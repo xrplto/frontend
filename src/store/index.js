@@ -1,6 +1,6 @@
 import { applyMiddleware, createStore } from 'redux';
 import { createLogger } from 'redux-logger'
-import reducer from 'store/reducers'
+import reducer from './reducers'
 const getMiddleware = () => {
   if (process.env.NODE_ENV === 'production') {
     return applyMiddleware();
@@ -10,5 +10,4 @@ const getMiddleware = () => {
   }
 };
 
-export default createStore(
-  reducer, getMiddleware());
+export default createStore(reducer, getMiddleware());

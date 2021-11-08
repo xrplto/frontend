@@ -1,62 +1,61 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import Grid from '@material-ui/core/Grid';
-import agent from '../../agent';
-import { connect } from 'react-redux';
+import EmailOutlinedIcon from '@material-ui/icons/EmailOutlined';
+import { useDispatch } from 'react-redux';
+
 import Container from '@material-ui/core/Container';
-import logo from '../../assets/images/newlogo.png';
-import {
-  UPDATE_FIELD_AUTH,
-  LOGIN,
-  LOGIN_PAGE_UNLOADED
-} from '../../constants/actionTypes';
+import TwitterIcon from '@material-ui/icons/Twitter';
 
-const mapStateToProps = state => ({ ...state.auth });
+import logo from 'assets/images/newlogo.png';
+import LoginImage from "assets/images/login.jpg"
+import { loginUserWithEmail } from "store/actions/auth"
 
-const mapDispatchToProps = dispatch => ({
-  onChangeEmail: value =>
-    dispatch({ type: UPDATE_FIELD_AUTH, key: 'email', value }),
-  onChangePassword: value =>
-    dispatch({ type: UPDATE_FIELD_AUTH, key: 'password', value }),
-  onSubmit: (email, password) =>
-    dispatch({ type: LOGIN, payload: agent.Auth.login(email, password) }),
-  onUnload: () =>
-    dispatch({ type: LOGIN_PAGE_UNLOADED })
-});
-
-class Login extends React.Component {
-  constructor() {
-    super();
-    this.changeEmail = ev => this.props.onChangeEmail(ev.target.value);
-    this.changePassword = ev => this.props.onChangePassword(ev.target.value);
-    this.submitForm = (email, password) => ev => {
-      ev.preventDefault();
-      this.props.onSubmit(email, password);
-    };
+const Login = () => {
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const [ value, setValue ] = useState({
+    email: "",
+    password: ""
+  });
+  const changeValue = (name, value) => {
+    setValue({...value, [name]: value});
+  };
+  const handlechange = (e) => {
+    changeValue(e.target.name, e.target.value);
+  };
+  const onSubmit = (e) => {
+    e.preventDefault();    
+    loginUserWithEmail(dispatch, history, value);
   }
-  render() {
-    const email = this.props.email;
-    const password = this.props.password;
   return (
-    <Container component="main" maxWidth="xs" className="border-black rounded border mt-20">
-      <div className="flex flex-col items-center mt-10">
-      <Link to="/">
-      <img src={logo} width="120" height="auto" alt="logo" /> 
-      </Link>
-        <form onSubmit={this.submitForm(email, password)} >
+    <div className="grid lg:grid-cols-2 login-panel">
+      <div className="image">
+        <Link to="/">
+          <img src={logo} width="120" height="auto" alt="logo" /> 
+        </Link>
+        <img src={LoginImage} />
+      </div>
+      <div className="login-panel-content">
+        <form onSubmit={onSubmit} >
+          <p className="text-center text-4xl">Login</p><br/>
+          <div className="grid grid-cols-2 gap-4">
+            <Button variant="contained" color="default" startIcon={<EmailOutlinedIcon/>}>with google</Button>
+            <Button variant="contained" color="primary" startIcon={<TwitterIcon />}>with twitter</Button>
+          </div>
           <TextField
             variant="outlined"
             margin="normal"
             required
             fullWidth
-            id="email"
+            name="email"
             label="Email Address"
             autoFocus
-            onChange={this.changeEmail} 
+            onChange={handlechange} 
           />
           <TextField
             variant="outlined"
@@ -65,8 +64,8 @@ class Login extends React.Component {
             fullWidth
             label="Password"
             type="password"
-            id="password"
-            onChange={this.changePassword} 
+            name="password"
+            onChange={handlechange} 
           />
           <FormControlLabel
             control={<Checkbox value="remember" color="primary" />}
@@ -88,17 +87,17 @@ class Login extends React.Component {
             </Grid>
             <Grid item>
               <Link to="/register">
-                {"Don't have an account? Sign Up"}
+                Don't have an account? Sign Up
               </Link>
             </Grid>
           </Grid>
-        </form>
+        </form>          
+        <p className="text-center  my-4">
+          copyright @ website.com 2021.7.5
+        </p>
       </div>
-      <p className="text-center  my-4">
-        copyright @ website.com 2021.7.5
-      </p>
-    </Container>
-  );
+    </div>
+  )
 }
-}
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+
+export default Login

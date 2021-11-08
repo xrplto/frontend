@@ -1,9 +1,8 @@
 import { useTranslation, Trans } from 'react-i18next';
-import img1 from '../../assets/images/banner.png';
+import img1 from 'assets/images/banner.png';
 import Button from '@material-ui/core/Button';
-import Header from '../Browse/Banner'
-import Footer from './Footer'
-
+import Header from 'components/Header'
+import Footer from 'components/Footer'
 // import Background from '../images/background_image.png';
 var sectionStyle = {
     marginTop: '100px',
@@ -11,8 +10,6 @@ var sectionStyle = {
     backgroundRepeat: 'no-repeat',
     backgroundSize: 'Cover',
   };
-
-
 
 function Home() {
     const { t } = useTranslation();

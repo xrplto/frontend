@@ -1,3 +1,64 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}
+
+::-webkit-scrollbar-thumb {
+    background: #d4d4d4; 
+}
+
+::-webkit-scrollbar-thumb:hover {   
+    background: #d4d4d4; 
+}
+
+html, body, #root {
+    height: 100%;
+}
+#box {
+    height: 100%;
+
+}
+#box.dark {
+    background-color: black;
+    color: white;
+}
+.dark {
+    background-color: #333;
+    color: white;
+}
+.login-panel {
+    width: 1000px;
+    margin: 50px auto;
+    border: rgb(66, 65, 65) 1px solid;
+    border-radius: 8px;
+
+    .image {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 30px;
+        background-color: black;
+    }
+
+    &-content {
+        display: flex;
+        margin: 30px 70px 10px;
+        flex-direction: column;
+    }
+}
+@media (max-width: 1024px) {
+    .login-panel {
+        max-width: 500px;
+        .image {
+            display: none;
+        }
+    } 
+  }
