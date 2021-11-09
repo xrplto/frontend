@@ -34,7 +34,7 @@ const App = (props) => {
     <Router>
       <div id="box" className={theme ? "" : "dark" }>
         <ThemeProvider theme={appliedTheme}>     
-            <Header/>
+          <Header/>
           <Switch>
             <Route exact path="/" component={Home}/>
             <Route path="/login" component={Login} />

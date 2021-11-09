@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import lanuguagesList from 'constants/lanuguagesList'
 import TextField from '@material-ui/core/TextField';
@@ -29,10 +30,16 @@ function useOutsideAlerter(ref, setActive) {
 
 const LanguageSelect = ({theme}) => {
     const wrapperRef = useRef(null);
+    const { t, i18n } = useTranslation();
     const [ active, setActive ] = useState(false);
     const [ value, setValue ] = useState("");
     const [ select, setSelect ] = useState({label: "English", value: "US"});
-    useOutsideAlerter(wrapperRef, setActive);
+    const handleSelect = (item) => {
+        setSelect(item);
+        setActive(false);
+        i18n.changeLanguage(item.value);
+    }
+    useOutsideAlerter(wrapperRef, setActive);    
 
     return (
         <div id="language-select" ref={wrapperRef}>
@@ -50,7 +57,7 @@ const LanguageSelect = ({theme}) => {
                 <ul>                    
                     {
                         lanuguagesList.filter((item) => item.label.toLowerCase().indexOf(value.toLowerCase()) != -1).map((item, index) => 
-                            <li key={index} onClick={() => {setSelect(item); setActive(false)}}>
+                            <li key={index} onClick={()=> handleSelect(item)}>
                                 <ReactCountryFlag countryCode={item.value} svg className="cp-modal-flag"/>
                                 {item.label}
                                 <span className="flex-grow"/>

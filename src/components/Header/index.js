@@ -29,11 +29,12 @@ const Header = (props) => {
   const dispatch = useDispatch()
   return (
     <>
-      <div className={`border-b-black border flex justify-end items-center px-4 ${theme ? "" : "dark"}`}>
+      <div className="border-b flex justify-end items-center px-4">
         <LanguageSelect theme={theme} />
         <IconButton
           edge="end"
           color="inherit"
+          style={{padding: "3px"}}
           aria-label="mode"
           onClick={() => changeTheme(dispatch, !theme) }>
              {!theme ? <Brightness7Icon style={{ color: "yellow" }}/> : <Brightness3Icon />}

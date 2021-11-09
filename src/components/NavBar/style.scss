@@ -1,0 +1,36 @@
+.nav-bar {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-bottom: 1px rgb(229, 231, 235) solid;
+
+    img {
+        padding-right: 10px;
+    }
+
+    a {
+        font-weight: bold;
+        padding-right: 10px;
+    }
+
+    a:hover {
+        color: red;
+    }
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    
+        &-content {
+            display: none;
+            position: absolute;
+            right: 0px;
+            min-width: 250px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+          }
+        &:hover .dropdown-content {display: block;}
+    }
+}
+
+  

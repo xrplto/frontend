@@ -5,6 +5,7 @@ import store from './store'
 import Spinner from './components/spinner'
 import reportWebVitals from './reportWebVitals';
 import './index.scss';
+import './i18n';
 
 const LazyApp = lazy(() => import("./App"))
 
