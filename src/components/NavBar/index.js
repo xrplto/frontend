@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React from 'react';
+import { useSelector } from 'react-redux';
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
@@ -10,8 +10,8 @@ import './style.scss';
 
 const NavBar = (props) => {
   const { t } = useTranslation();
-  const currentUser = useSelector((state) => state.auth.currentUser);
-  const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.auth.isAuthenticated);
+  const me = useSelector((state) => state.auth.me);
   return (
     <>
       <div className="nav-bar">
@@ -35,7 +35,7 @@ const NavBar = (props) => {
             (
             <>
             <div className="dropdown mr-3">
-                <span className="dropbtn font-bold hover:text-red-500 flex  mr-3"> <img src={`http://localhost:8080/api/public/${this.props.currentUser.image}`} className="rounded-full" width="40"/><ArrowDropDownIcon/></span>
+                <span className="dropbtn"> <img src={`${process.env.REACT_APP_BACKEND_URL + me.avatar}`} className="rounded-full" width="40"/><ArrowDropDownIcon/></span>
                 <div className="dropdown-content">
                     <a><ExitToAppIcon />{t('browse.logout')}</a>
                 </div>                  

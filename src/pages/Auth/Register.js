@@ -1,25 +1,45 @@
 import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import Lottie from 'react-lottie';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import Grid from '@material-ui/core/Grid';
 import logo from 'assets/images/newlogo.png';
 import LoginImage from "assets/images/login.jpg"
 import EmailOutlinedIcon from '@material-ui/icons/EmailOutlined';
 import TwitterIcon from '@material-ui/icons/Twitter';
+import animationData from "constants/loding"
+import { registerUserWithEmail } from "store/actions/auth"
+
+const savingOptions = {
+  loop: true,
+  autoplay: true, 
+  animationData: animationData,
+  rendererSettings: {
+    preserveAspectRatio: 'xMidYMid slice'
+  }
+};
 
 const Register = () => {
+  const dispatch = useDispatch();
+  const isLoading = useSelector((state) => state.common.isLoading)
+  const history = useHistory();
   const [ value, setValue ] = useState({
     email: "",
     password: ""
   });
-  const changeValue = (name, value) => {
-    setValue({...value, [name]: value});
+  const changeValue = (name, item) => {
+    setValue({...value, [name]: item});
   };
   const handlechange = (e) => {
     changeValue(e.target.name, e.target.value);
+  };
+  const onSubmit = (e) => {
+    e.preventDefault();    
+    registerUserWithEmail(dispatch, history, value);
   }
   return (
     <div className="grid lg:grid-cols-2 login-panel">
@@ -30,7 +50,7 @@ const Register = () => {
         <img src={LoginImage} />
       </div>
       <div className="login-panel-content">
-        <form onSubmit={() => {}} >
+        <form onSubmit={onSubmit} >
           <p className="text-center text-4xl">Sign Up</p><br/>
           <div className="grid grid-cols-2 gap-4">
             <Button variant="contained" color="default" startIcon={<EmailOutlinedIcon/>}>with google</Button>
@@ -75,8 +95,13 @@ const Register = () => {
             fullWidth
             variant="contained"
             color="primary"
+            disabled={isLoading}
           >
-            Sign Up
+            <span className="flex">
+              { isLoading && <Lottie options={savingOptions} height={25} width={25} /> }
+              Sign Up
+            </span>
+
           </Button>
           <Grid container>
             <Grid item xs>

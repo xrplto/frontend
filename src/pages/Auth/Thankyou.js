@@ -1,7 +1,7 @@
 import React from "react"
 import Button from '@material-ui/core/Button';
 import Container from '@material-ui/core/Container'
-import underMaintenance from "../../assets/images/maintenance-2.png"
+import underMaintenance from "assets/images/graphic-3.png"
 import { Link } from "react-router-dom";
 class Maintenance extends React.Component {
 
@@ -11,8 +11,8 @@ class Maintenance extends React.Component {
           <div className="flex flex-col items-center mt-20">
               <img
                 src={underMaintenance}
-                alt="underMaintenance"
-                className="img-fluid align-self-center mt-75"
+                alt="underMaintenance" 
+                className="img-fluid align-self-center mt-75" width="300"
               />
               <h1 className="text-4xl">You have registered successfully!</h1>
               <p className="px-2 my-4 text-center">

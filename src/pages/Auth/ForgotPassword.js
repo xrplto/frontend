@@ -5,7 +5,6 @@ import { useDispatch } from "react-redux";
 import Container from '@material-ui/core/Container'
 import logo from '../../assets/images/reset-password.png';
 
-import agent from '../../agent'
 import {
   useLocation,
   Link
@@ -18,7 +17,7 @@ export default function VerifyEmail() {
   const dispatch = useDispatch();
   const submitForm = (e) => {
     e.preventDefault();
-   dispatch({ type: "Verify", payload: agent.Auth.verifyPassword(token, password) })
+  //  dispatch({ type: "Verify", payload: agent.Auth.verifyPassword(token, password) })
   }
     return (
       <Container component="main" maxWidth="md" className=" mt-20">

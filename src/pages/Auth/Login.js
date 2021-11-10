@@ -6,24 +6,34 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { Link, useHistory } from "react-router-dom";
 import Grid from '@material-ui/core/Grid';
 import EmailOutlinedIcon from '@material-ui/icons/EmailOutlined';
-import { useDispatch } from 'react-redux';
-
-import Container from '@material-ui/core/Container';
+import { useDispatch, useSelector } from 'react-redux';
+import Lottie from 'react-lottie';
 import TwitterIcon from '@material-ui/icons/Twitter';
 
 import logo from 'assets/images/newlogo.png';
 import LoginImage from "assets/images/login.jpg"
 import { loginUserWithEmail } from "store/actions/auth"
+import animationData from "constants/loding"
+
+const savingOptions = {
+  loop: true,
+  autoplay: true, 
+  animationData: animationData,
+  rendererSettings: {
+    preserveAspectRatio: 'xMidYMid slice'
+  }
+};
 
 const Login = () => {
   const dispatch = useDispatch();
+  const isLoading = useSelector((state) => state.common.isLoading)
   const history = useHistory();
   const [ value, setValue ] = useState({
     email: "",
     password: ""
   });
-  const changeValue = (name, value) => {
-    setValue({...value, [name]: value});
+  const changeValue = (name, item) => {
+    setValue({...value, [name]: item});
   };
   const handlechange = (e) => {
     changeValue(e.target.name, e.target.value);
@@ -33,8 +43,8 @@ const Login = () => {
     loginUserWithEmail(dispatch, history, value);
   }
   return (
-    <div className="grid lg:grid-cols-2 login-panel">
-      <div className="image">
+    <div className="grid lg:grid-cols-2 login-panel border">
+      <div className="image border-r">
         <Link to="/">
           <img src={logo} width="120" height="auto" alt="logo" /> 
         </Link>
@@ -76,8 +86,12 @@ const Login = () => {
             fullWidth
             variant="contained"
             color="primary"
+            disabled={isLoading}
           >
-            Sign In
+            <span className="flex">
+              { isLoading && <Lottie options={savingOptions} height={25} width={25} /> }
+              Sign In
+            </span>
           </Button>
           <Grid container>
             <Grid item xs>

@@ -2,8 +2,7 @@ import React, { useState, useEffect }  from "react"
 import Button from '@material-ui/core/Button';
 import { useDispatch } from "react-redux";
 import Container from '@material-ui/core/Container'
-import underMaintenance from "../../assets/images/maintenance-2.png"
-import agent from '../../agent'
+import underMaintenance from "assets/images/graphic-3.png"
 import {
   useLocation,
   Link
@@ -14,7 +13,7 @@ export default function VerifyEmail() {
   let  token = query.get("verify_token");
   const dispatch = useDispatch();
   useEffect( () => {
-    dispatch({ type: "Verify", payload: agent.Auth.verifyEmail(token) })
+    // dispatch({ type: "Verify", payload: agent.Auth.verifyEmail(token) })
  }, []);
     return (
       <Container component="main" maxWidth="md">
@@ -22,7 +21,7 @@ export default function VerifyEmail() {
               <img
                 src={underMaintenance}
                 alt="underMaintenance"
-                className="img-fluid align-self-center mt-75"
+                className="img-fluid align-self-center mt-75" width="300"
               />
               <br/>
               <Link to="/login">

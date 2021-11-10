@@ -1,5 +1,5 @@
 import {
-    CHANGE_THEME
+    CHANGE_THEME,
 } from '../types';
   
 export const changeTheme = (dispatch,value) => {
