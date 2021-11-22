@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Lottie from 'react-lottie';
 import TwitterIcon from '@material-ui/icons/Twitter';
 
-import logo from 'assets/images/newlogo.png';
+import logo from 'assets/images/logo-white.png';
 import LoginImage from "assets/images/login.jpg"
 import { loginUserWithEmail } from "store/actions/auth"
 import animationData from "constants/loding"

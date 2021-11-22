@@ -9,6 +9,9 @@ import { createTheme } from "@material-ui/core/styles";
 import Header from "components/Header"
 import { CHANGE_ALERT } from "store/types";
 import { loadMe } from "store/actions/auth";
+import NavBar from "components/NavBar";
+import Footer from "components/Footer";
+
 const Home = lazy(() => import("pages/Home"))
 const Login = lazy(() => import("pages/Auth/Login"))
 const ForgotPassword = lazy(() => import("pages/Auth/ForgotPassword"))
@@ -39,6 +42,7 @@ const App = (props) => {
   useEffect(() => {
     axios.defaults.baseURL = process.env.REACT_APP_BACKEND_URL;
     if( localStorage.getItem("token") ) {
+      console.log(localStorage.getItem("token"))
       loadMe(dispatch);
     }
   }, []);
@@ -58,13 +62,19 @@ const App = (props) => {
         <ThemeProvider theme={appliedTheme}>     
           <Header/>
           <Switch>
-            <Route exact path="/" component={Home}/>
             <Route path="/login" component={Login} />
             <Route path="/register" component={Register} />
             <Route path="/Thankyou-Register" component={Thankyou}/>   
             <Route path="/verifyEmail" component={VerifyEmail}/>         
             <Route path="/forgot-password" component={ForgotPassword}/>
             <Route path='/input-email' component={InputEmail}/>
+            <Route path="/">      
+                <NavBar />
+                <div className="page-content">
+                  <Route exact path="/" component={Home}/>
+                </div>         
+                <Footer />
+             </Route>     
           </Switch>
           <ToastContainer />
         </ThemeProvider>

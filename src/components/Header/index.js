@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import logo from 'assets/images/newlogo.png';
 import Brightness3Icon from "@material-ui/icons/Brightness3";
 import Brightness7Icon from "@material-ui/icons/Brightness7";
 import IconButton from "@material-ui/core/IconButton";
@@ -29,7 +28,7 @@ const Header = (props) => {
   const dispatch = useDispatch()
   return (
     <>
-      <div className="border-b flex justify-end items-center px-4">
+      <div className={`border-b flex justify-end items-center px-4 ${theme ? "" : "dark"}`}>
         <LanguageSelect theme={theme} />
         <IconButton
           edge="end"

@@ -25,12 +25,12 @@ html, body, #root {
     height: 100%;
 
 }
-#box.dark {
-    background-color: black;
+.dark {
+    background-color: #424242;
     color: white;
 }
-.dark {
-    background-color: #333;
+#box.dark {
+    background-color: #333333;
     color: white;
 }
 .login-panel {
@@ -38,6 +38,7 @@ html, body, #root {
     margin: 50px auto;
     border-radius: 8px;
     box-shadow: grey 5px 5px 5px;
+    border: #e5e7eb;
 
     .image {
         display: flex;
@@ -50,9 +51,14 @@ html, body, #root {
 
     &-content {
         display: flex;
-        margin: 30px 70px 10px;
+        padding: 30px 70px 10px;
         flex-direction: column;
+        border: #e5e7eb 1px solid;
     }
+}
+.page-content {
+    min-height: calc(100vh - 355px);
+    padding: 20px
 }
 @media (max-width: 1024px) {
     .login-panel {

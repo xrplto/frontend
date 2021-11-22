@@ -4,7 +4,8 @@ import {
     LOGIN_WITH_OAUTH_SUCCESS,
     CHANGE_ALERT,
     CHANGE_LOADING,
-    ME_SUCCESS
+    ME_SUCCESS,
+    LOGOUT_SUCCESS
 } from '../types';
 
 const BaseUrl = process.env.REACT_APP_BACKEND_URL
@@ -19,7 +20,7 @@ export const loadMe = async (dispatch) => {
     axios.defaults.headers.common['x-auth-token'] = token;
     dispatch({ type: ME_SUCCESS, payload: response.data.me });
     } catch (err) {
-      localStorage.setItem('token', null);
+      localStorage.removeItem('token');
     }
 };
 
@@ -47,3 +48,16 @@ export const loginUserWithEmail = async (dispatch, history, formData) => {
       dispatch({ type: CHANGE_ALERT, payload: {success: 1, message: err.response.data.message}});
     }
   };
+
+  export const logOutUser = (history) => async (dispatch) => {
+    try {
+      //just to log user logut on the server
+      await axios.get('/auth/logout');
+  
+      dispatch({
+        type: LOGOUT_SUCCESS,
+      });
+      if (history) history.push('/');
+    } catch (err) {}
+  };
+  

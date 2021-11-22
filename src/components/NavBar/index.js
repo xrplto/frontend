@@ -5,17 +5,19 @@ import { useTranslation } from "react-i18next";
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import Button from '@material-ui/core/Button';
-import logo from 'assets/images/logo2.png';
+import logo from 'assets/images/logo.png';
+import logo_white from 'assets/images/logo-white.png';
 import './style.scss';
 
 const NavBar = (props) => {
   const { t } = useTranslation();
   const currentUser = useSelector((state) => state.auth.isAuthenticated);
+  const theme = useSelector((state) => state.common.theme);
   const me = useSelector((state) => state.auth.me);
   return (
     <>
-      <div className="nav-bar">
-        <img src={logo} width="130"/>
+      <div className={theme ? "nav-bar" : "nav-bar dark" }>
+        { theme ? <img src={logo} width="130" alt="logo" /> :<img src={logo_white} width="130" alt="logo" /> }
         <Link to="" >Cryptocurrencies</Link>
         <Link to="" >Exchanges</Link>
         <Link to="" >NFT</Link>

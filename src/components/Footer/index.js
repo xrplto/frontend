@@ -1,8 +1,8 @@
 import React from 'react';
-import logo from '../../assets/images/logo2.png';
-import discord from '../../assets/images/discord.svg'
-import reddit from '../../assets/images/reddit-blue.svg'
-import twitter from '../../assets/images/twitter-blue.svg'
+import logo from 'assets/images/logo-white.png';
+import discord from 'assets/images/discord.svg'
+import reddit from 'assets/images/reddit-blue.svg'
+import twitter from 'assets/images/twitter-blue.svg'
 
 export default function Footer() {
 
@@ -11,7 +11,6 @@ export default function Footer() {
         <div className="grid  grid-cols-6 md:grid-cols-7 gap-4 p-6 py-12" style={{backgroundColor:"#310045"}}>
             <div className='col-span-3 sm:col-span-2  md:col-span-1 '>
                 <img src={logo} width="80px" height="80px" alt="logo" className="float-left" />
-                <p className="text-white font-bold text-lg">Mintable</p>
                 <br/>
                 <br/>
                 <p className="text-white font-bold text-base pb-4">Join our community</p>

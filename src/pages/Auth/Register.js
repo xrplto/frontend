@@ -7,7 +7,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import { Link, useHistory } from "react-router-dom";
 import Grid from '@material-ui/core/Grid';
-import logo from 'assets/images/newlogo.png';
+import logo from 'assets/images/logo-white.png';
 import LoginImage from "assets/images/login.jpg"
 import EmailOutlinedIcon from '@material-ui/icons/EmailOutlined';
 import TwitterIcon from '@material-ui/icons/Twitter';
