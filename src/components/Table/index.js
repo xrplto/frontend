@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -20,12 +20,19 @@ const SortTableHead = (props) => {
 }
 
 const InvoiceTable = ({ data, isloading }) => {
-    const [page, setPage] = React.useState(0);
-    const [row, setRow] = React.useState(data.slice(0, 25));
+    const [page, setPage] = useState(0);
+    const [items, setItems] = useState(10)
+    const [row, setRow] = useState([...data.slice(0, items)]);
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
-        setRow(data.slice(newPage * 25, (newPage + 1) * 25))
     }
+    const handleChangeRowsPerPage = (event) => {
+        setItems( e => event.target.value)
+    }
+    useEffect(() => {
+        setRow([...data.slice(page * items, (page + 1) * items)])
+    }, [page, items]);
+
     return (
         <React.Fragment>
             <div className={`invoice--table ${data.length == 0 ? "" : "visible"}` }>
@@ -39,9 +46,9 @@ const InvoiceTable = ({ data, isloading }) => {
                             <TableCell><span>Total issued value of this token<SortTableHead /></span></TableCell>
                             <TableCell><span>Number of TrustLines<SortTableHead /></span></TableCell>
                             <TableCell><span>Current Dex Offers<SortTableHead /></span></TableCell>
-                            <TableCell><span>Trustline<SortTableHead /></span></TableCell>
-                            <TableCell><span>Dex<SortTableHead /></span></TableCell>
-                            <TableCell><span>Explorers<SortTableHead /></span></TableCell>
+                            {/* <TableCell>Trustline</TableCell>
+                            <TableCell>Dex</TableCell> */}
+                            <TableCell>Explorers</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -68,19 +75,24 @@ const InvoiceTable = ({ data, isloading }) => {
                                 <TableCell>
                                     {row.offers}
                                 </TableCell>
+                                <TableCell>
+                                    <a href={`https://bithomp.com/explorer/${row.account}`}>Bithomp</a>&nbsp;|&nbsp; 
+                                    <a href={`https://xrpscan.com/account/${row.account}`}>XRPScan</a>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
                 <div className="invoice--table--pagination">
                     <TablePagination
-                        labelRowsPerPage=""
+                        labelRowsPerPage="Rows per page"
                         rowsPerPageOptions={[10, 25, 50, 100]}
                         component="div"
                         count={data.length}
-                        rowsPerPage={10}
+                        rowsPerPage={items}
                         page={page}
                         onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
                     />
                     {/* <span className="left-page">
                         page {page + 1} of {data.length % 5 == 0 ? (data.length == 0 ? 1 : Math.floor(data.length / 5)) : Math.floor(data.length / 5 + 1)}

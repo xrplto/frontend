@@ -19,7 +19,7 @@ const NavBar = (props) => {
       <div className={theme ? "nav-bar" : "nav-bar dark" }>
         { theme ? <img src={logo} width="130" alt="logo" /> :<img src={logo_white} width="130" alt="logo" /> }
         <Link to="" >Cryptocurrencies</Link>
-        <Link to="" >Exchanges</Link>
+        <Link to="/tokens" >NFTs</Link>
         <Link to="" >NFT</Link>
         <Link to="" >Portfolio</Link>
         <Link to="" >Watchlist</Link>

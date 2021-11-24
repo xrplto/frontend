@@ -20,6 +20,7 @@ const InputEmail = lazy(() => import("pages/Auth/InputEmail"))
 const Register = lazy(() => import("pages/Auth/Register"))
 const Thankyou = lazy(() => import("pages/Auth/Thankyou"))
 const VerifyEmail = lazy(() => import("pages/Auth/VerifyEmail"))
+const TokenList = lazy(() => import("pages/token"))
 
 const light = {
   palette: {
@@ -72,6 +73,7 @@ const App = (props) => {
                 <NavBar />
                 <div className="page-content">
                   <Route exact path="/" component={Home}/>
+                  <Route exact path="/tokens" component={TokenList}/>
                 </div>         
                 <Footer />
              </Route>     
