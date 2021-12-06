@@ -22,16 +22,16 @@ const SortTableHead = (props) => {
 const InvoiceTable = ({ data, isloading }) => {
     const [page, setPage] = useState(0);
     const [items, setItems] = useState(10)
-    const [row, setRow] = useState([...data.slice(0, items)]);
+    // const [row, setRow] = useState([...data.slice(0, items)]);
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     }
     const handleChangeRowsPerPage = (event) => {
         setItems( e => event.target.value)
     }
-    useEffect(() => {
-        setRow([...data.slice(page * items, (page + 1) * items)])
-    }, [page, items]);
+    // useEffect(() => {
+    //     setRow([...data.slice(page * items, (page + 1) * items)])
+    // }, [page, items]);
 
     return (
         <React.Fragment>
@@ -39,51 +39,51 @@ const InvoiceTable = ({ data, isloading }) => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell><span>Issuer Account<SortTableHead /></span></TableCell>
-                            <TableCell><span>Issuer KYC<SortTableHead /></span></TableCell>
-                            <TableCell><span>Accountname<SortTableHead /></span></TableCell>
-                            <TableCell><span>Token Currency Code<SortTableHead /></span></TableCell>
-                            <TableCell><span>Total issued value of this token<SortTableHead /></span></TableCell>
-                            <TableCell><span>Number of TrustLines<SortTableHead /></span></TableCell>
-                            <TableCell><span>Current Dex Offers<SortTableHead /></span></TableCell>
+                            <TableCell><span>Account<SortTableHead /></span></TableCell>
+                            {/* <TableCell><span>Issuer KYC<SortTableHead /></span></TableCell>
+                            <TableCell><span>Accountname<SortTableHead /></span></TableCell> */}
+                            <TableCell><span>Currency<SortTableHead /></span></TableCell>
+                            <TableCell><span>Value<SortTableHead /></span></TableCell>
+                            <TableCell><span>TrustLines<SortTableHead /></span></TableCell>
+                            <TableCell><span>Offers<SortTableHead /></span></TableCell>
                             {/* <TableCell>Trustline</TableCell>
                             <TableCell>Dex</TableCell> */}
                             <TableCell>Explorers</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {row.map((row, index) => (
+                        {Object.keys(data).map((key, index) => (
                             <TableRow key={index}>
                                 <TableCell component="th" scope="row">
-                                    {row.account}
+                                    {data[key].account}
                                 </TableCell>
-                                <TableCell>
+                                {/* <TableCell>
                                     {row.kyc && <CheckCircleIcon style={{color: "green"}} />}
                                 </TableCell>
                                 <TableCell>
                                     {row.username}
+                                </TableCell> */}
+                                <TableCell>
+                                    {data[key].currency}
                                 </TableCell>
                                 <TableCell>
-                                    {row.currency}
+                                    {data[key].amount}
                                 </TableCell>
                                 <TableCell>
-                                    {row.amount}
+                                    {data[key].trustlines}
                                 </TableCell>
                                 <TableCell>
-                                    {row.trustlines}
+                                    {data[key].offers}
                                 </TableCell>
                                 <TableCell>
-                                    {row.offers}
-                                </TableCell>
-                                <TableCell>
-                                    <a href={`https://bithomp.com/explorer/${row.account}`}>Bithomp</a>&nbsp;|&nbsp; 
-                                    <a href={`https://xrpscan.com/account/${row.account}`}>XRPScan</a>
+                                    <a href={`https://bithomp.com/explorer/${data[key].account}`}>Bithomp</a>&nbsp;|&nbsp; 
+                                    <a href={`https://xrpscan.com/account/${data[key].account}`}>XRPScan</a>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
-                <div className="invoice--table--pagination">
+                {/* <div className="invoice--table--pagination">
                     <TablePagination
                         labelRowsPerPage="Rows per page"
                         rowsPerPageOptions={[10, 25, 50, 100]}
@@ -94,10 +94,7 @@ const InvoiceTable = ({ data, isloading }) => {
                         onPageChange={handleChangePage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
                     />
-                    {/* <span className="left-page">
-                        page {page + 1} of {data.length % 5 == 0 ? (data.length == 0 ? 1 : Math.floor(data.length / 5)) : Math.floor(data.length / 5 + 1)}
-                    </span> */}
-                </div>
+                </div> */}
             </div>
             { isloading && <Spinner type={1} />}
         </React.Fragment>
