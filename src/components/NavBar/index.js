@@ -17,10 +17,8 @@ const NavBar = (props) => {
   return (
     <>
       <div className={theme ? "nav-bar" : "nav-bar dark" }>
-        { theme ? <img src={logo} width="130" alt="logo" /> :<img src={logo_white} width="130" alt="logo" /> }
-        <Link to="" >Cryptocurrencies</Link>
-        <Link to="/tokens" >NFTs</Link>
-        <Link to="" >NFT</Link>
+        <Link to="/" >{ theme ? <img src={logo} width="130" alt="logo" /> :<img src={logo_white} width="130" alt="logo" /> }</Link>
+        <Link to="/tokens" >Tokens</Link>
         <Link to="" >Portfolio</Link>
         <Link to="" >Watchlist</Link>
         <span className="flex-grow" />

@@ -39,10 +39,10 @@ const InvoiceTable = ({ data, isloading }) => {
                 <Table>
                     <TableHead>
                         <TableRow>
+                            <TableCell><span>Currency<SortTableHead /></span></TableCell>
                             <TableCell><span>Account<SortTableHead /></span></TableCell>
                             {/* <TableCell><span>Issuer KYC<SortTableHead /></span></TableCell>
-                            <TableCell><span>Accountname<SortTableHead /></span></TableCell> */}
-                            <TableCell><span>Currency<SortTableHead /></span></TableCell>
+                            <TableCell><span>Accountname<SortTableHead /></span></TableCell> */}                            
                             <TableCell><span>Value<SortTableHead /></span></TableCell>
                             <TableCell><span>TrustLines<SortTableHead /></span></TableCell>
                             <TableCell><span>Offers<SortTableHead /></span></TableCell>
@@ -54,6 +54,9 @@ const InvoiceTable = ({ data, isloading }) => {
                     <TableBody>
                         {Object.keys(data).map((key, index) => (
                             <TableRow key={index}>
+                                <TableCell>
+                                    {data[key].currency}
+                                </TableCell>
                                 <TableCell component="th" scope="row">
                                     {data[key].account}
                                 </TableCell>
@@ -63,9 +66,6 @@ const InvoiceTable = ({ data, isloading }) => {
                                 <TableCell>
                                     {row.username}
                                 </TableCell> */}
-                                <TableCell>
-                                    {data[key].currency}
-                                </TableCell>
                                 <TableCell>
                                     {data[key].amount}
                                 </TableCell>
