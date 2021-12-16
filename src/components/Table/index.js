@@ -6,10 +6,13 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import TablePagination from '@material-ui/core/TablePagination';
-import Spinner from "components/spinner"
+import { LineChart, Line } from "recharts";
+import Dropdown from "components/dropdown";
+import Spinner from "components/spinner";
+
 import "./style.scss"
+
 
 const SortTableHead = (props) => {
     return (
@@ -18,24 +21,30 @@ const SortTableHead = (props) => {
         </div>
     );
 }
+const chartData = () => {
+    let k = []
+    for(let i=0; i < 20; i++) {
+        k.push({ pv: 0.05 * i + Math.random() })
+    }
+    return k;
+}
 
 const InvoiceTable = ({ data, isloading }) => {
     const [page, setPage] = useState(0);
-    const [items, setItems] = useState(10)
-    // const [row, setRow] = useState([...data.slice(0, items)]);
+    const [items, setItems] = useState(100)
+    const [row, setRow] = useState([...data.slice(0, items)]);
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     }
     const handleChangeRowsPerPage = (event) => {
         setItems( e => event.target.value)
     }
-    // useEffect(() => {
-    //     setRow([...data.slice(page * items, (page + 1) * items)])
-    // }, [page, items]);
-
+    useEffect(() => {
+        setRow([...data.slice(page * items, (page + 1) * items)])
+    }, [page, items]);
     return (
         <React.Fragment>
-            <div className={`invoice--table ${data.length == 0 ? "" : "visible"}` }>
+            <div className={`invoice--table ${data.length === 0 ? "" : "visible"}` }>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -52,13 +61,13 @@ const InvoiceTable = ({ data, isloading }) => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {Object.keys(data).map((key, index) => (
+                        {row.map((item, index) => (
                             <TableRow key={index}>
                                 <TableCell>
-                                    {data[key].currency}
+                                    {item.currency}
                                 </TableCell>
                                 <TableCell component="th" scope="row">
-                                    {data[key].account}
+                                    {item.account}
                                 </TableCell>
                                 {/* <TableCell>
                                     {row.kyc && <CheckCircleIcon style={{color: "green"}} />}
@@ -67,23 +76,27 @@ const InvoiceTable = ({ data, isloading }) => {
                                     {row.username}
                                 </TableCell> */}
                                 <TableCell>
-                                    {data[key].amount}
+                                    {item.amount}
                                 </TableCell>
                                 <TableCell>
-                                    {data[key].trustlines}
+                                    {item.trustlines}
                                 </TableCell>
                                 <TableCell>
-                                    {data[key].offers}
+                                    {item.offers}
                                 </TableCell>
                                 <TableCell>
-                                    <a href={`https://bithomp.com/explorer/${data[key].account}`}>Bithomp</a>&nbsp;|&nbsp; 
-                                    <a href={`https://xrpscan.com/account/${data[key].account}`}>XRPScan</a>
+                                    <div className="flex agling-items">
+                                        <LineChart width={150} height={60} data={chartData()}>
+                                            <Line type="monotone" dataKey="pv" stroke="#5ecf8e" strokeWidth={2} dot={<span />} />
+                                        </LineChart>                
+                                        <Dropdown account={item.account} />                          
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
-                {/* <div className="invoice--table--pagination">
+                <div className="invoice--table--pagination">
                     <TablePagination
                         labelRowsPerPage="Rows per page"
                         rowsPerPageOptions={[10, 25, 50, 100]}
@@ -94,7 +107,7 @@ const InvoiceTable = ({ data, isloading }) => {
                         onPageChange={handleChangePage}
                         onRowsPerPageChange={handleChangeRowsPerPage}
                     />
-                </div> */}
+                </div>
             </div>
             { isloading && <Spinner type={1} />}
         </React.Fragment>

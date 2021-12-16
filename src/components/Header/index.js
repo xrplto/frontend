@@ -13,7 +13,10 @@ const Header = (props) => {
   const dispatch = useDispatch()
   return (
     <>
-      <div className={`border-b flex justify-end items-center px-4 ${theme ? "" : "dark"}`}>
+      <div className={`border-b flex items-center px-4 ${theme ? "" : "dark"}`}>
+        <span className="mr-4"><b>Ledger Index: 68249567</b> </span>
+        <span><b>Ledger Hash: D669BF5CA88CE15A7EA7D0707871F537C3AA5D3D53D47643EA7764676EA6132D</b> </span>
+        <span className="flex-grow"/>
         <LanguageSelect theme={theme} />
         <IconButton
           edge="end"

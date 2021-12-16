@@ -73,7 +73,7 @@ const App = (props) => {
                 <NavBar />
                 <div className="page-content">
                   <Route exact path="/" component={Home}/>
-                  <Route exact path="/tokens" component={TokenList}/>
+                  <Route path="/tokens/:account" component={TokenList}/>
                 </div>         
                 <Footer />
              </Route>     

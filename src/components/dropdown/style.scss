@@ -1,0 +1,14 @@
+.cp-dropdown {
+    position: relative;
+
+    &-modal {
+        position: absolute;
+        right: -50%;
+        display: none;
+        z-index: 1;
+    }  
+    &-modal.active {
+        display: block;
+    }
+}
+

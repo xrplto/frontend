@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from "axios";
-import Home_image from "assets/images/home-image.jpg"
 import Table from "components/Table"
 import * as normalizer from 'utils/normalizers';
 const xrpl = require("xrpl")
@@ -172,18 +171,16 @@ const Home = (props) => {
         console.log(e)
         break;
       }
-    } while(response.result.state.length > 100)
+    } while(k < 10)
 
    
   }
   useEffect(() => {
     main();
   }, [])
-  // console.log(issuerData)
-  console.log("token:", Object.keys(issuerData).length)
   return (
     <>
-    <Table data={issuerData}/>
+    <Table data={Object.values(issuerData)}/>
     </>
   )
 }

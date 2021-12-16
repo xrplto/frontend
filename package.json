@@ -25,6 +25,7 @@
     "react-select": "^5.2.1",
     "react-spinners": "^0.11.0",
     "react-toastify": "^8.1.0",
+    "recharts": "^2.1.6",
     "redux": "^4.1.2",
     "redux-logger": "^3.0.6",
     "sass": "^1.43.4",
@@ -32,7 +33,7 @@
     "xrpl": "^2.0.3"
   },
   "scripts": {
-    "start": "craco start",
+    "start": "set PORT=80 && craco start",
     "build": "craco build",
     "test": "craco test",
     "eject": "craco eject"
