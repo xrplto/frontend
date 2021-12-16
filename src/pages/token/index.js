@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import axios from "axios";
 import Card from '@material-ui/core/Card';
 import ToggleSwitch from "components/toggleSwitch"
 import {
@@ -82,32 +81,26 @@ const Tokens = () => {
     return (
     <>
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="flex items-center justify-around p-3">      
-            Rank #3
-            Coin
-            On 894 watchlists
-            Binance Coin Price (BNB)
-            $534.01
-            0.18%
-            0.01094 BTC0.47%
-            0.1326 ETH3.55%
+          <Card className="flex items-center justify-around p-3"> 
+            Binance Coin Price (BNB)<br />
+            $534.0 )<br />
+            ▼ 0.18%
           </Card>
           <Card className="flex items-center justify-around p-3">
-            Market Cap
-            $89,073,675,636
-            0.18%
+            Market Cap<br />
+            $89,073,675,636<br />
+            ▼ 0.18%
           </Card>
           <Card className="flex items-center justify-around p-3">
-            Fully Diluted Market Cap
-            $89,073,675,636
-            0.18%
+            Fully Diluted Market Cap<br />
+            $89,073,675,636<br />
+            ▼ 0.18%
           </Card>
           <Card className="flex items-center justify-around p-3">
-            Volume
-            24h
-            $2,011,890,007
-            3.04%
-            Volume / Market Cap
+            Volume(24h)<br />
+            $2,011,890,007<br />
+            ▼ 3.04%<br />
+            Volume / Market Cap<br />
             0.02268
           </Card>        
       </div>

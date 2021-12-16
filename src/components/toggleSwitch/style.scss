@@ -1,5 +1,4 @@
 .toggle {
-  margin-left: 40px;
   border-radius: 30px;
   height: 40px;
   box-sizing: border-box;
@@ -16,13 +15,13 @@
   font-size: 14px;
   span {
     width: 60px;
-    padding: 5px;
-    margin: 5px;
+    padding: 5px 10px;
+    margin: 5px 0px;
     text-align: center;
   }
   .active {
-    color: #74726e;
-    background-color: white;
+    color: #4a473f;
+    background-color: #ff9898;
     border-radius: 30px;
   }
 }

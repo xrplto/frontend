@@ -13,6 +13,8 @@ import NavBar from "components/NavBar";
 import Footer from "components/Footer";
 
 const Home = lazy(() => import("pages/Home"))
+const Token = lazy(() => import("pages/token"))
+const TokenList = lazy(() => import("pages/tokenList"))
 const Login = lazy(() => import("pages/Auth/Login"))
 const ForgotPassword = lazy(() => import("pages/Auth/ForgotPassword"))
 const InputEmail = lazy(() => import("pages/Auth/InputEmail"))
@@ -20,7 +22,7 @@ const InputEmail = lazy(() => import("pages/Auth/InputEmail"))
 const Register = lazy(() => import("pages/Auth/Register"))
 const Thankyou = lazy(() => import("pages/Auth/Thankyou"))
 const VerifyEmail = lazy(() => import("pages/Auth/VerifyEmail"))
-const TokenList = lazy(() => import("pages/token"))
+
 
 const light = {
   palette: {
@@ -73,7 +75,8 @@ const App = (props) => {
                 <NavBar />
                 <div className="page-content">
                   <Route exact path="/" component={Home}/>
-                  <Route path="/tokens/:account" component={TokenList}/>
+                  <Route exact path="/tokens/" component={TokenList}/>
+                  <Route path="/tokens/:account" component={Token}/>
                 </div>         
                 <Footer />
              </Route>     
