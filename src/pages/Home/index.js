@@ -2,63 +2,84 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Card from '@material-ui/core/Card';
 import Divider from '@material-ui/core/Divider';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
 import ToggleSwitch from "components/toggleSwitch"
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Brush
-} from "recharts";
+import ReactHighcharts from 'react-highcharts/ReactHighstock.src';
 import XrpImage from "assets/images/xrp.webp"
-import "./style.scss"
-const data = [
-  {
-    name: "Page A",
-    uv: 4000,
-    pv: 2400,
-    amt: 2400
-  },
-  {
-    name: "Page B",
-    uv: 3000,
-    pv: 1398,
-    amt: 2210
-  },
-  {
-    name: "Page C",
-    uv: 2000,
-    pv: 9800,
-    amt: 2290
-  },
-  {
-    name: "Page D",
-    uv: 2780,
-    pv: 3908,
-    amt: 2000
-  },
-  {
-    name: "Page E",
-    uv: 1890,
-    pv: 4800,
-    amt: 2181
-  },
-  {
-    name: "Page F",
-    uv: 2390,
-    pv: 3800,
-    amt: 2500
-  },
-  {
-    name: "Page G",
-    uv: 3490,
-    pv: 4300,
-    amt: 2100
-  }
-];
+import "./style.scss";
 
+const options = {style: 'currency', currency: 'USD'};
+const numberFormat = new Intl.NumberFormat('en-US', options);
+const configPrice = {
+      
+  yAxis: [{
+    offset: 20,
+    opposite:false,
+    labels: {
+      formatter: function () {
+        return numberFormat.format(this.value) 
+      }
+      ,
+      x: 0,
+      style: {
+        "color": "#000", "position": "absolute"
+
+      },
+      align: 'left'
+    },
+  },
+    
+  ],
+  tooltip: {
+    shared: true,
+    formatter: function () {
+      return numberFormat.format(this.y, 0) +  '</b><br/>' + new Date(this.x).toLocaleDateString()
+    }
+  },
+  plotOptions: {
+    series: {
+      showInNavigator: true,
+      gapSize: 6,
+
+    }
+  },
+  title: {
+    text: ``
+  },
+  rangeSelector: {
+    inputEnabled: false,
+    enabled: false
+  },
+  chart: {
+    height: 600,
+  },
+  credits: {
+    enabled: false
+  },
+
+  legend: {
+    enabled: true
+  },
+  xAxis: {
+    type: 'date',
+  },
+  series: [{
+    name: 'Price',
+    type: 'spline',
+
+    data: data,
+    tooltip: {
+      valueDecimals: 2
+    },
+
+  }
+  ]
+};
 const Tokens = () => {
     const { t } = useTranslation();
     const [ type, setType ] = useState({
@@ -170,30 +191,57 @@ const Tokens = () => {
             <ToggleSwitch data={type} onChange={setType} />
             <ToggleSwitch data={period} onChange={setPeriod} />
             </div>
-            <LineChart
-              width={800}
-              height={500}
-              data={data}
-              syncId="anyId"
-              margin={{
-                top: 10,
-                right: 30,
-                left: 0,
-                bottom: 0
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="pv" stroke="#82ca9d" fill="#82ca9d" />
-              <Brush />
-            </LineChart>
+            <ReactHighcharts config = {configPrice}></ReactHighcharts>
           </Card>
           <Card className="p-3">
-            Market Cap<br />
-            $89,073,675,636<br />
-            ▼ 0.18%
+            <div className='text-2xl font-bold mb-4'>7-day price history</div>
+            <Divider/>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Date</TableCell>
+                  <TableCell align="right">USD</TableCell>
+                  <TableCell align="right">Change</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow >
+                  <TableCell>December 17, 2021	Friday</TableCell>
+                  <TableCell align="right">$0.807264</TableCell>
+                  <TableCell align="right">-2.6%</TableCell>
+                </TableRow>
+                <TableRow >
+                  <TableCell>December 17, 2021	Friday</TableCell>
+                  <TableCell align="right">$0.807264</TableCell>
+                  <TableCell align="right">-2.6%</TableCell>
+                </TableRow>
+                <TableRow >
+                  <TableCell>December 17, 2021	Friday</TableCell>
+                  <TableCell align="right">$0.807264</TableCell>
+                  <TableCell align="right">-2.6%</TableCell>
+                </TableRow>
+                <TableRow >
+                  <TableCell>December 17, 2021	Friday</TableCell>
+                  <TableCell align="right">$0.807264</TableCell>
+                  <TableCell align="right">-2.6%</TableCell>
+                </TableRow>
+                <TableRow >
+                  <TableCell>December 17, 2021	Friday</TableCell>
+                  <TableCell align="right">$0.807264</TableCell>
+                  <TableCell align="right">-2.6%</TableCell>
+                </TableRow>
+                <TableRow >
+                  <TableCell>December 17, 2021	Friday</TableCell>
+                  <TableCell align="right">$0.807264</TableCell>
+                  <TableCell align="right">-2.6%</TableCell>
+                </TableRow>
+                <TableRow >
+                  <TableCell>December 17, 2021	Friday</TableCell>
+                  <TableCell align="right">$0.807264</TableCell>
+                  <TableCell align="right">-2.6%</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </Card>
                 
       </div>
