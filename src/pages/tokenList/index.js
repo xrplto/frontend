@@ -3,7 +3,7 @@ import axios from "axios";
 import Table from "components/Table"
 import * as normalizer from 'utils/normalizers';
 const xrpl = require("xrpl")
-const client = new xrpl.Client("wss://xrplcluster.com/")
+const client = new xrpl.Client("ws://95.216.74.17:6005")
 const getCurrencyCode = (currency) => {
   let normalizedCode = normalizer.normalizeCurrencyCodeXummImpl(currency);
   if(!normalizedCode || normalizedCode.trim().length == 0)
