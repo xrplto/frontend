@@ -1,6 +1,6 @@
 import React, { lazy, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route, Redirect } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -13,7 +13,7 @@ import NavBar from "components/NavBar";
 import Footer from "components/Footer";
 
 const Home = lazy(() => import("pages/Home"))
-const Token = lazy(() => import("pages/token"))
+// const Token = lazy(() => import("pages/token"))
 const TokenList = lazy(() => import("pages/tokenList"))
 const Login = lazy(() => import("pages/Auth/Login"))
 const ForgotPassword = lazy(() => import("pages/Auth/ForgotPassword"))
@@ -74,9 +74,12 @@ const App = (props) => {
             <Route path="/">      
                 <NavBar />
                 <div className="page-content">
-                  <Route exact path="/" component={Home}/>
-                  <Route exact path="/tokens/" component={TokenList}/>
-                  <Route path="/tokens/:account" component={Token}/>
+                  {/* <Route exact path="/" component={Home}/> */}
+                  <Route exact path="/">
+                    <Redirect to="/tokens" /> 
+                  </Route>
+                  <Route exact path="/tokens" component={TokenList}/>
+                  <Route path="/tokens/:account" component={Home}/>
                 </div>         
                 <Footer />
              </Route>     

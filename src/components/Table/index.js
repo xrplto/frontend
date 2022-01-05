@@ -10,7 +10,9 @@ import TablePagination from '@material-ui/core/TablePagination';
 import { LineChart, Line } from "recharts";
 import Dropdown from "components/dropdown";
 import Spinner from "components/spinner";
-
+import {
+    Link
+  } from "react-router-dom";
 import "./style.scss"
 
 
@@ -41,34 +43,39 @@ const InvoiceTable = ({ data, isloading }) => {
     }
     useEffect(() => {
         setRow([...data.slice(page * items, (page + 1) * items)])
-    }, [page, items]);
+    }, [page, items, data]);
+    console.log(row)
     return (
         <React.Fragment>
             <div className={`invoice--table ${data.length === 0 ? "" : "visible"}` }>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell><span>Currency<SortTableHead /></span></TableCell>
-                            <TableCell><span>Account<SortTableHead /></span></TableCell>
+                            <TableCell><span>#<SortTableHead /></span></TableCell>
+                            <TableCell><span>NAME<SortTableHead /></span></TableCell>
+                            <TableCell><span>PRICE<SortTableHead /></span></TableCell>
                             {/* <TableCell><span>Issuer KYC<SortTableHead /></span></TableCell>
                             <TableCell><span>Accountname<SortTableHead /></span></TableCell> */}                            
-                            <TableCell><span>Value<SortTableHead /></span></TableCell>
-                            <TableCell><span>TrustLines<SortTableHead /></span></TableCell>
-                            <TableCell><span>Offers<SortTableHead /></span></TableCell>
+                            <TableCell><span>24H<SortTableHead /></span></TableCell>
+                            <TableCell><span>7D<SortTableHead /></span></TableCell>
+                            <TableCell><span>Circulating Supply<SortTableHead /></span></TableCell>
                             {/* <TableCell>Trustline</TableCell>
                             <TableCell>Dex</TableCell> */}
-                            <TableCell>Explorers</TableCell>
+                            <TableCell>Last 7 Days</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {row.map((item, index) => (
                             <TableRow key={index}>
                                 <TableCell>
-                                    {item.currency}
+                                    {page * items + index + 1}
                                 </TableCell>
-                                <TableCell component="th" scope="row">
+                                <TableCell>
+                                    <Link to={`/tokens/${item._id}`}>{item.username == ""? item.currency : item.username}</Link>
+                                </TableCell>
+                                {/* <TableCell component="th" scope="row">
                                     {item.account}
-                                </TableCell>
+                                </TableCell> */}
                                 {/* <TableCell>
                                     {row.kyc && <CheckCircleIcon style={{color: "green"}} />}
                                 </TableCell>
@@ -76,13 +83,16 @@ const InvoiceTable = ({ data, isloading }) => {
                                     {row.username}
                                 </TableCell> */}
                                 <TableCell>
-                                    {item.amount}
-                                </TableCell>
-                                <TableCell>
                                     {item.trustlines}
                                 </TableCell>
                                 <TableCell>
                                     {item.offers}
+                                </TableCell>
+                                <TableCell>
+                                    {item.offers}
+                                </TableCell>
+                                <TableCell>
+                                    {parseFloat(item.amount.$numberDecimal).toFixed()}
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex agling-items">
