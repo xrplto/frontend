@@ -83,7 +83,7 @@ const InvoiceTable = ({ data, isloading }) => {
                                     {row.username}
                                 </TableCell> */}
                                 <TableCell>
-                                    {item.trustlines}
+                                    {item.price}
                                 </TableCell>
                                 <TableCell>
                                     {item.offers}
