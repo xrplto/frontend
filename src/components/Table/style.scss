@@ -35,7 +35,11 @@
     &.visible {
         display: block;
     }
-
+    .percent {
+        display: flex;
+        align-items: center;
+        color: green;
+    }
     // &--pagination {
     //     justify-content: end;
     //     display: flex;

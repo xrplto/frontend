@@ -31,7 +31,12 @@ const chartData = () => {
     return k;
 }
 
-const InvoiceTable = ({ data, isloading }) => {
+const price_change = () => {
+    let k = Math.random() * 100 -50
+    return k > 0 ? <b className='percent'><ArrowDropUpIcon/> {(k / 10).toPrecision(2)} %</b>  : <b className='percent' style={{color: "red"}}><ArrowDropDownIcon/> {(k / 10).toPrecision(2)} %</b> 
+}
+
+const InvoiceTable = ({ data }) => {
     const [page, setPage] = useState(0);
     const [items, setItems] = useState(100)
     const [row, setRow] = useState([...data.slice(0, items)]);
@@ -83,21 +88,23 @@ const InvoiceTable = ({ data, isloading }) => {
                                     {row.username}
                                 </TableCell> */}
                                 <TableCell>
-                                    {item.price}
+                                    $ {item.price? item.price * 0.83 : ""}<br/>
+                                    {item.price} XRP
                                 </TableCell>
                                 <TableCell>
-                                    {item.offers}
+                                    {price_change()}
                                 </TableCell>
                                 <TableCell>
-                                    {item.offers}
+                                   {price_change()}    
                                 </TableCell>
                                 <TableCell>
-                                    {parseFloat(item.amount.$numberDecimal).toFixed()}
+                                    $ {(parseFloat(item.amount.$numberDecimal) * 0.83).toFixed()}<br/>
+                                    {parseFloat(item.amount.$numberDecimal).toFixed()} XRP
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex agling-items">
                                         <LineChart width={150} height={60} data={chartData()}>
-                                            <Line type="monotone" dataKey="pv" stroke="#5ecf8e" strokeWidth={2} dot={<span />} />
+                                            <Line type="monotone" dataKey="pv" stroke={Math.random() > 0.5 ? "green" : "red" } strokeWidth={2} dot={<span />} />
                                         </LineChart>                
                                         <Dropdown account={item.account} />                          
                                     </div>
@@ -119,7 +126,6 @@ const InvoiceTable = ({ data, isloading }) => {
                     />
                 </div>
             </div>
-            { isloading && <Spinner type={1} />}
         </React.Fragment>
         
     )

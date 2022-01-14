@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import Button from '@material-ui/core/Button';
+import loginImage from "assets/images/xumm.svg"
 import logo from 'assets/images/logo.png';
 import logo_white from 'assets/images/logo-white.png';
 import './style.scss';
@@ -24,12 +25,16 @@ const NavBar = (props) => {
         <span className="flex-grow" />
         {!currentUser? (
             <>
-            <Link to="/Login">{t('browse.login')}</Link>
+             <Button variant="contained" >
+               <img src={loginImage} alt=" Watches" className="features--image" loading="lazy" width={180} />
+             </Button>
+          
+            {/* <Link to="/Login">{t('browse.login')}</Link>
             <Link to="/register">
                 <Button variant="contained" color="secondary">
                     {t('browse.signup')}
                 </Button>
-            </Link>
+            </Link> */}
             </>
             ) : 
             (

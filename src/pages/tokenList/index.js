@@ -15,7 +15,7 @@ const Home = (props) => {
   }, [])
   return (
     <>
-    <Table data={list} isloading={isloading} />
+    <Table data={list} />
     </>
   )
 }

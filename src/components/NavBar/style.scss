@@ -12,7 +12,9 @@
     a:hover {
         color: red;
     }
-
+    .MuiButton-root {
+        padding: 2px;
+    }
     .dropdown {
         position: relative;
         display: inline-block;
