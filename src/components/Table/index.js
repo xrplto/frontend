@@ -107,8 +107,8 @@ const InvoiceTable = ({ data }) => {
                                    {price_change()}    
                                 </TableCell>
                                 <TableCell>
-                                    $ {new Intl.NumberFormat().format((parseFloat(item.amount.$numberDecimal) * row.price.value.$numberDecimal).toFixed())}<br/>
-                                    {new Intl.NumberFormat().format(parseFloat(item.amount.$numberDecimal).toFixed())} XRP
+                                    $ {new Intl.NumberFormat().format((parseFloat(item.marketCap) * row.price.value.$numberDecimal).toFixed())}<br/>
+                                    {new Intl.NumberFormat().format(parseFloat(item.marketCap).toFixed())} XRP
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex agling-items">
