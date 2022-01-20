@@ -2,7 +2,6 @@ import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import store from './store'
-import Spinner from './components/spinner'
 import reportWebVitals from './reportWebVitals';
 import './index.scss';
 import './i18n';
@@ -11,7 +10,7 @@ const LazyApp = lazy(() => import("./App"))
 
 ReactDOM.render(
     <Provider store={store}>
-      <Suspense fallback={<Spinner />}>
+      <Suspense fallback={<div/>}>
         <LazyApp />
       </Suspense>
     </Provider>,
