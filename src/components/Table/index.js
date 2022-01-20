@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import axios from "axios";
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -9,7 +10,6 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import TablePagination from '@material-ui/core/TablePagination';
 import { LineChart, Line } from "recharts";
 import Dropdown from "components/dropdown";
-import Spinner from "components/spinner";
 import {
     Link
   } from "react-router-dom";
@@ -33,13 +33,13 @@ const chartData = () => {
 
 const price_change = () => {
     let k = Math.random() * 100 -50
-    return k > 0 ? <b className='percent'><ArrowDropUpIcon/> {(k / 10).toPrecision(2)} %</b>  : <b className='percent' style={{color: "red"}}><ArrowDropDownIcon/> {(k / 10).toPrecision(2)} %</b> 
+    return k > 0 ? <b className='percent'><ArrowDropUpIcon/> {(k / 10).toFixed(2)} %</b>  : <b className='percent' style={{color: "red"}}><ArrowDropDownIcon/> {(k / 10).toFixed(2)} %</b> 
 }
 
 const InvoiceTable = ({ data }) => {
     const [page, setPage] = useState(0);
     const [items, setItems] = useState(100)
-    const [row, setRow] = useState([...data.slice(0, items)]);
+    const [row, setRow] = useState({data: [], count: 0});
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
     }
@@ -47,12 +47,21 @@ const InvoiceTable = ({ data }) => {
         setItems( e => event.target.value)
     }
     useEffect(() => {
-        setRow([...data.slice(page * items, (page + 1) * items)])
-    }, [page, items, data]);
-    console.log(row)
+        const interval = setInterval(() => {           
+            axios.get(`/api/tokens?page=${page}&pagination=${items}`).then(({data}) => {
+                setRow(data);
+              })
+          }, 300000);
+          return () => clearInterval(interval);        
+      }, [])
+    useEffect(() => {
+        axios.get(`/api/tokens?page=${page}&pagination=${items}`).then(({data}) => {
+            setRow(data);
+        })
+    }, [page, items]);
     return (
         <React.Fragment>
-            <div className={`invoice--table ${data.length === 0 ? "" : "visible"}` }>
+            <div className="invoice--table visible">
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -70,7 +79,7 @@ const InvoiceTable = ({ data }) => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {row.map((item, index) => (
+                        {row.data.map((item, index) => (
                             <TableRow key={index}>
                                 <TableCell>
                                     {page * items + index + 1}
@@ -88,8 +97,8 @@ const InvoiceTable = ({ data }) => {
                                     {row.username}
                                 </TableCell> */}
                                 <TableCell>
-                                    $ {item.price? item.price * 0.83 : ""}<br/>
-                                    {item.price} XRP
+                                    $ {item.price? (item.price / 1000000 * row.price.value.$numberDecimal).toFixed(6) : ""}<br/>
+                                    {(item.price / 1000000).toFixed(6)} XRP
                                 </TableCell>
                                 <TableCell>
                                     {price_change()}
@@ -98,8 +107,8 @@ const InvoiceTable = ({ data }) => {
                                    {price_change()}    
                                 </TableCell>
                                 <TableCell>
-                                    $ {(parseFloat(item.amount.$numberDecimal) * 0.83).toFixed()}<br/>
-                                    {parseFloat(item.amount.$numberDecimal).toFixed()} XRP
+                                    $ {new Intl.NumberFormat().format((parseFloat(item.amount.$numberDecimal) * row.price.value.$numberDecimal).toFixed())}<br/>
+                                    {new Intl.NumberFormat().format(parseFloat(item.amount.$numberDecimal).toFixed())} XRP
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex agling-items">
@@ -118,7 +127,7 @@ const InvoiceTable = ({ data }) => {
                         labelRowsPerPage="Rows per page"
                         rowsPerPageOptions={[10, 25, 50, 100]}
                         component="div"
-                        count={data.length}
+                        count={row.count}
                         rowsPerPage={items}
                         page={page}
                         onPageChange={handleChangePage}

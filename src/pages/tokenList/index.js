@@ -1,21 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import axios from "axios";
+import React from 'react';
 import Table from "components/Table"
 
-
-
-const Home = (props) => {
-  const [ list, setList ] = useState([])
-  const [ isloading, setIsloading ] = useState(true)
-  useEffect(() => {
-    axios.get("/api/tokens").then(({data}) => {
-      setList(data)
-      setIsloading(false)
-    })
-  }, [])
+const Home = () => {
   return (
     <>
-    <Table data={list} />
+    <Table/>
     </>
   )
 }
