@@ -31,9 +31,14 @@ const chartData = () => {
     return k;
 }
 
-const price_change = () => {
-    let k = Math.random() * 100 -50
-    return k > 0 ? <b className='percent'><ArrowDropUpIcon/> {(k / 10).toFixed(2)} %</b>  : <b className='percent' style={{color: "red"}}><ArrowDropDownIcon/> {(k / 10).toFixed(2)} %</b> 
+const price_change = (price, priceLast) => {
+    if(priceLast != 0) {
+        let k = (price - priceLast) / priceLast * 100;
+        return k >= 0 ? <b className='percent'><ArrowDropUpIcon/> {k.toFixed(2)} %</b>  : <b className='percent' style={{color: "red"}}><ArrowDropDownIcon/> {k.toFixed(2)} %</b> 
+    } else {
+        return "-- %"    
+    }
+   
 }
 
 const InvoiceTable = ({ data }) => {
@@ -101,10 +106,10 @@ const InvoiceTable = ({ data }) => {
                                     {(item.price / 1000000).toFixed(6)} XRP
                                 </TableCell>
                                 <TableCell>
-                                    {price_change()}
+                                    {price_change(item.price, row.list[index].price24h)}
                                 </TableCell>
                                 <TableCell>
-                                   {price_change()}    
+                                    {price_change(item.price, row.list[index].price7d)}
                                 </TableCell>
                                 <TableCell>
                                     $ {new Intl.NumberFormat().format((parseFloat(item.marketCap) * row.price.value.$numberDecimal).toFixed())}<br/>
