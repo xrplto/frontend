@@ -1,70 +1,40 @@
-# Getting Started with Create React App
+## NFT marketplace built on XRP Ledger
+![RUNNING](./docs/2022-01-29_16-22-44-206.gif)
+![Total](./docs/screenshot.png)
+![Market Page](./docs/1token_market.png)
+![Token List ](./docs/2token_list.png)
+![Token Tester](./docs/3token_tester.png)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### About XLS-20 NFT-Devnet from RippleX
+(Jan 11)
 
-## Available Scripts
+[Technical Tutorial](http://xrpl.org/nftoken-tester-tutorial.html)
 
-In the project directory, you can run:
+[![Netlify Status](https://api.netlify.com/api/v1/badges/775543f2-b60a-4993-8dc6-a30249b5dd91/deploy-status)](https://app.netlify.com/sites/freedevsoft/deploys)
 
-### `yarn start`
+XLS-20d is initially released on the NFT-Devnet in order to allow developers to test NFT capabilities, and server operators to understand the performance characteristics and implications of the proposed changes without compromising the performance of the XRPL.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+RippleX is just one contributor to the XRPL – there’s a whole community of independent developers building on it today for its inherent performance advantages and tokenization capabilities. One such project is [Carbonland Trust](https://www.carbonlandtrust.com/), which is pushing the boundaries for potential NFT uses.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+In May, RippleX invited the developer community to provide feedback on XRPL's [proposal](https://github.com/XRPLF/XRPL-Standards/discussions/46) to enhance NFT support on the XRP Ledger (XRPL).
 
-### `yarn test`
+NFT-Devnet makes it possible for all developers to [learn](https://xrpl.org/nft-conceptual-overview.html) about and experiment with the native NFT capabilities introduced with XLS-20d.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Developers are welcome to start building apps and tokenization use cases, as well as visit the [Technical Tutorial](http://xrpl.org/nftoken-tester-tutorial.html) page to get started.
 
-### `yarn build`
+#### The NFT-Devnet: Getting Started with NFTs on XRPL
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Non-fungible tokens serve to encode ownership of physical, non-physical or purely digital goods, such as works of art and in-game items.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The XLS-20d proposal introduces extensions to the XRP Ledger that would support a native NFT type, along with operations to enumerate, transfer and hold such tokens. With XLS-20d [live on XLS-20 Sandbox](https://xrpl.org/nft-conceptual-overview.html) today, developers can access all essential NFT functionality including minting, trading, and burning.
+Moreover, advanced features like automatic royalties, which enable more sophisticated royalty structures for creators, and co-ownership, which expands access possibilities to assets, are also built into the proposal.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The NFT-Devnet is a beta environment where developers can preview, test and experiment with XLS-20d on XRPL before it is enabled on the Mainnet.
 
-### `yarn eject`
+As this is the first time developers can mint native NFTs on the XRP Ledger, an interactive Technical Tutorial in the documentation on xrpl.org can help them get started. We also encourage developers building NFT projects – or wanting to get started with NFTs – to apply to the XRPL Grants program.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+#### Community Spotlight: Carbonland Trust
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Earlier this year, Ripple launched the XRPL Grants program – an initiative to engage, fund and support the independent developer community and their technical projects built on the XRP Ledger. Carbonland Trust is one of more than 20 projects to receive funding through the program, focused on protecting forest land with their CO2 Removal Bonded NFTs and Conservation Certificates. The project centers on creating the first CO2 Removal Credit Yielding NFT, a carbon credit producing digital asset and forest conservation DeFi protocol. In addition, the project includes CO2 Bonds which offer businesses and individuals a better way to remove CO2, hedge against rising carbon credit prices, and lock in a stable, long-term supply of high-quality offsets.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Carbonland Trust is one of many projects funded through the XRPL Grants program that will build on the XRPL XLS-20 Sandbox environment.
