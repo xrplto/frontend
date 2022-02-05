@@ -24,6 +24,11 @@ const sidebarConfig = [
     title: 'Spinners',
     path: '/spinners',
     icon: getIcon(spinnerIcon)
+  },
+  {
+    title: 'Setting',
+    path: '/setting',
+    icon: getIcon(spinnerIcon)
   }
 ];
 

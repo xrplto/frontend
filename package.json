@@ -86,7 +86,7 @@
     "web-vitals": "^2.1.0",
     "web3": "^1.7.0",
     "xrpl": "^2.1.1",
-    "yup": "^0.32.9",
+    "yup": "^0.32.9"
   },
   "devDependencies": {
     "@babel/core": "^7.15.5",
