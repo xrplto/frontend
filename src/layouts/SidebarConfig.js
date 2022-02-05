@@ -16,34 +16,14 @@ const getIcon = (name) => <Icon icon={name} width={22} height={22} />;
 
 const sidebarConfig = [
   {
-    title: 'Market',
-    path: '/market',
-    icon: getIcon(shoppingBagFill)
-  },
-  {
     title: 'Tokens',
     path: '/tokens',
     icon: getIcon(postageStamp)
   },
   {
-    title: 'NFToken Tester',
-    path: '/tester',
-    icon: getIcon(mint)
-  },
-  {
     title: 'Spinners',
     path: '/spinners',
     icon: getIcon(spinnerIcon)
-  },
-  {
-    title: 'Progress',
-    path: '/progress',
-    icon: getIcon(progressBar)
-  },
-  {
-    title: 'Test Page',
-    path: '/test_page',
-    icon: getIcon(testReact)
   }
 ];
 
