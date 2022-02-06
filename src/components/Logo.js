@@ -10,7 +10,7 @@ Logo.propTypes = {
 };
 
 export default function Logo({ sx }) {
-  return <Box component="img" src="/xrpl/xrp-text-mark-black.svg" sx={{ height: 50, ...sx }} />;
+  return <Box component="img" src="/xrpl/xrp-text-mark-black.svg" sx={{ height: 36, ...sx }} />;
 }
 
 // export default function Logo({ sx }) {

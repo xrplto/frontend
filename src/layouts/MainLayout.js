@@ -4,8 +4,6 @@ import { Outlet } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 //
 import Navbar from './Navbar';
-import Sidebar from './Sidebar';
-
 // ----------------------------------------------------------------------
 
 const APP_BAR_MOBILE = 64;
@@ -33,12 +31,9 @@ const MainStyle = styled('div')(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 export default function MainLayout() {
-  const [open, setOpen] = useState(false);
-
   return (
     <RootStyle>
-      <Navbar onOpenSidebar={() => setOpen(true)} />
-      <Sidebar isOpenSidebar={open} onCloseSidebar={() => setOpen(false)} />
+      <Navbar />
       <MainStyle>
         <Outlet />
       </MainStyle>

@@ -5,8 +5,12 @@ import trash2Fill from '@iconify/icons-eva/trash-2-fill';
 import roundFilterList from '@iconify/icons-ic/round-filter-list';
 // material
 import { styled } from '@mui/material/styles';
+import { Link as RouterLink } from 'react-router-dom';
+import cloudRefresh from '@iconify/icons-fontisto/cloud-refresh';
 import {
   Box,
+  Button,
+  Stack,
   Toolbar,
   Tooltip,
   IconButton,
@@ -79,11 +83,18 @@ export default function TokenListToolbar({ numSelected, filterName, onFilterName
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <Icon icon={roundFilterList} />
-          </IconButton>
-        </Tooltip>
+      	<Stack direction="row" alignItems="center">
+	        <Tooltip title="Reload">
+	          <IconButton>
+	            <Icon icon={cloudRefresh} />
+	          </IconButton>
+	        </Tooltip>
+	        <Tooltip title="Filter list">
+	          <IconButton>
+	            <Icon icon={roundFilterList} />
+	          </IconButton>
+	        </Tooltip>
+        </Stack>
       )}
     </RootStyle>
   );

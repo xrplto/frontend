@@ -3,7 +3,6 @@ import { Icon } from '@iconify/react';
 //import { sentenceCase } from 'change-case';
 import { useState } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
-import cloudRefresh from '@iconify/icons-fontisto/cloud-refresh';
 import { Link as RouterLink } from 'react-router-dom';
 // material
 import {
@@ -139,20 +138,6 @@ export default function Token() {
   return (
     <Page title="Tokens">
       <Container>
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-          <Typography variant="h4" gutterBottom>
-            Tokens
-          </Typography>
-          <Button
-            variant="contained"
-            component={RouterLink}
-            to="#"
-            startIcon={<Icon icon={cloudRefresh} />}
-          >
-            Reload
-          </Button>
-        </Stack>
-
         <Card>
           <TokenListToolbar
             numSelected={selected.length}
