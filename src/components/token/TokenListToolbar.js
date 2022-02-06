@@ -16,7 +16,8 @@ import {
   IconButton,
   Typography,
   OutlinedInput,
-  InputAdornment
+  InputAdornment,
+  TablePagination
 } from '@mui/material';
 
 // ----------------------------------------------------------------------
@@ -43,30 +44,30 @@ const SearchStyle = styled(OutlinedInput)(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-TokenListToolbar.propTypes = {
+/*TokenListToolbar.propTypes = {
   numSelected: PropTypes.number,
   filterName: PropTypes.string,
   onFilterName: PropTypes.func
-};
+};*/
 
-export default function TokenListToolbar({ numSelected, filterName, onFilterName }) {
+export default function TokenListToolbar(props) {
   return (
     <RootStyle
       sx={{
-        ...(numSelected > 0 && {
+        ...(props.numSelected > 0 && {
           color: 'primary.main',
           bgcolor: 'primary.lighter'
         })
       }}
     >
-      {numSelected > 0 ? (
+      {props.numSelected > 0 ? (
         <Typography component="div" variant="subtitle1">
-          {numSelected} selected
+          {props.numSelected} selected
         </Typography>
       ) : (
         <SearchStyle
-          value={filterName}
-          onChange={onFilterName}
+          value={props.filterName}
+          onChange={props.onFilterName}
           placeholder="Search ..."
           startAdornment={
             <InputAdornment position="start">
@@ -76,7 +77,7 @@ export default function TokenListToolbar({ numSelected, filterName, onFilterName
         />
       )}
 
-      {numSelected > 0 ? (
+      {props.numSelected > 0 ? (
         <Tooltip title="Delete">
           <IconButton>
             <Icon icon={trash2Fill} />
@@ -84,12 +85,22 @@ export default function TokenListToolbar({ numSelected, filterName, onFilterName
         </Tooltip>
       ) : (
       	<Stack direction="row" alignItems="center">
+      		<TablePagination
+	            rowsPerPageOptions={[5, 10, 25]}
+	            component="div"
+	            count={props.count}
+	            rowsPerPage={props.rowsPerPage}
+	            labelRowsPerPage={props.labelRowsPerPage}
+	            page={props.page}
+	            onPageChange={props.onPageChange}
+	            onRowsPerPageChange={props.onRowsPerPageChange}
+	        />
 	        <Tooltip title="Reload">
 	          <IconButton>
 	            <Icon icon={cloudRefresh} />
 	          </IconButton>
 	        </Tooltip>
-	        <Tooltip title="Filter list">
+	        <Tooltip title="Filter">
 	          <IconButton>
 	            <Icon icon={roundFilterList} />
 	          </IconButton>

@@ -137,12 +137,17 @@ export default function Token() {
   
   return (
     <Page title="Tokens">
-      <Container>
         <Card>
           <TokenListToolbar
             numSelected={selected.length}
             filterName={filterName}
             onFilterName={handleFilterByName}
+      		count={TOKENLIST.length}
+            rowsPerPage={rowsPerPage}
+            labelRowsPerPage={labelRowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
           />
 
           <Scrollbar>
@@ -226,19 +231,7 @@ export default function Token() {
               </Table>
             </TableContainer>
           </Scrollbar>
-
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={TOKENLIST.length}
-            rowsPerPage={rowsPerPage}
-            labelRowsPerPage={labelRowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-          />
         </Card>
-      </Container>
     </Page>
   );
 }
