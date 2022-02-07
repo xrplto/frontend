@@ -26,17 +26,16 @@ import SearchNotFound from '../components/SearchNotFound';
 import { TokenListHead, TokenListToolbar, TokenMoreMenu } from '../components/token';
 import axios from 'axios'
 //
-import TOKENLIST from '../_mocks_/tokens';
+//import TOKENLIST from '../_mocks_/tokens';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
-  { id: 'price', label: 'Price', alignRight: false },
-  { id: 'dailypercent', label: '24H %', alignRight: false },
-  { id: 'marketcap', label: 'Market Cap', alignRight: false },
-  { id: 'holders', label: 'Holders', alignRight: false },
+  { id: 'code', label: 'Token ID', alignRight: false },
+  { id: 'amount', label: 'Amount', alignRight: false },
   { id: 'trustlines', label: 'Trust Lines', alignRight: false },
+  { id: 'issuer', label: 'Account', alignRight: false },
   { id: '' }
 ];
 
@@ -87,13 +86,17 @@ export default function Token() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const loadTokens = (offset) => {
+  	  console.log("Loading tokens!!!");
     axios.get(`http://localhost/api/v1/token/all?order_direction=desc&offset=${offset}&limit=20`)
     .then(res => {
 		try {
 			if (res.status === 200 && res.data) {
 				let tokenList = [];
-				for(var i in res.data.tokens)
-					tokenList.push(res.data.tokens[i]);
+				for (var i in res.data.tokens) {
+					let token = res.data.tokens[i];
+					token.id = i;
+					tokenList.push(token);
+				}
 				setTokens(tokenList);
 			}
 		} catch (error) {
@@ -117,18 +120,18 @@ export default function Token() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = tokens.map((n) => n.name);
+      const newSelecteds = tokens.map((n) => n.id);
       setSelected(newSelecteds);
       return;
     }
     setSelected([]);
   };
 
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
+  const handleClick = (event, id) => {
+    const selectedIndex = selected.indexOf(id);
     let newSelected = [];
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
+      newSelected = newSelected.concat(selected, id);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -195,15 +198,17 @@ export default function Token() {
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row) => {
                       const {
+                      	 id,
+                      	trustlines,
                       	account,
-                      	currencyCode,
-                      	currencyCodeUTF8,
+                      	name,
+                      	code,
                       	amount,
                       	username,
                       	kyc,
                       	created } = row;
                       const imgUrl = "/static/tokens/token_1.jpg";
-                      const isItemSelected = selected.indexOf(name) !== -1;
+                      const isItemSelected = selected.indexOf(id) !== -1;
 
                       return (
                         <TableRow
@@ -217,27 +222,31 @@ export default function Token() {
                           <TableCell padding="checkbox">
                             <Checkbox
                               checked={isItemSelected}
-                              onChange={(event) => handleClick(event, name)}
+                              onChange={(event) => handleClick(event, id)}
                             />
                           </TableCell>
                           <TableCell component="th" scope="row" padding="none">
                             <Stack direction="row" alignItems="center" spacing={2}>
-                              <Avatar alt={currencyCodeUTF8} src={imgUrl} />
+                              <Avatar alt={name} src={imgUrl} />
                               <Typography variant="subtitle2" noWrap>
-                                {currencyCodeUTF8}
+                  				{name}
                               </Typography>
                             </Stack>
                           </TableCell>
-                          <TableCell align="left">{price}</TableCell>
+                          <TableCell align="left">{code}</TableCell>
+                          <TableCell align="left">{amount}</TableCell>
+                          <TableCell align="left">{trustlines}</TableCell>
+                          <TableCell align="left">{account}</TableCell>
+                          {/*<TableCell align="left">{price}</TableCell>
                           <TableCell align="left">{dailypercent}</TableCell>
                           <TableCell align="left">{marketcap}</TableCell>
                           <TableCell align="left">{holders}</TableCell>
                           <TableCell align="left">{role}</TableCell>
-                          {/* <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell> */}
-                          {/* <TableCell align="left">
+                          <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
+                          <TableCell align="left">
                             <Label
                               variant="ghost"
-                              color={(status === 'banned' && 'error') || 'success'}
+                              color={(status === 'kyc' && 'error') || 'success'}
                             >
                               {sentenceCase(status)}
                             </Label>
