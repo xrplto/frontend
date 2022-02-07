@@ -1,24 +1,22 @@
 import { filter } from 'lodash';
-import { Icon } from '@iconify/react';
+//import { Icon } from '@iconify/react';
 //import { sentenceCase } from 'change-case';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
-import { Link as RouterLink } from 'react-router-dom';
+//import { Link as RouterLink } from 'react-router-dom';
 // material
 import {
     Card,
     Table,
     Stack,
     Avatar,
-    Button,
     Checkbox,
     TableRow,
     TableBody,
     TableCell,
-    Container,
     Typography,
     TableContainer,
-    TablePagination
+    /*TablePagination*/
 } from '@mui/material';
 // components
 import Page from '../components/Page';
@@ -26,6 +24,7 @@ import Page from '../components/Page';
 import Scrollbar from '../components/Scrollbar';
 import SearchNotFound from '../components/SearchNotFound';
 import { TokenListHead, TokenListToolbar, TokenMoreMenu } from '../components/token';
+import axios from 'axios'
 //
 import TOKENLIST from '../_mocks_/tokens';
 
@@ -80,6 +79,35 @@ export default function Token() {
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [labelRowsPerPage/*, setLabelRowsPerPage*/] = useState('Rows');
+  const [ offset, setOffset ] = useState(0);
+  const [tokens, setTokens] = useState([]);
+  
+  useEffect(() => {
+    loadTokens(offset);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const loadTokens = (offset) => {
+    axios.get(`http://localhost/api/v1/token/all?order_direction=desc&offset=${offset}&limit=20`)
+    .then(res => {
+		try {
+			if (res.status === 200 && res.data) {
+				let tokenList = [];
+				for(var i in res.data.tokens)
+					tokenList.push(res.data.tokens[i]);
+				setTokens(tokenList);
+			}
+		} catch (error) {
+			console.log(error);
+		}
+
+      //dispatch(concatinate(res.data.assets));
+      //if(res.data.assets.length < 20) setHasMore(false);
+      //setOffset(offset + 1);
+    })
+    .catch(err => {
+      console.log("err->>", err);
+    })
+  }
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -89,7 +117,7 @@ export default function Token() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = TOKENLIST.map((n) => n.name);
+      const newSelecteds = tokens.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -127,9 +155,9 @@ export default function Token() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - TOKENLIST.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tokens.length) : 0;
 
-  const filteredTokens = applySortFilter(TOKENLIST, getComparator(order, orderBy), filterName);
+  const filteredTokens = applySortFilter(tokens, getComparator(order, orderBy), filterName);
 
   const isTokenNotFound = filteredTokens.length === 0;
 
@@ -142,7 +170,7 @@ export default function Token() {
             numSelected={selected.length}
             filterName={filterName}
             onFilterName={handleFilterByName}
-      		count={TOKENLIST.length}
+      		count={tokens.length}
             rowsPerPage={rowsPerPage}
             labelRowsPerPage={labelRowsPerPage}
             page={page}
@@ -157,7 +185,7 @@ export default function Token() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={TOKENLIST.length}
+                  rowCount={tokens.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   onSelectAllClick={handleSelectAllClick}
@@ -166,7 +194,15 @@ export default function Token() {
                   {filteredTokens
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row) => {
-                      const { id, name, role/*, status*/, price, dailypercent, marketcap, holders, imgUrl/*, isVerified*/ } = row;
+                      const {
+                      	account,
+                      	currencyCode,
+                      	currencyCodeUTF8,
+                      	amount,
+                      	username,
+                      	kyc,
+                      	created } = row;
+                      const imgUrl = "/static/tokens/token_1.jpg";
                       const isItemSelected = selected.indexOf(name) !== -1;
 
                       return (
@@ -186,9 +222,9 @@ export default function Token() {
                           </TableCell>
                           <TableCell component="th" scope="row" padding="none">
                             <Stack direction="row" alignItems="center" spacing={2}>
-                              <Avatar alt={name} src={imgUrl} />
+                              <Avatar alt={currencyCodeUTF8} src={imgUrl} />
                               <Typography variant="subtitle2" noWrap>
-                                {name}
+                                {currencyCodeUTF8}
                               </Typography>
                             </Stack>
                           </TableCell>

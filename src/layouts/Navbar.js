@@ -1,27 +1,27 @@
 import * as React from 'react';
-import PropTypes from 'prop-types';
-import { useTheme, ThemeProvider, createTheme, StyledEngineProvider } from '@mui/material/styles';
-import { Icon } from '@iconify/react';
-import menu2Fill from '@iconify/icons-eva/menu-2-fill';
+//import PropTypes from 'prop-types';
+//import { useTheme, ThemeProvider, createTheme, StyledEngineProvider } from '@mui/material/styles';
+//import { Icon } from '@iconify/react';
+//import menu2Fill from '@iconify/icons-eva/menu-2-fill';
 // material
 import { alpha, styled } from '@mui/material/styles';
-import { Box, Stack, AppBar, Toolbar, IconButton } from '@mui/material';
+import { Box, Stack, AppBar, Toolbar/*, IconButton*/ } from '@mui/material';
 // components
 //
 import AccountPopover from './AccountPopover';
 
 import Logo from '../components/Logo';
 
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink/*, useLocation*/ } from 'react-router-dom';
 
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
+//import LightModeIcon from '@mui/icons-material/LightMode';
+//import DarkModeIcon from '@mui/icons-material/DarkMode';
 // ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
 
 const APPBAR_MOBILE = 64;
-const APPBAR_DESKTOP = 72;
+//const APPBAR_DESKTOP = 72;
 
 const RootStyle = styled(AppBar)(({ theme }) => ({
   boxShadow: 'none',
