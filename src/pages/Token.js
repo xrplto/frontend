@@ -4,8 +4,10 @@ import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { Link as RouterLink } from 'react-router-dom';
+import { normalizer } from '../utils/normalizers';
 // material
 import {
+    Backdrop,
     Card,
     Table,
     Stack,
@@ -18,6 +20,9 @@ import {
     TableContainer,
     /*TablePagination*/
 } from '@mui/material';
+import {
+    HashLoader,
+} from "react-spinners";
 // components
 import Page from '../components/Page';
 //import Label from '../components/Label';
@@ -32,6 +37,7 @@ import axios from 'axios'
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
+  { id: 'price', label: 'Price', alignRight: false },
   { id: 'code', label: 'Token ID', alignRight: false },
   { id: 'amount', label: 'Amount', alignRight: false },
   { id: 'trustlines', label: 'Trust Lines', alignRight: false },
@@ -71,46 +77,49 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function Token() {
-  const [page, setPage] = useState(0);
-  const [order, setOrder] = useState('asc');
-  const [selected, setSelected] = useState([]);
-  const [orderBy, setOrderBy] = useState('');
-  const [filterName, setFilterName] = useState('');
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [labelRowsPerPage/*, setLabelRowsPerPage*/] = useState('Rows');
-  const [ offset, setOffset ] = useState(0);
-  const [tokens, setTokens] = useState([]);
-  
-  useEffect(() => {
-    loadTokens(offset);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  const loadTokens = (offset) => {
-  	  console.log("Loading tokens!!!");
-    axios.get(`http://localhost/api/v1/token/all?order_direction=desc&offset=${offset}&limit=20`)
-    .then(res => {
-		try {
-			if (res.status === 200 && res.data) {
-				let tokenList = [];
-				for (var i in res.data.tokens) {
-					let token = res.data.tokens[i];
-					token.id = i;
-					tokenList.push(token);
-				}
-				setTokens(tokenList);
-			}
-		} catch (error) {
-			console.log(error);
-		}
+    const [page, setPage] = useState(0);
+    const [order, setOrder] = useState('asc');
+    const [selected, setSelected] = useState([]);
+    const [orderBy, setOrderBy] = useState('');
+    const [filterName, setFilterName] = useState('');
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [labelRowsPerPage/*, setLabelRowsPerPage*/] = useState('Rows');
+    const [ offset, setOffset ] = useState(0);
+    const [tokens, setTokens] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-      //dispatch(concatinate(res.data.assets));
-      //if(res.data.assets.length < 20) setHasMore(false);
-      //setOffset(offset + 1);
-    })
-    .catch(err => {
-      console.log("err->>", err);
-    })
-  }
+    useEffect(() => {
+        setLoading(true);
+        loadTokens(offset);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    const loadTokens = (offset) => {
+        console.log("Loading tokens!!!");
+        //axios.get(`http://65.21.204.118/api/v1/token/all?order_direction=desc&offset=${offset}&limit=20`)
+        axios.get(`http://ws.xrpl.to/api/v1/token/all?order_direction=desc&offset=${offset}&limit=20`)
+        .then(res => {
+            setLoading(false);
+            try {
+                if (res.status === 200 && res.data) {
+                    let tokenList = [];
+                    for (var i in res.data.tokens) {
+                        let token = res.data.tokens[i];
+                        token.id = i;
+                        tokenList.push(token);
+                    }
+                    setTokens(tokenList);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+
+            //dispatch(concatinate(res.data.assets));
+            //if(res.data.assets.length < 20) setHasMore(false);
+            //setOffset(offset + 1);
+        }).catch(err => {
+            console.log("err->>", err);
+        })
+    }
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -168,6 +177,14 @@ export default function Token() {
   
   return (
     <Page title="Tokens">
+        <Backdrop
+            sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            open={loading}
+        >
+            <HashLoader
+                color={'#00AB55'}
+                size={50}/>
+        </Backdrop >
         <Card>
           <TokenListToolbar
             numSelected={selected.length}
@@ -194,21 +211,21 @@ export default function Token() {
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {filteredTokens
+                  {//{"acct":"rDN4Ux1WFJJsPCdqdfZgrDZ2icxdAmg2w","code":"SEC","amt":7999301.997671802,"trline":29063,"exch":0.05973118285905216}
+                   filteredTokens
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row) => {
                       const {
                       	 id,
-                      	trustlines,
-                      	account,
-                      	name,
+                      	acct,
                       	code,
-                      	amount,
-                      	username,
-                      	kyc,
-                      	created } = row;
+                      	amt,
+                      	trline,
+                      	exch } = row;
+                      const name = normalizer.normalizeCurrencyCodeXummImpl(code);
                       const imgUrl = "/static/tokens/token_1.jpg";
                       const isItemSelected = selected.indexOf(id) !== -1;
+                      const price = exch;
 
                       return (
                         <TableRow
@@ -233,10 +250,11 @@ export default function Token() {
                               </Typography>
                             </Stack>
                           </TableCell>
+                          <TableCell align="left">{price}</TableCell>
                           <TableCell align="left">{code}</TableCell>
-                          <TableCell align="left">{amount}</TableCell>
-                          <TableCell align="left">{trustlines}</TableCell>
-                          <TableCell align="left">{account}</TableCell>
+                          <TableCell align="left">{amt}</TableCell>
+                          <TableCell align="left">{trline}</TableCell>
+                          <TableCell align="left">{acct}</TableCell>
                           {/*<TableCell align="left">{price}</TableCell>
                           <TableCell align="left">{dailypercent}</TableCell>
                           <TableCell align="left">{marketcap}</TableCell>
