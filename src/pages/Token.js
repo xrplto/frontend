@@ -4,7 +4,7 @@ import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { Link as RouterLink } from 'react-router-dom';
-import { normalizer } from '../utils/normalizers';
+//import { normalizer } from '../utils/normalizers';
 // material
 import {
     Backdrop,
@@ -32,16 +32,14 @@ import { TokenListHead, TokenListToolbar, TokenMoreMenu } from '../components/to
 import axios from 'axios'
 //
 //import TOKENLIST from '../_mocks_/tokens';
-
 // ----------------------------------------------------------------------
-
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', alignRight: false },
-  { id: 'price', label: 'Price', alignRight: false },
-  { id: 'code', label: 'Token ID', alignRight: false },
+  { id: 'price_xrp', label: 'Price (XRP)', alignRight: false },
+  { id: 'price_usd', label: 'Price ($)', alignRight: false },
   { id: 'amount', label: 'Amount', alignRight: false },
-  { id: 'trustlines', label: 'Trust Lines', alignRight: false },
-  { id: 'issuer', label: 'Account', alignRight: false },
+  { id: 'trline', label: 'Trust Lines', alignRight: false },
+  { id: 'acct', label: 'Account', alignRight: false },
   { id: '' }
 ];
 
@@ -64,29 +62,31 @@ function getComparator(order, orderBy) {
 }
 
 function applySortFilter(array, comparator, query) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  if (query) {
-    return filter(array, (_token) => _token.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-  }
-  return stabilizedThis.map((el) => el[0]);
+    const stabilizedThis = array.map((el, index) => [el, index]);
+    stabilizedThis.sort((a, b) => {
+        const order = comparator(a[0], b[0]);
+        if (order !== 0) return order;
+        return a[1] - b[1];
+    });
+    if (query) {
+        return filter(array, (_token) => _token.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    }
+    return stabilizedThis.map((el) => el[0]);
 }
 
 export default function Token() {
     const [page, setPage] = useState(0);
-    const [order, setOrder] = useState('asc');
+    const [order, setOrder] = useState('desc');
     const [selected, setSelected] = useState([]);
-    const [orderBy, setOrderBy] = useState('');
+    const [orderBy, setOrderBy] = useState('trline');
     const [filterName, setFilterName] = useState('');
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [labelRowsPerPage/*, setLabelRowsPerPage*/] = useState('Rows');
     const [ offset, setOffset ] = useState(0);
     const [tokens, setTokens] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [exch_usd, setUSD] = useState(100);
+    const [exch_eur, setEUR] = useState(100);
 
     useEffect(() => {
         setLoading(true);
@@ -95,16 +95,19 @@ export default function Token() {
     }, []);
     const loadTokens = (offset) => {
         console.log("Loading tokens!!!");
-        //axios.get(`http://65.21.204.118/api/v1/token/all?order_direction=desc&offset=${offset}&limit=20`)
-        axios.get(`http://ws.xrpl.to/api/v1/token/all?order_direction=desc&offset=${offset}&limit=20`)
+        axios.get(`http://ws.xrpl.to/api/v1/token/all/${offset}`)
         .then(res => {
             setLoading(false);
             try {
                 if (res.status === 200 && res.data) {
                     let tokenList = [];
+                    if (res.data.USD > 0) setUSD(res.data.USD);
+                    if (res.data.EUR > 0) setEUR(res.data.EUR);
                     for (var i in res.data.tokens) {
                         let token = res.data.tokens[i];
                         token.id = i;
+                        token.price_xrp = token.exch;
+                        token.price_usd = token.exch / exch_usd;
                         tokenList.push(token);
                     }
                     setTokens(tokenList);
@@ -121,51 +124,53 @@ export default function Token() {
         })
     }
 
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
+    const handleRequestSort = (event, property) => {
+        console.log("handleRequestSort: " + property);
 
-  const handleSelectAllClick = (event) => {
-    if (event.target.checked) {
-      const newSelecteds = tokens.map((n) => n.id);
-      setSelected(newSelecteds);
-      return;
-    }
-    setSelected([]);
-  };
+        const isAsc = orderBy === property && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+    };
 
-  const handleClick = (event, id) => {
-    const selectedIndex = selected.indexOf(id);
-    let newSelected = [];
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-    setSelected(newSelected);
-  };
+    const handleSelectAllClick = (event) => {
+        if (event.target.checked) {
+            const newSelecteds = tokens.map((n) => n.id);
+            setSelected(newSelecteds);
+            return;
+        }
+        setSelected([]);
+    };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
+    const handleClick = (event, id) => {
+        const selectedIndex = selected.indexOf(id);
+        let newSelected = [];
+        if (selectedIndex === -1) {
+            newSelected = newSelected.concat(selected, id);
+        } else if (selectedIndex === 0) {
+            newSelected = newSelected.concat(selected.slice(1));
+        } else if (selectedIndex === selected.length - 1) {
+            newSelected = newSelected.concat(selected.slice(0, -1));
+        } else if (selectedIndex > 0) {
+            newSelected = newSelected.concat(
+                selected.slice(0, selectedIndex),
+                selected.slice(selectedIndex + 1)
+            );
+        }
+        setSelected(newSelected);
+    };
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
 
-  const handleFilterByName = (event) => {
-    setFilterName(event.target.value);
-  };
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const handleFilterByName = (event) => {
+        setFilterName(event.target.value);
+    };
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tokens.length) : 0;
 
@@ -218,14 +223,14 @@ export default function Token() {
                       const {
                       	 id,
                       	acct,
-                      	code,
+                        name,
                       	amt,
                       	trline,
+                        price_xrp,
+                        price_usd,
                       	exch } = row;
-                      const name = normalizer.normalizeCurrencyCodeXummImpl(code);
-                      const imgUrl = "/static/tokens/token_1.jpg";
+                      const imgUrl = `/static/tokens/${name}.jpg`;
                       const isItemSelected = selected.indexOf(id) !== -1;
-                      const price = exch;
 
                       return (
                         <TableRow
@@ -250,8 +255,8 @@ export default function Token() {
                               </Typography>
                             </Stack>
                           </TableCell>
-                          <TableCell align="left">{price}</TableCell>
-                          <TableCell align="left">{code}</TableCell>
+                          <TableCell align="left">{price_xrp}</TableCell>
+                          <TableCell align="left">{price_usd}</TableCell>
                           <TableCell align="left">{amt}</TableCell>
                           <TableCell align="left">{trline}</TableCell>
                           <TableCell align="left">{acct}</TableCell>
