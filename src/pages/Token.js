@@ -82,7 +82,7 @@ export default function Token() {
     const [filterName, setFilterName] = useState('');
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [labelRowsPerPage/*, setLabelRowsPerPage*/] = useState('Rows');
-    const [ offset, setOffset ] = useState(0);
+    const [ offset, setOffset ] = useState(-1);
     const [tokens, setTokens] = useState([]);
     const [loading, setLoading] = useState(false);
     const [exch_usd, setUSD] = useState(100);
