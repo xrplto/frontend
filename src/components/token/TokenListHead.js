@@ -38,6 +38,7 @@ export default function TokenListHead({
             onChange={onSelectAllClick}
           />
         </TableCell>
+        <TableCell key="id" align='left' sortDirection={false}>#</TableCell>
         {headLabel.map((headCell) => (
           <TableCell
             key={headCell.id}

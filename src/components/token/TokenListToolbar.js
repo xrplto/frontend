@@ -2,7 +2,7 @@
 import { Icon } from '@iconify/react';
 import searchFill from '@iconify/icons-eva/search-fill';
 import trash2Fill from '@iconify/icons-eva/trash-2-fill';
-import roundFilterList from '@iconify/icons-ic/round-filter-list';
+//import roundFilterList from '@iconify/icons-ic/round-filter-list';
 // material
 import { styled } from '@mui/material/styles';
 //import { Link as RouterLink } from 'react-router-dom';
@@ -85,7 +85,7 @@ export default function TokenListToolbar(props) {
       ) : (
       	<Stack direction="row" alignItems="center">
       		<TablePagination
-	            rowsPerPageOptions={[5, 10, 25]}
+	            rowsPerPageOptions={[100, 50, 20]}
 	            component="div"
 	            count={props.count}
 	            rowsPerPage={props.rowsPerPage}
@@ -95,15 +95,15 @@ export default function TokenListToolbar(props) {
 	            onRowsPerPageChange={props.onRowsPerPageChange}
 	        />
 	        <Tooltip title="Reload">
-	          <IconButton>
+	          <IconButton onClick={props.onCloudRefresh}>
 	            <Icon icon={cloudRefresh} />
 	          </IconButton>
 	        </Tooltip>
-	        <Tooltip title="Filter">
+	        {/* <Tooltip title="Filter">
 	          <IconButton>
 	            <Icon icon={roundFilterList} />
 	          </IconButton>
-	        </Tooltip>
+	        </Tooltip> */}
         </Stack>
       )}
     </RootStyle>

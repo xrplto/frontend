@@ -2,6 +2,7 @@ import { filter } from 'lodash';
 //import { Icon } from '@iconify/react';
 //import { sentenceCase } from 'change-case';
 import { useState, useEffect } from 'react';
+//import { Link } from "react-router-dom";
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { Link as RouterLink } from 'react-router-dom';
 //import { normalizer } from '../utils/normalizers';
@@ -34,13 +35,13 @@ import axios from 'axios'
 //import TOKENLIST from '../_mocks_/tokens';
 // ----------------------------------------------------------------------
 const TABLE_HEAD = [
-  { id: 'name', label: 'Name', alignRight: false },
-  { id: 'price_xrp', label: 'Price (XRP)', alignRight: false },
-  { id: 'price_usd', label: 'Price ($)', alignRight: false },
-  { id: 'amount', label: 'Amount', alignRight: false },
-  { id: 'trline', label: 'Trust Lines', alignRight: false },
-  { id: 'acct', label: 'Account', alignRight: false },
-  { id: '' }
+    { id: 'name', label: 'Name', alignRight: false },
+    { id: 'price_xrp', label: 'Price (XRP)', alignRight: false },
+    { id: 'price_usd', label: 'Price ($)', alignRight: false },
+    { id: 'amount', label: 'Amount', alignRight: false },
+    { id: 'trline', label: 'Trust Lines', alignRight: false },
+    { id: 'acct', label: 'Account', alignRight: false },
+    { id: '' }
 ];
 
 // ----------------------------------------------------------------------
@@ -71,7 +72,13 @@ function applySortFilter(array, comparator, query) {
     if (query) {
         return filter(array, (_token) => _token.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
     }
-    return stabilizedThis.map((el) => el[0]);
+    let idx = 1;
+    const res = stabilizedThis.map((el) => {
+        el[0].id = idx++;
+        return el[0];
+    });
+    return res;
+    //return stabilizedThis.map((el) => el[0]);
 }
 
 export default function Token() {
@@ -80,7 +87,7 @@ export default function Token() {
     const [selected, setSelected] = useState([]);
     const [orderBy, setOrderBy] = useState('trline');
     const [filterName, setFilterName] = useState('');
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(100);
     const [labelRowsPerPage/*, setLabelRowsPerPage*/] = useState('Rows');
     const [ offset, setOffset ] = useState(-1);
     const [tokens, setTokens] = useState([]);
@@ -95,14 +102,20 @@ export default function Token() {
     }, []);
     const loadTokens = (offset) => {
         console.log("Loading tokens!!!");
-        axios.get(`http://ws.xrpl.to/api/v1/token/all/${offset}`)
+        axios.get(`https://ws.xrpl.to/api/v1/token/all/${offset}`)
         .then(res => {
             setLoading(false);
             try {
                 if (res.status === 200 && res.data) {
                     let tokenList = [];
-                    if (res.data.USD > 0) setUSD(res.data.USD);
-                    if (res.data.EUR > 0) setEUR(res.data.EUR);
+                    let exch_usd = 1;
+                    if (res.data.USD > 0) {
+                        exch_usd = res.data.USD;
+                        setUSD(exch_usd);
+                    }
+
+                    if (res.data.EUR > 0)
+                        setEUR(res.data.EUR);
                     for (var i in res.data.tokens) {
                         let token = res.data.tokens[i];
                         token.id = i;
@@ -125,8 +138,6 @@ export default function Token() {
     }
 
     const handleRequestSort = (event, property) => {
-        console.log("handleRequestSort: " + property);
-
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
@@ -172,6 +183,11 @@ export default function Token() {
         setFilterName(event.target.value);
     };
 
+    const handleCloudRefresh = (event) => {
+        setLoading(true);
+        loadTokens(offset);
+    };
+
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tokens.length) : 0;
 
   const filteredTokens = applySortFilter(tokens, getComparator(order, orderBy), filterName);
@@ -201,6 +217,7 @@ export default function Token() {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            onCloudRefresh={handleCloudRefresh}
           />
 
           <Scrollbar>
@@ -247,6 +264,7 @@ export default function Token() {
                               onChange={(event) => handleClick(event, id)}
                             />
                           </TableCell>
+                          <TableCell align="left">{id}</TableCell>
                           <TableCell component="th" scope="row" padding="none">
                             <Stack direction="row" alignItems="center" spacing={2}>
                               <Avatar alt={name} src={imgUrl} />
@@ -259,7 +277,11 @@ export default function Token() {
                           <TableCell align="left">{price_usd}</TableCell>
                           <TableCell align="left">{amt}</TableCell>
                           <TableCell align="left">{trline}</TableCell>
-                          <TableCell align="left">{acct}</TableCell>
+                          <TableCell align="left">
+                            <a href={`https://bithomp.com/explorer/${acct}`} target="_blank" rel="noreferrer noopener"> 
+                                {acct}
+                            </a>
+                          </TableCell>
                           {/*<TableCell align="left">{price}</TableCell>
                           <TableCell align="left">{dailypercent}</TableCell>
                           <TableCell align="left">{marketcap}</TableCell>
