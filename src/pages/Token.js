@@ -99,33 +99,6 @@ export default function Token() {
         setLoading(true);
         loadTokens(offset);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-    useEffect(() => {
-        let calling = false;
-        let i = 0;
-        function getExchangeRate() {
-            if (calling) return;
-            calling = true;
-            axios.get('https://ws.xrpl.to/api/v1/exchangerate')
-            .then(res => {
-                const rates = res.status===200?res.data:undefined;
-                if (rates) {
-                    //i++;
-                    //setUSD(i);
-                    setUSD(rates.USD);
-                    console.log(rates.USD);
-                    console.log(rates.EUR);
-                    console.log(rates.JPY);
-                    console.log(rates.CNY);
-                }
-            }).catch(err => {
-                console.log("error on getting exchange rates!!!", err);
-            }).then(function () {
-                // always executed
-                calling = false;
-                console.log("Heartbeat!");
-            });
-        }
         getExchangeRate();
         const interval = setInterval(() => getExchangeRate(), 5000)
         
@@ -142,8 +115,27 @@ export default function Token() {
         return () => {
           clearInterval(interval);
         }
-    }, [])
-    const loadTokens = (offset) => {
+    }, []);
+    //let i = 0;
+    function getExchangeRate() {
+        axios.get('https://ws.xrpl.to/api/v1/exchangerate')
+        .then(res => {
+            const rates = res.status===200?res.data:undefined;
+            if (rates) {
+                //i++;
+                //setUSD(i);
+                //console.log(i);
+                setUSD(rates.USD);
+                console.log(rates.USD);
+            }
+        }).catch(err => {
+            console.log("error on getting exchange rates!!!", err);
+        }).then(function () {
+            // always executed
+            console.log("Heartbeat!");
+        });
+    }
+    function loadTokens(offset) {
         console.log("Loading tokens!!!");
         axios.get(`https://ws.xrpl.to/api/v1/token/all/${offset}`)
         .then(res => {
@@ -156,6 +148,9 @@ export default function Token() {
                     for (var i in res.data.tokens) {
                         let token = res.data.tokens[i];
                         token.id = i;
+                        token.price_xrp = token.exch;
+                        token.price_usd = token.exch;
+                        token.amount = token.amt;
                         tokenList.push(token);
                     }
                     setTokens(tokenList);
@@ -163,13 +158,15 @@ export default function Token() {
             } catch (error) {
                 console.log(error);
             }
-            setLoading(false);
             //dispatch(concatinate(res.data.assets));
             //if(res.data.assets.length < 20) setHasMore(false);
             //setOffset(offset + 1);
         }).catch(err => {
             console.log("err->>", err);
-        })
+        }).then(function () {
+            // always executed
+            setLoading(false);
+        });
     }
 
     const handleRequestSort = (event, property) => {
@@ -278,12 +275,9 @@ export default function Token() {
                         name,
                       	amt,
                       	trline,
-                      	exch } = row;
+                        price_xrp} = row;
                       const imgUrl = `/static/tokens/${name}.jpg`;
                       const isItemSelected = selected.indexOf(id) !== -1;
-
-                      const price_xrp = exch;
-                      const price_usd = exch / exch_usd;
 
                       return (
                         <TableRow
@@ -310,7 +304,7 @@ export default function Token() {
                             </Stack>
                           </TableCell>
                           <TableCell align="left">{price_xrp}</TableCell>
-                          <TableCell align="left">{price_usd}</TableCell>
+                          <TableCell align="left">{price_xrp / exch_usd}</TableCell>
                           <TableCell align="left">{amt}</TableCell>
                           <TableCell align="left">{trline}</TableCell>
                           <TableCell align="left">
