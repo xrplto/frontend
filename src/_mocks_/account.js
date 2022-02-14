@@ -1,9 +1,9 @@
 // ----------------------------------------------------------------------
 
 const account = {
-  displayName: 'Yannier',
-  email: 'demo@yannier.cc',
-  photoURL: '/static/avatar.jpg'
+    displayName: 'Developer',
+    email: 'mahiros.tech@gmail.com',
+    photoURL: '/static/avatar.jpg'
 };
 
 export default account;
