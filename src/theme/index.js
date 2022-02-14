@@ -18,10 +18,34 @@ import * as React from 'react';
 //const ColorModeContext = React.createContext({ toggleColorMode: () => {} });
 
 ThemeConfig.propTypes = {
-  children: PropTypes.node
+    children: PropTypes.node
 };
 
+/*
+import { useEffect, useState } from 'react';
+export const useDarkMode = () => {
+    const [theme, setTheme] = useState('light');
+
+    const setMode = mode => {
+        window.localStorage.setItem('theme', mode)
+        setTheme(mode)
+    };
+
+    const themeToggler = () => {
+        theme === 'light' ? setMode('dark') : setMode('light')
+    };
+
+    useEffect(() => {
+        const localTheme = window.localStorage.getItem('theme');
+        localTheme && setTheme(localTheme)
+    }, []);
+    return [theme, themeToggler]
+};
+
+*/
+
 export default function ThemeConfig({ children }) {
+    // const [theme, setTheme] = useState(window.localStorage.getItem('theme') || 'light');
     /*const [mode, setMode] = useState('dark');
     const colorMode = useMemo(() => ({
       toggleColorMode: () => {
@@ -30,26 +54,26 @@ export default function ThemeConfig({ children }) {
     }),
     [],
   );*/
-   const themeOptions = useMemo(
-     () => ({
-       palette,
-       shape,
-       typography,
-       shadows,
-       customShadows
-     }),
-     []
-   );
+    const themeOptions = useMemo(
+        () => ({
+            palette,
+            shape,
+            typography,
+            shadows,
+            customShadows
+        }),
+        []
+    );
 
-  const theme = createTheme(themeOptions);
-  theme.components = componentsOverride(theme);
+    const theme = createTheme(themeOptions);
+    theme.components = componentsOverride(theme);
 
-  return (
-    <StyledEngineProvider injectFirst>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-      </ThemeProvider>
-      </StyledEngineProvider>
-  );
+    return (
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                {children}
+            </ThemeProvider>
+        </StyledEngineProvider>
+    );
 }

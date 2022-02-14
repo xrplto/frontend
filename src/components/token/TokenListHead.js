@@ -38,7 +38,6 @@ export default function TokenListHead({
             onChange={onSelectAllClick}
           />
         </TableCell>
-        <TableCell key="id" align='left' sortDirection={false}>#</TableCell>
         {headLabel.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -49,7 +48,7 @@ export default function TokenListHead({
               hideSortIcon
               active={orderBy === headCell.id}
               direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
+              onClick={headCell.enableOrder?createSortHandler(headCell.id):undefined}
             >
               {headCell.label}
               {orderBy === headCell.id ? (

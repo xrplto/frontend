@@ -35,12 +35,13 @@ import axios from 'axios'
 //import TOKENLIST from '../_mocks_/tokens';
 // ----------------------------------------------------------------------
 const TABLE_HEAD = [
-    { id: 'name', label: 'Name', alignRight: false },
-    { id: 'price_xrp', label: 'Price (XRP)', alignRight: false },
-    { id: 'price_usd', label: 'Price ($)', alignRight: false },
-    { id: 'amount', label: 'Amount', alignRight: false },
-    { id: 'trline', label: 'Trust Lines', alignRight: false },
-    { id: 'acct', label: 'Account', alignRight: false },
+    { id: 'id', label: '#', alignRight: false, enableOrder: false},
+    { id: 'name', label: 'Name', alignRight: false, enableOrder: true},
+    { id: 'price_xrp', label: 'Price (XRP)', alignRight: false, enableOrder: true },
+    { id: 'price_usd', label: 'Price ($)', alignRight: false, enableOrder: true },
+    { id: 'amount', label: 'Amount', alignRight: false, enableOrder: true },
+    { id: 'trline', label: 'Trust Lines', alignRight: false, enableOrder: true },
+    { id: 'acct', label: 'Account', alignRight: false, enableOrder: false },
     { id: '' }
 ];
 
@@ -89,38 +90,72 @@ export default function Token() {
     const [filterName, setFilterName] = useState('');
     const [rowsPerPage, setRowsPerPage] = useState(100);
     const [labelRowsPerPage/*, setLabelRowsPerPage*/] = useState('Rows');
-    const [ offset, setOffset ] = useState(-1);
+    const [ offset, setOffset ] = useState(0);
     const [tokens, setTokens] = useState([]);
     const [loading, setLoading] = useState(false);
     const [exch_usd, setUSD] = useState(100);
-    const [exch_eur, setEUR] = useState(100);
 
     useEffect(() => {
         setLoading(true);
         loadTokens(offset);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+    useEffect(() => {
+        let calling = false;
+        let i = 0;
+        function getExchangeRate() {
+            if (calling) return;
+            calling = true;
+            axios.get('https://ws.xrpl.to/api/v1/exchangerate')
+            .then(res => {
+                const rates = res.status===200?res.data:undefined;
+                if (rates) {
+                    //i++;
+                    //setUSD(i);
+                    setUSD(rates.USD);
+                    console.log(rates.USD);
+                    console.log(rates.EUR);
+                    console.log(rates.JPY);
+                    console.log(rates.CNY);
+                }
+            }).catch(err => {
+                console.log("error on getting exchange rates!!!", err);
+            }).then(function () {
+                // always executed
+                calling = false;
+                console.log("Heartbeat!");
+            });
+        }
+        getExchangeRate();
+        const interval = setInterval(() => getExchangeRate(), 5000)
+        
+        /*var promise = Promise.resolve(true);
+
+        const interval = setInterval(function () {
+            promise = promise.then(function () {
+                return new Promise(function (resolve) {
+                    getExchangeRate(resolve);
+                });
+            });
+        }, 5000);*/
+
+        return () => {
+          clearInterval(interval);
+        }
+    }, [])
     const loadTokens = (offset) => {
         console.log("Loading tokens!!!");
         axios.get(`https://ws.xrpl.to/api/v1/token/all/${offset}`)
         .then(res => {
-            setLoading(false);
             try {
                 if (res.status === 200 && res.data) {
                     let tokenList = [];
-                    let exch_usd = 1;
                     if (res.data.USD > 0) {
-                        exch_usd = res.data.USD;
-                        setUSD(exch_usd);
+                        setUSD(res.data.USD);
                     }
-
-                    if (res.data.EUR > 0)
-                        setEUR(res.data.EUR);
                     for (var i in res.data.tokens) {
                         let token = res.data.tokens[i];
                         token.id = i;
-                        token.price_xrp = token.exch;
-                        token.price_usd = token.exch / exch_usd;
                         tokenList.push(token);
                     }
                     setTokens(tokenList);
@@ -128,7 +163,7 @@ export default function Token() {
             } catch (error) {
                 console.log(error);
             }
-
+            setLoading(false);
             //dispatch(concatinate(res.data.assets));
             //if(res.data.assets.length < 20) setHasMore(false);
             //setOffset(offset + 1);
@@ -243,11 +278,12 @@ export default function Token() {
                         name,
                       	amt,
                       	trline,
-                        price_xrp,
-                        price_usd,
                       	exch } = row;
                       const imgUrl = `/static/tokens/${name}.jpg`;
                       const isItemSelected = selected.indexOf(id) !== -1;
+
+                      const price_xrp = exch;
+                      const price_usd = exch / exch_usd;
 
                       return (
                         <TableRow
