@@ -1,15 +1,16 @@
 import PropTypes from 'prop-types';
-import { useMemo/*, useState*/ } from 'react';
+import { useContext, useMemo/*, useState*/ } from 'react';
 // material
 import { CssBaseline } from '@mui/material';
 import { /*useTheme, */ThemeProvider, createTheme, StyledEngineProvider } from '@mui/material/styles';
+import Context from './Context'
 //
 import shape from './shape';
 import palette from './palette';
 import typography from './typography';
 import componentsOverride from './overrides';
 import shadows, { customShadows } from './shadows';
-
+import AppThemeProvider from './Provider'
 import * as React from 'react';
 //import IconButton from '@mui/material/IconButton';
 //import Box from '@mui/material/Box';
@@ -43,6 +44,34 @@ export const useDarkMode = () => {
 };
 
 */
+function useTheme() {
+    return useContext(Context)
+}
+
+const getThemeSource = (id, ts, isDarkMode, isRTL) => {
+    if (ts) {
+        for (let i = 0; i < ts.length; i++) {
+        if (ts[i]['id'] === id) {
+            const source = ts[i]['source']
+            const palette = source != null ? source.palette : {}
+            return createTheme({
+            ...source,
+            palette: { ...palette, mode: isDarkMode ? 'dark' : 'light' },
+            direction: isRTL ? 'rtl' : 'ltr',
+            })
+        }
+        }
+    }
+
+    return createTheme({
+        palette: { mode: isDarkMode ? 'dark' : 'light' },
+        shape,
+        typography,
+        shadows,
+        customShadows,
+        direction: isRTL ? 'rtl' : 'ltr',
+    })
+}
 
 export default function ThemeConfig({ children }) {
     // const [theme, setTheme] = useState(window.localStorage.getItem('theme') || 'light');
@@ -56,7 +85,7 @@ export default function ThemeConfig({ children }) {
   );*/
     const themeOptions = useMemo(
         () => ({
-            palette,
+            palette: { ...palette, mode: 'dark' },
             shape,
             typography,
             shadows,
@@ -65,7 +94,18 @@ export default function ThemeConfig({ children }) {
         []
     );
 
-    const theme = createTheme(themeOptions);
+    //const intl = useIntl()
+    //const { appConfig } = useConfig()
+    const uss = useTheme();
+    console.log(uss);
+    const { themeID, isDarkMode, isRTL } = useContext(Context);
+    //const { theme: themeConfig, pwa, notistack } = appConfig || {}
+    //const { useiOSPWAPrompt, iOSPWAPromptProps } = pwa || {}
+    const themeConfig = {};
+    const { themes = [] } = themeConfig || {}
+    const theme = getThemeSource(themeID, themes, isDarkMode, isRTL)
+
+    //const theme = createTheme(themeOptions);
     theme.components = componentsOverride(theme);
 
     return (

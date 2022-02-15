@@ -2,9 +2,7 @@ import { filter } from 'lodash';
 //import { Icon } from '@iconify/react';
 //import { sentenceCase } from 'change-case';
 import { useState, useEffect } from 'react';
-import { Link } from "react-router-dom";
 //import plusFill from '@iconify/icons-eva/plus-fill';
-//import { Link as RouterLink } from 'react-router-dom';
 //import { normalizer } from '../utils/normalizers';
 import { fCurrency5, fCurrency3 } from '../utils/formatNumber';
 // material
@@ -14,6 +12,7 @@ import {
     Table,
     Stack,
     Avatar,
+    Link,
     Checkbox,
     TableRow,
     TableBody,
@@ -323,15 +322,17 @@ export default function Token() {
                               </Typography>
                             </Stack>
                           </TableCell>
-                          <TableCell align="left">{fCurrency5(price_xrp)}</TableCell>
-                          <TableCell align="left">{fCurrency5(price_xrp / exch_usd)}</TableCell>
-                          <TableCell align="left">{fCurrency3(amt)}</TableCell>
+                          <TableCell align="left">{fCurrency5(price_xrp)||0}</TableCell>
+                          <TableCell align="left">{fCurrency5(price_xrp / exch_usd)||0}</TableCell>
+                          <TableCell align="left">{fCurrency3(amt)||0}</TableCell>
                           <TableCell align="left">{trline}</TableCell>
                           <TableCell align="left">
                             <Link
                                 underline="hover"
                                 color="inherit"
+                                target="_blank"
                                 href={`https://bithomp.com/explorer/${acct}`}
+                                rel="noreferrer noopener"
                             >
                                 {acct}                            
                             </Link>
