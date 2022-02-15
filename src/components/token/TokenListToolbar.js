@@ -7,6 +7,7 @@ import trash2Fill from '@iconify/icons-eva/trash-2-fill';
 import { styled } from '@mui/material/styles';
 //import { Link as RouterLink } from 'react-router-dom';
 import cloudRefresh from '@iconify/icons-fontisto/cloud-refresh';
+import { fCurrency3 } from '../../utils/formatNumber';
 import {
   Box,
   Stack,
@@ -84,6 +85,15 @@ export default function TokenListToolbar(props) {
         </Tooltip>
       ) : (
       	<Stack direction="row" alignItems="center">
+            <Stack direction="row" spacing={2} sx={{mt:0.5}} alignItems="center">
+                <h5>1 XRP</h5>
+                <h6>|</h6>
+                <h5>$ {fCurrency3(1/props.EXCH_USD)}</h5>
+                <h6>|</h6>
+                <h5>€ {fCurrency3(1/props.EXCH_EUR)}</h5>
+                <h6>|</h6>
+                <h5>¥ {fCurrency3(1/props.EXCH_JPY)}</h5>
+            </Stack>
       		<TablePagination
 	            rowsPerPageOptions={[100, 50, 20]}
 	            component="div"

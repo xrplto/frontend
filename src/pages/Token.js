@@ -2,10 +2,11 @@ import { filter } from 'lodash';
 //import { Icon } from '@iconify/react';
 //import { sentenceCase } from 'change-case';
 import { useState, useEffect } from 'react';
-//import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { Link as RouterLink } from 'react-router-dom';
 //import { normalizer } from '../utils/normalizers';
+import { fCurrency5, fCurrency3 } from '../utils/formatNumber';
 // material
 import {
     Backdrop,
@@ -46,7 +47,6 @@ const TABLE_HEAD = [
 ];
 
 // ----------------------------------------------------------------------
-
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
@@ -94,6 +94,9 @@ export default function Token() {
     const [tokens, setTokens] = useState([]);
     const [loading, setLoading] = useState(false);
     const [exch_usd, setUSD] = useState(100);
+    const [exch_eur, setEUR] = useState(100);
+    const [exch_jpy, setJPY] = useState(100);
+    const [exch_cny, setCNY] = useState(100);
 
     useEffect(() => {
         setLoading(true);
@@ -126,6 +129,9 @@ export default function Token() {
                 //setUSD(i);
                 //console.log(i);
                 setUSD(rates.USD);
+                setEUR(rates.EUR);
+                setJPY(rates.JPY);
+                setCNY(rates.CNY);
                 console.log(rates.USD);
             }
         }).catch(err => {
@@ -144,6 +150,15 @@ export default function Token() {
                     let tokenList = [];
                     if (res.data.USD > 0) {
                         setUSD(res.data.USD);
+                    }
+                    if (res.data.EUR > 0) {
+                        setEUR(res.data.EUR);
+                    }
+                    if (res.data.JPY > 0) {
+                        setJPY(res.data.JPY);
+                    }
+                    if (res.data.CNY > 0) {
+                        setCNY(res.data.CNY);
                     }
                     for (var i in res.data.tokens) {
                         let token = res.data.tokens[i];
@@ -229,6 +244,7 @@ export default function Token() {
   // style={{border: '1px solid red'}}
   
   return (
+    
     <Page title="Tokens">
         <Backdrop
             sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
@@ -238,7 +254,7 @@ export default function Token() {
                 color={'#00AB55'}
                 size={50}/>
         </Backdrop >
-        <Card>
+        <Card variant="outlined">
           <TokenListToolbar
             numSelected={selected.length}
             filterName={filterName}
@@ -250,6 +266,10 @@ export default function Token() {
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             onCloudRefresh={handleCloudRefresh}
+            EXCH_USD = {exch_usd}
+            EXCH_EUR = {exch_eur}
+            EXCH_JPY = {exch_jpy}
+            EXCH_CNY = {exch_cny}
           />
 
           <Scrollbar>
@@ -303,16 +323,23 @@ export default function Token() {
                               </Typography>
                             </Stack>
                           </TableCell>
-                          <TableCell align="left">{price_xrp}</TableCell>
-                          <TableCell align="left">{price_xrp / exch_usd}</TableCell>
-                          <TableCell align="left">{amt}</TableCell>
+                          <TableCell align="left">{fCurrency5(price_xrp)}</TableCell>
+                          <TableCell align="left">{fCurrency5(price_xrp / exch_usd)}</TableCell>
+                          <TableCell align="left">{fCurrency3(amt)}</TableCell>
                           <TableCell align="left">{trline}</TableCell>
                           <TableCell align="left">
-                            <a href={`https://bithomp.com/explorer/${acct}`} target="_blank" rel="noreferrer noopener"> 
-                                {acct}
-                            </a>
+                            <Link
+                                underline="hover"
+                                color="inherit"
+                                href={`https://bithomp.com/explorer/${acct}`}
+                            >
+                                {acct}                            
+                            </Link>
                           </TableCell>
-                          {/*<TableCell align="left">{price}</TableCell>
+                          {/*
+                          <a href={`https://bithomp.com/explorer/${acct}`} target="_blank" rel="noreferrer noopener"> 
+                          </a>
+                          <TableCell align="left">{price}</TableCell>
                           <TableCell align="left">{dailypercent}</TableCell>
                           <TableCell align="left">{marketcap}</TableCell>
                           <TableCell align="left">{holders}</TableCell>
