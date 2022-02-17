@@ -1,0 +1,65 @@
+{
+  "name": "material-ui",
+  "version": "0.0.1",
+  "description": "material-ui-shell React component",
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "files": [
+    "css",
+    "es",
+    "lib",
+    "umd"
+  ],
+  "scripts": {
+    "build": "nwb build-react-component",
+    "clean": "nwb clean-module && nwb clean-demo",
+    "prepublishOnly": "npm run build",
+    "start": "nwb serve-react-demo",
+    "test": "nwb test-react",
+    "test:coverage": "nwb test-react --coverage",
+    "test:watch": "nwb test-react --server"
+  },
+  "dependencies": {
+    "jss-rtl": "^0.3.0",
+    "intl": "^1.2.5",
+    "notistack": "^2.0.3",
+    "react": "^17.0.2",
+    "react-custom-scrollbars-2": "^4.4.0",
+    "react-dom": "^17.0.2",
+    "react-easy-crop": "^4.0.1",
+    "react-intl": "^5.24.2",
+    "react-ios-pwa-prompt": "^1.8.4",
+    "react-markdown": "^7.1.2",
+    "react-router-dom": "^6.2.1",
+    "react-virtualized-auto-sizer": "^1.0.6",
+    "react-window": "^1.8.6",
+    "@mui/material": "^5.2.7",
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
+    "@fontsource/roboto": "^4.5.1",
+    "@mui/icons-material": "^5.2.5",
+    "@mui/styles": "^5.2.3"
+  },
+  "devDependencies": {
+    "nwb": "^0.25.2",
+    "prettier": "^2.5.1",
+    "raw-loader": "^4.0.2"
+  },
+  "author": "Mahiros Technology",
+  "homepage": "https://xrpl.to/",
+  "license": "MIT",
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "semi": false,
+    "singleQuote": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/",
+    "directory": "packages/material-ui-shell"
+  },
+  "keywords": [
+    "react-component"
+  ]
+}

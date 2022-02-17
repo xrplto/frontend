@@ -1,5 +1,5 @@
 // config
-import { useConfig } from './config'
+//import { useConfig } from './config'
 // routes
 import Router from './routes';
 // theme

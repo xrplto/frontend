@@ -85,7 +85,7 @@ export default function ThemeConfig({ children }) {
   );*/
     const themeOptions = useMemo(
         () => ({
-            palette: { ...palette, mode: 'dark' },
+            palette,
             shape,
             typography,
             shadows,
@@ -96,16 +96,14 @@ export default function ThemeConfig({ children }) {
 
     //const intl = useIntl()
     //const { appConfig } = useConfig()
-    const uss = useTheme();
-    console.log(uss);
-    const { themeID, isDarkMode, isRTL } = useContext(Context);
+    //const { themeID, isDarkMode, isRTL } = useContext(Context);
     //const { theme: themeConfig, pwa, notistack } = appConfig || {}
     //const { useiOSPWAPrompt, iOSPWAPromptProps } = pwa || {}
-    const themeConfig = {};
-    const { themes = [] } = themeConfig || {}
-    const theme = getThemeSource(themeID, themes, isDarkMode, isRTL)
+    //const themeConfig = {};
+    //const { themes = [] } = themeConfig || {}
+    //const theme = getThemeSource(themeID, themes, isDarkMode, isRTL)
 
-    //const theme = createTheme(themeOptions);
+    const theme = createTheme(themeOptions);
     theme.components = componentsOverride(theme);
 
     return (
