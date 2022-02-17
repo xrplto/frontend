@@ -1,16 +1,10 @@
 import { useConfig } from '../../providers/Config'
 import { CssBaseline } from '@mui/material'
-import PWAPrompt from 'react-ios-pwa-prompt'
 import React from 'react'
 import { useTheme } from '../../providers/Theme'
-import UpdateContainer from '../../containers/UpdateContainer/UpdateContainer'
-import QuestionDialogsProvider from '../../providers/Dialogs/Question/Provider'
 import getThemeSource from '../../utils/theme'
 import { SnackbarProvider } from 'notistack'
 import { ThemeProvider } from '@mui/material/styles'
-import { useIntl } from 'react-intl'
-import FilterProvider from '../../providers/Filter/Provider'
-import VirtualListsProvider from '../../providers/VirtualLists/Provider'
 import MenuProvider from '../../providers/Menu/Provider'
 import AppThemeProvider from '../../providers/Theme/Provider'
 import '@fontsource/roboto/300.css'
@@ -19,11 +13,9 @@ import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
 
 const LayoutContent = ({ children }) => {
-  const intl = useIntl()
   const { appConfig } = useConfig()
   const { themeID, isDarkMode } = useTheme()
-  const { theme: themeConfig, pwa, notistack } = appConfig || {}
-  const { useiOSPWAPrompt, iOSPWAPromptProps } = pwa || {}
+  const { theme: themeConfig, notistack } = appConfig || {}
   const { themes = [] } = themeConfig || {}
   const theme = getThemeSource(themeID, themes, isDarkMode)
 
@@ -31,44 +23,8 @@ const LayoutContent = ({ children }) => {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <SnackbarProvider maxSnack={3} {...notistack}>
-        <UpdateContainer>
-          <QuestionDialogsProvider>
-            <FilterProvider>
-              <VirtualListsProvider>{children}</VirtualListsProvider>
-            </FilterProvider>
-          </QuestionDialogsProvider>
-        </UpdateContainer>
+            {children}
       </SnackbarProvider>
-      {useiOSPWAPrompt && (
-        <PWAPrompt
-          //debug={true}
-          promptOnVisit={1}
-          timesToShow={3}
-          copyTitle={intl.formatMessage({
-            id: 'ios_prompt_title',
-            defaultMessage: 'Add to Home Screen',
-          })}
-          copyClosePrompt={intl.formatMessage({
-            id: 'ios_prompt_close',
-            defaultMessage: 'Close',
-          })}
-          copyBody={intl.formatMessage({
-            id: 'ios_prompt_body',
-            defaultMessage:
-              'This website has app functionality. Add it to your home screen to use it in fullscreen and while offline.',
-          })}
-          copyShareButtonLabel={intl.formatMessage({
-            id: 'ios_prompt_share_button',
-            defaultMessage: "1) Press the 'Share' button",
-          })}
-          copyAddHomeButtonLabel={intl.formatMessage({
-            id: 'ios_prompt_add_to_home_button',
-            defaultMessage: "2) Press 'Add to Home Screen'",
-          })}
-          permanentlyHideOnDismiss={false}
-          {...iOSPWAPromptProps}
-        />
-      )}
     </ThemeProvider>
   )
 }

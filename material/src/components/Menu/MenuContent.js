@@ -2,36 +2,26 @@ import React from 'react'
 import Scrollbar from '../Scrollbar/Scrollbar'
 import SelectableMenuList from '../../containers/SelectableMenuList'
 import { useAddToHomeScreen } from '../../providers/AddToHomeScreen'
-import { useAuth } from '../../providers/Auth'
 import { useConfig } from '../../providers/Config'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useIntl } from 'react-intl'
-import { useLocale } from '../../providers/Locale'
 import { useMenu } from '../../providers/Menu'
 import { useTheme as useAppTheme } from '../../providers/Theme'
 import getMenuItems from '../../config/menuItems'
 
 const Menu = (props) => {
-  const intl = useIntl()
   const navigate = useNavigate()
   const location = useLocation()
-  const auth = useAuth()
   const menuContext = useMenu()
   const a2HSContext = useAddToHomeScreen()
   const { toggleThis, isMiniMode, isMiniSwitchVisibility } = menuContext || {}
   const { appConfig } = useConfig()
-  const { setLocale, locale = 'en' } = useLocale()
   const themeContext = useAppTheme()
 
   const menuItems = getMenuItems({
-    intl,
-    locale,
-    updateLocale: setLocale,
     menuContext,
     themeContext,
     appConfig,
     a2HSContext,
-    auth,
     ...props,
   }).filter((item) => {
     return item.visible !== false

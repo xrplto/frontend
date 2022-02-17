@@ -1,5 +1,4 @@
 import React from 'react'
-import ResponsiveMenu from '../ResponsiveMenu/ResponsiveMenu'
 import { useConfig } from '../../providers/Config'
 
 const Menu = (props) => {
@@ -8,10 +7,10 @@ const Menu = (props) => {
   const { MenuHeader, MenuContent } = menu || {}
 
   return (
-    <ResponsiveMenu>
+    <>
       {MenuHeader && <MenuHeader />}
       {MenuContent && <MenuContent />}
-    </ResponsiveMenu>
+    </>
   )
 }
 

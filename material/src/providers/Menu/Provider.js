@@ -2,7 +2,6 @@ import React, { useEffect, useReducer } from 'react'
 import Context from './Context'
 import { useMediaQuery } from '@mui/material'
 import {
-  setIsAuthMenuOpen,
   setIsMiniMode,
   setIsMenuOpen,
   setIsMobileMenuOpen,
@@ -13,7 +12,6 @@ import reducer from './store/reducer'
 const Provider = ({ appConfig, children, persistKey = 'menu' }) => {
   const { menu } = appConfig || {}
   const {
-    initialAuthMenuOpen,
     initialMiniMode,
     initialMenuOpen,
     initialMobileMenuOpen,
@@ -24,7 +22,6 @@ const Provider = ({ appConfig, children, persistKey = 'menu' }) => {
   const savedState = JSON.parse(localStorage.getItem(persistKey))
 
   const [menuStore, dispatch] = useReducer(reducer, {
-    isAuthMenuOpen: initialAuthMenuOpen,
     isMiniMode: initialMiniMode,
     isMenuOpen: initialMenuOpen,
     isMobileMenuOpen: initialMobileMenuOpen,
@@ -35,13 +32,7 @@ const Provider = ({ appConfig, children, persistKey = 'menu' }) => {
   const props = {
     //setter
     toggleThis(value, newValue = null) {
-      if (value === 'isAuthMenuOpen') {
-        dispatch(
-          setIsAuthMenuOpen(
-            newValue !== null ? newValue : !menuStore.isAuthMenuOpen
-          )
-        )
-      } else if (value === 'isMiniMode') {
+      if (value === 'isMiniMode') {
         dispatch(
           setIsMiniMode(newValue !== null ? newValue : !menuStore.isMiniMode)
         )
@@ -64,7 +55,6 @@ const Provider = ({ appConfig, children, persistKey = 'menu' }) => {
       }
     },
     //getters
-    isAuthMenuOpen: menuStore.isAuthMenuOpen,
     isMiniMode: menuStore.isMiniMode,
     isMenuOpen: menuStore.isMenuOpen,
     isMobileMenuOpen: menuStore.isMobileMenuOpen,

@@ -2,8 +2,6 @@ import React, { useContext } from 'react'
 import MenuContext from '../../providers/Menu/Context'
 import { useTheme } from '@mui/material/styles'
 import { useConfig } from '../../providers/Config'
-import { useOnline } from '../../providers/Online'
-import { useIntl } from 'react-intl'
 import {
   AppBar,
   Toolbar,
@@ -22,14 +20,12 @@ export default function ({
   contentStyle,
   tabs = null,
 }) {
-  const isOnline = useOnline()
   const theme = useTheme()
   const { appConfig } = useConfig()
   const { menu } = appConfig || {}
   const { width = 240 } = menu || {}
 
   const { toggleThis, isDesktop, isMenuOpen } = useContext(MenuContext)
-  const intl = useIntl()
   let headerTitle = ''
 
   if (typeof pageTitle === 'string' || pageTitle instanceof String) {
@@ -115,7 +111,7 @@ export default function ({
       />
 
       {isLoading && <LinearProgress />}
-      {!isOnline && (
+      
         <div
           style={{
             display: 'flex',
@@ -126,13 +122,10 @@ export default function ({
           }}
         >
           <Typography variant="caption" color="textSecondary" noWrap>
-            {intl.formatMessage({
-              id: 'offline',
-              defaultMessage: 'Offline',
-            })}
+            Offline
           </Typography>
         </div>
-      )}
+      
       {tabs}
       <div style={{ flex: 1, overflow: 'auto', ...contentStyle }}>
         {children}

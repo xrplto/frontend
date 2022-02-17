@@ -1,5 +1,4 @@
 import React from 'react'
-import { useAuth } from '../../providers/Auth'
 import { useMenu } from '../../providers/Menu'
 import { useTheme as useAppTheme } from '../../providers/Theme'
 import {
@@ -25,30 +24,15 @@ import {
 import { useTheme } from '@mui/material/styles'
 
 const MenuHeader = () => {
-  const { auth } = useAuth()
   const { toggleThisTheme, isDarkMode } = useAppTheme()
   const menuContext = useMenu()
   const theme = useTheme()
-  const authData = auth
   const {
     toggleThis,
     isDesktop,
     isMiniMode,
     isMenuOpen,
-    isMiniSwitchVisibility,
-    isAuthMenuOpen,
   } = menuContext || {}
-
-  const isAuthenticated = auth.isAuthenticated
-  const AvatarConstructor = ({ src, alt, avatar }) => {
-    return (
-      <ListItemAvatar onClick={() => toggleThis('isAuthMenuOpen')}>
-        <Avatar src={src} alt={alt}>
-          {avatar}
-        </Avatar>
-      </ListItemAvatar>
-    )
-  }
 
   const styles = {
     icon: {
@@ -78,11 +62,8 @@ const MenuHeader = () => {
         padding: 0,
       }}
     >
-      {isMiniMode && isAuthenticated && (
-        <div style={{ ...styles.toolbar }}></div>
-      )}
-      <List sx={{ ...(!isAuthenticated ? styles.toolbar : {}) }}>
-        {!isMiniMode && (
+      <List>
+        
           <ListItem
             sx={{
               color: (t) => theme.palette.grey.A100,
@@ -90,19 +71,6 @@ const MenuHeader = () => {
               ...theme.mixins.toolbar,
             }}
           >
-            {isAuthenticated &&
-              (authData.photoURL
-                ? AvatarConstructor({
-                    src: authData.photoURL,
-                    alt: 'user',
-                  })
-                : AvatarConstructor({
-                    avatar: authData.displayName ? (
-                      authData.displayName[0].toUpperCase()
-                    ) : (
-                      <PersonIcon />
-                    ),
-                  }))}
             <ListItemSecondaryAction>
               <IconButton
                 onClick={() => {
@@ -117,16 +85,6 @@ const MenuHeader = () => {
               </IconButton>
               {isDesktop && (
                 <>
-                  {isMiniSwitchVisibility && (
-                    <IconButton
-                      onClick={() => {
-                        toggleThis('isMiniMode', true)
-                        toggleThis('isMenuOpen', false)
-                      }}
-                    >
-                      <ChromeReaderMode sx={{ ...styles.icon }} />
-                    </IconButton>
-                  )}
                   <IconButton
                     color="inherit"
                     onClick={() => {
@@ -140,66 +98,44 @@ const MenuHeader = () => {
               )}
             </ListItemSecondaryAction>
           </ListItem>
-        )}
 
-        {isAuthenticated && (
+        
           <ListItem
             onClick={() => {
               toggleThis('isAuthMenuOpen')
             }}
           >
-            {!isMenuOpen &&
-              isMiniMode &&
-              isDesktop &&
-              (authData.photoURL
-                ? AvatarConstructor({
-                    src: authData.photoURL,
-                    alt: 'user',
-                  })
-                : AvatarConstructor({
-                    avatar: authData.displayName ? (
-                      authData.displayName[0].toUpperCase()
-                    ) : (
-                      <PersonIcon />
-                    ),
-                  }))}
-            {!isMiniMode && (
-              <ListItemText
-                sx={{
-                  color: (t) => theme.palette.grey.A100,
-                  cursor: 'pointer',
-                  marginLeft:
-                    !isMenuOpen && isDesktop && authData.photoURL
-                      ? 7
-                      : undefined,
-                  textOverflow: 'ellipsis',
-                }}
-                secondaryTypographyProps={{
-                  color: (t) => theme.palette.grey.A100,
-                  width: 80,
-                  textOverflow: 'ellipsis',
-                }}
-                primary={authData.displayName}
-                secondary={authData.email}
-              />
-            )}
-            {isMenuOpen && (
-              <ListItemSecondaryAction
-                onClick={() => {
-                  toggleThis('isAuthMenuOpen')
-                }}
-              >
-                <IconButton>
-                  {isAuthMenuOpen ? (
-                    <ArrowDropUpIcon sx={{ ...styles.icon }} />
-                  ) : (
-                    <ArrowDropDownIcon sx={{ ...styles.icon }} />
-                  )}
-                </IconButton>
-              </ListItemSecondaryAction>
-            )}
+            
+            <ListItemText
+            sx={{
+                color: (t) => theme.palette.grey.A100,
+                cursor: 'pointer',
+                marginLeft:
+                !isMenuOpen && isDesktop && authData.photoURL
+                    ? 7
+                    : undefined,
+                textOverflow: 'ellipsis',
+            }}
+            secondaryTypographyProps={{
+                color: (t) => theme.palette.grey.A100,
+                width: 80,
+                textOverflow: 'ellipsis',
+            }}
+            primary={"authData.displayName"}
+            secondary={"authData.email"}
+            />
+            
+            
+            <ListItemSecondaryAction
+            onClick={() => {
+                toggleThis('isAuthMenuOpen')
+            }}
+            >
+            <IconButton>
+            <ArrowDropUpIcon sx={{ ...styles.icon }} />
+            </IconButton>
+            </ListItemSecondaryAction>
           </ListItem>
-        )}
       </List>
     </Paper>
   )
