@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { normalizer } from '../utils/normalizers';
 import { fCurrency5, fCurrency3 } from '../utils/formatNumber';
+import Str from '@supercharge/strings';
+
 // material
 import {
     Backdrop,
@@ -39,9 +41,11 @@ const TABLE_HEAD = [
     { id: 'name', label: 'Name', alignRight: false, enableOrder: true},
     { id: 'price_xrp', label: 'Price (XRP)', alignRight: false, enableOrder: true },
     { id: 'price_usd', label: 'Price ($)', alignRight: false, enableOrder: true },
+    { id: 'percent_24h', label: '24h (%)', alignRight: false, enableOrder: false },
+    { id: 'percent_7d', label: '7d (%)', alignRight: false, enableOrder: false },
     { id: 'amount', label: 'Amount', alignRight: false, enableOrder: true },
     { id: 'trline', label: 'Trust Lines', alignRight: false, enableOrder: true },
-    { id: 'acct', label: 'Account', alignRight: false, enableOrder: false },
+    { id: 'history', label: 'Last 7 Days', alignRight: false, enableOrder: false },
     { id: '' }
 ];
 
@@ -117,7 +121,7 @@ export default function Token() {
         return () => {
           clearInterval(interval);
         }
-    }, []);
+    }, [offset]);
     //let i = 0;
     function getExchangeRate() {
         axios.get('https://ws.xrpl.to/api/v1/exchangerate')
@@ -318,24 +322,26 @@ export default function Token() {
                             <Stack direction="row" alignItems="center" spacing={2}>
                               <Avatar alt={name} src={imgUrl} />
                               <Typography variant="subtitle2" noWrap>
+                                <Link
+                                    underline="hover"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://bithomp.com/explorer/${acct}`}
+                                    rel="noreferrer noopener"
+                                >
                   				{name}
+                                </Link>
                               </Typography>
                             </Stack>
                           </TableCell>
                           <TableCell align="left">{fCurrency5(price_xrp)||0}</TableCell>
                           <TableCell align="left">{fCurrency5(price_xrp / exch_usd)||0}</TableCell>
+                          <TableCell align="left"></TableCell>
+                          <TableCell align="left"></TableCell>
                           <TableCell align="left">{fCurrency3(amt)||0}</TableCell>
                           <TableCell align="left">{trline}</TableCell>
                           <TableCell align="left">
-                            <Link
-                                underline="hover"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://bithomp.com/explorer/${acct}`}
-                                rel="noreferrer noopener"
-                            >
-                                {acct}                            
-                            </Link>
+                                {/* {Str(acct).limit(10, '...').get()} */}
                           </TableCell>
                           {/*
                           <a href={`https://bithomp.com/explorer/${acct}`} target="_blank" rel="noreferrer noopener"> 

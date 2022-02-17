@@ -1,7 +1,9 @@
-//import { Fragment } from "react";
+import { useContext } from 'react'
 import PropTypes from 'prop-types';
 // material
 import { Box } from '@mui/material';
+// Context
+import Context from '../Context'
 
 // ----------------------------------------------------------------------
 
@@ -10,7 +12,12 @@ Logo.propTypes = {
 };
 
 export default function Logo({ sx }) {
-  return <Box component="img" src="/xrpl.to/XRPL_Logo2_Colored_(Black).png" sx={{ height: 46, ...sx }} />;
+    const { isDarkMode } = useContext(Context);
+    const img_black = "/xrpl.to/XRPL_Logo2_Colored_(Black).png";
+    const img_white = "/xrpl.to/XRPL_Logo2_Colored_(White).png";
+    const img = isDarkMode?img_white:img_black;
+
+  return <Box component="img" src={img} sx={{ height: 46, ...sx }} />;
 }
 
 // export default function Logo({ sx }) {
