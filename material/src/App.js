@@ -1,9 +1,9 @@
 import React, { Suspense, lazy, Component } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import ConfigProvider from './providers/Config/Provider'
-import config from './config'
+import config from './providers/Config/config'
 
-const Layout = lazy(() => import('./containers/Layout'))
+const Layout = lazy(() => import('./components/Layout'))
 
 const Application = () => {
   const { pages, components, containers } = config

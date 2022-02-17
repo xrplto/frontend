@@ -1,5 +1,4 @@
 import React, { useContext } from 'react'
-import MenuContext from '../providers/Menu/Context'
 import { useTheme } from '@mui/material/styles'
 import { useConfig } from '../providers/Config'
 import {
@@ -8,36 +7,21 @@ import {
   IconButton,
   Typography,
 } from '@mui/material'
-import { ChevronLeft, Menu as MenuIcon } from '@mui/icons-material'
 
 export default function ({
   pageTitle,
   onBackClick,
-  appBarContent = null,
-  tabs = null,
+  appBarContent = null
 }) {
   const theme = useTheme()
   const { appConfig } = useConfig()
   const { menu } = appConfig || {}
   const { width = 240 } = menu || {}
 
-  const { toggleThis, isDesktop, isMenuOpen } = useContext(MenuContext)
   let headerTitle = ''
 
   if (typeof pageTitle === 'string' || pageTitle instanceof String) {
     headerTitle = pageTitle
-  }
-
-  const handleDrawerMenuClick = () => {
-    if (!isMenuOpen) {
-      toggleThis('isMiniMode', false)
-      toggleThis('isMenuOpen', true)
-      if (!isDesktop) {
-        toggleThis('isMobileMenuOpen')
-      }
-    } else {
-      toggleThis('isMobileMenuOpen')
-    }
   }
 
   return (
@@ -51,10 +35,9 @@ export default function ({
       }}
     >
       <AppBar
-        position={isDesktop ? 'absolute' : undefined}
+        position={'absolute'}
         sx={{
-          width:
-            isMenuOpen && isDesktop ? `calc(100% - ${width}px)` : undefined,
+          width:`calc(100% - ${width}px)`,
           zIndex: theme.zIndex['drawer'],
           transition: theme.transitions.create(['width', 'margin'], {
             easing: theme.transitions.easing.sharp,
@@ -65,31 +48,6 @@ export default function ({
         }}
       >
         <Toolbar>
-          {(isMenuOpen && isDesktop) ||
-            (!onBackClick && (
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                onClick={handleDrawerMenuClick}
-                edge="start"
-              >
-                <MenuIcon />
-              </IconButton>
-            ))}
-          {/* james- check if this is dead code? */}
-          {onBackClick && (
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={onBackClick}
-            >
-              <ChevronLeft />
-            </IconButton>
-          )}
-          {!onBackClick && isMenuOpen && false && (
-            <div style={{ marginRight: 32 }} />
-          )}
-          {/* james- check if this is dead code? */}
           <Typography variant="h6" color="inherit" noWrap>
             {headerTitle}
           </Typography>

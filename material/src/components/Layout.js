@@ -3,7 +3,6 @@ import { useRoutes } from 'react-router-dom'
 import { useConfig } from '../providers/Config'
 
 export const LayoutContent = ({ appConfig = {} }) => {
-  const [messages, setMessages] = useState([])
   const {
     components,
     routes = [],

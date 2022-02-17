@@ -5,7 +5,7 @@ import { useTheme } from '../providers/Theme'
 import getThemeSource from '../utils/theme'
 import { SnackbarProvider } from 'notistack'
 import { ThemeProvider } from '@mui/material/styles'
-import MenuProvider from '../providers/Menu/Provider'
+//import MenuProvider from '../providers/Menu/Provider'
 import AppThemeProvider from '../providers/Theme/Provider'
 import '@fontsource/roboto/300.css'
 import '@fontsource/roboto/400.css'
@@ -33,8 +33,7 @@ export default function ({ children }) {
   const { appConfig } = useConfig()
 
   return (
-    <React.Fragment>
-      <MenuProvider appConfig={appConfig}>
+    <React.Fragment>      
         <AppThemeProvider appConfig={appConfig}>
           <div
             style={{
@@ -44,7 +43,7 @@ export default function ({ children }) {
             <LayoutContent>{children}</LayoutContent>
           </div>
         </AppThemeProvider>
-      </MenuProvider>
+      
     </React.Fragment>
   )
 }

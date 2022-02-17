@@ -1,16 +1,12 @@
 import React from 'react'
-import { useMenu } from '../providers/Menu'
 import { useTheme as useAppTheme } from '../providers/Theme'
 import {
-  Avatar,
   IconButton,
   List,
   ListItem,
-  ListItemAvatar,
-  ListItemSecondaryAction,
-  ListItemText,
   Paper,
 } from '@mui/material'
+
 import {
   Brightness4 as Brightness4Icon,
   BrightnessHigh as BrightnessHighIcon,
@@ -18,15 +14,8 @@ import {
 import { useTheme } from '@mui/material/styles'
 
 const MenuHeader = () => {
-  const { toggleThisTheme, isDarkMode } = useAppTheme()
-  const menuContext = useMenu()
-  const theme = useTheme()
-  const {
-    toggleThis,
-    isDesktop,
-    isMiniMode,
-    isMenuOpen,
-  } = menuContext || {}
+    const { toggleThisTheme, isDarkMode } = useAppTheme()
+    const theme = useTheme()
 
   const styles = {
     icon: {

@@ -1,5 +1,5 @@
 import { Typography } from '@mui/material'
-import Page from '../containers/Page'
+import Page from '../components/Page'
 import React from 'react'
 
 const HomePage = () => {
