@@ -3,11 +3,10 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import ConfigProvider from './providers/Config/Provider'
 import config from './config'
 
-const Layout = lazy(() => import('./containers/Layout/Layout'))
+const Layout = lazy(() => import('./containers/Layout'))
 
 const Application = () => {
   const { pages, components, containers } = config
-  const { LandingPage = false } = pages || {}
   const { Loading = () => <div /> } = components || {}
   const { AppContainer = React.Fragment } = containers || {}
 
@@ -17,9 +16,6 @@ const Application = () => {
         <AppContainer>
           <BrowserRouter>
             <Routes>
-              {LandingPage && (
-                <Route path="/" exact element={<LandingPage />} />
-              )}
               <Route
                 path="*"
                 element={

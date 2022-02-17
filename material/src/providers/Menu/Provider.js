@@ -12,18 +12,15 @@ import reducer from './store/reducer'
 const Provider = ({ appConfig, children, persistKey = 'menu' }) => {
   const { menu } = appConfig || {}
   const {
-    initialMiniMode,
-    initialMenuOpen,
     initialMobileMenuOpen,
-    initialMiniSwitchVisibility,
-    useWindowWatcher,
+    initialMiniSwitchVisibility
   } = menu
 
   const savedState = JSON.parse(localStorage.getItem(persistKey))
 
   const [menuStore, dispatch] = useReducer(reducer, {
-    isMiniMode: initialMiniMode,
-    isMenuOpen: initialMenuOpen,
+    isMiniMode: true,
+    isMenuOpen: true,
     isMobileMenuOpen: initialMobileMenuOpen,
     isMiniSwitchVisibility: initialMiniSwitchVisibility,
     ...savedState,
@@ -69,15 +66,6 @@ const Provider = ({ appConfig, children, persistKey = 'menu' }) => {
       console.warn(error)
     }
   }, [menuStore, persistKey])
-
-  useEffect(() => {
-    if (useWindowWatcher) {
-      if (!isDesktop) {
-        props.setMenuOpen(false)
-        props.setMiniMode(false)
-      }
-    }
-  }, [isDesktop, props, useWindowWatcher])
 
   return (
     <Context.Provider

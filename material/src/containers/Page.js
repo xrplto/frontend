@@ -1,23 +1,19 @@
 import React, { useContext } from 'react'
-import MenuContext from '../../providers/Menu/Context'
+import MenuContext from '../providers/Menu/Context'
 import { useTheme } from '@mui/material/styles'
-import { useConfig } from '../../providers/Config'
+import { useConfig } from '../providers/Config'
 import {
   AppBar,
   Toolbar,
   IconButton,
-  LinearProgress,
   Typography,
 } from '@mui/material'
 import { ChevronLeft, Menu as MenuIcon } from '@mui/icons-material'
 
 export default function ({
-  children,
   pageTitle,
   onBackClick,
-  isLoading,
   appBarContent = null,
-  contentStyle,
   tabs = null,
 }) {
   const theme = useTheme()
@@ -109,27 +105,6 @@ export default function ({
           minHeight: 64, //height of AppBar
         }}
       />
-
-      {isLoading && <LinearProgress />}
-      
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            width: '100%',
-            height: 15,
-            backgroundColor: theme.palette.secondary.main,
-          }}
-        >
-          <Typography variant="caption" color="textSecondary" noWrap>
-            Offline
-          </Typography>
-        </div>
-      
-      {tabs}
-      <div style={{ flex: 1, overflow: 'auto', ...contentStyle }}>
-        {children}
-      </div>
     </div>
   )
 }

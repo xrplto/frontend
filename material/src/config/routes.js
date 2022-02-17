@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-key */
 import React, { lazy } from 'react'
-const Home = lazy(() => import('../pages/Home/Home'))
+const Home = lazy(() => import('../pages/Home'))
 const routes = [
   {
     path: '/home',
