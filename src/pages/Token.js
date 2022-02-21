@@ -9,6 +9,7 @@ import Str from '@supercharge/strings';
 
 // material
 import {
+    Box,
     Backdrop,
     Card,
     Table,
@@ -76,13 +77,13 @@ function applySortFilter(array, comparator, query) {
     if (query) {
         return filter(array, (_token) => _token.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
     }
-    let idx = 1;
+    /*let idx = 1;
     const res = stabilizedThis.map((el) => {
         el[0].id = idx++;
         return el[0];
     });
-    return res;
-    //return stabilizedThis.map((el) => el[0]);
+    return res;*/
+    return stabilizedThis.map((el) => el[0]);
 }
 
 export default function Token() {
@@ -165,7 +166,6 @@ export default function Token() {
                     }
                     for (var i in res.data.tokens) {
                         let token = res.data.tokens[i];
-                        token.id = i;
                         token.price_xrp = token.exch;
                         token.price_usd = token.exch;
                         token.amount = token.amt;
@@ -342,6 +342,16 @@ export default function Token() {
                           <TableCell align="left">{trline}</TableCell>
                           <TableCell align="left">
                                 {/* {Str(acct).limit(10, '...').get()} */}
+                                {/* <Box
+                                  component="img"
+                                  alt={`${name}`}
+                                  src={`https://www.coingecko.com/coins/${id}/sparkline`}
+                                /> */}
+                                <Box
+                                  component="img"
+                                  alt=""
+                                  src={`https://ws.xrpl.to/api/v1/sparkline/${id}`}
+                                />
                           </TableCell>
                           {/*
                           <a href={`https://bithomp.com/explorer/${acct}`} target="_blank" rel="noreferrer noopener"> 
