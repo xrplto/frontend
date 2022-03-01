@@ -12,7 +12,9 @@ export function fCurrency3(number) {
 }
 
 export function fCurrency5(number) {
-    return numeral(number).format(Number.isInteger(number) ? '0,0' : '0,0.00000');
+    const res = numeral(number).format(Number.isInteger(number) ? '0,0' : '0,0.00000');
+    if (isNaN(res)) return 0;
+    return res;
 }
 
 export function fPercent(number) {

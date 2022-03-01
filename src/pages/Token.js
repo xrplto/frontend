@@ -334,8 +334,8 @@ export default function Token() {
                               </Typography>
                             </Stack>
                           </TableCell>
-                          <TableCell align="left">{fCurrency5(price_xrp)||0}</TableCell>
-                          <TableCell align="left">{fCurrency5(price_xrp / exch_usd)||0}</TableCell>
+                          <TableCell align="left">{fCurrency5(price_xrp)}</TableCell>
+                          <TableCell align="left">{fCurrency5(price_xrp / exch_usd)}</TableCell>
                           <TableCell align="left"></TableCell>
                           <TableCell align="left"></TableCell>
                           <TableCell align="left">{fCurrency3(amt)||0}</TableCell>
