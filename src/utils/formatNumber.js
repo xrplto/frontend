@@ -11,10 +11,33 @@ export function fCurrency3(number) {
     return numeral(number).format(Number.isInteger(number) ? '0,0' : '0,0.000');
 }
 
+const f = (v, threshold = .999) => {
+    let shift = 1;
+    let part;
+    
+    do {
+      shift *= 10;
+      part = Math.floor(v * shift) / shift;
+    } while (part / v < threshold);
+    
+    return part;
+}
+
+export function limitNumber(number) {
+        const res = numeral(number).format(Number.isInteger(number) ? '0,0' : '0,0.00');
+        if (res === 'NaN')
+            return 0;
+        return number;
+}
+
 export function fCurrency5(number) {
-    const res = numeral(number).format(Number.isInteger(number) ? '0,0' : '0,0.00000');
-    if (isNaN(res)) return 0;
-    return res;
+    if (number < 1)
+        return f(number);
+    else {
+        const res = numeral(number).format(Number.isInteger(number) ? '0,0' : '0,0.00');
+        if (res === 'NaN') return 0;
+        return res;
+    }
 }
 
 export function fPercent(number) {

@@ -24,13 +24,14 @@ import {
 
 const APPBAR_MOBILE = 64;
 //const APPBAR_DESKTOP = 72;
-
+// boxShadow: theme.customShadows.z8,
 const RootStyle = styled(AppBar)(({ theme }) => ({
-  boxShadow: theme.customShadows.z8,
-  backdropFilter: 'blur(1px)',
-  WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
-  backgroundColor: alpha(theme.palette.background.paper, 0.72),
-  //backgroundColor: alpha("#00AB88", 0.7),
+    boxShadow: theme.customShadows.z1,
+    backdropFilter: 'blur(1px)',
+    WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
+    backgroundColor: alpha(theme.palette.background.paper, 0.8),
+    borderRadius: '10px'
+    //backgroundColor: alpha("#00AB88", 0.7),
 }));
 
 const ToolbarStyle = styled(Toolbar)(({ theme }) => ({
@@ -44,7 +45,6 @@ export default function Navbar() {
     return (
     <RootStyle>
         <ToolbarStyle>
-
             <Box component={RouterLink} to="/" sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
                 <Logo />
             </Box>

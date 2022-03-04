@@ -4,9 +4,9 @@ import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { normalizer } from '../utils/normalizers';
-import { fCurrency5, fCurrency3 } from '../utils/formatNumber';
-import Str from '@supercharge/strings';
-
+import { limitNumber, fCurrency5, fCurrency3 } from '../utils/formatNumber';
+//import Str from '@supercharge/strings';
+import { withStyles } from '@mui/styles';
 // material
 import {
     Box,
@@ -34,17 +34,20 @@ import Scrollbar from '../components/Scrollbar';
 import SearchNotFound from '../components/SearchNotFound';
 import { TokenListHead, TokenListToolbar, TokenMoreMenu } from '../components/token';
 import axios from 'axios'
+const BASE_URL = 'https://ws.xrpl.to/api';
+//const BASE_URL = 'http://localhost/api';
 //
 //import TOKENLIST from '../_mocks_/tokens';
 // ----------------------------------------------------------------------
 const TABLE_HEAD = [
     { id: 'id', label: '#', alignRight: false, enableOrder: false},
     { id: 'name', label: 'Name', alignRight: false, enableOrder: true},
-    { id: 'price_xrp', label: 'Price (XRP)', alignRight: false, enableOrder: true },
-    { id: 'price_usd', label: 'Price ($)', alignRight: false, enableOrder: true },
+    { id: 'price', label: 'Price', alignRight: false, enableOrder: true },
     { id: 'percent_24h', label: '24h (%)', alignRight: false, enableOrder: false },
     { id: 'percent_7d', label: '7d (%)', alignRight: false, enableOrder: false },
     { id: 'amount', label: 'Amount', alignRight: false, enableOrder: true },
+    { id: 'holders', label: 'Holders', alignRight: false, enableOrder: true },
+    { id: 'offers', label: 'Offers', alignRight: false, enableOrder: true },
     { id: 'trline', label: 'Trust Lines', alignRight: false, enableOrder: true },
     { id: 'history', label: 'Last 7 Days', alignRight: false, enableOrder: false },
     { id: '' }
@@ -52,19 +55,19 @@ const TABLE_HEAD = [
 
 // ----------------------------------------------------------------------
 function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
+    if (b[orderBy] < a[orderBy]) {
+        return -1;
+    }
+    if (b[orderBy] > a[orderBy]) {
+        return 1;
+    }
+    return 0;
 }
 
 function getComparator(order, orderBy) {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
+    return order === 'desc'
+        ? (a, b) => descendingComparator(a, b, orderBy)
+        : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
 function applySortFilter(array, comparator, query) {
@@ -125,7 +128,7 @@ export default function Token() {
     }, [offset]);
     //let i = 0;
     function getExchangeRate() {
-        axios.get('https://ws.xrpl.to/api/v1/exchangerate')
+        axios.get(`${BASE_URL}/exchangerate`)
         .then(res => {
             const rates = res.status===200?res.data:undefined;
             if (rates) {
@@ -142,40 +145,39 @@ export default function Token() {
             console.log("error on getting exchange rates!!!", err);
         }).then(function () {
             // always executed
-            console.log("Heartbeat!");
+            // console.log("Heartbeat!");
         });
     }
     function loadTokens(offset) {
         console.log("Loading tokens!!!");
-        axios.get(`https://ws.xrpl.to/api/v1/token/all/${offset}`)
+        axios.get(`${BASE_URL}/tokens/${offset}`)
         .then(res => {
-            try {
-                if (res.status === 200 && res.data) {
-                    let tokenList = [];
-                    if (res.data.USD > 0) {
-                        setUSD(res.data.USD);
-                    }
-                    if (res.data.EUR > 0) {
-                        setEUR(res.data.EUR);
-                    }
-                    if (res.data.JPY > 0) {
-                        setJPY(res.data.JPY);
-                    }
-                    if (res.data.CNY > 0) {
-                        setCNY(res.data.CNY);
-                    }
-                    for (var i in res.data.tokens) {
-                        let token = res.data.tokens[i];
-                        token.price_xrp = token.exch;
-                        token.price_usd = token.exch;
-                        token.amount = token.amt;
-                        tokenList.push(token);
-                    }
-                    setTokens(tokenList);
-                }
-            } catch (error) {
-                console.log(error);
-            }
+              try {
+                  if (res.status === 200 && res.data) {
+                      let tokenList = [];
+                      if (res.data.USD > 0) {
+                          setUSD(res.data.USD);
+                      }
+                      if (res.data.EUR > 0) {
+                          setEUR(res.data.EUR);
+                      }
+                      if (res.data.JPY > 0) {
+                          setJPY(res.data.JPY);
+                      }
+                      if (res.data.CNY > 0) {
+                          setCNY(res.data.CNY);
+                      }
+                      for (var i in res.data.tokens) {
+                          let token = res.data.tokens[i];
+                          token.price = limitNumber(token.exch);
+                          token.amount = token.amt;
+                          tokenList.push(token);
+                      }
+                      setTokens(tokenList);
+                  }
+              } catch (error) {
+                  console.log(error);
+              }
             //dispatch(concatinate(res.data.assets));
             //if(res.data.assets.length < 20) setHasMore(false);
             //setOffset(offset + 1);
@@ -244,6 +246,12 @@ export default function Token() {
 
   const isTokenNotFound = filteredTokens.length === 0;
 
+  const CoinNameTypography = withStyles({
+    root: {
+      color: "#3366FF"
+    }
+  })(Typography);
+
   // style={{border: '1px solid red'}}
   
   return (
@@ -259,141 +267,167 @@ export default function Token() {
         </Backdrop >
         <Card variant="outlined">
           <TokenListToolbar
-            numSelected={selected.length}
-            filterName={filterName}
-            onFilterName={handleFilterByName}
-      		count={tokens.length}
-            rowsPerPage={rowsPerPage}
-            labelRowsPerPage={labelRowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            onCloudRefresh={handleCloudRefresh}
-            EXCH_USD = {exch_usd}
-            EXCH_EUR = {exch_eur}
-            EXCH_JPY = {exch_jpy}
-            EXCH_CNY = {exch_cny}
+              numSelected={selected.length}
+              filterName={filterName}
+              onFilterName={handleFilterByName}
+      		    count={tokens.length}
+              rowsPerPage={rowsPerPage}
+              labelRowsPerPage={labelRowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              onCloudRefresh={handleCloudRefresh}
+              EXCH_USD = {exch_usd}
+              EXCH_EUR = {exch_eur}
+              EXCH_JPY = {exch_jpy}
+              EXCH_CNY = {exch_cny}
           />
 
           <Scrollbar>
-            <TableContainer sx={{ minWidth: 800 }}>
-              <Table>
-                <TokenListHead
-                  order={order}
-                  orderBy={orderBy}
-                  headLabel={TABLE_HEAD}
-                  rowCount={tokens.length}
-                  numSelected={selected.length}
-                  onRequestSort={handleRequestSort}
-                  onSelectAllClick={handleSelectAllClick}
-                />
-                <TableBody>
-                  {//{"acct":"rDN4Ux1WFJJsPCdqdfZgrDZ2icxdAmg2w","code":"SEC","amt":7999301.997671802,"trline":29063,"exch":0.05973118285905216}
-                   filteredTokens
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row) => {
-                      const {
-                      	 id,
-                      	acct,
-                        name,
-                      	amt,
-                      	trline,
-                        price_xrp} = row;
-                      const imgUrl = `/static/tokens/${name}.jpg`;
-                      const isItemSelected = selected.indexOf(id) !== -1;
+              <TableContainer sx={{ minWidth: 800 }}>
+                  <Table>
+                      <TokenListHead
+                        order={order}
+                        orderBy={orderBy}
+                        headLabel={TABLE_HEAD}
+                        rowCount={tokens.length}
+                        numSelected={selected.length}
+                        onRequestSort={handleRequestSort}
+                        onSelectAllClick={handleSelectAllClick}
+                      />
+                      <TableBody>
+                          {filteredTokens.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                              .map((row) => {
+                                  const {
+                                      id,
+                                      acct,
+                                      name,
+                                      date,
+                                      amt,
+                                      trline,
+                                      holders,
+                                      offers,
+                                      md5,
+                                      user,
+                                      price} = row;
+                                  const imgUrl = `/static/tokens/${name}.jpg`;
+                                  const isItemSelected = selected.indexOf(id) !== -1;
+                                  let date_fixed = '';
+                                  try {
+                                    if (date) {
+                                        date_fixed = date.split('T')[0];
+                                    }
+                                  } catch(e) {}
+                                  return (
+                                    <TableRow
+                                        hover
+                                        key={id}
+                                        tabIndex={-1}
+                                        role="checkbox"
+                                        selected={isItemSelected}
+                                        aria-checked={isItemSelected}
+                                    >
+                                        <TableCell padding="checkbox">
+                                          <Checkbox
+                                            checked={isItemSelected}
+                                            onChange={(event) => handleClick(event, id)}
+                                          />
+                                        </TableCell>
+                                        <TableCell align="left">{id}</TableCell>
+                                        <TableCell component="th" scope="row" padding="none">
+                                          <Stack direction="row" alignItems="center" spacing={2}>
+                                            <Avatar alt={name} src={imgUrl} />
+                                            <Stack>
+                                                <CoinNameTypography variant="subtitle1" noWrap>
+                                                <Link
+                                                    underline="hover"
+                                                    color="inherit"
+                                                    target="_blank"
+                                                    href={`https://bithomp.com/explorer/${acct}`}
+                                                    rel="noreferrer noopener"
+                                                >
+                                                    {name}
+                                                </Link>
+                                                </CoinNameTypography>
+                                                <Typography variant="caption">
+                                                {user}
+                                                </Typography>
+                                                <Typography variant="caption">
+                                                {date_fixed}
+                                                </Typography>
+                                            </Stack>
+                                          </Stack>
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            <Stack>
+                                                <Typography variant="subtitle1" noWrap>
+                                                    $ {fCurrency5(price / exch_usd)}
+                                                </Typography>
+                                                <Typography variant="caption">
+                                                {fCurrency5(price)} XRP
+                                                </Typography>
+                                            </Stack>                                           
+                                        </TableCell>
+                                        <TableCell align="left"></TableCell>
+                                        <TableCell align="left"></TableCell>
+                                        <TableCell align="left">{fCurrency5(amt)||0}</TableCell>
+                                        <TableCell align="left">{holders}</TableCell>
+                                        <TableCell align="left">{offers}</TableCell>
+                                        <TableCell align="left">{trline}</TableCell>
+                                        <TableCell align="left">
+                                              {/* {Str(acct).limit(10, '...').get()} */}
+                                              {/* <Box
+                                                component="img"
+                                                alt={`${name}`}
+                                                src={`https://www.coingecko.com/coins/${id}/sparkline`}
+                                              /> */}
+                                              <Box
+                                                component="img"
+                                                alt=""
+                                                src={`${BASE_URL}/sparkline/${md5}`}
+                                              />
+                                        </TableCell>
+                                        {/*
+                                        <a href={`https://bithomp.com/explorer/${acct}`} target="_blank" rel="noreferrer noopener"> 
+                                        </a>
+                                        <TableCell align="left">{price}</TableCell>
+                                        <TableCell align="left">{dailypercent}</TableCell>
+                                        <TableCell align="left">{marketcap}</TableCell>
+                                        <TableCell align="left">{holders}</TableCell>
+                                        <TableCell align="left">{role}</TableCell>
+                                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
+                                        <TableCell align="left">
+                                          <Label
+                                            variant="ghost"
+                                            color={(status === 'kyc' && 'error') || 'success'}
+                                          >
+                                            {sentenceCase(status)}
+                                          </Label>
+                                        </TableCell> */}
 
-                      return (
-                        <TableRow
-                          hover
-                          key={id}
-                          tabIndex={-1}
-                          role="checkbox"
-                          selected={isItemSelected}
-                          aria-checked={isItemSelected}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              checked={isItemSelected}
-                              onChange={(event) => handleClick(event, id)}
-                            />
-                          </TableCell>
-                          <TableCell align="left">{id}</TableCell>
-                          <TableCell component="th" scope="row" padding="none">
-                            <Stack direction="row" alignItems="center" spacing={2}>
-                              <Avatar alt={name} src={imgUrl} />
-                              <Typography variant="subtitle2" noWrap>
-                                <Link
-                                    underline="hover"
-                                    color="inherit"
-                                    target="_blank"
-                                    href={`https://bithomp.com/explorer/${acct}`}
-                                    rel="noreferrer noopener"
-                                >
-                  				{name}
-                                </Link>
-                              </Typography>
-                            </Stack>
-                          </TableCell>
-                          <TableCell align="left">{fCurrency5(price_xrp)}</TableCell>
-                          <TableCell align="left">{fCurrency5(price_xrp / exch_usd)}</TableCell>
-                          <TableCell align="left"></TableCell>
-                          <TableCell align="left"></TableCell>
-                          <TableCell align="left">{fCurrency3(amt)||0}</TableCell>
-                          <TableCell align="left">{trline}</TableCell>
-                          <TableCell align="left">
-                                {/* {Str(acct).limit(10, '...').get()} */}
-                                {/* <Box
-                                  component="img"
-                                  alt={`${name}`}
-                                  src={`https://www.coingecko.com/coins/${id}/sparkline`}
-                                /> */}
-                                <Box
-                                  component="img"
-                                  alt=""
-                                  src={`https://ws.xrpl.to/api/v1/sparkline/${id}`}
-                                />
-                          </TableCell>
-                          {/*
-                          <a href={`https://bithomp.com/explorer/${acct}`} target="_blank" rel="noreferrer noopener"> 
-                          </a>
-                          <TableCell align="left">{price}</TableCell>
-                          <TableCell align="left">{dailypercent}</TableCell>
-                          <TableCell align="left">{marketcap}</TableCell>
-                          <TableCell align="left">{holders}</TableCell>
-                          <TableCell align="left">{role}</TableCell>
-                          <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
-                          <TableCell align="left">
-                            <Label
-                              variant="ghost"
-                              color={(status === 'kyc' && 'error') || 'success'}
-                            >
-                              {sentenceCase(status)}
-                            </Label>
-                          </TableCell> */}
-
-                          <TableCell align="right">
-                            <TokenMoreMenu />
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  {emptyRows > 0 && (
-                    <TableRow style={{ height: 53 * emptyRows }}>
-                      <TableCell colSpan={6} />
-                    </TableRow>
-                  )}
-                </TableBody>
-                {isTokenNotFound && (
-                  <TableBody>
-                    <TableRow>
-                      <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                        <SearchNotFound searchQuery={filterName} />
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                )}
-              </Table>
-            </TableContainer>
+                                        <TableCell align="right">
+                                          <TokenMoreMenu />
+                                        </TableCell>
+                                    </TableRow>
+                                  );
+                            })}
+                            {emptyRows > 0 && (
+                                <TableRow style={{ height: 53 * emptyRows }}>
+                                    <TableCell colSpan={6} />
+                                </TableRow>
+                            )}
+                      </TableBody>
+                      {isTokenNotFound && (
+                          <TableBody>
+                              <TableRow>
+                                  <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                                        <SearchNotFound searchQuery={filterName} />
+                                  </TableCell>
+                              </TableRow>
+                          </TableBody>
+                      )}
+                  </Table>
+              </TableContainer>
           </Scrollbar>
         </Card>
     </Page>
