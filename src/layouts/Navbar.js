@@ -14,14 +14,17 @@ import { Link as RouterLink/*, useLocation*/ } from 'react-router-dom';
 
 //import LightModeIcon from '@mui/icons-material/LightMode';
 //import DarkModeIcon from '@mui/icons-material/DarkMode';
-import {
-    Brightness4 as Brightness4Icon,
-    BrightnessHigh as BrightnessHighIcon,
-} from '@mui/icons-material'
+// import {
+//     Brightness4 as Brightness4Icon,
+//     BrightnessHigh as BrightnessHighIcon,
+// } from '@mui/icons-material'
+
+import { Icon } from '@iconify/react';
+import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
+import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 // ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
-
 const APPBAR_MOBILE = 64;
 //const APPBAR_DESKTOP = 72;
 // boxShadow: theme.customShadows.z8,
@@ -52,15 +55,14 @@ export default function Navbar() {
             <Box sx={{ flexGrow: 1 }} />
 
             <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1.5 }}>
+                <AccountPopover />
                 <IconButton onClick={() => { toggleThisTheme('isDarkMode') }} >
                     {isDarkMode ? (
-                        <BrightnessHighIcon />
+                        <Icon icon={baselineBrightnessHigh} />
                     ) : (
-                        <Brightness4Icon />
+                        <Icon icon={baselineBrightness4} />
                     )}
                 </IconButton>
-
-                <AccountPopover />
             </Stack>
         </ToolbarStyle>
     </RootStyle>

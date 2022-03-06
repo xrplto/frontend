@@ -105,8 +105,8 @@ export const palette_light = {
     gradients: GRADIENTS,
     chart: CHART_COLORS,
     divider: GREY[500_24],
-    text: { primary: GREY[800], secondary: GREY[600], disabled: GREY[500] },
-    background: { paper: GREY[100], default: GREY[200], neutral: GREY[200] },
+    text: { primary: GREY[800], secondary: GREY[600], disabled: GREY[500], widget: GREY[300] },
+    background: { paper: GREY[200], default: GREY[300], neutral: GREY[300], widget: alpha('#007B55', 0.8) },
     action: {
         active: GREY[600],
         hover: GREY[500_8],
@@ -118,6 +118,15 @@ export const palette_light = {
         disabledOpacity: 0.48
     },
 };
+
+// const PRIMARY = {
+//     lighter: '#C8FACD',
+//     light: '#5BE584',
+//     main: '#00AB55',
+//     dark: '#007B55',
+//     darker: '#005249',
+//     contrastText: '#fff'
+// };
 
 export const palette_dark = {
     common: { black: '#000', white: '#fff' },
@@ -131,8 +140,8 @@ export const palette_dark = {
     gradients: GRADIENTS,
     chart: CHART_COLORS,
     divider: GREY[500_24],
-    text: { primary: GREY[300], secondary: GREY[100], disabled: GREY[500] },
-    background: { paper: '#191F3A', default: '#0c1023', neutral: GREY[200] },
+    text: { primary: GREY[300], secondary: GREY[100], disabled: GREY[500], widget: GREY[300] },
+    background: { paper: '#191F3A', default: '#0c1023', neutral: GREY[200], widget: alpha('#005249', 0.7)},
     action: {
         active: GREY[600],
         hover: GREY[500_8],

@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { limitNumber, fCurrency5, fCurrency3 } from '../utils/formatNumber';
 //import Str from '@supercharge/strings';
 import { withStyles } from '@mui/styles';
+import {TOKENS} from './tokens';
 // material
 import {
     Box,
@@ -32,7 +33,8 @@ import Page from '../components/Page';
 //import Label from '../components/Label';
 import Scrollbar from '../components/Scrollbar';
 import SearchNotFound from '../components/SearchNotFound';
-import { TokenListHead, TokenListToolbar, TokenMoreMenu } from '../components/token';
+import { TokenListHead, TokenListToolbar, TokenMoreMenu, NFTWidget } from '../components/token';
+
 import axios from 'axios'
 const BASE_URL = 'https://ws.xrpl.to/api';
 //const BASE_URL = 'http://localhost/api';
@@ -106,24 +108,15 @@ export default function Token() {
     const [exch_cny, setCNY] = useState(100);
 
     useEffect(() => {
-        setLoading(true);
         loadTokens(offset);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        getExchangeRate();
-        const interval = setInterval(() => getExchangeRate(), 5000)
-        
-        /*var promise = Promise.resolve(true);
 
-        const interval = setInterval(function () {
-            promise = promise.then(function () {
-                return new Promise(function (resolve) {
-                    getExchangeRate(resolve);
-                });
-            });
-        }, 5000);*/
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        //getExchangeRate();
+
+        const timer = setInterval(() => getExchangeRate(), 5000)
 
         return () => {
-          clearInterval(interval);
+          clearInterval(timer);
         }
     }, [offset]);
     //let i = 0;
@@ -150,6 +143,28 @@ export default function Token() {
     }
     function loadTokens(offset) {
         console.log("Loading tokens!!!");
+        let tokenList = [];
+        if (TOKENS.USD > 0) {
+            setUSD(TOKENS.USD);
+        }
+        if (TOKENS.EUR > 0) {
+            setEUR(TOKENS.EUR);
+        }
+        if (TOKENS.JPY > 0) {
+            setJPY(TOKENS.JPY);
+        }
+        if (TOKENS.CNY > 0) {
+            setCNY(TOKENS.CNY);
+        }
+        for (var i in TOKENS.tokens) {
+            let token = TOKENS.tokens[i];
+            token.price = limitNumber(token.exch);
+            token.amount = token.amt;
+            tokenList.push(token);
+        }
+        setTokens(tokenList);
+
+        //setLoading(true);
         axios.get(`${BASE_URL}/tokens/${offset}`)
         .then(res => {
               try {
@@ -185,7 +200,7 @@ export default function Token() {
             console.log("err->>", err);
         }).then(function () {
             // always executed
-            setLoading(false);
+            //setLoading(false);
         });
     }
 
@@ -236,7 +251,6 @@ export default function Token() {
     };
 
     const handleCloudRefresh = (event) => {
-        setLoading(true);
         loadTokens(offset);
     };
 
@@ -376,11 +390,6 @@ export default function Token() {
                                         <TableCell align="left">{trline}</TableCell>
                                         <TableCell align="left">
                                               {/* {Str(acct).limit(10, '...').get()} */}
-                                              {/* <Box
-                                                component="img"
-                                                alt={`${name}`}
-                                                src={`https://www.coingecko.com/coins/${id}/sparkline`}
-                                              /> */}
                                               <Box
                                                 component="img"
                                                 alt=""
@@ -430,6 +439,7 @@ export default function Token() {
               </TableContainer>
           </Scrollbar>
         </Card>
+        <NFTWidget/>
     </Page>
   );
 }

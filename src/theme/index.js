@@ -1,9 +1,9 @@
+import { useContext } from 'react'
+import Context from '../Context'
 import PropTypes from 'prop-types';
-import { /*useContext, useMemo,*/ useState, useEffect } from 'react';
 // material
 import { CssBaseline } from '@mui/material';
 import { /*useTheme, */ThemeProvider, createTheme, StyledEngineProvider } from '@mui/material/styles';
-import Context from '../Context'
 //
 import shape from './shape';
 import { palette_light, palette_dark } from './palette';
@@ -18,31 +18,7 @@ ThemeConfig.propTypes = {
 };
 
 export default function ThemeConfig({ children }) {
-    const persistKey = 'theme';
-    const [isDarkMode, setIsDarkMode] = useState(true)
-    const isDarkModeKey = `${persistKey}:isDarkMode`
-
-    const toggleThisTheme = (mode) => {
-        if (mode === 'isDarkMode')
-            setIsDarkMode(!isDarkMode)
-    }
-
-    useEffect(() => {
-        const persistIsDarkMode = localStorage.getItem(isDarkModeKey)
-
-        if (persistIsDarkMode) {
-            // convert to boolean
-            setIsDarkMode(persistIsDarkMode === 'true')
-        }
-    }, [isDarkModeKey])
-
-    useEffect(() => {
-        try {
-            localStorage.setItem(isDarkModeKey, isDarkMode)
-        } catch (error) {
-            console.warn(error)
-        }
-    }, [isDarkMode, isDarkModeKey])
+    const { isDarkMode } = useContext(Context);
 
     const palette = isDarkMode ? palette_dark : palette_light;
 
@@ -59,18 +35,10 @@ export default function ThemeConfig({ children }) {
 
     return (
         <StyledEngineProvider injectFirst>
-            <Context.Provider
-                value={{
-                    isDarkMode,
-                    toggleThisTheme,
-                }}
-                >
-                <ThemeProvider theme={theme}>
-                    <CssBaseline />
-                    {children}
-                </ThemeProvider>
-            
-            </Context.Provider>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                {children}
+            </ThemeProvider>
         </StyledEngineProvider>
     );
 }
