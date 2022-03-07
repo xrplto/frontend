@@ -26,12 +26,12 @@ const MainStyle = styled('div')(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 export default function MainLayout() {
-  return (
-    <RootStyle>
-      <Navbar />
-      <MainStyle>
-        <Outlet />
-      </MainStyle>
-    </RootStyle>
-  );
+    return (
+        <RootStyle>
+            <Navbar />
+            <MainStyle>
+                <Outlet />
+            </MainStyle>
+        </RootStyle>
+    );
 }

@@ -25,9 +25,9 @@ import { Outlet } from 'react-router-dom';
 // </HeaderStyle>
 
 export default function EmptyLayout() {
-  return (
-    <>      
-      <Outlet />
-    </>
-  );
+    return (
+        <>      
+            <Outlet />
+        </>
+    );
 }

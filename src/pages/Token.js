@@ -160,6 +160,8 @@ export default function Token() {
             let token = TOKENS.tokens[i];
             token.price = limitNumber(token.exch);
             token.amount = token.amt;
+            token.pro7d = 0;
+            token.pro24h = 0;
             tokenList.push(token);
         }
         setTokens(tokenList);
@@ -167,32 +169,34 @@ export default function Token() {
         //setLoading(true);
         axios.get(`${BASE_URL}/tokens/${offset}`)
         .then(res => {
-              try {
-                  if (res.status === 200 && res.data) {
-                      let tokenList = [];
-                      if (res.data.USD > 0) {
-                          setUSD(res.data.USD);
-                      }
-                      if (res.data.EUR > 0) {
-                          setEUR(res.data.EUR);
-                      }
-                      if (res.data.JPY > 0) {
-                          setJPY(res.data.JPY);
-                      }
-                      if (res.data.CNY > 0) {
-                          setCNY(res.data.CNY);
-                      }
-                      for (var i in res.data.tokens) {
-                          let token = res.data.tokens[i];
-                          token.price = limitNumber(token.exch);
-                          token.amount = token.amt;
-                          tokenList.push(token);
-                      }
-                      setTokens(tokenList);
-                  }
-              } catch (error) {
-                  console.log(error);
-              }
+            try {
+                if (res.status === 200 && res.data) {
+                    let tokenList = [];
+                    if (res.data.USD > 0) {
+                        setUSD(res.data.USD);
+                    }
+                    if (res.data.EUR > 0) {
+                        setEUR(res.data.EUR);
+                    }
+                    if (res.data.JPY > 0) {
+                        setJPY(res.data.JPY);
+                    }
+                    if (res.data.CNY > 0) {
+                        setCNY(res.data.CNY);
+                    }
+                    for (var i in res.data.tokens) {
+                        let token = res.data.tokens[i];
+                        token.price = limitNumber(token.exch);
+                        token.amount = token.amt;
+                        token.pro7d = fCurrency5(token.pro7d);
+                        token.pro24h = fCurrency5(token.pro24h);
+                        tokenList.push(token);
+                    }
+                    setTokens(tokenList);
+                }
+            } catch (error) {
+                console.log(error);
+            }
             //dispatch(concatinate(res.data.assets));
             //if(res.data.assets.length < 20) setHasMore(false);
             //setOffset(offset + 1);
@@ -266,6 +270,18 @@ export default function Token() {
     }
   })(Typography);
 
+  const BearishTypography = withStyles({
+    root: {
+      color: "#FF6C40"
+    }
+  })(Typography);
+
+  const BullishTypography = withStyles({
+    root: {
+      color: "#54D62C"
+    }
+  })(Typography);
+
   // style={{border: '1px solid red'}}
   
   return (
@@ -323,9 +339,28 @@ export default function Token() {
                                       offers,
                                       md5,
                                       user,
+                                      pro7d,
+                                      pro24h,
                                       price} = row;
                                   const imgUrl = `/static/tokens/${name}.jpg`;
                                   const isItemSelected = selected.indexOf(id) !== -1;
+
+                                  let strPro7d = 0;
+                                  if (pro7d < 0) {
+                                    strPro7d = -pro7d;
+                                    strPro7d = '-' + strPro7d + '%';
+                                  } else {
+                                    strPro7d = '+' + pro7d + '%';
+                                  }
+
+                                  let strPro24h = 0;
+                                  if (pro24h < 0) {
+                                    strPro24h = -pro24h;
+                                    strPro24h = '-' + strPro24h + '%';
+                                  } else {
+                                    strPro24h = '+' + pro24h + '%';
+                                  }
+
                                   let date_fixed = '';
                                   try {
                                     if (date) {
@@ -380,10 +415,30 @@ export default function Token() {
                                                 <Typography variant="caption">
                                                 {fCurrency5(price)} XRP
                                                 </Typography>
-                                            </Stack>                                           
+                                            </Stack>
                                         </TableCell>
-                                        <TableCell align="left"></TableCell>
-                                        <TableCell align="left"></TableCell>
+                                        <TableCell align="left">
+                                            {pro24h < 0 ? (
+                                                <BearishTypography variant="subtitle1" noWrap>
+                                                    {strPro24h}
+                                                </BearishTypography>
+                                            ) : (
+                                                <BullishTypography variant="subtitle1" noWrap>
+                                                    {strPro24h}
+                                                </BullishTypography>
+                                            )}
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            {pro7d < 0 ? (
+                                                <BearishTypography variant="subtitle1" noWrap>
+                                                    {strPro7d}
+                                                </BearishTypography>
+                                            ) : (
+                                                <BullishTypography variant="subtitle1" noWrap>
+                                                    {strPro7d}
+                                                </BullishTypography>
+                                            )}
+                                        </TableCell>
                                         <TableCell align="left">{fCurrency5(amt)||0}</TableCell>
                                         <TableCell align="left">{holders}</TableCell>
                                         <TableCell align="left">{offers}</TableCell>
