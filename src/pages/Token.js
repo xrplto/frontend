@@ -295,7 +295,6 @@ export default function Token() {
                 color={'#00AB55'}
                 size={50}/>
         </Backdrop >
-        <Card variant="outlined">
           <TokenListToolbar
               numSelected={selected.length}
               filterName={filterName}
@@ -493,7 +492,6 @@ export default function Token() {
                   </Table>
               </TableContainer>
           </Scrollbar>
-        </Card>
         <NFTWidget/>
     </Page>
   );

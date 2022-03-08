@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 //
 import Navbar from './Navbar';
+import Pricebar from './Pricebar';
 // ----------------------------------------------------------------------
 const APP_BAR_DESKTOP = 92;
 
@@ -28,6 +29,7 @@ const MainStyle = styled('div')(({ theme }) => ({
 export default function MainLayout() {
     return (
         <RootStyle>
+            <Pricebar />
             <Navbar />
             <MainStyle>
                 <Outlet />

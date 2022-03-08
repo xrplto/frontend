@@ -106,7 +106,7 @@ export const palette_light = {
     chart: CHART_COLORS,
     divider: GREY[500_24],
     text: { primary: GREY[800], secondary: GREY[600], disabled: GREY[500], widget: GREY[300] },
-    background: { paper: GREY[200], default: GREY[300], neutral: GREY[300], widget: alpha('#007B55', 0.8) },
+    background: { paper: GREY[100], default: GREY[200], neutral: GREY[200], widget: alpha('#007B55', 0.8) },
     action: {
         active: GREY[600],
         hover: GREY[500_8],
