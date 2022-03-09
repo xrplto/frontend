@@ -3,7 +3,7 @@ import { useContext } from 'react'
 import Context from '../Context'
 // material
 import { alpha, styled/*, useTheme*/ } from '@mui/material/styles';
-import { Box, Stack, AppBar, Toolbar, IconButton } from '@mui/material';
+import { Box, FormGroup, FormControlLabel, Switch, Stack, AppBar, Toolbar, IconButton } from '@mui/material';
 // components
 //
 import AccountPopover from './AccountPopover';
@@ -19,26 +19,18 @@ import { Link as RouterLink/*, useLocation*/ } from 'react-router-dom';
 //     BrightnessHigh as BrightnessHighIcon,
 // } from '@mui/icons-material'
 
-import { Icon } from '@iconify/react';
+import { Icon } from '@iconify/react'; 
 import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
 import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 // ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
-const APPBAR_MOBILE = 64;
-//const APPBAR_DESKTOP = 72;
+//const APPBAR_MOBILE = 64;
+const APPBAR_DESKTOP = 72;
 // boxShadow: theme.customShadows.z1,
-const RootStyle = styled(AppBar)(({ theme }) => ({
-    boxShadow: 'none',
-    backdropFilter: 'blur(2px)',
-    WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
-    backgroundColor: alpha(theme.palette.background.paper, 0.0),
-    borderRadius: '0px'
-    //backgroundColor: alpha("#00AB88", 0.7),
-}));
 
 const ToolbarStyle = styled(Toolbar)(({ theme }) => ({
-  minHeight: APPBAR_MOBILE
+  minHeight: APPBAR_DESKTOP
 }));
 
 // ----------------------------------------------------------------------
@@ -46,7 +38,6 @@ export default function Navbar() {
     const { toggleThisTheme, isDarkMode } = useContext(Context);
 
     return (
-    <RootStyle>
         <ToolbarStyle>
             <Box component={RouterLink} to="/" sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
                 <Logo />
@@ -65,6 +56,5 @@ export default function Navbar() {
                 </IconButton>
             </Stack>
         </ToolbarStyle>
-    </RootStyle>
     );
 }

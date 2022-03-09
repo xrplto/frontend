@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { normalizer } from '../utils/normalizers';
 import { limitNumber, fCurrency5, fCurrency3 } from '../utils/formatNumber';
-//import Str from '@supercharge/strings';
 import { withStyles } from '@mui/styles';
 import {TOKENS} from './tokens';
 // material
