@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 // material
 import { alpha, styled } from '@mui/material/styles';
-import { Box, Stack, AppBar, Toolbar, IconButton } from '@mui/material';
+import { AppBar } from '@mui/material';
 //
 import Pricebar from './Pricebar';
 import Navbar from './Navbar';
 import axios from 'axios'
+
+import { useSelector, useDispatch } from "react-redux";
+import { update, selectRate, selectLoading } from "../redux/exchangeSlice";
 // ----------------------------------------------------------------------
 const APP_BAR_DESKTOP = 92;
 
@@ -39,10 +42,9 @@ const AppBarStyle = styled(AppBar)(({ theme }) => ({
 export default function MainLayout() {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
 
-    const [exch_usd, setUSD] = useState(100);
-    const [exch_eur, setEUR] = useState(100); 
-    const [exch_jpy, setJPY] = useState(100);
-    const [exch_cny, setCNY] = useState(100);
+    const dispatch = useDispatch();
+    //const rates = useSelector(selectRate);
+    //console.log(rates);
 
     useEffect(() => {
         function getExchangeRate() {
@@ -50,13 +52,7 @@ export default function MainLayout() {
             .then(res => {
                 const rates = res.status===200?res.data:undefined;
                 if (rates) {
-                    //i++;
-                    //setUSD(i);
-                    //console.log(i);
-                    setUSD(rates.USD);
-                    setEUR(rates.EUR);
-                    setJPY(rates.JPY);
-                    setCNY(rates.CNY);
+                    dispatch(update(rates));
                     console.log(rates.USD);
                 }
             }).catch(err => {

@@ -40,8 +40,26 @@ export function fCurrency5(number) {
     }
 }
 
+const fp = (v, threshold = .99) => {
+    let shift = 1;
+    let part;
+    
+    do {
+      shift *= 10;
+      part = Math.floor(v * shift) / shift;
+    } while (part / v < threshold);
+    
+    return part;
+}
+
 export function fPercent(number) {
-    return numeral(number / 100).format('0.0%');
+    if (number < 1)
+        return fp(number);
+    else {
+        const res = numeral(number).format(Number.isInteger(number) ? '0,0' : '0,0.00');
+        if (res === 'NaN') return 0;
+        return res;
+    }
 }
 
 export function fNumber(number) {

@@ -13,6 +13,9 @@ import ScrollToTop from './components/ScrollToTop';
 import { Backdrop } from "@mui/material";
 import { HashLoader } from "react-spinners";
 // ----------------------------------------------------------------------
+import exchangeReducer from "./redux/exchangeSlice";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
 
 export default function App() {
     const [loading, setLoading] = useState(false);
@@ -61,27 +64,35 @@ export default function App() {
         }
     }, [accountProfile, key_profile])
 
+    const store = configureStore({
+        reducer: {
+          exchange: exchangeReducer,
+        },
+    });
+
     return (
-        <Context.Provider
-            value={{
-                isDarkMode,
-                toggleThisTheme,
-                accountProfile,
-                setAccountProfile,
-                setLoading
-            }}
-        >
-            <Backdrop
-                sx={{ color: "#000", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                open={loading}
+        <Provider store={store}>
+            <Context.Provider
+                value={{
+                    isDarkMode,
+                    toggleThisTheme,
+                    accountProfile,
+                    setAccountProfile,
+                    setLoading
+                }}
             >
-                <HashLoader color={"#00AB55"} size={50} />
-            </Backdrop>
-            <ThemeConfig>
-              <ScrollToTop />
-            <GlobalStyles />
-            <Router />
-            </ThemeConfig>
-        </Context.Provider>
+                <Backdrop
+                    sx={{ color: "#000", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                    open={loading}
+                >
+                    <HashLoader color={"#00AB55"} size={50} />
+                </Backdrop>
+                <ThemeConfig>
+                <ScrollToTop />
+                <GlobalStyles />
+                <Router />
+                </ThemeConfig>
+            </Context.Provider>
+        </Provider>
     );
 }

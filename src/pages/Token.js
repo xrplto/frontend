@@ -4,7 +4,7 @@ import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { normalizer } from '../utils/normalizers';
-import { limitNumber, fCurrency5, fCurrency3 } from '../utils/formatNumber';
+import { limitNumber, fCurrency5, fPercent } from '../utils/formatNumber';
 import { withStyles } from '@mui/styles';
 import {TOKENS} from './tokens';
 // material
@@ -35,11 +35,14 @@ import SearchNotFound from '../components/SearchNotFound';
 import { TokenListHead, TokenListToolbar, TokenMoreMenu, NFTWidget } from '../components/token';
 
 import axios from 'axios'
+
+// ----------------------------------------------------------------------
+import { useSelector, useDispatch } from "react-redux";
+import { update, selectRate, selectLoading } from "../redux/exchangeSlice";
+// ----------------------------------------------------------------------
+
 const BASE_URL = 'https://ws.xrpl.to/api';
 //const BASE_URL = 'http://localhost/api';
-//
-//import TOKENLIST from '../_mocks_/tokens';
-// ----------------------------------------------------------------------
 const TABLE_HEAD = [
     { id: 'id', label: '#', alignRight: false, enableOrder: false},
     { id: 'name', label: 'Name', alignRight: false, enableOrder: true},
@@ -101,60 +104,37 @@ export default function Token() {
     const [ offset, setOffset ] = useState(-1);
     const [tokens, setTokens] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [exch_usd, setUSD] = useState(100);
-    const [exch_eur, setEUR] = useState(100);
-    const [exch_jpy, setJPY] = useState(100);
-    const [exch_cny, setCNY] = useState(100);
+
+    const EXCH = useSelector(selectRate);
+    console.log("USD: " + EXCH.USD);
 
     useEffect(() => {
         loadTokens(offset);
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        //getExchangeRate();
 
-        const timer = setInterval(() => getExchangeRate(), 5000)
+        const timer = setInterval(() => {}, 5000)
 
         return () => {
           clearInterval(timer);
         }
     }, [offset]);
     //let i = 0;
-    function getExchangeRate() {
-        axios.get(`${BASE_URL}/exchangerate`)
-        .then(res => {
-            const rates = res.status===200?res.data:undefined;
-            if (rates) {
-                //i++;
-                //setUSD(i);
-                //console.log(i);
-                setUSD(rates.USD);
-                setEUR(rates.EUR);
-                setJPY(rates.JPY);
-                setCNY(rates.CNY);
-                console.log(rates.USD);
-            }
-        }).catch(err => {
-            console.log("error on getting exchange rates!!!", err);
-        }).then(function () {
-            // always executed
-            // console.log("Heartbeat!");
-        });
-    }
     function loadTokens(offset) {
         console.log("Loading tokens!!!");
         let tokenList = [];
-        if (TOKENS.USD > 0) {
-            setUSD(TOKENS.USD);
-        }
-        if (TOKENS.EUR > 0) {
-            setEUR(TOKENS.EUR);
-        }
-        if (TOKENS.JPY > 0) {
-            setJPY(TOKENS.JPY);
-        }
-        if (TOKENS.CNY > 0) {
-            setCNY(TOKENS.CNY);
-        }
+        // if (TOKENS.USD > 0) {
+        //     setUSD(TOKENS.USD);
+        // }
+        // if (TOKENS.EUR > 0) {
+        //     setEUR(TOKENS.EUR);
+        // }
+        // if (TOKENS.JPY > 0) {
+        //     setJPY(TOKENS.JPY);
+        // }
+        // if (TOKENS.CNY > 0) {
+        //     setCNY(TOKENS.CNY);
+        // }
         for (var i in TOKENS.tokens) {
             let token = TOKENS.tokens[i];
             token.price = limitNumber(token.exch);
@@ -171,24 +151,24 @@ export default function Token() {
             try {
                 if (res.status === 200 && res.data) {
                     let tokenList = [];
-                    if (res.data.USD > 0) {
-                        setUSD(res.data.USD);
-                    }
-                    if (res.data.EUR > 0) {
-                        setEUR(res.data.EUR);
-                    }
-                    if (res.data.JPY > 0) {
-                        setJPY(res.data.JPY);
-                    }
-                    if (res.data.CNY > 0) {
-                        setCNY(res.data.CNY);
-                    }
+                    // if (res.data.USD > 0) {
+                    //     setUSD(res.data.USD);
+                    // }
+                    // if (res.data.EUR > 0) {
+                    //     setEUR(res.data.EUR);
+                    // }
+                    // if (res.data.JPY > 0) {
+                    //     setJPY(res.data.JPY);
+                    // }
+                    // if (res.data.CNY > 0) {
+                    //     setCNY(res.data.CNY);
+                    // }
                     for (var i in res.data.tokens) {
                         let token = res.data.tokens[i];
                         token.price = limitNumber(token.exch);
                         token.amount = token.amt;
-                        token.pro7d = fCurrency5(token.pro7d);
-                        token.pro24h = fCurrency5(token.pro24h);
+                        token.pro7d = fPercent(token.pro7d);
+                        token.pro24h = fPercent(token.pro24h);
                         tokenList.push(token);
                     }
                     setTokens(tokenList);
@@ -298,17 +278,13 @@ export default function Token() {
               numSelected={selected.length}
               filterName={filterName}
               onFilterName={handleFilterByName}
-      		    count={tokens.length}
+      		  count={tokens.length}
               rowsPerPage={rowsPerPage}
               labelRowsPerPage={labelRowsPerPage}
               page={page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               onCloudRefresh={handleCloudRefresh}
-              EXCH_USD = {exch_usd}
-              EXCH_EUR = {exch_eur}
-              EXCH_JPY = {exch_jpy}
-              EXCH_CNY = {exch_cny}
           />
 
           <Scrollbar>
@@ -408,7 +384,7 @@ export default function Token() {
                                         <TableCell align="left">
                                             <Stack>
                                                 <Typography variant="subtitle1" noWrap>
-                                                    $ {fCurrency5(price / exch_usd)}
+                                                    $ {fCurrency5(price / EXCH.USD)}
                                                 </Typography>
                                                 <Typography variant="caption">
                                                 {fCurrency5(price)} XRP
