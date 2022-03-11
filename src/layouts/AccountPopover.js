@@ -82,7 +82,6 @@ export default function AccountPopover() {
         }
         return () => {
             if (timer) {
-                console.log("kill timer");
                 clearInterval(timer)
             }
         };

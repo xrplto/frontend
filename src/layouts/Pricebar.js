@@ -1,6 +1,6 @@
 import * as React from 'react';
 //import { useContext } from 'react'
-//import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 //import Context from '../Context'
 // material
 import { alpha, styled/*, useTheme*/ } from '@mui/material/styles';
@@ -9,8 +9,8 @@ import { Box, Stack } from '@mui/material';
 //
 import { fCurrency3 } from '../utils/formatNumber';
 // ----------------------------------------------------------------------
-import { useSelector, useDispatch } from "react-redux";
-import { update, selectRate } from "../redux/exchangeSlice";
+import { useSelector } from "react-redux";
+import { selectRate } from "../redux/exchangeSlice";
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     boxShadow: theme.customShadows.z0,
@@ -24,6 +24,12 @@ const StackStyle = styled(Stack)(({ theme }) => ({
 // ----------------------------------------------------------------------
 export default function Pricebar() {
     const rates = useSelector(selectRate);
+    console.log("Pricebar.js", rates.USD);
+
+    useEffect(() => {
+        console.log("Pricebar useEffect called!");
+    }, []);
+
     return (
         <>
             <StackStyle direction="row" spacing={2} sx={{pl:10, pr:10, pt:1, pb:0.5}} alignItems="center">

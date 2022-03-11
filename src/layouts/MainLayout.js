@@ -35,6 +35,7 @@ const AppBarStyle = styled(AppBar)(({ theme }) => ({
     WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
     backgroundColor: alpha(theme.palette.background.paper, 0.0),
     borderRadius: '0px',
+    color: theme.palette.text.primary
     //backgroundColor: alpha("#00AB88", 0.7),
 }));
 
@@ -50,7 +51,7 @@ export default function MainLayout() {
         function getExchangeRate() {
             axios.get(`${BASE_URL}/exchangerate`)
             .then(res => {
-                const rates = res.status===200?res.data:undefined;
+                let rates = res.status===200?res.data:undefined;
                 if (rates) {
                     dispatch(update(rates));
                     console.log(rates.USD);
@@ -68,6 +69,7 @@ export default function MainLayout() {
         const timer = setInterval(() => getExchangeRate(), 5000)
 
         return () => {
+            console.log("kill timer");
             clearInterval(timer);
         }
     }, []);

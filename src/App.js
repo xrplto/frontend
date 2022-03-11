@@ -17,6 +17,14 @@ import exchangeReducer from "./redux/exchangeSlice";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 
+const store = configureStore({
+    reducer: {
+      exchange: exchangeReducer,
+    },
+});
+
+console.log(store);
+
 export default function App() {
     const [loading, setLoading] = useState(false);
     const key_darkmode = 'theme:isDarkMode'
@@ -64,14 +72,7 @@ export default function App() {
         }
     }, [accountProfile, key_profile])
 
-    const store = configureStore({
-        reducer: {
-          exchange: exchangeReducer,
-        },
-    });
-
     return (
-        <Provider store={store}>
             <Context.Provider
                 value={{
                     isDarkMode,
@@ -81,6 +82,7 @@ export default function App() {
                     setLoading
                 }}
             >
+                <Provider store={store}>
                 <Backdrop
                     sx={{ color: "#000", zIndex: (theme) => theme.zIndex.drawer + 1 }}
                     open={loading}
@@ -92,7 +94,7 @@ export default function App() {
                 <GlobalStyles />
                 <Router />
                 </ThemeConfig>
+                </Provider>
             </Context.Provider>
-        </Provider>
     );
 }
