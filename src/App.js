@@ -14,16 +14,16 @@ import { Backdrop } from "@mui/material";
 import { HashLoader } from "react-spinners";
 // ----------------------------------------------------------------------
 import exchangeReducer from "./redux/exchangeSlice";
+import tokenReducer from "./redux/tokenSlice";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 
 const store = configureStore({
     reducer: {
       exchange: exchangeReducer,
+      token: tokenReducer,
     },
 });
-
-console.log(store);
 
 export default function App() {
     const [loading, setLoading] = useState(false);
@@ -49,8 +49,7 @@ export default function App() {
     useEffect(() => {
         const profile = localStorage.getItem(key_profile)
         //const profile = '{"account":"rDsRQWRTRrtzAgK8HH7rcCAZnWeCsJm28K","uuid":"4a3eb58c-aa97-4d48-9ab2-92d90df9a75f"}';
-        console.log('Profile: ' + profile);
-        if (profile) {
+       if (profile) {
             setAccountProfile(JSON.parse(profile));
         }
     }, [key_profile])

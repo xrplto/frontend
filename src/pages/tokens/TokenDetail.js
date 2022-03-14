@@ -1,6 +1,5 @@
 import React from "react";
-import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 
 import Content from "./Content";
 
@@ -17,8 +16,8 @@ import {
 import ExpensesTable from "./ExpensesTable";
 
 import HoldersPie from "./HoldersPie";
-import RevenueLine from "./RevenueLine";
-import PeopleDialog from "./PeopleDialog";
+import PriceLine from "./PriceLine";
+import TokenDialog from "./TokenDialog";
 
 import {
     Avatar,
@@ -26,11 +25,19 @@ import {
     Chip,
     Paper,
     Rating,
+    Stack,
     Typography,
     CircularProgress
 } from '@mui/material';
 
-const useStyles = makeStyles((theme) => ({
+import axios from 'axios'
+
+import Page from '../../components/Page';
+
+import { useSelector, useDispatch } from "react-redux";
+import { selectContent } from "../../redux/tokenSlice";
+
+/*const useStyles = makeStyles((theme) => ({
   headerContainer: {
     position: "relative",
     height: "100px",
@@ -73,12 +80,12 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(1),
     padding: theme.spacing(2),
   },
-}));
+}));*/
 
 export function SummaryCard({ title, value, component }) {
-  const classes = useStyles();
+  //const classes = useStyles();
   return (
-    <Paper elevation={2} className={classes.summaryCard}>
+    <Paper elevation={2}>
       <Typography color={"textSecondary"} variant="h5" gutterBottom>
         {title}
       </Typography>
@@ -91,76 +98,51 @@ export function SummaryCard({ title, value, component }) {
   );
 }
 
-export default function TokenDetail({ id }) {
-  let token = { name: "Solo", id: 3, img: "/static/tokens/SOLO.jpg" };
-  
-  const classes = useStyles();
-  const loading = false;
+export default function TokenDetail(props) {
+    let token = { name: "Solo", id: 3, img: "/static/tokens/SOLO.jpg" };
+    const { md5 } = useParams();
+    const { state } = useLocation();
+    console.log("state " + JSON.stringify(state));
+    console.log(JSON.stringify(props));
 
-  if (loading) {
+    //const token = useSelector(selectContent).tokens.find(token => token.md5 === md5);
+    //const token = useSelector(selectTokens)[id-1];
+    //console.log(token);
+    const loading = false;
+
+    if (loading) {
+        return (
+            <Content>
+                <CircularProgress />
+            </Content>
+        );
+    }
+
+    const trips = 4;
+    const distance = 0;
+    const fare = 0;
     return (
-      <Content>
-        <CircularProgress />
-      </Content>
-    );
-  }
-
-  const trips = 4;
-  const distance = 0;
-  const fare = 0;
-  return (
-    <Content>
-      <div
-        style={{
-          height: "200px",
-          backgroundPosition: "center",
-          backgroundSize: "cover",
-          filter: "contrast(75%)",
-          backgroundImage: "url(/static/crypto2.jpg)",
-        }}
-      />
-      <div className={classes.headerContainer}>
-        <div className={classes.header}>
-          <Avatar
-            alt={token.name}
-            src={token.img}
-            classes={{ root: classes.avatar, circle: classes.circle }}
-          />
-          <Typography variant={"h5"}>{token.name}</Typography>
-          <Chip variant={"outlined"} icon={<TokenIcon />} label="Token" />
-          <Rating name="read-only" value={4.3} readOnly />
-          <div className={classes.spacer} />
-          <div className={classes.actionGroup}>
-            <PeopleDialog
-              data={token}
-              render={(open) => (
-                <Button
-                  color="primary"
-                  variant="contained"
-                  startIcon={<EditIcon />}
-                  onClick={open}
-                >
-                  Edit
-                </Button>
-              )}
+        <Page title={token.name + ' price today'}>
+          <Stack direction="row" spacing={1} sx={{mt:2}} alignItems='center'>
+            <Avatar
+              alt={token.name}
+              src={token.img}
             />
-            <Button variant="outlined" startIcon={<DeleteIcon />}>
-              Delete
-            </Button>
-          </div>
-        </div>
-      </div>
-      <div className={classes.summaryCards}>
-        <SummaryCard title={"Revenue"} value={"$" + fare} />
-        <SummaryCard title={"Trips"} value={trips} />
-        <SummaryCard title={"Miles"} value={distance} />
-        <SummaryCard title={"Rating"} value={4.32} />
-      </div>
-      <div className={classes.summaryCards}>
-        <SummaryCard title="Last 30 Days" component={<RevenueLine />} />
-        <SummaryCard title="By Vehicle" component={<HoldersPie />} />
-      </div>
-      <SummaryCard title={"Recent expenses"} component={<ExpensesTable />} />
-    </Content>
-  );
+            <Typography variant={"h3"}>{token.name}</Typography>
+            <Chip variant={"outlined"} icon={<TokenIcon />} label="Token" />
+            <Rating name="read-only" value={4.3} readOnly />
+          </Stack>
+            <div>
+              <SummaryCard title={"Holders"} value={"$" + fare} />
+              <SummaryCard title={"Offers"} value={trips} />
+              <SummaryCard title={"Market"} value={distance} />
+              <SummaryCard title={"Rating"} value={4.32} />
+            </div>
+            <div>
+              <SummaryCard title="Last 30 Days" component={<PriceLine />} />
+              <SummaryCard title="By Accounts" component={<HoldersPie />} />
+            </div>
+            <SummaryCard title={"Recent Orders"} component={<ExpensesTable />} />
+        </Page>
+    );
 }

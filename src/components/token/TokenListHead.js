@@ -1,65 +1,57 @@
 import PropTypes from 'prop-types';
 // material
 import { visuallyHidden } from '@mui/utils';
-import { Box, Checkbox, TableRow, TableCell, TableHead, TableSortLabel } from '@mui/material';
+import { Box, TableRow, TableCell, TableHead, TableSortLabel } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
 TokenListHead.propTypes = {
-  order: PropTypes.oneOf(['asc', 'desc']),
-  orderBy: PropTypes.string,
-  rowCount: PropTypes.number,
-  headLabel: PropTypes.array,
-  numSelected: PropTypes.number,
-  onRequestSort: PropTypes.func,
-  onSelectAllClick: PropTypes.func
+    order: PropTypes.oneOf(['asc', 'desc']),
+    orderBy: PropTypes.string,
+    headLabel: PropTypes.array,
+    onRequestSort: PropTypes.func,
 };
 
 export default function TokenListHead({
-  order,
-  orderBy,
-  rowCount,
-  headLabel,
-  numSelected,
-  onRequestSort,
-  onSelectAllClick
+    order,
+    orderBy,
+    headLabel,
+    onRequestSort,
 }) {
-  const createSortHandler = (property) => (event) => {
-    onRequestSort(event, property);
-  };
+    const createSortHandler = (property) => (event) => {
+        onRequestSort(event, property);
+    };
 
-  return (
-    <TableHead>
-      <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-          />
-        </TableCell>
-        {headLabel.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={headCell.alignRight ? 'right' : 'left'}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            <TableSortLabel
-              hideSortIcon
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={headCell.enableOrder?createSortHandler(headCell.id):undefined}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box sx={{ ...visuallyHidden }}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
+    return (
+        <TableHead>
+            <TableRow>
+                {headLabel.map((headCell) => (
+                    <TableCell
+                        key={headCell.id}
+                        align={headCell.align}
+                        sortDirection={orderBy === headCell.id ? order : false}
+                        sx={{
+                            ...(headCell.id === 'historyGraph' && {
+                                minWidth: 130,
+                              })
+                        }}
+                    >
+                        <TableSortLabel
+                            hideSortIcon
+                            active={orderBy === headCell.id}
+                            direction={orderBy === headCell.id ? order : 'asc'}
+                            onClick={headCell.order?createSortHandler(headCell.id):undefined}
+                        >
+                            {headCell.label}
+                            {orderBy === headCell.id ? (
+                                <Box sx={{ ...visuallyHidden }}>
+                                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                                </Box>
+                            ) : null}
+                        </TableSortLabel>
+                    </TableCell>
+                ))}
+            </TableRow>
+        </TableHead>
+    );
 }

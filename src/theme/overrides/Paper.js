@@ -1,6 +1,6 @@
 // ----------------------------------------------------------------------
 
-export default function Paper() {
+export default function Paper(theme) {
   return {
     MuiPaper: {
       defaultProps: {
@@ -9,6 +9,7 @@ export default function Paper() {
 
       styleOverrides: {
         root: {
+          boxShadow: theme.customShadows.z0,
           backgroundImage: 'none'
         }
       }

@@ -4,19 +4,15 @@ import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { normalizer } from '../utils/normalizers';
-import { limitNumber, fCurrency5, fPercent } from '../../utils/formatNumber';
+import { fCurrency5 } from '../../utils/formatNumber';
 import { withStyles } from '@mui/styles';
-import {TOKENS} from './tokens';
+import { Link } from 'react-router-dom'
 // material
 import {
     Box,
-    Backdrop,
-    Card,
     Table,
     Stack,
     Avatar,
-    Link,
-    Checkbox,
     TableRow,
     TableBody,
     TableCell,
@@ -24,36 +20,40 @@ import {
     TableContainer,
     /*TablePagination*/
 } from '@mui/material';
-import {
-    HashLoader,
-} from "react-spinners";
 // components
 import Page from '../../components/Page';
 //import Label from '../../components/Label';
 import Scrollbar from '../../components/Scrollbar';
-import SearchNotFound from '../../components/SearchNotFound';
+//import SearchNotFound from '../../components/SearchNotFound';
 import { TokenListHead, TokenListToolbar, TokenMoreMenu, NFTWidget } from '../../components/token';
-
-import axios from 'axios'
 
 // ----------------------------------------------------------------------
 import { useSelector, useDispatch } from "react-redux";
-import { update, selectRate, selectLoading } from "../../redux/exchangeSlice";
+import { selectRate } from "../../redux/exchangeSlice";
+import {
+    setOrder,
+    setOrderBy,
+    setPage,
+    setRowsPerPage,
+    selectContent,
+    loadTokens
+} from "../../redux/tokenSlice";
 // ----------------------------------------------------------------------
-
 const BASE_URL = 'https://ws.xrpl.to/api';
 //const BASE_URL = 'http://localhost/api';
 const TABLE_HEAD = [
-    { id: 'id', label: '#', alignRight: false, enableOrder: false},
-    { id: 'name', label: 'Name', alignRight: false, enableOrder: true},
-    { id: 'price', label: 'Price', alignRight: false, enableOrder: true },
-    { id: 'percent_24h', label: '24h (%)', alignRight: false, enableOrder: false },
-    { id: 'percent_7d', label: '7d (%)', alignRight: false, enableOrder: false },
-    { id: 'amount', label: 'Amount', alignRight: false, enableOrder: true },
-    { id: 'holders', label: 'Holders', alignRight: false, enableOrder: true },
-    { id: 'offers', label: 'Offers', alignRight: false, enableOrder: true },
-    { id: 'trline', label: 'Trust Lines', alignRight: false, enableOrder: true },
-    { id: 'history', label: 'Last 7 Days', alignRight: false, enableOrder: false },
+    { id: 'id', label: '#', align: 'left', order: false},
+    { id: 'name', label: 'Name', align: 'left', order: true},
+    { id: 'price', label: 'Price', align: 'left', order: true },
+    { id: 'percent_24h', label: '24h (%)', align: 'left', order: false },
+    { id: 'percent_7d', label: '7d (%)', align: 'left', order: false },
+    { id: 'amount', label: 'Total Supply', align: 'left', order: true },
+    // { id: 'volume', label: 'Volume(24H)', align: 'left', order: true },
+    { id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
+    { id: 'holders', label: 'Holders', align: 'left', order: true },
+    { id: 'offers', label: 'Offers', align: 'left', order: true },
+    { id: 'trline', label: 'Trust Lines', align: 'left', order: true },
+    { id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
     { id: '' }
 ];
 
@@ -94,104 +94,42 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function Token() {
-    const [page, setPage] = useState(0);
-    const [order, setOrder] = useState('desc');
-    const [selected, setSelected] = useState([]);
-    const [orderBy, setOrderBy] = useState('trline');
     const [filterName, setFilterName] = useState('');
-    const [rowsPerPage, setRowsPerPage] = useState(100);
-    const [labelRowsPerPage/*, setLabelRowsPerPage*/] = useState('Rows');
-    const [ offset, setOffset ] = useState(0);
-    const [tokens, setTokens] = useState([]);
-    const [loading, setLoading] = useState(false);
 
     const EXCH = useSelector(selectRate);
-    console.log("USD: " + EXCH.USD);
+
+    const dispatch = useDispatch();
+
+    const content = useSelector(selectContent);
 
     useEffect(() => {
-        loadTokens(offset);
-
+        if (content.tokens.length < 1000)
+            dispatch(loadTokens(0));
         // eslint-disable-next-line react-hooks/exhaustive-deps
-
         const timer = setInterval(() => {}, 5000)
 
         return () => {
-          clearInterval(timer);
+            clearInterval(timer);
         }
-    }, [offset]);
+    }, []);
     //let i = 0;
-    function loadTokens(offset) {
-        console.log("Loading tokens!!!");
-        let tokenList = [];
-        for (var i in TOKENS.tokens) {
-            let token = TOKENS.tokens[i];
-            token.price = limitNumber(token.exch);
-            token.amount = token.amt;
-            token.pro7d = 0;
-            token.pro24h = 0;
-            tokenList.push(token);
-        }
-        setTokens(tokenList);
-
-        //setLoading(true);
-        axios.get(`${BASE_URL}/tokens/${offset}`)
-        .then(res => {
-            try {
-                if (res.status === 200 && res.data) {
-                    let tokenList = [];
-                    // if (res.data.USD > 0) {
-                    //     setUSD(res.data.USD);
-                    // }
-                    // if (res.data.EUR > 0) {
-                    //     setEUR(res.data.EUR);
-                    // }
-                    // if (res.data.JPY > 0) {
-                    //     setJPY(res.data.JPY);
-                    // }
-                    // if (res.data.CNY > 0) {
-                    //     setCNY(res.data.CNY);
-                    // }
-                    for (var i in res.data.tokens) {
-                        let token = res.data.tokens[i];
-                        token.price = limitNumber(token.exch);
-                        token.amount = token.amt;
-                        token.pro7d = fPercent(token.pro7d);
-                        token.pro24h = fPercent(token.pro24h);
-                        tokenList.push(token);
-                    }
-                    setTokens(tokenList);
-                    if (offset === 0) setOffset(-1);
-                }
-            } catch (error) {
-                console.log(error);
-            }
-            //dispatch(concatinate(res.data.assets));
-            //if(res.data.assets.length < 20) setHasMore(false);
-            //setOffset(offset + 1);
-        }).catch(err => {
-            console.log("err->>", err);
-        }).then(function () {
-            // always executed
-            //setLoading(false);
-        });
-    }
 
     const handleRequestSort = (event, property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
-        setOrderBy(property);
+        const isAsc = content.orderBy === property && content.order === 'asc';
+        dispatch(setOrder(isAsc ? 'desc' : 'asc'));
+        dispatch(setOrderBy(property));
     };
 
-    const handleSelectAllClick = (event) => {
+    /*const handleSelectAllClick = (event) => {
         if (event.target.checked) {
             const newSelecteds = tokens.map((n) => n.id);
             setSelected(newSelecteds);
             return;
         }
         setSelected([]);
-    };
+    };*/
 
-    const handleClick = (event, id) => {
+    /*const handleClick = (event, id) => {
         const selectedIndex = selected.indexOf(id);
         let newSelected = [];
         if (selectedIndex === -1) {
@@ -207,14 +145,14 @@ export default function Token() {
             );
         }
         setSelected(newSelected);
-    };
+    };*/
 
     const handleChangePage = (event, newPage) => {
-        setPage(newPage);
+        dispatch(setPage(newPage));
     };
 
     const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
+        dispatch(setRowsPerPage(parseInt(event.target.value, 10)));
         setPage(0);
     };
 
@@ -223,20 +161,20 @@ export default function Token() {
     };
 
     const handleCloudRefresh = (event) => {
-        loadTokens(offset);
+        dispatch(loadTokens(0));
     };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tokens.length) : 0;
+    const emptyRows = content.page > 0 ? Math.max(0, (1 + content.page) * content.rowsPerPage - content.tokens.length) : 0;
 
-  const filteredTokens = applySortFilter(tokens, getComparator(order, orderBy), filterName);
+    const filteredTokens = applySortFilter(content.tokens, getComparator(content.order, content.orderBy), filterName);
 
-  const isTokenNotFound = filteredTokens.length === 0;
+    //const isTokenNotFound = filteredTokens.length === 0;
 
-  const CoinNameTypography = withStyles({
-    root: {
-      color: "#3366FF"
-    }
-  })(Typography);
+    const CoinNameTypography = withStyles({
+        root: {
+        color: "#3366FF"
+        }
+    }) (Typography);
 
   const BearishTypography = withStyles({
     root: {
@@ -253,24 +191,14 @@ export default function Token() {
   // style={{border: '1px solid red'}}
   
   return (
-    
     <Page title="Tokens">
-        <Backdrop
-            sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-            open={loading}
-        >
-            <HashLoader
-                color={'#00AB55'}
-                size={50}/>
-        </Backdrop >
           <TokenListToolbar
-              numSelected={selected.length}
               filterName={filterName}
               onFilterName={handleFilterByName}
-      		  count={tokens.length}
-              rowsPerPage={rowsPerPage}
-              labelRowsPerPage={labelRowsPerPage}
-              page={page}
+      		  count={content.tokenCount}
+              rowsPerPage={content.rowsPerPage}
+              labelRowsPerPage={'Rows'}
+              page={content.page}
               onPageChange={handleChangePage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               onCloudRefresh={handleCloudRefresh}
@@ -280,21 +208,19 @@ export default function Token() {
               <TableContainer sx={{ minWidth: 800 }}>
                   <Table>
                       <TokenListHead
-                        order={order}
-                        orderBy={orderBy}
+                        order={content.order}
+                        orderBy={content.orderBy}
                         headLabel={TABLE_HEAD}
-                        rowCount={tokens.length}
-                        numSelected={selected.length}
                         onRequestSort={handleRequestSort}
-                        onSelectAllClick={handleSelectAllClick}
                       />
                       <TableBody>
-                          {filteredTokens.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                          {filteredTokens.slice(content.page * content.rowsPerPage, content.page * content.rowsPerPage + content.rowsPerPage)
                               .map((row) => {
                                   const {
                                       id,
                                       acct,
                                       name,
+                                      code,
                                       date,
                                       amt,
                                       trline,
@@ -306,7 +232,7 @@ export default function Token() {
                                       pro24h,
                                       price} = row;
                                   const imgUrl = `/static/tokens/${name}.jpg`;
-                                  const isItemSelected = selected.indexOf(id) !== -1;
+                                  const isItemSelected = false;//selected.indexOf(id) !== -1;
 
                                   let strPro7d = 0;
                                   if (pro7d < 0) {
@@ -339,29 +265,31 @@ export default function Token() {
                                         selected={isItemSelected}
                                         aria-checked={isItemSelected}
                                     >
-                                        <TableCell padding="checkbox">
+                                        {/* <TableCell padding="checkbox">
                                           <Checkbox
                                             checked={isItemSelected}
                                             onChange={(event) => handleClick(event, id)}
                                           />
-                                        </TableCell>
+                                        </TableCell> */}
                                         <TableCell align="left">{id}</TableCell>
                                         <TableCell component="th" scope="row" padding="none">
                                           <Stack direction="row" alignItems="center" spacing={2}>
                                             <Avatar alt={name} src={imgUrl} />
                                             <Stack>
-                                                <CoinNameTypography variant="subtitle1" noWrap>
                                                 <Link
+                                                    style={{ textDecoration: 'none' }}
                                                     underline="hover"
                                                     color="inherit"
-                                                    target="_blank"
-                                                    // href={`https://bithomp.com/explorer/${acct}`}
-                                                    href={`detail/${md5}`}
-                                                    rel="noreferrer noopener"
+                                                    query = {"AAS"}
+                                                    to={{
+                                                        pathname: `detail/${md5}`,
+                                                        query: {name:"AAS"}
+                                                    }}
                                                 >
+                                                <CoinNameTypography variant="subtitle1" noWrap>
                                                     {name}
-                                                </Link>
                                                 </CoinNameTypography>
+                                                </Link>
                                                 <Typography variant="caption">
                                                 {user}
                                                 </Typography>
@@ -404,6 +332,7 @@ export default function Token() {
                                             )}
                                         </TableCell>
                                         <TableCell align="left">{fCurrency5(amt)||0}</TableCell>
+                                        <TableCell align="left">$ {fCurrency5(price * amt)}</TableCell>
                                         <TableCell align="left">{holders}</TableCell>
                                         <TableCell align="left">{offers}</TableCell>
                                         <TableCell align="left">{trline}</TableCell>
@@ -412,6 +341,7 @@ export default function Token() {
                                               <Box
                                                 component="img"
                                                 alt=""
+                                                sx={{ maxWidth:'none' }}
                                                 src={`${BASE_URL}/sparkline/${md5}`}
                                               />
                                         </TableCell>
@@ -434,7 +364,7 @@ export default function Token() {
                                         </TableCell> */}
 
                                         <TableCell align="right">
-                                          <TokenMoreMenu />
+                                          <TokenMoreMenu acct={acct} currency={code}/>
                                         </TableCell>
                                     </TableRow>
                                   );
@@ -445,7 +375,7 @@ export default function Token() {
                                 </TableRow>
                             )}
                       </TableBody>
-                      {isTokenNotFound && (
+                      {/*isTokenNotFound && (
                           <TableBody>
                               <TableRow>
                                   <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
@@ -453,7 +383,7 @@ export default function Token() {
                                   </TableCell>
                               </TableRow>
                           </TableBody>
-                      )}
+                      )*/}
                   </Table>
               </TableContainer>
           </Scrollbar>

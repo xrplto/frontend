@@ -9,7 +9,8 @@ import Navbar from './Navbar';
 import axios from 'axios'
 
 import { useSelector, useDispatch } from "react-redux";
-import { update, selectRate, selectLoading } from "../redux/exchangeSlice";
+import { update_rate, selectRate, selectLoading } from "../redux/exchangeSlice";
+import { update_tokens, selectTokens } from "../redux/tokenSlice";
 // ----------------------------------------------------------------------
 const APP_BAR_DESKTOP = 92;
 
@@ -53,7 +54,7 @@ export default function MainLayout() {
             .then(res => {
                 let rates = res.status===200?res.data:undefined;
                 if (rates) {
-                    dispatch(update(rates));
+                    dispatch(update_rate(rates));
                     console.log(rates.USD);
                 }
             }).catch(err => {

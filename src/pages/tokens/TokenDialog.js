@@ -50,7 +50,7 @@ export default function PeopleDialog({ data, render, onSave }) {
               aria-labelledby="form-dialog-title"
             >
                 <DialogTitle id="form-dialog-title">
-                    {data ? "Edit" : "Add"} Driver{" "}
+                    {data ? "Edit" : "Add"} Token{" "}
                 </DialogTitle>
                 <DialogContent>
                     <TextField

@@ -1,20 +1,19 @@
 //import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
 import searchFill from '@iconify/icons-eva/search-fill';
-import trash2Fill from '@iconify/icons-eva/trash-2-fill';
+//import trash2Fill from '@iconify/icons-eva/trash-2-fill';
 //import roundFilterList from '@iconify/icons-ic/round-filter-list';
 // material
 import { styled } from '@mui/material/styles';
 //import { Link as RouterLink } from 'react-router-dom';
 import cloudRefresh from '@iconify/icons-fontisto/cloud-refresh';
-import { fCurrency3 } from '../../utils/formatNumber';
+//import { fCurrency3 } from '../../utils/formatNumber';
 import {
   Box,
   Stack,
   Toolbar,
   Tooltip,
   IconButton,
-  Typography,
   OutlinedInput,
   InputAdornment,
   TablePagination
@@ -45,68 +44,47 @@ const SearchStyle = styled(OutlinedInput)(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 /*TokenListToolbar.propTypes = {
-  numSelected: PropTypes.number,
   filterName: PropTypes.string,
   onFilterName: PropTypes.func
 };*/
 
 export default function TokenListToolbar(props) {
   return (
-    <RootStyle
-      sx={{
-        ...(props.numSelected > 0 && {
-          color: 'primary.main',
-          bgcolor: 'primary.lighter'
-        })
-      }}
-    >
-      {props.numSelected > 0 ? (
-        <Typography component="div" variant="subtitle1">
-          {props.numSelected} selected
-        </Typography>
-      ) : (
-        <SearchStyle
-          value={props.filterName}
-          onChange={props.onFilterName}
-          placeholder="Search ..."
-          startAdornment={
-            <InputAdornment position="start">
-              <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
-            </InputAdornment>
-          }
-        />
-      )}
+    <RootStyle>
 
-      {props.numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton>
-            <Icon icon={trash2Fill} />
-          </IconButton>
-        </Tooltip>
-      ) : (
-      	<Stack direction="row" alignItems="center">
-      		<TablePagination
-	            rowsPerPageOptions={[100, 50, 20]}
-	            component="div"
-	            count={props.count}
-	            rowsPerPage={props.rowsPerPage}
-	            labelRowsPerPage={props.labelRowsPerPage}
-	            page={props.page}
-	            onPageChange={props.onPageChange}
-	            onRowsPerPageChange={props.onRowsPerPageChange}
-	        />
-	        <Tooltip title="Reload">
-	          <IconButton onClick={props.onCloudRefresh}>
-	            <Icon icon={cloudRefresh} />
-	          </IconButton>
-	        </Tooltip>
-	        {/* <Tooltip title="Filter">
-	          <IconButton>
-	            <Icon icon={roundFilterList} />
-	          </IconButton>
-	        </Tooltip> */}
-        </Stack>
-      )}
+    <SearchStyle
+      value={props.filterName}
+      onChange={props.onFilterName}
+      placeholder="Search ..."
+      startAdornment={
+        <InputAdornment position="start">
+          <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
+        </InputAdornment>
+      }
+    />
+
+    <Stack direction="row" alignItems="center">
+      <TablePagination
+          rowsPerPageOptions={[100, 50, 20]}
+          component="div"
+          count={props.count}
+          rowsPerPage={props.rowsPerPage}
+          labelRowsPerPage={props.labelRowsPerPage}
+          page={props.page}
+          onPageChange={props.onPageChange}
+          onRowsPerPageChange={props.onRowsPerPageChange}
+      />
+      <Tooltip title="Reload">
+        <IconButton onClick={props.onCloudRefresh}>
+          <Icon icon={cloudRefresh} />
+        </IconButton>
+      </Tooltip>
+      {/* <Tooltip title="Filter">
+        <IconButton>
+          <Icon icon={roundFilterList} />
+        </IconButton>
+      </Tooltip> */}
+    </Stack>
     </RootStyle>
   );
 }

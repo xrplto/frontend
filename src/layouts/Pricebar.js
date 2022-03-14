@@ -1,6 +1,6 @@
 import * as React from 'react';
 //import { useContext } from 'react'
-import { useState, useEffect } from 'react';
+import { /*useState,*/ useEffect } from 'react';
 //import Context from '../Context'
 // material
 import { alpha, styled/*, useTheme*/ } from '@mui/material/styles';
@@ -24,10 +24,9 @@ const StackStyle = styled(Stack)(({ theme }) => ({
 // ----------------------------------------------------------------------
 export default function Pricebar() {
     const rates = useSelector(selectRate);
-    console.log("Pricebar.js", rates.USD);
 
     useEffect(() => {
-        console.log("Pricebar useEffect called!");
+        //console.log("Pricebar useEffect called!");
     }, []);
 
     return (

@@ -23,7 +23,7 @@ function useOptions(theme, data) {
     title: null,
     series: [
       {
-        name: "Revenue",
+        name: "Price",
         data,
         color: theme.palette.primary.main,
       },
@@ -38,7 +38,7 @@ function useOptions(theme, data) {
   };
 }
 
-export default function RevenueLine() {
+export default function PriceLine() {
   const theme = useTheme();
   const chartData = [
     { date: new Date(), fare: 1000 },

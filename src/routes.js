@@ -16,7 +16,7 @@ export default function Router() {
       element: <MainLayout />,
       children: [
         { path: '/', element: <Tokens /> },
-        { path: 'detail/:md5', element: <TokenDetail /> },
+        { path: 'detail/:md5', element: <TokenDetail/> },
         { path: 'tokens', element: <Tokens /> },
         { path: 'spinners', element: <Spinner /> },
         { path: '*', element: <Navigate to="/404/NotFound" /> }

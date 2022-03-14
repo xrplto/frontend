@@ -14,7 +14,7 @@ export const exchangeSlice = createSlice({
     name: "exchange",
     initialState,
     reducers: {
-        update: (state, action) => {
+        update_rate: (state, action) => {
             // Redux Toolkit allows us to write "mutating" logic in reducers. It
             // doesn't actually mutate the state because it uses the Immer library,
             // which detects changes to a "draft state" and produces a brand new
@@ -24,8 +24,7 @@ export const exchangeSlice = createSlice({
     },
 });
 
-//export const { add, remove, update } = exchangeSlice.actions;
-export const { update } = exchangeSlice.actions;
+export const { update_rate } = exchangeSlice.actions;
 
 // The function below is called a thunk and allows us to perform async logic. It
 // can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This

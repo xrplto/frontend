@@ -2,6 +2,18 @@ import { replace } from 'lodash';
 import numeral from 'numeral';
 
 // ----------------------------------------------------------------------
+/*function processBigNumber(number, language, currency = undefined) {
+    const { num, unit } = formatLargeNumber(Number(number), 2);
+    let numberString = unit ? `${num} ${unit}` : `${num}`;
+    if (number.toString().includes('e')) {
+        numberString = Number(number)
+            .toExponential(2)
+            .toString();
+    }
+    if (currency)
+        return `${getLocalizedCurrencySymbol(language, currency)} ${numberString}`;
+    return numberString;
+}*/
 
 export function fCurrency(number) {
     return numeral(number).format(Number.isInteger(number) ? '0,0' : '0,0.00');
