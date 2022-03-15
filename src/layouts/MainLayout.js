@@ -4,12 +4,12 @@ import { Outlet } from 'react-router-dom';
 import { alpha, styled } from '@mui/material/styles';
 import { AppBar } from '@mui/material';
 //
-import Pricebar from './Pricebar';
+import Topbar from './Topbar';
 import Navbar from './Navbar';
 import axios from 'axios'
 
 import { useSelector, useDispatch } from "react-redux";
-import { update_rate, selectRate, selectLoading } from "../redux/exchangeSlice";
+import { update_status, selectStatus, selectLoading } from "../redux/statusSlice";
 import { update_tokens, selectTokens } from "../redux/tokenSlice";
 // ----------------------------------------------------------------------
 const APP_BAR_DESKTOP = 92;
@@ -45,17 +45,17 @@ export default function MainLayout() {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
 
     const dispatch = useDispatch();
-    //const rates = useSelector(selectRate);
-    //console.log(rates);
+    //const status = useSelector(selectStatus);
+    //console.log(status);
 
     useEffect(() => {
-        function getExchangeRate() {
-            axios.get(`${BASE_URL}/exchangerate`)
+        function getStatus() {
+            axios.get(`${BASE_URL}/status`)
             .then(res => {
-                let rates = res.status===200?res.data:undefined;
-                if (rates) {
-                    dispatch(update_rate(rates));
-                    console.log(rates.USD);
+                let status = res.status===200?res.data:undefined;
+                if (status) {
+                    dispatch(update_status(status));
+                    console.log(status.USD);
                 }
             }).catch(err => {
                 console.log("error on getting exchange rates!!!", err);
@@ -65,9 +65,9 @@ export default function MainLayout() {
             });
         }
 
-        getExchangeRate();
+        getStatus();
 
-        const timer = setInterval(() => getExchangeRate(), 5000)
+        const timer = setInterval(() => getStatus(), 5000)
 
         return () => {
             console.log("kill timer");
@@ -78,7 +78,7 @@ export default function MainLayout() {
     return (
         <RootStyle>
             <AppBarStyle>
-                <Pricebar />
+                <Topbar />
                 <Navbar />
             </AppBarStyle>
             <MainStyle>

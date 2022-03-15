@@ -1,11 +1,13 @@
 import { filter } from 'lodash';
-//import { Icon } from '@iconify/react';
+import { Icon } from '@iconify/react';
+import searchFill from '@iconify/icons-eva/search-fill';
 //import { sentenceCase } from 'change-case';
 import { useState, useEffect } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { normalizer } from '../utils/normalizers';
-import { fCurrency5 } from '../../utils/formatNumber';
+import { fCurrency5, fNumber } from '../../utils/formatNumber';
 import { withStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { Link } from 'react-router-dom'
 // material
 import {
@@ -18,6 +20,9 @@ import {
     TableCell,
     Typography,
     TableContainer,
+    OutlinedInput,
+    InputAdornment,
+    Toolbar
     /*TablePagination*/
 } from '@mui/material';
 // components
@@ -25,11 +30,11 @@ import Page from '../../components/Page';
 //import Label from '../../components/Label';
 import Scrollbar from '../../components/Scrollbar';
 //import SearchNotFound from '../../components/SearchNotFound';
-import { TokenListHead, TokenListToolbar, TokenMoreMenu, NFTWidget } from '../../components/token';
+import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu, NFTWidget } from '../../components/token';
 
 // ----------------------------------------------------------------------
 import { useSelector, useDispatch } from "react-redux";
-import { selectRate } from "../../redux/exchangeSlice";
+import { selectStatus } from "../../redux/statusSlice";
 import {
     setOrder,
     setOrderBy,
@@ -39,8 +44,7 @@ import {
     loadTokens
 } from "../../redux/tokenSlice";
 // ----------------------------------------------------------------------
-const BASE_URL = 'https://ws.xrpl.to/api';
-//const BASE_URL = 'http://localhost/api';
+const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
 const TABLE_HEAD = [
     { id: 'id', label: '#', align: 'left', order: false},
     { id: 'name', label: 'Name', align: 'left', order: true},
@@ -96,7 +100,7 @@ function applySortFilter(array, comparator, query) {
 export default function Token() {
     const [filterName, setFilterName] = useState('');
 
-    const EXCH = useSelector(selectRate);
+    const status = useSelector(selectStatus);
 
     const dispatch = useDispatch();
 
@@ -147,21 +151,8 @@ export default function Token() {
         setSelected(newSelected);
     };*/
 
-    const handleChangePage = (event, newPage) => {
-        dispatch(setPage(newPage));
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        dispatch(setRowsPerPage(parseInt(event.target.value, 10)));
-        setPage(0);
-    };
-
     const handleFilterByName = (event) => {
         setFilterName(event.target.value);
-    };
-
-    const handleCloudRefresh = (event) => {
-        dispatch(loadTokens(0));
     };
 
     const emptyRows = content.page > 0 ? Math.max(0, (1 + content.page) * content.rowsPerPage - content.tokens.length) : 0;
@@ -176,218 +167,212 @@ export default function Token() {
         }
     }) (Typography);
 
-  const BearishTypography = withStyles({
-    root: {
-      color: "#FF6C40"
-    }
-  })(Typography);
+    const BearishTypography = withStyles({
+        root: {
+        color: "#FF6C40"
+        }
+    })(Typography);
 
-  const BullishTypography = withStyles({
-    root: {
-      color: "#54D62C"
-    }
-  })(Typography);
+    const BullishTypography = withStyles({
+        root: {
+        color: "#54D62C"
+        }
+    })(Typography);
 
-  // style={{border: '1px solid red'}}
-  
-  return (
-    <Page title="Tokens">
-          <TokenListToolbar
-              filterName={filterName}
-              onFilterName={handleFilterByName}
-      		  count={content.tokenCount}
-              rowsPerPage={content.rowsPerPage}
-              labelRowsPerPage={'Rows'}
-              page={content.page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-              onCloudRefresh={handleCloudRefresh}
-          />
+    // style={{border: '1px solid red'}}
+ 
+    return (
+        <Page title="Tokens">
 
-          <Scrollbar>
-              <TableContainer sx={{ minWidth: 800 }}>
-                  <Table>
-                      <TokenListHead
-                        order={content.order}
-                        orderBy={content.orderBy}
-                        headLabel={TABLE_HEAD}
-                        onRequestSort={handleRequestSort}
-                      />
-                      <TableBody>
-                          {filteredTokens.slice(content.page * content.rowsPerPage, content.page * content.rowsPerPage + content.rowsPerPage)
-                              .map((row) => {
-                                  const {
-                                      id,
-                                      acct,
-                                      name,
-                                      code,
-                                      date,
-                                      amt,
-                                      trline,
-                                      holders,
-                                      offers,
-                                      md5,
-                                      user,
-                                      pro7d,
-                                      pro24h,
-                                      price} = row;
-                                  const imgUrl = `/static/tokens/${name}.jpg`;
-                                  const isItemSelected = false;//selected.indexOf(id) !== -1;
+            <SearchToolbar
+                filterName = {filterName}
+                onFilterName={handleFilterByName}
+            />
+        
+            <TokenListToolbar />
 
-                                  let strPro7d = 0;
-                                  if (pro7d < 0) {
-                                    strPro7d = -pro7d;
-                                    strPro7d = '-' + strPro7d + '%';
-                                  } else {
-                                    strPro7d = '+' + pro7d + '%';
-                                  }
+            <Scrollbar>
+                <TableContainer sx={{ minWidth: 800 }}>
+                    <Table>
+                        <TokenListHead
+                            order={content.order}
+                            orderBy={content.orderBy}
+                            headLabel={TABLE_HEAD}
+                            onRequestSort={handleRequestSort}
+                        />
+                        <TableBody>
+                            {filteredTokens.slice(content.page * content.rowsPerPage, content.page * content.rowsPerPage + content.rowsPerPage)
+                                .map((row) => {
+                                    const {
+                                        id,
+                                        acct,
+                                        name,
+                                        code,
+                                        date,
+                                        amt,
+                                        marketcap,
+                                        trline,
+                                        holders,
+                                        offers,
+                                        md5,
+                                        user,
+                                        pro7d,
+                                        pro24h,
+                                        price} = row;
+                                    const imgUrl = `/static/tokens/${name}.jpg`;
+                                    const isItemSelected = false;//selected.indexOf(id) !== -1;
 
-                                  let strPro24h = 0;
-                                  if (pro24h < 0) {
-                                    strPro24h = -pro24h;
-                                    strPro24h = '-' + strPro24h + '%';
-                                  } else {
-                                    strPro24h = '+' + pro24h + '%';
-                                  }
-
-                                  let date_fixed = '';
-                                  try {
-                                    if (date) {
-                                        date_fixed = date.split('T')[0];
+                                    let strPro7d = 0;
+                                    if (pro7d < 0) {
+                                        strPro7d = -pro7d;
+                                        strPro7d = '-' + strPro7d + '%';
+                                    } else {
+                                        strPro7d = '+' + pro7d + '%';
                                     }
-                                  } catch(e) {}
-                                  return (
-                                    <TableRow
-                                        hover
-                                        key={id}
-                                        tabIndex={-1}
-                                        role="checkbox"
-                                        selected={isItemSelected}
-                                        aria-checked={isItemSelected}
-                                    >
-                                        {/* <TableCell padding="checkbox">
-                                          <Checkbox
-                                            checked={isItemSelected}
-                                            onChange={(event) => handleClick(event, id)}
-                                          />
-                                        </TableCell> */}
-                                        <TableCell align="left">{id}</TableCell>
-                                        <TableCell component="th" scope="row" padding="none">
-                                          <Stack direction="row" alignItems="center" spacing={2}>
-                                            <Avatar alt={name} src={imgUrl} />
-                                            <Stack>
-                                                <Link
-                                                    style={{ textDecoration: 'none' }}
-                                                    underline="hover"
-                                                    color="inherit"
-                                                    query = {"AAS"}
-                                                    to={{
-                                                        pathname: `detail/${md5}`,
-                                                        query: {name:"AAS"}
-                                                    }}
-                                                >
-                                                <CoinNameTypography variant="subtitle1" noWrap>
-                                                    {name}
-                                                </CoinNameTypography>
-                                                </Link>
-                                                <Typography variant="caption">
-                                                {user}
-                                                </Typography>
-                                                <Typography variant="caption">
-                                                {date_fixed}
-                                                </Typography>
-                                            </Stack>
-                                          </Stack>
-                                        </TableCell>
-                                        <TableCell align="left">
-                                            <Stack>
-                                                <Typography variant="subtitle1" noWrap>
-                                                    $ {fCurrency5(price / EXCH.USD)}
-                                                </Typography>
-                                                <Typography variant="caption">
-                                                {fCurrency5(price)} XRP
-                                                </Typography>
-                                            </Stack>
-                                        </TableCell>
-                                        <TableCell align="left">
-                                            {pro24h < 0 ? (
-                                                <BearishTypography variant="subtitle1" noWrap>
-                                                    {strPro24h}
-                                                </BearishTypography>
-                                            ) : (
-                                                <BullishTypography variant="subtitle1" noWrap>
-                                                    {strPro24h}
-                                                </BullishTypography>
-                                            )}
-                                        </TableCell>
-                                        <TableCell align="left">
-                                            {pro7d < 0 ? (
-                                                <BearishTypography variant="subtitle1" noWrap>
-                                                    {strPro7d}
-                                                </BearishTypography>
-                                            ) : (
-                                                <BullishTypography variant="subtitle1" noWrap>
-                                                    {strPro7d}
-                                                </BullishTypography>
-                                            )}
-                                        </TableCell>
-                                        <TableCell align="left">{fCurrency5(amt)||0}</TableCell>
-                                        <TableCell align="left">$ {fCurrency5(price * amt)}</TableCell>
-                                        <TableCell align="left">{holders}</TableCell>
-                                        <TableCell align="left">{offers}</TableCell>
-                                        <TableCell align="left">{trline}</TableCell>
-                                        <TableCell align="left">
-                                              {/* {Str(acct).limit(10, '...').get()} */}
-                                              <Box
-                                                component="img"
-                                                alt=""
-                                                sx={{ maxWidth:'none' }}
-                                                src={`${BASE_URL}/sparkline/${md5}`}
-                                              />
-                                        </TableCell>
-                                        {/*
-                                        <a href={`https://bithomp.com/explorer/${acct}`} target="_blank" rel="noreferrer noopener"> 
-                                        </a>
-                                        <TableCell align="left">{price}</TableCell>
-                                        <TableCell align="left">{dailypercent}</TableCell>
-                                        <TableCell align="left">{marketcap}</TableCell>
-                                        <TableCell align="left">{holders}</TableCell>
-                                        <TableCell align="left">{role}</TableCell>
-                                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
-                                        <TableCell align="left">
-                                          <Label
-                                            variant="ghost"
-                                            color={(status === 'kyc' && 'error') || 'success'}
-                                          >
-                                            {sentenceCase(status)}
-                                          </Label>
-                                        </TableCell> */}
 
-                                        <TableCell align="right">
-                                          <TokenMoreMenu acct={acct} currency={code}/>
-                                        </TableCell>
+                                    let strPro24h = 0;
+                                    if (pro24h < 0) {
+                                        strPro24h = -pro24h;
+                                        strPro24h = '-' + strPro24h + '%';
+                                    } else {
+                                        strPro24h = '+' + pro24h + '%';
+                                    }
+
+                                    let date_fixed = '';
+                                    try {
+                                        if (date) {
+                                            date_fixed = date.split('T')[0];
+                                        }
+                                    } catch(e) {}
+                                    return (
+                                        <TableRow
+                                            hover
+                                            key={id}
+                                            tabIndex={-1}
+                                            role="checkbox"
+                                            selected={isItemSelected}
+                                            aria-checked={isItemSelected}
+                                        >
+                                            {/* <TableCell padding="checkbox">
+                                            <Checkbox
+                                                checked={isItemSelected}
+                                                onChange={(event) => handleClick(event, id)}
+                                            />
+                                            </TableCell> */}
+                                            <TableCell align="left">{id}</TableCell>
+                                            <TableCell component="th" scope="row" padding="none">
+                                            <Stack direction="row" alignItems="center" spacing={2}>
+                                                <Avatar alt={name} src={imgUrl} />
+                                                <Stack>
+                                                    <Link
+                                                        style={{ textDecoration: 'none' }}
+                                                        underline="hover"
+                                                        color="inherit"
+                                                        to={`detail/${md5}`}
+                                                        onClick={()=>{localStorage.setItem("selectToken", JSON.stringify(row));}}
+                                                    >
+                                                    <CoinNameTypography variant="subtitle1" noWrap>
+                                                        {name}
+                                                    </CoinNameTypography>
+                                                    </Link>
+                                                    <Typography variant="caption">
+                                                    {user}
+                                                    </Typography>
+                                                    <Typography variant="caption">
+                                                    {date_fixed}
+                                                    </Typography>
+                                                </Stack>
+                                            </Stack>
+                                            </TableCell>
+                                            <TableCell align="left">
+                                                <Stack>
+                                                    <Typography variant="subtitle1" noWrap>
+                                                        $ {fCurrency5(price / status.USD)}
+                                                    </Typography>
+                                                    <Typography variant="caption">
+                                                    {fCurrency5(price)} XRP
+                                                    </Typography>
+                                                </Stack>
+                                            </TableCell>
+                                            <TableCell align="left">
+                                                {pro24h < 0 ? (
+                                                    <BearishTypography variant="subtitle1" noWrap>
+                                                        {strPro24h}
+                                                    </BearishTypography>
+                                                ) : (
+                                                    <BullishTypography variant="subtitle1" noWrap>
+                                                        {strPro24h}
+                                                    </BullishTypography>
+                                                )}
+                                            </TableCell>
+                                            <TableCell align="left">
+                                                {pro7d < 0 ? (
+                                                    <BearishTypography variant="subtitle1" noWrap>
+                                                        {strPro7d}
+                                                    </BearishTypography>
+                                                ) : (
+                                                    <BullishTypography variant="subtitle1" noWrap>
+                                                        {strPro7d}
+                                                    </BullishTypography>
+                                                )}
+                                            </TableCell>
+                                            <TableCell align="left">{fNumber(amt)}</TableCell>
+                                            <TableCell align="left">$ {fNumber(marketcap / status.USD)}</TableCell>
+                                            <TableCell align="left">{holders}</TableCell>
+                                            <TableCell align="left">{offers}</TableCell>
+                                            <TableCell align="left">{trline}</TableCell>
+                                            <TableCell align="left">
+                                                {/* {Str(acct).limit(10, '...').get()} */}
+                                                <Box
+                                                    component="img"
+                                                    alt=""
+                                                    sx={{ maxWidth:'none' }}
+                                                    src={`${BASE_URL}/sparkline/${md5}`}
+                                                />
+                                            </TableCell>
+                                            {/*
+                                            <a href={`https://bithomp.com/explorer/${acct}`} target="_blank" rel="noreferrer noopener"> 
+                                            </a>
+                                            <TableCell align="left">{price}</TableCell>
+                                            <TableCell align="left">{dailypercent}</TableCell>
+                                            <TableCell align="left">{marketcap}</TableCell>
+                                            <TableCell align="left">{holders}</TableCell>
+                                            <TableCell align="left">{role}</TableCell>
+                                            <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
+                                            <TableCell align="left">
+                                            <Label
+                                                variant="ghost"
+                                                color={(status === 'kyc' && 'error') || 'success'}
+                                            >
+                                                {sentenceCase(status)}
+                                            </Label>
+                                            </TableCell> */}
+
+                                            <TableCell align="right">
+                                            <TokenMoreMenu acct={acct} currency={code}/>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                                {emptyRows > 0 && (
+                                    <TableRow style={{ height: 53 * emptyRows }}>
+                                        <TableCell colSpan={6} />
                                     </TableRow>
-                                  );
-                            })}
-                            {emptyRows > 0 && (
-                                <TableRow style={{ height: 53 * emptyRows }}>
-                                    <TableCell colSpan={6} />
+                                )}
+                        </TableBody>
+                        {/*isTokenNotFound && (
+                            <TableBody>
+                                <TableRow>
+                                    <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                                            <SearchNotFound searchQuery={filterName} />
+                                    </TableCell>
                                 </TableRow>
-                            )}
-                      </TableBody>
-                      {/*isTokenNotFound && (
-                          <TableBody>
-                              <TableRow>
-                                  <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                                        <SearchNotFound searchQuery={filterName} />
-                                  </TableCell>
-                              </TableRow>
-                          </TableBody>
-                      )*/}
-                  </Table>
-              </TableContainer>
-          </Scrollbar>
-        <NFTWidget/>
-    </Page>
-  );
+                            </TableBody>
+                        )*/}
+                    </Table>
+                </TableContainer>
+            </Scrollbar>
+            <NFTWidget/>
+        </Page>
+    );
 }

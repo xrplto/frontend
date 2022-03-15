@@ -7,8 +7,8 @@ const initialState = {
     content:{
         page: 0,
         order: 'desc',
-        orderBy: 'trline',
-        rowsPerPage: 20,
+        orderBy: 'marketcap',
+        rowsPerPage: 100,
         tokenCount: 0,
         tokens: []
     },
@@ -38,7 +38,7 @@ export const tokenSlice = createSlice({
         setOrderBy: (state, action) => {
             state.content.orderBy = action.payload;
         },
-        setTokens: (state, action) => {            
+        setTokens: (state, action) => {
             const tokens = action.payload.tokens;
             const tokenCount = action.payload.token_count;
 
@@ -50,9 +50,9 @@ export const tokenSlice = createSlice({
                 //const md5 = token.md5;
                 token.price = token.exch;
                 token.amount = token.amt;
+                token.marketcap = token.amt * token.price;
                 token.pro7d = fPercent(token.pro7d);
                 token.pro24h = fPercent(token.pro24h);
-
                 state.content.tokens.push(token);
             }
             //state.tokens.push(newTokens);
