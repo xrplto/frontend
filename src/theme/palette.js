@@ -105,8 +105,8 @@ export const palette_light = {
     gradients: GRADIENTS,
     chart: CHART_COLORS,
     divider: GREY[500_24],
-    text: { primary: GREY[800], secondary: GREY[600], disabled: GREY[500], widget: GREY[300] },
-    background: { paper: GREY[100], default: GREY[200], neutral: GREY[200], widget: alpha('#007B55', 0.8) },
+    text: { primary: GREY[800], secondary: GREY[600], disabled: GREY[500], widget: GREY[0] },
+    background: { paper: GREY[100], default: GREY[200], neutral: GREY[200], widget: alpha('#3366FF', 1) },
     action: {
         active: GREY[600],
         hover: GREY[500_8],
@@ -128,6 +128,23 @@ export const palette_light = {
 //     contrastText: '#fff'
 // };
 
+// const SECONDARY = {
+//     lighter: '#D6E4FF',
+//     light: '#84A9FF',
+//     main: '#3366FF',
+//     dark: '#1939B7',
+//     darker: '#091A7A',
+//     contrastText: '#fff'
+// };
+
+// const SUCCESS = {
+//     lighter: '#E9FCD4',
+//     light: '#AAF27F',
+//     main: '#54D62C',
+//     dark: '#229A16',
+//     darker: '#08660D',
+//     contrastText: GREY[800]
+// };
 export const palette_dark = {
     common: { black: '#000', white: '#fff' },
     primary: { ...PRIMARY },
@@ -140,8 +157,8 @@ export const palette_dark = {
     gradients: GRADIENTS,
     chart: CHART_COLORS,
     divider: GREY[500_24],
-    text: { primary: GREY[300], secondary: GREY[100], disabled: GREY[500], widget: GREY[300] },
-    background: { paper: '#191F3A', default: '#0c1023', neutral: GREY[200], widget: alpha('#005249', 0.7)},
+    text: { primary: GREY[300], secondary: GREY[100], disabled: GREY[500], widget: GREY[0] },
+    background: { paper: '#191F3A', default: '#0c1023', neutral: GREY[200], widget: alpha('#3366FF', 1)},
     action: {
         active: GREY[600],
         hover: GREY[500_8],

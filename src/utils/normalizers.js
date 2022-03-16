@@ -8,10 +8,6 @@ function isHex(string) {
 	return /^[0-9A-Fa-f]*$/.test(string);
 }
 
-module.exports.tokenNormalizer = numberOfTokens => {
-    return numberOfTokens.trim().length > 15 ? Number(numberOfTokens).toExponential(15) : numberOfTokens.trim();
-}
-
 module.exports.currencyCodeUTF8ToHexIfUTF8 = currencyCode => {
     if(currencyCode) {
         if(currencyCode.length == 3)

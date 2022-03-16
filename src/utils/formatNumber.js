@@ -15,6 +15,22 @@ import numeral from 'numeral';
     return numberString;
 }*/
 
+export function fNumber(num) {
+    const strNum = num.toString().trim();
+    const intNum = num - (num % 1);
+
+    if (strNum.includes('e')) {
+        if (strNum.length > 5)
+            return Number(strNum).toExponential(5);
+        return num;
+    }
+
+    if (intNum.toString().length > 10)
+        return Number(strNum).toExponential(5);
+
+    return fCurrency5(num);
+}
+
 export function fCurrency(number) {
     return numeral(number).format(Number.isInteger(number) ? '0,0' : '0,0.00');
 }
@@ -40,6 +56,10 @@ export function limitNumber(number) {
         if (res === 'NaN')
             return 0;
         return number;
+}
+
+export function fIntNumber(number) {
+    return numeral(number).format('0,0');
 }
 
 export function fCurrency5(number) {
@@ -72,10 +92,6 @@ export function fPercent(number) {
         if (res === 'NaN') return 0;
         return res;
     }
-}
-
-export function fNumber(number) {
-    return numeral(number).format();
 }
 
 export function fShortenNumber(number) {

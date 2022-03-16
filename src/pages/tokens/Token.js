@@ -52,10 +52,10 @@ const TABLE_HEAD = [
     { id: 'percent_24h', label: '24h (%)', align: 'left', order: false },
     { id: 'percent_7d', label: '7d (%)', align: 'left', order: false },
     { id: 'amount', label: 'Total Supply', align: 'left', order: true },
-    // { id: 'volume', label: 'Volume(24H)', align: 'left', order: true },
+    { id: 'volume', label: 'Volume(24H)', align: 'left', order: true },
     { id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
-    { id: 'holders', label: 'Holders', align: 'left', order: true },
-    { id: 'offers', label: 'Offers', align: 'left', order: true },
+//    { id: 'holders', label: 'Holders', align: 'left', order: true },
+//    { id: 'offers', label: 'Offers', align: 'left', order: true },
     { id: 'trline', label: 'Trust Lines', align: 'left', order: true },
     { id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
     { id: '' }
@@ -101,10 +101,9 @@ export default function Token() {
     const [filterName, setFilterName] = useState('');
 
     const status = useSelector(selectStatus);
+    const content = useSelector(selectContent);
 
     const dispatch = useDispatch();
-
-    const content = useSelector(selectContent);
 
     useEffect(() => {
         if (content.tokens.length < 1000)
@@ -117,6 +116,11 @@ export default function Token() {
         }
     }, []);
     //let i = 0;
+
+    useEffect(() => {
+        if (filterName && content.page > 0)
+            dispatch(setPage(0));
+    }, [filterName]);
 
     const handleRequestSort = (event, property) => {
         const isAsc = content.orderBy === property && content.order === 'asc';
@@ -189,8 +193,6 @@ export default function Token() {
                 onFilterName={handleFilterByName}
             />
         
-            <TokenListToolbar />
-
             <Scrollbar>
                 <TableContainer sx={{ minWidth: 800 }}>
                     <Table>
@@ -221,6 +223,7 @@ export default function Token() {
                                         price} = row;
                                     const imgUrl = `/static/tokens/${name}.jpg`;
                                     const isItemSelected = false;//selected.indexOf(id) !== -1;
+                                    const vol24h = 0;
 
                                     let strPro7d = 0;
                                     if (pro7d < 0) {
@@ -317,9 +320,10 @@ export default function Token() {
                                                 )}
                                             </TableCell>
                                             <TableCell align="left">{fNumber(amt)}</TableCell>
+                                            <TableCell align="left">{fNumber(vol24h)}</TableCell>
                                             <TableCell align="left">$ {fNumber(marketcap / status.USD)}</TableCell>
-                                            <TableCell align="left">{holders}</TableCell>
-                                            <TableCell align="left">{offers}</TableCell>
+                                            {/* <TableCell align="left">{holders}</TableCell>
+                                            <TableCell align="left">{offers}</TableCell> */}
                                             <TableCell align="left">{trline}</TableCell>
                                             <TableCell align="left">
                                                 {/* {Str(acct).limit(10, '...').get()} */}
@@ -372,7 +376,10 @@ export default function Token() {
                     </Table>
                 </TableContainer>
             </Scrollbar>
-            <NFTWidget/>
+
+            <TokenListToolbar />
+            
+            {/* <NFTWidget/> */}
         </Page>
     );
 }

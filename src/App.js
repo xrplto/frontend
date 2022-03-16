@@ -13,14 +13,14 @@ import ScrollToTop from './components/ScrollToTop';
 import { Backdrop } from "@mui/material";
 import { HashLoader } from "react-spinners";
 // ----------------------------------------------------------------------
-import exchangeReducer from "./redux/exchangeSlice";
+import statusReducer from "./redux/statusSlice";
 import tokenReducer from "./redux/tokenSlice";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 
 const store = configureStore({
     reducer: {
-      exchange: exchangeReducer,
+      status: statusReducer,
       token: tokenReducer,
     },
 });

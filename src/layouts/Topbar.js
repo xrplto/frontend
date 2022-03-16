@@ -4,10 +4,12 @@ import { /*useState,*/ useEffect } from 'react';
 //import Context from '../Context'
 // material
 import { alpha, styled/*, useTheme*/ } from '@mui/material/styles';
-import { Box, Stack } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 // components
 //
 import { fIntNumber, fCurrency3 } from '../utils/formatNumber';
+import { Icon } from '@iconify/react';
+import postageStamp from '@iconify/icons-mdi/postage-stamp';
 // ----------------------------------------------------------------------
 import { useSelector } from "react-redux";
 import { selectStatus } from "../redux/statusSlice";
@@ -21,6 +23,21 @@ const StackStyle = styled(Stack)(({ theme }) => ({
     //backgroundColor: alpha("#00AB88", 0.99),
 }));
 
+const XLS14DStyle = styled('div')(({ theme }) => ({
+    cursor: 'pointer',
+    paddingLeft: theme.spacing(0.8),
+    paddingRight: theme.spacing(0.8),
+    paddingTop: theme.spacing(0.2),
+    paddingBottom: theme.spacing(0.2),
+    boxShadow: theme.customShadows.z20,
+    color: theme.palette.text.widget,
+    backgroundColor: theme.palette.background.widget,
+    borderRadius: 8,
+    transition: theme.transitions.create('opacity'),
+    opacity: 0.9,
+    '&:hover': { opacity: 1 }
+}));
+
 // ----------------------------------------------------------------------
 export default function Topbar() {
     const status = useSelector(selectStatus);
@@ -31,10 +48,18 @@ export default function Topbar() {
 
     return (
         <>
-            <StackStyle direction="row" spacing={2} sx={{pl:5, pr:10, pt:1, pb:0.5}} alignItems="center">
+            <StackStyle direction="row" spacing={2} sx={{pl:5, pr:10, pt:0.5, pb:0.5}} alignItems="center">
                 <h5>Tokens: </h5>
                 <h5>{fIntNumber(status.token_count)}</h5>
                 <Box sx={{ flexGrow: 1 }} />
+                <XLS14DStyle>
+                    <Stack direction="row" spacing={0.1} alignItems='center'>
+                        <Icon icon={postageStamp} width={16} height={16} />
+                        <Typography align="center" style={{ wordWrap: "break-word" }} variant="caption" >
+                            XLS-14D
+                        </Typography>
+                    </Stack>
+                </XLS14DStyle>
                 <h5>1 XRP</h5>
                 <h6>|</h6>
                 <h5>$ {fCurrency3(1/status.USD)}</h5>
