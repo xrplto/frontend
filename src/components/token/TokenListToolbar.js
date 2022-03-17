@@ -101,7 +101,6 @@ export default function TokenListToolbar(props) {
                 <Select
                     value={content.rowsPerPage}
                     onChange={handleChangeRowsPerPage}
-                    disableUnderline
                     sx={{'& .MuiOutlinedInput-notchedOutline' : {
                         border: 'none'
                     }}}

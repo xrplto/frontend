@@ -3,8 +3,8 @@ import { Navigate, useRoutes } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import EmptyLayout from './layouts/EmptyLayout';
 //
-import Tokens from './pages/tokens/Token';
-import TokenDetail from './pages/tokens/TokenDetail';
+import Tokens from './pages/token/Token';
+import TokenDetail from './pages/token/TokenDetail';
 import Spinner from './pages/spinner/Spinner';
 import NotFound from './pages/Page404';
 
