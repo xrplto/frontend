@@ -1,21 +1,22 @@
 // material
-import { Box, Grid, Container, Typography } from '@mui/material';
+import { Grid } from '@mui/material';
 
 // components
 import {
   AppCurrentVisits,
-  AppWebsiteVisits,
   AppCurrentSubject,
   AppConversionRates
 } from './app';
 
+import PriceChart from './charts/PriceChart';
+
 // ----------------------------------------------------------------------
 
-export default function Dashboard() {
+export default function Graph({detail}) {
     return (
         <Grid container spacing={3} sx={{p:0}} p={-24}>
             <Grid item xs={12} md={6} lg={8} sx={{pl:0}}>
-                <AppWebsiteVisits />
+                <PriceChart detail={detail} />
             </Grid>
 
             <Grid item xs={12} md={6} lg={4}>
