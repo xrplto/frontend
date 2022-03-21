@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
+import ScrollToTop from './ScrollToTop';
 
 import Content from "./Content";
 
@@ -18,6 +19,7 @@ import {
     Divider,
     Paper,
     Stack,
+    Toolbar,
     Typography
 } from '@mui/material';
 
@@ -95,23 +97,24 @@ export default function TokenDetail(props) {
 
     //const status = useSelector(selectStatus);
     //const dispatch = useDispatch();
-    
+
     useEffect(() => {
         function getDetail() {
-            axios.get(`${BASE_URL}/detail/${md5}`)
-            .then(res => {
-                let detail = res.status===200?res.data:undefined;
-                if (detail) {
-                    //dispatch(update_status(status));
-                    console.log(detail);
-                    setDetail(detail);
-                }
-            }).catch(err => {
-                console.log("error on getting details!!!", err);
-            }).then(function () {
-                // always executed
-                // console.log("Heartbeat!");
-            });
+            // https://ws.xrpl.to/api/detail/0413ca7cfc258dfaf698c02fe304e607?range=1D
+            axios.get(`${BASE_URL}/detail/${md5}?range=1D`)
+                .then(res => {
+                    let detail = res.status === 200 ? res.data : undefined;
+                    if (detail) {
+                        //dispatch(update_status(status));
+                        console.log(detail);
+                        setDetail(detail);
+                    }
+                }).catch(err => {
+                    console.log("error on getting details!!!", err);
+                }).then(function () {
+                    // always executed
+                    // console.log("Heartbeat!");
+                });
         }
 
         if (md5)
@@ -121,9 +124,9 @@ export default function TokenDetail(props) {
 
     if (!detail) {
         return (
-          <Content>
-              {/* <CircularProgress /> */}
-          </Content>
+            <Content>
+                {/* <CircularProgress /> */}
+            </Content>
         );
     } else {
         const {
@@ -138,27 +141,28 @@ export default function TokenDetail(props) {
             offers,
             exch*/
         } = detail.token;
-    
-        let user = detail.user;
+
+        let user = detail.token.user;
         if (!user) user = name;
 
         return (
-            <Page title={user + ' price today'}>
-                <Container maxWidth="xl" sx={{mt:5}}>
-                    <Stack direction="row" spacing={5} sx={{mt:2}}>
-                      <UserDesc token={detail.token}  />
+            <Page title={`${user} price today, ${name} to USD live, marketcap and chart `}>
+                <Toolbar id="back-to-top-anchor" />
+                <Container maxWidth="xl" sx={{ mt: 4 }}>
+                    <Stack direction="row" spacing={5} sx={{ mt: 2 }}>
+                        <UserDesc token={detail.token} />
 
-                      <Divider orientation="vertical" variant="middle" flexItem />
-                      
-                      <PriceDesc token={detail.token} />
+                        <Divider orientation="vertical" variant="middle" flexItem />
 
-                      <Divider orientation="vertical" variant="middle" flexItem />
+                        <PriceDesc token={detail.token} />
 
-                      <ExtraDesc token={detail.token} />
+                        <Divider orientation="vertical" variant="middle" flexItem />
+
+                        <ExtraDesc token={detail.token} />
 
                     </Stack>
-                    <Graph detail={detail}/>
-                  
+                    <Graph detail={detail} />
+
                     {/* <div>
                       <SummaryCard title={"Holders"} value={"$" + fare} />
                       <SummaryCard title={"Offers"} value={trips} />
@@ -171,6 +175,7 @@ export default function TokenDetail(props) {
                     </div>
                     <SummaryCard title={"Recent Orders"} component={<ExpensesTable />} /> */}
                 </Container>
+                <ScrollToTop />
             </Page>
         );
     }

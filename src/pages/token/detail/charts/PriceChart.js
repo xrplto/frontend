@@ -3,74 +3,97 @@ import ReactApexChart from 'react-apexcharts';
 // material
 import { CardHeader, Box } from '@mui/material';
 //
-import BaseOptionChartStyle from './BaseOptionChartStyle';
-//import { alpha } from '@mui/material/styles';
+import ChartOptions from './ChartOptions';
+import { alpha, styled, useTheme } from '@mui/material/styles';
 //import { withStyles } from '@mui/styles';
-
+import { fCurrency5, fNumber } from '../../../../utils/formatNumber';
 // ----------------------------------------------------------------------
-
-// const CHART_DATA = [
-//     {
-//         name: 'A',
-//         type: 'column',
-//         data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30]
-//     },
-//     {
-//         name: 'B',
-//         type: 'area',
-//         data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43]
-//     },
-//     {
-//         name: 'C',
-//         type: 'line',
-//         data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39]
-//     }
-// ];
 
 // const CardTransparent = withStyles({
 //     root: {
 //         backgroundColor: alpha('#B72136', 0.0)
 //     }
 // }) (Card);
+
+const CustomChart = styled(ReactApexChart)(({ theme }) => ({
+    '&.apexcharts-canvas': {
+        // Tooltip
+        '.apexcharts-xaxistooltip': {
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)', // Fix on Mobile
+            backgroundColor: alpha(theme.palette.background.default, 0.2),
+            border: 0,
+            boxShadow: theme.customShadows.z16,
+            color: theme.palette.text.primary,
+            borderRadius: theme.shape.borderRadiusSm,
+            '&:before': { borderBottomColor: 'transparent' },
+            '&:after': { borderBottomColor: alpha(theme.palette.background.default, 0.72) }
+        },
+        '.apexcharts-tooltip.apexcharts-theme-light': {
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)', // Fix on Mobile
+            backgroundColor: alpha(theme.palette.background.default, 0.2),
+            border: 0,
+            boxShadow: theme.customShadows.z24,
+            borderRadius: theme.shape.borderRadiusSm,
+            '& .apexcharts-tooltip-title': {
+                border: 0,
+                textAlign: 'center',
+                fontWeight: theme.typography.fontWeightBold,
+                backgroundColor: theme.palette.grey[500_16],
+                color: theme.palette.text[theme.palette.mode === 'light' ? 'secondary' : 'primary']
+            }
+        },
+        // Legend
+        '.apexcharts-legend': {
+            padding: 0
+        },
+        '.apexcharts-legend-series': {
+            display: 'flex !important',
+            alignItems: 'center'
+        },
+        '.apexcharts-legend-marker': {
+            marginRight: 8
+        },
+        '.apexcharts-legend-text': {
+            lineHeight: '18px',
+            textTransform: 'capitalize'
+        }
+    }
+}));
+
 function getChartData(data) {
     let vals = [];
-    return data.slice(7300, 8740);
+    let labels = [];
+    for (var i in data) {
+        const d = data[i];
+        let val = fCurrency5(parseFloat(d.v));
+        vals.push(val);
+        labels.push(d.t);
+    }
+    return { labels: labels, data: vals };
 }
 
-export default function PriceChart({detail}) {
-    const data = getChartData(detail.history);
+export default function PriceChart({ detail }) {
+    //const {labels, data} = getChartData(detail.history);
+    let user = detail.token.user;
+    if (!user) user = detail.token.name;
+
     const CHART_DATA = [
         {
-            name: 'B',
+            name: '',
             type: 'area',
-            data
+            data: detail.history
         }
     ];
-    const chartOptions = merge(BaseOptionChartStyle(), {
-        stroke: { width: [2] },
-        plotOptions: { bar: { columnWidth: '11%', borderRadius: 4 } },
-        fill: { type: ['gradient'] },
-        labels: data,
-        xaxis: { type: 'datetime' },
-        tooltip: {
-            shared: true,
-            intersect: false,
-            y: {
-                formatter: (y) => {
-                    if (typeof y !== 'undefined') {
-                        return `${y.toFixed(0)} xxx`;
-                    }
-                    return y;
-                }
-            }
-        }
+    const chartOptions = merge(ChartOptions(), {
     });
 
     return (
         <>
-            <CardHeader title="Price charts" subheader="(+43%) than last year" />
+            <CardHeader title={`${user} to USD Chart`} subheader="" />
             <Box sx={{ p: 0, pb: 1 }} dir="ltr">
-                <ReactApexChart type="line" series={CHART_DATA} options={chartOptions} height={364} />
+                <CustomChart type="line" series={CHART_DATA} options={chartOptions} height={364} />
             </Box>
         </>
     );
