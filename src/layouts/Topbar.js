@@ -15,11 +15,14 @@ import { useSelector } from "react-redux";
 import { selectStatus } from "../redux/statusSlice";
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
-    boxShadow: theme.customShadows.z0,
+    //boxShadow: theme.customShadows.z0,
     backdropFilter: 'blur(2px)',
     WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
     backgroundColor: alpha(theme.palette.background.paper, 0.0),
     borderRadius: '0px',
+    borderBottom: '0.05em solid',
+    borderBottomColor: alpha('#919EAB', 0.24),
+    //padding: '0.5em'
     //backgroundColor: alpha("#00AB88", 0.99),
 }));
 
@@ -47,7 +50,7 @@ export default function Topbar() {
     }, []);
 
     return (
-        <StackStyle direction="row" spacing={2} sx={{pl:5, pr:10, pt:0.5, pb:0.5}} alignItems="center">
+        <StackStyle direction="row" spacing={2} sx={{pl:2, pr:3, pt:0.5, pb:0.5}} alignItems="center">
             <h5>Tokens: </h5>
             <h5>{fIntNumber(status.token_count)}</h5>
             <Box sx={{ flexGrow: 1 }} />

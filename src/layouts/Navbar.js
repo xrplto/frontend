@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useContext } from 'react'
 import Context from '../Context'
 // material
-import {styled/*, alpha, useTheme*/ } from '@mui/material/styles';
+import {styled, alpha/*, useTheme*/ } from '@mui/material/styles';
 import { Box, Stack, Toolbar, IconButton } from '@mui/material';
 // components
 //
@@ -25,12 +25,30 @@ import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 // ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
-//const APPBAR_MOBILE = 64;
 const APPBAR_DESKTOP = 72;
-// boxShadow: theme.customShadows.z1,
 
 const ToolbarStyle = styled(Toolbar)(({ theme }) => ({
-  minHeight: APPBAR_DESKTOP
+    minHeight: APPBAR_DESKTOP,
+    //boxShadow: theme.customShadows.z0
+    borderBottom: '0.05em solid',
+    backgroundColor: alpha('#919EAB', 0.8),
+    borderBottomColor: alpha('#919EAB', 0.24),
+    '& .MuiToolbar-root': {
+        paddingLeft: 0,
+        paddingRight: 0,
+    }
+}));
+
+const StackStyle = styled(Stack)(({ theme }) => ({
+    //boxShadow: theme.customShadows.z0,
+    backdropFilter: 'blur(2px)',
+    WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
+    backgroundColor: alpha(theme.palette.background.paper, 0.0),
+    borderRadius: '0px',
+    borderBottom: '0.05em solid',
+    borderBottomColor: alpha('#919EAB', 0.24),
+    //padding: '0.5em'
+    //backgroundColor: alpha("#00AB88", 0.99),
 }));
 
 // ----------------------------------------------------------------------
@@ -38,8 +56,8 @@ export default function Navbar() {
     const { toggleThisTheme, isDarkMode } = useContext(Context);
 
     return (
-        <ToolbarStyle>
-            <Box component={RouterLink} to="/" sx={{ px: 2.5, py: 3, display: 'inline-flex' }}>
+        <StackStyle direction="row" spacing={2} sx={{pl:2, pr:2, pt:0.5, pb:0.5}} alignItems="center">
+            <Box component={RouterLink} to="/" sx={{ pl: 0, pr: 0, py: 3, display: 'inline-flex' }}>
                 <Logo />
             </Box>
 
@@ -55,6 +73,6 @@ export default function Navbar() {
                     )}
                 </IconButton>
             </Stack>
-        </ToolbarStyle>
+        </StackStyle>
     );
 }

@@ -38,7 +38,7 @@ export default function TokenMoreMenu({acct, currency}) {
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="bithomp" src="/static/bithomp.png" sx={{ mr:1, width: 36, height: 36 }} />
+                        <Avatar alt="bithomp" src="/static/bithomp.png" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Bithomp" primaryTypographyProps={{ variant: 'subtitle1' }} />
                     </MenuItem>
                 </Link>
@@ -50,7 +50,7 @@ export default function TokenMoreMenu({acct, currency}) {
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xrpscan" src="/static/xrpscan.png" sx={{ mr:1, width: 36, height: 36 }} />
+                        <Avatar alt="xrpscan" src="/static/xrpscan.png" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPScan" primaryTypographyProps={{ variant: 'subtitle1' }} />
                     </MenuItem>
                 </Link>
@@ -62,7 +62,7 @@ export default function TokenMoreMenu({acct, currency}) {
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ mr:1, width: 36, height: 36 }} />
+                        <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XUMM Dex" primaryTypographyProps={{ variant: 'subtitle1' }} />
                     </MenuItem>
                 </Link>

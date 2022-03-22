@@ -17,6 +17,7 @@ import ScrollToTop from './ScrollToTop';
 import {
     Avatar,
     Box,
+    Container,
     Stack,
     Table,
     TableRow,
@@ -121,7 +122,8 @@ function applySortFilter(array, comparator, query) {
 
 
 const CustomTableContainer = styled(TableContainer)(({ theme }) => ({
-    overflow: "initial"
+    maxWidth: 'xl',
+    overflow: 'initial'
 }));
 
 export default function Token(props) {
@@ -198,6 +200,8 @@ export default function Token(props) {
 
     return (
         <Page title="Tokens">
+            <Container maxWidth="xl">
+                
             <Toolbar id="back-to-top-anchor" />
 
             <SearchToolbar
@@ -205,8 +209,8 @@ export default function Token(props) {
                 onFilterName={handleFilterByName}
             />
 
-            {/* <Scrollbar> */}
-            <CustomTableContainer>
+            
+            {/* <CustomTableContainer> */}
                 <Table stickyHeader>
                     <TokenListHead
                         order={content.order}
@@ -386,8 +390,8 @@ export default function Token(props) {
                         </TableBody>
                     )*/}
                 </Table>
-            </CustomTableContainer>
-            {/* </Scrollbar> */}
+            {/* </CustomTableContainer> */}
+            </Container>
 
             <TokenListToolbar />
             {/* <NFTWidget/> */}

@@ -1,8 +1,24 @@
-import { useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 // material
 import { alpha, styled } from '@mui/material/styles';
-import { AppBar } from '@mui/material';
+import { makeStyles } from "@mui/styles";
+import {
+    AppBar,
+    Container,
+    Slide,
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableContainer,
+    useScrollTrigger,
+    CssBaseline,
+    Toolbar,
+    Typography,
+    Divider
+} from '@mui/material';
 //
 import Topbar from './Topbar';
 import Navbar from './Navbar';
@@ -12,33 +28,64 @@ import { useSelector, useDispatch } from "react-redux";
 import { update_status, selectStatus, selectLoading } from "../redux/statusSlice";
 import { update_tokens, selectTokens } from "../redux/tokenSlice";
 // ----------------------------------------------------------------------
-const APP_BAR_DESKTOP = 92;
+
+const APP_BAR_DESKTOP = 64;
 
 const RootStyle = styled('div')({
-  display: 'flex',
-  minHeight: '100%',
-  overflow: 'hidden'
+    display: 'flex',
+    minHeight: '100%'
 });
 
 const MainStyle = styled('div')(({ theme }) => ({
     flexGrow: 1,
-    overflow: 'auto',
     minHeight: '100%',
-    paddingTop: APP_BAR_DESKTOP + 24,
+    paddingTop: APP_BAR_DESKTOP,
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
     paddingBottom: theme.spacing(10)
 }));
 
 const AppBarStyle = styled(AppBar)(({ theme }) => ({
+    //position: 'static',
     boxShadow: 'none',
     backdropFilter: 'blur(2px)',
     WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
-    backgroundColor: alpha(theme.palette.background.paper, 0.0),
+    backgroundColor: alpha(theme.palette.background.default, 0.9),
     borderRadius: '0px',
     color: theme.palette.text.primary
     //backgroundColor: alpha("#00AB88", 0.7),
 }));
+
+function HideOnScroll(props) {
+    const { children, window } = props;
+    // Note that you normally won't need to set the window ref as useScrollTrigger
+    // will default to window.
+    // This is only being set here because the demo is in an iframe.
+    /*const trigger = useScrollTrigger({
+        target: window ? window() : undefined,
+    });*/
+
+    const trigger = useScrollTrigger({
+        target: window ? window() : undefined,
+        disableHysteresis: true,
+        threshold: 100,
+    });
+
+    return (
+      <Slide appear={false} direction="down" in={!trigger}>
+        {children}
+      </Slide>
+    );
+}
+  
+HideOnScroll.propTypes = {
+    children: PropTypes.element.isRequired,
+    /**
+     * Injected by the documentation to work in an iframe.
+     * You won't need it on your project.
+     */
+    window: PropTypes.func,
+};
 
 // ----------------------------------------------------------------------
 export default function MainLayout() {
@@ -75,12 +122,31 @@ export default function MainLayout() {
         }
     }, []);
 
+    /*<CssBaseline />
+    <AppBar position="static">
+        <Container maxWidth="lg">
+            <ToolBar>
+                <Typography>Logo</Typography> 
+            </ToolBar>
+        </Container>
+    </AppBar>*/
+
     return (
         <RootStyle>
-            <AppBarStyle>
+            {/* <CssBaseline /> */}
+            <HideOnScroll>
+                <AppBarStyle>
+                    <Container maxWidth="xl">
+                        <Topbar />
+                        <Navbar />
+                    </Container>
+                </AppBarStyle>
+            </HideOnScroll>
+
+            {/* <AppBarStyle>
                 <Topbar />
-                <Navbar />
-            </AppBarStyle>
+            </AppBarStyle> */}
+
             <MainStyle>
                 <Outlet />
             </MainStyle>

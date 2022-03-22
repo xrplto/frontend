@@ -179,7 +179,7 @@ export default function AccountPopover() {
                 {accountProfile && accountProfile.account ? (
                         <>
                         <Stack spacing={1} sx={{ pt: 2 }} alignItems='center'>
-                            <Avatar alt="xumm" src="/static/xumm.jpg"/>
+                            <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ mr:1, width: 24, height: 24 }}/>
                             <Typography align="center" style={{ wordWrap: "break-word" }} variant="body2" sx={{ width: 180, color: 'text.secondary' }} >
                                 {accountProfile.account}
                             </Typography>
