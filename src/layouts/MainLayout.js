@@ -126,7 +126,7 @@ export default function MainLayout() {
     <AppBar position="static">
         <Container maxWidth="lg">
             <ToolBar>
-                <Typography>Logo</Typography> 
+                <Typography>Logo</Typography>
             </ToolBar>
         </Container>
     </AppBar>*/

@@ -13,6 +13,7 @@ import {
     Chip,
     Box,
     Stack,
+    Tooltip,
     Typography
 } from '@mui/material';
 
@@ -89,32 +90,36 @@ export default function TokenDetail({token}) {
                         <Typography variant="subtitle1">
                             {fCurrency5(exch)} XRP
                         </Typography>
-                        {pro24h < 0 ? (
-                            <BearishChip
-                                icon={<Icon icon={caretDown} width="16" height="16" />}
-                                size="small"
-                                label={<Typography variant="subtitle2">{strPro24h}</Typography>}
-                                variant="h3" />
-                        ) : (
-                            <BullishChip 
-                                icon={<Icon icon={caretUp} width="16" height="16" />}
-                                size="small"
-                                label={<Typography variant="subtitle2">{strPro24h}</Typography>}
-                                variant="h3" />
-                        )}
-                        {pro7d < 0 ? (
-                            <BearishChip
-                                icon={<Icon icon={caretDown} width="16" height="16" />}
-                                size="small"
-                                label={<Typography variant="subtitle2">{strPro7d}</Typography>}
-                                variant="h3" />
-                        ) : (
-                            <BullishChip 
-                                icon={<Icon icon={caretUp} width="16" height="16" />}
-                                size="small"
-                                label={<Typography variant="subtitle2">{strPro7d}</Typography>}
-                                variant="h3" />
-                        )}
+                        <Tooltip title="24h(%)">
+                            {pro24h < 0 ? (
+                                <BearishChip
+                                    icon={<Icon icon={caretDown} width="16" height="16" />}
+                                    size="small"
+                                    label={<Typography variant="subtitle2">{strPro24h}</Typography>}
+                                    variant="h3" />
+                            ) : (
+                                <BullishChip
+                                    icon={<Icon icon={caretUp} width="16" height="16" />}
+                                    size="small"
+                                    label={<Typography variant="subtitle2">{strPro24h}</Typography>}
+                                    variant="h3" />
+                            )}
+                        </Tooltip>
+                        <Tooltip title="7d(%)">
+                            {pro7d < 0 ? (
+                                <BearishChip
+                                    icon={<Icon icon={caretDown} width="16" height="16" />}
+                                    size="small"
+                                    label={<Typography variant="subtitle2">{strPro7d}</Typography>}
+                                    variant="h3" />
+                            ) : (
+                                <BullishChip 
+                                    icon={<Icon icon={caretUp} width="16" height="16" />}
+                                    size="small"
+                                    label={<Typography variant="subtitle2">{strPro7d}</Typography>}
+                                    variant="h3" />
+                            )}
+                        </Tooltip>
                     </Stack>
                 </Stack>
             </Stack>

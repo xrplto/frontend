@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { withStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 
 import {
     Token as TokenIcon
@@ -12,16 +14,47 @@ import linkExternal from '@iconify/icons-charm/link-external';
 import zoomIcon from '@iconify/icons-cil/zoom';
 import codeIcon from '@iconify/icons-bytesize/code';
 import personFill from '@iconify/icons-bi/person-fill';
-import downOutlined from '@iconify/icons-ant-design/down-outlined';
+import chevronDown from '@iconify/icons-akar-icons/chevron-down';
+import twitterFill from '@iconify/icons-akar-icons/twitter-fill';
 
 
 import {
     Avatar,
     Chip,
+    Grid,
+    Link,
     Rating,
     Stack,
     Typography
 } from '@mui/material';
+
+/* success 3366FF  secondary FF6C40 */
+
+const CustomChip = styled(Chip)(({ theme }) => ({
+    color: '#3366FF'
+}));
+
+const HoldersChip = withStyles({
+    root: {
+        "&&:hover": {
+            backgroundColor: "purple"
+        },
+        "&&:focus": {
+            backgroundColor: "green"
+        }
+    }
+})(Chip);
+
+const OffersChip = withStyles({
+    root: {
+        "&&:hover": {
+            backgroundColor: "purple"
+        },
+        "&&:focus": {
+            backgroundColor: "green"
+        }
+    }
+})(Chip);
 
 export default function TokenDetail({token}) {
     const [rating, setRating] = useState(2);
@@ -29,13 +62,16 @@ export default function TokenDetail({token}) {
     const {
         id,
         name,
+        domain,
+        kyc,
+        twitter,
+        holders,
+        offers,
         /*acct,
         code,
         date,
         amt,
-        trline,
-        holders,
-        offers,
+        trline,        
         exch*/
     } = token;
 
@@ -68,34 +104,68 @@ export default function TokenDetail({token}) {
                 <Chip variant={"outlined"} icon={<TokenIcon />} label={name} />
             </Stack>
             <Stack direction="row" spacing={1} sx={{mt:2}}>
-                <Chip label={'Rank #' + id} color="primary" size="small"/>
-                <Chip label="Token" color="success" size="small"/>
-                <Chip label="On 3,634,131 watchlists" color="secondary" size="small"/>
+                <Chip label={'Rank #' + id} color="primary" variant="outlined" size="small"/>
+                <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
+                <Chip label={offers + " Offers"} color="success" variant="outlined" size="small"/>
             </Stack>
-            <Stack direction="row" spacing={1} sx={{mt:5}}>
-                <Chip label="www.sologenic.com"
-                    deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
-                    onDelete={handleDelete} onClick={handleDelete}
-                    icon={<Icon icon={link45deg} width="16" height="16" />} />
-                <Chip label="Explorers"
-                    deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
-                    onDelete={handleDelete} onClick={handleDelete}
-                    icon={<Icon icon={zoomIcon} width="16" height="16" />} />
-                <Chip label="Chat"
-                    deleteIcon={<Icon icon={downOutlined} width="16" height="16"/>}
-                    onDelete={handleDelete} onClick={handleDelete}
-                    icon={<Icon icon={chatIcon} width="16" height="16" />} />
-            </Stack>
-            <Stack direction="row" spacing={1} sx={{mt:1}}>
-                <Chip label="Source code"
-                    deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
-                    onDelete={handleDelete} onClick={handleDelete}
-                    icon={<Icon icon={codeIcon} width="16" height="16" />} />
-                <Chip label="Community"
-                    deleteIcon={<Icon icon={downOutlined} width="16" height="16"/>}
-                    onDelete={handleDelete} onClick={handleDelete}
-                    icon={<Icon icon={personFill} width="16" height="16" />} />
-              </Stack>
+            <Grid container spacing={1} sx={{p:0,mt:2}} >
+                {domain && (
+                    <Grid item>
+                        <Link
+                            underline="none"
+                            color="inherit"
+                            target="_blank"
+                            href={`https://${domain}`}
+                            rel="noreferrer noopener"
+                        >
+                            <Chip label={domain} sx={{pl:0.5,pr:0.5}}
+                                deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
+                                onDelete={handleDelete} onClick={handleDelete}
+                                icon={<Icon icon={link45deg} width="16" height="16" />} />
+                        </Link>
+                    </Grid>
+                )}
+                {twitter && (
+                    <Grid item>
+                        <Link
+                            underline="none"
+                            color="inherit"
+                            target="_blank"
+                            href={`https://twitter.com/${twitter}`}
+                            rel="noreferrer noopener"
+                        >
+                            <Chip label={twitter} sx={{pl:0.5,pr:0.5}}
+                                deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
+                                onDelete={handleDelete} onClick={handleDelete}
+                                icon={<Icon icon={twitterFill} width="16" height="16" />} />
+                        </Link>
+                    </Grid>
+                )}
+                <Grid item>
+                    <Chip label="Explorers" sx={{pl:0.5,pr:0.5}}
+                        deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
+                        onDelete={handleDelete} onClick={handleDelete}
+                        icon={<Icon icon={zoomIcon} width="16" height="16" />} />
+                </Grid>
+                <Grid item>
+                    <Chip label="Chat" sx={{pl:0.5,pr:0.5}}
+                        deleteIcon={<Icon icon={chevronDown} width="16" height="16"/>}
+                        onDelete={handleDelete} onClick={handleDelete}
+                        icon={<Icon icon={chatIcon} width="16" height="16" />} />
+                </Grid>
+                <Grid item>
+                    <Chip label="Source code" sx={{pl:0.5,pr:0.5}}
+                        deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
+                        onDelete={handleDelete} onClick={handleDelete}
+                        icon={<Icon icon={codeIcon} width="16" height="16" />} />
+                </Grid>
+                <Grid item>
+                    <Chip label="Community" sx={{pl:0.5,pr:0.5}}
+                        deleteIcon={<Icon icon={chevronDown} width="16" height="16"/>}
+                        onDelete={handleDelete} onClick={handleDelete}
+                        icon={<Icon icon={personFill} width="16" height="16" />} />
+                </Grid>
+            </Grid>
         </Stack>
     );
 }

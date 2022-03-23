@@ -25,7 +25,7 @@ import {
 import { makeStyles } from "@mui/styles";
 
 import { useSelector, useDispatch } from "react-redux";
-import { selectStatus } from "../../redux/statusSlice";
+
 import {
     setOrder,
     setOrderBy,
@@ -33,7 +33,7 @@ import {
     setRowsPerPage,
     selectContent,
     loadTokens
-} from "../../redux/tokenSlice";
+} from "../../../redux/tokenSlice";
 // ----------------------------------------------------------------------
 const AppBarStyle = styled(AppBar)(({ theme }) => ({
     boxShadow: 'none',
@@ -118,6 +118,20 @@ export default function TokenListToolbar(props) {
 
     const handleChangePage = (event, newPage) => {
         dispatch(setPage(newPage - 1));
+        gotoTop(event);
+    };
+
+    const gotoTop = (event) => {
+        const anchor = (event.target.ownerDocument || document).querySelector(
+          '#back-to-top-anchor',
+        );
+    
+        if (anchor) {
+          anchor.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+          });
+        }
     };
 
     return (

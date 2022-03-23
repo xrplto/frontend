@@ -12,11 +12,13 @@ import Content from "./Content";
 import UserDesc from "./detail/UserDesc";
 import PriceDesc from "./detail/PriceDesc";
 import ExtraDesc from "./detail/ExtraDesc";
-import Graph from "./detail/Graph";
+import Holders from "./detail/Holders";
+import PriceChart from './detail/charts/PriceChart';
 
 import {
     Container,
     Divider,
+    Grid,
     Paper,
     Stack,
     Toolbar,
@@ -26,6 +28,13 @@ import {
 import axios from 'axios'
 
 import Page from '../../components/Page';
+
+import {
+    AppCurrentSubject,
+    AppConversionRates
+} from './detail/app';
+
+
 
 /*const useStyles = makeStyles((theme) => ({
     headerContainer: {
@@ -149,19 +158,37 @@ export default function TokenDetail(props) {
             <Page title={`${user} price today, ${name} to USD live, marketcap and chart `}>
                 <Toolbar id="back-to-top-anchor" />
                 <Container maxWidth="xl" sx={{ mt: 4 }}>
-                    <Stack direction="row" spacing={5} sx={{ mt: 2 }}>
-                        <UserDesc token={detail.token} />
+                    <Grid item container direction="row" >
+                        <Grid item xs={6} md={6} lg={3.5} sx={{borderRight: '1px solid #323546'}}>
+                            <UserDesc token={detail.token} />
+                        </Grid>
+                        
+                        <Grid item xs={6} md={6} lg={3.5} sx={{pl:3, borderRight: '1px solid #323546'}}>
+                            <PriceDesc token={detail.token} />
+                        </Grid>
 
-                        <Divider orientation="vertical" variant="middle" flexItem />
+                        <Grid item xs={12} md={12} lg={5} sx={{pl:3}}>
+                            <ExtraDesc token={detail.token} />
+                        </Grid>
+                    </Grid>
 
-                        <PriceDesc token={detail.token} />
+                    <Grid container spacing={3} sx={{p:0}}>
+                        <Grid item xs={12} md={6} lg={8} sx={{pl:0}}>
+                            <PriceChart detail={detail} />
+                        </Grid>
 
-                        <Divider orientation="vertical" variant="middle" flexItem />
+                        <Grid item xs={12} md={6} lg={4}>
+                            <Holders token={detail.token} />
+                        </Grid>
 
-                        <ExtraDesc token={detail.token} />
+                        <Grid item xs={12} md={6} lg={8}>
+                            <AppConversionRates />
+                        </Grid>
 
-                    </Stack>
-                    <Graph detail={detail} />
+                        <Grid item xs={12} md={6} lg={4}>
+                            <AppCurrentSubject />
+                        </Grid>
+                    </Grid>
 
                     {/* <div>
                       <SummaryCard title={"Holders"} value={"$" + fare} />

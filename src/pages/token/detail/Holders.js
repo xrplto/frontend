@@ -4,12 +4,18 @@ import ReactApexChart from 'react-apexcharts';
 import { useTheme, styled/*, alpha*/ } from '@mui/material/styles';
 import { CardHeader } from '@mui/material';
 // utils
-import { fNumber } from '../../../../utils/formatNumber';
+import { fNumber } from '../../../utils/formatNumber';
 //
-import { BaseOptionChart } from './charts';
+import ChartOptions from './charts/ChartOptions';
 
-//import { withStyles } from '@mui/styles';
+import { withStyles } from '@mui/styles';
 
+import {
+    Button,
+    Divider,
+    Stack,
+    Typography
+} from '@mui/material';
 // ----------------------------------------------------------------------
 
 const CHART_HEIGHT = 372;
@@ -41,10 +47,24 @@ const ChartWrapperStyle = styled('div')(({ theme }) => ({
 
 const CHART_DATA = [4344, 5435, 1443, 4443];
 
-export default function AppCurrentVisits() {
+export default function AppCurrentVisits({token}) {
     const theme = useTheme();
 
-    const chartOptions = merge(BaseOptionChart(), {
+    const {
+        name,
+        holders,
+        offers,
+        /*
+        id
+        acct,
+        code,
+        date,
+        amt,
+        trline,
+        exch*/
+    } = token;
+
+    const chartOptions = merge(/*ChartOptions()*/{}, {
         colors: [
             theme.palette.primary.main,
             theme.palette.info.main,

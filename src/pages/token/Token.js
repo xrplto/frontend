@@ -6,8 +6,7 @@ import { useState, useEffect } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { normalizer } from '../utils/normalizers';
 import { fCurrency5, fNumber } from '../../utils/formatNumber';
-import { withStyles } from '@mui/styles';
-import { makeStyles } from "@mui/styles";
+import { withStyles, makeStyles } from '@mui/styles';
 //import { styled } from '@mui/material/styles';
 import { Link } from 'react-router-dom'
 import { alpha, styled } from '@mui/material/styles';
@@ -35,7 +34,7 @@ import Page from '../../components/Page';
 //import Label from '../../components/Label';
 import Scrollbar from '../../components/Scrollbar';
 //import SearchNotFound from '../../components/SearchNotFound';
-import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu } from '../../components/token';
+import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu } from './components';
 
 // ----------------------------------------------------------------------
 import { useSelector, useDispatch } from "react-redux";
@@ -140,7 +139,7 @@ export default function Token(props) {
         if (content.tokens.length < 1000)
             dispatch(loadTokens(0));
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        const timer = setInterval(() => { }, 5000)
+        const timer = setInterval(() => {}, 5000)
 
         return () => {
             clearInterval(timer);
@@ -159,7 +158,7 @@ export default function Token(props) {
         dispatch(setOrderBy(property));
     };
 
-    //const emptyRows = content.page > 0 ? Math.max(0, (1 + content.page) * content.rowsPerPage - content.tokens.length) : 0;
+    const emptyRows = content.page > 0 ? Math.max(0, (1 + content.page) * content.rowsPerPage - content.tokens.length) : 0;
 
     const filteredTokens = applySortFilter(content.tokens, getComparator(content.order, content.orderBy), filterName);
 
@@ -201,7 +200,7 @@ export default function Token(props) {
     return (
         <Page title="Tokens">
             <Container maxWidth="xl">
-                
+
             <Toolbar id="back-to-top-anchor" />
 
             <SearchToolbar
@@ -374,11 +373,11 @@ export default function Token(props) {
                                     </TableRow>
                                 );
                             })}
-                        {/*emptyRows > 0 && (
+                        {emptyRows > 0 && (
                                 <TableRow style={{ height: 53 * emptyRows }}>
                                     <TableCell colSpan={6} />
                                 </TableRow>
-                            )*/}
+                            )}
                     </TableBody>
                     {/*isTokenNotFound && (
                         <TableBody>
@@ -391,11 +390,10 @@ export default function Token(props) {
                     )*/}
                 </Table>
             {/* </CustomTableContainer> */}
-            </Container>
-
             <TokenListToolbar />
-            {/* <NFTWidget/> */}
             <ScrollToTop />
+            </Container>
+            {/* <NFTWidget/> */}
         </Page>
     );
 }

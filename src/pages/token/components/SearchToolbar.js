@@ -29,7 +29,7 @@ import {
     setRowsPerPage,
     selectContent,
     loadTokens
-} from "../../redux/tokenSlice";
+} from "../../../redux/tokenSlice";
 // ----------------------------------------------------------------------
 const RootStyle = styled(Toolbar)(({ theme }) => ({
     height: 96,
