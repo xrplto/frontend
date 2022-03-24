@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { withStyles } from '@mui/styles';
-import { styled } from '@mui/material/styles';
+//import { withStyles } from '@mui/styles';
+//import { styled } from '@mui/material/styles';
 
 import {
     Token as TokenIcon
@@ -25,12 +25,13 @@ import {
     Link,
     Rating,
     Stack,
+    Tooltip,
     Typography
 } from '@mui/material';
 
 /* success 3366FF  secondary FF6C40 */
 
-const CustomChip = styled(Chip)(({ theme }) => ({
+/*const CustomChip = styled(Chip)(({ theme }) => ({
     color: '#3366FF'
 }));
 
@@ -54,7 +55,7 @@ const OffersChip = withStyles({
             backgroundColor: "green"
         }
     }
-})(Chip);
+})(Chip);*/
 
 export default function TokenDetail({token}) {
     const [rating, setRating] = useState(2);
@@ -104,7 +105,9 @@ export default function TokenDetail({token}) {
                 <Chip variant={"outlined"} icon={<TokenIcon />} label={name} />
             </Stack>
             <Stack direction="row" spacing={1} sx={{mt:2}}>
-                <Chip label={'Rank #' + id} color="primary" variant="outlined" size="small"/>
+                <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body1">Rank by Market Cap</Typography>}>
+                    <Chip label={'Rank #' + id} color="primary" variant="outlined" size="small"/>
+                </Tooltip>
                 <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
                 <Chip label={offers + " Offers"} color="success" variant="outlined" size="small"/>
             </Stack>

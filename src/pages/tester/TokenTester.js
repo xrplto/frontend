@@ -18,7 +18,7 @@ import {
 } from "react-spinners";
 
 // components
-import Page from '../../components/Page';
+import Page from '../../layouts/Page';
 import TesterControls from './TesterControls';
 import ChooseAccountDialog from './ChooseAccountDialog';
 

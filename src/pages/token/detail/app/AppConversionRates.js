@@ -5,14 +5,14 @@ import { Box, CardHeader } from '@mui/material';
 // utils
 import { fNumber } from '../../../../utils/formatNumber';
 //
-import { BaseOptionChart } from './charts';
+//import { BaseOptionChart } from './charts';
 
 // ----------------------------------------------------------------------
 
 const CHART_DATA = [{ data: [400, 430, 448, 470, 540, 580, 690, 1100, 1200, 1380] }];
 
 export default function AppConversionRates() {
-  const chartOptions = merge(BaseOptionChart(), {
+  const chartOptions = merge(/*BaseOptionChart()*/{}, {
     tooltip: {
       marker: { show: false },
       y: {

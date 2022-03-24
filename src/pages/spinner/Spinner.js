@@ -1,4 +1,4 @@
-import Page from '../../components/Page';
+import Page from '../../layouts/Page';
 
 import "./styles.css";
 import { data1, data2 } from "./model";

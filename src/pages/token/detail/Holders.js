@@ -6,16 +6,15 @@ import { CardHeader } from '@mui/material';
 // utils
 import { fNumber } from '../../../utils/formatNumber';
 //
-import ChartOptions from './charts/ChartOptions';
+//import ChartOptions from './ChartOptions';
+//import { withStyles } from '@mui/styles';
 
-import { withStyles } from '@mui/styles';
-
-import {
+/*import {
     Button,
     Divider,
     Stack,
     Typography
-} from '@mui/material';
+} from '@mui/material';*/
 // ----------------------------------------------------------------------
 
 const CHART_HEIGHT = 372;
@@ -50,19 +49,18 @@ const CHART_DATA = [4344, 5435, 1443, 4443];
 export default function AppCurrentVisits({token}) {
     const theme = useTheme();
 
-    const {
+    /*const {
         name,
         holders,
         offers,
-        /*
         id
         acct,
         code,
         date,
         amt,
         trline,
-        exch*/
-    } = token;
+        exch
+    } = token;*/
 
     const chartOptions = merge(/*ChartOptions()*/{}, {
         colors: [

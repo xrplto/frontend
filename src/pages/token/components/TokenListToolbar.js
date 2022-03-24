@@ -1,49 +1,33 @@
 //import PropTypes from 'prop-types';
-import { Icon } from '@iconify/react';
-import searchFill from '@iconify/icons-eva/search-fill';
+//import { Icon } from '@iconify/react';
+//import searchFill from '@iconify/icons-eva/search-fill';
 //import trash2Fill from '@iconify/icons-eva/trash-2-fill';
 //import roundFilterList from '@iconify/icons-ic/round-filter-list';
 // material
-import { alpha, styled } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 //import { Link as RouterLink } from 'react-router-dom';
 //import { fCurrency3 } from '../../utils/formatNumber';
 import {
-    AppBar,
-    Box,
     Stack,
     Toolbar,
-    Tooltip,
-    IconButton,
-    OutlinedInput,
-    InputAdornment,
     Pagination,
     Select,
-    MenuItem,
-    TablePagination
+    MenuItem
 } from '@mui/material';
 
-import { makeStyles } from "@mui/styles";
+//import { makeStyles } from "@mui/styles";
 
 import { useSelector, useDispatch } from "react-redux";
 
 import {
-    setOrder,
-    setOrderBy,
     setPage,
     setRowsPerPage,
     selectContent,
-    loadTokens
+    /*setOrder,
+    setOrderBy,
+    loadTokens*/
 } from "../../../redux/tokenSlice";
 // ----------------------------------------------------------------------
-const AppBarStyle = styled(AppBar)(({ theme }) => ({
-    boxShadow: 'none',
-    backdropFilter: 'blur(2px)',
-    WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
-    backgroundColor: alpha(theme.palette.background.default, 0.9),
-    borderRadius: '0px',
-    color: theme.palette.text.primary
-    //backgroundColor: alpha("#00AB88", 0.7),
-}));
 
 const RootStyle = styled(Toolbar)(({ theme }) => ({
     height: 64,
@@ -60,39 +44,14 @@ const RootStyle = styled(Toolbar)(({ theme }) => ({
   onFilterName: PropTypes.func
 };*/
 
-const dropdownStyles = makeStyles({
+/*const dropdownStyles = makeStyles({
     underline: {
         borderBottom: "0px solid red !important",
         "&:hover": {
             borderBottom: "0px solid rgba(0,0,0,0)"
         }
     }
-});
-
-
-/*
-<AppBarStyle position="fixed" color="primary" sx={{ top: 'auto', bottom: 0 }}>
-    <RootStyle>
-        Showing {start} - {end} out of {count}
-        <Pagination page={content.page+1} onChange={handleChangePage} count={page_count} variant="outlined" shape="rounded" />
-
-        <Stack direction="row" alignItems="center">
-            Show Rows
-            <Select
-                value={content.rowsPerPage}
-                onChange={handleChangeRowsPerPage}
-                sx={{'& .MuiOutlinedInput-notchedOutline' : {
-                    border: 'none'
-                }}}
-            >
-                <MenuItem value={100}>100</MenuItem>
-                <MenuItem value={50}>50</MenuItem>
-                <MenuItem value={20}>20</MenuItem>
-            </Select>
-        </Stack>
-    </RootStyle>
-</AppBarStyle>
-*/
+});*/
 
 const CustomSelect = styled(Select)(({ theme }) => ({
     '& .MuiOutlinedInput-notchedOutline' : {

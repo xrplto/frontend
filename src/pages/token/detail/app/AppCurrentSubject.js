@@ -4,7 +4,7 @@ import ReactApexChart from 'react-apexcharts';
 import { useTheme, styled } from '@mui/material/styles';
 import { CardHeader } from '@mui/material';
 //
-import { BaseOptionChart } from './charts';
+//import { BaseOptionChart } from './charts';
 
 // ----------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ const CHART_DATA = [
 export default function AppCurrentSubject() {
     const theme = useTheme();
 
-    const chartOptions = merge(BaseOptionChart(), {
+    const chartOptions = merge(/*BaseOptionChart()*/{}, {
         stroke: { width: 2 },
         fill: { opacity: 0.48 },
         legend: { floating: true, horizontalAlign: 'center' },
