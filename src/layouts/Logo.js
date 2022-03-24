@@ -4,12 +4,12 @@ import PropTypes from 'prop-types';
 import { Box } from '@mui/material';
 // Context
 import Context from '../Context'
-import {styled, alpha/*, useTheme*/ } from '@mui/material/styles';
+//import {styled, alpha, useTheme } from '@mui/material/styles';
 
 // ----------------------------------------------------------------------
 
 Logo.propTypes = {
-  sx: PropTypes.object
+    sx: PropTypes.object
 };
 
 export default function Logo({ sx }) {

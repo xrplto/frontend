@@ -5,7 +5,6 @@ import EmptyLayout from './layouts/EmptyLayout';
 //
 import Tokens from './pages/token/Token';
 import TokenDetail from './pages/token/TokenDetail';
-import Spinner from './pages/spinner/Spinner';
 import NotFound from './pages/Page404';
 
 // ----------------------------------------------------------------------
@@ -18,7 +17,6 @@ export default function Router() {
         { path: '/', element: <Tokens /> },
         { path: 'detail/:md5', element: <TokenDetail/> },
         { path: 'tokens', element: <Tokens /> },
-        { path: 'spinners', element: <Spinner /> },
         { path: '*', element: <Navigate to="/404/NotFound" /> }
       ]
     },

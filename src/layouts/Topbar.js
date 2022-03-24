@@ -4,7 +4,7 @@ import { /*useState,*/ useEffect } from 'react';
 //import Context from '../Context'
 // material
 import { alpha, styled/*, useTheme*/ } from '@mui/material/styles';
-import { Box, Stack, Typography } from '@mui/material';
+import { Box, Stack, Tooltip, Typography } from '@mui/material';
 // components
 //
 import { fIntNumber, fCurrency3 } from '../utils/formatNumber';
@@ -20,8 +20,6 @@ const StackStyle = styled(Stack)(({ theme }) => ({
     WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
     backgroundColor: alpha(theme.palette.background.paper, 0.0),
     borderRadius: '0px',
-    borderBottom: '0.05em solid',
-    borderBottomColor: alpha('#919EAB', 0.24),
     //padding: '0.5em'
     //backgroundColor: alpha("#00AB88", 0.99),
 }));
@@ -51,24 +49,26 @@ export default function Topbar() {
 
     return (
         <StackStyle direction="row" spacing={2} sx={{pl:2, pr:3, pt:0.5, pb:0.5}} alignItems="center">
-            <h5>Tokens: </h5>
-            <h5>{fIntNumber(status.token_count)}</h5>
-            <Box sx={{ flexGrow: 1 }} />
-            <XLS14DStyle>
-                <Stack direction="row" spacing={0.1} alignItems='center'>
-                    <Icon icon={postageStamp} width={16} height={16} />
-                    <Typography align="center" style={{ wordWrap: "break-word" }} variant="caption" >
-                        XLS-14D
-                    </Typography>
-                </Stack>
-            </XLS14DStyle>
-            <h5>1 XRP</h5>
-            <h6>|</h6>
-            <h5>$ {fCurrency3(1/status.USD)}</h5>
-            <h6>|</h6>
-            <h5>€ {fCurrency3(1/status.EUR)}</h5>
-            <h6>|</h6>
-            <h5>¥ {fCurrency3(1/status.JPY)}</h5>
+                <h5>Tokens: </h5>
+                <h5>{fIntNumber(status.token_count)}</h5>
+                <Box sx={{ flexGrow: 1 }} />
+                <XLS14DStyle>
+                    <Tooltip title="Deprecated">
+                        <Stack direction="row" spacing={0.1} alignItems='center'>
+                            <Icon icon={postageStamp} width={16} height={16} />
+                            <Typography align="center" style={{ wordWrap: "break-word" }} variant="caption" >
+                                XLS-14D
+                            </Typography>
+                        </Stack>
+                    </Tooltip>
+                </XLS14DStyle>
+                <h5>1 XRP</h5>
+                <h6>|</h6>
+                <h5>$ {fCurrency3(1/status.USD)}</h5>
+                <h6>|</h6>
+                <h5>€ {fCurrency3(1/status.EUR)}</h5>
+                <h6>|</h6>
+                <h5>¥ {fCurrency3(1/status.JPY)}</h5>
         </StackStyle>
     );
 }

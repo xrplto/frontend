@@ -17,7 +17,6 @@ import personFill from '@iconify/icons-bi/person-fill';
 import chevronDown from '@iconify/icons-akar-icons/chevron-down';
 import twitterFill from '@iconify/icons-akar-icons/twitter-fill';
 
-
 import {
     Avatar,
     Chip,
@@ -28,6 +27,8 @@ import {
     Tooltip,
     Typography
 } from '@mui/material';
+
+import ExplorersMenu from './ExplorersMenu';
 
 /* success 3366FF  secondary FF6C40 */
 
@@ -68,8 +69,8 @@ export default function TokenDetail({token}) {
         twitter,
         holders,
         offers,
-        /*acct,
-        code,
+        acct,
+        /*code,
         date,
         amt,
         trline,        
@@ -145,10 +146,7 @@ export default function TokenDetail({token}) {
                     </Grid>
                 )}
                 <Grid item>
-                    <Chip label="Explorers" sx={{pl:0.5,pr:0.5}}
-                        deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
-                        onDelete={handleDelete} onClick={handleDelete}
-                        icon={<Icon icon={zoomIcon} width="16" height="16" />} />
+                    <ExplorersMenu acct={acct}/>
                 </Grid>
                 <Grid item>
                     <Chip label="Chat" sx={{pl:0.5,pr:0.5}}

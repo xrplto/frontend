@@ -183,7 +183,7 @@ export default function Token(props) {
     // style={{border: '1px solid red'}}
 
     return (
-        <Page title="Tokens">
+        <Page title="XRPL Tokens/Currencies Prices, Charts And Market Capitalizations">
             <Container maxWidth="xl">
 
             <Toolbar id="back-to-top-anchor" />

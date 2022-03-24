@@ -3,7 +3,7 @@ import ReactApexChart from 'react-apexcharts';
 // material
 import { CardHeader, Box } from '@mui/material';
 //
-import { BaseOptionChart } from './charts';
+//import { BaseOptionChart } from './charts';
 //import { alpha } from '@mui/material/styles';
 //import { withStyles } from '@mui/styles';
 
@@ -34,7 +34,7 @@ const CHART_DATA = [
 // }) (Card);
 
 export default function AppWebsiteVisits() {
-    const chartOptions = merge(BaseOptionChart(), {
+    const chartOptions = merge(/*BaseOptionChart()*/{}, {
         stroke: { width: [0, 2, 3] },
         plotOptions: { bar: { columnWidth: '11%', borderRadius: 4 } },
         fill: { type: ['solid', 'gradient', 'solid'] },

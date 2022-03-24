@@ -72,7 +72,7 @@ export default function TokenListToolbar(props) {
     if (end > count) end = count;
 
     const handleChangeRowsPerPage = (event) => {
-        dispatch(setRowsPerPage(parseInt(event.target.value, 10)));
+        dispatch(setRowsPerPage(parseInt(event.target.value, 100)));
     };
 
     const handleChangePage = (event, newPage) => {

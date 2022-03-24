@@ -1,32 +1,22 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { /*useState,*/ useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 // material
 import { alpha, styled } from '@mui/material/styles';
-import { makeStyles } from "@mui/styles";
 import {
     AppBar,
     Container,
     Slide,
-    Table,
-    TableHead,
-    TableRow,
-    TableCell,
-    TableContainer,
     useScrollTrigger,
-    CssBaseline,
-    Toolbar,
-    Typography,
-    Divider
 } from '@mui/material';
 //
 import Topbar from './Topbar';
 import Navbar from './Navbar';
 import axios from 'axios'
 
-import { useSelector, useDispatch } from "react-redux";
-import { update_status, selectStatus, selectLoading } from "../redux/statusSlice";
-import { update_tokens, selectTokens } from "../redux/tokenSlice";
+import { /*useSelector,*/ useDispatch } from "react-redux";
+import { update_status/*, selectStatus, selectLoading*/ } from "../redux/statusSlice";
+//import { update_tokens, selectTokens } from "../redux/tokenSlice";
 // ----------------------------------------------------------------------
 
 const APP_BAR_DESKTOP = 64;
@@ -52,8 +42,10 @@ const AppBarStyle = styled(AppBar)(({ theme }) => ({
     WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
     backgroundColor: alpha(theme.palette.background.default, 0.9),
     borderRadius: '0px',
-    color: theme.palette.text.primary
+    color: theme.palette.text.primary,
     //backgroundColor: alpha("#00AB88", 0.7),
+    borderBottom: '0.05em solid',
+    borderBottomColor: alpha('#919EAB', 0.24),
 }));
 
 function HideOnScroll(props) {
@@ -137,8 +129,15 @@ export default function MainLayout() {
             <HideOnScroll>
                 <AppBarStyle>
                     <Container maxWidth="xl">
-                        <Topbar />
                         <Navbar />
+                    </Container>
+                </AppBarStyle>
+            </HideOnScroll>
+
+            <HideOnScroll>
+                <AppBarStyle>
+                    <Container maxWidth="xl">
+                        <Topbar />
                     </Container>
                 </AppBarStyle>
             </HideOnScroll>

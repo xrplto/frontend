@@ -13,21 +13,19 @@ import UserDesc from "./detail/UserDesc";
 import PriceDesc from "./detail/PriceDesc";
 import ExtraDesc from "./detail/ExtraDesc";
 import Holders from "./detail/Holders";
-import PriceChart from './detail/charts/PriceChart';
+import PriceChart from './detail/PriceChart';
 
 import {
     Container,
-    Divider,
     Grid,
     Paper,
-    Stack,
     Toolbar,
     Typography
 } from '@mui/material';
 
 import axios from 'axios'
 
-import Page from '../../components/Page';
+import Page from '../../layouts/Page';
 
 import {
     AppCurrentSubject,
