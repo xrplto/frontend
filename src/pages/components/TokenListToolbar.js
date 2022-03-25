@@ -26,7 +26,7 @@ import {
     /*setOrder,
     setOrderBy,
     loadTokens*/
-} from "../../../redux/tokenSlice";
+} from "../../redux/tokenSlice";
 // ----------------------------------------------------------------------
 
 const RootStyle = styled(Toolbar)(({ theme }) => ({

@@ -5,9 +5,9 @@ import { Icon } from '@iconify/react';
 import caretDown from '@iconify/icons-bx/caret-down';
 //import caretUp from '@iconify/icons-bx/caret-up';
 import infoFilled from '@iconify/icons-ep/info-filled';
-import { selectStatus } from "../../../redux/statusSlice";
-import { fNumber } from '../../../utils/formatNumber';
-import { useSelector, useDispatch } from "react-redux";
+import { selectStatus } from "../../redux/statusSlice";
+import { fNumber } from '../../utils/formatNumber';
+import { useSelector/*, useDispatch*/ } from "react-redux";
 import {
     Button,
     Divider,
@@ -41,11 +41,11 @@ export default function TokenDetail({token}) {
 
     const {
         name,
-        holders,
-        offers,
         amt,
         exch,
         /*
+        holders,
+        offers,
         id
         acct,
         code,

@@ -3,7 +3,7 @@ import ReactApexChart from 'react-apexcharts';
 // material
 import { Box, CardHeader } from '@mui/material';
 // utils
-import { fNumber } from '../../../../utils/formatNumber';
+import { fNumber } from '../../../utils/formatNumber';
 //
 //import { BaseOptionChart } from './charts';
 

@@ -1,12 +1,8 @@
 import { Icon } from '@iconify/react';
 import { useRef, useState } from 'react';
-//import editFill from '@iconify/icons-eva/edit-fill';
-//import { Link as RouterLink } from 'react-router-dom';
-//import trash2Outline from '@iconify/icons-eva/trash-2-outline';
-//import detailIcon from '@iconify/icons-bx/detail';
 import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
 // material
-import { Link, Menu, MenuItem, IconButton, Avatar, ListItemIcon, ListItemText } from '@mui/material';
+import { Link, Menu, MenuItem, IconButton, Avatar, ListItemText } from '@mui/material';
 
 // ----------------------------------------------------------------------
 

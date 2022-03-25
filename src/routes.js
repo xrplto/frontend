@@ -1,11 +1,13 @@
 import { Navigate, useRoutes } from 'react-router-dom';
+
 // layouts
 import MainLayout from './layouts/MainLayout';
 import EmptyLayout from './layouts/EmptyLayout';
-//
-import Tokens from './pages/token/Token';
-import TokenDetail from './pages/token/TokenDetail';
-import NotFound from './pages/Page404';
+import NotFound from './layouts/Page404';
+
+// pages
+import Tokens from './pages/Token';
+import TokenDetail from './pages/TokenDetail';
 
 // ----------------------------------------------------------------------
 export default function Router() {

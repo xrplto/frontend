@@ -5,7 +5,7 @@ import { Icon } from '@iconify/react';
 import caretDown from '@iconify/icons-bx/caret-down';
 import caretUp from '@iconify/icons-bx/caret-up';
 
-import { fCurrency5, fPercent } from '../../../utils/formatNumber';
+import { fCurrency5, fPercent } from '../../utils/formatNumber';
 
 
 import {
@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 
 import { useSelector/*, useDispatch*/ } from "react-redux";
-import { selectStatus } from "../../../redux/statusSlice";
+import { selectStatus } from "../../redux/statusSlice";
 
 const BearishChip = withStyles({
     root: {

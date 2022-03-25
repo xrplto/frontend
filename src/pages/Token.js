@@ -5,15 +5,16 @@ import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { normalizer } from '../utils/normalizers';
-import { fCurrency5, fNumber } from '../../utils/formatNumber';
+import { fCurrency5, fNumber } from '../utils/formatNumber';
 import { withStyles } from '@mui/styles';
 import { Link } from 'react-router-dom'
 
-import ScrollToTop from './ScrollToTop';
+import ScrollToTop from '../layouts/ScrollToTop';
 // material
 import {
     Avatar,
     Box,
+    Chip,
     Container,
     Stack,
     Table,
@@ -24,20 +25,20 @@ import {
     Toolbar,
 } from '@mui/material';
 // components
-import Page from '../../layouts/Page';
+import Page from '../layouts/Page';
 //import SearchNotFound from '../../components/SearchNotFound';
 import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu } from './components';
 
 // ----------------------------------------------------------------------
 import { useSelector, useDispatch } from "react-redux";
-import { selectStatus } from "../../redux/statusSlice";
+import { selectStatus } from "../redux/statusSlice";
 import {
     setOrder,
     setOrderBy,
     setPage,
     selectContent,
     loadTokens
-} from "../../redux/tokenSlice";
+} from "../redux/tokenSlice";
 // ----------------------------------------------------------------------
 
 const CoinNameTypography = withStyles({
@@ -55,6 +56,15 @@ const BearishTypography = withStyles({
 const BullishTypography = withStyles({
     root: {
         color: "#54D62C"
+    }
+})(Typography);
+
+const KYCTypography = withStyles({
+    root: {
+        color: "#007B55",
+        borderRadius: '6px',
+        border: '0.05em solid #007B55',
+        //fontSize: '0.5rem',
     }
 })(Typography);
 
@@ -214,6 +224,7 @@ export default function Token(props) {
                                 trline,
                                 //holders,
                                 //offers,
+                                kyc,
                                 md5,
                                 user,
                                 pro7d,
@@ -272,13 +283,20 @@ export default function Token(props) {
                                                     to={`detail/${md5}`}
                                                     onClick={() => { localStorage.setItem("selectToken", JSON.stringify(row)); }}
                                                 >
-                                                    <CoinNameTypography variant="subtitle1" noWrap>
+                                                    <CoinNameTypography variant="h6" noWrap>
                                                         {name}
                                                     </CoinNameTypography>
                                                 </Link>
-                                                <Typography variant="caption">
-                                                    {user}
-                                                </Typography>
+                                                <Stack direction="row" alignItems="center" spacing={0.2}>
+                                                    <Typography variant="caption">
+                                                        {user}
+                                                    </Typography>
+                                                    {kyc && (
+                                                        <KYCTypography variant="caption">
+                                                        KYC
+                                                        </KYCTypography>
+                                                    )}
+                                                </Stack>
                                                 <Typography variant="caption">
                                                     {date_fixed}
                                                 </Typography>

@@ -110,7 +110,10 @@ export default function TokenDetail({token}) {
                     <Chip label={'Rank #' + id} color="primary" variant="outlined" size="small"/>
                 </Tooltip>
                 <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
-                <Chip label={offers + " Offers"} color="success" variant="outlined" size="small"/>
+                <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
+                {kyc && (
+                    <Chip label={'KYC'} color="success" variant="outlined" size="small"/>
+                )}
             </Stack>
             <Grid container spacing={1} sx={{p:0,mt:2}} >
                 {domain && (

@@ -1,8 +1,6 @@
 //import PropTypes from 'prop-types';
 import { Icon } from '@iconify/react';
 import searchFill from '@iconify/icons-eva/search-fill';
-//import trash2Fill from '@iconify/icons-eva/trash-2-fill';
-//import roundFilterList from '@iconify/icons-ic/round-filter-list';
 // material
 import { styled } from '@mui/material/styles';
 //import { Link as RouterLink } from 'react-router-dom';
@@ -15,21 +13,18 @@ import {
     Stack,
     Select,
     Toolbar,
-    Tooltip,
-    IconButton,
     OutlinedInput,
-    InputAdornment,
-    TablePagination
+    InputAdornment
 } from '@mui/material';
 
 import {
-    setOrder,
-    setOrderBy,
-    setPage,
+    // setOrder,
+    // setOrderBy,
+    // setPage,
+    // loadTokens,
     setRowsPerPage,
     selectContent,
-    loadTokens
-} from "../../../redux/tokenSlice";
+} from "../../redux/tokenSlice";
 // ----------------------------------------------------------------------
 const RootStyle = styled(Toolbar)(({ theme }) => ({
     height: 96,

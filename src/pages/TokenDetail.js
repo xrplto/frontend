@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
-import ScrollToTop from './ScrollToTop';
+import ScrollToTop from '../layouts/ScrollToTop';
 
 import Content from "./Content";
 
@@ -18,82 +18,17 @@ import PriceChart from './detail/PriceChart';
 import {
     Container,
     Grid,
-    Paper,
-    Toolbar,
-    Typography
+    Toolbar
 } from '@mui/material';
 
 import axios from 'axios'
 
-import Page from '../../layouts/Page';
+import Page from '../layouts/Page';
 
 import {
     AppCurrentSubject,
     AppConversionRates
 } from './detail/app';
-
-
-
-/*const useStyles = makeStyles((theme) => ({
-    headerContainer: {
-        position: "relative",
-        height: "100px",
-    },
-    header: {
-        display: "flex",
-        position: "absolute",
-        width: "calc(100%)",
-        top: "-70px",
-        alignItems: "flex-end",
-        "& > *": {
-            margin: `${theme.spacing(3)}px ${theme.spacing(1)}px`,
-        },
-    },
-    spacer: {
-        flexGrow: "1",
-    },
-    avatar: {
-        border: `3px solid white`,
-        width: theme.spacing(13),
-        height: theme.spacing(13),
-        boxShadow: theme.shadows[3],
-    },
-    actionGroup: {
-        display: "flex",
-        width: "330px",
-        justifyContent: "space-between",
-        marginRight: 0,
-    },
-    summaryCards: {
-        display: "flex",
-        flexWrap: "wrap",
-    },
-    summaryCard: {
-        margin: theme.spacing(1),
-        flexGrow: 1,
-        padding: theme.spacing(3),
-    },
-    tripCard: {
-        margin: theme.spacing(1),
-        padding: theme.spacing(2),
-    },
-}));*/
-
-export function SummaryCard({ title, value, component }) {
-    //const classes = useStyles();
-    return (
-        <Paper elevation={2}>
-            <Typography color={"textSecondary"} variant="h5" gutterBottom>
-                {title}
-            </Typography>
-            {component || (
-                <Typography color={"primary"} variant="h3">
-                    {value}
-                </Typography>
-            )}
-        </Paper>
-    );
-}
 
 export default function TokenDetail(props) {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
@@ -187,18 +122,6 @@ export default function TokenDetail(props) {
                             <AppCurrentSubject />
                         </Grid>
                     </Grid>
-
-                    {/* <div>
-                      <SummaryCard title={"Holders"} value={"$" + fare} />
-                      <SummaryCard title={"Offers"} value={trips} />
-                      <SummaryCard title={"Market"} value={distance} />
-                      <SummaryCard title={"Rating"} value={4.32} />
-                    </div>
-                    <div>
-                      <SummaryCard title="Last 30 Days" component={<PriceLine />} />
-                      <SummaryCard title="By Accounts" component={<HoldersPie />} />
-                    </div>
-                    <SummaryCard title={"Recent Orders"} component={<ExpensesTable />} /> */}
                 </Container>
                 <ScrollToTop />
             </Page>

@@ -30,9 +30,9 @@ const RootStyle = styled('div')(({ theme }) => ({
 }));
 
 // ----------------------------------------------------------------------
-{/* <Badge showZero badgeContent={0} color="error" max={99}>
-    <Icon icon={postageStamp} width={24} height={24} />
-</Badge> */}
+//<Badge showZero badgeContent={0} color="error" max={99}>
+//<Icon icon={postageStamp} width={24} height={24} />
+//</Badge>
 export default function NFTWidget() {
     return (
         <RootStyle>

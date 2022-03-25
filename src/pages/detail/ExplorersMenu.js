@@ -1,12 +1,10 @@
 import { styled } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import zoomIcon from '@iconify/icons-cil/zoom';
 import chevronDown from '@iconify/icons-akar-icons/chevron-down';
-import { withStyles } from '@mui/styles';
 // material
 import {
-    Button,
     Chip,
     Link,
     Menu,
