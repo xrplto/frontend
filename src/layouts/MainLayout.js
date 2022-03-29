@@ -94,7 +94,7 @@ export default function MainLayout() {
                 let status = res.status===200?res.data:undefined;
                 if (status) {
                     dispatch(update_status(status));
-                    console.log(status.USD);
+                    //console.log(status.USD);
                 }
             }).catch(err => {
                 console.log("error on getting exchange rates!!!", err);
@@ -109,7 +109,7 @@ export default function MainLayout() {
         const timer = setInterval(() => getStatus(), 5000)
 
         return () => {
-            console.log("kill timer");
+            //console.log("kill timer");
             clearInterval(timer);
         }
     }, []);

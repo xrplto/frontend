@@ -24,22 +24,13 @@ export default function ChartOptions() {
   return {
     // Colors
     colors: [
-      theme.palette.primary.main,
+      theme.palette.primary.primary,
       theme.palette.chart.yellow[0],
       theme.palette.chart.blue[0],
       theme.palette.chart.violet[0],
       theme.palette.chart.green[0],
       theme.palette.chart.red[0]
     ],
-
-    // Chart
-    chart: {
-      toolbar: { show: true },
-      zoom: { enabled: false },
-      animations: { enabled: true },
-      foreColor: theme.palette.text.disabled,
-      fontFamily: theme.typography.fontFamily
-    },
 
     // States
     states: {
@@ -57,19 +48,6 @@ export default function ChartOptions() {
       }
     },
 
-    // Fill
-    fill: {
-      type: 'gradient',
-      opacity: 1,
-      gradient: {
-        type: 'vertical',
-        shadeIntensity: 0,
-        opacityFrom: 0.4,
-        opacityTo: 0,
-        stops: [0, 100]
-      }
-    },
-
     // Datalabels
     dataLabels: { enabled: false },
 
@@ -78,35 +56,6 @@ export default function ChartOptions() {
       width: 2,
       curve: 'smooth',
       lineCap: 'round'
-    },
-
-    // Grid
-    grid: {
-      strokeDashArray: 3,
-      borderColor: theme.palette.divider
-    },
-
-    // Xaxis
-    xaxis: {
-      type: 'datetime',
-      axisBorder: { show: true },
-      axisTicks: { show: true }
-    },
-
-    yaxis: {
-        show: true,
-        tickAmount: 6,
-        labels: {
-            /**
-            * Allows users to apply a custom formatter function to yaxis labels.
-            *
-            * @param { String } value - The generated value of the y-axis tick
-            * @param { index } index of the tick / currently executing iteration in yaxis labels array
-            */
-            formatter: function(val, index) {
-                return fCurrency5(val);
-            }
-        }
     },
 
     // Markers

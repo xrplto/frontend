@@ -14,7 +14,6 @@ import ScrollToTop from '../layouts/ScrollToTop';
 import {
     Avatar,
     Box,
-    Chip,
     Container,
     Stack,
     Table,
@@ -61,10 +60,13 @@ const BullishTypography = withStyles({
 
 const KYCTypography = withStyles({
     root: {
-        color: "#007B55",
+        color: "#34B60C",
         borderRadius: '6px',
-        border: '0.05em solid #007B55',
+        border: '0.05em solid #34B60C',
         //fontSize: '0.5rem',
+        lineHeight: '1',
+        paddingLeft: '3px',
+        paddingRight: '3px',
     }
 })(Typography);
 

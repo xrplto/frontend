@@ -14,6 +14,9 @@ import PriceDesc from "./detail/PriceDesc";
 import ExtraDesc from "./detail/ExtraDesc";
 import Holders from "./detail/Holders";
 import PriceChart from './detail/PriceChart';
+import PriceChart2 from './detail/PriceChart2';
+import ConversionChart from './detail/ConversionChart';
+import RadialChart from './detail/RadialChart';
 
 import {
     Container,
@@ -25,14 +28,10 @@ import axios from 'axios'
 
 import Page from '../layouts/Page';
 
-import {
-    AppCurrentSubject,
-    AppConversionRates
-} from './detail/app';
-
 export default function TokenDetail(props) {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
     const [detail, setDetail] = useState(null);
+    const [range, setRange] = useState('1D');
     //const [token, setToken] = useState(JSON.parse(localStorage.getItem('selectToken')));
 
     const { md5 } = useParams();
@@ -43,7 +42,7 @@ export default function TokenDetail(props) {
     useEffect(() => {
         function getDetail() {
             // https://ws.xrpl.to/api/detail/0413ca7cfc258dfaf698c02fe304e607?range=1D
-            axios.get(`${BASE_URL}/detail/${md5}?range=1D`)
+            axios.get(`${BASE_URL}/detail/${md5}?range=${range}`)
                 .then(res => {
                     let detail = res.status === 200 ? res.data : undefined;
                     if (detail) {
@@ -58,11 +57,10 @@ export default function TokenDetail(props) {
                     // console.log("Heartbeat!");
                 });
         }
-
         if (md5)
             getDetail();
 
-    }, [md5]);
+    }, [range]);
 
     if (!detail) {
         return (
@@ -106,8 +104,13 @@ export default function TokenDetail(props) {
                     </Grid>
 
                     <Grid container spacing={3} sx={{p:0}}>
+                        {/* <Grid item xs={12} md={6} lg={8} sx={{pl:0}}>
+                            <PriceChart2 detail={detail} range={range} setRange={setRange} />
+                        </Grid>
                         <Grid item xs={12} md={6} lg={8} sx={{pl:0}}>
-                            <PriceChart detail={detail} />
+                        </Grid> */}
+                        <Grid item xs={12} md={6} lg={8} sx={{pl:0}}>
+                            <PriceChart detail={detail} range={range} setRange={setRange} />
                         </Grid>
 
                         <Grid item xs={12} md={6} lg={4}>
@@ -115,11 +118,11 @@ export default function TokenDetail(props) {
                         </Grid>
 
                         <Grid item xs={12} md={6} lg={8}>
-                            <AppConversionRates />
+                            <ConversionChart />
                         </Grid>
 
                         <Grid item xs={12} md={6} lg={4}>
-                            <AppCurrentSubject />
+                            <RadialChart />
                         </Grid>
                     </Grid>
                 </Container>

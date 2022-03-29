@@ -4,7 +4,7 @@ import ReactApexChart from 'react-apexcharts';
 import { useTheme, styled } from '@mui/material/styles';
 import { CardHeader } from '@mui/material';
 //
-//import { BaseOptionChart } from './charts';
+import ChartOptions from './ChartOptions';
 
 // ----------------------------------------------------------------------
 
@@ -37,10 +37,10 @@ const CHART_DATA = [
     { name: 'Series 3', data: [44, 76, 78, 13, 43, 10] }
 ];
 
-export default function AppCurrentSubject() {
+export default function RadialChart() {
     const theme = useTheme();
 
-    const chartOptions = merge(/*BaseOptionChart()*/{}, {
+    const chartOptions = merge(/*ChartOptions()*/{}, {
         stroke: { width: 2 },
         fill: { opacity: 0.48 },
         legend: { floating: true, horizontalAlign: 'center' },

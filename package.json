@@ -53,6 +53,8 @@
     "@emotion/styled": "^11.8.1",
     "@reduxjs/toolkit": "^1.8.0",
     "faker": "^6.6.6",
+    "chart.js": "^3.7.1",
+    "react-chartjs-2": "^4.0.1",
     "apexcharts": "^3.33.2",
     "react-apexcharts": "^1.4.0",
     "moment": "^2.29.1",
