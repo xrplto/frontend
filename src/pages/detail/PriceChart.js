@@ -1,12 +1,10 @@
 import { merge } from 'lodash';
-import { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
-import ApexCharts from 'apexcharts';
 // material
 import { Box, CardHeader, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
 //
 import ChartOptions from './ChartOptions';
-import { alpha, styled, useTheme } from '@mui/material/styles';
+import { /*alpha, styled,*/ useTheme } from '@mui/material/styles';
 //import { withStyles } from '@mui/styles';
 import { fCurrency5 } from '../../utils/formatNumber';
 // ----------------------------------------------------------------------
@@ -17,71 +15,71 @@ import { fCurrency5 } from '../../utils/formatNumber';
 //     }
 // }) (Card);
 
-const CustomChart = styled(ReactApexChart)(({ theme }) => ({
-    '&.apexcharts-canvas': {
-        // Tooltip
-        '.apexcharts-xaxistooltip': {
-            backdropFilter: 'blur(6px)',
-            WebkitBackdropFilter: 'blur(6px)', // Fix on Mobile
-            backgroundColor: alpha(theme.palette.background.default, 0.2),
-            border: 0,
-            boxShadow: theme.customShadows.z16,
-            color: theme.palette.text.primary,
-            borderRadius: theme.shape.borderRadiusSm,
-            '&:before': { borderBottomColor: 'transparent' },
-            '&:after': { borderBottomColor: alpha(theme.palette.background.default, 0.72) }
-        },
-        '.apexcharts-tooltip.apexcharts-theme-light': {
-            backdropFilter: 'blur(6px)',
-            WebkitBackdropFilter: 'blur(6px)', // Fix on Mobile
-            backgroundColor: alpha(theme.palette.background.default, 0.2),
-            border: 0,
-            boxShadow: theme.customShadows.z24,
-            borderRadius: theme.shape.borderRadiusSm,
-            '& .apexcharts-tooltip-title': {
-                border: 0,
-                textAlign: 'center',
-                fontWeight: theme.typography.fontWeightBold,
-                backgroundColor: theme.palette.grey[500_16],
-                color: theme.palette.text[theme.palette.mode === 'light' ? 'secondary' : 'primary']
-            }
-        },
-        // Legend
-        '.apexcharts-legend': {
-            padding: 0
-        },
-        '.apexcharts-legend-series': {
-            display: 'flex !important',
-            alignItems: 'center'
-        },
-        '.apexcharts-legend-marker': {
-            marginRight: 8
-        },
-        '.apexcharts-legend-text': {
-            lineHeight: '18px',
-            textTransform: 'capitalize'
-        }
-    }
-}));
+// const CustomChart = styled(ReactApexChart)(({ theme }) => ({
+//     '&.apexcharts-canvas': {
+//         // Tooltip
+//         '.apexcharts-xaxistooltip': {
+//             backdropFilter: 'blur(6px)',
+//             WebkitBackdropFilter: 'blur(6px)', // Fix on Mobile
+//             backgroundColor: alpha(theme.palette.background.default, 0.2),
+//             border: 0,
+//             boxShadow: theme.customShadows.z16,
+//             color: theme.palette.text.primary,
+//             borderRadius: theme.shape.borderRadiusSm,
+//             '&:before': { borderBottomColor: 'transparent' },
+//             '&:after': { borderBottomColor: alpha(theme.palette.background.default, 0.72) }
+//         },
+//         '.apexcharts-tooltip.apexcharts-theme-light': {
+//             backdropFilter: 'blur(6px)',
+//             WebkitBackdropFilter: 'blur(6px)', // Fix on Mobile
+//             backgroundColor: alpha(theme.palette.background.default, 0.2),
+//             border: 0,
+//             boxShadow: theme.customShadows.z24,
+//             borderRadius: theme.shape.borderRadiusSm,
+//             '& .apexcharts-tooltip-title': {
+//                 border: 0,
+//                 textAlign: 'center',
+//                 fontWeight: theme.typography.fontWeightBold,
+//                 backgroundColor: theme.palette.grey[500_16],
+//                 color: theme.palette.text[theme.palette.mode === 'light' ? 'secondary' : 'primary']
+//             }
+//         },
+//         // Legend
+//         '.apexcharts-legend': {
+//             padding: 0
+//         },
+//         '.apexcharts-legend-series': {
+//             display: 'flex !important',
+//             alignItems: 'center'
+//         },
+//         '.apexcharts-legend-marker': {
+//             marginRight: 8
+//         },
+//         '.apexcharts-legend-text': {
+//             lineHeight: '18px',
+//             textTransform: 'capitalize'
+//         }
+//     }
+// }));
 
 export default function PriceChart({ detail, range, setRange }) {
     const theme = useTheme();
     const data = detail.history;
 
-    let openPrice = 0;
+    //let openPrice = 0;
     let minTime = 0;
     let maxTime = 0;
 
     if (data && data.length > 0) {
-        openPrice = data[0][1];
+        //openPrice = data[0][1];
         minTime = data[0][0];
         maxTime = data[data.length - 1][0];
     }
 
-    if (data && data.length > 60) {
-        minTime = data[30][0];
-        maxTime = data[data.length - 30][0];
-    }
+    // if (data && data.length > 60) {
+    //     minTime = data[30][0];
+    //     maxTime = data[data.length - 30][0];
+    // }
 
     let user = detail.token.user;
     if (!user) user = detail.token.name;
@@ -300,7 +298,7 @@ export default function PriceChart({ detail, range, setRange }) {
 
     return (
         <>
-            <Stack direction="row" spacing={2} sx={{mt:4}} alignItems="center">
+            <Stack direction="row" spacing={2} sx={{mt:0}} alignItems="center">
                 <CardHeader title={`${user} to USD Chart`} subheader='' />
                 <Box sx={{ flexGrow: 1 }} />
                 <ToggleButtonGroup

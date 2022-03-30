@@ -23,13 +23,13 @@ import { Icon } from '@iconify/react';
 import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
 import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 // ----------------------------------------------------------------------
-import { useSelector, useDispatch } from "react-redux";
+import { /*useSelector,*/ useDispatch } from "react-redux";
 
 import {
     setPage,
     setRowsPerPage,
-    selectContent,
-    /*setOrder,
+    /*selectContent,
+    setOrder,
     setOrderBy,
     loadTokens*/
 } from "../redux/tokenSlice";

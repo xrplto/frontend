@@ -11,15 +11,19 @@ import Content from "./Content";
 
 import UserDesc from "./detail/UserDesc";
 import PriceDesc from "./detail/PriceDesc";
+import LinkDesc from "./detail/LinkDesc";
 import ExtraDesc from "./detail/ExtraDesc";
 import Holders from "./detail/Holders";
 import PriceChart from './detail/PriceChart';
-import PriceChart2 from './detail/PriceChart2';
+//import PriceChart2 from './detail/PriceChart2';
 import ConversionChart from './detail/ConversionChart';
 import RadialChart from './detail/RadialChart';
+import PriceStatistics from './detail/PriceStatistics';
+import Description from './detail/Description';
 
 import {
     Container,
+    Divider,
     Grid,
     Toolbar
 } from '@mui/material';
@@ -60,7 +64,7 @@ export default function TokenDetail(props) {
         if (md5)
             getDetail();
 
-    }, [range]);
+    }, [md5, range]);
 
     if (!detail) {
         return (
@@ -85,23 +89,29 @@ export default function TokenDetail(props) {
         let user = detail.token.user;
         if (!user) user = name;
 
+        // sx={{borderRight: '1px solid #323546'}}
         return (
             <Page title={`${user} price today, ${name} to USD live, marketcap and chart `}>
                 <Toolbar id="back-to-top-anchor" />
-                <Container maxWidth="xl" sx={{ mt: 4 }}>
+                <Container maxWidth="xl">
                     <Grid item container direction="row" >
-                        <Grid item xs={6} md={6} lg={3.5} sx={{borderRight: '1px solid #323546'}}>
+                        <Grid item xs={5} md={6} lg={5} sx={{ mt: 3 }}>
                             <UserDesc token={detail.token} />
                         </Grid>
                         
-                        <Grid item xs={6} md={6} lg={3.5} sx={{pl:3, borderRight: '1px solid #323546'}}>
+                        <Grid item xs={7} md={6} lg={7} sx={{ mt: 3 }}>
                             <PriceDesc token={detail.token} />
                         </Grid>
+                        <Grid item xs={12} md={12} lg={5} sx={{ mt: 2 }}>
+                            <LinkDesc token={detail.token} />
+                        </Grid>
 
-                        <Grid item xs={12} md={12} lg={5} sx={{pl:3}}>
+                        <Grid item xs={12} md={12} lg={7} sx={{ mt: 2 }}>
                             <ExtraDesc token={detail.token} />
                         </Grid>
                     </Grid>
+
+                    <Divider orientation="horizontal" sx={{mt:2,mb:2}} variant="middle" flexItem />
 
                     <Grid container spacing={3} sx={{p:0}}>
                         {/* <Grid item xs={12} md={6} lg={8} sx={{pl:0}}>
@@ -114,16 +124,17 @@ export default function TokenDetail(props) {
                         </Grid>
 
                         <Grid item xs={12} md={6} lg={4}>
-                            <Holders token={detail.token} />
+                            {/* <Holders token={detail.token} /> */}
+                            <PriceStatistics token={detail.token} />
                         </Grid>
 
                         <Grid item xs={12} md={6} lg={8}>
-                            <ConversionChart />
+                            <Description token={detail.token} />
                         </Grid>
 
-                        <Grid item xs={12} md={6} lg={4}>
+                        {/* <Grid item xs={12} md={6} lg={4}>
                             <RadialChart />
-                        </Grid>
+                        </Grid> */}
                     </Grid>
                 </Container>
                 <ScrollToTop />

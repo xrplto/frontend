@@ -1,5 +1,3 @@
-import { merge } from 'lodash';
-import { useState, useEffect } from 'react';
 // material
 import { Box, CardHeader, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
 // chart.js
@@ -15,9 +13,9 @@ import {
     Legend,
 } from 'chart.js';
 //
-import { alpha, styled, useTheme } from '@mui/material/styles';
+//import { useTheme } from '@mui/material/styles';
 //import { withStyles } from '@mui/styles';
-import { fCurrency5 } from '../../utils/formatNumber';
+//import { fCurrency5 } from '../../utils/formatNumber';
 // ----------------------------------------------------------------------
 
 ChartJS.register(
@@ -31,22 +29,17 @@ ChartJS.register(
 );
 
 export default function PriceChart2({ detail, range, setRange }) {
-    const theme = useTheme();
+    //const theme = useTheme();
     const data = detail.history;
 
-    let openPrice = 0;
-    let minTime = 0;
-    let maxTime = 0;
+    //let openPrice = 0;
+    //let minTime = 0;
+    //let maxTime = 0;
 
     if (data && data.length > 0) {
-        openPrice = data[0][1];
-        minTime = data[0][0];
-        maxTime = data[data.length - 1][0];
-    }
-
-    if (data && data.length > 60) {
-        minTime = data[30][0];
-        maxTime = data[data.length - 30][0];
+        //openPrice = data[0][1];
+        //minTime = data[0][0];
+        //maxTime = data[data.length - 1][0];
     }
 
     let user = detail.token.user;

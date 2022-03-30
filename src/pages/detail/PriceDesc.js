@@ -7,7 +7,6 @@ import caretUp from '@iconify/icons-bx/caret-up';
 
 import { fCurrency5, fPercent } from '../../utils/formatNumber';
 
-
 import {
     Avatar,
     Chip,
@@ -32,7 +31,7 @@ const BullishChip = withStyles({
     }
 })(Chip);
 
-export default function TokenDetail({token}) {
+export default function PriceDesc({token}) {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
 
     const status = useSelector(selectStatus);
@@ -81,54 +80,67 @@ export default function TokenDetail({token}) {
                 <Typography variant="subtitle1">{user} Price ({name})</Typography>
                 <Chip size="small" variant={"outlined"} icon={<Avatar sx={{ width: 24, height: 24 }} alt="xumm" src="/static/sponsor.png"/>} label='Sponsored' />
             </Stack>
-            <Stack direction="row" spacing={2} sx={{mt:1}} alignItems='center'>
-                <Stack>
+            <Stack direction="row" spacing={2} sx={{mt:0}} alignItems='center'>
+                <Stack direction="row" spacing={1} alignItems='center'>
                     <Typography variant="h3" noWrap>
                         $ {fCurrency5(exch / status.USD)}
                     </Typography>
-                    <Stack direction="row" spacing={1}>
-                        <Typography variant="subtitle1">
-                            {fCurrency5(exch)} XRP
-                        </Typography>
-                        <Tooltip title="24h(%)">
-                            {pro24h < 0 ? (
-                                <BearishChip
-                                    icon={<Icon icon={caretDown} width="16" height="16" />}
-                                    size="small"
-                                    label={<Typography variant="subtitle2">{strPro24h}</Typography>}
-                                    variant="h3" />
-                            ) : (
-                                <BullishChip
-                                    icon={<Icon icon={caretUp} width="16" height="16" />}
-                                    size="small"
-                                    label={<Typography variant="subtitle2">{strPro24h}</Typography>}
-                                    variant="h3" />
-                            )}
-                        </Tooltip>
-                        <Tooltip title="7d(%)">
-                            {pro7d < 0 ? (
-                                <BearishChip
-                                    icon={<Icon icon={caretDown} width="16" height="16" />}
-                                    size="small"
-                                    label={<Typography variant="subtitle2">{strPro7d}</Typography>}
-                                    variant="h3" />
-                            ) : (
-                                <BullishChip 
-                                    icon={<Icon icon={caretUp} width="16" height="16" />}
-                                    size="small"
-                                    label={<Typography variant="subtitle2">{strPro7d}</Typography>}
-                                    variant="h3" />
-                            )}
-                        </Tooltip>
-                    </Stack>
+                    <Typography variant="subtitle1" style={{marginTop:8}}>
+                        {fCurrency5(exch)} XRP
+                    </Typography>
                 </Stack>
             </Stack>
-            <Box
-                component="img"
-                alt=""
-                sx={{ maxWidth:'none', width: 270, height: 100, mt: 2 }}
-                src={`${BASE_URL}/sparkline/${md5}`}
-            />
+
+            <Stack direction="row" spacing={1}>
+                <Tooltip title="24h(%)">
+                    {pro24h < 0 ? (
+                        <BearishChip
+                            icon={<Icon icon={caretDown} width="16" height="16" />}
+                            size="small"
+                            label={<Typography variant="subtitle2">{strPro24h}</Typography>}
+                            variant="h3" />
+                    ) : (
+                        <BullishChip
+                            icon={<Icon icon={caretUp} width="16" height="16" />}
+                            size="small"
+                            label={<Typography variant="subtitle2">{strPro24h}</Typography>}
+                            variant="h3" />
+                    )}
+                </Tooltip>
+                <Tooltip title={
+                    <Stack alignItems='center'>
+                        7d (%)
+                        <Box
+                            component="img"
+                            alt=""
+                            sx={{ width: 135, height: 50, mt: 2 }}
+                            src={`${BASE_URL}/sparkline/${md5}`}
+                        />
+                    </Stack>
+                }>
+                    {pro7d < 0 ? (
+                        <BearishChip
+                            icon={<Icon icon={caretDown} width="16" height="16" />}
+                            size="small"
+                            label={<Typography variant="subtitle2">{strPro7d}</Typography>}
+                            variant="h3" />
+                    ) : (
+                        <BullishChip 
+                            icon={<Icon icon={caretUp} width="16" height="16" />}
+                            size="small"
+                            label={<Typography variant="subtitle2">{strPro7d}</Typography>}
+                            variant="h3" />
+                    )}
+                </Tooltip>
+            </Stack>
+            {/* <Tooltip title="Last 7 Days">
+                <Box
+                    component="img"
+                    alt=""
+                    sx={{ maxWidth:'none', width: 270, height: 50, mt: 2 }}
+                    src={`${BASE_URL}/sparkline/${md5}`}
+                />
+            </Tooltip> */}
         </Stack>
     );
 }
