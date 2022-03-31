@@ -62,9 +62,9 @@ import { fCurrency5 } from '../../utils/formatNumber';
 //     }
 // }));
 
-export default function PriceChart({ detail, range, setRange }) {
+export default function PriceChart({ history, token, range, setRange }) {
     const theme = useTheme();
-    const data = detail.history;
+    const data = history;
 
     //let openPrice = 0;
     let minTime = 0;
@@ -81,8 +81,8 @@ export default function PriceChart({ detail, range, setRange }) {
     //     maxTime = data[data.length - 30][0];
     // }
 
-    let user = detail.token.user;
-    if (!user) user = detail.token.name;
+    let user = token.user;
+    if (!user) user = token.name;
 
     const CHART_DATA1 = [
         {

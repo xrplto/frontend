@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { fPercent } from '../utils/formatNumber';
+import { update_status } from "../redux/statusSlice";
 
 import axios from 'axios'
 
@@ -9,7 +10,6 @@ const initialState = {
         order: 'desc',
         orderBy: 'marketcap',
         rowsPerPage: 100,
-        tokenCount: 0,
         tokens: []
     },
     offset: 0
@@ -40,9 +40,6 @@ export const tokenSlice = createSlice({
         },
         setTokens: (state, action) => {
             const tokens = action.payload.tokens;
-            const tokenCount = action.payload.token_count;
-
-            state.content.tokenCount = tokenCount;
             //let newTokens = [];
             state.content.tokens = [];
             for (var i in tokens) {
@@ -80,7 +77,17 @@ export const loadTokens = (offset) => (dispatch, getState) => {
     .then(res => {
         try {
             if (res.status === 200 && res.data) {
-                dispatch(setTokens(res.data));
+                const ret = res.data;
+                const status = {
+                    session: 0,
+                    USD: ret.exch.USD,
+                    EUR: ret.exch.EUR,
+                    JPY: ret.exch.JPY,
+                    CNY: ret.exch.CNY,
+                    token_count: ret.token_count
+                };
+                dispatch(update_status(status));
+                dispatch(setTokens(ret));
                 //if (offset === 0) dispatch(setOffset(-1));
             }
         } catch (error) {

@@ -30,7 +30,7 @@ import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu } from '.
 
 // ----------------------------------------------------------------------
 import { useSelector, useDispatch } from "react-redux";
-import { selectStatus } from "../redux/statusSlice";
+import { selectStatus, update_status } from "../redux/statusSlice";
 import {
     setOrder,
     setOrderBy,
@@ -38,6 +38,8 @@ import {
     selectContent,
     loadTokens
 } from "../redux/tokenSlice";
+// ----------------------------------------------------------------------
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 // ----------------------------------------------------------------------
 
 const CoinNameTypography = withStyles({
@@ -132,17 +134,54 @@ export default function Token(props) {
 
     const dispatch = useDispatch();
 
+    const {
+        sendMessage,
+        lastMessage,
+        readyState,
+    } = useWebSocket('wss://ws.xrpl.to/api/ws/detail');
+
+    const connectionStatus = {
+        [ReadyState.CONNECTING]: 'Connecting',
+        [ReadyState.OPEN]: 'Open',
+        [ReadyState.CLOSING]: 'Closing',
+        [ReadyState.CLOSED]: 'Closed',
+        [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
+    } [readyState];
+
     useEffect(() => {
-        if (content.tokens.length < 1000)
-            dispatch(loadTokens(0));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        const timer = setInterval(() => {}, 5000)
+        try {
+            const res = lastMessage.data;
+            const json = JSON.parse(res);
+            console.log(json);
+            const status = {
+                session: json.session,
+                USD: json.exch.USD,
+                EUR: json.exch.EUR,
+                JPY: json.exch.JPY,
+                CNY: json.exch.CNY,
+                token_count: json.token_count
+            };
+            dispatch(update_status(status));
+        } catch(err) {}
+    }, [lastMessage]);
+
+    useEffect(() => {
+        function getStatus() {
+            //if (connectionStatus === 'open')
+                sendMessage('Hello');
+        }
+        
+        const timer = setInterval(() => getStatus(), 5000)
 
         return () => {
             clearInterval(timer);
         }
+    }, [readyState]);
+
+    useEffect(() => {
+        if (content.tokens.length < 1000)
+            dispatch(loadTokens(0));
     }, []);
-    //let i = 0;
 
     useEffect(() => {
         if (filterName && content.page > 0)

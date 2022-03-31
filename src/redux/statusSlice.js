@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
     status: {
+        session:0,
         USD:100,
         EUR:100,
         JPY:100,

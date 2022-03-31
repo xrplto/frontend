@@ -27,6 +27,7 @@ import {
     setOrderBy,
     loadTokens*/
 } from "../../redux/tokenSlice";
+import { selectStatus } from "../../redux/statusSlice";
 // ----------------------------------------------------------------------
 
 const RootStyle = styled(Toolbar)(({ theme }) => ({
@@ -62,9 +63,10 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 export default function TokenListToolbar(props) {
     const dispatch = useDispatch();
     const content = useSelector(selectContent);
+    const status = useSelector(selectStatus);
 
     const rowsPerPage = content.rowsPerPage;
-    const count = content.tokenCount;
+    const count = status.token_count;
     const page_count = Math.floor(count / rowsPerPage) + 1;
 
     const start = content.page * rowsPerPage + 1;

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { /*useState,*/ useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 // material
 import { alpha, styled } from '@mui/material/styles';
@@ -12,11 +12,6 @@ import {
 //
 import Topbar from './Topbar';
 import Navbar from './Navbar';
-import axios from 'axios'
-
-import { /*useSelector,*/ useDispatch } from "react-redux";
-import { update_status/*, selectStatus, selectLoading*/ } from "../redux/statusSlice";
-//import { update_tokens, selectTokens } from "../redux/tokenSlice";
 // ----------------------------------------------------------------------
 
 const APP_BAR_DESKTOP = 64;
@@ -81,39 +76,6 @@ HideOnScroll.propTypes = {
 
 // ----------------------------------------------------------------------
 export default function MainLayout() {
-    const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
-
-    const dispatch = useDispatch();
-    //const status = useSelector(selectStatus);
-    //console.log(status);
-
-    useEffect(() => {
-        function getStatus() {
-            axios.get(`${BASE_URL}/status`)
-            .then(res => {
-                let status = res.status===200?res.data:undefined;
-                if (status) {
-                    dispatch(update_status(status));
-                    //console.log(status.USD);
-                }
-            }).catch(err => {
-                console.log("error on getting exchange rates!!!", err);
-            }).then(function () {
-                // always executed
-                // console.log("Heartbeat!");
-            });
-        }
-
-        getStatus();
-
-        const timer = setInterval(() => getStatus(), 5000)
-
-        return () => {
-            //console.log("kill timer");
-            clearInterval(timer);
-        }
-    }, []);
-
     /*<CssBaseline />
     <AppBar position="static">
         <Container maxWidth="lg">

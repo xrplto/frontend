@@ -26,6 +26,7 @@
     ]
   },
   "dependencies": {
+    "react-use-websocket": "^3.0.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@iconify/icons-ant-design": "^1.1.0",
     "@iconify/icons-eva": "^1.1.0",
