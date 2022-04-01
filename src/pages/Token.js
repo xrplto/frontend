@@ -5,11 +5,13 @@ import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 //import plusFill from '@iconify/icons-eva/plus-fill';
 //import { normalizer } from '../utils/normalizers';
-import { fCurrency5, fNumber } from '../utils/formatNumber';
+import { BeatLoader } from "react-spinners";
+import { fCurrency5, fNumber, fPercent } from '../utils/formatNumber';
 import { withStyles } from '@mui/styles';
 import { Link } from 'react-router-dom'
-
+import InfiniteScroll from "react-infinite-scroll-component";
 import ScrollToTop from '../layouts/ScrollToTop';
+import TopMark from '../layouts/TopMark';
 // material
 import {
     Avatar,
@@ -29,17 +31,10 @@ import Page from '../layouts/Page';
 import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu } from './components';
 
 // ----------------------------------------------------------------------
+import axios from 'axios'
+
 import { useSelector, useDispatch } from "react-redux";
 import { selectStatus, update_status } from "../redux/statusSlice";
-import {
-    setOrder,
-    setOrderBy,
-    setPage,
-    selectContent,
-    loadTokens
-} from "../redux/tokenSlice";
-// ----------------------------------------------------------------------
-import useWebSocket, { ReadyState } from 'react-use-websocket';
 // ----------------------------------------------------------------------
 
 const CoinNameTypography = withStyles({
@@ -126,106 +121,123 @@ function applySortFilter(array, comparator, query) {
 
 export default function Token(props) {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
-
+    const dispatch = useDispatch();
     const [filterName, setFilterName] = useState('');
+    const [page, setPage] = useState(0);
+    const [order, setOrder] = useState('desc');
+    const [orderBy, setOrderBy] = useState('marketcap');
+    const [rows, setRows] = useState(100);
+    const [tokens, setTokens] = useState([]);
+    const [offset, setOffset] = useState(0);
+    const [load, setLoad] = useState(true);
+    const [hasMore, setHasMore] = useState(false);
 
     const status = useSelector(selectStatus);
-    const content = useSelector(selectContent);
-
-    const dispatch = useDispatch();
-
-    const {
-        sendMessage,
-        lastMessage,
-        readyState,
-    } = useWebSocket('wss://ws.xrpl.to/api/ws/detail');
-
-    const connectionStatus = {
-        [ReadyState.CONNECTING]: 'Connecting',
-        [ReadyState.OPEN]: 'Open',
-        [ReadyState.CLOSING]: 'Closing',
-        [ReadyState.CLOSED]: 'Closed',
-        [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-    } [readyState];
 
     useEffect(() => {
-        try {
-            const res = lastMessage.data;
-            const json = JSON.parse(res);
-            console.log(json);
-            const status = {
-                session: json.session,
-                USD: json.exch.USD,
-                EUR: json.exch.EUR,
-                JPY: json.exch.JPY,
-                CNY: json.exch.CNY,
-                token_count: json.token_count
-            };
-            dispatch(update_status(status));
-        } catch(err) {}
-    }, [lastMessage]);
-
-    useEffect(() => {
-        function getStatus() {
-            //if (connectionStatus === 'open')
-                sendMessage('Hello');
+        console.log(`useEffect - [load ${load}]`);
+        if (load) {
+            setLoad(false);
+            loadTokens();
         }
-        
-        const timer = setInterval(() => getStatus(), 5000)
-
-        return () => {
-            clearInterval(timer);
-        }
-    }, [readyState]);
-
-    useEffect(() => {
-        if (content.tokens.length < 1000)
-            dispatch(loadTokens(0));
-    }, []);
-
-    useEffect(() => {
-        if (filterName && content.page > 0)
-            dispatch(setPage(0));
-    }, [filterName, content.page]);
+    }, [load]);
+    
+    // useEffect(() => {
+    //     if (filterName && page > 0)
+    //         dispatch(setPage(0));
+    // }, [filterName, page]);
 
     const handleRequestSort = (event, property) => {
-        const isAsc = content.orderBy === property && content.order === 'asc';
-        dispatch(setOrder(isAsc ? 'desc' : 'asc'));
-        dispatch(setOrderBy(property));
+        const isAsc = orderBy === property && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+        setOffset(0);
+        setPage(0);
+        setLoad(true);
     };
 
-    const emptyRows = content.page > 0 ? Math.max(0, (1 + content.page) * content.rowsPerPage - content.tokens.length) : 0;
+    const updatePage = (newPage)  => {
+        if (newPage === page) return;
+        console.log("updatePage");
+        setOffset(0);
+        setPage(newPage);
+        setLoad(true);
+    }
 
-    const filteredTokens = applySortFilter(content.tokens, getComparator(content.order, content.orderBy), filterName);
+    const updateRows = (newRows) => {
+        if (newRows === rows) return;
+        console.log("updateRows");
+        setRows(newRows);
+        if (tokens.length < newRows)
+            setHasMore(true);
+    }
 
-    //const isTokenNotFound = filteredTokens.length === 0;
-
-    /*const handleSelectAllClick = (event) => {
-        if (event.target.checked) {
-            const newSelecteds = tokens.map((n) => n.id);
-            setSelected(newSelecteds);
+    const fetchMoreData = () => {
+        console.log("fetchMoreData - 1");
+        if (tokens.length >= rows) {
+            setHasMore(false);
             return;
         }
-        setSelected([]);
-    };*/
+        console.log("fetchMoreData - 2");
+        setOffset(offset + 1);
+        setLoad(true);
+    };
 
-    /*const handleClick = (event, id) => {
-        const selectedIndex = selected.indexOf(id);
-        let newSelected = [];
-        if (selectedIndex === -1) {
-            newSelected = newSelected.concat(selected, id);
-        } else if (selectedIndex === 0) {
-            newSelected = newSelected.concat(selected.slice(1));
-        } else if (selectedIndex === selected.length - 1) {
-            newSelected = newSelected.concat(selected.slice(0, -1));
-        } else if (selectedIndex > 0) {
-            newSelected = newSelected.concat(
-                selected.slice(0, selectedIndex),
-                selected.slice(selectedIndex + 1)
-            );
-        }
-        setSelected(newSelected);
-    };*/
+    const loadTokens=() => {
+    
+        // https://livenet.xrpl.org/api/v1/token/top
+        // https://ws.xrpl.to/api/tokens/-1
+        // https://github.com/WietseWind/fetch-xrpl-transactions
+        //const offset = getState().token.offset;
+        const count = status.token_count;
+        const start = page * rows + offset * 20;
+        console.log(`${offset} Load tokens from ${start+1}`);
+        axios.get(`${BASE_URL}/tokens?start=${start}&limit=20&sortBy=${orderBy}&sortType=${order}`)
+        .then(res => {
+            try {
+                if (res.status === 200 && res.data) {
+                    const ret = res.data;
+                    const status = {
+                        session: 0,
+                        USD: ret.exch.USD,
+                        EUR: ret.exch.EUR,
+                        JPY: ret.exch.JPY,
+                        CNY: ret.exch.CNY,
+                        token_count: ret.token_count
+                    };
+                    dispatch(update_status(status));
+                    let newTokens;
+                    if (offset == 0) {
+                        newTokens = ret.tokens;
+                        setHasMore(true);
+                    } else {
+                        newTokens = tokens.concat(ret.tokens);
+                    }
+                    setTokens(newTokens);
+
+                    if (ret.tokens.length < 20)
+                        setHasMore(false);
+
+                    if (newTokens.length >= rows)
+                        setHasMore(false);
+
+                    console.log("Loaded tokens");
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }).catch(err => {
+            console.log("err->>", err);
+        }).then(function () {
+            // always executed
+        });
+    };
+
+    const emptyRows = 0;//Math.max(0, rows - tokens.length);//page > 0 ? Math.max(0, (1 + page) * rows - tokens.length) : 0;
+
+    const filteredTokens = tokens; // applySortFilter(tokens, getComparator(order, orderBy), filterName);
+
+    //const isTokenNotFound = filteredTokens.length === 0;
 
     const handleFilterByName = (event) => {
         setFilterName(event.target.value);
@@ -237,22 +249,35 @@ export default function Token(props) {
         <Page title="XRPL Tokens/Currencies Prices, Charts And Market Capitalizations">
             <Container maxWidth="xl">
 
-            <Toolbar id="back-to-top-anchor" />
+            <TopMark/>
 
             <SearchToolbar
                 filterName={filterName}
                 onFilterName={handleFilterByName}
+                rows={rows}
+                setRows={updateRows}
             />
-
+            <InfiniteScroll
+                dataLength={tokens.length}
+                next={fetchMoreData}
+                hasMore={hasMore}
+                loader={
+                    <div style={{display: "flex",justifyContent:"center",paddingTop:"10px"}}>
+                        <BeatLoader color={"#00AB55"} size={10} />
+                    </div>
+                }
+            >
             <Table stickyHeader>
                 <TokenListHead
-                    order={content.order}
-                    orderBy={content.orderBy}
+                    order={order}
+                    orderBy={orderBy}
                     headLabel={TABLE_HEAD}
                     onRequestSort={handleRequestSort}
                 />
                 <TableBody>
-                    {filteredTokens.slice(content.page * content.rowsPerPage, content.page * content.rowsPerPage + content.rowsPerPage)
+                    {
+                    //filteredTokens.slice(page * rows, page * rows + rows)
+                    filteredTokens.slice(0, rows)
                         .map((row) => {
                             const {
                                 id,
@@ -261,7 +286,6 @@ export default function Token(props) {
                                 code,
                                 date,
                                 amt,
-                                marketcap,
                                 trline,
                                 //holders,
                                 //offers,
@@ -275,20 +299,24 @@ export default function Token(props) {
                             const isItemSelected = false;//selected.indexOf(id) !== -1;
                             const vol24h = 0;
 
+                            const pro7 = fPercent(pro7d);
+                            const pro24 = fPercent(pro24h);
+                            const marketcap = amt * price;
+                            
                             let strPro7d = 0;
-                            if (pro7d < 0) {
-                                strPro7d = -pro7d;
+                            if (pro7 < 0) {
+                                strPro7d = -pro7;
                                 strPro7d = '-' + strPro7d + '%';
                             } else {
-                                strPro7d = '+' + pro7d + '%';
+                                strPro7d = '+' + pro7 + '%';
                             }
 
                             let strPro24h = 0;
-                            if (pro24h < 0) {
-                                strPro24h = -pro24h;
+                            if (pro24 < 0) {
+                                strPro24h = -pro24;
                                 strPro24h = '-' + strPro24h + '%';
                             } else {
-                                strPro24h = '+' + pro24h + '%';
+                                strPro24h = '+' + pro24 + '%';
                             }
 
                             let date_fixed = '';
@@ -431,7 +459,13 @@ export default function Token(props) {
                     </TableBody>
                 )*/}
             </Table>
-            <TokenListToolbar />
+            </InfiniteScroll>
+            <TokenListToolbar
+                rows={rows}
+                setRows={updateRows}
+                page={page}
+                setPage={updatePage}
+            />
             <ScrollToTop />
             </Container>
             {/* <NFTWidget/> */}

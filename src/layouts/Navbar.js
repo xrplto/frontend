@@ -25,14 +25,6 @@ import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 // ----------------------------------------------------------------------
 import { /*useSelector,*/ useDispatch } from "react-redux";
 
-import {
-    setPage,
-    setRowsPerPage,
-    /*selectContent,
-    setOrder,
-    setOrderBy,
-    loadTokens*/
-} from "../redux/tokenSlice";
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -50,8 +42,8 @@ export default function Navbar() {
     const { toggleThisTheme, isDarkMode } = useContext(Context);
 
     const reloadPage = () => {
-        dispatch(setRowsPerPage(100));
-        dispatch(setPage(0));
+        //dispatch(setRowsPerPage(100));
+        //dispatch(setPage(0));
     }
     return (
         <StackStyle direction="row" spacing={2} sx={{pl:2, pr:2, pt:4, pb:0.5}} alignItems="center">

@@ -16,15 +16,6 @@ import {
     OutlinedInput,
     InputAdornment
 } from '@mui/material';
-
-import {
-    // setOrder,
-    // setOrderBy,
-    // setPage,
-    // loadTokens,
-    setRowsPerPage,
-    selectContent,
-} from "../../redux/tokenSlice";
 // ----------------------------------------------------------------------
 const RootStyle = styled(Toolbar)(({ theme }) => ({
     height: 96,
@@ -53,31 +44,29 @@ const SearchStyle = styled(OutlinedInput)(({ theme }) => ({
   onFilterName: PropTypes.func
 };*/
 
-export default function SearchToolbar(props) {
-    const dispatch = useDispatch();
-    const content = useSelector(selectContent);
-
-    const handleChangeRowsPerPage = (event) => {
-        dispatch(setRowsPerPage(parseInt(event.target.value, 10)));
+export default function SearchToolbar({ filterName, onFilterName, rows, setRows }) {
+   
+    const handleChangeRows = (event) => {
+        setRows(parseInt(event.target.value, 10));
     };
 
     return (
         <RootStyle>
             <SearchStyle
-                value={props.filterName}
-                onChange={props.onFilterName}
+                value={filterName}
+                onChange={onFilterName}
                 placeholder="Search ..."
                 startAdornment={
-                  <InputAdornment position="start">
-                    <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
-                  </InputAdornment>
+                    <InputAdornment position="start">
+                        <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
+                    </InputAdornment>
                 }
             />
             <Stack direction="row" alignItems="center">
                 Show Rows
                 <Select
-                    value={content.rowsPerPage}
-                    onChange={handleChangeRowsPerPage}
+                    value={rows}
+                    onChange={handleChangeRows}
                     sx={{'& .MuiOutlinedInput-notchedOutline' : {
                         border: 'none'
                     }}}

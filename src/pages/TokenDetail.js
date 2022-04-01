@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from "react-router-dom";
 import ScrollToTop from '../layouts/ScrollToTop';
+import TopMark from '../layouts/TopMark';
 
 import Content from "./Content";
 import UserDesc from "./detail/UserDesc";
@@ -14,13 +15,11 @@ import Description from './detail/Description';
 import {
     Container,
     Divider,
-    Grid,
-    Toolbar
+    Grid
 } from '@mui/material';
 
 // ----------------------------------------------------------------------
 import axios from 'axios'
-import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { useSelector, useDispatch } from "react-redux";
 import { selectStatus, update_status } from "../redux/statusSlice";
 // ----------------------------------------------------------------------
@@ -37,53 +36,6 @@ export default function TokenDetail(props) {
 
     //const status = useSelector(selectStatus);
     const dispatch = useDispatch();
-
-    const {
-        sendMessage,
-        lastMessage,
-        readyState,
-    } = useWebSocket('wss://ws.xrpl.to/api/ws/detail');
-
-    const connectionStatus = {
-        [ReadyState.CONNECTING]: 'Connecting',
-        [ReadyState.OPEN]: 'Open',
-        [ReadyState.CLOSING]: 'Closing',
-        [ReadyState.CLOSED]: 'Closed',
-        [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-    } [readyState];
-
-    useEffect(() => {
-        try {
-            const res = lastMessage.data;
-            const json = JSON.parse(res);
-            console.log(json);
-            const status = {
-                session: json.session,
-                USD: json.exch.USD,
-                EUR: json.exch.EUR,
-                JPY: json.exch.JPY,
-                CNY: json.exch.CNY,
-                token_count: json.token_count
-            };
-            dispatch(update_status(status));
-            setToken(json.token);
-        } catch(err) {}
-    }, [lastMessage]);
-
-    useEffect(() => {
-        console.log(connectionStatus);
-
-        function getStatus() {
-            //if (connectionStatus === 'open')
-            sendMessage(md5);
-        }
-        
-        const timer = setInterval(() => getStatus(), 5000)
-
-        return () => {
-            clearInterval(timer);
-        }
-    }, [readyState]);
 
     useEffect(() => {
         function getDetail() {
@@ -143,7 +95,7 @@ export default function TokenDetail(props) {
         // sx={{borderRight: '1px solid #323546'}}
         return (
             <Page title={`${user} price today, ${name} to USD live, marketcap and chart `}>
-                <Toolbar id="back-to-top-anchor" />
+                <TopMark md5={md5}/>
                 <Container maxWidth="xl">
                     <Grid item container direction="row" >
                         <Grid item xs={5} md={6} lg={5} sx={{ mt: 3 }}>

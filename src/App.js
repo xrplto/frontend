@@ -13,14 +13,12 @@ import { Backdrop } from "@mui/material";
 import { HashLoader } from "react-spinners";
 // ----------------------------------------------------------------------
 import statusReducer from "./redux/statusSlice";
-import tokenReducer from "./redux/tokenSlice";
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 
 const store = configureStore({
     reducer: {
-      status: statusReducer,
-      token: tokenReducer,
+        status: statusReducer,
     },
 });
 

@@ -17,16 +17,8 @@ import {
 
 //import { makeStyles } from "@mui/styles";
 
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 
-import {
-    setPage,
-    setRowsPerPage,
-    selectContent,
-    /*setOrder,
-    setOrderBy,
-    loadTokens*/
-} from "../../redux/tokenSlice";
 import { selectStatus } from "../../redux/statusSlice";
 // ----------------------------------------------------------------------
 
@@ -60,51 +52,48 @@ const CustomSelect = styled(Select)(({ theme }) => ({
     }
 }));
 
-export default function TokenListToolbar(props) {
-    const dispatch = useDispatch();
-    const content = useSelector(selectContent);
+export default function TokenListToolbar({ rows, setRows, page, setPage}) {
     const status = useSelector(selectStatus);
 
-    const rowsPerPage = content.rowsPerPage;
     const count = status.token_count;
-    const page_count = Math.floor(count / rowsPerPage) + 1;
+    const page_count = Math.floor(count / rows) + 1;
 
-    const start = content.page * rowsPerPage + 1;
-    let end = start + rowsPerPage - 1;
+    const start = page * rows + 1;
+    let end = start + rows - 1;
     if (end > count) end = count;
 
-    const handleChangeRowsPerPage = (event) => {
-        dispatch(setRowsPerPage(parseInt(event.target.value, 100)));
+    const handleChangeRows = (event) => {
+        setRows(parseInt(event.target.value, 10));
     };
 
     const handleChangePage = (event, newPage) => {
-        dispatch(setPage(newPage - 1));
+        setPage(newPage - 1);
         gotoTop(event);
     };
 
     const gotoTop = (event) => {
         const anchor = (event.target.ownerDocument || document).querySelector(
-          '#back-to-top-anchor',
+            '#back-to-top-anchor',
         );
     
         if (anchor) {
-          anchor.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center',
-          });
+            anchor.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            });
         }
     };
 
     return (
         <RootStyle>
             Showing {start} - {end} out of {count}
-            <Pagination page={content.page+1} onChange={handleChangePage} count={page_count} variant="outlined" shape="rounded" />
+            <Pagination page={page+1} onChange={handleChangePage} count={page_count} variant="outlined" shape="rounded" />
 
             <Stack direction="row" alignItems="center">
                 Show Rows
                 <CustomSelect
-                    value={content.rowsPerPage}
-                    onChange={handleChangeRowsPerPage}
+                    value={rows}
+                    onChange={handleChangeRows}
                 >
                     <MenuItem value={100}>100</MenuItem>
                     <MenuItem value={50}>50</MenuItem>
