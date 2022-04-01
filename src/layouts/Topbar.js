@@ -43,10 +43,6 @@ const XLS14DStyle = styled('div')(({ theme }) => ({
 export default function Topbar() {
     const status = useSelector(selectStatus);
 
-    useEffect(() => {
-        //console.log("Topbar useEffect called!");
-    }, []);
-
     return (
         <StackStyle direction="row" spacing={2} sx={{pl:2, pr:3, pt:0.5, pb:0.5}} alignItems="center">
                 <h5>Tokens: </h5>

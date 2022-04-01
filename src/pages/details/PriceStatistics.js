@@ -1,40 +1,23 @@
-import { merge } from 'lodash';
-import ReactApexChart from 'react-apexcharts';
 // material
-import { useTheme, styled, alpha } from '@mui/material/styles';
-import { CardHeader } from '@mui/material';
-// utils
-import { fCurrency5, fNumber } from '../../utils/formatNumber';
-//
-//import ChartOptions from './ChartOptions';
 import { withStyles } from '@mui/styles';
-
+import { alpha, styled } from '@mui/material/styles';
 import {
-    Button,
-    Box,
-    Card,
-    Chip,
-    Divider,
+    CardHeader,
     Stack,
     Typography,
     Table,
     TableRow,
     TableBody,
-    TableCell,
-    Tooltip
+    TableCell
 } from '@mui/material';
-
+// ----------------------------------------------------------------------
+// utils
+import { fCurrency5, fNumber } from '../../utils/formatNumber';
+// ----------------------------------------------------------------------
+// Redux
 import { useSelector/*, useDispatch*/ } from "react-redux";
 import { selectStatus } from "../../redux/statusSlice";
 // ----------------------------------------------------------------------
-const RootStyle = styled(Card)(({ theme }) => ({
-    boxShadow: 'none',
-    textAlign: 'center',
-    padding: theme.spacing(5, 0),
-    color: theme.palette.warning.darker,
-    backgroundColor: theme.palette.warning.lighter
-}));
-
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
     backdropFilter: 'blur(2px)',
@@ -65,20 +48,19 @@ const badge24hStyle = {
 // ----------------------------------------------------------------------
 
 export default function PriceStatistics({token}) {
-    const theme = useTheme();
     const status = useSelector(selectStatus);
 
     const {
-        name,
-        holders,
-        offers,
         id,
+        name,
+        amt,
+        exch,
+        /*holders,
+        offers,
         acct,
         code,
         date,
-        amt,
-        trline,
-        exch
+        trline,*/
     } = token;
 
     let user = token.user;

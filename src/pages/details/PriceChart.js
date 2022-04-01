@@ -124,16 +124,6 @@ export default function PriceChart({ history, token, range, setRange }) {
             borderColor: theme.palette.divider
         },
         colors: ['#B72136'],
-        // colors: [function({ value, seriesIndex, w }) {
-        //     console.log("Value:", value);
-        //     if (value < openPrice) {
-        //         // Bearish
-        //         return '#B72136'
-        //     } else {
-        //         // Bullish
-        //         return '#007B55'
-        //     }
-        // }],
 
         // Fill
         fill: {

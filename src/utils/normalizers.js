@@ -60,7 +60,6 @@ function precision(num, precision) {
 }
 
 module.exports.currencyCodeUTF8ToHex = currencyCode => {
-    //console.log("NORMALIZER INPUT: " + currencyCode);
     if(currencyCode && currencyCode.length == 40) { //remove trailing zeros
         while(currencyCode.endsWith("00")) {
             currencyCode = currencyCode.substring(0, currencyCode.length-2);
@@ -68,13 +67,10 @@ module.exports.currencyCodeUTF8ToHex = currencyCode => {
     }
   
     let output;
-    //console.log("currency to change: " + currency);
     if(currencyCode.length > 3)
         output = Buffer.from(currencyCode.trim(), "utf-8").toString("hex");
     else
         output = currencyCode;
-
-    //console.log("NORMALIZER OUTPUT: " + output);
 
     return output;
 }

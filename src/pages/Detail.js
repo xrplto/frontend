@@ -3,14 +3,13 @@ import { useParams } from "react-router-dom";
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
 
-import Content from "./Content";
-import UserDesc from "./detail/UserDesc";
-import PriceDesc from "./detail/PriceDesc";
-import LinkDesc from "./detail/LinkDesc";
-import ExtraDesc from "./detail/ExtraDesc";
-import PriceChart from './detail/PriceChart';
-import PriceStatistics from './detail/PriceStatistics';
-import Description from './detail/Description';
+import UserDesc from "./details/UserDesc";
+import PriceDesc from "./details/PriceDesc";
+import LinkDesc from "./details/LinkDesc";
+import ExtraDesc from "./details/ExtraDesc";
+import PriceChart from './details/PriceChart';
+import PriceStatistics from './details/PriceStatistics';
+import Description from './details/Description';
 
 import {
     Container,
@@ -20,13 +19,13 @@ import {
 
 // ----------------------------------------------------------------------
 import axios from 'axios'
-import { useSelector, useDispatch } from "react-redux";
-import { selectStatus, update_status } from "../redux/statusSlice";
+import { useDispatch } from "react-redux";
+import { update_status } from "../redux/statusSlice";
 // ----------------------------------------------------------------------
 
 import Page from '../layouts/Page';
 
-export default function TokenDetail(props) {
+export default function Detail(props) {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
     const [history, setHistory] = useState([]);
     const [range, setRange] = useState('1D');
@@ -44,7 +43,6 @@ export default function TokenDetail(props) {
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
-                        console.log(ret);
                         const status = {
                             session: 0,
                             USD: ret.exch.USD,
@@ -61,25 +59,24 @@ export default function TokenDetail(props) {
                     console.log("error on getting details!!!", err);
                 }).then(function () {
                     // always executed
-                    // console.log("Heartbeat!");
                 });
         }
         if (md5)
             getDetail();
 
-    }, [md5, range]);
+    }, [md5, range, dispatch]);
 
     if (!token) {
         return (
-            <Content>
+            <>
                 {/* <CircularProgress /> */}
-            </Content>
+            </>
         );
     } else {
         const {
             name,
             /*id,
-            acct,            
+            acct,
             code,
             date,
             amt,

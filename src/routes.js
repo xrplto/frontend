@@ -6,28 +6,28 @@ import EmptyLayout from './layouts/EmptyLayout';
 import NotFound from './layouts/Page404';
 
 // pages
-import Tokens from './pages/Token';
-import TokenDetail from './pages/TokenDetail';
+import Token from './pages/Token';
+import Detail from './pages/Detail';
 
 // ----------------------------------------------------------------------
 export default function Router() {
-  return useRoutes([
-    {
-      path: '/',
-      element: <MainLayout />,
-      children: [
-        { path: '/', element: <Tokens /> },
-        { path: 'detail/:md5', element: <TokenDetail/> },
-        { path: 'tokens', element: <Tokens /> },
-        { path: '*', element: <Navigate to="/404/NotFound" /> }
-      ]
-    },
-    {
-      path: '/404',
-      element: <EmptyLayout />,
-      children: [
-        { path: '*', element: <NotFound /> }
-      ]
-    }
-  ]);
+    return useRoutes([
+        {
+            path: '/',
+            element: <MainLayout />,
+            children: [
+                { path: '/', element: <Token /> },
+                { path: 'detail/:md5', element: <Detail/> },
+                { path: 'tokens', element: <Token /> },
+                { path: '*', element: <Navigate to="/404/NotFound" /> }
+            ]
+        },
+        {
+            path: '/404',
+            element: <EmptyLayout />,
+            children: [
+                { path: '*', element: <NotFound /> }
+            ]
+        }
+    ]);
 }

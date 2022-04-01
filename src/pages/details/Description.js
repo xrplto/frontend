@@ -1,38 +1,18 @@
 //import { useState } from 'react';
 import { withStyles } from '@mui/styles';
-import { useTheme, styled, alpha } from '@mui/material/styles';
-
-import { Icon } from '@iconify/react';
-import caretDown from '@iconify/icons-bx/caret-down';
-import caretUp from '@iconify/icons-bx/caret-up';
+import { /*useTheme, styled,*/ alpha } from '@mui/material/styles';
 
 import { fCurrency5, fPercent, fNumber } from '../../utils/formatNumber';
 
 import {
-    Avatar,
     CardHeader,
-    Chip,
-    Box,
     Link,
     Stack,
-    Tooltip,
     Typography
 } from '@mui/material';
 
 import { useSelector/*, useDispatch*/ } from "react-redux";
 import { selectStatus } from "../../redux/statusSlice";
-
-const BearishChip = withStyles({
-    root: {
-        backgroundColor: "#B72136"
-    }
-})(Chip);
-  
-const BullishChip = withStyles({
-    root: {
-        backgroundColor: "#007B55"
-    }
-})(Chip);
 
 const DescTypography = withStyles({
     root: {
@@ -46,13 +26,13 @@ export default function Description({token}) {
         id,
         name,
         exch,
-        pro7d,
         pro24h,
-        md5,
         amt,
         /*acct,
         code,
         date,
+        md5,
+        pro7d,
         trline,
         holders,
         offers*/
@@ -65,7 +45,6 @@ export default function Description({token}) {
     const marketcap = fNumber(amt * exch / status.USD);
     const supply = fNumber(amt);
     const volume24h = 0;
-    const str24h = '';
 
     //const vpro7d = fPercent(pro7d);
     const vpro24h = fPercent(pro24h);

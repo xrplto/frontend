@@ -89,18 +89,6 @@ export default function ChartOptions() {
       marker: {
         show: true,
       },
-      // custom: function({ series, seriesIndex, dataPointIndex, w }) {
-      //   console.log(w);
-      //   return (
-      //     '<div class="arrow_box">' +
-      //     "<span>" +
-      //         w.globals.labels[dataPointIndex] +
-      //     ": " +
-      //         series[seriesIndex][dataPointIndex] +
-      //     "</span>" +
-      //     "</div>"
-      //   );
-      // }
     },
 
     // Legend

@@ -57,7 +57,6 @@ export default function AccountPopover() {
         var isRunning = false;
         var counter = 150;
         if (openLogin) {
-            console.log("Set timer");
             timer = setInterval(async () => {
                 console.log(counter + " " + isRunning, uuid);
                 if (isRunning) return;
