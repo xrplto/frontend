@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 // ----------------------------------------------------------------------
 import {
     Toolbar
 } from '@mui/material';
 // ----------------------------------------------------------------------
-import { useSelector, useDispatch } from "react-redux";
-import { selectStatus, update_status } from "../redux/statusSlice";
+import { useDispatch } from "react-redux";
+import { update_status } from "../redux/statusSlice";
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 // ----------------------------------------------------------------------
 
@@ -16,7 +16,7 @@ export default function TopMark({ md5 }) {
         sendMessage,
         lastMessage,
         readyState,
-    } = useWebSocket('wss://ws.xrpl.to/api/ws/detail');
+    } = useWebSocket(`wss://ws.xrpl.to/api/ws/detail/${md5}`);
 
     const connectionStatus = {
         [ReadyState.CONNECTING]: 'Connecting',
@@ -30,7 +30,7 @@ export default function TopMark({ md5 }) {
         try {
             const res = lastMessage.data;
             const json = JSON.parse(res);
-            //console.log(json);
+            console.log(json);
             const status = {
                 session: json.session,
                 USD: json.exch.USD,
@@ -41,7 +41,7 @@ export default function TopMark({ md5 }) {
             };
             dispatch(update_status(status));
         } catch(err) {}
-    }, [lastMessage]);
+    }, [lastMessage, dispatch]);
 
     useEffect(() => {
         function getStatus() {
@@ -52,12 +52,12 @@ export default function TopMark({ md5 }) {
                 sendMessage('Hello');
         }
         
-        const timer = setInterval(() => getStatus(), 5000)
+        const timer = setInterval(() => getStatus(), 10000)
 
         return () => {
             clearInterval(timer);
         }
-    }, [readyState]);
+    }, [readyState, sendMessage, md5]);
 
     return (
         <Toolbar id="back-to-top-anchor" />

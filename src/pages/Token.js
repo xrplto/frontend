@@ -1,10 +1,5 @@
-import { filter } from 'lodash';
-//import { Icon } from '@iconify/react';
-//import searchFill from '@iconify/icons-eva/search-fill';
-//import { sentenceCase } from 'change-case';
+//import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
-//import plusFill from '@iconify/icons-eva/plus-fill';
-//import { normalizer } from '../utils/normalizers';
 import { BeatLoader } from "react-spinners";
 import { fCurrency5, fNumber, fPercent } from '../utils/formatNumber';
 import { withStyles } from '@mui/styles';
@@ -22,13 +17,12 @@ import {
     TableRow,
     TableBody,
     TableCell,
-    Typography,
-    Toolbar,
+    Typography
 } from '@mui/material';
 // components
 import Page from '../layouts/Page';
 //import SearchNotFound from '../../components/SearchNotFound';
-import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu } from './components';
+import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu } from './tokens';
 
 // ----------------------------------------------------------------------
 import axios from 'axios'
@@ -84,42 +78,42 @@ const TABLE_HEAD = [
 ];
 
 // ----------------------------------------------------------------------
-function descendingComparator(a, b, orderBy) {
-    if (b[orderBy] < a[orderBy]) {
-        return -1;
-    }
-    if (b[orderBy] > a[orderBy]) {
-        return 1;
-    }
-    return 0;
-}
+// function descendingComparator(a, b, orderBy) {
+//     if (b[orderBy] < a[orderBy]) {
+//         return -1;
+//     }
+//     if (b[orderBy] > a[orderBy]) {
+//         return 1;
+//     }
+//     return 0;
+// }
 
-function getComparator(order, orderBy) {
-    return order === 'desc'
-        ? (a, b) => descendingComparator(a, b, orderBy)
-        : (a, b) => -descendingComparator(a, b, orderBy);
-}
+// function getComparator(order, orderBy) {
+//     return order === 'desc'
+//         ? (a, b) => descendingComparator(a, b, orderBy)
+//         : (a, b) => -descendingComparator(a, b, orderBy);
+// }
 
-function applySortFilter(array, comparator, query) {
-    const stabilizedThis = array.map((el, index) => [el, index]);
-    stabilizedThis.sort((a, b) => {
-        const order = comparator(a[0], b[0]);
-        if (order !== 0) return order;
-        return a[1] - b[1];
-    });
-    if (query) {
-        return filter(array, (_token) => _token.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-    }
-    /*let idx = 1;
-    const res = stabilizedThis.map((el) => {
-        el[0].id = idx++;
-        return el[0];
-    });
-    return res;*/
-    return stabilizedThis.map((el) => el[0]);
-}
+// function applySortFilter(array, comparator, query) {
+//     const stabilizedThis = array.map((el, index) => [el, index]);
+//     stabilizedThis.sort((a, b) => {
+//         const order = comparator(a[0], b[0]);
+//         if (order !== 0) return order;
+//         return a[1] - b[1];
+//     });
+//     if (query) {
+//         return filter(array, (_token) => _token.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+//     }
+//     /*let idx = 1;
+//     const res = stabilizedThis.map((el) => {
+//         el[0].id = idx++;
+//         return el[0];
+//     });
+//     return res;*/
+//     return stabilizedThis.map((el) => el[0]);
+// }
 
-export default function Token(props) {
+export default function Token() {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
     const dispatch = useDispatch();
     const [filterName, setFilterName] = useState('');
@@ -134,65 +128,14 @@ export default function Token(props) {
 
     const status = useSelector(selectStatus);
 
-    useEffect(() => {
-        console.log(`useEffect - [load ${load}]`);
-        if (load) {
-            setLoad(false);
-            loadTokens();
-        }
-    }, [load]);
-    
-    // useEffect(() => {
-    //     if (filterName && page > 0)
-    //         dispatch(setPage(0));
-    // }, [filterName, page]);
-
-    const handleRequestSort = (event, property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
-        setOrderBy(property);
-        setOffset(0);
-        setPage(0);
-        setLoad(true);
-    };
-
-    const updatePage = (newPage)  => {
-        if (newPage === page) return;
-        console.log("updatePage");
-        setOffset(0);
-        setPage(newPage);
-        setLoad(true);
-    }
-
-    const updateRows = (newRows) => {
-        if (newRows === rows) return;
-        console.log("updateRows");
-        setRows(newRows);
-        if (tokens.length < newRows)
-            setHasMore(true);
-    }
-
-    const fetchMoreData = () => {
-        console.log("fetchMoreData - 1");
-        if (tokens.length >= rows) {
-            setHasMore(false);
-            return;
-        }
-        console.log("fetchMoreData - 2");
-        setOffset(offset + 1);
-        setLoad(true);
-    };
-
     const loadTokens=() => {
-    
         // https://livenet.xrpl.org/api/v1/token/top
         // https://ws.xrpl.to/api/tokens/-1
         // https://github.com/WietseWind/fetch-xrpl-transactions
-        //const offset = getState().token.offset;
-        const count = status.token_count;
+        // https://ws.xrpl.to/api/tokens?start=0&limit=100&sortBy=marketcap&sortType=desc
         const start = page * rows + offset * 20;
         console.log(`${offset} Load tokens from ${start+1}`);
-        axios.get(`${BASE_URL}/tokens?start=${start}&limit=20&sortBy=${orderBy}&sortType=${order}`)
+        axios.get(`${BASE_URL}/tokens?start=${start}&limit=20&sortBy=${orderBy}&sortType=${order}&filter=${filterName}`)
         .then(res => {
             try {
                 if (res.status === 200 && res.data) {
@@ -207,7 +150,7 @@ export default function Token(props) {
                     };
                     dispatch(update_status(status));
                     let newTokens;
-                    if (offset == 0) {
+                    if (offset === 0) {
                         newTokens = ret.tokens;
                         setHasMore(true);
                     } else {
@@ -220,8 +163,6 @@ export default function Token(props) {
 
                     if (newTokens.length >= rows)
                         setHasMore(false);
-
-                    console.log("Loaded tokens");
                 }
             } catch (error) {
                 console.log(error);
@@ -233,6 +174,45 @@ export default function Token(props) {
         });
     };
 
+    useEffect(() => {
+        if (load) {
+            setLoad(false);
+            loadTokens();
+        }
+    }, [load]);
+    
+    const handleRequestSort = (event, property) => {
+        const isAsc = orderBy === property && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+        setOffset(0);
+        setPage(0);
+        setLoad(true);
+    };
+
+    const updatePage = (newPage)  => {
+        if (newPage === page) return;
+        setOffset(0);
+        setPage(newPage);
+        setLoad(true);
+    }
+
+    const updateRows = (newRows) => {
+        if (newRows === rows) return;
+        setRows(newRows);
+        if (tokens.length < newRows)
+            setHasMore(true);
+    }
+
+    const fetchMoreData = () => {
+        if (tokens.length >= rows) {
+            setHasMore(false);
+            return;
+        }
+        setOffset(offset + 1);
+        setLoad(true);
+    };
+
     const emptyRows = 0;//Math.max(0, rows - tokens.length);//page > 0 ? Math.max(0, (1 + page) * rows - tokens.length) : 0;
 
     const filteredTokens = tokens; // applySortFilter(tokens, getComparator(order, orderBy), filterName);
@@ -241,6 +221,9 @@ export default function Token(props) {
 
     const handleFilterByName = (event) => {
         setFilterName(event.target.value);
+        setPage(0);
+        setOffset(0);
+        setLoad(true);
     };
 
     // style={{border: '1px solid red'}}
@@ -249,7 +232,7 @@ export default function Token(props) {
         <Page title="XRPL Tokens/Currencies Prices, Charts And Market Capitalizations">
             <Container maxWidth="xl">
 
-            <TopMark/>
+            <TopMark md5={'NONE'}/>
 
             <SearchToolbar
                 filterName={filterName}
@@ -468,7 +451,6 @@ export default function Token(props) {
             />
             <ScrollToTop />
             </Container>
-            {/* <NFTWidget/> */}
         </Page>
     );
 }
