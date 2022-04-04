@@ -26,13 +26,13 @@ export default function Description({token}) {
         id,
         name,
         exch,
-        pro24h,
+        p24h,
         amt,
         /*acct,
         code,
         date,
         md5,
-        pro7d,
+        p7d,
         trline,
         holders,
         offers*/
@@ -46,8 +46,8 @@ export default function Description({token}) {
     const supply = fNumber(amt);
     const volume24h = 0;
 
-    //const vpro7d = fPercent(pro7d);
-    const vpro24h = fPercent(pro24h);
+    //const vpro7d = fPercent(p7d[0]);
+    const vpro24h = fPercent(p24h[0]);
 
     let strPro24h = 0;
     if (vpro24h < 0) {
@@ -61,7 +61,7 @@ export default function Description({token}) {
         <Stack>
             <CardHeader title={`${name} Price Live Data`}  subheader='' sx={{p:2}}/>
             <DescTypography sx={{pl:2, mt:2}}>
-                The live {user} price today is ${price} USD with a 24-hour trading volume of ${volume24h} USD. We update our ${name} to USD price in real-time. ${user} is {strPro24h} in the last 24 hours. The current CoinMarketCap ranking is #{id}, with a live market cap of ${marketcap} USD. It has a circulating supply of {supply} {name} coins.
+                The live {user} price today is ${price} USD with a 24-hour trading volume of ${volume24h} USD. We update our {name} to USD price in real-time. {user} is {strPro24h} in the last 24 hours. The current CoinMarketCap ranking is #{id}, with a live market cap of ${marketcap} USD. It has a circulating supply of {supply} {name} coins.
             </DescTypography>
 
             <DescTypography sx={{pl:2, mt:2}}>

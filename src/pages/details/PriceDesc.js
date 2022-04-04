@@ -39,8 +39,8 @@ export default function PriceDesc({token}) {
     const {
         name,
         exch,
-        pro7d,
-        pro24h,
+        p7d,
+        p24h,
         md5,
         /*id,
         acct,
@@ -55,8 +55,8 @@ export default function PriceDesc({token}) {
     let user = token.user;
     if (!user) user = name;
 
-    const vpro7d = fPercent(pro7d);
-    const vpro24h = fPercent(pro24h);
+    const vpro7d = fPercent(p7d[0]);
+    const vpro24h = fPercent(p24h[0]);
 
     let strPro7d = 0;
     if (vpro7d < 0) {
@@ -93,7 +93,7 @@ export default function PriceDesc({token}) {
 
             <Stack direction="row" spacing={1}>
                 <Tooltip title="24h(%)">
-                    {pro24h < 0 ? (
+                    {vpro24h < 0 ? (
                         <BearishChip
                             icon={<Icon icon={caretDown} width="16" height="16" />}
                             size="small"
@@ -118,7 +118,7 @@ export default function PriceDesc({token}) {
                         />
                     </Stack>
                 }>
-                    {pro7d < 0 ? (
+                    {vpro7d < 0 ? (
                         <BearishChip
                             icon={<Icon icon={caretDown} width="16" height="16" />}
                             size="small"

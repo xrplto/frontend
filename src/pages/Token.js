@@ -30,6 +30,9 @@ import axios from 'axios'
 import { useSelector, useDispatch } from "react-redux";
 import { selectStatus, update_status } from "../redux/statusSlice";
 // ----------------------------------------------------------------------
+import { encode, decode } from 'cborg/json'
+var Buffer = require('buffer/').Buffer;
+// ----------------------------------------------------------------------
 
 const CoinNameTypography = withStyles({
     root: {
@@ -241,6 +244,7 @@ export default function Token() {
                 setRows={updateRows}
             />
             <InfiniteScroll
+                style={{overflow: "inherit"}}
                 dataLength={tokens.length}
                 next={fetchMoreData}
                 hasMore={hasMore}
@@ -275,16 +279,16 @@ export default function Token() {
                                 kyc,
                                 md5,
                                 user,
-                                pro7d,
-                                pro24h,
-                                price } = row;
+                                p7d,
+                                p24h,
+                                exch } = row;
                             const imgUrl = `/static/tokens/${name}.jpg`;
                             const isItemSelected = false;//selected.indexOf(id) !== -1;
                             const vol24h = 0;
 
-                            const pro7 = fPercent(pro7d);
-                            const pro24 = fPercent(pro24h);
-                            const marketcap = amt * price;
+                            const pro7 = fPercent(p7d[0]);
+                            const pro24 = fPercent(p24h[0]);
+                            const marketcap = amt * exch / status.USD;
                             
                             let strPro7d = 0;
                             if (pro7 < 0) {
@@ -308,6 +312,14 @@ export default function Token() {
                                     date_fixed = date.split('T')[0];
                                 }
                             } catch (e) { }
+
+                            const uri = {md5, id};
+                            const encodedUri = Buffer.from(encode(uri)).toString('hex');
+                            console.log("encodedUri", encodedUri);
+                            const decoded = decode(Buffer.from(encodedUri, 'hex'))
+                            console.log('decoded:', decoded)
+                            //console.log('encoded:', encode(decoded))
+                            //console.log('encoded (string):', Buffer.from(encode(decoded)).toString())
                             return (
                                 <TableRow
                                     hover
@@ -358,15 +370,15 @@ export default function Token() {
                                     <TableCell align="left">
                                         <Stack>
                                             <Typography variant="subtitle1" noWrap>
-                                                $ {fCurrency5(price / status.USD)}
+                                                $ {fCurrency5(exch / status.USD)}
                                             </Typography>
                                             <Typography variant="caption">
-                                                {fCurrency5(price)} XRP
+                                                {fCurrency5(exch)} XRP
                                             </Typography>
                                         </Stack>
                                     </TableCell>
                                     <TableCell align="left">
-                                        {pro24h < 0 ? (
+                                        {pro24 < 0 ? (
                                             <BearishTypography variant="subtitle1" noWrap>
                                                 {strPro24h}
                                             </BearishTypography>
@@ -377,7 +389,7 @@ export default function Token() {
                                         )}
                                     </TableCell>
                                     <TableCell align="left">
-                                        {pro7d < 0 ? (
+                                        {pro7 < 0 ? (
                                             <BearishTypography variant="subtitle1" noWrap>
                                                 {strPro7d}
                                             </BearishTypography>
@@ -389,7 +401,7 @@ export default function Token() {
                                     </TableCell>
                                     <TableCell align="left">{fNumber(amt)}</TableCell>
                                     <TableCell align="left">{fNumber(vol24h)}</TableCell>
-                                    <TableCell align="left">$ {fNumber(marketcap / status.USD)}</TableCell>
+                                    <TableCell align="left">$ {fNumber(marketcap)}</TableCell>
                                     {/* <TableCell align="left">{holders}</TableCell>
                                     <TableCell align="left">{offers}</TableCell> */}
                                     <TableCell align="left">{trline}</TableCell>
