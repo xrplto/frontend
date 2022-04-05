@@ -15,16 +15,16 @@ import {
     Typography
 } from '@mui/material';
 
-export default function UserDesc({token}) {
+export default function UserDesc({token, id, sort}) {
     const [rating, setRating] = useState(2);
 
     const {
-        id,
         name,
         kyc,
         holders,
         offers,
         /*
+        id
         acct,
         domain,
         twitter,
@@ -61,7 +61,7 @@ export default function UserDesc({token}) {
                 <Chip variant={"outlined"} icon={<TokenIcon />} label={name} />
             </Stack>
             <Stack direction="row" spacing={1} sx={{mt:2}}>
-                <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Rank by Market Cap</Typography>}>
+                <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Rank by {sort}</Typography>}>
                     <Chip label={'Rank #' + id} color="primary" variant="outlined" size="small"/>
                 </Tooltip>
                 <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>

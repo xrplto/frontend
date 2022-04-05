@@ -28,8 +28,9 @@ export default function Description({token}) {
         exch,
         p24h,
         amt,
-        /*acct,
+        acct,
         code,
+        /*
         date,
         md5,
         p7d,
@@ -67,22 +68,11 @@ export default function Description({token}) {
             <DescTypography sx={{pl:2, mt:2}}>
                 If you would like to know where to buy {user}, the top cryptocurrency exchanges for trading in {user} stock are currently 
                 <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener"
-                    href={`https://coinmarketcap.com/exchanges/cointiger/`}
-                >{' CoinTiger'}</Link>,
+                    href={`https://sologenic.org/trade?network=mainnet&market=${code}%2B${acct}%2FXRP`}
+                >{' Solo DEX'}</Link> and
                 <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener"
-                    href={`https://coinmarketcap.com/exchanges/digifinex/`}
-                >{' DigiFinex'}</Link>,
-                <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener"
-                    href={`https://coinmarketcap.com/exchanges/hitbtc/`}
-                >{' HitBTC'}</Link>,
-                <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener"
-                    href={`https://coinmarketcap.com/exchanges/gate-io/`}
-                >{' Gate.io'}</Link>,
-                 and 
-                <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener"
-                    href={`https://coinmarketcap.com/exchanges/mxc/`}
-                >{' MEXC'}</Link>.
-                You can find others listed on our crypto exchanges page.
+                    href={`https://xumm.app/detect/xapp:xumm.dex?issuer=${acct}&currency=${code}`}
+                >{' Xumm DEX'}</Link>.
             </DescTypography>
         </Stack>
     );

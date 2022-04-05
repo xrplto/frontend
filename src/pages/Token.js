@@ -67,10 +67,10 @@ const KYCTypography = withStyles({
 const TABLE_HEAD = [
     { id: 'id', label: '#', align: 'left', order: false },
     { id: 'name', label: 'Name', align: 'left', order: true },
-    { id: 'price', label: 'Price', align: 'left', order: true },
+    { id: 'exch', label: 'Price', align: 'left', order: true },
     { id: 'percent_24h', label: '24h (%)', align: 'left', order: false },
     { id: 'percent_7d', label: '7d (%)', align: 'left', order: false },
-    { id: 'amount', label: 'Total Supply', align: 'left', order: true },
+    { id: 'amt', label: 'Total Supply', align: 'left', order: true },
     { id: 'volume', label: 'Volume(24H)', align: 'left', order: true },
     { id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
     //    { id: 'holders', label: 'Holders', align: 'left', order: true },
@@ -123,6 +123,7 @@ export default function Token() {
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState('desc');
     const [orderBy, setOrderBy] = useState('marketcap');
+    const [sort, setSort] = useState('Market Cap');
     const [rows, setRows] = useState(100);
     const [tokens, setTokens] = useState([]);
     const [offset, setOffset] = useState(0);
@@ -184,10 +185,11 @@ export default function Token() {
         }
     }, [load]);
     
-    const handleRequestSort = (event, property) => {
-        const isAsc = orderBy === property && order === 'asc';
+    const handleRequestSort = (event, id, desc) => {
+        const isAsc = orderBy === id && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
-        setOrderBy(property);
+        setOrderBy(id);
+        setSort(desc);
         setOffset(0);
         setPage(0);
         setLoad(true);
@@ -313,13 +315,13 @@ export default function Token() {
                                 }
                             } catch (e) { }
 
-                            const uri = {md5, id};
+                            /*const uri = [id, orderBy];
                             const encodedUri = Buffer.from(encode(uri)).toString('hex');
                             console.log("encodedUri", encodedUri);
                             const decoded = decode(Buffer.from(encodedUri, 'hex'))
                             console.log('decoded:', decoded)
                             //console.log('encoded:', encode(decoded))
-                            //console.log('encoded (string):', Buffer.from(encode(decoded)).toString())
+                            //console.log('encoded (string):', Buffer.from(encode(decoded)).toString())*/
                             return (
                                 <TableRow
                                     hover
@@ -344,7 +346,7 @@ export default function Token() {
                                                     style={{ textDecoration: 'none' }}
                                                     underline="hover"
                                                     color="inherit"
-                                                    to={`detail/${md5}`}
+                                                    to={`detail/${md5}?id=${id}&sort=${sort}`}
                                                     onClick={() => { localStorage.setItem("selectToken", JSON.stringify(row)); }}
                                                 >
                                                     <CoinNameTypography variant="h6" noWrap>

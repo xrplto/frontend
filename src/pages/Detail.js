@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
 
@@ -30,8 +30,12 @@ export default function Detail(props) {
     const [history, setHistory] = useState([]);
     const [range, setRange] = useState('1D');
     const [token, setToken] = useState(null); // JSON.parse(localStorage.getItem('selectToken')));
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const { md5 } = useParams();
+       
+    const id = searchParams.get("id");
+    const sort = searchParams.get("sort");
 
     //const status = useSelector(selectStatus);
     const dispatch = useDispatch();
@@ -96,12 +100,13 @@ export default function Detail(props) {
                 <Container maxWidth="xl">
                     <Grid item container direction="row" >
                         <Grid item xs={5} md={6} lg={5} sx={{ mt: 3 }}>
-                            <UserDesc token={token} />
+                            <UserDesc token={token} id={id} sort={sort} />
                         </Grid>
                         
                         <Grid item xs={7} md={6} lg={7} sx={{ mt: 3 }}>
                             <PriceDesc token={token} />
                         </Grid>
+
                         <Grid item xs={12} md={12} lg={5} sx={{ mt: 2 }}>
                             <LinkDesc token={token} />
                         </Grid>
