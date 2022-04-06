@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams/*, useSearchParams*/ } from "react-router-dom";
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
 
@@ -25,17 +25,49 @@ import { update_status } from "../redux/statusSlice";
 
 import Page from '../layouts/Page';
 
+const TABLE_HEAD = [
+    { no: 0, id: 'id', label: '#', align: 'left', order: false },
+    { no: 1, id: 'name', label: 'Name', align: 'left', order: true },
+    { no: 2, id: 'exch', label: 'Price', align: 'left', order: true },
+    { no: 3, id: 'percent_24h', label: '24h (%)', align: 'left', order: false },
+    { no: 4, id: 'percent_7d', label: '7d (%)', align: 'left', order: false },
+    { no: 5, id: 'amt', label: 'Total Supply', align: 'left', order: true },
+    { no: 6, id: 'volume', label: 'Volume(24H)', align: 'left', order: true },
+    { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
+    { no: 8, id: 'trline', label: 'Trust Lines', align: 'left', order: true },
+    { no: 9, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
+    { id: '' }
+];
+
 export default function Detail(props) {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
     const [history, setHistory] = useState([]);
     const [range, setRange] = useState('1D');
     const [token, setToken] = useState(null); // JSON.parse(localStorage.getItem('selectToken')));
-    const [searchParams, setSearchParams] = useSearchParams();
+    // const [searchParams, setSearchParams] = useSearchParams();
+    // const id = searchParams.get("id");
+    // const sort = searchParams.get("sort");
 
-    const { md5 } = useParams();
-       
-    const id = searchParams.get("id");
-    const sort = searchParams.get("sort");
+    const { exMD5 } = useParams();
+
+    let md5 = null;
+    let id = 0;
+    let sort = null;
+
+    if (exMD5 && exMD5.length > 10) {
+        try {
+            id = parseInt(exMD5.substring(0, 5), 16);
+            const sortInt = parseInt(exMD5.substring(5, 7), 16);
+            if (sortInt < TABLE_HEAD.length) {
+                sort = TABLE_HEAD[sortInt].label;
+                md5 = exMD5.substring(7);
+            }
+        } catch(err) {
+            md5 = null;
+            id = 0;
+            sort = null;
+        }
+    }
 
     //const status = useSelector(selectStatus);
     const dispatch = useDispatch();

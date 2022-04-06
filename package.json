@@ -53,18 +53,9 @@
     "@mui/utils": "^5.0.0",
     "@emotion/styled": "^11.8.1",
     "@reduxjs/toolkit": "^1.8.0",
-    "faker": "^6.6.6",
-    "chart.js": "^3.7.1",
-    "react-chartjs-2": "^4.0.1",
     "apexcharts": "^3.33.2",
     "react-apexcharts": "^1.4.0",
-    "moment": "^2.29.1",
     "axios": "^0.25.0",
-    "change-case": "^4.1.2",
-    "classnames": "^2.3.1",
-    "date-fns": "^2.24.0",
-    "formik": "^2.2.9",
-    "framer-motion": "^4.1.17",
     "lodash": "^4.17.21",
     "numeral": "^2.0.4",
     "prop-types": "^15.7.2",
@@ -76,13 +67,7 @@
     "react-redux": "7.2.6",
     "react-router-dom": "^6.0.0-beta.4",
     "react-scripts": "^5.0.0",
-    "simplebar": "^5.3.5",
-    "simplebar-react": "^2.3.5",
-    "web3": "^1.7.0",
-    "xrpl": "^2.1.1",
-    "react-infinite-scroll-component": "6.1.0",
-    "cborg": "^1.9.0",
-    "buffer": "^6.0.3"
+    "react-infinite-scroll-component": "6.1.0"
   },
   "devDependencies": {
     "prettier": "^2.4.1"

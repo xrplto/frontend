@@ -28,10 +28,7 @@ import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu } from '.
 import axios from 'axios'
 
 import { useSelector, useDispatch } from "react-redux";
-import { selectStatus, update_status } from "../redux/statusSlice";
-// ----------------------------------------------------------------------
-import { encode, decode } from 'cborg/json'
-var Buffer = require('buffer/').Buffer;
+import { selectStatus, selectReset, do_reset, update_status } from "../redux/statusSlice";
 // ----------------------------------------------------------------------
 
 const CoinNameTypography = withStyles({
@@ -64,19 +61,20 @@ const KYCTypography = withStyles({
     }
 })(Typography);
 
+//    { id: 'holders', label: 'Holders', align: 'left', order: true },
+//    { id: 'offers', label: 'Offers', align: 'left', order: true },
+
 const TABLE_HEAD = [
-    { id: 'id', label: '#', align: 'left', order: false },
-    { id: 'name', label: 'Name', align: 'left', order: true },
-    { id: 'exch', label: 'Price', align: 'left', order: true },
-    { id: 'percent_24h', label: '24h (%)', align: 'left', order: false },
-    { id: 'percent_7d', label: '7d (%)', align: 'left', order: false },
-    { id: 'amt', label: 'Total Supply', align: 'left', order: true },
-    { id: 'volume', label: 'Volume(24H)', align: 'left', order: true },
-    { id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
-    //    { id: 'holders', label: 'Holders', align: 'left', order: true },
-    //    { id: 'offers', label: 'Offers', align: 'left', order: true },
-    { id: 'trline', label: 'Trust Lines', align: 'left', order: true },
-    { id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
+    { no: 0, id: 'id', label: '#', align: 'left', order: false },
+    { no: 1, id: 'name', label: 'Name', align: 'left', order: true },
+    { no: 2, id: 'exch', label: 'Price', align: 'left', order: true },
+    { no: 3, id: 'percent_24h', label: '24h (%)', align: 'left', order: false },
+    { no: 4, id: 'percent_7d', label: '7d (%)', align: 'left', order: false },
+    { no: 5, id: 'amt', label: 'Total Supply', align: 'left', order: true },
+    { no: 6, id: 'volume', label: 'Volume(24H)', align: 'left', order: true },
+    { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
+    { no: 8, id: 'trline', label: 'Trust Lines', align: 'left', order: true },
+    { no: 9, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
     { id: '' }
 ];
 
@@ -123,7 +121,7 @@ export default function Token() {
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState('desc');
     const [orderBy, setOrderBy] = useState('marketcap');
-    const [sort, setSort] = useState('Market Cap');
+    const [selHead, setSelHead] = useState(7);
     const [rows, setRows] = useState(100);
     const [tokens, setTokens] = useState([]);
     const [offset, setOffset] = useState(0);
@@ -131,6 +129,15 @@ export default function Token() {
     const [hasMore, setHasMore] = useState(false);
 
     const status = useSelector(selectStatus);
+    const reset = useSelector(selectReset);
+
+    if (reset) {
+        dispatch(do_reset(false));
+        setOffset(0);
+        setPage(0);
+        setFilterName('');
+        setLoad(true);
+    }
 
     const loadTokens=() => {
         // https://livenet.xrpl.org/api/v1/token/top
@@ -138,7 +145,7 @@ export default function Token() {
         // https://github.com/WietseWind/fetch-xrpl-transactions
         // https://ws.xrpl.to/api/tokens?start=0&limit=100&sortBy=marketcap&sortType=desc
         const start = page * rows + offset * 20;
-        console.log(`${offset} Load tokens from ${start+1}`);
+        //console.log(`${offset} Load tokens from ${start+1}`);
         axios.get(`${BASE_URL}/tokens?start=${start}&limit=20&sortBy=${orderBy}&sortType=${order}&filter=${filterName}`)
         .then(res => {
             try {
@@ -185,11 +192,11 @@ export default function Token() {
         }
     }, [load]);
     
-    const handleRequestSort = (event, id, desc) => {
-        const isAsc = orderBy === id && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+    const handleRequestSort = (event, id, no) => {
+        const isDesc = orderBy === id && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(id);
-        setSort(desc);
+        setSelHead(no);
         setOffset(0);
         setPage(0);
         setLoad(true);
@@ -291,6 +298,8 @@ export default function Token() {
                             const pro7 = fPercent(p7d[0]);
                             const pro24 = fPercent(p24h[0]);
                             const marketcap = amt * exch / status.USD;
+
+                            const detail = id.toString(16).padStart(5, '0') + selHead.toString(16).padStart(2, '0');
                             
                             let strPro7d = 0;
                             if (pro7 < 0) {
@@ -346,7 +355,7 @@ export default function Token() {
                                                     style={{ textDecoration: 'none' }}
                                                     underline="hover"
                                                     color="inherit"
-                                                    to={`detail/${md5}?id=${id}&sort=${sort}`}
+                                                    to={`detail/${detail}${md5}`}
                                                     onClick={() => { localStorage.setItem("selectToken", JSON.stringify(row)); }}
                                                 >
                                                     <CoinNameTypography variant="h6" noWrap>

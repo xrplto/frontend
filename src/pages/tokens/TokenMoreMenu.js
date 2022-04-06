@@ -35,7 +35,7 @@ export default function TokenMoreMenu({acct, currency}) {
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="bithomp" src="/static/bithomp.png" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="Bithomp" primaryTypographyProps={{ variant: 'subtitle1' }} />
+                        <ListItemText primary="Bithomp" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
                 <Link
@@ -47,7 +47,19 @@ export default function TokenMoreMenu({acct, currency}) {
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xrpscan" src="/static/xrpscan.png" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="XRPScan" primaryTypographyProps={{ variant: 'subtitle1' }} />
+                        <ListItemText primary="XRPScan" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://gatehub.net/explorer/${acct}`}
+                    rel="noreferrer noopener"
+                >
+                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="xumm" src="/static/gatehub.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="GateHub" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
                 <Link
@@ -59,7 +71,7 @@ export default function TokenMoreMenu({acct, currency}) {
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xumm" src="/static/xrplorer.svg" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="XRPLORER" primaryTypographyProps={{ variant: 'subtitle1' }} />
+                        <ListItemText primary="XRPLORER" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
                 <Link
@@ -71,7 +83,7 @@ export default function TokenMoreMenu({acct, currency}) {
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xumm" src="/static/solo.jpg" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="Solo DEX" primaryTypographyProps={{ variant: 'subtitle1' }} />
+                        <ListItemText primary="Solo DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
                 <Link
@@ -83,7 +95,7 @@ export default function TokenMoreMenu({acct, currency}) {
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="Xumm DEX" primaryTypographyProps={{ variant: 'subtitle1' }} />
+                        <ListItemText primary="Xumm DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
                 {/* <MenuItem sx={{ color: 'text.secondary' }}>

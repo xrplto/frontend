@@ -60,7 +60,7 @@ export default function App() {
     }, [isDarkMode, key_darkmode])
 
     useEffect(() => {
-        console.log('Saving: ' + JSON.stringify(accountProfile));
+        //console.log('Saving: ' + JSON.stringify(accountProfile));
         try {
             localStorage.setItem(key_profile, JSON.stringify(accountProfile));
         } catch (error) {

@@ -3,14 +3,14 @@ import { useContext } from 'react'
 import Context from '../Context'
 // material
 import {styled, alpha/*, useTheme*/ } from '@mui/material/styles';
-import { Box, Stack, IconButton } from '@mui/material';
+import { Box, Link, Stack, IconButton } from '@mui/material';
 // components
 //
 import AccountPopover from './AccountPopover';
 
 import Logo from './Logo';
 
-import { Link as RouterLink/*, useLocation*/ } from 'react-router-dom';
+// import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 //import LightModeIcon from '@mui/icons-material/LightMode';
 //import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -24,7 +24,7 @@ import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
 import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 // ----------------------------------------------------------------------
 import { /*useSelector,*/ useDispatch } from "react-redux";
-
+import { do_reset } from "../redux/statusSlice";
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -44,16 +44,22 @@ export default function Navbar() {
     const reloadPage = () => {
         //dispatch(setRowsPerPage(100));
         //dispatch(setPage(0));
+        dispatch(do_reset(true));
+        // window.location.href = '/';
     }
     return (
         <StackStyle direction="row" spacing={2} sx={{pl:2, pr:2, pt:4, pb:0.5}} alignItems="center">
-            <Box
+            {/* <Box
                 component={RouterLink}
                 to="/" sx={{ pl: 0, pr: 0, py: 3, display: 'inline-flex' }}
                 onClick={() => { reloadPage(); }}
             >
                 <Logo />
-            </Box>
+            </Box> */}
+
+            <Link href="/" sx={{ pl: 0, pr: 0, py: 3, display: 'inline-flex' }} underline="none">
+                <Logo />
+            </Link>
 
             <Box sx={{ flexGrow: 1 }} />
 

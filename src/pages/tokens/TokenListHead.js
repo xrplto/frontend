@@ -18,8 +18,8 @@ export default function TokenListHead({
     headLabel,
     onRequestSort,
 }) {
-    const createSortHandler = (id, desc) => (event) => {
-        onRequestSort(event, id, desc);
+    const createSortHandler = (id, no) => (event) => {
+        onRequestSort(event, id, no);
     };
 
     return (
@@ -39,8 +39,8 @@ export default function TokenListHead({
                         <TableSortLabel
                             hideSortIcon
                             active={orderBy === headCell.id}
-                            direction={orderBy === headCell.id ? order : 'asc'}
-                            onClick={headCell.order?createSortHandler(headCell.id, headCell.label):undefined}
+                            direction={orderBy === headCell.id ? order : 'desc'}
+                            onClick={headCell.order?createSortHandler(headCell.id, headCell.no):undefined}
                         >
                             {headCell.label}
                             {orderBy === headCell.id ? (

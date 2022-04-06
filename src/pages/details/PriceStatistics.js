@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 // ----------------------------------------------------------------------
 // utils
-import { fCurrency5, fNumber, fPercent, fCurrency51 } from '../../utils/formatNumber';
+import { fCurrency5, fNumber, fPercent } from '../../utils/formatNumber';
 // ----------------------------------------------------------------------
 // Redux
 import { useSelector/*, useDispatch*/ } from "react-redux";
@@ -45,18 +45,6 @@ const badge24hStyle = {
     borderRadius: '4px',
     padding: '2px 4px'
 };
-
-const HighTypography = withStyles({
-    root: {
-        color: "#FF6C40"
-    }
-})(Typography);
-
-const LowTypography = withStyles({
-    root: {
-        color: "#54D62C"
-    }
-})(Typography);
 
 const BearishTypography = withStyles({
     root: {

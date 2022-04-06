@@ -6,7 +6,7 @@ import {
 // ----------------------------------------------------------------------
 import { useDispatch } from "react-redux";
 import { update_status } from "../redux/statusSlice";
-import useWebSocket, { ReadyState } from 'react-use-websocket';
+import useWebSocket/*, { ReadyState }*/ from 'react-use-websocket';
 // ----------------------------------------------------------------------
 
 export default function TopMark({ md5 }) {
@@ -18,19 +18,19 @@ export default function TopMark({ md5 }) {
         readyState,
     } = useWebSocket(`wss://ws.xrpl.to/api/ws/detail/${md5}`);
 
-    const connectionStatus = {
+    /*const connectionStatus = {
         [ReadyState.CONNECTING]: 'Connecting',
         [ReadyState.OPEN]: 'Open',
         [ReadyState.CLOSING]: 'Closing',
         [ReadyState.CLOSED]: 'Closed',
         [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-    } [readyState];
+    } [readyState];*/
 
     useEffect(() => {
         try {
             const res = lastMessage.data;
             const json = JSON.parse(res);
-            console.log(json);
+            //console.log(json);
             const status = {
                 session: json.session,
                 USD: json.exch.USD,
