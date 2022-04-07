@@ -78,24 +78,24 @@ export default function TokenMoreMenu({acct, currency}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://sologenic.org/trade?network=mainnet&market=${currency}%2B${acct}%2FXRP`}
-                    rel="noreferrer noopener"
-                >
-                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xumm" src="/static/solo.jpg" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="Solo DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
-                    </MenuItem>
-                </Link>
-                <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
                     href={`https://xumm.app/detect/xapp:xumm.dex?issuer=${acct}&currency=${currency}`}
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Xumm DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://sologenic.org/trade?network=mainnet&market=${currency}%2B${acct}%2FXRP`}
+                    rel="noreferrer noopener"
+                >
+                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="xumm" src="/static/solo.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="Sologenic DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
                 {/* <MenuItem sx={{ color: 'text.secondary' }}>

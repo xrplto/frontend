@@ -62,17 +62,18 @@ export default function Description({token}) {
         <Stack>
             <CardHeader title={`${name} Price Live Data`}  subheader='' sx={{p:2}}/>
             <DescTypography sx={{pl:2, mt:2}}>
-                The live {user} price today is ${price} USD with a 24-hour trading volume of ${volume24h} USD. We update our {name} to USD price in real-time. {user} is {strPro24h} in the last 24 hours. The current CoinMarketCap ranking is #{id}, with a live market cap of ${marketcap} USD. It has a circulating supply of {supply} {name} coins.
+                The live {user} price today is ${price} USD with a 24-hour trading volume of ${volume24h} USD. We update our {name} to USD price in real-time. {user} is {strPro24h} in the last 24 hours. The current XRPL.TO ranking is #{id}, with a live market cap of ${marketcap} USD. It has a circulating supply of {supply} {name} coins.
             </DescTypography>
 
             <DescTypography sx={{pl:2, mt:2}}>
-                If you would like to know where to buy {user}, the top cryptocurrency exchanges for trading in {user} stock are currently 
-                <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener"
-                    href={`https://sologenic.org/trade?network=mainnet&market=${code}%2B${acct}%2FXRP`}
-                >{' Solo DEX'}</Link> and
+                If you would like to know where to buy {user}, the top XRPL DEX for trading in {user} token are currently 
                 <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener"
                     href={`https://xumm.app/detect/xapp:xumm.dex?issuer=${acct}&currency=${code}`}
-                >{' Xumm DEX'}</Link>.
+                >{' Xumm DEX'}</Link> and
+                <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener"
+                    href={`https://sologenic.org/trade?network=mainnet&market=${code}%2B${acct}%2FXRP`}
+                >{' Sologenic DEX'}</Link>.
+                
             </DescTypography>
         </Stack>
     );
