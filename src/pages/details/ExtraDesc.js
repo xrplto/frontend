@@ -46,6 +46,7 @@ export default function ExtraDesc({token}) {
         name,
         amt,
         exch,
+        vol24h,
         /*
         holders,
         offers,
@@ -61,7 +62,7 @@ export default function ExtraDesc({token}) {
 
     const marketcap = fNumber(amt * exch / status.USD);
     const supply = fNumber(amt);
-    const volume = 0; // For now, it's 0
+    const volume = fNumber(vol24h); // For now, it's 0
 
     return (
         <Stack spacing={2}>
@@ -103,7 +104,7 @@ export default function ExtraDesc({token}) {
                         </Tooltip>
                     </Stack>
                     <Stack alignItems="center">
-                        <VolumeTypography variant="h5" sx={{mt:5,mb:5}}>$ {volume}</VolumeTypography>
+                        <VolumeTypography variant="h5" sx={{mt:5,mb:5}}> {volume}</VolumeTypography>
                     </Stack>
                 </Grid>
 

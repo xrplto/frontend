@@ -6,7 +6,7 @@ import { Box, CardHeader, Stack, ToggleButton, ToggleButtonGroup } from '@mui/ma
 import ChartOptions from './ChartOptions';
 import { /*alpha, styled,*/ useTheme } from '@mui/material/styles';
 //import { withStyles } from '@mui/styles';
-import { fCurrency5 } from '../../utils/formatNumber';
+import { fCurrency5, fNumber } from '../../utils/formatNumber';
 // ----------------------------------------------------------------------
 
 // const CardTransparent = withStyles({
@@ -155,7 +155,7 @@ export default function PriceChart({ history, token, range, setRange }) {
                 * @param { index } index of the tick / currently executing iteration in yaxis labels array
                 */
                 formatter: function(val, index) {
-                    return fCurrency5(val);
+                    return fNumber(val);
                 }
             }
         },

@@ -69,6 +69,7 @@ export default function PriceStatistics({token}) {
         exch,
         maxmin24h,
         p24h,
+        vol24h,
         /*
         p7d,
         holders,
@@ -82,8 +83,11 @@ export default function PriceStatistics({token}) {
     let user = token.user;
     if (!user) user = name;
 
-    const marketcap = fNumber(amt * exch / status.USD);
-    
+    const marketcap = amt * exch / status.USD;
+    let voldivmarket = 0;
+    if (marketcap > 0)
+        voldivmarket = fNumber(vol24h / marketcap);
+   
     const pro24 = fPercent(p24h[0]);
     let strPro24h = 0;
     if (pro24 < 0) {
@@ -113,7 +117,7 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                     <TableRow>
                     <TableCell align="left"><Label variant="subtitle1" noWrap >{user} Price</Label></TableCell>
-                        <TableCell align="left">${fCurrency5(exch / status.USD)}</TableCell>
+                        <TableCell align="left">${fNumber(exch / status.USD)}</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left"><Label variant="subtitle1" noWrap >Price Change<span style={badge24hStyle}>24h</span></Label></TableCell>
@@ -135,16 +139,16 @@ export default function PriceStatistics({token}) {
                     <TableRow>
                         <TableCell align="left"><Label variant="subtitle1" noWrap >24h Low / 24h High</Label></TableCell>
                         <TableCell align="left">
-                            <Typography variant="subtitle2">${fCurrency5(maxmin24h[1])} / ${fCurrency5(maxmin24h[0])}</Typography>
+                            <Typography variant="subtitle2">${fNumber(maxmin24h[1])} / ${fNumber(maxmin24h[0])}</Typography>
                         </TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left"><Label variant="subtitle1" noWrap >Trading Volume<span style={badge24hStyle}>24h</span></Label></TableCell>
-                        <TableCell align="left">{0}</TableCell>
+                        <TableCell align="left">{fNumber(vol24h)}</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left"><Label variant="subtitle1" noWrap >Volume / Market Cap</Label></TableCell>
-                        <TableCell align="left">{0}</TableCell>
+                        <TableCell align="left">{voldivmarket}</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left"><Label variant="subtitle1" noWrap >Market Dominance</Label></TableCell>
@@ -156,7 +160,7 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                     <TableRow>
                         <TableCell align="left"><Label variant="subtitle1" noWrap >Market Cap</Label></TableCell>
-                        <TableCell align="left">$ {marketcap}</TableCell>
+                        <TableCell align="left">$ {fNumber(marketcap)}</TableCell>
                     </TableRow>
                 </TableBody>
             </Table>

@@ -30,6 +30,7 @@ export default function Description({token}) {
         amt,
         acct,
         code,
+        vol24h,
         /*
         date,
         md5,
@@ -42,10 +43,10 @@ export default function Description({token}) {
     let user = token.user;
     if (!user) user = name;
 
-    const price = fCurrency5(exch / status.USD);
+    const price = fNumber(exch / status.USD);
     const marketcap = fNumber(amt * exch / status.USD);
     const supply = fNumber(amt);
-    const volume24h = 0;
+    const volume24h = fNumber(vol24h);
 
     //const vpro7d = fPercent(p7d[0]);
     const vpro24h = fPercent(p24h[0]);
@@ -61,11 +62,11 @@ export default function Description({token}) {
     return (
         <Stack>
             <CardHeader title={`${name} Price Live Data`}  subheader='' sx={{p:2}}/>
-            <DescTypography sx={{pl:2, mt:2}}>
+            <Typography sx={{pl:2, mt:2}}>
                 The live {user} price today is ${price} USD with a 24-hour trading volume of ${volume24h} USD. We update our {name} to USD price in real-time. {user} is {strPro24h} in the last 24 hours. The current XRPL.TO ranking is #{id}, with a live market cap of ${marketcap} USD. It has a circulating supply of {supply} {name} coins.
-            </DescTypography>
+            </Typography>
 
-            <DescTypography sx={{pl:2, mt:2}}>
+            <Typography sx={{pl:2, mt:2}}>
                 If you would like to know where to buy {user}, the top XRPL DEX for trading in {user} token are currently 
                 <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener"
                     href={`https://xumm.app/detect/xapp:xumm.dex?issuer=${acct}&currency=${code}`}
@@ -74,7 +75,7 @@ export default function Description({token}) {
                     href={`https://sologenic.org/trade?network=mainnet&market=${code}%2B${acct}%2FXRP`}
                 >{' Sologenic DEX'}</Link>.
                 
-            </DescTypography>
+            </Typography>
         </Stack>
     );
 }

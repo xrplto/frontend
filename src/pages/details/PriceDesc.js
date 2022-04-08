@@ -5,7 +5,7 @@ import { Icon } from '@iconify/react';
 import caretDown from '@iconify/icons-bx/caret-down';
 import caretUp from '@iconify/icons-bx/caret-up';
 
-import { fCurrency5, fPercent } from '../../utils/formatNumber';
+import { /*fCurrency5,*/ fNumber, fPercent } from '../../utils/formatNumber';
 
 import {
     Avatar,
@@ -83,10 +83,10 @@ export default function PriceDesc({token}) {
             <Stack direction="row" spacing={2} sx={{mt:0}} alignItems='center'>
                 <Stack direction="row" spacing={1} alignItems='center'>
                     <Typography variant="h3" noWrap>
-                        $ {fCurrency5(exch / status.USD)}
+                        $ {fNumber(exch / status.USD)}
                     </Typography>
                     <Typography variant="subtitle1" style={{marginTop:8}}>
-                        {fCurrency5(exch)} XRP
+                        {fNumber(exch)} XRP
                     </Typography>
                 </Stack>
             </Stack>

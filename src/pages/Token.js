@@ -70,10 +70,10 @@ const TABLE_HEAD = [
     { no: 2, id: 'exch', label: 'Price', align: 'left', order: true },
     { no: 3, id: 'percent_24h', label: '24h (%)', align: 'left', order: false },
     { no: 4, id: 'percent_7d', label: '7d (%)', align: 'left', order: false },
-    { no: 5, id: 'amt', label: 'Total Supply', align: 'left', order: true },
-    { no: 6, id: 'volume', label: 'Volume(24H)', align: 'left', order: true },
-    { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
-    { no: 8, id: 'trline', label: 'Trust Lines', align: 'left', order: true },
+    { no: 5, id: 'vol24h', label: 'Volume(24H)', align: 'left', order: true },
+    { no: 6, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
+    { no: 7, id: 'trline', label: 'Trust Lines', align: 'left', order: true },
+    { no: 8, id: 'amt', label: 'Total Supply', align: 'left', order: true },
     { no: 9, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
     { id: '' }
 ];
@@ -120,7 +120,7 @@ export default function Token() {
     const [filterName, setFilterName] = useState('');
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState('desc');
-    const [orderBy, setOrderBy] = useState('marketcap');
+    const [orderBy, setOrderBy] = useState('vol24h');
     const [selHead, setSelHead] = useState(7);
     const [rows, setRows] = useState(100);
     const [tokens, setTokens] = useState([]);
@@ -283,6 +283,7 @@ export default function Token() {
                                 date,
                                 amt,
                                 trline,
+                                vol24h,
                                 //holders,
                                 //offers,
                                 kyc,
@@ -293,7 +294,6 @@ export default function Token() {
                                 exch } = row;
                             const imgUrl = `/static/tokens/${name}.jpg`;
                             const isItemSelected = false;//selected.indexOf(id) !== -1;
-                            const vol24h = 0;
 
                             const pro7 = fPercent(p7d[0]);
                             const pro24 = fPercent(p24h[0]);
@@ -381,10 +381,10 @@ export default function Token() {
                                     <TableCell align="left">
                                         <Stack>
                                             <Typography variant="subtitle1" noWrap>
-                                                $ {fCurrency5(exch / status.USD)}
+                                                $ {fNumber(exch / status.USD)}
                                             </Typography>
                                             <Typography variant="caption">
-                                                {fCurrency5(exch)} XRP
+                                                {fNumber(exch)} XRP
                                             </Typography>
                                         </Stack>
                                     </TableCell>
@@ -410,12 +410,12 @@ export default function Token() {
                                             </BullishTypography>
                                         )}
                                     </TableCell>
-                                    <TableCell align="left">{fNumber(amt)}</TableCell>
                                     <TableCell align="left">{fNumber(vol24h)}</TableCell>
                                     <TableCell align="left">$ {fNumber(marketcap)}</TableCell>
                                     {/* <TableCell align="left">{holders}</TableCell>
                                     <TableCell align="left">{offers}</TableCell> */}
                                     <TableCell align="left">{trline}</TableCell>
+                                    <TableCell align="left">{fNumber(amt)} <Typography variant="caption" noWrap>{name}</Typography></TableCell>
                                     <TableCell align="left">
                                         {/* {Str(acct).limit(10, '...').get()} */}
                                         <Box

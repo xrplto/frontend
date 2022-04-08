@@ -31,10 +31,10 @@ const TABLE_HEAD = [
     { no: 2, id: 'exch', label: 'Price', align: 'left', order: true },
     { no: 3, id: 'percent_24h', label: '24h (%)', align: 'left', order: false },
     { no: 4, id: 'percent_7d', label: '7d (%)', align: 'left', order: false },
-    { no: 5, id: 'amt', label: 'Total Supply', align: 'left', order: true },
-    { no: 6, id: 'volume', label: 'Volume(24H)', align: 'left', order: true },
-    { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
-    { no: 8, id: 'trline', label: 'Trust Lines', align: 'left', order: true },
+    { no: 5, id: 'vol24h', label: 'Volume(24H)', align: 'left', order: true },
+    { no: 6, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
+    { no: 7, id: 'trline', label: 'Trust Lines', align: 'left', order: true },
+    { no: 8, id: 'amt', label: 'Total Supply', align: 'left', order: true },
     { no: 9, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
     { id: '' }
 ];
