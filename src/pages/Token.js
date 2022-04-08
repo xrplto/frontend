@@ -284,6 +284,7 @@ export default function Token() {
                                 amt,
                                 trline,
                                 vol24h,
+                                vol24ht,
                                 //holders,
                                 //offers,
                                 kyc,
@@ -410,7 +411,16 @@ export default function Token() {
                                             </BullishTypography>
                                         )}
                                     </TableCell>
-                                    <TableCell align="left">{fNumber(vol24h)}</TableCell>
+                                    <TableCell align="left">
+                                        <Stack>
+                                            <Typography variant="subtitle1" noWrap>
+                                                ${fNumber(vol24h)}
+                                            </Typography>
+                                            <Typography variant="caption">
+                                                {fNumber(vol24ht)} {name}
+                                            </Typography>
+                                        </Stack>
+                                    </TableCell>
                                     <TableCell align="left">$ {fNumber(marketcap)}</TableCell>
                                     {/* <TableCell align="left">{holders}</TableCell>
                                     <TableCell align="left">{offers}</TableCell> */}
