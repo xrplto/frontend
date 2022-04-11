@@ -28,16 +28,25 @@ export default function TopMark({ md5 }) {
 
     useEffect(() => {
         try {
+            /*
+            "transactions24H": 46499,
+            "tradedAmount24H": 500900.5080961794,
+            "tradedTokens24H": 494,
+            */
             const res = lastMessage.data;
             const json = JSON.parse(res);
+            const exch = json.exch;
             //console.log(json);
             const status = {
                 session: json.session,
-                USD: json.exch.USD,
-                EUR: json.exch.EUR,
-                JPY: json.exch.JPY,
-                CNY: json.exch.CNY,
-                token_count: json.token_count
+                USD: exch.USD,
+                EUR: exch.EUR,
+                JPY: exch.JPY,
+                CNY: exch.CNY,
+                token_count: json.token_count,
+                transactions24H: json.transactions24H,
+                tradedAmount24H: json.tradedAmount24H,
+                tradedTokens24H: json.tradedTokens24H,
             };
             dispatch(update_status(status));
         } catch(err) {}

@@ -7,9 +7,11 @@ const initialState = {
         EUR:100,
         JPY:100,
         CNY:100,
-        token_count:0
-    },
-    reset: false
+        token_count:0,
+        transactions24H: 0,
+        tradedAmount24H: 0,
+        tradedTokens24H: 0
+    }
 }
 
 export const statusSlice = createSlice({
@@ -23,13 +25,10 @@ export const statusSlice = createSlice({
         update_status: (state, action) => {
             state.status = action.payload;
         },
-        do_reset: (state, action) => {
-            state.reset = action.payload;
-        },
     },
 });
 
-export const { update_status, do_reset } = statusSlice.actions;
+export const { update_status } = statusSlice.actions;
 
 // The function below is called a thunk and allows us to perform async logic. It
 // can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This
@@ -45,6 +44,5 @@ export const incrementAsync = (amount) => (dispatch) => {
 // the state. Selectors can also be defined inline where they're used instead of
 // in the slice file. For example: `useSelector((state) => state.counter.value)`
 export const selectStatus = (state) => state.status.status;
-export const selectReset = (state) => state.status.reset;
 
 export default statusSlice.reducer;

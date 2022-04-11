@@ -31,11 +31,12 @@ const TABLE_HEAD = [
     { no: 2, id: 'exch', label: 'Price', align: 'left', order: true },
     { no: 3, id: 'percent_24h', label: '24h (%)', align: 'left', order: false },
     { no: 4, id: 'percent_7d', label: '7d (%)', align: 'left', order: false },
-    { no: 5, id: 'vol24h', label: 'Volume(24H)', align: 'left', order: true },
-    { no: 6, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
-    { no: 7, id: 'trline', label: 'Trust Lines', align: 'left', order: true },
-    { no: 8, id: 'amt', label: 'Total Supply', align: 'left', order: true },
-    { no: 9, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
+    { no: 5, id: 'vol24h', label: 'Volume(24h)', align: 'left', order: true },
+    { no: 6, id: 'vol24htx', label: 'Tx(24h)', align: 'left', order: true },
+    { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
+    { no: 8, id: 'trline', label: 'Trust Lines', align: 'left', order: true },
+    { no: 9, id: 'amt', label: 'Total Supply', align: 'left', order: true },
+    { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
     { id: '' }
 ];
 
@@ -79,13 +80,18 @@ export default function Detail(props) {
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
+                        const exch = ret.exch;
+                        //console.log(ret);
                         const status = {
                             session: 0,
-                            USD: ret.exch.USD,
-                            EUR: ret.exch.EUR,
-                            JPY: ret.exch.JPY,
-                            CNY: ret.exch.CNY,
-                            token_count: ret.token_count
+                            USD: exch.USD,
+                            EUR: exch.EUR,
+                            JPY: exch.JPY,
+                            CNY: exch.CNY,
+                            token_count: ret.token_count,
+                            transactions24H: ret.transactions24H,
+                            tradedAmount24H: ret.tradedAmount24H,
+                            tradedTokens24H: ret.tradedTokens24H,
                         };
                         dispatch(update_status(status));
                         setHistory(ret.history);

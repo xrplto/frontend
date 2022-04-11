@@ -10,21 +10,10 @@ import AccountPopover from './AccountPopover';
 
 import Logo from './Logo';
 
-// import { Link as RouterLink, useLocation } from 'react-router-dom';
-
-//import LightModeIcon from '@mui/icons-material/LightMode';
-//import DarkModeIcon from '@mui/icons-material/DarkMode';
-// import {
-//     Brightness4 as Brightness4Icon,
-//     BrightnessHigh as BrightnessHighIcon,
-// } from '@mui/icons-material'
-
 import { Icon } from '@iconify/react'; 
 import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
 import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 // ----------------------------------------------------------------------
-import { /*useSelector,*/ useDispatch } from "react-redux";
-import { do_reset } from "../redux/statusSlice";
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -38,15 +27,8 @@ const StackStyle = styled(Stack)(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 export default function Navbar() {
-    const dispatch = useDispatch();
     const { toggleThisTheme, isDarkMode } = useContext(Context);
 
-    const reloadPage = () => {
-        //dispatch(setRowsPerPage(100));
-        //dispatch(setPage(0));
-        dispatch(do_reset(true));
-        // window.location.href = '/';
-    }
     return (
         <StackStyle direction="row" spacing={2} sx={{pl:2, pr:2, pt:4, pb:0.5}} alignItems="center">
             {/* <Box

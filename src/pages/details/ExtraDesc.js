@@ -47,7 +47,8 @@ export default function ExtraDesc({token}) {
         amt,
         exch,
         vol24h,
-        vol24ht,
+        vol24hamt,
+        vol24htx,
         /*
         holders,
         offers,

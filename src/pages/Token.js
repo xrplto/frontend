@@ -1,7 +1,7 @@
 //import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 import { BeatLoader } from "react-spinners";
-import { fCurrency5, fNumber, fPercent } from '../utils/formatNumber';
+import { fNumber, fPercent } from '../utils/formatNumber';
 import { withStyles } from '@mui/styles';
 import { Link } from 'react-router-dom'
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -28,7 +28,7 @@ import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu } from '.
 import axios from 'axios'
 
 import { useSelector, useDispatch } from "react-redux";
-import { selectStatus, selectReset, do_reset, update_status } from "../redux/statusSlice";
+import { selectStatus, update_status } from "../redux/statusSlice";
 // ----------------------------------------------------------------------
 
 const CoinNameTypography = withStyles({
@@ -70,11 +70,12 @@ const TABLE_HEAD = [
     { no: 2, id: 'exch', label: 'Price', align: 'left', order: true },
     { no: 3, id: 'percent_24h', label: '24h (%)', align: 'left', order: false },
     { no: 4, id: 'percent_7d', label: '7d (%)', align: 'left', order: false },
-    { no: 5, id: 'vol24h', label: 'Volume(24H)', align: 'left', order: true },
-    { no: 6, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
-    { no: 7, id: 'trline', label: 'Trust Lines', align: 'left', order: true },
-    { no: 8, id: 'amt', label: 'Total Supply', align: 'left', order: true },
-    { no: 9, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
+    { no: 5, id: 'vol24h', label: 'Volume(24h)', align: 'left', order: true },
+    { no: 6, id: 'vol24htx', label: 'Tx(24h)', align: 'left', order: true },
+    { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
+    { no: 8, id: 'trline', label: 'Trust Lines', align: 'left', order: true },
+    { no: 9, id: 'amt', label: 'Total Supply', align: 'left', order: true },
+    { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
     { id: '' }
 ];
 
@@ -120,8 +121,10 @@ export default function Token() {
     const [filterName, setFilterName] = useState('');
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState('desc');
+    // -----------------------------------------------
     const [orderBy, setOrderBy] = useState('vol24h');
-    const [selHead, setSelHead] = useState(7);
+    const [selHead, setSelHead] = useState(5);
+    // -----------------------------------------------
     const [rows, setRows] = useState(100);
     const [tokens, setTokens] = useState([]);
     const [offset, setOffset] = useState(0);
@@ -129,16 +132,7 @@ export default function Token() {
     const [hasMore, setHasMore] = useState(false);
 
     const status = useSelector(selectStatus);
-    const reset = useSelector(selectReset);
-
-    if (reset) {
-        dispatch(do_reset(false));
-        setOffset(0);
-        setPage(0);
-        setFilterName('');
-        setLoad(true);
-    }
-
+ 
     const loadTokens=() => {
         // https://livenet.xrpl.org/api/v1/token/top
         // https://ws.xrpl.to/api/tokens/-1
@@ -151,13 +145,18 @@ export default function Token() {
             try {
                 if (res.status === 200 && res.data) {
                     const ret = res.data;
+                    const exch = ret.exch;
+                    //console.log(ret);
                     const status = {
                         session: 0,
-                        USD: ret.exch.USD,
-                        EUR: ret.exch.EUR,
-                        JPY: ret.exch.JPY,
-                        CNY: ret.exch.CNY,
-                        token_count: ret.token_count
+                        USD: exch.USD,
+                        EUR: exch.EUR,
+                        JPY: exch.JPY,
+                        CNY: exch.CNY,
+                        token_count: ret.token_count,
+                        transactions24H: ret.transactions24H,
+                        tradedAmount24H: ret.tradedAmount24H,
+                        tradedTokens24H: ret.tradedTokens24H,
                     };
                     dispatch(update_status(status));
                     let newTokens;
@@ -284,7 +283,8 @@ export default function Token() {
                                 amt,
                                 trline,
                                 vol24h,
-                                vol24ht,
+                                vol24hamt,
+                                vol24htx,
                                 //holders,
                                 //offers,
                                 kyc,
@@ -417,10 +417,14 @@ export default function Token() {
                                                 ${fNumber(vol24h)}
                                             </Typography>
                                             <Typography variant="caption">
-                                                {fNumber(vol24ht)} {name}
+                                                {fNumber(vol24hamt)} {name}
                                             </Typography>
+                                            {/* <Typography variant="caption">
+                                                {fNumber(vol24htx)} tx
+                                            </Typography> */}
                                         </Stack>
                                     </TableCell>
+                                    <TableCell align="left">{fNumber(vol24htx)}</TableCell>
                                     <TableCell align="left">$ {fNumber(marketcap)}</TableCell>
                                     {/* <TableCell align="left">{holders}</TableCell>
                                     <TableCell align="left">{offers}</TableCell> */}
