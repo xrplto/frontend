@@ -101,7 +101,7 @@ export default function Topbar() {
                 <h5>Vol:</h5>
                 <h5>${fNumber(status.tradedAmount24H)}</h5>
                 <h6>|</h6>
-                <h5>Tokens:</h5>
+                <h5>Trades:</h5>
                 <h5>{fIntNumber(status.tradedTokens24H)}</h5>
                 <Box sx={{ flexGrow: 1 }} />
                 <h5>1 XRP</h5>
