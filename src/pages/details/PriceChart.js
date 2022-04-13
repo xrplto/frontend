@@ -96,7 +96,7 @@ export default function PriceChart({ history, token, range, setRange }) {
         chart: {
             id: 'chart2',
             animations: { enabled: false },
-            foreColor: theme.palette.text.disabled,
+            foreColor: theme.palette.text.primary,
             fontFamily: theme.typography.fontFamily,
             redrawOnParentResize: true,
             toolbar: {
@@ -189,6 +189,8 @@ export default function PriceChart({ history, token, range, setRange }) {
         chart: {
             id: 'chart1',
             animations: { enabled: false },
+            foreColor: theme.palette.text.disabled,
+            fontFamily: theme.typography.fontFamily,
             brush:{
                 target: 'chart2',
                 enabled: true,
@@ -198,7 +200,7 @@ export default function PriceChart({ history, token, range, setRange }) {
                 enabled: true,
                 fill: {
                     //color: "#00AB55",
-                    color: "#fff",
+                    color: theme.palette.chartFill,
                     opacity: 0.05
                 },
                 stroke: {

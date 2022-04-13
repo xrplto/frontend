@@ -75,7 +75,7 @@ export default function Topbar() {
 
     return (
         <StackStyle direction="row" spacing={2} sx={{pl:2, pr:3, pt:0.5, pb:0.5}} alignItems="center">
-                <AllStyle>
+                {/* <AllStyle>
                     <Tooltip title="All">
                         <Stack direction="row" spacing={0.1} alignItems='center'>
                             <Typography align="center" style={{ wordWrap: "break-word" }} variant="caption" >
@@ -83,12 +83,12 @@ export default function Topbar() {
                             </Typography>
                         </Stack>
                     </Tooltip>
-                </AllStyle>
+                </AllStyle> */}
                 <h5>Tokens: </h5>
                 <h5>{fIntNumber(status.token_count)}</h5>
                 <H24Style>
                     <Tooltip title="Metrics on 24 hours">
-                        <Stack direction="row" spacing={0.1} alignItems='center'>
+                        <Stack spacing={0.05} alignItems='center'>
                             <Typography align="center" style={{ wordWrap: "break-word" }} variant="caption" >
                                 24h
                             </Typography>
@@ -96,13 +96,13 @@ export default function Topbar() {
                     </Tooltip>
                 </H24Style>
                 <h5>Tx:</h5>
-                <h5>{fIntNumber(status.transactions24H)}</h5>
-                <h6>|</h6>
+                <Typography align="center" style={{ color: "#74CAFF" }} variant="subtitle2">{fIntNumber(status.transactions24H)}</Typography>
+                {/* <h6>|</h6> */}
                 <h5>Vol:</h5>
-                <h5>${fNumber(status.tradedAmount24H)}</h5>
-                <h6>|</h6>
+                <Typography align="center" style={{ color: "#FF6C40" }} variant="subtitle2">${fNumber(status.tradedAmount24H)}</Typography>
+                {/* <h6>|</h6> */}
                 <h5>Trades:</h5>
-                <h5>{fIntNumber(status.tradedTokens24H)}</h5>
+                <Typography align="center" style={{ color: "#3366FF" }} variant="subtitle2">{fIntNumber(status.tradedTokens24H)}</Typography>
                 <Box sx={{ flexGrow: 1 }} />
                 <h5>1 XRP</h5>
                 <h6>|</h6>

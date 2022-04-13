@@ -1,6 +1,6 @@
 // material
 import { withStyles } from '@mui/styles';
-import { alpha, styled } from '@mui/material/styles';
+import { alpha, styled, useTheme } from '@mui/material/styles';
 import {
     CardHeader,
     Stack,
@@ -10,6 +10,8 @@ import {
     TableBody,
     TableCell
 } from '@mui/material';
+import { tableCellClasses } from "@mui/material/TableCell";
+import BearBullTypography from '../../layouts/BearBullTypography';
 // ----------------------------------------------------------------------
 // utils
 import { fCurrency5, fNumber, fPercent } from '../../utils/formatNumber';
@@ -60,6 +62,7 @@ const BullishTypography = withStyles({
 // ----------------------------------------------------------------------
 
 export default function PriceStatistics({token}) {
+    const theme = useTheme();
     const status = useSelector(selectStatus);
 
     const {
@@ -88,15 +91,6 @@ export default function PriceStatistics({token}) {
     if (marketcap > 0)
         voldivmarket = fNumber(vol24h / marketcap);
    
-    const pro24 = fPercent(p24h[0]);
-    let strPro24h = 0;
-    if (pro24 < 0) {
-        strPro24h = -pro24;
-        strPro24h = '-' + strPro24h + '%';
-    } else {
-        strPro24h = '+' + pro24 + '%';
-    }
-
     const pc24 = p24h[1];
     let strPc24h;
     if (pc24 < 0) {
@@ -109,7 +103,12 @@ export default function PriceStatistics({token}) {
     return (
         <StackStyle>
             <CardHeader title={`${name} Price Statistics`}  subheader='' sx={{p:2}}/>
-            <Table>
+            <Table sx={{
+                [`& .${tableCellClasses.root}`]: {
+                    borderBottom: "1px solid",
+                    borderBottomColor: theme.palette.divider
+                }
+            }}>
                 <TableBody>
                     <TableRow>
                         <TableCell align="left"><Label variant="subtitle2" noWrap >{user} Price Today</Label></TableCell>
@@ -124,15 +123,7 @@ export default function PriceStatistics({token}) {
                         <TableCell align="left">
                             <Stack>
                             {strPc24h}
-                            {pro24 < 0 ? (
-                                <BearishTypography variant="subtitle2" noWrap>
-                                    {strPro24h}
-                                </BearishTypography>
-                            ) : (
-                                <BullishTypography variant="subtitle2" noWrap>
-                                    {strPro24h}
-                                </BullishTypography>
-                            )}
+                            <BearBullTypography value={p24h[0]} variant="subtitle2"/>
                             </Stack>
                         </TableCell>
                     </TableRow>

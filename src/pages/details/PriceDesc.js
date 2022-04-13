@@ -1,35 +1,16 @@
-//import { useState } from 'react';
-import { withStyles } from '@mui/styles';
-
-import { Icon } from '@iconify/react';
-import caretDown from '@iconify/icons-bx/caret-down';
-import caretUp from '@iconify/icons-bx/caret-up';
-
-import { /*fCurrency5,*/ fNumber, fPercent } from '../../utils/formatNumber';
+import { fNumber } from '../../utils/formatNumber';
 
 import {
     Avatar,
     Chip,
     Box,
     Stack,
-    Tooltip,
     Typography
 } from '@mui/material';
 
 import { useSelector/*, useDispatch*/ } from "react-redux";
 import { selectStatus } from "../../redux/statusSlice";
-
-const BearishChip = withStyles({
-    root: {
-        backgroundColor: "#B72136"
-    }
-})(Chip);
-  
-const BullishChip = withStyles({
-    root: {
-        backgroundColor: "#007B55"
-    }
-})(Chip);
+import BearBullChip from '../../layouts/BearBullChip';
 
 export default function PriceDesc({token}) {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
@@ -55,25 +36,6 @@ export default function PriceDesc({token}) {
     let user = token.user;
     if (!user) user = name;
 
-    const vpro7d = fPercent(p7d[0]);
-    const vpro24h = fPercent(p24h[0]);
-
-    let strPro7d = 0;
-    if (vpro7d < 0) {
-        strPro7d = -vpro7d;
-        strPro7d = strPro7d + ' %';
-    } else {
-        strPro7d = vpro7d + ' %';
-    }
-
-    let strPro24h = 0;
-    if (vpro24h < 0) {
-        strPro24h = -vpro24h;
-        strPro24h = strPro24h + ' %';
-    } else {
-        strPro24h = vpro24h + ' %';
-    }
-
     return (
         <Stack>
             <Stack direction="row" spacing={2}>
@@ -92,22 +54,8 @@ export default function PriceDesc({token}) {
             </Stack>
 
             <Stack direction="row" spacing={1}>
-                <Tooltip title="24h(%)">
-                    {vpro24h < 0 ? (
-                        <BearishChip
-                            icon={<Icon icon={caretDown} width="16" height="16" />}
-                            size="small"
-                            label={<Typography variant="subtitle2">{strPro24h}</Typography>}
-                            variant="h3" />
-                    ) : (
-                        <BullishChip
-                            icon={<Icon icon={caretUp} width="16" height="16" />}
-                            size="small"
-                            label={<Typography variant="subtitle2">{strPro24h}</Typography>}
-                            variant="h3" />
-                    )}
-                </Tooltip>
-                <Tooltip title={
+                <BearBullChip value={p24h[0]} tooltip='24h(%)'/>
+                <BearBullChip value={p7d[0]} tooltip={
                     <Stack alignItems='center'>
                         7d (%)
                         <Box
@@ -117,30 +65,8 @@ export default function PriceDesc({token}) {
                             src={`${BASE_URL}/sparkline/${md5}`}
                         />
                     </Stack>
-                }>
-                    {vpro7d < 0 ? (
-                        <BearishChip
-                            icon={<Icon icon={caretDown} width="16" height="16" />}
-                            size="small"
-                            label={<Typography variant="subtitle2">{strPro7d}</Typography>}
-                            variant="h3" />
-                    ) : (
-                        <BullishChip 
-                            icon={<Icon icon={caretUp} width="16" height="16" />}
-                            size="small"
-                            label={<Typography variant="subtitle2">{strPro7d}</Typography>}
-                            variant="h3" />
-                    )}
-                </Tooltip>
+                }/>
             </Stack>
-            {/* <Tooltip title="Last 7 Days">
-                <Box
-                    component="img"
-                    alt=""
-                    sx={{ maxWidth:'none', width: 270, height: 50, mt: 2 }}
-                    src={`${BASE_URL}/sparkline/${md5}`}
-                />
-            </Tooltip> */}
         </Stack>
     );
 }

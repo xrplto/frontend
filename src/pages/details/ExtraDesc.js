@@ -1,5 +1,6 @@
 //import { useState } from 'react';
 import { withStyles } from '@mui/styles';
+import { /*alpha, styled,*/ useTheme } from '@mui/material/styles';
 
 import { Icon } from '@iconify/react';
 import infoFilled from '@iconify/icons-ep/info-filled';
@@ -39,7 +40,7 @@ const SupplyTypography = withStyles({
 })(Typography);
 
 export default function ExtraDesc({token}) {
-
+    const theme = useTheme();
     const status = useSelector(selectStatus);
 
     const {
@@ -86,7 +87,7 @@ export default function ExtraDesc({token}) {
             <Divider orientation="horizontal" variant="middle" flexItem />
 
             <Grid item container direction="row" sx={{height:'100%'}}>
-                <Grid item xs={4} sx={{pr:3, borderRight: '1px solid #323546'}}>
+                <Grid item xs={4} sx={{pr:3, borderRight: '1px solid', borderRightColor: theme.palette.divider}}>
                     <Stack direction="row" alignItems="center" gap={1}>
                         <Typography variant="body1">Market Cap</Typography>
                         <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">The total market value of a cryptocurrency's circulating supply.<br/>It is analogous to the free-float capitalization in the stock market.<br/>Market Cap = Current Price x Circulating Supply.</Typography>}>
@@ -98,7 +99,7 @@ export default function ExtraDesc({token}) {
                     </Stack>
                     
                 </Grid>
-                <Grid item xs={4} sx={{pl:3, borderRight: '1px solid #323546'}}>
+                <Grid item xs={4} sx={{pl:3, borderRight: '1px solid', borderRightColor: theme.palette.divider}}>
                     <Stack direction="row" alignItems="center" gap={1}>
                         <Typography variant="body1">Volume (24h)</Typography>
                         <Tooltip title={<Typography variant="body2">A measure of how much of a cryptocurrency was traded in the last 24 hours.</Typography>}>

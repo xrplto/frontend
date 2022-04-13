@@ -7,7 +7,8 @@ import { Link } from 'react-router-dom'
 import InfiniteScroll from "react-infinite-scroll-component";
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
-import {styled, alpha, useTheme } from '@mui/material/styles';
+import {/*styled, alpha,*/ useTheme } from '@mui/material/styles';
+import BearBullTypography from '../layouts/BearBullTypography';
 // material
 import {
     Avatar,
@@ -17,11 +18,11 @@ import {
     Table,
     TableRow,
     TableBody,
-    //TableCell,
+    TableCell,
     Typography
 } from '@mui/material';
 
-import TableCell, { tableCellClasses } from "@mui/material/TableCell";
+import { tableCellClasses } from "@mui/material/TableCell";
 // components
 import Page from '../layouts/Page';
 //import SearchNotFound from '../../components/SearchNotFound';
@@ -37,18 +38,6 @@ import { selectStatus, update_status } from "../redux/statusSlice";
 const CoinNameTypography = withStyles({
     root: {
         color: "#3366FF"
-    }
-})(Typography);
-
-const BearishTypography = withStyles({
-    root: {
-        color: "#FF6C40"
-    }
-})(Typography);
-
-const BullishTypography = withStyles({
-    root: {
-        color: "#54D62C"
     }
 })(Typography);
 
@@ -306,28 +295,10 @@ export default function Token() {
                             const imgUrl = `/static/tokens/${name}.jpg`;
                             const isItemSelected = false;//selected.indexOf(id) !== -1;
 
-                            const pro7 = fPercent(p7d[0]);
-                            const pro24 = fPercent(p24h[0]);
                             const marketcap = amt * exch / status.USD;
 
                             const detail = id.toString(16).padStart(5, '0') + selHead.toString(16).padStart(2, '0');
                             
-                            let strPro7d = 0;
-                            if (pro7 < 0) {
-                                strPro7d = -pro7;
-                                strPro7d = '-' + strPro7d + '%';
-                            } else {
-                                strPro7d = '+' + pro7 + '%';
-                            }
-
-                            let strPro24h = 0;
-                            if (pro24 < 0) {
-                                strPro24h = -pro24;
-                                strPro24h = '-' + strPro24h + '%';
-                            } else {
-                                strPro24h = '+' + pro24 + '%';
-                            }
-
                             let date_fixed = '';
                             try {
                                 if (date) {
@@ -400,26 +371,10 @@ export default function Token() {
                                         </Stack>
                                     </TableCell>
                                     <TableCell align="left">
-                                        {pro24 < 0 ? (
-                                            <BearishTypography variant="subtitle1" noWrap>
-                                                {strPro24h}
-                                            </BearishTypography>
-                                        ) : (
-                                            <BullishTypography variant="subtitle1" noWrap>
-                                                {strPro24h}
-                                            </BullishTypography>
-                                        )}
+                                        <BearBullTypography value={p24h[0]} variant="subtitle1" />
                                     </TableCell>
                                     <TableCell align="left">
-                                        {pro7 < 0 ? (
-                                            <BearishTypography variant="subtitle1" noWrap>
-                                                {strPro7d}
-                                            </BearishTypography>
-                                        ) : (
-                                            <BullishTypography variant="subtitle1" noWrap>
-                                                {strPro7d}
-                                            </BullishTypography>
-                                        )}
+                                        <BearBullTypography value={p7d[0]} variant="subtitle1" />
                                     </TableCell>
                                     <TableCell align="left">
                                         <Stack>

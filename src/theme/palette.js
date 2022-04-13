@@ -105,7 +105,8 @@ export const palette_light = {
     gradients: GRADIENTS,
     chart: CHART_COLORS,
     divider: GREY[500_32],
-    divider1: '#00AB55',
+    divider1: GREY[800],
+    chartFill: GREY[800],
     text: { primary: GREY[800], secondary: GREY[600], disabled: GREY[500], widget: GREY[0] },
     background: { paper: GREY[100], default: GREY[200], neutral: GREY[200], widget: alpha('#3366FF', 1) },
     //background: { paper: alpha('#292F4A', 1), default: alpha('#1c2033', 1), neutral: GREY[200], widget: alpha('#3366FF', 1)},
@@ -134,6 +135,7 @@ export const palette_dark = {
     chart: CHART_COLORS,
     divider: GREY[500_24],
     divider1: GREY[500_24],
+    chartFill: '#fff',
     text: { primary: GREY[300], secondary: GREY[100], disabled: GREY[500], widget: GREY[0] },
     background: { paper: '#191F3A', default: '#0c1023', neutral: GREY[200], widget: alpha('#3366FF', 1)},
     action: {
