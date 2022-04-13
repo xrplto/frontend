@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import InfiniteScroll from "react-infinite-scroll-component";
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
+import {styled, alpha, useTheme } from '@mui/material/styles';
 // material
 import {
     Avatar,
@@ -16,9 +17,11 @@ import {
     Table,
     TableRow,
     TableBody,
-    TableCell,
+    //TableCell,
     Typography
 } from '@mui/material';
+
+import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 // components
 import Page from '../layouts/Page';
 //import SearchNotFound from '../../components/SearchNotFound';
@@ -116,6 +119,7 @@ const TABLE_HEAD = [
 // }
 
 export default function Token() {
+    const theme = useTheme();
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
     const dispatch = useDispatch();
     const [filterName, setFilterName] = useState('');
@@ -262,7 +266,13 @@ export default function Token() {
                     </div>
                 }
             >
-            <Table stickyHeader>
+                {/* 1px solid rgba(46, 50, 54, 1) 2E3236*/}
+            <Table stickyHeader sx={{
+                [`& .${tableCellClasses.root}`]: {
+                    borderBottom: "1px solid",
+                    borderBottomColor: theme.palette.divider
+                }
+            }}>
                 <TokenListHead
                     order={order}
                     orderBy={orderBy}

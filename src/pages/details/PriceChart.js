@@ -204,7 +204,7 @@ export default function PriceChart({ history, token, range, setRange }) {
                 stroke: {
                     width: 1,
                     dashArray: 3,
-                    color: '#fff',
+                    color: theme.palette.divider1,
                     opacity: 0.8
                 },
                 xaxis: {
