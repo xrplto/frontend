@@ -137,11 +137,11 @@ export default function Detail(props) {
                 <TopMark md5={md5}/>
                 <Container maxWidth="xl">
                     <Grid item container direction="row" >
-                        <Grid item xs={5} md={6} lg={5} sx={{ mt: 3 }}>
+                        <Grid item xs={12} md={6} lg={5} sx={{ mt: 3 }}>
                             <UserDesc token={token} id={id} sort={sort} />
                         </Grid>
                         
-                        <Grid item xs={7} md={6} lg={7} sx={{ mt: 3 }}>
+                        <Grid item xs={12} md={6} lg={7} sx={{ mt: 3 }}>
                             <PriceDesc token={token} />
                         </Grid>
 

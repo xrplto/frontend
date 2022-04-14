@@ -62,7 +62,7 @@ export default function TokenMoreMenu({acct, currency}) {
                         <ListItemText primary="GateHub" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
-                <Link
+                {/* <Link
                     underline="none"
                     color="inherit"
                     target="_blank"
@@ -73,7 +73,7 @@ export default function TokenMoreMenu({acct, currency}) {
                         <Avatar alt="xumm" src="/static/xrplorer.svg" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPLORER" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
-                </Link>
+                </Link> */}
                 <Link
                     underline="none"
                     color="inherit"

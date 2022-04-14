@@ -68,6 +68,8 @@ export default function PriceDesc({token}) {
                     </Stack>
                 }/>
             </Stack>
+
+            <LowHighBar24H token={token}/>
         </Stack>
     );
 }
