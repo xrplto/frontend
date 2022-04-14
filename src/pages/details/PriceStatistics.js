@@ -47,18 +47,6 @@ const badge24hStyle = {
     borderRadius: '4px',
     padding: '2px 4px'
 };
-
-const BearishTypography = withStyles({
-    root: {
-        color: "#FF6C40"
-    }
-})(Typography);
-
-const BullishTypography = withStyles({
-    root: {
-        color: "#54D62C"
-    }
-})(Typography);
 // ----------------------------------------------------------------------
 
 export default function PriceStatistics({token}) {

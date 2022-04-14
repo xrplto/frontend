@@ -11,6 +11,7 @@ import {
 import { useSelector/*, useDispatch*/ } from "react-redux";
 import { selectStatus } from "../../redux/statusSlice";
 import BearBullChip from '../../layouts/BearBullChip';
+import LowHighBar24H from '../../layouts/LowHighBar24H';
 
 export default function PriceDesc({token}) {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
