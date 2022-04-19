@@ -10,6 +10,7 @@ import ExtraDesc from "./details/ExtraDesc";
 import PriceChart from './details/PriceChart';
 import PriceStatistics from './details/PriceStatistics';
 import Description from './details/Description';
+import ExchangeHistory from './details/ExchangeHistory';
 
 import {
     Container,
@@ -168,6 +169,10 @@ export default function Detail(props) {
 
                         <Grid item xs={12} md={6} lg={8}>
                             <Description token={token} />
+                        </Grid>
+
+                        <Grid item xs={12} md={6} lg={4}>
+                            <ExchangeHistory token={token} />
                         </Grid>
 
                         {/* <Grid item xs={12} md={6} lg={4}>
