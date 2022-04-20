@@ -14,7 +14,7 @@ import { tableCellClasses } from "@mui/material/TableCell";
 import BearBullTypography from '../../layouts/BearBullTypography';
 // ----------------------------------------------------------------------
 // utils
-import { fCurrency5, fNumber, fPercent } from '../../utils/formatNumber';
+import { fNumber } from '../../utils/formatNumber';
 // ----------------------------------------------------------------------
 // Redux
 import { useSelector/*, useDispatch*/ } from "react-redux";
