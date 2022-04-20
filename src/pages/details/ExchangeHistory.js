@@ -49,9 +49,9 @@ export default function ExchangeHistory({token}) {
 
     useEffect(() => {
         function getExchanges() {
-            // https://ws.xrpl.to/api/exchanges/8c1e704bfcf7fd53e9d3b00eab33fc86
-            // https://ws.xrpl.to/api/exchanges/056f1c543940088df14d343b2648b656a2
-            axios.get(`${BASE_URL}/exchanges/${md5}&limit=${limit}`)
+            // https://ws.xrpl.to/api/exchanges?md5=8c1e704bfcf7fd53e9d3b00eab33fc86&limit=100
+            // https://ws.xrpl.to/api/exchanges?md5=6f1c543940088df14d343b2648b656a2&limit=100
+            axios.get(`${BASE_URL}/exchanges?md5=${md5}&limit=${limit}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -102,7 +102,14 @@ export default function ExchangeHistory({token}) {
                                 seq,
                                 md5,*/
                                 } = row;
-                            const strTime = (new Date(time)).toLocaleTimeString('en-US', { hour12: false });
+                            const date = new Date(time);
+                            const year = date.getFullYear();
+                            const month = date.getMonth();
+                            const day = date.getDay();
+
+                            //const strTime = (new Date(time)).toLocaleTimeString('en-US', { hour12: false });
+                            
+                            const strTime = date.toISOString(); //date.format("YYYY-MM-DDTHH:mm:ss");
                             // console.log(now.format("HH:mm:ss"));
                             // localtime = d.toLocaleTimeString('en-US', { hour12: false });
                             return (
