@@ -99,7 +99,12 @@ export default function Topbar() {
                 <Typography align="center" style={{ color: "#74CAFF" }} variant="subtitle2">{fIntNumber(status.transactions24H)}</Typography>
                 {/* <h6>|</h6> */}
                 <h5>Vol:</h5>
-                <Typography align="center" style={{ color: "#FF6C40" }} variant="subtitle2">${fNumber(status.tradedAmount24H)}</Typography>
+                <Typography align="center" style={{ color: "#FF6C40" }} variant="subtitle2">
+                    ${fNumber(status.tradedUSD24H)}
+                    <Typography align="center" style={{ color: "#54D62C" }} variant="caption">
+                        ({fNumber(status.tradedXRP24H)} XRP)
+                    </Typography>
+                </Typography>
                 {/* <h6>|</h6> */}
                 <h5>Trades:</h5>
                 <Typography align="center" style={{ color: "#3366FF" }} variant="subtitle2">{fIntNumber(status.tradedTokens24H)}</Typography>

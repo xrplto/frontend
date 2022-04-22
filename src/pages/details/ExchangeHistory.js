@@ -64,7 +64,7 @@ export default function ExchangeHistory({token}) {
                         setExchs(ret.exchs);
                     }
                 }).catch(err => {
-                    console.log("error on getting details!!!", err);
+                    console.log("Error on getting exchanges!!!", err);
                 }).then(function () {
                     // always executed
                 });
@@ -98,7 +98,7 @@ export default function ExchangeHistory({token}) {
                     exchs.map((row) => {
                             const {
                                 _id,
-                                amount,
+                                value,
                                 exch,
                                 time,
                                 hash,
@@ -133,7 +133,7 @@ export default function ExchangeHistory({token}) {
                                         tabIndex={-1}
                                     >
                                         <TableCell align="left">{fNumber(exch)}</TableCell>
-                                        <TableCell align="left">{fNumber(amount)}</TableCell>
+                                        <TableCell align="left">{fNumber(value)}</TableCell>
                                         <TableCell align="left">{strTime} <span style={badge24hStyle}>{day}</span></TableCell>
                                     </TableRow>
                                 </CopyToClipboard>
