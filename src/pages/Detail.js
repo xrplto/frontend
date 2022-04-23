@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useParams/*, useSearchParams*/ } from "react-router-dom";
 import ScrollToTop from '../layouts/ScrollToTop';
@@ -11,11 +12,17 @@ import PriceChart from './details/PriceChart';
 import PriceStatistics from './details/PriceStatistics';
 import Description from './details/Description';
 import ExchangeHistory from './details/ExchangeHistory';
+import HistoryData from './details/HistoryData';
 
 import {
+    Box,
     Container,
     Divider,
-    Grid
+    Grid,
+    Tab,
+    Tabs,
+    Toolbar,
+    Typography
 } from '@mui/material';
 
 // ----------------------------------------------------------------------
@@ -41,11 +48,63 @@ const TABLE_HEAD = [
     { id: '' }
 ];
 
+function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+  
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            {...other}
+        >
+            {value === index && (
+            <Box sx={{ p: 3 }}>
+                <Typography>{children}</Typography>
+            </Box>
+            )}
+        </div>
+    );
+}
+  
+TabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired,
+};
+
+function a11yProps(index) {
+    return {
+        id: `simple-tab-${index}`,
+        'aria-controls': `simple-tabpanel-${index}`,
+    };
+}
+
 export default function Detail(props) {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
     const [history, setHistory] = useState([]);
     const [range, setRange] = useState('1D');
     const [token, setToken] = useState(null); // JSON.parse(localStorage.getItem('selectToken')));
+    const [value, setValue] = useState(0);
+
+    const gotoTabView = (event) => {
+        const anchor = (event.target.ownerDocument || document).querySelector(
+            '#back-to-top-tab-anchor',
+        );
+    
+        if (anchor) {
+            anchor.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+        }
+    };
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+        gotoTabView(event);
+    };
     // const [searchParams, setSearchParams] = useSearchParams();
     // const id = searchParams.get("id");
     // const sort = searchParams.get("sort");
@@ -157,29 +216,38 @@ export default function Detail(props) {
                     </Grid>
 
                     <Divider orientation="horizontal" sx={{mt:2,mb:2}} variant="middle" flexItem />
+                    <div id="back-to-top-tab-anchor" />
+                    <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+                        <Tab label="Overview" {...a11yProps(0)} />
+                        <Tab label="Historical Data" {...a11yProps(1)} />
+                    </Tabs>
+                    <TabPanel value={value} index={0}>
+                        <Grid container spacing={3} sx={{p:0}}>
+                            <Grid item xs={12} md={6} lg={8} sx={{pl:0}}>
+                                <PriceChart history={history} token={token} range={range} setRange={setRange} />
+                            </Grid>
 
-                    <Grid container spacing={3} sx={{p:0}}>
-                        <Grid item xs={12} md={6} lg={8} sx={{pl:0}}>
-                            <PriceChart history={history} token={token} range={range} setRange={setRange} />
+                            <Grid item xs={12} md={6} lg={4}>
+                                {/* <Holders token={token} /> */}
+                                <PriceStatistics token={token} />
+                            </Grid>
+
+                            <Grid item xs={12} md={6} lg={8}>
+                                <Description token={token} />
+                            </Grid>
+
+                            <Grid item xs={12} md={6} lg={4}>
+                                <ExchangeHistory token={token} />
+                            </Grid>
+
+                            {/* <Grid item xs={12} md={6} lg={4}>
+                                <RadialChart />
+                            </Grid> */}
                         </Grid>
-
-                        <Grid item xs={12} md={6} lg={4}>
-                            {/* <Holders token={token} /> */}
-                            <PriceStatistics token={token} />
-                        </Grid>
-
-                        <Grid item xs={12} md={6} lg={8}>
-                            <Description token={token} />
-                        </Grid>
-
-                        <Grid item xs={12} md={6} lg={4}>
-                            <ExchangeHistory token={token} />
-                        </Grid>
-
-                        {/* <Grid item xs={12} md={6} lg={4}>
-                            <RadialChart />
-                        </Grid> */}
-                    </Grid>
+                    </TabPanel>
+                    <TabPanel value={value} index={1}>
+                        <HistoryData token={token} />
+                    </TabPanel>
                 </Container>
                 <ScrollToTop />
             </Page>

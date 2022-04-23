@@ -15,7 +15,7 @@ import {
     TableRow
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
-import ExchHistToolbar from './ExchHistToolbar';
+import HistoryDataToolbar from './HistoryDataToolbar';
 import { MD5 } from 'crypto-js';
 // ----------------------------------------------------------------------
 // utils
@@ -24,12 +24,12 @@ import { fNumber } from '../../utils/formatNumber';
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
-    backdropFilter: 'blur(2px)',
-    WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
+    //backdropFilter: 'blur(2px)',
+    //WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
     //backgroundColor: alpha(theme.palette.background.default, 0.0),
-    borderRadius: '13px',
-    padding: '0em 0.5em 1.5em 0.5em',
-    backgroundColor: alpha("#919EAB", 0.03),
+    //borderRadius: '13px',
+    //padding: '0em 0.5em 1.5em 0.5em',
+    //backgroundColor: alpha("#919EAB", 0.03),
 }));
 // ----------------------------------------------------------------------
 const badge24hStyle = {
@@ -54,10 +54,10 @@ function getPair(issuer, code) {
     return MD5(pair).toString();
 }
 
-export default function ExchangeHistory({token}) {
+export default function HistoryData({token}) {
     const BASE_URL = 'https://ws.xrpl.to/api';
     const [page, setPage] = useState(0);
-    const [rows, setRows] = useState(5);
+    const [rows, setRows] = useState(10);
     const [count, setCount] = useState(0);
     const [copied, setCopied] = useState(false);
     const [exchs, setExchs] = useState([]);
@@ -90,19 +90,14 @@ export default function ExchangeHistory({token}) {
                 });
         }
         getExchanges();
-    }, [page]);
+    }, [page, rows]);
 
     return (
         <StackStyle>
-            <CardHeader title={<>
-                Exchange History
-                <span style={badge24hStyle}>24h</span>
-                </>}  subheader='' sx={{p:2}}/>
             <Table stickyHeader sx={{
                 [`& .${tableCellClasses.root}`]: {
                     borderBottom: "1px solid",
-                    borderBottomColor: theme.palette.divider,
-                    backgroundColor: alpha("#919EAB", 0)
+                    borderBottomColor: theme.palette.divider
                 }
             }}>
                 <TableHead>
@@ -145,7 +140,7 @@ export default function ExchangeHistory({token}) {
                                 buy = true;
                             }
                             const date = new Date(time);
-                            //const year = date.getFullYear();
+                            const year = date.getFullYear();
                             const month = date.getMonth() + 1;
                             const day = date.getDate();
                             const hour = date.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
@@ -153,8 +148,8 @@ export default function ExchangeHistory({token}) {
                             const sec = date.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
 
                             //const strTime = (new Date(time)).toLocaleTimeString('en-US', { hour12: false });
-                            //const strTime = date.toISOString(); //date.format("YYYY-MM-DDTHH:mm:ss");
-                            const strTime = `${hour}:${min}:${sec}`;
+                            //const strTime = date.format("YYYY-MM-DD HH:mm:ss");
+                            const strTime = `${year}-${month}-${day} ${hour}:${min}:${sec}`;
                             return (
                                 <CopyToClipboard
                                     key={`id${_id}`}
@@ -172,14 +167,14 @@ export default function ExchangeHistory({token}) {
                                     >
                                         <TableCell align="left">{fNumber(exch)}</TableCell>
                                         <TableCell align="left">{fNumber(value)}</TableCell>
-                                        <TableCell align="left">{strTime} <span style={badge24hStyle}>{day}</span></TableCell>
+                                        <TableCell align="left">{strTime}</TableCell>
                                     </TableRow>
                                 </CopyToClipboard>
                             );
                         })}
                 </TableBody>
             </Table>
-            <ExchHistToolbar
+            <HistoryDataToolbar
                 count={count}
                 rows={rows}
                 setRows={setRows}

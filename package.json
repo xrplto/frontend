@@ -58,6 +58,7 @@
     "react-apexcharts": "^1.4.0",
     "axios": "^0.25.0",
     "lodash": "^4.17.21",
+    "crypto-js": "^4.1.1",
     "numeral": "^2.0.4",
     "prop-types": "^15.7.2",
     "react": "^17.0.2",
