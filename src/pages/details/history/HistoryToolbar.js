@@ -1,12 +1,6 @@
-//import PropTypes from 'prop-types';
-//import { Icon } from '@iconify/react';
-//import searchFill from '@iconify/icons-eva/search-fill';
-//import trash2Fill from '@iconify/icons-eva/trash-2-fill';
-//import roundFilterList from '@iconify/icons-ic/round-filter-list';
 // material
 import { styled } from '@mui/material/styles';
-//import { Link as RouterLink } from 'react-router-dom';
-//import { fCurrency3 } from '../../utils/formatNumber';
+
 import {
     Stack,
     Toolbar,
@@ -14,12 +8,6 @@ import {
     Select,
     MenuItem
 } from '@mui/material';
-
-//import { makeStyles } from "@mui/styles";
-
-import { useSelector } from "react-redux";
-
-import { selectStatus } from "../../redux/statusSlice";
 // ----------------------------------------------------------------------
 
 const RootStyle = styled(Toolbar)(({ theme }) => ({
@@ -31,28 +19,13 @@ const RootStyle = styled(Toolbar)(({ theme }) => ({
 
 
 // ----------------------------------------------------------------------
-
-/*TokenListToolbar.propTypes = {
-  filterName: PropTypes.string,
-  onFilterName: PropTypes.func
-};*/
-
-/*const dropdownStyles = makeStyles({
-    underline: {
-        borderBottom: "0px solid red !important",
-        "&:hover": {
-            borderBottom: "0px solid rgba(0,0,0,0)"
-        }
-    }
-});*/
-
 const CustomSelect = styled(Select)(({ theme }) => ({
     '& .MuiOutlinedInput-notchedOutline' : {
         border: 'none'
     }
 }));
 
-export default function HistoryDataToolbar({ count, rows, setRows, page, setPage}) {
+export default function HistoryToolbar({ count, rows, setRows, page, setPage}) {
     const page_count = Math.floor(count / rows) + 1;
 
     const start = page * rows + 1;

@@ -1,13 +1,11 @@
 // material
 import axios from 'axios'
-import { withStyles } from '@mui/styles';
 import { useState, useEffect } from 'react';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {
     CardHeader,
     Stack,
-    Typography,
     Table,
     TableBody,
     TableCell,
@@ -55,6 +53,7 @@ function getPair(issuer, code) {
 }
 
 export default function ExchangeHistory({token}) {
+    const EPOCH_OFFSET = 946684800;
     const BASE_URL = 'https://ws.xrpl.to/api';
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(5);
@@ -65,7 +64,7 @@ export default function ExchangeHistory({token}) {
     const {
         acct,
         code,
-        md5
+        // md5
     } = token;
     const pair = getPair(acct, code);
     console.log(pair);
@@ -119,14 +118,14 @@ export default function ExchangeHistory({token}) {
                             const {
                                 _id,
                                 hash,
-                                maker,
-                                taker,
-                                seq,
                                 takerPaid,
                                 takerGot,
-                                time,
-                                pair,
-                                xUSD
+                                date,
+                                // maker,
+                                // taker,
+                                // seq,                                
+                                // pair,
+                                // xUSD
                                 } = row;
                             let value;
                             let exch;
@@ -144,16 +143,16 @@ export default function ExchangeHistory({token}) {
                                 exch = t / value;
                                 buy = true;
                             }
-                            const date = new Date(time);
-                            //const year = date.getFullYear();
-                            const month = date.getMonth() + 1;
-                            const day = date.getDate();
-                            const hour = date.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                            const min = date.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                            const sec = date.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                            const nDate = new Date((date + EPOCH_OFFSET) * 1000);
+                            //const year = nDate.getFullYear();
+                            //const month = nDate.getMonth() + 1;
+                            const day = nDate.getDate();
+                            const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                            const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                            const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
 
                             //const strTime = (new Date(time)).toLocaleTimeString('en-US', { hour12: false });
-                            //const strTime = date.toISOString(); //date.format("YYYY-MM-DDTHH:mm:ss");
+                            //const strTime = nDate.toISOString(); //nDate.format("YYYY-MM-DDTHH:mm:ss");
                             const strTime = `${hour}:${min}:${sec}`;
                             return (
                                 <CopyToClipboard

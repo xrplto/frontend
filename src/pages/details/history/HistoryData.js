@@ -1,13 +1,11 @@
 // material
 import axios from 'axios'
-import { withStyles } from '@mui/styles';
 import { useState, useEffect } from 'react';
-import { alpha, styled, useTheme } from '@mui/material/styles';
+import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {
-    CardHeader,
+    Link,
     Stack,
-    Typography,
     Table,
     TableBody,
     TableCell,
@@ -15,11 +13,12 @@ import {
     TableRow
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
-import HistoryDataToolbar from './HistoryDataToolbar';
+import HistoryToolbar from './HistoryToolbar';
+import HistoryMoreMenu from './HistoryMoreMenu';
 import { MD5 } from 'crypto-js';
 // ----------------------------------------------------------------------
 // utils
-import { fNumber } from '../../utils/formatNumber';
+import { fNumber } from '../../../utils/formatNumber';
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
@@ -32,18 +31,6 @@ const StackStyle = styled(Stack)(({ theme }) => ({
     //backgroundColor: alpha("#919EAB", 0.03),
 }));
 // ----------------------------------------------------------------------
-const badge24hStyle = {
-    display: 'inline-block',
-    marginLeft: '4px',
-    color: '#C4CDD5',
-    fontSize: '11px',
-    fontWeight: '500',
-    lineHeight: '18px',
-    backgroundColor: '#323546',
-    borderRadius: '4px',
-    padding: '2px 4px'
-};
-
 function getPair(issuer, code) {
     // issuer, currencyCode, 'XRP', undefined
     const t1 = 'undefined_XRP';
@@ -55,6 +42,7 @@ function getPair(issuer, code) {
 }
 
 export default function HistoryData({token}) {
+    const EPOCH_OFFSET = 946684800;
     const BASE_URL = 'https://ws.xrpl.to/api';
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);
@@ -65,7 +53,7 @@ export default function HistoryData({token}) {
     const {
         acct,
         code,
-        md5
+        // md5
     } = token;
     const pair = getPair(acct, code);
     console.log(pair);
@@ -102,9 +90,14 @@ export default function HistoryData({token}) {
             }}>
                 <TableHead>
                     <TableRow>
-                        <TableCell align="left">PRICE</TableCell>
-                        <TableCell align="left">VOLUME</TableCell>
-                        <TableCell align="left">TIME</TableCell>
+                        <TableCell align="left">Price</TableCell>
+                        <TableCell align="left">Volume</TableCell>
+                        <TableCell align="left">Time</TableCell>
+                        <TableCell align="left">Ledger</TableCell>
+                        <TableCell align="left">Sequence</TableCell>
+                        <TableCell align="left">From</TableCell>
+                        <TableCell align="left">To</TableCell>
+                        <TableCell align="left"></TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -116,12 +109,13 @@ export default function HistoryData({token}) {
                                 hash,
                                 maker,
                                 taker,
+                                ledger,
                                 seq,
                                 takerPaid,
                                 takerGot,
-                                time,
-                                pair,
-                                xUSD
+                                date,
+                                // pair,
+                                // xUSD
                                 } = row;
                             let value;
                             let exch;
@@ -139,16 +133,16 @@ export default function HistoryData({token}) {
                                 exch = t / value;
                                 buy = true;
                             }
-                            const date = new Date(time);
-                            const year = date.getFullYear();
-                            const month = date.getMonth() + 1;
-                            const day = date.getDate();
-                            const hour = date.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                            const min = date.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                            const sec = date.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                            const nDate = new Date((date + EPOCH_OFFSET) * 1000);
+                            const year = nDate.getFullYear();
+                            const month = nDate.getMonth() + 1;
+                            const day = nDate.getDate();
+                            const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                            const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                            const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
 
-                            //const strTime = (new Date(time)).toLocaleTimeString('en-US', { hour12: false });
-                            //const strTime = date.format("YYYY-MM-DD HH:mm:ss");
+                            //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
+                            //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
                             const strTime = `${year}-${month}-${day} ${hour}:${min}:${sec}`;
                             return (
                                 <CopyToClipboard
@@ -168,13 +162,40 @@ export default function HistoryData({token}) {
                                         <TableCell align="left">{fNumber(exch)}</TableCell>
                                         <TableCell align="left">{fNumber(value)}</TableCell>
                                         <TableCell align="left">{strTime}</TableCell>
+                                        <TableCell align="left">{ledger}</TableCell>
+                                        <TableCell align="left">{seq}</TableCell>
+                                        <TableCell align="left">
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={`https://bithomp.com/explorer/${maker}`}
+                                                rel="noreferrer noopener"
+                                            >
+                                                {maker}
+                                            </Link>
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={`https://bithomp.com/explorer/${taker}`}
+                                                rel="noreferrer noopener"
+                                            >
+                                                {taker}
+                                            </Link>
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <HistoryMoreMenu hash={hash} />
+                                        </TableCell>
                                     </TableRow>
                                 </CopyToClipboard>
                             );
                         })}
                 </TableBody>
             </Table>
-            <HistoryDataToolbar
+            <HistoryToolbar
                 count={count}
                 rows={rows}
                 setRows={setRows}

@@ -12,7 +12,7 @@ import PriceChart from './details/PriceChart';
 import PriceStatistics from './details/PriceStatistics';
 import Description from './details/Description';
 import ExchangeHistory from './details/ExchangeHistory';
-import HistoryData from './details/HistoryData';
+import {HistoryData} from './details/history';
 
 import {
     Box,
