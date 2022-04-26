@@ -2,15 +2,19 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
+import { withStyles } from '@mui/styles';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {
+    Alert,
     Link,
+    Snackbar,
     Stack,
     Table,
     TableBody,
     TableCell,
     TableHead,
-    TableRow
+    TableRow,
+    Typography
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
 import HistoryToolbar from './HistoryToolbar';
@@ -30,6 +34,18 @@ const StackStyle = styled(Stack)(({ theme }) => ({
     //padding: '0em 0.5em 1.5em 0.5em',
     //backgroundColor: alpha("#919EAB", 0.03),
 }));
+
+const CancelTypography = withStyles({
+    root: {
+        color: "#FF6C40",
+        borderRadius: '6px',
+        border: '0.05em solid #FF6C40',
+        //fontSize: '0.5rem',
+        lineHeight: '1',
+        paddingLeft: '3px',
+        paddingRight: '3px',
+    }
+})(Typography);
 // ----------------------------------------------------------------------
 function getPair(issuer, code) {
     // issuer, currencyCode, 'XRP', undefined
@@ -58,6 +74,14 @@ export default function HistoryData({token}) {
     const pair = getPair(acct, code);
     console.log(pair);
 
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+    
+        setCopied(false);
+    };
+
     useEffect(() => {
         function getExchanges() {
             // XPUNK
@@ -69,7 +93,14 @@ export default function HistoryData({token}) {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
                         setCount(ret.count);
-                        setExchs(ret.exchs);
+                        let exs = [];
+                        let i = 0;
+                        for (var ex of ret.exchs) {
+                            ex.id = i + page * rows + 1;
+                            exs.push(ex);
+                            i++;
+                        }
+                        setExchs(exs);
                     }
                 }).catch(err => {
                     console.log("Error on getting exchanges!!!", err);
@@ -82,6 +113,11 @@ export default function HistoryData({token}) {
 
     return (
         <StackStyle>
+             <Snackbar open={copied} autoHideDuration={800} onClose={handleClose}>
+                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                    Copied
+                </Alert>
+            </Snackbar>
             <Table stickyHeader sx={{
                 [`& .${tableCellClasses.root}`]: {
                     borderBottom: "1px solid",
@@ -90,8 +126,10 @@ export default function HistoryData({token}) {
             }}>
                 <TableHead>
                     <TableRow>
+                        <TableCell align="left">#</TableCell>
                         <TableCell align="left">Price</TableCell>
                         <TableCell align="left">Volume</TableCell>
+                        <TableCell align="left"></TableCell>
                         <TableCell align="left">Time</TableCell>
                         <TableCell align="left">Ledger</TableCell>
                         <TableCell align="left">Sequence</TableCell>
@@ -105,6 +143,7 @@ export default function HistoryData({token}) {
                     // exchs.slice(page * rows, page * rows + rows)
                     exchs.map((row) => {
                             const {
+                                id,
                                 _id,
                                 hash,
                                 maker,
@@ -114,6 +153,7 @@ export default function HistoryData({token}) {
                                 takerPaid,
                                 takerGot,
                                 date,
+                                cancel,
                                 // pair,
                                 // xUSD
                                 } = row;
@@ -143,7 +183,8 @@ export default function HistoryData({token}) {
 
                             //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
                             //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
-                            const strTime = `${year}-${month}-${day} ${hour}:${min}:${sec}`;
+                            const strDate = `${year}-${month}-${day}`;
+                            const strTime = `${hour}:${min}:${sec}`;
                             return (
                                 <CopyToClipboard
                                     key={`id${_id}`}
@@ -159,9 +200,23 @@ export default function HistoryData({token}) {
                                             }
                                         }}
                                     >
-                                        <TableCell align="left">{fNumber(exch)}</TableCell>
-                                        <TableCell align="left">{fNumber(value)}</TableCell>
-                                        <TableCell align="left">{strTime}</TableCell>
+                                        <TableCell align="left"><Typography variant="subtitle2">{id}</Typography></TableCell>
+                                        <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
+                                        <TableCell align="left"><Typography variant="subtitle2">{fNumber(value)}</Typography></TableCell>
+                                        <TableCell align="left">
+                                            {cancel && (
+                                                <CancelTypography variant="caption">
+                                                cancel
+                                                </CancelTypography>
+                                            )}
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            <Stack>
+                                                <Typography variant="subtitle2">{strTime}</Typography>
+                                                <Typography variant="caption">{strDate}</Typography>
+                                            </Stack>
+                                            
+                                        </TableCell>
                                         <TableCell align="left">{ledger}</TableCell>
                                         <TableCell align="left">{seq}</TableCell>
                                         <TableCell align="left">
