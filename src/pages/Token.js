@@ -9,10 +9,13 @@ import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
 import {/*styled, alpha,*/ useTheme } from '@mui/material/styles';
 import BearBullTypography from '../layouts/BearBullTypography';
+import { Icon } from '@iconify/react';
+import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 // material
 import {
     Avatar,
     Box,
+    Chip,
     Container,
     Stack,
     Table,
@@ -287,6 +290,7 @@ export default function Token() {
                                 vol24htx,
                                 //holders,
                                 //offers,
+                                xrpPair,
                                 kyc,
                                 md5,
                                 user,
@@ -306,6 +310,30 @@ export default function Token() {
                                     date_fixed = date.split('T')[0];
                                 }
                             } catch (e) { }
+
+                            /*"xrpPair": {
+                                "curr1": {
+                                    "currency": "534F4C4F00000000000000000000000000000000",
+                                    "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+                                    "value": 1494231.0359380918
+                                },
+                                "curr2": {
+                                    "currency": "XRP",
+                                    "issuer": null,
+                                    "value": 1152170.3078069987
+                                }
+                            }*/
+
+                            let tradedAmountWithXRP = 0;
+                            if (xrpPair) {
+                                const curr1 = xrpPair.curr1;
+                                const curr2 = xrpPair.curr2;
+                                if (acct === curr1.issuer)
+                                    tradedAmountWithXRP = curr1.value;
+
+                                if (acct === curr2.issuer)
+                                    tradedAmountWithXRP = curr2.value;
+                            }
 
                             /*const uri = [id, orderBy];
                             const encodedUri = Buffer.from(encode(uri)).toString('hex');
@@ -382,9 +410,21 @@ export default function Token() {
                                             <Typography variant="subtitle1" noWrap>
                                                 ${fNumber(vol24h)}
                                             </Typography>
-                                            <Typography variant="caption">
-                                                {fNumber(vol24hamt)} {name}
+                                            <Typography variant="subtitle1" color="#0C53B7">
+                                                <Stack>
+                                                    {fNumber(tradedAmountWithXRP)} 
+                                                    <Typography variant="caption">
+                                                        <Stack direction="row" alignItems='center'>
+                                                            {name}
+                                                            <Icon icon={arrowsExchange} width="16" height="16"/>
+                                                            XRP
+                                                        </Stack>
+                                                    </Typography>
+                                                </Stack>
                                             </Typography>
+                                            {/* <Typography variant="caption">
+                                                {fNumber(vol24hamt)} {name}
+                                            </Typography> */}
                                             {/* <Typography variant="caption">
                                                 {fNumber(vol24htx)} tx
                                             </Typography> */}
