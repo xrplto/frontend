@@ -412,7 +412,7 @@ export default function Token() {
                                             </Typography>
                                             <Typography variant="subtitle1" color="#0C53B7">
                                                 <Stack>
-                                                    {fNumber(tradedAmountWithXRP)} 
+                                                    {fNumber(tradedAmountWithXRP)}
                                                     <Typography variant="caption">
                                                         <Stack direction="row" alignItems='center'>
                                                             {name}
