@@ -15,11 +15,6 @@ import {
     MenuItem
 } from '@mui/material';
 
-//import { makeStyles } from "@mui/styles";
-
-import { useSelector } from "react-redux";
-
-import { selectStatus } from "../../redux/statusSlice";
 // ----------------------------------------------------------------------
 
 const RootStyle = styled(Toolbar)(({ theme }) => ({
@@ -52,7 +47,7 @@ const CustomSelect = styled(Select)(({ theme }) => ({
     }
 }));
 
-export default function ExchHistToolbar({ count, rows, setRows, page, setPage}) {
+export default function TokenPairsToolbar({ count, rows, setRows, page, setPage}) {
     const page_count = Math.floor(count / rows) + 1;
 
     const start = page * rows + 1;

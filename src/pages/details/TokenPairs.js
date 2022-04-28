@@ -13,7 +13,7 @@ import {
     TableRow
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
-import ExchHistToolbar from './ExchHistToolbar';
+import TokenPairsToolbar from './TokenPairsToolbar';
 import { MD5 } from 'crypto-js';
 // ----------------------------------------------------------------------
 // utils
@@ -42,54 +42,41 @@ const badge24hStyle = {
     padding: '2px 4px'
 };
 
-function getPair(issuer, code) {
-    // issuer, currencyCode, 'XRP', undefined
-    const t1 = 'undefined_XRP';
-    const t2 = issuer  + '_' +  code;
-    let pair = t1 + t2;
-    if (t1.localeCompare(t2) > 0)
-        pair = t2 + t1;
-    return MD5(pair).toString();
-}
-
-export default function ExchangeHistory({token}) {
+export default function TokenPairs({token}) {
     const EPOCH_OFFSET = 946684800;
     const BASE_URL = 'https://ws.xrpl.to/api';
+    const [pairs, setPairs] = useState([]);
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(5);
     const [count, setCount] = useState(0);
     const [copied, setCopied] = useState(false);
-    const [exchs, setExchs] = useState([]);
     const theme = useTheme();
     const {
         acct,
         code,
-        // md5
+        md5
     } = token;
-    const pair = getPair(acct, code);
-    console.log(pair);
 
     useEffect(() => {
-        function getExchanges() {
-            // XPUNK
-            // https://ws.xrpl.to/api/exchanges?pair=d12119be3c1749470903414dff032761&page=0&limit=5
-            // SOLO
-            // https://ws.xrpl.to/api/exchanges?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
-            axios.get(`${BASE_URL}/exchanges?pair=${pair}&page=${page}&limit=${rows}`)
+        function getPairs() {
+            // https://ws.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
+            axios.get(`${BASE_URL}/pairs?md5=${md5}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
-                        setCount(ret.count);
-                        setExchs(ret.exchs);
+                        setCount(ret.pairs.length);
+                        setPairs(ret.pairs);
                     }
                 }).catch(err => {
-                    console.log("Error on getting exchanges!!!", err);
+                    console.log("error on getting details!!!", err);
                 }).then(function () {
                     // always executed
                 });
         }
-        getExchanges();
-    }, [page]);
+        if (md5)
+            getPairs();
+
+    }, [md5]);
 
     return (
         <StackStyle>
@@ -113,8 +100,8 @@ export default function ExchangeHistory({token}) {
                 </TableHead>
                 <TableBody>
                 {
-                    // exchs.slice(page * rows, page * rows + rows)
-                    exchs.map((row) => {
+                    pairs.slice(page * rows, page * rows + rows)
+                    .map((row) => {
                             const {
                                 _id,
                                 hash,
@@ -123,7 +110,7 @@ export default function ExchangeHistory({token}) {
                                 date,
                                 // maker,
                                 // taker,
-                                // seq,                                
+                                // seq,
                                 // pair,
                                 // xUSD
                                 } = row;
@@ -178,7 +165,7 @@ export default function ExchangeHistory({token}) {
                         })}
                 </TableBody>
             </Table>
-            <ExchHistToolbar
+            <TokenPairsToolbar
                 count={count}
                 rows={rows}
                 setRows={setRows}

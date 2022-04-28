@@ -11,7 +11,7 @@ import ExtraDesc from "./details/ExtraDesc";
 import PriceChart from './details/PriceChart';
 import PriceStatistics from './details/PriceStatistics';
 import Description from './details/Description';
-import ExchangeHistory from './details/ExchangeHistory';
+import TokenPairs from './details/TokenPairs';
 import {HistoryData} from './details/history';
 
 import {
@@ -84,7 +84,6 @@ function a11yProps(index) {
 export default function Detail(props) {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
     const [history, setHistory] = useState([]);
-    const [pairs, setPairs] = useState([]);
     const [range, setRange] = useState('1D');
     const [token, setToken] = useState(null); // JSON.parse(localStorage.getItem('selectToken')));
     const [value, setValue] = useState(0);
@@ -170,26 +169,6 @@ export default function Detail(props) {
 
     }, [md5, range, dispatch]);
 
-    useEffect(() => {
-        function getPairs() {
-            // https://ws.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
-            axios.get(`${BASE_URL}/pairs?md5=${md5}`)
-                .then(res => {
-                    let ret = res.status === 200 ? res.data : undefined;
-                    if (ret) {
-                        setPairs(ret.pairs);
-                    }
-                }).catch(err => {
-                    console.log("error on getting details!!!", err);
-                }).then(function () {
-                    // always executed
-                });
-        }
-        if (md5)
-            getPairs();
-
-    }, [md5]);
-
     if (!token) {
         return (
             <>
@@ -258,7 +237,7 @@ export default function Detail(props) {
                             </Grid>
 
                             <Grid item xs={12} md={6} lg={4}>
-                                <ExchangeHistory token={token} pairs={pairs} />
+                                <TokenPairs token={token} />
                             </Grid>
 
                             {/* <Grid item xs={12} md={6} lg={4}>
