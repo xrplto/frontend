@@ -1,7 +1,7 @@
 //import { filter } from 'lodash';
 import { useState, useEffect } from 'react';
 import { BeatLoader } from "react-spinners";
-import { fNumber, fPercent } from '../utils/formatNumber';
+import { fNumber } from '../utils/formatNumber';
 import { withStyles } from '@mui/styles';
 import { Link } from 'react-router-dom'
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -15,7 +15,6 @@ import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import {
     Avatar,
     Box,
-    Chip,
     Container,
     Stack,
     Table,

@@ -10,9 +10,9 @@ function isHex(string) {
 
 module.exports.currencyCodeUTF8ToHexIfUTF8 = currencyCode => {
     if(currencyCode) {
-        if(currencyCode.length == 3)
+        if(currencyCode.length === 3)
             return currencyCode;
-        else if(currencyCode.length == 40 && isHex(currencyCode))
+        else if(currencyCode.length === 40 && isHex(currencyCode))
             return currencyCode;
         else
             return Buffer.from(currencyCode, 'utf-8').toString('hex');
@@ -22,7 +22,7 @@ module.exports.currencyCodeUTF8ToHexIfUTF8 = currencyCode => {
 }
 
 module.exports.currencyCodeHexToUTF8Trimmed = currencyCode => {
-        if(currencyCode && currencyCode.length == 40 && isHex(currencyCode)) { //remove trailing zeros
+        if(currencyCode && currencyCode.length === 40 && isHex(currencyCode)) { //remove trailing zeros
         while(currencyCode.endsWith("00")) {
             currencyCode = currencyCode.substring(0, currencyCode.length-2);
         }
@@ -60,7 +60,7 @@ function precision(num, precision) {
 }
 
 module.exports.currencyCodeUTF8ToHex = currencyCode => {
-    if(currencyCode && currencyCode.length == 40) { //remove trailing zeros
+    if(currencyCode && currencyCode.length === 40) { //remove trailing zeros
         while(currencyCode.endsWith("00")) {
             currencyCode = currencyCode.substring(0, currencyCode.length-2);
         }

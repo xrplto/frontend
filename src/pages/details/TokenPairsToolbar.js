@@ -1,18 +1,10 @@
-//import PropTypes from 'prop-types';
-//import { Icon } from '@iconify/react';
-//import searchFill from '@iconify/icons-eva/search-fill';
-//import trash2Fill from '@iconify/icons-eva/trash-2-fill';
-//import roundFilterList from '@iconify/icons-ic/round-filter-list';
 // material
 import { styled } from '@mui/material/styles';
 //import { Link as RouterLink } from 'react-router-dom';
 //import { fCurrency3 } from '../../utils/formatNumber';
 import {
-    Stack,
     Toolbar,
-    Pagination,
-    Select,
-    MenuItem
+    Pagination
 } from '@mui/material';
 
 // ----------------------------------------------------------------------
@@ -41,14 +33,15 @@ const RootStyle = styled(Toolbar)(({ theme }) => ({
     }
 });*/
 
-const CustomSelect = styled(Select)(({ theme }) => ({
+/*const CustomSelect = styled(Select)(({ theme }) => ({
     '& .MuiOutlinedInput-notchedOutline' : {
         border: 'none'
     }
-}));
+}));*/
 
 export default function TokenPairsToolbar({ count, rows, setRows, page, setPage}) {
-    const page_count = Math.floor(count / rows) + 1;
+    let page_count = Math.floor(count / rows) + 1;
+    if (count === rows) page_count = 1;
 
     const start = page * rows + 1;
     let end = start + rows - 1;

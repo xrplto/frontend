@@ -21,7 +21,6 @@ import {
     Grid,
     Tab,
     Tabs,
-    Toolbar,
     Typography
 } from '@mui/material';
 
@@ -61,7 +60,7 @@ function TabPanel(props) {
         >
             {value === index && (
             <Box sx={{ p: 3 }}>
-                <Typography>{children}</Typography>
+                {children}
             </Box>
             )}
         </div>
@@ -87,6 +86,7 @@ export default function Detail(props) {
     const [range, setRange] = useState('1D');
     const [token, setToken] = useState(null); // JSON.parse(localStorage.getItem('selectToken')));
     const [value, setValue] = useState(0);
+    const [pairs, setPairs] = useState([]);
 
     const gotoTabView = (event) => {
         const anchor = (event.target.ownerDocument || document).querySelector(
@@ -159,7 +159,7 @@ export default function Detail(props) {
                         setToken(ret.token);
                     }
                 }).catch(err => {
-                    console.log("error on getting details!!!", err);
+                    console.log("Error on getting details!!!", err);
                 }).then(function () {
                     // always executed
                 });
@@ -168,6 +168,27 @@ export default function Detail(props) {
             getDetail();
 
     }, [md5, range, dispatch]);
+
+    useEffect(() => {
+        function getPairs() {
+            // https://ws.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
+            axios.get(`${BASE_URL}/pairs?md5=${md5}`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        //setCount(ret.pairs.length);
+                        setPairs(ret.pairs);
+                    }
+                }).catch(err => {
+                    console.log("Error on getting pairs!!!", err);
+                }).then(function () {
+                    // always executed
+                });
+        }
+        if (md5)
+            getPairs();
+
+    }, [md5]);
 
     if (!token) {
         return (
@@ -228,7 +249,6 @@ export default function Detail(props) {
                             </Grid>
 
                             <Grid item xs={12} md={6} lg={4}>
-                                {/* <Holders token={token} /> */}
                                 <PriceStatistics token={token} />
                             </Grid>
 
@@ -237,16 +257,12 @@ export default function Detail(props) {
                             </Grid>
 
                             <Grid item xs={12} md={6} lg={4}>
-                                <TokenPairs token={token} />
+                                <TokenPairs token={token} pairs={pairs}/>
                             </Grid>
-
-                            {/* <Grid item xs={12} md={6} lg={4}>
-                                <RadialChart />
-                            </Grid> */}
                         </Grid>
                     </TabPanel>
                     <TabPanel value={value} index={1}>
-                        <HistoryData token={token} />
+                        <HistoryData token={token} pairs={pairs}/>
                     </TabPanel>
                 </Container>
                 <ScrollToTop />

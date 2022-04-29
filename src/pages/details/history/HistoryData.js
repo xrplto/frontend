@@ -6,7 +6,11 @@ import { withStyles } from '@mui/styles';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {
     Alert,
+    FormControl,
+    InputLabel,
     Link,
+    MenuItem,
+    Select,
     Snackbar,
     Stack,
     Table,
@@ -20,6 +24,8 @@ import { tableCellClasses } from "@mui/material/TableCell";
 import HistoryToolbar from './HistoryToolbar';
 import HistoryMoreMenu from './HistoryMoreMenu';
 import { MD5 } from 'crypto-js';
+import { Icon } from '@iconify/react';
+import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
@@ -46,7 +52,14 @@ const CancelTypography = withStyles({
         paddingRight: '3px',
     }
 })(Typography);
+
+const CustomSelect = styled(Select)(({ theme }) => ({
+    // '& .MuiOutlinedInput-notchedOutline' : {
+    //     border: 'none'
+    // }
+}));
 // ----------------------------------------------------------------------
+
 function getPair(issuer, code) {
     // issuer, currencyCode, 'XRP', undefined
     const t1 = 'undefined_XRP';
@@ -57,7 +70,7 @@ function getPair(issuer, code) {
     return MD5(pair).toString();
 }
 
-export default function HistoryData({token}) {
+export default function HistoryData({token, pairs}) {
     const EPOCH_OFFSET = 946684800;
     const BASE_URL = 'https://ws.xrpl.to/api';
     const [page, setPage] = useState(0);
@@ -65,51 +78,74 @@ export default function HistoryData({token}) {
     const [count, setCount] = useState(0);
     const [copied, setCopied] = useState(false);
     const [exchs, setExchs] = useState([]);
+    const [pair, setPair] = useState('');
+    const [vol, setVol] = useState(0);
     const theme = useTheme();
     const {
         acct,
         code,
         // md5
     } = token;
-    const pair = getPair(acct, code);
-    console.log(pair);
+
+    const setPairVolume = (p) => {
+        setPair(p);
+        for (var pi of pairs) {
+            if (pi.pair === p) {
+                if (pi.curr1.currency === code)
+                    setVol(pi.curr1.value);
+                if (pi.curr2.currency === code)
+                    setVol(pi.curr2.value);
+                break;
+            }
+        }
+    }
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return;
         }
-    
         setCopied(false);
     };
 
-    useEffect(() => {
-        function getExchanges() {
-            // XPUNK
-            // https://ws.xrpl.to/api/exchanges?pair=d12119be3c1749470903414dff032761&page=0&limit=5
-            // SOLO
-            // https://ws.xrpl.to/api/exchanges?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
-            axios.get(`${BASE_URL}/exchanges?pair=${pair}&page=${page}&limit=${rows}`)
-                .then(res => {
-                    let ret = res.status === 200 ? res.data : undefined;
-                    if (ret) {
-                        setCount(ret.count);
-                        let exs = [];
-                        let i = 0;
-                        for (var ex of ret.exchs) {
-                            ex.id = i + page * rows + 1;
-                            exs.push(ex);
-                            i++;
-                        }
-                        setExchs(exs);
-                    }
-                }).catch(err => {
-                    console.log("Error on getting exchanges!!!", err);
-                }).then(function () {
-                    // always executed
-                });
+    const handleChangePair = (event, value) => {
+        setPairVolume(event.target.value);
+    }
+
+    function getExchanges() {
+        if (!pair) {
+            setPairVolume(getPair(acct, code));
+            //console.log(pair);
+            return;
         }
+        // XPUNK
+        // https://ws.xrpl.to/api/exchanges?pair=d12119be3c1749470903414dff032761&page=0&limit=5
+        // SOLO
+        // https://ws.xrpl.to/api/exchanges?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
+        axios.get(`${BASE_URL}/exchanges?pair=${pair}&page=${page}&limit=${rows}`)
+            .then(res => {
+                let ret = res.status === 200 ? res.data : undefined;
+                if (ret) {
+                    setCount(ret.count);
+                    let exs = [];
+                    let i = 0;
+                    for (var ex of ret.exchs) {
+                        ex.id = i + page * rows + 1;
+                        exs.push(ex);
+                        i++;
+                    }
+                    setExchs(exs);
+                }
+            }).catch(err => {
+                console.log("Error on getting exchanges!!!", err);
+            }).then(function () {
+                // always executed
+            });
+    }
+
+    useEffect(() => {
+        //if (!pair) setPair(getPair(acct, code));
         getExchanges();
-    }, [page, rows]);
+    }, [page, rows, pair]);
 
     return (
         <StackStyle>
@@ -118,6 +154,45 @@ export default function HistoryData({token}) {
                     Copied
                 </Alert>
             </Snackbar>
+            <Stack direction="row" alignItems="center">
+                <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                    <InputLabel id="demo-select-small">Pairs</InputLabel>
+                    <CustomSelect
+                        labelId="demo-select-small"
+                        id="demo-select-small"
+                        value={pair}
+                        label="Pair"
+                        onChange={handleChangePair}
+                    >
+                        {
+                        pairs.map((row) => {
+                                const {
+                                    pair,
+                                    curr1,
+                                    curr2
+                                } = row;
+
+                                const name1 = curr1.name;
+                                const name2 = curr2.name;
+
+                                return (
+                                    <MenuItem key={pair} value={pair}>
+                                        <Stack direction="row" alignItems='center'>
+                                            <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
+                                            <Icon icon={arrowsExchange} width="16" height="16"/>
+                                            <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{name2}</Typography>
+                                        </Stack>
+                                    </MenuItem>
+                                );
+                            })
+                        }
+                    </CustomSelect>
+                </FormControl>
+                <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="caption">24H Volume:</Typography>
+                    <Typography variant="h5" sx={{ color: '#B72136' }}>{fNumber(vol)}</Typography>
+                </Stack>
+            </Stack>
             <Table stickyHeader sx={{
                 [`& .${tableCellClasses.root}`]: {
                     borderBottom: "1px solid",
