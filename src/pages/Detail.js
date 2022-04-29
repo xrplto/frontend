@@ -20,8 +20,7 @@ import {
     Divider,
     Grid,
     Tab,
-    Tabs,
-    Typography
+    Tabs
 } from '@mui/material';
 
 // ----------------------------------------------------------------------
@@ -176,7 +175,6 @@ export default function Detail(props) {
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
-                        //setCount(ret.pairs.length);
                         setPairs(ret.pairs);
                     }
                 }).catch(err => {

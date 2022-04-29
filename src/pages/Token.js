@@ -127,60 +127,59 @@ export default function Token() {
     const [hasMore, setHasMore] = useState(false);
 
     const status = useSelector(selectStatus);
- 
-    const loadTokens=() => {
-        // https://livenet.xrpl.org/api/v1/token/top
-        // https://ws.xrpl.to/api/tokens/-1
-        // https://github.com/WietseWind/fetch-xrpl-transactions
-        // https://ws.xrpl.to/api/tokens?start=0&limit=100&sortBy=marketcap&sortType=desc
-        const start = page * rows + offset * 20;
-        //console.log(`${offset} Load tokens from ${start+1}`);
-        axios.get(`${BASE_URL}/tokens?start=${start}&limit=20&sortBy=${orderBy}&sortType=${order}&filter=${filterName}`)
-        .then(res => {
-            try {
-                if (res.status === 200 && res.data) {
-                    const ret = res.data;
-                    const exch = ret.exch;
-                    //console.log(ret);
-                    const status = {
-                        session: 0,
-                        USD: exch.USD,
-                        EUR: exch.EUR,
-                        JPY: exch.JPY,
-                        CNY: exch.CNY,
-                        token_count: ret.token_count,
-                        transactions24H: ret.transactions24H,
-                        tradedUSD24H: ret.tradedUSD24H,
-                        tradedXRP24H: ret.tradedXRP24H,
-                        tradedTokens24H: ret.tradedTokens24H,
-                    };
-                    dispatch(update_status(status));
-                    let newTokens;
-                    if (offset === 0) {
-                        newTokens = ret.tokens;
-                        setHasMore(true);
-                    } else {
-                        newTokens = tokens.concat(ret.tokens);
-                    }
-                    setTokens(newTokens);
-
-                    if (ret.tokens.length < 20)
-                        setHasMore(false);
-
-                    if (newTokens.length >= rows)
-                        setHasMore(false);
-                }
-            } catch (error) {
-                console.log(error);
-            }
-        }).catch(err => {
-            console.log("err->>", err);
-        }).then(function () {
-            // always executed
-        });
-    };
 
     useEffect(() => {
+        const loadTokens=() => {
+            // https://livenet.xrpl.org/api/v1/token/top
+            // https://ws.xrpl.to/api/tokens/-1
+            // https://github.com/WietseWind/fetch-xrpl-transactions
+            // https://ws.xrpl.to/api/tokens?start=0&limit=100&sortBy=marketcap&sortType=desc
+            const start = page * rows + offset * 20;
+            //console.log(`${offset} Load tokens from ${start+1}`);
+            axios.get(`${BASE_URL}/tokens?start=${start}&limit=20&sortBy=${orderBy}&sortType=${order}&filter=${filterName}`)
+            .then(res => {
+                try {
+                    if (res.status === 200 && res.data) {
+                        const ret = res.data;
+                        const exch = ret.exch;
+                        //console.log(ret);
+                        const status = {
+                            session: 0,
+                            USD: exch.USD,
+                            EUR: exch.EUR,
+                            JPY: exch.JPY,
+                            CNY: exch.CNY,
+                            token_count: ret.token_count,
+                            transactions24H: ret.transactions24H,
+                            tradedUSD24H: ret.tradedUSD24H,
+                            tradedXRP24H: ret.tradedXRP24H,
+                            tradedTokens24H: ret.tradedTokens24H,
+                        };
+                        dispatch(update_status(status));
+                        let newTokens;
+                        if (offset === 0) {
+                            newTokens = ret.tokens;
+                            setHasMore(true);
+                        } else {
+                            newTokens = tokens.concat(ret.tokens);
+                        }
+                        setTokens(newTokens);
+    
+                        if (ret.tokens.length < 20)
+                            setHasMore(false);
+    
+                        if (newTokens.length >= rows)
+                            setHasMore(false);
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            }).catch(err => {
+                console.log("err->>", err);
+            }).then(function () {
+                // always executed
+            });
+        };
         if (load) {
             setLoad(false);
             loadTokens();
@@ -285,7 +284,7 @@ export default function Token() {
                                 amt,
                                 trline,
                                 vol24h,
-                                vol24hamt,
+                                //vol24hamt,
                                 vol24htx,
                                 //holders,
                                 //offers,

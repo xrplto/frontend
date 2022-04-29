@@ -1,6 +1,6 @@
 // material
-import axios from 'axios'
-import { useState, useEffect } from 'react';
+//import axios from 'axios'
+import { useState/*, useEffect*/ } from 'react';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 //import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {
@@ -46,15 +46,15 @@ const badge24hStyle = {
 };
 
 export default function TokenPairs({token, pairs}) {
-    const BASE_URL = 'https://ws.xrpl.to/api';
+    //const BASE_URL = 'https://ws.xrpl.to/api';
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(5);
     const theme = useTheme();
-    const {
-        //acct,
-        //code,
-        md5
-    } = token;
+    // const {
+    //     acct,
+    //     code,
+    //     md5
+    // } = token;
 
     if (!pairs || pairs.length === 0)
         return (

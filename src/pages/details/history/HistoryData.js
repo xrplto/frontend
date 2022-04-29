@@ -60,6 +60,20 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 }));
 // ----------------------------------------------------------------------
 
+const badge24hStyle = {
+    display: 'inline-block',
+    marginLeft: '4px',
+    marginRight: '4px',
+    color: '#C4CDD5',
+    fontSize: '11px',
+    fontWeight: '500',
+    lineHeight: '18px',
+    //backgroundColor: '#323546',
+    borderRadius: '4px',
+    border: '1px solid #323546',
+    padding: '1px 4px'
+};
+
 function getPair(issuer, code) {
     // issuer, currencyCode, 'XRP', undefined
     const t1 = 'undefined_XRP';
@@ -111,39 +125,37 @@ export default function HistoryData({token, pairs}) {
         setPairVolume(event.target.value);
     }
 
-    function getExchanges() {
-        if (!pair) {
-            setPairVolume(getPair(acct, code));
-            //console.log(pair);
-            return;
-        }
-        // XPUNK
-        // https://ws.xrpl.to/api/exchanges?pair=d12119be3c1749470903414dff032761&page=0&limit=5
-        // SOLO
-        // https://ws.xrpl.to/api/exchanges?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
-        axios.get(`${BASE_URL}/exchanges?pair=${pair}&page=${page}&limit=${rows}`)
-            .then(res => {
-                let ret = res.status === 200 ? res.data : undefined;
-                if (ret) {
-                    setCount(ret.count);
-                    let exs = [];
-                    let i = 0;
-                    for (var ex of ret.exchs) {
-                        ex.id = i + page * rows + 1;
-                        exs.push(ex);
-                        i++;
-                    }
-                    setExchs(exs);
-                }
-            }).catch(err => {
-                console.log("Error on getting exchanges!!!", err);
-            }).then(function () {
-                // always executed
-            });
-    }
-
     useEffect(() => {
-        //if (!pair) setPair(getPair(acct, code));
+        function getExchanges() {
+            if (!pair) {
+                setPairVolume(getPair(acct, code));
+                //console.log(pair);
+                return;
+            }
+            // XPUNK
+            // https://ws.xrpl.to/api/exchanges?pair=d12119be3c1749470903414dff032761&page=0&limit=5
+            // SOLO
+            // https://ws.xrpl.to/api/exchanges?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
+            axios.get(`${BASE_URL}/exchanges?pair=${pair}&page=${page}&limit=${rows}`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        setCount(ret.count);
+                        let exs = [];
+                        let i = 0;
+                        for (var ex of ret.exchs) {
+                            ex.id = i + page * rows + 1;
+                            exs.push(ex);
+                            i++;
+                        }
+                        setExchs(exs);
+                    }
+                }).catch(err => {
+                    console.log("Error on getting exchanges!!!", err);
+                }).then(function () {
+                    // always executed
+                });
+        }
         getExchanges();
     }, [page, rows, pair]);
 
@@ -181,6 +193,8 @@ export default function HistoryData({token, pairs}) {
                                             <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
                                             <Icon icon={arrowsExchange} width="16" height="16"/>
                                             <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{name2}</Typography>
+                                            <span style={badge24hStyle}>24h</span>
+                                            <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{fNumber(curr1.value)}</Typography>
                                         </Stack>
                                     </MenuItem>
                                 );
@@ -188,10 +202,10 @@ export default function HistoryData({token, pairs}) {
                         }
                     </CustomSelect>
                 </FormControl>
-                <Stack direction="row" spacing={1} alignItems="center">
+                {/* <Stack direction="row" spacing={1} alignItems="center">
                     <Typography variant="caption">24H Volume:</Typography>
                     <Typography variant="h5" sx={{ color: '#B72136' }}>{fNumber(vol)}</Typography>
-                </Stack>
+                </Stack> */}
             </Stack>
             <Table stickyHeader sx={{
                 [`& .${tableCellClasses.root}`]: {
