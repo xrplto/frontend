@@ -24,6 +24,7 @@ import { tableCellClasses } from "@mui/material/TableCell";
 import MarketToolbar from './MarketToolbar';
 import MarketMoreMenu from './MarketMoreMenu';
 import PairsList from './PairsList';
+import OrdersList from './OrdersList';
 import { MD5 } from 'crypto-js';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
@@ -174,99 +175,7 @@ export default function MarketData({token, pairs}) {
                 </Grid>
 
                 <Grid item xs={12} md={8} lg={8}>
-                    <Table stickyHeader sx={{
-                        [`& .${tableCellClasses.root}`]: {
-                            borderBottom: "1px solid",
-                            borderBottomColor: theme.palette.divider
-                        }
-                    }}>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell align="left">Price</TableCell>
-                                <TableCell align="left">Volume</TableCell>
-                                <TableCell align="left">Time</TableCell>
-                                <TableCell align="left">Ledger</TableCell>
-                                <TableCell align="left">Sequence</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                        {
-                            // exchs.slice(page * rows, page * rows + rows)
-                            exchs.map((row) => {
-                                    const {
-                                        _id,
-                                        hash,
-                                        maker,
-                                        taker,
-                                        ledger,
-                                        seq,
-                                        takerPaid,
-                                        takerGot,
-                                        date,
-                                        cancel,
-                                        } = row;
-                                    let value;
-                                    let exch;
-                                    let buy;
-                                    if (takerPaid.issuer === acct && takerPaid.currency === code) {
-                                        // SELL, Red
-                                        const t = parseFloat(takerGot.value);
-                                        value = parseFloat(takerPaid.value);
-                                        exch = t / value;
-                                        buy = false;
-                                    } else {
-                                        // BUY, Green
-                                        const t = parseFloat(takerPaid.value);
-                                        value = parseFloat(takerGot.value);
-                                        exch = t / value;
-                                        buy = true;
-                                    }
-                                    const nDate = new Date((date + EPOCH_OFFSET) * 1000);
-                                    const year = nDate.getFullYear();
-                                    const month = nDate.getMonth() + 1;
-                                    const day = nDate.getDate();
-                                    const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                                    const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                                    const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-
-                                    //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
-                                    //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
-                                    const strDate = `${year}-${month}-${day}`;
-                                    const strTime = `${hour}:${min}:${sec}`;
-                                    return (
-                                        <TableRow
-                                            hover
-                                            key={_id}
-                                            tabIndex={-1}
-                                            sx={{
-                                                [`& .${tableCellClasses.root}`]: {
-                                                    color: (buy ? '#007B55' : '#B72136')
-                                                }
-                                            }}
-                                        >
-                                            <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
-                                            <TableCell align="left"><Typography variant="subtitle2">{fNumber(value)}</Typography></TableCell>
-                                            <TableCell align="left">
-                                                <Stack>
-                                                    <Typography variant="subtitle2">{strTime}</Typography>
-                                                    <Typography variant="caption">{strDate}</Typography>
-                                                </Stack>
-                                                
-                                            </TableCell>
-                                            <TableCell align="left">{ledger}</TableCell>
-                                            <TableCell align="left">{seq}</TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                        </TableBody>
-                    </Table>
-                    <MarketToolbar
-                        count={count}
-                        rows={rows}
-                        setRows={setRows}
-                        page={page}
-                        setPage={setPage}
-                    />
+                    <OrdersList token={token} pairs={pairs} />
                 </Grid>
             </Grid>
         </StackStyle>

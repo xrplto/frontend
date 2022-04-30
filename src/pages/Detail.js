@@ -264,7 +264,7 @@ export default function Detail(props) {
                             </Grid>
 
                             <Grid item xs={12} md={6} lg={4}>
-                                <TokenPairs token={token} pairs={pairs}/>
+                                {/* <TokenPairs token={token} pairs={pairs}/> */}
                             </Grid>
                         </Grid>
                     </TabPanel>

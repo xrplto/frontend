@@ -6,7 +6,6 @@ import { withStyles } from '@mui/styles';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {
     Avatar,
-    IconButton,
     Link,
     ListItemText,
     MenuItem,
@@ -76,7 +75,7 @@ const badgeDEXStyle = {
     padding: '1px 4px'
 };
 
-export default function PairsList({token, pairs}) {
+export default function OrdersList({token, pairs}) {
     const BASE_URL = 'https://ws.xrpl.to/api';
     const [pair, setPair] = useState('');
     const theme = useTheme();
@@ -105,7 +104,7 @@ export default function PairsList({token, pairs}) {
 
     return (
         <StackStyle>
-            <Typography variant="h5" sx={{ pl: 2, pt: 2 }}>Pairs<span style={badge24hStyle}>24h</span></Typography>
+            <Typography variant="h5" sx={{ pl: 2, pt: 2 }}>Order Book</Typography>
             <Table stickyHeader sx={{
                 [`& .${tableCellClasses.root}`]: {
                     borderBottom: "1px solid",
@@ -114,9 +113,9 @@ export default function PairsList({token, pairs}) {
             }}>
                 <TableHead>
                     <TableRow>
-                        <TableCell align="left">Pair</TableCell>
-                        <TableCell align="left">Volume<span style={badge24hStyle}>24h</span></TableCell>
-                        <TableCell align="left"><span style={badgeDEXStyle}>DEX</span></TableCell>
+                        <TableCell align="left">Price</TableCell>
+                        <TableCell align="left">Volume</TableCell>
+                        <TableCell align="left">Total</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -175,30 +174,7 @@ export default function PairsList({token, pairs}) {
                                     <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{fNumber(curr1.value)}</Typography>
                                 </TableCell>
                                 <TableCell align="left" sx={{ p:0 }}>
-                                    <Stack direction="row">
-                                        <Link
-                                            underline="none"
-                                            color="inherit"
-                                            target="_blank"
-                                            href={soloDexURL}
-                                            rel="noreferrer noopener"
-                                        >
-                                            <IconButton edge="end" aria-label="solo">
-                                                <Avatar alt="sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
-                                            </IconButton>
-                                        </Link>
-                                        <Link
-                                            underline="none"
-                                            color="inherit"
-                                            target="_blank"
-                                            href={xummDexURL}
-                                            rel="noreferrer noopener"
-                                        >
-                                            <IconButton edge="end" aria-label="solo">
-                                                <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
-                                            </IconButton>
-                                        </Link>
-                                    </Stack>
+                                    
                                 </TableCell>
                             </TableRow>
                         );

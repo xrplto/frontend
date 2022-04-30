@@ -21,12 +21,12 @@ export default function LinkDesc({token}) {
         domain,
         twitter,
         acct,
+        code,
         /*
         id,
         kyc,
         holders,
         offers,
-        code,
         date,
         amt,
         trline,        
@@ -74,7 +74,7 @@ export default function LinkDesc({token}) {
                 </Grid>
             )}
             <Grid item sx={{pb:1}}>
-                <ExplorersMenu acct={acct}/>
+                <ExplorersMenu acct={acct} code={code}/>
             </Grid>
             <Grid item sx={{pb:1}}>
                 <Chip label="Chat" sx={{pl:0.5,pr:0.5}}

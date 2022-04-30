@@ -25,7 +25,7 @@ const LinkChip = styled(Chip)(({ theme }) => ({
 }));
 
 
-export default function ExplorersMenu({acct}) {
+export default function ExplorersMenu({acct, code}) {
     const [anchorEl, setAnchorEl] = useState(null);
     const [open, setOpen] = useState(false);
 
@@ -37,24 +37,11 @@ export default function ExplorersMenu({acct}) {
         setOpen(true);
     };
 
-    const handleClose = (e) => {
-        if (e.currentTarget.localName !== "ul") {
-            const menu = document.getElementById("simple-menu").children[2];
-            const menuBoundary = {
-                left: menu.offsetLeft,
-                top: e.currentTarget.offsetTop + e.currentTarget.offsetHeight,
-                right: menu.offsetLeft + menu.offsetHeight,
-                bottom: menu.offsetTop + menu.offsetHeight
-            };
-            if (
-                e.clientX >= menuBoundary.left &&
-                e.clientX <= menuBoundary.right &&
-                e.clientY <= menuBoundary.bottom &&
-                e.clientY >= menuBoundary.top
-            ) {
-                return;
-            }
-        }
+    const handleOpen1 = (event) => {
+        setOpen(true);
+    };
+
+    const handleClose = (event) => {
         setOpen(false);
     };
 
@@ -85,6 +72,7 @@ export default function ExplorersMenu({acct}) {
                     horizontal: "center"
                 }}
                 MenuListProps={{
+                    onMouseOver: handleOpen1,
                     onMouseLeave: handleClose
                 }}
                 // PaperProps={{
@@ -107,12 +95,48 @@ export default function ExplorersMenu({acct}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
+                    href={`https://gatehub.net/explorer/${acct}`}
+                    rel="noreferrer noopener"
+                >
+                    <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="xumm" src="/static/gatehub.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="GateHub" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
                     href={`https://xrpscan.com/account/${acct}`}
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() =>  handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xrpscan" src="/static/xrpscan.png" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPScan" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://xumm.app/detect/xapp:xumm.dex?issuer=${acct}&currency=${code}`}
+                    rel="noreferrer noopener"
+                >
+                    <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="Xumm DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://sologenic.org/trade?network=mainnet&market=${code}%2B${acct}%2FXRP`}
+                    rel="noreferrer noopener"
+                >
+                    <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="sologenic" src="/static/solo.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="Sologenic DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
             </Menu>
