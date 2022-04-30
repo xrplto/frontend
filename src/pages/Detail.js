@@ -13,6 +13,7 @@ import PriceStatistics from './details/PriceStatistics';
 import Description from './details/Description';
 import TokenPairs from './details/TokenPairs';
 import {HistoryData} from './details/history';
+import {MarketData} from './details/market';
 
 import {
     Box,
@@ -170,6 +171,7 @@ export default function Detail(props) {
 
     useEffect(() => {
         function getPairs() {
+            if (!md5) return;
             // https://ws.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
             axios.get(`${BASE_URL}/pairs?md5=${md5}`)
                 .then(res => {
@@ -183,8 +185,14 @@ export default function Detail(props) {
                     // always executed
                 });
         }
-        if (md5)
-            getPairs();
+
+        getPairs();
+
+        const timer = setInterval(() => getPairs(), 10000);
+
+        return () => {
+            clearInterval(timer);
+        }
 
     }, [md5]);
 
@@ -238,7 +246,8 @@ export default function Detail(props) {
                     <div id="back-to-top-tab-anchor" />
                     <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
                         <Tab label="Overview" {...a11yProps(0)} />
-                        <Tab label="Historical Data" {...a11yProps(1)} />
+                        <Tab label="Market" {...a11yProps(1)} />
+                        <Tab label="Historical Data" {...a11yProps(2)} />
                     </Tabs>
                     <TabPanel value={value} index={0}>
                         <Grid container spacing={3} sx={{p:0}}>
@@ -260,6 +269,9 @@ export default function Detail(props) {
                         </Grid>
                     </TabPanel>
                     <TabPanel value={value} index={1}>
+                        <MarketData token={token} pairs={pairs}/>
+                    </TabPanel>
+                    <TabPanel value={value} index={2}>
                         <HistoryData token={token} pairs={pairs}/>
                     </TabPanel>
                 </Container>

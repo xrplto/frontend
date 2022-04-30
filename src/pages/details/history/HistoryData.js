@@ -157,6 +157,12 @@ export default function HistoryData({token, pairs}) {
                 });
         }
         getExchanges();
+
+        const timer = setInterval(() => getExchanges(), 10000);
+
+        return () => {
+            clearInterval(timer);
+        }
     }, [page, rows, pair]);
 
     return (

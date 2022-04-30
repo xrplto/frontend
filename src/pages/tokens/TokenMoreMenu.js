@@ -94,7 +94,7 @@ export default function TokenMoreMenu({acct, currency}) {
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xumm" src="/static/solo.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="sologenic" src="/static/solo.jpg" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Sologenic DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>

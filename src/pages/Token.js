@@ -235,7 +235,7 @@ export default function Token() {
     // style={{border: '1px solid red'}}
 
     return (
-        <Page title="XRPL Tokens/Currencies Prices, Charts And Market Capitalizations">
+        <Page title="XRPL Token Prices, Charts, Market Volume And Transaction Activity">
             <Container maxWidth="xl">
 
             <TopMark md5={'NONE'}/>

@@ -1,4 +1,4 @@
-## XRPL Tokens/Currencies Prices, Charts And Market Capitalizations [xrpl.to](https://xrpl.to) (Front-End)
+## XRPL Token Prices, Charts, Market Volume And Transaction Activity | [XRPL.TO](https://xrpl.to) (Front-End)
 
 ## Setup
 
