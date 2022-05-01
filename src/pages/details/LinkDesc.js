@@ -3,7 +3,6 @@ import link45deg from '@iconify/icons-bi/link-45deg';
 import chatIcon from '@iconify/icons-bi/chat';
 import linkExternal from '@iconify/icons-charm/link-external';
 import codeIcon from '@iconify/icons-bytesize/code';
-import personFill from '@iconify/icons-bi/person-fill';
 import chevronDown from '@iconify/icons-akar-icons/chevron-down';
 import twitterFill from '@iconify/icons-akar-icons/twitter-fill';
 
@@ -14,6 +13,7 @@ import {
 } from '@mui/material';
 
 import ExplorersMenu from './ExplorersMenu';
+import CommunityMenu from './CommunityMenu';
 
 export default function LinkDesc({token}) {
     const {
@@ -89,10 +89,7 @@ export default function LinkDesc({token}) {
                     icon={<Icon icon={codeIcon} width="16" height="16" />} />
             </Grid>
             <Grid item sx={{pb:1}}>
-                <Chip label="Community" sx={{pl:0.5,pr:0.5}}
-                    deleteIcon={<Icon icon={chevronDown} width="16" height="16"/>}
-                    onDelete={handleDelete} onClick={handleDelete}
-                    icon={<Icon icon={personFill} width="16" height="16" />} />
+                <CommunityMenu acct={acct} code={code}/>
             </Grid>
         </Grid>
     );

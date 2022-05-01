@@ -6,7 +6,7 @@ import { Link, Menu, MenuItem, IconButton, Avatar, ListItemText } from '@mui/mat
 
 // ----------------------------------------------------------------------
 
-export default function MarketMoreMenu({hash}) {
+export default function TradeMoreMenu({hash}) {
     const ref = useRef(null);
     const [isOpen, setIsOpen] = useState(false);
 

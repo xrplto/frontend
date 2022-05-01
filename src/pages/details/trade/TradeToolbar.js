@@ -25,7 +25,7 @@ const CustomSelect = styled(Select)(({ theme }) => ({
     }
 }));
 
-export default function MarketToolbar({ count, rows, setRows, page, setPage}) {
+export default function TradeToolbar({ count, rows, setRows, page, setPage}) {
     const page_count = Math.floor(count / rows) + 1;
 
     const start = page * rows + 1;

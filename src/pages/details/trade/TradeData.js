@@ -21,7 +21,9 @@ import {
     Typography
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
-import PairsList from './PairsList';
+import TradeToolbar from './TradeToolbar';
+import TradeMoreMenu from './TradeMoreMenu';
+import OrdersList from './OrdersList';
 import { MD5 } from 'crypto-js';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
@@ -83,7 +85,7 @@ function getPair(issuer, code) {
     return MD5(pair).toString();
 }
 
-export default function MarketData({token, pairs}) {
+export default function TradeData({token, pairs}) {
     const EPOCH_OFFSET = 946684800;
     const BASE_URL = 'https://ws.xrpl.to/api';
     const [page, setPage] = useState(0);
@@ -167,13 +169,9 @@ export default function MarketData({token, pairs}) {
     return (
         <StackStyle>
             <Grid container spacing={3} sx={{p:0}}>
-                <Grid item xs={12} md={12} lg={12} sx={{pl:0}}>
-                    <PairsList token={token} pairs={pairs} />
-                </Grid>
-
-                {/* <Grid item xs={12} md={8} lg={8}>
+                <Grid item xs={12} md={8} lg={8}>
                     <OrdersList token={token} pairs={pairs} />
-                </Grid> */}
+                </Grid>
             </Grid>
         </StackStyle>
     );

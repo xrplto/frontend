@@ -115,28 +115,43 @@ export default function ExplorersMenu({acct, code}) {
                         <ListItemText primary="XRPScan" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
+                {/* https://explorer.xrplf.org/r4sHHquyvSxozK5HgCShR7ZqpZE5wzvjHt
+                https://livenet.xrpl.org/accounts/r4sHHquyvSxozK5HgCShR7ZqpZE5wzvjHt
+                https://xrplorer.com/account/r4sHHquyvSxozK5HgCShR7ZqpZE5wzvjHt */}
                 <Link
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://xumm.app/detect/xapp:xumm.dex?issuer=${acct}&currency=${code}`}
+                    href={`https://explorer.xrplf.org/${acct}`}
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="Xumm DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        <Avatar alt="xrplf" src="/static/explorerxrplf.png" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="XRP Ledger Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
                 <Link
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://sologenic.org/trade?network=mainnet&market=${code}%2B${acct}%2FXRP`}
+                    href={`https://livenet.xrpl.org/accounts/${acct}`}
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="sologenic" src="/static/solo.jpg" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="Sologenic DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        <Avatar alt="sologenic" src="/static/livenetxrplorg.png" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="XRPL Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://xrplorer.com/account/${acct}`}
+                    rel="noreferrer noopener"
+                >
+                    <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="xumm" src="/static/xrplorer.png" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="XRPLORER" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
             </Menu>

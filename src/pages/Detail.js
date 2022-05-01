@@ -11,9 +11,10 @@ import ExtraDesc from "./details/ExtraDesc";
 import PriceChart from './details/PriceChart';
 import PriceStatistics from './details/PriceStatistics';
 import Description from './details/Description';
-import TokenPairs from './details/TokenPairs';
 import {HistoryData} from './details/history';
 import {MarketData} from './details/market';
+import {TradeData} from './details/trade';
+import DocumentMeta from 'react-document-meta';
 
 import {
     Box,
@@ -219,63 +220,83 @@ export default function Detail(props) {
         let user = token.user;
         if (!user) user = name;
 
+        const meta = {
+            title: `${user} price today, ${name} to USD live, volume, trading history, markets and chart`,
+            description: `Get the latest XRPL DEX ${user} price, 24-hour volume, trading pairs, history, charts, and data today in real-time.`,
+            canonical: `https://xrpl.to/${exMD5}`,
+            'og:image': `/static/tokens/${name}.jpg`,
+            meta: {
+                'og:image': `/static/tokens/${name}.jpg`,
+                charset: 'utf-8',
+                name: {
+                    keywords: 'react,meta,document,html,tags'
+                }
+            }
+        }
+
         // sx={{borderRight: '1px solid #323546'}}
         return (
-            <Page title={`${user} price today, ${name} to USD live, marketcap and chart `}>
-                <TopMark md5={md5}/>
-                <Container maxWidth="xl">
-                    <Grid item container direction="row" >
-                        <Grid item xs={12} md={6} lg={5} sx={{ mt: 3 }}>
-                            <UserDesc token={token} id={id} sort={sort} />
-                        </Grid>
-                        
-                        <Grid item xs={12} md={6} lg={7} sx={{ mt: 3 }}>
-                            <PriceDesc token={token} />
-                        </Grid>
-
-                        <Grid item xs={12} md={12} lg={5} sx={{ mt: 2 }}>
-                            <LinkDesc token={token} />
-                        </Grid>
-
-                        <Grid item xs={12} md={12} lg={7} sx={{ mt: 2 }}>
-                            <ExtraDesc token={token} />
-                        </Grid>
-                    </Grid>
-
-                    <Divider orientation="horizontal" sx={{mt:2,mb:2}} variant="middle" flexItem />
-                    <div id="back-to-top-tab-anchor" />
-                    <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-                        <Tab label="Overview" {...a11yProps(0)} />
-                        <Tab label="Market" {...a11yProps(1)} />
-                        <Tab label="Historical Data" {...a11yProps(2)} />
-                    </Tabs>
-                    <TabPanel value={value} index={0}>
-                        <Grid container spacing={3} sx={{p:0}}>
-                            <Grid item xs={12} md={6} lg={8} sx={{pl:0}}>
-                                <PriceChart history={history} token={token} range={range} setRange={setRange} />
+            <Page title={`${user} price today, ${name} to USD live, volume, trading history, markets and chart `}>
+                <DocumentMeta {...meta} >
+                    <TopMark md5={md5}/>
+                    <Container maxWidth="xl">
+                        <Grid item container direction="row" >
+                            <Grid item xs={12} md={6} lg={5} sx={{ mt: 3 }}>
+                                <UserDesc token={token} id={id} sort={sort} />
+                            </Grid>
+                            
+                            <Grid item xs={12} md={6} lg={7} sx={{ mt: 3 }}>
+                                <PriceDesc token={token} />
                             </Grid>
 
-                            <Grid item xs={12} md={6} lg={4}>
-                                <PriceStatistics token={token} />
+                            <Grid item xs={12} md={12} lg={5} sx={{ mt: 2 }}>
+                                <LinkDesc token={token} />
                             </Grid>
 
-                            <Grid item xs={12} md={6} lg={8}>
-                                <Description token={token} />
-                            </Grid>
-
-                            <Grid item xs={12} md={6} lg={4}>
-                                {/* <TokenPairs token={token} pairs={pairs}/> */}
+                            <Grid item xs={12} md={12} lg={7} sx={{ mt: 2 }}>
+                                <ExtraDesc token={token} />
                             </Grid>
                         </Grid>
-                    </TabPanel>
-                    <TabPanel value={value} index={1}>
-                        <MarketData token={token} pairs={pairs}/>
-                    </TabPanel>
-                    <TabPanel value={value} index={2}>
-                        <HistoryData token={token} pairs={pairs}/>
-                    </TabPanel>
-                </Container>
-                <ScrollToTop />
+
+                        <Divider orientation="horizontal" sx={{mt:2,mb:2}} variant="middle" flexItem />
+                        <div id="back-to-top-tab-anchor" />
+                        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+                            <Tab label="Overview" {...a11yProps(0)} />
+                            <Tab label="Market" {...a11yProps(1)} />
+                            <Tab label="Trade" {...a11yProps(2)} />
+                            <Tab label="Historical Data" {...a11yProps(3)} />
+                        </Tabs>
+                        <TabPanel value={value} index={0}>
+                            <Grid container spacing={3} sx={{p:0}}>
+                                <Grid item xs={12} md={6} lg={8} sx={{pl:0}}>
+                                    <PriceChart history={history} token={token} range={range} setRange={setRange} />
+                                </Grid>
+
+                                <Grid item xs={12} md={6} lg={4}>
+                                    <PriceStatistics token={token} />
+                                </Grid>
+
+                                <Grid item xs={12} md={6} lg={8}>
+                                    <Description token={token} />
+                                </Grid>
+
+                                <Grid item xs={12} md={6} lg={4}>
+                                    {/* <TokenPairs token={token} pairs={pairs}/> */}
+                                </Grid>
+                            </Grid>
+                        </TabPanel>
+                        <TabPanel value={value} index={1}>
+                            <MarketData token={token} pairs={pairs}/>
+                        </TabPanel>
+                        <TabPanel value={value} index={2}>
+                            <TradeData token={token} pairs={pairs}/>
+                        </TabPanel>
+                        <TabPanel value={value} index={3}>
+                            <HistoryData token={token} pairs={pairs}/>
+                        </TabPanel>
+                    </Container>
+                    <ScrollToTop />
+                </DocumentMeta>
             </Page>
         );
     }

@@ -19,8 +19,8 @@ import {
     Typography
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
-import MarketToolbar from './MarketToolbar';
-import MarketMoreMenu from './MarketMoreMenu';
+import TradeToolbar from './TradeToolbar';
+import TradeMoreMenu from './TradeMoreMenu';
 import { MD5 } from 'crypto-js';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
