@@ -11,14 +11,14 @@ import {
     TableCell
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
-import BearBullTypography from '../../layouts/BearBullTypography';
+import BearBullTypography from '../../../layouts/BearBullTypography';
 // ----------------------------------------------------------------------
 // utils
-import { fNumber } from '../../utils/formatNumber';
+import { fNumber } from '../../../utils/formatNumber';
 // ----------------------------------------------------------------------
 // Redux
 import { useSelector/*, useDispatch*/ } from "react-redux";
-import { selectStatus } from "../../redux/statusSlice";
+import { selectStatus } from "../../../redux/statusSlice";
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -143,7 +143,6 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                 </TableBody>
             </Table>
-            {/* <ReactApexChart type="pie" series={CHART_DATA} options={chartOptions} height={280} /> */}
         </StackStyle>
     );
 }

@@ -1,17 +1,11 @@
 // material
-import axios from 'axios'
-import { useState, useEffect } from 'react';
-import { alpha, styled, useTheme } from '@mui/material/styles';
-import { withStyles } from '@mui/styles';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
+//import { useState, useEffect } from 'react';
+import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 import {
     Avatar,
     Box,
     IconButton,
     Link,
-    ListItemText,
-    MenuItem,
-    Select,
     Stack,
     Table,
     TableBody,
@@ -39,11 +33,6 @@ const StackStyle = styled(Stack)(({ theme }) => ({
     //backgroundColor: alpha("#919EAB", 0.03),
 }));
 
-const CustomSelect = styled(Select)(({ theme }) => ({
-    // '& .MuiOutlinedInput-notchedOutline' : {
-    //     border: 'none'
-    // }
-}));
 // ----------------------------------------------------------------------
 
 const badge24hStyle = {
@@ -82,13 +71,12 @@ function truncate(str, n){
 
 export default function PairsList({token, pairs}) {
     const BASE_URL = 'https://ws.xrpl.to/api';
-    const [pair, setPair] = useState('');
     const theme = useTheme();
-    const {
-        acct,
-        code,
-        // md5
-    } = token;
+    // const {
+    //     acct,
+    //     code,
+    //     md5
+    // } = token;
     // https://ws.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
     return (
         <StackStyle>

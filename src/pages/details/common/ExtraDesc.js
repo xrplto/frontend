@@ -1,12 +1,11 @@
-//import { useState } from 'react';
 import { withStyles } from '@mui/styles';
-import { /*alpha, styled,*/ useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 
 import { Icon } from '@iconify/react';
 import infoFilled from '@iconify/icons-ep/info-filled';
-import { selectStatus } from "../../redux/statusSlice";
-import { fNumber } from '../../utils/formatNumber';
-import { useSelector/*, useDispatch*/ } from "react-redux";
+import { selectStatus } from "../../../redux/statusSlice";
+import { fNumber } from '../../../utils/formatNumber';
+import { useSelector } from "react-redux";
 import {
     Divider,
     Grid,
@@ -14,12 +13,6 @@ import {
     Tooltip,
     Typography
 } from '@mui/material';
-
-// const ActionButton = withStyles({
-//     root: {
-//       backgroundColor: "#007B55"
-//     }
-// })(Button);
 
 const MarketTypography = withStyles({
     root: {
@@ -48,9 +41,8 @@ export default function ExtraDesc({token}) {
         amt,
         exch,
         vol24h,
-        vol24hamt,
+        /*vol24hamt,
         vol24htx,
-        /*
         holders,
         offers,
         id

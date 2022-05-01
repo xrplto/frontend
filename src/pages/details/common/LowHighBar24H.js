@@ -1,16 +1,13 @@
 import * as React from 'react';
-//import { useContext } from 'react'
-//import { useState, useEffect } from 'react';
-//import Context from '../Context'
 // material
 import { styled/*, useTheme*/ } from '@mui/material/styles';
 import { Box, Slider, Stack, Typography } from '@mui/material';
 // components
 //
-import { fNumber } from '../utils/formatNumber';
+import { fNumber } from '../../../utils/formatNumber';
 // ----------------------------------------------------------------------
 import { useSelector } from "react-redux";
-import { selectStatus } from "../redux/statusSlice";
+import { selectStatus } from "../../../redux/statusSlice";
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 const LowhighBarSlider = styled(Slider)(({ theme }) => ({

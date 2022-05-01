@@ -4,13 +4,8 @@ import { useParams/*, useSearchParams*/ } from "react-router-dom";
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
 
-import UserDesc from "./details/UserDesc";
-import PriceDesc from "./details/PriceDesc";
-import LinkDesc from "./details/LinkDesc";
-import ExtraDesc from "./details/ExtraDesc";
-import PriceChart from './details/PriceChart';
-import PriceStatistics from './details/PriceStatistics';
-import Description from './details/Description';
+import {UserDesc, PriceDesc, LinkDesc, ExtraDesc} from "./details/common"
+import {PriceChart, PriceStatistics, Description} from './details/overview';
 import {HistoryData} from './details/history';
 import {MarketData} from './details/market';
 import {TradeData} from './details/trade';
@@ -281,7 +276,6 @@ export default function Detail(props) {
                                 </Grid>
 
                                 <Grid item xs={12} md={6} lg={4}>
-                                    {/* <TokenPairs token={token} pairs={pairs}/> */}
                                 </Grid>
                             </Grid>
                         </TabPanel>

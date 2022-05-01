@@ -1,8 +1,4 @@
-//import { useState } from 'react';
-import { withStyles } from '@mui/styles';
-import { /*useTheme, styled,*/ alpha } from '@mui/material/styles';
-
-import { fCurrency5, fPercent, fNumber } from '../../utils/formatNumber';
+import { fPercent, fNumber } from '../../../utils/formatNumber';
 
 import {
     CardHeader,
@@ -12,13 +8,7 @@ import {
 } from '@mui/material';
 
 import { useSelector/*, useDispatch*/ } from "react-redux";
-import { selectStatus } from "../../redux/statusSlice";
-
-const DescTypography = withStyles({
-    root: {
-        color: alpha('#DFE3E8', 0.7)
-    }
-})(Typography);
+import { selectStatus } from "../../../redux/statusSlice";
 
 export default function Description({token}) {
     const status = useSelector(selectStatus);

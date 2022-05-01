@@ -1,4 +1,4 @@
-import { fNumber } from '../../utils/formatNumber';
+import { fNumber } from '../../../utils/formatNumber';
 
 import {
     Avatar,
@@ -8,10 +8,10 @@ import {
     Typography
 } from '@mui/material';
 
-import { useSelector/*, useDispatch*/ } from "react-redux";
-import { selectStatus } from "../../redux/statusSlice";
-import BearBullChip from '../../layouts/BearBullChip';
-import LowHighBar24H from '../../layouts/LowHighBar24H';
+import { useSelector } from "react-redux";
+import { selectStatus } from "../../../redux/statusSlice";
+import BearBullChip from './BearBullChip';
+import LowHighBar24H from './LowHighBar24H';
 
 export default function PriceDesc({token}) {
     const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';

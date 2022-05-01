@@ -6,7 +6,7 @@ import caretUp from '@iconify/icons-bx/caret-up';
 // material
 import { Chip, Tooltip, Typography } from '@mui/material';
 //import {styled, alpha, useTheme } from '@mui/material/styles';
-import { fPercent } from '../utils/formatNumber';
+import { fPercent } from '../../../utils/formatNumber';
 // ----------------------------------------------------------------------
 
 const BearishChip = withStyles({
