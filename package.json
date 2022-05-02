@@ -26,6 +26,7 @@
     ]
   },
   "dependencies": {
+    "buffer": "^6.0.3",
     "react-document-meta": "^3.0.0-beta.2",
     "react-copy-to-clipboard": "^5.1.0",
     "react-use-websocket": "^3.0.0",

@@ -6,6 +6,9 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 //import reportWebVitals from './reportWebVitals';
 
+import { Buffer } from 'buffer'
+window.Buffer = Buffer
+
 // ----------------------------------------------------------------------
 
 ReactDOM.render(

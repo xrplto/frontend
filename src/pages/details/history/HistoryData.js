@@ -257,14 +257,14 @@ export default function HistoryData({token, pairs}) {
                         <TableCell align="left">#</TableCell>
                         <TableCell align="left">Price</TableCell>
                         <TableCell align="left">Volume</TableCell>
-                        <TableCell align="left"></TableCell>
+                        <TableCell align="left">Flag</TableCell>
                         <TableCell align="left">Taker Paid</TableCell>
                         <TableCell align="left">Taker Got</TableCell>
                         <TableCell align="left">Time</TableCell>
                         <TableCell align="left">Ledger</TableCell>
                         <TableCell align="left">Sequence</TableCell>
-                        <TableCell align="left">From</TableCell>
-                        <TableCell align="left">To</TableCell>
+                        <TableCell align="left">Maker</TableCell>
+                        <TableCell align="left">Taker</TableCell>
                         <TableCell align="left">Hash</TableCell>
                         <TableCell align="left"></TableCell>
                     </TableRow>
@@ -318,8 +318,8 @@ export default function HistoryData({token, pairs}) {
                             const strDate = `${year}-${month}-${day}`;
                             const strTime = `${hour}:${min}:${sec}`;
 
-                            const from = truncate(maker, 12);
-                            const to = truncate(taker, 12);
+                            const tMaker = truncate(maker, 12);
+                            const tTaker = truncate(taker, 12);
                             const tHash = truncate(hash, 16);
 
                             const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
@@ -371,11 +371,11 @@ export default function HistoryData({token, pairs}) {
                                         </TableCell>
 
                                         <TableCell align="left">
-                                            {fNumber(takerPaid.value)} {namePaid}
+                                            {fNumber(takerPaid.value)} <Typography variant="caption">{namePaid}</Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
-                                            {fNumber(takerGot.value)} {nameGot}
+                                            {fNumber(takerGot.value)} <Typography variant="caption">{nameGot}</Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
@@ -395,7 +395,7 @@ export default function HistoryData({token, pairs}) {
                                                 href={`https://bithomp.com/explorer/${maker}`}
                                                 rel="noreferrer noopener"
                                             >
-                                                {from}
+                                                {tMaker}
                                             </Link>
                                         </TableCell>
                                         <TableCell align="left">
@@ -406,7 +406,7 @@ export default function HistoryData({token, pairs}) {
                                                 href={`https://bithomp.com/explorer/${taker}`}
                                                 rel="noreferrer noopener"
                                             >
-                                                {to}
+                                                {tTaker}
                                             </Link>
                                         </TableCell>
                                         <TableCell align="left">
