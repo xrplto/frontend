@@ -6,7 +6,9 @@ import { withStyles } from '@mui/styles';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {
     Alert,
+    Avatar,
     FormControl,
+    IconButton,
     InputLabel,
     Link,
     MenuItem,
@@ -29,6 +31,7 @@ import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
+import { normalizeCurrencyCodeXummImpl } from '../../../utils/normalizers';
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
@@ -46,6 +49,30 @@ const CancelTypography = withStyles({
         color: "#FF6C40",
         borderRadius: '6px',
         border: '0.05em solid #FF6C40',
+        //fontSize: '0.5rem',
+        lineHeight: '1',
+        paddingLeft: '3px',
+        paddingRight: '3px',
+    }
+})(Typography);
+
+const BuyTypography = withStyles({
+    root: {
+        color: "#007B55",
+        borderRadius: '6px',
+        border: '0.05em solid #007B55',
+        //fontSize: '0.5rem',
+        lineHeight: '1',
+        paddingLeft: '3px',
+        paddingRight: '3px',
+    }
+})(Typography);
+
+const SellTypography = withStyles({
+    root: {
+        color: "#B72136",
+        borderRadius: '6px',
+        border: '0.05em solid #B72136',
         //fontSize: '0.5rem',
         lineHeight: '1',
         paddingLeft: '3px',
@@ -83,6 +110,12 @@ function getPair(issuer, code) {
         pair = t2 + t1;
     return MD5(pair).toString();
 }
+
+function truncate(str, n){
+    if (!str) return '';
+    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
+    return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
+};
 
 export default function HistoryData({token, pairs}) {
     const EPOCH_OFFSET = 946684800;
@@ -225,11 +258,14 @@ export default function HistoryData({token, pairs}) {
                         <TableCell align="left">Price</TableCell>
                         <TableCell align="left">Volume</TableCell>
                         <TableCell align="left"></TableCell>
+                        <TableCell align="left">Taker Paid</TableCell>
+                        <TableCell align="left">Taker Got</TableCell>
                         <TableCell align="left">Time</TableCell>
                         <TableCell align="left">Ledger</TableCell>
                         <TableCell align="left">Sequence</TableCell>
                         <TableCell align="left">From</TableCell>
                         <TableCell align="left">To</TableCell>
+                        <TableCell align="left">Hash</TableCell>
                         <TableCell align="left"></TableCell>
                     </TableRow>
                 </TableHead>
@@ -240,6 +276,7 @@ export default function HistoryData({token, pairs}) {
                             const {
                                 id,
                                 _id,
+                                dir,
                                 hash,
                                 maker,
                                 taker,
@@ -280,18 +317,26 @@ export default function HistoryData({token, pairs}) {
                             //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
                             const strDate = `${year}-${month}-${day}`;
                             const strTime = `${hour}:${min}:${sec}`;
+
+                            const from = truncate(maker, 12);
+                            const to = truncate(taker, 12);
+                            const tHash = truncate(hash, 16);
+
+                            const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
+                            const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
+
                             return (
-                                <CopyToClipboard
-                                    key={`id${_id}`}
-                                    text={hash}
-                                    onCopy={() => setCopied(true)}>
+                                // <CopyToClipboard
+                                //     key={`id${_id}`}
+                                //     text={hash}
+                                //     onCopy={() => setCopied(true)}>
                                     <TableRow
                                         hover
                                         key={_id}
                                         tabIndex={-1}
                                         sx={{
                                             [`& .${tableCellClasses.root}`]: {
-                                                color: (buy ? '#007B55' : '#B72136')
+                                                color: (/*buy*/dir === 'buy' ? '#007B55' : '#B72136')
                                             }
                                         }}
                                     >
@@ -299,12 +344,40 @@ export default function HistoryData({token, pairs}) {
                                         <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
                                         <TableCell align="left"><Typography variant="subtitle2">{fNumber(value)}</Typography></TableCell>
                                         <TableCell align="left">
-                                            {cancel && (
-                                                <CancelTypography variant="caption">
-                                                cancel
-                                                </CancelTypography>
-                                            )}
+                                            <Stack spacing={1}>
+                                                {dir==='buy' && (
+                                                    <Stack direction="row">
+                                                        <BuyTypography variant="caption">
+                                                        buy
+                                                        </BuyTypography>
+                                                    </Stack>
+                                                )}
+                                                
+                                                {dir==='sell' && (
+                                                    <Stack direction="row">
+                                                        <SellTypography variant="caption">
+                                                        sell
+                                                        </SellTypography>
+                                                    </Stack>
+                                                )}
+                                                {cancel && (
+                                                    <Stack direction="row">
+                                                        <CancelTypography variant="caption">
+                                                        cancel
+                                                        </CancelTypography>
+                                                    </Stack>
+                                                )}
+                                            </Stack>
                                         </TableCell>
+
+                                        <TableCell align="left">
+                                            {fNumber(takerPaid.value)} {namePaid}
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            {fNumber(takerGot.value)} {nameGot}
+                                        </TableCell>
+
                                         <TableCell align="left">
                                             <Stack>
                                                 <Typography variant="subtitle2">{strTime}</Typography>
@@ -322,7 +395,7 @@ export default function HistoryData({token, pairs}) {
                                                 href={`https://bithomp.com/explorer/${maker}`}
                                                 rel="noreferrer noopener"
                                             >
-                                                {maker}
+                                                {from}
                                             </Link>
                                         </TableCell>
                                         <TableCell align="left">
@@ -333,14 +406,30 @@ export default function HistoryData({token, pairs}) {
                                                 href={`https://bithomp.com/explorer/${taker}`}
                                                 rel="noreferrer noopener"
                                             >
-                                                {taker}
+                                                {to}
+                                            </Link>
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={`https://bithomp.com/explorer/${hash}`}
+                                                rel="noreferrer noopener"
+                                            >
+                                                <Stack direction="row" alignItems='center'>
+                                                    {tHash}
+                                                    <IconButton edge="end" aria-label="bithomp">
+                                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                    </IconButton>
+                                                </Stack>
                                             </Link>
                                         </TableCell>
                                         <TableCell align="right">
                                             <HistoryMoreMenu hash={hash} />
                                         </TableCell>
                                     </TableRow>
-                                </CopyToClipboard>
+                                // </CopyToClipboard>
                             );
                         })}
                 </TableBody>

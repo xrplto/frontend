@@ -34,8 +34,8 @@ const StackStyle = styled(Stack)(({ theme }) => ({
     //backdropFilter: 'blur(2px)',
     //WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
     //backgroundColor: alpha(theme.palette.background.default, 0.0),
-    borderRadius: '1px',
-    border: '1px solid #323546',
+    //borderRadius: '1px',
+    //border: '1px solid #323546',
     //padding: '0em 0.5em 1.5em 0.5em',
     //backgroundColor: alpha("#919EAB", 0.03),
 }));
@@ -75,32 +75,12 @@ const badgeDEXStyle = {
     padding: '1px 4px'
 };
 
-export default function OrdersList({token, pairs}) {
+export default function OrdersList({pair, curr1, curr2}) {
     const BASE_URL = 'https://ws.xrpl.to/api';
-    const [pair, setPair] = useState('');
+    const [orders, setOrders] = useState([]);
     const theme = useTheme();
-    const {
-        acct,
-        code,
-        // md5
-    } = token;
 
-    // const setPairVolume = (p) => {
-    //     setPair(p);
-    //     for (var pi of pairs) {
-    //         if (pi.pair === p) {
-    //             if (pi.curr1.currency === code)
-    //                 setVol(pi.curr1.value);
-    //             if (pi.curr2.currency === code)
-    //                 setVol(pi.curr2.value);
-    //             break;
-    //         }
-    //     }
-    // }
-
-    // const handleChangePair = (event, value) => {
-    //     setPairVolume(event.target.value);
-    // }
+    console.log(curr1, curr2);
 
     return (
         <StackStyle>
@@ -121,7 +101,7 @@ export default function OrdersList({token, pairs}) {
                 <TableBody>
                 {
                     // exchs.slice(page * rows, page * rows + rows)
-                    pairs.map((row) => {
+                    orders.map((row) => {
                         const {
                             pair,
                             curr1,
@@ -129,33 +109,6 @@ export default function OrdersList({token, pairs}) {
                         } = row;
                         const name1 = curr1.name;
                         const name2 = curr2.name;
-
-                        // market=434F524500000000000000000000000000000000%2BrcoreNywaoz2ZCQ8Lg2EbSLnGuRBmun6D%2F534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz
-                        let soloDexURL = '';
-                        if (curr2.issuer)
-                            soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}%2B${curr2.issuer}`;
-                        else
-                            soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}`;
-
-                        let xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
-                        
-                        // {
-                        //     "pair": "fa99aff608a10186d3b1ff33b5cd665f",
-                        //     "curr1": {
-                        //         "currency": "534F4C4F00000000000000000000000000000000",
-                        //         "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-                        //         "value": 697318.6740120539,
-                        //         "md5": "0413ca7cfc258dfaf698c02fe304e607",
-                        //         "name": "SOLO"
-                        //     },
-                        //     "curr2": {
-                        //         "currency": "XRP",
-                        //         "issuer": null,
-                        //         "value": 523918.7944699987,
-                        //         "md5": "eaf386fee7b02561c08cdbbac6b43a67",
-                        //         "name": "XRP"
-                        //     }
-                        // }
 
                         return (
                             <TableRow

@@ -3,7 +3,6 @@ import axios from 'axios'
 import { useState, useEffect } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 import { withStyles } from '@mui/styles';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {
     Alert,
     FormControl,
@@ -168,6 +167,47 @@ export default function TradeData({token, pairs}) {
 
     return (
         <StackStyle>
+            <Stack direction="row" alignItems="center">
+                <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                    <InputLabel id="demo-select-small">Pairs</InputLabel>
+                    <CustomSelect
+                        labelId="demo-select-small"
+                        id="demo-select-small"
+                        value={pair}
+                        label="Pair"
+                        onChange={handleChangePair}
+                    >
+                        {
+                        pairs.map((row) => {
+                                const {
+                                    pair,
+                                    curr1,
+                                    curr2
+                                } = row;
+
+                                const name1 = curr1.name;
+                                const name2 = curr2.name;
+
+                                return (
+                                    <MenuItem key={pair} value={pair}>
+                                        <Stack direction="row" alignItems='center'>
+                                            <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
+                                            <Icon icon={arrowsExchange} width="16" height="16"/>
+                                            <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{name2}</Typography>
+                                            <span style={badge24hStyle}>24h</span>
+                                            <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{fNumber(curr1.value)}</Typography>
+                                        </Stack>
+                                    </MenuItem>
+                                );
+                            })
+                        }
+                    </CustomSelect>
+                </FormControl>
+                {/* <Stack direction="row" spacing={1} alignItems="center">
+                    <Typography variant="caption">24H Volume:</Typography>
+                    <Typography variant="h5" sx={{ color: '#B72136' }}>{fNumber(vol)}</Typography>
+                </Stack> */}
+            </Stack>
             <Grid container spacing={3} sx={{p:0}}>
                 <Grid item xs={12} md={8} lg={8}>
                     <OrdersList token={token} pairs={pairs} />
