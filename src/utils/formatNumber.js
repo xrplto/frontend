@@ -39,7 +39,7 @@ export function fCurrency3(number) {
     return numeral(number).format(Number.isInteger(number) ? '0,0' : '0,0.000');
 }
 
-const f = (v, threshold = .999) => {
+const f = (v, threshold = .9999) => {
     let shift = 1;
     let part;
     

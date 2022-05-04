@@ -170,10 +170,6 @@ export default function MarketData({token, pairs}) {
                 <Grid item xs={12} md={12} lg={12} sx={{pl:0}}>
                     <PairsList token={token} pairs={pairs} />
                 </Grid>
-
-                {/* <Grid item xs={12} md={8} lg={8}>
-                    <OrdersList token={token} pairs={pairs} />
-                </Grid> */}
             </Grid>
         </StackStyle>
     );

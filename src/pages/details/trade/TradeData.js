@@ -84,86 +84,29 @@ function getPair(issuer, code) {
     return MD5(pair).toString();
 }
 
+function getInitialPair(pairs) {
+    if (pairs.length > 0)
+        return pairs[0].pair;
+    return '';
+}
+
 export default function TradeData({token, pairs}) {
+    const theme = useTheme();
     const EPOCH_OFFSET = 946684800;
     const BASE_URL = 'https://ws.xrpl.to/api';
-    const [page, setPage] = useState(0);
-    const [rows, setRows] = useState(10);
-    const [count, setCount] = useState(0);
-    const [copied, setCopied] = useState(false);
-    const [exchs, setExchs] = useState([]);
-    const [pair, setPair] = useState('');
-    const [vol, setVol] = useState(0);
-    const theme = useTheme();
+    const [sel, setSel] = useState(1);
+    const [pair, setPair] = useState(pairs[0]);
     const {
         acct,
         code,
         // md5
     } = token;
 
-    const setPairVolume = (p) => {
-        setPair(p);
-        for (var pi of pairs) {
-            if (pi.pair === p) {
-                if (pi.curr1.currency === code)
-                    setVol(pi.curr1.value);
-                if (pi.curr2.currency === code)
-                    setVol(pi.curr2.value);
-                break;
-            }
-        }
-    }
-
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setCopied(false);
-    };
-
     const handleChangePair = (event, value) => {
-        setPairVolume(event.target.value);
+        const idx = parseInt(event.target.value, 10);
+        setSel(idx);
+        setPair(pairs[idx-1]);
     }
-
-    useEffect(() => {
-        function getExchanges() {
-            if (!pair) {
-                setPairVolume(getPair(acct, code));
-                //console.log(pair);
-                return;
-            }
-            // XPUNK
-            // https://ws.xrpl.to/api/exchanges?pair=d12119be3c1749470903414dff032761&page=0&limit=5
-            // SOLO
-            // https://ws.xrpl.to/api/exchanges?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
-            axios.get(`${BASE_URL}/exchanges?pair=${pair}&page=${page}&limit=${rows}`)
-                .then(res => {
-                    let ret = res.status === 200 ? res.data : undefined;
-                    if (ret) {
-                        setCount(ret.count);
-                        let exs = [];
-                        let i = 0;
-                        for (var ex of ret.exchs) {
-                            ex.id = i + page * rows + 1;
-                            exs.push(ex);
-                            i++;
-                        }
-                        setExchs(exs);
-                    }
-                }).catch(err => {
-                    console.log("Error on getting exchanges!!!", err);
-                }).then(function () {
-                    // always executed
-                });
-        }
-        getExchanges();
-
-        const timer = setInterval(() => getExchanges(), 10000);
-
-        return () => {
-            clearInterval(timer);
-        }
-    }, [page, rows, pair]);
 
     return (
         <StackStyle>
@@ -173,13 +116,14 @@ export default function TradeData({token, pairs}) {
                     <CustomSelect
                         labelId="demo-select-small"
                         id="demo-select-small"
-                        value={pair}
+                        value={sel}
                         label="Pair"
                         onChange={handleChangePair}
                     >
                         {
                         pairs.map((row) => {
                                 const {
+                                    id,
                                     pair,
                                     curr1,
                                     curr2
@@ -189,7 +133,7 @@ export default function TradeData({token, pairs}) {
                                 const name2 = curr2.name;
 
                                 return (
-                                    <MenuItem key={pair} value={pair}>
+                                    <MenuItem key={id} value={id}>
                                         <Stack direction="row" alignItems='center'>
                                             <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
                                             <Icon icon={arrowsExchange} width="16" height="16"/>
@@ -209,8 +153,8 @@ export default function TradeData({token, pairs}) {
                 </Stack> */}
             </Stack>
             <Grid container spacing={3} sx={{p:0}}>
-                <Grid item xs={12} md={8} lg={8}>
-                    <OrdersList token={token} pairs={pairs} />
+                <Grid item xs={12} md={4} lg={4}>
+                    <OrdersList token={token} pair={pair} />
                 </Grid>
             </Grid>
         </StackStyle>
