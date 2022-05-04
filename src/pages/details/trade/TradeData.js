@@ -1,31 +1,19 @@
 // material
-import axios from 'axios'
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 import { withStyles } from '@mui/styles';
 import {
-    Alert,
     FormControl,
-    Grid,
     InputLabel,
-    Link,
     MenuItem,
     Select,
     Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
     Typography
 } from '@mui/material';
-import { tableCellClasses } from "@mui/material/TableCell";
-import TradeToolbar from './TradeToolbar';
-import TradeMoreMenu from './TradeMoreMenu';
-import OrdersList from './OrdersList';
 import { MD5 } from 'crypto-js';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
+import {OrderBook} from "./orderbook";
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
@@ -40,18 +28,6 @@ const StackStyle = styled(Stack)(({ theme }) => ({
     //padding: '0em 0.5em 1.5em 0.5em',
     //backgroundColor: alpha("#919EAB", 0.03),
 }));
-
-const CancelTypography = withStyles({
-    root: {
-        color: "#FF6C40",
-        borderRadius: '6px',
-        border: '0.05em solid #FF6C40',
-        //fontSize: '0.5rem',
-        lineHeight: '1',
-        paddingLeft: '3px',
-        paddingRight: '3px',
-    }
-})(Typography);
 
 const CustomSelect = styled(Select)(({ theme }) => ({
     // '& .MuiOutlinedInput-notchedOutline' : {
@@ -74,21 +50,21 @@ const badge24hStyle = {
     padding: '1px 4px'
 };
 
-function getPair(issuer, code) {
-    // issuer, currencyCode, 'XRP', undefined
-    const t1 = 'undefined_XRP';
-    const t2 = issuer  + '_' +  code;
-    let pair = t1 + t2;
-    if (t1.localeCompare(t2) > 0)
-        pair = t2 + t1;
-    return MD5(pair).toString();
-}
+// function getPair(issuer, code) {
+//     // issuer, currencyCode, 'XRP', undefined
+//     const t1 = 'undefined_XRP';
+//     const t2 = issuer  + '_' +  code;
+//     let pair = t1 + t2;
+//     if (t1.localeCompare(t2) > 0)
+//         pair = t2 + t1;
+//     return MD5(pair).toString();
+// }
 
-function getInitialPair(pairs) {
-    if (pairs.length > 0)
-        return pairs[0].pair;
-    return '';
-}
+// function getInitialPair(pairs) {
+//     if (pairs.length > 0)
+//         return pairs[0].pair;
+//     return '';
+// }
 
 export default function TradeData({token, pairs}) {
     const theme = useTheme();
@@ -152,13 +128,14 @@ export default function TradeData({token, pairs}) {
                     <Typography variant="h5" sx={{ color: '#B72136' }}>{fNumber(vol)}</Typography>
                 </Stack> */}
             </Stack>
-            <Grid container spacing={3} sx={{p:0}}>
+            <OrderBook />
+            {/* <Grid container spacing={3} sx={{p:0}}>
                 <Grid item xs={12} md={4} lg={4}>
                     <OrdersList token={token} pair={pair} />
                 </Grid>
                 <Grid item xs={12} md={4} lg={4}>
                 </Grid>
-            </Grid>
+            </Grid> */}
         </StackStyle>
     );
 }

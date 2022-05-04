@@ -2,14 +2,7 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react';
 import { alpha, styled, useTheme } from '@mui/material/styles';
-import { withStyles } from '@mui/styles';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {
-    Avatar,
-    Link,
-    ListItemText,
-    MenuItem,
-    Paper,
     Select,
     Stack,
     Table,
@@ -21,11 +14,11 @@ import {
     Typography
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
-import TradeToolbar from './TradeToolbar';
-import TradeMoreMenu from './TradeMoreMenu';
+//import TradeToolbar from './TradeToolbar';
+//import TradeMoreMenu from './TradeMoreMenu';
 import { MD5 } from 'crypto-js';
-import { Icon } from '@iconify/react';
-import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
+//import { Icon } from '@iconify/react';
+//import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
