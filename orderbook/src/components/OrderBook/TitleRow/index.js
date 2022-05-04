@@ -1,6 +1,18 @@
-import React, { FunctionComponent } from 'react';
-import { Container } from "./styles";
+import React from 'react';
 import { MOBILE_WIDTH } from "../../../constants";
+import styled from "styled-components";
+
+export const Container = styled.div`
+    display: flex;
+    justify-content: space-around;
+    color: #98a6af;
+    padding: .3em;
+    background-color: #121723;
+    
+    span {
+        min-width: 5rem;
+    }
+`
 
 const TitleRow = ({reversedFieldsOrder = false, windowWidth}) => {
   return (

@@ -1,12 +1,14 @@
-import React, { FunctionComponent } from 'react';
-import { Container } from "./styles";
+import React from 'react';
 
-interface StatusMessageProps {
-  selectedMarket: string;
-  isFeedKilled: boolean;
-}
+import styled from "styled-components";
 
-const StatusMessage: FunctionComponent<StatusMessageProps> = ({selectedMarket = '', isFeedKilled}) => {
+const Container = styled.div`
+  color: white;
+  font-size: 1.2em;
+  width: 100%;
+  text-align: center;
+`
+const StatusMessage = ({selectedMarket = '', isFeedKilled}) => {
   return (
     <Container>
       {isFeedKilled ? 'Feed killed.' : `Selected market: ${selectedMarket}`}

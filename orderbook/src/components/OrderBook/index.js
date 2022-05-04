@@ -2,7 +2,6 @@ import React, { FunctionComponent, useEffect } from 'react';
 import useWebSocket from "react-use-websocket";
 
 import TitleRow from "./TitleRow";
-import { Container, TableContainer } from "./styles";
 import PriceLevelRow from "./PriceLevelRow";
 import Spread from "../Spread";
 import { useSelector, useDispatch } from "react-redux";
@@ -10,9 +9,38 @@ import { addAsks, addBids, addExistingState, selectAsks, selectBids } from './or
 import { MOBILE_WIDTH, ORDERBOOK_LEVELS, ORDER_TYPE_ASKS, ORDER_TYPE_BIDS } from "../../constants";
 import Loader from "../Loader";
 import DepthVisualizer from "../DepthVisualizer";
-import { PriceLevelRowContainer } from "./PriceLevelRow/styles";
 import { ProductsMap } from "../../App";
 import { formatNumber } from "../../helpers";
+import styled from "styled-components";
+
+const Container = styled.div`
+  display: flex;
+  min-height: 31.25em;
+  flex-direction: column-reverse;
+  justify-content: center;
+  align-items: center;
+  border-color: #263946;
+
+  @media only screen and (min-width: 800px) {
+    flex-direction: row;
+    justify-content: center;
+  }
+`
+
+const TableContainer = styled.div`
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  color: #bfc1c8;
+
+  @media only screen and (min-width: 800px) {
+    width: 50%;
+  }
+`
+
+const PriceLevelRowContainer = styled.div`
+  margin: .155em 0;
+`
 
 const WSS_FEED_URL = 'wss://www.cryptofacilities.com/ws/v1';
 

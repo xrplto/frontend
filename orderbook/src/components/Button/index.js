@@ -1,21 +1,21 @@
-import React, { FunctionComponent } from 'react';
+import React from 'react';
+import styled from "styled-components";
 
-import { Container } from "./styles";
-
-const Container = styled(button)(({ theme }) => ({
-    padding: '.3em .7em',
-    margin: '1em',
-    borderRadius: '4px',
-    border: 'none',
-    color: white,
-    background: ${backgroundColor},
-    fontFamily: '"Calibri", sans-serif',
-    fontSize: '1.2em',
-    '&: hover': {
-        cursor: 'pointer',
-        opacity: '.8'
+const Container = styled.button`
+    padding: .3em .7em;
+    margin: 1em;
+    border-radius: 4px;
+    border: none;
+    color: white;
+    background: ${props => props.backgroundColor};
+    font-family: "Calibri", sans-serif;
+    font-size: 1.2em;
+    
+    &:hover {
+        cursor: pointer;
+        opacity: .8;
     }
-}));
+`
 
 const Button = ({ title, backgroundColor = '#5741d9', callback}) => {
     return (

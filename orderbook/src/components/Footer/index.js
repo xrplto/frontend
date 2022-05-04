@@ -1,7 +1,12 @@
 import React, { FunctionComponent } from 'react';
-
-import { Container } from "./styles";
 import Button from "../Button";
+import styled from "styled-components";
+
+export const Container = styled.div`
+  display: flex;
+  justify-content: center;
+  background-color: #121723;
+`
 
 const Footer = ({ toggleFeedCallback, killFeedCallback , isFeedKilled}) => {
   return (

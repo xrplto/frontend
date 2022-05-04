@@ -1,5 +1,4 @@
 import { createSlice, current } from '@reduxjs/toolkit';
-import { RootState } from '../../store';
 import { groupByTicketSize } from "../../helpers";
 import { ORDERBOOK_LEVELS } from "../../constants";
 

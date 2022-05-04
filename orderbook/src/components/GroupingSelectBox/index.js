@@ -1,9 +1,23 @@
 import React, { ChangeEvent, FunctionComponent } from 'react';
 
-import { Container } from "./Container";
 import { useSelector, useDispatch } from "react-redux";
 import { selectGrouping, setGrouping } from "../OrderBook/orderbookSlice";
 
+import styled from "styled-components";
+
+const Container = styled.div`
+  select {
+    border-radius: 3px;
+    padding: 0.3em;
+    color: white;
+    border: none;
+    background-color: #303947;
+    
+    &:hover {
+      cursor: pointer;
+    }
+  }
+`
 export const GroupingSelectBox = ({options}) => {
   const groupingSize = useSelector(selectGrouping);
   const dispatch = useDispatch();

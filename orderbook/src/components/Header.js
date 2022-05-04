@@ -1,6 +1,8 @@
+import React from 'react';
 import styled from "styled-components";
+import GroupingSelectBox from "../GroupingSelectBox";
 
-export const Container = styled.div`
+const Container = styled.div`
   display: flex;
   width: 100%;
   margin: 0 auto;
@@ -18,3 +20,14 @@ export const Container = styled.div`
     padding: 0.7em;
   }
 `
+
+const Header = ({options}) => {
+  return (
+    <Container>
+      <h3>Order Book</h3>
+      <GroupingSelectBox options={options} />
+    </Container>
+  );
+};
+
+export default Header;
