@@ -232,10 +232,12 @@ export default function OrdersList({token, pair}) {
                             //const exch = parseFloat(quality);
                             const exch = takerPays / takerGets;
 
+                            const id = MD5(JSON.stringify(row)).toString();
+
                             return (
                                 <TableRow
                                     hover
-                                    key={pair}
+                                    key={id}
                                     tabIndex={-1}
                                 >
                                     <TableCell align="left">

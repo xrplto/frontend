@@ -1,0 +1,120 @@
+@import url("https://fonts.googleapis.com/css2?family=PT+Mono&family=PT+Sans:wght@400;700&display=swap");
+
+body {
+  background-color: #191919;
+  color: #dddddd;
+  margin: 0;
+}
+
+#root {
+  padding: 1em 0;
+  box-sizing: border-box;
+  height: 100vh;
+}
+
+.OB {
+  position: relative;
+  height: 100%;
+  max-width: 20em;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #929292;
+}
+
+.OB__header {
+  font-family: "PT Sans", sans-serif;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  text-align: center;
+  background-color: #191919;
+  border-bottom: 1px solid #929292;
+}
+
+.OB__header2 {
+  display: flex;
+}
+
+.OB__header2 > * {
+  flex-basis: 50%;
+  border-top: 1px solid #929292;
+}
+
+.OB__header2 > *:nth-child(1) {
+  border-right: 1px solid #929292;
+}
+
+.OB__S {
+  flex-basis: auto;
+  height: 2em;
+  display: flex;
+  align-items: center;
+  border: 1px solid #929292;
+}
+
+.OB__SP,
+.OB__SL {
+  flex-basis: 50%;
+}
+
+.OB__SL {
+  font-family: "PT Sans", sans-serif;
+  text-align: right;
+}
+
+.OB__SP {
+  font-family: "PT Mono", monospace;
+  text-align: center;
+}
+
+.OBP {
+  font-family: "PT Mono", monospace;
+  text-align: center;
+  display: flex;
+  overflow-y: hidden;
+}
+
+.OBP--sell {
+  color: green;
+  flex-direction: column;
+}
+
+.OBP--ask {
+  color: red;
+  flex-direction: column-reverse;
+}
+
+.OBP__order {
+  padding: 4px;
+  display: flex;
+  font-size: 80%;
+}
+
+.OBP__order:nth-child(2n) {
+  background-color: #111111;
+}
+
+.OBP__order > * {
+  flex-basis: 50%;
+}
+
+.OBP__size {
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.OBP__bar {
+  height: 100%;
+  position: absolute;
+  left: 0;
+}
+
+.OBP--sell .OBP__bar {
+  background-color: green;
+}
+
+.OBP--ask .OBP__bar {
+  background-color: red;
+}

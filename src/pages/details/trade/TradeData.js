@@ -3,6 +3,7 @@ import axios from 'axios'
 import { useState, useEffect } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 import { withStyles } from '@mui/styles';
+import OB from "./OB/OB";
 import {
     Alert,
     FormControl,
@@ -155,6 +156,9 @@ export default function TradeData({token, pairs}) {
             <Grid container spacing={3} sx={{p:0}}>
                 <Grid item xs={12} md={4} lg={4}>
                     <OrdersList token={token} pair={pair} />
+                </Grid>
+                <Grid item xs={12} md={4} lg={4}>
+                    <OB product_id="BTC-USD" />
                 </Grid>
             </Grid>
         </StackStyle>
