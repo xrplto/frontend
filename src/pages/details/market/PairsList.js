@@ -70,14 +70,14 @@ function truncate(str, n){
 };
 
 export default function PairsList({token, pairs}) {
-    const BASE_URL = 'https://ws.xrpl.to/api';
+    const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
     // const {
     //     acct,
     //     code,
     //     md5
     // } = token;
-    // https://ws.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
+    // https://api.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
     return (
         <StackStyle>
             <Typography variant="h5" sx={{ pl: 2, pt: 2 }}>Pairs<span style={badge24hStyle}>24h</span></Typography>

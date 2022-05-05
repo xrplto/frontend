@@ -85,7 +85,7 @@ function getPair(issuer, code) {
 
 export default function MarketData({token, pairs}) {
     const EPOCH_OFFSET = 946684800;
-    const BASE_URL = 'https://ws.xrpl.to/api';
+    const BASE_URL = 'https://api.xrpl.to/api';
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);
     const [count, setCount] = useState(0);
@@ -132,9 +132,9 @@ export default function MarketData({token, pairs}) {
                 return;
             }
             // XPUNK
-            // https://ws.xrpl.to/api/exchanges?pair=d12119be3c1749470903414dff032761&page=0&limit=5
+            // https://api.xrpl.to/api/exchanges?pair=d12119be3c1749470903414dff032761&page=0&limit=5
             // SOLO
-            // https://ws.xrpl.to/api/exchanges?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
+            // https://api.xrpl.to/api/exchanges?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
             axios.get(`${BASE_URL}/exchanges?pair=${pair}&page=${page}&limit=${rows}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;

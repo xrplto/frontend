@@ -69,7 +69,7 @@ const badge24hStyle = {
 export default function TradeData({token, pairs}) {
     const theme = useTheme();
     const EPOCH_OFFSET = 946684800;
-    const BASE_URL = 'https://ws.xrpl.to/api';
+    const BASE_URL = 'https://api.xrpl.to/api';
     const [sel, setSel] = useState(1);
     const [pair, setPair] = useState(pairs[0]);
     const {

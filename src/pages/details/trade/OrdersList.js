@@ -72,17 +72,26 @@ const badgeDEXStyle = {
 
 export default function OrdersList({token, pair}) {
     const theme = useTheme();
-    const BASE_URL = 'https://ws.xrpl.to/api';
+    const BASE_URL = 'https://api.xrpl.to/api';
     const [offers1, setOffers1] = useState([]);
     const [offers2, setOffers2] = useState([]);
 
     useEffect(() => {
+        // console.log(JSON.stringify({
+        //     command: 'subscribe',
+        //     books: [{
+        //         taker_gets:{issuer:'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz',currency:'534F4C4F00000000000000000000000000000000'},
+        //         taker_pays:{currency:'XRP'},
+        //         both: true,
+        //         snapshot: true
+        //     }],
+        // }));
         function getOrders() {
             if (!pair) return;
             const curr1 = '0413ca7cfc258dfaf698c02fe304e607'; // pair.curr1;
             const curr2 = '71dbd3aabf2d99d205e0e2556ae4cf55'; // pair.curr2;
             // SOLO
-            // https://ws.xrpl.to/api/orders?curr1=0413ca7cfc258dfaf698c02fe304e607&curr2=71dbd3aabf2d99d205e0e2556ae4cf55&limit=100
+            // https://api.xrpl.to/api/orders?curr1=0413ca7cfc258dfaf698c02fe304e607&curr2=71dbd3aabf2d99d205e0e2556ae4cf55&limit=100
             axios.get(`${BASE_URL}/orders?curr1=${curr1}&curr2=${curr2}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;

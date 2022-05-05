@@ -111,7 +111,7 @@ const TABLE_HEAD = [
 
 export default function Token() {
     const theme = useTheme();
-    const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
+    const BASE_URL = 'https://api.xrpl.to/api'; // 'http://localhost/api';
     const dispatch = useDispatch();
     const [filterName, setFilterName] = useState('');
     const [page, setPage] = useState(0);
@@ -131,9 +131,9 @@ export default function Token() {
     useEffect(() => {
         const loadTokens=() => {
             // https://livenet.xrpl.org/api/v1/token/top
-            // https://ws.xrpl.to/api/tokens/-1
+            // https://api.xrpl.to/api/tokens/-1
             // https://github.com/WietseWind/fetch-xrpl-transactions
-            // https://ws.xrpl.to/api/tokens?start=0&limit=100&sortBy=marketcap&sortType=desc
+            // https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=marketcap&sortType=desc
             const start = page * rows + offset * 20;
             //console.log(`${offset} Load tokens from ${start+1}`);
             axios.get(`${BASE_URL}/tokens?start=${start}&limit=20&sortBy=${orderBy}&sortType=${order}&filter=${filterName}`)

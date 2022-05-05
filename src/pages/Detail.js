@@ -77,7 +77,7 @@ function a11yProps(index) {
 }
 
 export default function Detail(props) {
-    const BASE_URL = 'https://ws.xrpl.to/api'; // 'http://localhost/api';
+    const BASE_URL = 'https://api.xrpl.to/api'; // 'http://localhost/api';
     const [history, setHistory] = useState([]);
     const [range, setRange] = useState('1D');
     const [token, setToken] = useState(null); // JSON.parse(localStorage.getItem('selectToken')));
@@ -131,7 +131,7 @@ export default function Detail(props) {
 
     useEffect(() => {
         function getDetail() {
-            // https://ws.xrpl.to/api/detail/0413ca7cfc258dfaf698c02fe304e607?range=1D
+            // https://api.xrpl.to/api/detail/0413ca7cfc258dfaf698c02fe304e607?range=1D
             axios.get(`${BASE_URL}/detail/${md5}?range=${range}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
@@ -168,7 +168,7 @@ export default function Detail(props) {
     useEffect(() => {
         function getPairs() {
             if (!md5) return;
-            // https://ws.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
+            // https://api.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
             axios.get(`${BASE_URL}/pairs?md5=${md5}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
