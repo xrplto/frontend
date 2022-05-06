@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import useWebSocket from "react-use-websocket";
 
 import TitleRow from "./TitleRow";
-import PriceLevelRow from "./PriceLevelRow";
 import Spread from "./Spread";
 import { useSelector, useDispatch } from "react-redux";
 import { addAsks, addBids, addExistingState, selectAsks, selectBids } from './orderbookSlice';
 import { MOBILE_WIDTH, ORDERBOOK_LEVELS, ORDER_TYPE_ASKS, ORDER_TYPE_BIDS } from "./constants";
 import Loader from "./Loader";
+import PriceLevelRow from "./PriceLevelRow";
 import DepthVisualizer from "./DepthVisualizer";
 import { formatNumber } from "./helpers";
 import styled from "styled-components";
@@ -130,10 +130,8 @@ const OrderBook = () => {
         const handleVisibilityChange = () => {
             const isHidden = document['hidden'];
             if (isHidden) {
-                document.title = 'Orderbook Paused';
                 setIsPageVisible(false);
             } else {
-                document.title = 'Orderbook';
                 setIsPageVisible(true);
             }
         };

@@ -4,6 +4,7 @@ import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 import { withStyles } from '@mui/styles';
 import {
     FormControl,
+    Grid,
     InputLabel,
     MenuItem,
     Select,
@@ -14,6 +15,7 @@ import { MD5 } from 'crypto-js';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import {OrderBook} from "./orderbook";
+import OrderBook2 from "./xrpl/OrderBook";
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
@@ -128,14 +130,16 @@ export default function TradeData({token, pairs}) {
                     <Typography variant="h5" sx={{ color: '#B72136' }}>{fNumber(vol)}</Typography>
                 </Stack> */}
             </Stack>
-            <OrderBook />
-            {/* <Grid container spacing={3} sx={{p:0}}>
-                <Grid item xs={12} md={4} lg={4}>
-                    <OrdersList token={token} pair={pair} />
+            
+            <Grid container spacing={3} sx={{p:0}}>
+                <Grid item xs={12} md={6} lg={6}>
+                    <OrderBook />
+                    {/* <OrdersList token={token} pair={pair} /> */}
                 </Grid>
-                <Grid item xs={12} md={4} lg={4}>
+                <Grid item xs={12} md={6} lg={6}>
+                    <OrderBook2 token={token} pair={pair}/>
                 </Grid>
-            </Grid> */}
+            </Grid>
         </StackStyle>
     );
 }
