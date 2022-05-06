@@ -12,7 +12,7 @@ const headers = () => {
 }
 
 const getTokenData = async (ott) => {
-    if(!tokenData) {
+    if (!tokenData) {
         try {
             const res = await axios.get(`${apiEndPoint}/authorize`, { headers: { 'x-api-key': apiKey, 'x-api-ott': ott } })
             tokenData = res.data.ott

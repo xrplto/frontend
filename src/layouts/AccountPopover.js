@@ -44,6 +44,7 @@ export default function AccountPopover() {
     const [uuid, setUuid] = useState(null);
     //const [wsUrl, setWsUrl] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
+    const [nextUrl, setNextUrl] = useState(null);
 
     /*const connectionStatus = {
         [ReadyState.CONNECTING]: "Connecting",
@@ -93,9 +94,11 @@ export default function AccountPopover() {
             if (res.status === 200) {
                 const uuid = res.data.data.uuid;
                 const qrlink = res.data.data.qrUrl;
+                const nextlink = res.data.data.next;
 
                 setUuid(uuid);
                 setQrUrl(qrlink);
+                setNextUrl(nextlink);
                 setOpenLogin(true);
             }
         } catch (err) {
@@ -209,6 +212,7 @@ export default function AccountPopover() {
                 open={openLogin}
                 handleClose={handleLoginClose}
                 qrUrl={qrUrl}
+                nextUrl={nextUrl}
             />
         </>
     );
