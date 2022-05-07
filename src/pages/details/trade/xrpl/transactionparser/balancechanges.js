@@ -1,15 +1,14 @@
-import { groupBy, mapValues, map, compact, flatten, isEmpty } from 'lodash';
-//var _ = require('lodash')
+import _ from 'lodash'
 import {BigNumber} from 'bignumber.js'
 import {normalizeNodes} from './utils'
 import {dropsToXRP} from './utils'
 
 function groupByAddress(balanceChanges) {
-    var grouped = groupBy(balanceChanges, function(node) {
+    var grouped = _.groupBy(balanceChanges, function(node) {
         return node.address
     })
-    return mapValues(grouped, function(group) {
-        return map(group, function(node) {
+    return _.mapValues(grouped, function(group) {
+        return _.map(group, function(node) {
             return node.balance
         })
     })
@@ -20,91 +19,91 @@ function parseValue(value) {
 }
 
 function computeBalanceChange(node) {
-  var value = null
-  if (node.newFields.Balance) {
-    value = parseValue(node.newFields.Balance)
-  } else if (node.previousFields.Balance && node.finalFields.Balance) {
-    value = parseValue(node.finalFields.Balance).minus(
-      parseValue(node.previousFields.Balance))
-  }
-  return value === null ? null : value.isZero() ? null : value
+    var value = null
+    if (node.newFields.Balance) {
+        value = parseValue(node.newFields.Balance)
+    } else if (node.previousFields.Balance && node.finalFields.Balance) {
+        value = parseValue(node.finalFields.Balance).minus(
+        parseValue(node.previousFields.Balance))
+    }
+    return value === null ? null : value.isZero() ? null : value
 }
 
 function parseFinalBalance(node) {
-  if (node.newFields.Balance) {
-    return parseValue(node.newFields.Balance)
-  } else if (node.finalFields.Balance) {
-    return parseValue(node.finalFields.Balance)
-  }
-  return null
+    if (node.newFields.Balance) {
+        return parseValue(node.newFields.Balance)
+    } else if (node.finalFields.Balance) {
+        return parseValue(node.finalFields.Balance)
+    }
+    return null
 }
 
 
 function parseXRPQuantity(node, valueParser) {
-  var value = valueParser(node)
+    var value = valueParser(node)
 
-  if (value === null) {
-    return null
-  }
-
-  return {
-    address: node.finalFields.Account || node.newFields.Account,
-    balance: {
-      counterparty: '',
-      currency: 'XRP',
-      value: dropsToXRP(value).toString()
+    if (value === null) {
+        return null
     }
-  }
+
+    return {
+        address: node.finalFields.Account || node.newFields.Account,
+        balance: {
+            counterparty: '',
+            currency: 'XRP',
+            value: dropsToXRP(value).toString()
+        }
+    }
 }
 
 function flipTrustlinePerspective(quantity) {
-  var negatedBalance = (new BigNumber(quantity.balance.value)).negated()
-  return {
-    address: quantity.balance.counterparty,
-    balance: {
-      counterparty: quantity.address,
-      currency: quantity.balance.currency,
-      value: negatedBalance.toString()
+    var negatedBalance = (new BigNumber(quantity.balance.value)).negated()
+    return {
+        address: quantity.balance.counterparty,
+        balance: {
+            counterparty: quantity.address,
+            currency: quantity.balance.currency,
+            value: negatedBalance.toString()
+        }
     }
-  }
 }
 
 function parseTrustlineQuantity(node, valueParser) {
-  var value = valueParser(node)
+    var value = valueParser(node)
 
-  if (value === null) {
-    return null
-  }
-
-  /*
-   * A trustline can be created with a non-zero starting balance
-   * If an offer is placed to acquire an asset with no existing trustline,
-   * the trustline can be created when the offer is taken.
-   */
-  var fields = isEmpty(node.newFields) ? node.finalFields : node.newFields
-
-  // the balance is always from low node's perspective
-  var result = {
-    address: fields.LowLimit.issuer,
-    balance: {
-      counterparty: fields.HighLimit.issuer,
-      currency: fields.Balance.currency,
-      value: value.toString()
+    if (value === null) {
+        return null
     }
-  }
-  return [result, flipTrustlinePerspective(result)]
+
+    /*
+    * A trustline can be created with a non-zero starting balance
+    * If an offer is placed to acquire an asset with no existing trustline,
+    * the trustline can be created when the offer is taken.
+    */
+    var fields = _.isEmpty(node.newFields) ? node.finalFields : node.newFields
+
+    // the balance is always from low node's perspective
+    var result = {
+        address: fields.LowLimit.issuer,
+        balance: {
+            counterparty: fields.HighLimit.issuer,
+            currency: fields.Balance.currency,
+            value: value.toString()
+        }
+    }
+    return [result, flipTrustlinePerspective(result)]
 }
 
 function parseQuantities(metadata, valueParser) {
-  var values = normalizeNodes(metadata).map(function(node) {
-    if (node.entryType === 'AccountRoot') {
-      return [parseXRPQuantity(node, valueParser)]
-    } else if (node.entryType === 'RippleState') {
-      return parseTrustlineQuantity(node, valueParser)
-    }
-    return []
-  })
-  return groupByAddress(compact(flatten(values)))
+    var values = normalizeNodes(metadata).map(function(node) {
+        if (node.entryType === 'AccountRoot') {
+            return [parseXRPQuantity(node, valueParser)]
+        } else if (node.entryType === 'RippleState') {
+            return parseTrustlineQuantity(node, valueParser)
+        }
+        return []
+    })
+    return groupByAddress(_.compact(_.flatten(values)))
 }
 
 /**
@@ -114,10 +113,9 @@ function parseQuantities(metadata, valueParser) {
  *  @param {Object} metadata Transaction metada
  *  @returns {Object} parsed balance changes
  */
- export default function parseBalanceChanges(metadata) {
-  return parseQuantities(metadata, computeBalanceChange)
+export default function parseBalanceChanges(metadata) {
+    return parseQuantities(metadata, computeBalanceChange)
 }
-
 
 /**
  *  Computes the complete list of every final balance in the ledger
@@ -126,8 +124,8 @@ function parseQuantities(metadata, valueParser) {
  *  @param {Object} metadata Transaction metada
  *  @returns {Object} parsed balances
  */
-function parseFinalBalances(metadata) {
-  return parseQuantities(metadata, parseFinalBalance)
+export function parseFinalBalances(metadata) {
+    return parseQuantities(metadata, parseFinalBalance)
 }
 
 //module.exports.parseBalanceChanges = parseBalanceChanges

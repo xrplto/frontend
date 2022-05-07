@@ -86,7 +86,6 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
     }
 
     let precision = maxDecimals(orderType === ORDER_TYPE_BIDS ? Math.pow(offers[0].quality * multiplier, -1) : offers[0].quality * multiplier)
-    console.log("Precision:", precision);
 
     let index = 0
     const array = []
@@ -119,7 +118,6 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
         }
         array.push(obj)
     }
-    console.log("Len(array):", array.length);
     return array
 }
 

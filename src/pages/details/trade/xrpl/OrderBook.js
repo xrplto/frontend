@@ -120,9 +120,18 @@ export default function OrderBook({token, pair}) {
             const parsedBids = orderBookParser(orderBook.result.bids, ORDER_TYPE_BIDS);
             setAsks(parsedAsks);
             setBids(parsedBids);
+        } else {
+            const epochToDate = (epoch) => {
+                let date = new Date('2000-01-01T00:00:00Z')
+                date.setUTCSeconds(epoch)
+    
+                return date.toJSON()
+            }
+            const tx = orderBook;
+            if (tx.engine_result === 'tesSUCCESS') {
+                parseOrderBookChanges(tx);
+            }
         }
-
-        //console.log(orderBook);
         // 
         if (orderBook.numLevels) {
             //dispatch(addExistingState(res));
@@ -263,6 +272,39 @@ export default function OrderBook({token, pair}) {
                 baseObject = null
                 quoteObject = null
             } catch(e) { console.warn(e) }
+        }
+
+        tradeUpdates.sort((a, b) => {
+            if(tradeUpdates[0].direction === 'buy') {
+                // lowest first highest last
+                return a.rate - b.rate
+            } else {
+                return b.rate - a.rate
+            }
+        })
+
+        for(let updateItem of tradeUpdates) {
+            //context.dispatch('updateLastTradedPrice', updateItem.rate)
+            //context.dispatch('pushTxToTradeHistory', updateItem)
+            //payload.emitter.emit('tradeDataUpdate', updateItem)
+
+            console.log(updateItem);
+
+            // if (updateItem.base_currency === 'XRP' || updateItem.counter_currency === 'XRP') {
+                // if( (baseObject.grossValue <= 0 || baseObject.value <= 0) && (quoteObject.grossValue <= 0 || quoteObject.value <= 0) ) {
+                //     console.log('Do not update market price: both values negative')
+                // }
+                // else if( (baseObject.grossValue >= 0 || baseObject.value >= 0) && (quoteObject.grossValue >= 0 || quoteObject.value >= 0) ) {
+                //     console.log('Do not update market price: both values positive')
+                // }
+                // else {
+                    // context.dispatch('updateLastTradedPrice', updateItem.rate)
+                // }
+                // context.dispatch('pushTxToTradeHistory', updateItem)
+            // } else {
+            //     context.dispatch('updateLastTradedPrice', updateItem.rate)
+            //     context.dispatch('pushTxToTradeHistory', updateItem)
+            // }
         }
     }
 
