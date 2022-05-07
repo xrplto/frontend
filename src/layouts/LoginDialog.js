@@ -71,6 +71,6 @@ export default function LoginDialog(props) {
                     <LinkTypography variant="h4" color='primary'>Open in XUMM</LinkTypography>
                 </Link>
             </div>
-      </QRDialog>
+        </QRDialog>
     );
 }

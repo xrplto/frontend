@@ -1,3 +1,5 @@
+import { MOBILE_WIDTH, ORDER_TYPE_ASKS, ORDER_TYPE_BIDS } from "./constants";
+
 const round = (value, decimals) => {
     value = Number(value)
     if(value < 1) return value.toPrecision(decimals)
@@ -20,7 +22,7 @@ const maxDecimals = (float) => {
     }
 }
 
-const formatOrderBook = (offers, reverse) => {
+const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
     // { ASK
     //     "Account": "rsoLoDTcxn9wCEHHBR7enMhzQMThkB2w28",
     //     "BookDirectory": "5C8970D155D65DB8FF49B291D7EFFA4A09F9E8A68D9974B25A1997F7E14CDA39",
@@ -66,21 +68,25 @@ const formatOrderBook = (offers, reverse) => {
 
     if (offers.length < 1) return []
 
-    console.log("Len(offers):", offers.length);
-
     const getCurrency = offers[0].TakerGets?.currency || 'XRP'
     const payCurrency = offers[0].TakerPays?.currency || 'XRP'
     
     let multiplier = 1
-    if (reverse) {
-        if (getCurrency === 'XRP') multiplier = 1_000_000
-        else if (payCurrency === 'XRP') multiplier = 0.000_001
+    // It's the same on each condition?
+    if (orderType === ORDER_TYPE_BIDS) {
+        if (getCurrency === 'XRP')
+            multiplier = 1_000_000
+        else if (payCurrency === 'XRP')
+            multiplier = 0.000_001
     } else {
-        if (getCurrency === 'XRP') multiplier = 1_000_000
-        else if (payCurrency === 'XRP') multiplier = 0.000_001
+        if (getCurrency === 'XRP')
+            multiplier = 1_000_000
+        else if (payCurrency === 'XRP')
+            multiplier = 0.000_001
     }
 
-    let precision = maxDecimals(reverse ? Math.pow(offers[0].quality * multiplier, -1) : offers[0].quality * multiplier)
+    let precision = maxDecimals(orderType === ORDER_TYPE_BIDS ? Math.pow(offers[0].quality * multiplier, -1) : offers[0].quality * multiplier)
+    console.log("Precision:", precision);
 
     let index = 0
     const array = []
@@ -92,22 +98,22 @@ const formatOrderBook = (offers, reverse) => {
             total: 0
         }
 
-        var quantity = reverse ? (offer.TakerPays?.value || offer.TakerPays) : (offer.TakerGets?.value || offer.TakerGets)       
+        const quantity = Number(orderType === ORDER_TYPE_BIDS ? (offer.TakerPays?.value || offer.TakerPays) : (offer.TakerGets?.value || offer.TakerGets))
+        const price = round(orderType === ORDER_TYPE_BIDS ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier, precision)
 
-        if(i === 0) {
-            obj.price = round(reverse ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier, precision)
-            obj.quantity = Number(quantity)
-            obj.total = Number(quantity)
+        if (i === 0) {
+            obj.price = price
+            obj.quantity = quantity
+            obj.total = quantity
         } else {
-            const price = round(reverse ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier, precision)
             if (array[index].price === price) {
-                array[index].quantity = Number(array[index].quantity) + Number(quantity)
-                array[index].total = Number(array[index].total) + Number(quantity)
+                array[index].quantity += quantity
+                array[index].total += quantity
                 continue
             } else {
                 obj.price = price
-                obj.quantity = Number(quantity)
-                obj.total = Number(array[index].total) + Number(quantity)
+                obj.quantity = quantity
+                obj.total = array[index].total + quantity
                 index++
             }
         }
