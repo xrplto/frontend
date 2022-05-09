@@ -89,34 +89,62 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
 
     let index = 0
     const array = []
+    let total = 0;
     for (let i = 0; i < offers.length; i++) {
         const offer = offers[i]
         const obj = {
+            id: `${offer.Account}:${offer.Sequence}`,
             price: 0,
             quantity: 0,
-            total: 0
+            amount: 0,
+            total: 0,
+            partial: false
         }
 
-        const quantity = Number(orderType === ORDER_TYPE_BIDS ? (offer.TakerPays?.value || offer.TakerPays) : (offer.TakerGets?.value || offer.TakerGets))
-        const price = round(orderType === ORDER_TYPE_BIDS ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier, precision)
+        const gets = offer.taker_gets_funded || offer.TakerGets;
+        const pays = offer.taker_pays_funded || offer.TakerPays;
+        const partial = (offer.taker_gets_funded || offer.taker_pays_funded) ? true: false;
 
-        if (i === 0) {
-            obj.price = price
-            obj.quantity = quantity
-            obj.total = quantity
-        } else {
-            if (array[index].price === price) {
-                array[index].quantity += quantity
-                array[index].total += quantity
-                continue
-            } else {
-                obj.price = price
-                obj.quantity = quantity
-                obj.total = array[index].total + quantity
-                index++
-            }
-        }
-        array.push(obj)
+        const takerPays = pays.value || pays;
+        const takerGets = gets.value || gets;
+
+        const quantity = Number(orderType === ORDER_TYPE_BIDS ? takerPays : takerGets)
+        const price = orderType === ORDER_TYPE_BIDS ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier
+
+        const takerGetsA = offer.TakerGets.value || offer.TakerGets;
+        const takerPaysA = offer.TakerPays.value || offer.TakerPays;
+
+        const quantityA = Number(orderType === ORDER_TYPE_BIDS ? takerPaysA : takerGetsA)
+
+        // const quantity = Number(orderType === ORDER_TYPE_BIDS ? (offer.TakerPays?.value || offer.TakerPays) : (offer.TakerGets?.value || offer.TakerGets))
+        // const price = round(orderType === ORDER_TYPE_BIDS ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier, precision)
+
+        // if (i === 0) {
+        //     obj.price = price
+        //     obj.quantity = quantity
+        //     obj.total = quantity
+        // } else {
+        //     if (array[index].price === price) {
+        //         array[index].quantity += quantity
+        //         array[index].total += quantity
+        //         continue
+        //     } else {
+        //         obj.price = price
+        //         obj.quantity = quantity
+        //         obj.total = array[index].total + quantity
+        //         index++
+        //     }
+        // }
+        total += quantity;
+        obj.price = price
+        obj.quantity = quantity
+        obj.quantityA = quantityA;
+        obj.amount = quantity * price
+        obj.total = total
+        obj.partial = partial
+
+        if (quantity > 0)
+            array.push(obj)
     }
     return array
 }

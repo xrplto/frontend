@@ -132,12 +132,10 @@ export default function TradeData({token, pairs}) {
             </Stack>
             
             <Grid container spacing={3} sx={{p:0}}>
-                <Grid item xs={12} md={6} lg={6}>
-                    <OrderBook />
-                    {/* <OrdersList token={token} pair={pair} /> */}
-                </Grid>
-                <Grid item xs={12} md={6} lg={6}>
+                <Grid item xs={12} md={12} lg={12}>
+                    {/* <OrderBook /> */}
                     <OrderBook2 token={token} pair={pair}/>
+                    {/* <OrdersList token={token} pair={pair} /> */}
                 </Grid>
             </Grid>
         </StackStyle>

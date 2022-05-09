@@ -21,10 +21,12 @@ const TitleRow = ({reversedFieldsOrder = false, windowWidth}) => {
         <>
           <span>PRICE</span>
           <span>SIZE</span>
+          <span></span>
           <span>TOTAL</span>
         </> :
         <>
           <span>TOTAL</span>
+          <span></span>
           <span>SIZE</span>
           <span>PRICE</span>
         </>}

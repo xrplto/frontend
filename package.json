@@ -75,6 +75,7 @@
     "react-infinite-scroll-component": "6.1.0",
     "styled-components": "^5.3.5",
     "bignumber.js": "^9.0.2",
+    "decimal.js": "^10.3.1",
     "assert": "^2.0.0"
   },
   "devDependencies": {
