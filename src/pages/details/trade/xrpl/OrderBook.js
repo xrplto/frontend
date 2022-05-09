@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import useWebSocket from "react-use-websocket";
 import { PuffLoader } from "react-spinners";
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import DepthVisualizer from "./DepthVisualizer";
 
 import orderBookParser from './orderbook-parser';
@@ -27,6 +27,8 @@ import {
     TableRow,
     Typography
 } from '@mui/material';
+
+import { tableCellClasses } from "@mui/material/TableCell";
 
 const LoaderContainer = styled('div')({
     display: 'flex',
@@ -119,7 +121,7 @@ parseOffer_fn = function(e) {
 
 export default function OrderBook({token, pair}) {
     const WSS_FEED_URL = 'wss://ws.xrpl.to';
-    
+    const theme = useTheme();
     const [isFeedKilled, setIsFeedKilled] = useState(false);
     const [isPageVisible, setIsPageVisible] = useState(true);
     const [bids, setBids] = useState([]);
@@ -149,10 +151,10 @@ export default function OrderBook({token, pair}) {
         const handleVisibilityChange = () => {
             const isHidden = document['hidden'];
             if (isHidden) {
-                document.title = 'Orderbook Paused';
+                //document.title = 'Orderbook Paused';
                 setIsPageVisible(false);
             } else {
-                document.title = 'Orderbook';
+                //document.title = 'Orderbook';
                 setIsPageVisible(true);
             }
         };
@@ -505,25 +507,28 @@ export default function OrderBook({token, pair}) {
                     <>
                     {isBid ?
                         <TableRow
-                            hover
                             key={total + quantity}
                             tabIndex={-1}
-                            style={{background: `linear-gradient(to left, #113534 ${depth}%, rgba(0, 0, 0, 0.0) 0%)`}}
+                            hover
+                            style={{
+                                background: `linear-gradient(to left, #113534, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`,
+                                "&:hover": {
+                                    background: "blue !important"
+                                }
+                            }}
                         >
                             <TableCell>{amount}</TableCell>
                             <TableCell>{quantityA}</TableCell>
                             <TableCell style={{color: partial ? '#FFC107':''}}>{quantity}</TableCell>
                             <TableCell style={{color: '#118860'}}>{price}</TableCell>
-                            <TableCell>{depth}%</TableCell>
                         </TableRow>
                     :
                         <TableRow
                             hover
                             key={total + quantity}
                             tabIndex={-1}
-                            style={{background: `linear-gradient(to right, #3d1e28 ${depth}%, rgba(0, 0, 0, 0.0) 0%)`}}
+                            style={{background: `linear-gradient(to right, #3d1e28, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`}}
                         >
-                            <TableCell>{depth}%</TableCell>
                             <TableCell style={{color: '#bb3336'}}>{price}</TableCell>
                             <TableCell style={{color: partial ? '#FFC107':''}}>{quantity}</TableCell>
                             <TableCell>{quantityA}</TableCell>
@@ -546,14 +551,22 @@ export default function OrderBook({token, pair}) {
             {bids.length && asks.length ?
                 <Grid container spacing={0} sx={{p:0}}>
                     <Grid item xs={12} md={6} lg={6}>
-                        <Table>
+                        <Table
+                            stickyHeader
+                            size={'small'}
+                            sx={{
+                                [`& .${tableCellClasses.root}`]: {
+                                    borderBottom: "0px solid",
+                                    borderBottomColor: theme.palette.divider
+                                }
+                            }}
+                        >
                             <TableHead>
                                 <TableRow>
                                     <TableCell align="left">Total</TableCell>
                                     <TableCell align="left"></TableCell>
                                     <TableCell align="left">Size</TableCell>
                                     <TableCell align="left">Price</TableCell>
-                                    <TableCell align="left">%</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -562,10 +575,18 @@ export default function OrderBook({token, pair}) {
                         </Table>
                     </Grid>
                     <Grid item xs={12} md={6} lg={6} sx={{p:0}}>
-                        <Table>
+                        <Table
+                            stickyHeader
+                            size={'small'}
+                            sx={{
+                                [`& .${tableCellClasses.root}`]: {
+                                    borderBottom: "0px solid",
+                                    borderBottomColor: theme.palette.divider
+                                }
+                            }}
+                        >
                             <TableHead>
                                 <TableRow>
-                                    <TableCell align="left">%</TableCell>
                                     <TableCell align="left">Price</TableCell>
                                     <TableCell align="left">Size</TableCell>
                                     <TableCell align="left"></TableCell>
