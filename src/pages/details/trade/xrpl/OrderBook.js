@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import useWebSocket from "react-use-websocket";
 import { PuffLoader } from "react-spinners";
 import { styled } from '@mui/material/styles';
-import TitleRow from "./TitleRow";
-import PriceLevelRow from "./PriceLevelRow";
 import DepthVisualizer from "./DepthVisualizer";
 
 import orderBookParser from './orderbook-parser';
 import { formatNumber } from "./helpers";
 
-import { MOBILE_WIDTH, ORDER_TYPE_ASKS, ORDER_TYPE_BIDS } from "./constants";
+import { fNumber } from '../../../../utils/formatNumber';
+
+import { ORDER_TYPE_ASKS, ORDER_TYPE_BIDS } from "./constants";
 
 import { parseOrderbookChanges, parseBalanceChanges } from './transactionparser'
 
@@ -17,7 +17,14 @@ import {Decimal} from 'decimal.js';
 
 import {
     Button,
+    Grid,
     Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
     Typography
 } from '@mui/material';
 
@@ -28,15 +35,15 @@ const LoaderContainer = styled('div')({
     height: '79vh'
 });
 
-const TableContainer = styled('div')({
-    display: 'flex',
-    width: '100%',
-    flexDirection: 'column',
-    color: '#bfc1c8',
-    '@media only screen and (min-width: 800px)': {
-        width: '50%'
-    }
-});
+// const TableContainer = styled('div')({
+//     display: 'flex',
+//     width: '100%',
+//     flexDirection: 'column',
+//     color: '#bfc1c8',
+//     '@media only screen and (min-width: 800px)': {
+//         width: '50%'
+//     }
+// });
 
 const PriceLevelRowContainer = styled('div')({
     margin: '.155em 0'
@@ -113,19 +120,10 @@ parseOffer_fn = function(e) {
 export default function OrderBook({token, pair}) {
     const WSS_FEED_URL = 'wss://ws.xrpl.to';
     
-    const [windowWidth, setWindowWidth] = useState(0);
     const [isFeedKilled, setIsFeedKilled] = useState(false);
     const [isPageVisible, setIsPageVisible] = useState(true);
     const [bids, setBids] = useState([]);
     const [asks, setAsks] = useState([]);
-
-    // Window width detection
-    useEffect(() => {
-        window.onresize = () => {
-            setWindowWidth(window.innerWidth);
-        }
-        setWindowWidth(() => window.innerWidth);
-    }, []);
 
     // Page Visibility detection
     useEffect(() => {
@@ -468,7 +466,7 @@ export default function OrderBook({token, pair}) {
         const sortedLevelsByPrice = [ ...levels ].sort(
             (a, b) => {
                 let result = 0;
-                if (orderType === ORDER_TYPE_BIDS || windowWidth < MOBILE_WIDTH) {
+                if (orderType === ORDER_TYPE_BIDS) {
                     result = b.price - a.price;
                 } else {
                     result = a.price - b.price;
@@ -477,63 +475,105 @@ export default function OrderBook({token, pair}) {
             }
         );
 
-        // { ASK
-        //     "price": "0.7325",
-        //     "quantity": 100,
-        //     "total": 66863.44407301412
-        // }
-
-        // { BID
-        //     "price": "1.403",
-        //     "quantity": 49595232,
-        //     "total": 33298479983
-        // }
-
-        // [ 36401, 450, 31620, 2.1745095490677873 ]
-        // Price, Size, Total, Depth
+        const array = sortedLevelsByPrice.slice(0, 30);
 
         return (
-            sortedLevelsByPrice.map((level, idx) => {
-                const total = formatNumber(level.total);
-                const amount = formatNumber(level.amount);
-                const depth = getIndicatorProgress(level.quantity); // level[3];
-                const quantity = formatNumber(level.quantity);
+            array.map((level, idx) => {
+                const depth = getIndicatorProgress(level.quantity);
+                const total = fNumber(level.total);
+                const amount = fNumber(level.amount);
+                const quantity = fNumber(level.quantity);
+                const quantityA = fNumber(level.quantityA);
+                const price = fNumber(level.price);
+                const partial = level.partial;
+                const isBid= orderType === ORDER_TYPE_BIDS;
+                {/* <PriceLevelRowContainer key={level.id}>
+                    <DepthVisualizer key={depth} windowWidth={windowWidth} depth={depth} orderType={orderType} />
+                    <PriceLevelRow
+                        key={quantity + total}
+                        level={level}
+                        orderType={orderType}
+                        windowWidth={windowWidth} />
+                </PriceLevelRowContainer> */}
+
+                const DepthVisualizerColors = {
+                    BIDS: "#113534",
+                    ASKS: "#3d1e28"
+                };
+
                 return (
-                    <PriceLevelRowContainer key={idx + depth}>
-                        <DepthVisualizer key={depth} windowWidth={windowWidth} depth={depth} orderType={orderType} />
-                        <PriceLevelRow
-                            key={quantity + total}
-                            level={level}
-                            orderType={orderType}
-                            windowWidth={windowWidth} />
-                    </PriceLevelRowContainer>
+                    <>
+                    {isBid ?
+                        <TableRow
+                            hover
+                            key={total + quantity}
+                            tabIndex={-1}
+                            style={{background: `linear-gradient(to left, #113534 ${depth}%, rgba(0, 0, 0, 0.0) ${100-depth}%)`}}
+                        >
+                            <TableCell>{amount}</TableCell>
+                            <TableCell>{quantityA}</TableCell>
+                            <TableCell style={{color: partial ? '#FFC107':''}}>{quantity}</TableCell>
+                            <TableCell style={{color: '#118860'}}>{price}</TableCell>
+                        </TableRow>
+                    :
+                        <TableRow
+                            hover
+                            key={total + quantity}
+                            tabIndex={-1}
+                            style={{background: `linear-gradient(to right, #3d1e28 ${depth}%, rgba(0, 0, 0, 0.0) ${100-depth}%)`}}
+                        >
+                            <TableCell style={{color: '#bb3336'}}>{price}</TableCell>
+                            <TableCell style={{color: partial ? '#FFC107':''}}>{quantity}</TableCell>
+                            <TableCell>{quantityA}</TableCell>
+                            <TableCell>{amount}</TableCell>
+                        </TableRow>}
+                    </>
                 );
             })
         );
     };
 
     if (isPageVisible) {
-        return <Stack>
+        return (
+        <Stack>
             <Stack direction="row">
-                <Typography variant='h3'>Order Book</Typography>
+                <Typography variant='h4'>Order Book</Typography>
                 {/* <Spread bids={bids} asks={asks} /> */}
                 {/* <GroupingSelectBox options={options[productId]} /> */}
             </Stack>
             {bids.length && asks.length ?
-                <Stack direction="row">
-                    <TableContainer>
-                        {windowWidth > MOBILE_WIDTH && <TitleRow windowWidth={windowWidth} reversedFieldsOrder={false} />}
-                        <div>
-                            {buildPriceLevels(bids, ORDER_TYPE_BIDS)}
-                        </div>
-                    </TableContainer>
-                    <TableContainer>
-                        <TitleRow windowWidth={windowWidth} reversedFieldsOrder={true} />
-                        <div>
-                            {buildPriceLevels(asks, ORDER_TYPE_ASKS)}
-                        </div>
-                    </TableContainer>
-                </Stack>
+                <Grid container spacing={0} sx={{p:0}}>
+                    <Grid item xs={12} md={6} lg={6}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell align="left">Total</TableCell>
+                                    <TableCell align="left"></TableCell>
+                                    <TableCell align="left">Size</TableCell>
+                                    <TableCell align="left">Price</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {buildPriceLevels(bids, ORDER_TYPE_BIDS)}
+                            </TableBody>
+                        </Table>
+                    </Grid>
+                    <Grid item xs={12} md={6} lg={6} sx={{p:0}}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell align="left">Price</TableCell>
+                                    <TableCell align="left">Size</TableCell>
+                                    <TableCell align="left"></TableCell>
+                                    <TableCell align="left">Total</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {buildPriceLevels(asks, ORDER_TYPE_ASKS)}
+                            </TableBody>
+                        </Table>
+                    </Grid>
+                </Grid>
             :
                 <LoaderContainer>
                     <PuffLoader color={"#00AB55"} size={50} />
@@ -548,7 +588,7 @@ export default function OrderBook({token, pair}) {
         >
           <Button variant="outlined" color="error" onClick={toggleFeed}>{isFeedKilled ? 'Renew feed' : 'Kill Feed'}</Button>
         </div>
-        </Stack>
+        </Stack> )
     } else
         return 'HIDDEN PAGE.';
 };

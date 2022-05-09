@@ -6,6 +6,19 @@ import { formatNumber } from "./helpers";
 
 import styled from "styled-components";
 
+import { fNumber } from '../../../../utils/formatNumber';
+
+import {
+    Avatar,
+    Box,
+    Stack,
+    Table,
+    TableRow,
+    TableBody,
+    TableCell,
+    Typography
+} from '@mui/material';
+
 const Container = styled.div`
     display: flex;
     justify-content: space-around;
@@ -52,27 +65,28 @@ const formatPrice = (val) => {
 };
 
 const PriceLevelRow = ({ level, orderType, windowWidth }) => {
-    const total = formatNumber(level.total);
-    const amount = formatNumber(level.amount);
-    const quantity = formatNumber(level.quantity);
-    const quantityA = formatNumber(level.quantityA);
-    const price = formatPrice(level.price);
+    const total = fNumber(level.total);
+    const amount = fNumber(level.amount);
+    const quantity = fNumber(level.quantity);
+    const quantityA = fNumber(level.quantityA);
+    const price = fNumber(level.price);
     const partial = level.partial;
-    
+    const isBid= orderType === ORDER_TYPE_BIDS;
+
     return (
-        <Container data-testid='price-level-row' isPartial={partial} isBid={orderType === ORDER_TYPE_BIDS} windowWidth={windowWidth}>
+        <Container data-testid='price-level-row' isPartial={partial} isBid={isBid} windowWidth={windowWidth}>
             {orderType === ORDER_TYPE_ASKS || windowWidth < MOBILE_WIDTH ?
                 <>
-                    <span className='price'>{price}</span>
-                    <span className='quantity'>{quantity}</span>
-                    <span>{quantityA}</span>
-                    <span>{amount}</span>
+                    <TableCell style={{color: '#bb3336'}}>{price}</TableCell>
+                    <TableCell style={{color: partial ? '#FFC107':''}}>{quantity}</TableCell>
+                    <TableCell>{quantityA}</TableCell>
+                    <TableCell>{amount}</TableCell>
                 </> :
                 <>
-                    <span>{amount}</span>
-                    <span>{quantityA}</span>
-                    <span className='quantity'>{quantity}</span>
-                    <span className='price'>{price}</span>
+                    <TableCell>{amount}</TableCell>
+                    <TableCell>{quantityA}</TableCell>
+                    <TableCell style={{color: partial ? '#FFC107':''}}>{quantity}</TableCell>
+                    <TableCell style={{color: '#118860'}}>{price}</TableCell>
                 </>}
         </Container>
     );
