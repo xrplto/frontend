@@ -115,6 +115,8 @@ function parseOrderChange(node) {
         value: node.finalFields.Account || node.newFields.Account
     })
 
+    orderChange.id = `${orderChange.account}:${orderChange.sequence}`
+
     return orderChange
 }
 
