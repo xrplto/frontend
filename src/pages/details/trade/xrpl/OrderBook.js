@@ -508,20 +508,22 @@ export default function OrderBook({token, pair}) {
                             hover
                             key={total + quantity}
                             tabIndex={-1}
-                            style={{background: `linear-gradient(to left, #113534 ${depth}%, rgba(0, 0, 0, 0.0) ${100-depth}%)`}}
+                            style={{background: `linear-gradient(to left, #113534 ${depth}%, rgba(0, 0, 0, 0.0) 0%)`}}
                         >
                             <TableCell>{amount}</TableCell>
                             <TableCell>{quantityA}</TableCell>
                             <TableCell style={{color: partial ? '#FFC107':''}}>{quantity}</TableCell>
                             <TableCell style={{color: '#118860'}}>{price}</TableCell>
+                            <TableCell>{depth}%</TableCell>
                         </TableRow>
                     :
                         <TableRow
                             hover
                             key={total + quantity}
                             tabIndex={-1}
-                            style={{background: `linear-gradient(to right, #3d1e28 ${depth}%, rgba(0, 0, 0, 0.0) ${100-depth}%)`}}
+                            style={{background: `linear-gradient(to right, #3d1e28 ${depth}%, rgba(0, 0, 0, 0.0) 0%)`}}
                         >
+                            <TableCell>{depth}%</TableCell>
                             <TableCell style={{color: '#bb3336'}}>{price}</TableCell>
                             <TableCell style={{color: partial ? '#FFC107':''}}>{quantity}</TableCell>
                             <TableCell>{quantityA}</TableCell>
@@ -551,6 +553,7 @@ export default function OrderBook({token, pair}) {
                                     <TableCell align="left"></TableCell>
                                     <TableCell align="left">Size</TableCell>
                                     <TableCell align="left">Price</TableCell>
+                                    <TableCell align="left">%</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -562,6 +565,7 @@ export default function OrderBook({token, pair}) {
                         <Table>
                             <TableHead>
                                 <TableRow>
+                                    <TableCell align="left">%</TableCell>
                                     <TableCell align="left">Price</TableCell>
                                     <TableCell align="left">Size</TableCell>
                                     <TableCell align="left"></TableCell>
