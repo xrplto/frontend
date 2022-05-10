@@ -109,7 +109,7 @@ export const palette_light = {
     chartFill: GREY[800],
     text: { primary: GREY[800], secondary: GREY[600], disabled: GREY[500], widget: GREY[0] },
     background: { paper: GREY[100], default: GREY[200], neutral: GREY[200], widget: alpha('#3366FF', 1) },
-    //background: { paper: alpha('#292F4A', 1), default: alpha('#1c2033', 1), neutral: GREY[200], widget: alpha('#3366FF', 1)},
+    // background: { paper: alpha('#292F4A', 1), default: alpha('#1c2033', 1), neutral: GREY[200], widget: alpha('#3366FF', 1)},
     action: {
         active: GREY[600],
         hover: GREY[500_8],

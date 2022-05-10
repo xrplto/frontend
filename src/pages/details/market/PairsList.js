@@ -27,8 +27,8 @@ const StackStyle = styled(Stack)(({ theme }) => ({
     //backdropFilter: 'blur(2px)',
     //WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
     //backgroundColor: alpha(theme.palette.background.default, 0.0),
-    borderRadius: '1px',
-    border: '1px solid #323546',
+    // borderRadius: '1px',
+    // border: '1px solid #323546',
     //padding: '0em 0.5em 1.5em 0.5em',
     //backgroundColor: alpha("#919EAB", 0.03),
 }));
@@ -83,7 +83,7 @@ export default function PairsList({token, pairs}) {
             <Typography variant="h5" sx={{ pl: 2, pt: 2 }}>Pairs<span style={badge24hStyle}>24h</span></Typography>
             <Table stickyHeader sx={{
                 [`& .${tableCellClasses.root}`]: {
-                    borderBottom: "1px solid",
+                    borderBottom: "0px solid",
                     borderBottomColor: theme.palette.divider
                 }
             }}>
@@ -128,6 +128,13 @@ export default function PairsList({token, pairs}) {
                             soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}%2B${curr2.issuer}`;
                         else
                             soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}`;
+
+                        let gatehubDexURL = '';
+                        if (curr2.issuer)
+                            gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}+${curr2.issuer}`;
+                        else
+                            gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}`;
+                            
 
                         let xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
 
@@ -217,7 +224,7 @@ export default function PairsList({token, pairs}) {
                                                     rel="noreferrer noopener"
                                                 >
                                                     <IconButton edge="end" aria-label="bithomp">
-                                                        <Avatar alt="bithomp" src="/static/bithomp.png" sx={{ width: 16, height: 16 }} />
+                                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
                                                     </IconButton>
                                                 </Link>
                                             </Stack>
@@ -233,7 +240,7 @@ export default function PairsList({token, pairs}) {
                                                     rel="noreferrer noopener"
                                                 >
                                                     <IconButton edge="end" aria-label="bithomp">
-                                                        <Avatar alt="bithomp" src="/static/bithomp.png" sx={{ width: 16, height: 16 }} />
+                                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
                                                     </IconButton>
                                                 </Link>
                                             </Stack>
@@ -251,6 +258,17 @@ export default function PairsList({token, pairs}) {
                                         >
                                             <IconButton edge="end" aria-label="solo">
                                                 <Avatar alt="sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
+                                            </IconButton>
+                                        </Link>
+                                        <Link
+                                            underline="none"
+                                            color="inherit"
+                                            target="_blank"
+                                            href={gatehubDexURL}
+                                            rel="noreferrer noopener"
+                                        >
+                                            <IconButton edge="end" aria-label="solo">
+                                                <Avatar alt="gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
                                             </IconButton>
                                         </Link>
                                         <Link

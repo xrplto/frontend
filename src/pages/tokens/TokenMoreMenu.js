@@ -58,7 +58,7 @@ export default function TokenMoreMenu({acct, currency}) {
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xumm" src="/static/gatehub.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="gatehub" src="/static/gatehub.jpg" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="GateHub" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -70,7 +70,7 @@ export default function TokenMoreMenu({acct, currency}) {
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xumm" src="/static/xrplorer.svg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="xrplorer" src="/static/xrplorer.svg" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPLORER" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link> */}
@@ -98,19 +98,18 @@ export default function TokenMoreMenu({acct, currency}) {
                         <ListItemText primary="Sologenic DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
-                {/* <MenuItem sx={{ color: 'text.secondary' }}>
-                    <ListItemIcon>
-                        <Icon icon={trash2Outline} width={24} height={24} />
-                    </ListItemIcon>
-                    <ListItemText primary="Delete" primaryTypographyProps={{ variant: 'body2' }} />
-                </MenuItem>
-
-                <MenuItem component={RouterLink} to="#" sx={{ color: 'text.secondary' }}>
-                    <ListItemIcon>
-                        <Icon icon={editFill} width={24} height={24} />
-                    </ListItemIcon>
-                    <ListItemText primary="Edit" primaryTypographyProps={{ variant: 'body2' }} />
-                </MenuItem> */}
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://gatehub.net/markets/${currency}+${acct}/XRP`}
+                    rel="noreferrer noopener"
+                >
+                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="gatehub" src="/static/gatehub.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="GateHub DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
             </Menu>
         </>
     );

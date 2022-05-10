@@ -252,7 +252,7 @@ export default function OrderBook({token, pair}) {
         let avgA
 
         if (asks.length >= 1) {
-            totA = asks[asks.length - 1].total
+            totA = asks[asks.length - 1].sum
             avgA = totA / asks.length
         }
 
@@ -260,7 +260,7 @@ export default function OrderBook({token, pair}) {
         let avgB
 
         if (bids.length >= 1) {
-            totB = bids[bids.length - 1].total
+            totB = bids[bids.length - 1].sum
             avgB = totB / bids.length
         }
 
@@ -292,20 +292,18 @@ export default function OrderBook({token, pair}) {
 
         return (
             array.map((level, idx) => {
-                const depth = getIndicatorProgress(level.quantity);
-                const total = fNumber(level.total);
-                const amount = fNumber(level.amount);
-                const quantity = fNumber(level.quantity);
-                const quantityA = fNumber(level.quantityA);
                 const price = fNumber(level.price);
-                const partial = level.partial;
+                const amount = fNumber(level.amount);
+                const value = fNumber(level.value);
+                const sum = fNumber(level.sum);
+                const depth = getIndicatorProgress(level.amount);
+                
                 const isBid= orderType === ORDER_TYPE_BIDS;
-
                 return (
                     <>
                     {isBid ?
                         <TableRow
-                            key={total + quantity}
+                            key={'BID' + sum + amount}
                             tabIndex={-1}
                             hover
                             style={{
@@ -315,22 +313,22 @@ export default function OrderBook({token, pair}) {
                                 }
                             }}
                         >
+                            <TableCell>{sum}</TableCell>
+                            <TableCell>{value}</TableCell>
                             <TableCell>{amount}</TableCell>
-                            <TableCell>{quantityA}</TableCell>
-                            <TableCell style={{color: partial ? '#FFC107':''}}>{quantity}</TableCell>
                             <TableCell style={{color: '#118860'}}>{price}</TableCell>
                         </TableRow>
                     :
                         <TableRow
                             hover
-                            key={total + quantity}
+                            key={'ASK' + sum + amount}
                             tabIndex={-1}
                             style={{background: `linear-gradient(to right, #3d1e28, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`}}
                         >
                             <TableCell style={{color: '#bb3336'}}>{price}</TableCell>
-                            <TableCell style={{color: partial ? '#FFC107':''}}>{quantity}</TableCell>
-                            <TableCell>{quantityA}</TableCell>
                             <TableCell>{amount}</TableCell>
+                            <TableCell>{value}</TableCell>
+                            <TableCell>{sum}</TableCell>
                         </TableRow>}
                     </>
                 );
@@ -341,14 +339,10 @@ export default function OrderBook({token, pair}) {
     if (isPageVisible) {
         return (
         <Stack>
-            <Stack direction="row">
-                <Typography variant='h4'>Order Book</Typography>
-                {/* <Spread bids={bids} asks={asks} /> */}
-                {/* <GroupingSelectBox options={options[productId]} /> */}
-            </Stack>
             {bids.length || asks.length ?
                 <Grid container spacing={0} sx={{p:0}}>
                     <Grid item xs={12} md={6} lg={6}>
+                        <Typography variant='subtitle1' sx={{color:'#007B55', ml:2, mt:2, mb:1}}>Buy Orders</Typography>
                         <Table
                             stickyHeader
                             size={'small'}
@@ -361,10 +355,10 @@ export default function OrderBook({token, pair}) {
                         >
                             <TableHead>
                                 <TableRow>
-                                    <TableCell align="left">Total</TableCell>
-                                    <TableCell align="left"></TableCell>
-                                    <TableCell align="left">Size</TableCell>
-                                    <TableCell align="left">Price</TableCell>
+                                    <TableCell align="left">Sum</TableCell>
+                                    <TableCell align="left">Value</TableCell>
+                                    <TableCell align="left">Amount</TableCell>
+                                    <TableCell align="left">Bid</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -373,6 +367,7 @@ export default function OrderBook({token, pair}) {
                         </Table>
                     </Grid>
                     <Grid item xs={12} md={6} lg={6} sx={{p:0}}>
+                        <Typography variant='subtitle1' sx={{color:'#B72136', ml:2, mt:2, mb:1}}>Sell Orders</Typography>
                         <Table
                             stickyHeader
                             size={'small'}
@@ -385,10 +380,10 @@ export default function OrderBook({token, pair}) {
                         >
                             <TableHead>
                                 <TableRow>
-                                    <TableCell align="left">Price</TableCell>
-                                    <TableCell align="left">Size</TableCell>
-                                    <TableCell align="left"></TableCell>
-                                    <TableCell align="left">Total</TableCell>
+                                    <TableCell align="left">Ask</TableCell>
+                                    <TableCell align="left">Amount</TableCell>
+                                    <TableCell align="left">Value</TableCell>
+                                    <TableCell align="left">Sum</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>

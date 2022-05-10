@@ -3,19 +3,22 @@ import { useState } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 import { withStyles } from '@mui/styles';
 import {
+    Avatar,
     FormControl,
     Grid,
+    IconButton,
     InputLabel,
+    Link,
     MenuItem,
     Select,
     Stack,
+    Tooltip,
     Typography
 } from '@mui/material';
 import { MD5 } from 'crypto-js';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
-import {OrderBook} from "./orderbook";
-import OrderBook2 from "./xrpl/OrderBook";
+import OrderBook from "./OrderBook";
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
@@ -52,6 +55,34 @@ const badge24hStyle = {
     padding: '1px 4px'
 };
 
+const badgeDEXStyle = {
+    display: 'inline-block',
+    marginLeft: '4px',
+    marginRight: '4px',
+    color: '#C4CDD5',
+    fontSize: '11px',
+    fontWeight: '500',
+    lineHeight: '18px',
+    // backgroundColor: '#7A0C2E',
+    borderRadius: '4px',
+    border: '1px solid #B78103',
+    padding: '1px 4px'
+};
+
+const StackDexStyle = styled(Stack)(({ theme }) => ({
+    display: 'inline-block',
+    marginLeft: '4px',
+    marginRight: '4px',
+    color: '#C4CDD5',
+    fontSize: '11px',
+    fontWeight: '500',
+    lineHeight: '18px',
+    // backgroundColor: '#7A0C2E',
+    borderRadius: '8px',
+    border: `1px solid ${theme.palette.divider}`,
+    padding: '0px 12px'
+}));
+
 // function getPair(issuer, code) {
 //     // issuer, currencyCode, 'XRP', undefined
 //     const t1 = 'undefined_XRP';
@@ -69,9 +100,6 @@ const badge24hStyle = {
 // }
 
 export default function TradeData({token, pairs}) {
-    const theme = useTheme();
-    const EPOCH_OFFSET = 946684800;
-    const BASE_URL = 'https://api.xrpl.to/api';
     const [sel, setSel] = useState(1);
     const [pair, setPair] = useState(pairs[0]);
     const {
@@ -85,6 +113,24 @@ export default function TradeData({token, pairs}) {
         setSel(idx);
         setPair(pairs[idx-1]);
     }
+
+    const curr1 = pair.curr1;
+    const curr2 = pair.curr2;
+
+    let soloDexURL = '';
+    if (curr2.issuer)
+        soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}%2B${curr2.issuer}`;
+    else
+        soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}`;
+
+    let gatehubDexURL = '';
+    if (curr2.issuer)
+        gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}+${curr2.issuer}`;
+    else
+        gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}`;
+        
+
+    let xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
 
     return (
         <StackStyle>
@@ -125,6 +171,48 @@ export default function TradeData({token, pairs}) {
                         }
                     </CustomSelect>
                 </FormControl>
+                <StackDexStyle direction="row" spacing={2} alignItems="center">
+                    DEX
+                    <Tooltip title="Sologenic">
+                        <Link
+                            underline="none"
+                            color="inherit"
+                            target="_blank"
+                            href={soloDexURL}
+                            rel="noreferrer noopener"
+                        >
+                            <IconButton edge="end" aria-label="solo">
+                                <Avatar variant="rounded" alt="sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
+                            </IconButton>
+                        </Link>
+                    </Tooltip>
+                    <Tooltip title="GateHub">
+                        <Link
+                            underline="none"
+                            color="inherit"
+                            target="_blank"
+                            href={gatehubDexURL}
+                            rel="noreferrer noopener"
+                        >
+                            <IconButton edge="end" aria-label="solo">
+                                <Avatar variant="rounded" alt="gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
+                            </IconButton>
+                        </Link>
+                    </Tooltip>
+                    <Tooltip title="XUMM">
+                        <Link
+                            underline="none"
+                            color="inherit"
+                            target="_blank"
+                            href={xummDexURL}
+                            rel="noreferrer noopener"
+                        >
+                            <IconButton edge="end" aria-label="solo">
+                                <Avatar variant="rounded" alt="xumm" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
+                            </IconButton>
+                        </Link>
+                    </Tooltip>
+                </StackDexStyle>
                 {/* <Stack direction="row" spacing={1} alignItems="center">
                     <Typography variant="caption">24H Volume:</Typography>
                     <Typography variant="h5" sx={{ color: '#B72136' }}>{fNumber(vol)}</Typography>
@@ -132,10 +220,10 @@ export default function TradeData({token, pairs}) {
             </Stack>
             
             <Grid container spacing={3} sx={{p:0}}>
-                <Grid item xs={12} md={12} lg={12}>
-                    {/* <OrderBook /> */}
-                    <OrderBook2 token={token} pair={pair}/>
-                    {/* <OrdersList token={token} pair={pair} /> */}
+                <Grid item xs={12} md={8} lg={8}>
+                    <OrderBook token={token} pair={pair}/>
+                </Grid>
+                <Grid item xs={12} md={4} lg={4}>
                 </Grid>
             </Grid>
         </StackStyle>
