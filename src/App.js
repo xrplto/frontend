@@ -13,14 +13,12 @@ import { Backdrop } from "@mui/material";
 import { HashLoader } from "react-spinners";
 // ----------------------------------------------------------------------
 import statusReducer from "./redux/statusSlice";
-import orderbookReducer from './pages/details/trade/orderbook/orderbookSlice';
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 
 const store = configureStore({
     reducer: {
-        status: statusReducer,
-        orderbook: orderbookReducer,
+        status: statusReducer
     },
 });
 
