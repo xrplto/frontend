@@ -44,6 +44,8 @@ export default function OrderBook({token, pair}) {
     const [isPageVisible, setIsPageVisible] = useState(true);
     const [bids, setBids] = useState([]);
     const [asks, setAsks] = useState([]);
+    const [ready, setReady] = useState(false);
+    const [reqID, setReqID] = useState(1);
 
     // Page Visibility detection
     useEffect(() => {
@@ -91,62 +93,260 @@ export default function OrderBook({token, pair}) {
     }
 
     const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-        onOpen: () => console.log('wss://ws.xrpl.to opened'),
-        onClose: () => console.log('wss://ws.xrpl.to closed'),
+        onOpen: () => {console.log('wss://ws.xrpl.to opened');setReady(true);},
+        onClose: () => {console.log('wss://ws.xrpl.to closed');setReady(false);},
         shouldReconnect: (closeEvent) => true,
         onMessage: (event) =>  processMessages(event)
     });
 
+    useEffect(() => {
+        function setRequestID() {
+            if (!ready) return;
+            if (!pair) return;
+            setReqID(reqID + 2);
+            /*{
+                "id":17,
+                "command":"book_offers",
+                "taker_gets":{
+                    "currency":"534F4C4F00000000000000000000000000000000",
+                    "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
+                },
+                "taker_pays":{
+                    "currency":"XRP"
+                },
+                "ledger_index":"validated",
+                "limit":200
+            }
+
+            {
+                "id":20,
+                "command":"book_offers",
+                "taker_gets":{"currency":"XRP"},
+                "taker_pays":{
+                    "currency":"534F4C4F00000000000000000000000000000000",
+                    "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
+                },
+                "ledger_index":"validated",
+                "limit":200
+            }*/
+            const curr1 = pair.curr1;
+            const curr2 = pair.curr2;
+            const cmdAsk = {
+                id: reqID,
+                command: 'book_offers',
+                taker_gets: {
+                    currency: curr1.currency,
+                    issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+                },
+                taker_pays: {
+                    currency: curr2.currency,
+                    issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+                },
+                ledger_index: 'validated',
+                limit: 200
+            }
+            const cmdBid = {
+                id: reqID+1,
+                command: 'book_offers',
+                taker_gets: {
+                    currency: curr2.currency,
+                    issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+                },
+                taker_pays: {
+                    currency: curr1.currency,
+                    issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+                },
+                ledger_index: 'validated',
+                limit: 200
+            }
+            sendJsonMessage(cmdAsk);
+            sendJsonMessage(cmdBid);
+        }
+
+        if (reqID === 1)
+            setRequestID();
+
+        const timer = setInterval(() => setRequestID(), 5000);
+
+        return () => {
+            clearInterval(timer);
+        }
+
+    }, [reqID, ready, pair, sendJsonMessage]);
+
+    // useEffect(() => {
+    //     function connect(pair) {
+    //         const curr1 = pair.curr1;
+    //         const curr2 = pair.curr2;
+    //         setReady(true);
+    //         /*
+    //         { ASKs
+    //             "Account": "r4A8CVAgcxBSvrw45YgjQEgwAC5zikx5ZF",
+    //             "BookDirectory": "B288090D3C8C2DFE50D835DB4C0F09EAF4C1ABF29B1F92DD5806FECB896B8EE7",
+    //             "BookNode": "0",
+    //             "Flags": 131072,
+    //             "LedgerEntryType": "Offer",
+    //             "OwnerNode": "1",
+    //             "PreviousTxnID": "2C6830E26108F374726B0C53824A1547B6017485E2863640C0B22AD57377669B",
+    //             "PreviousTxnLgrSeq": 71537721,
+    //             "Sequence": 67110224,
+    //             "TakerGets": {
+    //                 "currency": "CSC",
+    //                 "issuer": "rCSCManTZ8ME9EoLrSHHYKW8PPwWMgkwr",
+    //                 "value": "415460.6399156552"
+    //             },
+    //             "TakerPays": "818041999",
+    //             "index": "CBF6BA4481EA2D4C12C2D78231C1DA8935D54406E8CB264DB6D7BC3CAEF2DA33",
+    //             "owner_funds": "874562.6699156552",
+    //             "quality": "1968.999997607655"
+    //         }
+    //         const subscribeMessage = {
+    //             id: 'book',
+    //             command: 'subscribe',
+    //             books: [
+    //                 {
+    //                     taker_pays: {
+    //                         currency: curr1.currency,
+    //                         issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+    //                     },
+    //                     taker_gets: {
+    //                         currency: curr2.currency,
+    //                         issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+    //                     },
+    //                     snapshot: true,
+    //                     both: true
+    //                 }
+    //             ]
+    //         }
+
+    //         // const unSubscribeMessage = {
+    //         //     event: 'unsubscribe',
+    //         //     feed: 'book_ui_1',
+    //         //     product_ids: [ProductsMap[product]]
+    //         // };
+    //         // sendJsonMessage(unSubscribeMessage);
+
+    //         sendJsonMessage(subscribeMessage);
+    //     }
+
+    //     if (isFeedKilled) {
+    //         getWebSocket()?.close();
+    //     } else {
+    //         connect(pair);
+    //     }
+    // }, [pair, isFeedKilled, sendJsonMessage, getWebSocket]);
+
     const applyChanges = (line) => {
-        // {
-        //     "direction": "sell",
-        //     "quantity": {
-        //         "currency": "XRP",
-        //         "value": "2264.770252"
-        //     },
-        //     "totalPrice": {
+        // { ASKs
+        //     "Account": "r4A8CVAgcxBSvrw45YgjQEgwAC5zikx5ZF",
+        //     "BookDirectory": "B288090D3C8C2DFE50D835DB4C0F09EAF4C1ABF29B1F92DD5806FECB896B8EE7",
+        //     "BookNode": "0",
+        //     "Flags": 131072,
+        //     "LedgerEntryType": "Offer",
+        //     "OwnerNode": "1",
+        //     "PreviousTxnID": "2C6830E26108F374726B0C53824A1547B6017485E2863640C0B22AD57377669B",
+        //     "PreviousTxnLgrSeq": 71537721,
+        //     "Sequence": 67110224,
+        //     "TakerGets": {
         //         "currency": "CSC",
-        //         "counterparty": "rCSCManTZ8ME9EoLrSHHYKW8PPwWMgkwr",
-        //         "value": "1200316.230463"
+        //         "issuer": "rCSCManTZ8ME9EoLrSHHYKW8PPwWMgkwr",
+        //         "value": "415460.6399156552"
         //     },
-        //     "sequence": 44400313,
-        //     "status": "cancelled",
-        //     "makerExchangeRate": "529.9947000818342",
-        //     "expirationTime": "2022-05-09T15:26:28.000Z",
-        //     "id": "rETx8GBiH6fxhTcfHM9fGeyShqxozyD3xe:44400313"
+        //     "TakerPays": "818041999",
+        //     "index": "CBF6BA4481EA2D4C12C2D78231C1DA8935D54406E8CB264DB6D7BC3CAEF2DA33",
+        //     "owner_funds": "874562.6699156552",
+        //     "quality": "1968.999997607655"
         // }
+
+        // status:
+        //     created
+        //     partially-filled
+        //     filled
+        //     cancelled
         if (line.direction === 'sell') {
+            // {
+            //     "direction": "sell",
+            //     "quantity": {
+            //         "currency": "XRP",
+            //         "value": "2264.770252"
+            //     },
+            //     "totalPrice": {
+            //         "currency": "CSC",
+            //         "counterparty": "rCSCManTZ8ME9EoLrSHHYKW8PPwWMgkwr",
+            //         "value": "1200316.230463"
+            //     },
+            //     "sequence": 44400313,
+            //     "status": "cancelled",
+            //     "makerExchangeRate": "529.9947000818342",
+            //     "expirationTime": "2022-05-09T15:26:28.000Z",
+            //     "id": "rETx8GBiH6fxhTcfHM9fGeyShqxozyD3xe:44400313"
+            // }
             let idx = asks.findIndex((e => e.id === line.id));
-            console.log(idx);
+            //let idx1 = bids.findIndex((e => e.id === line.id));
+            console.log(`ASKS ${line.status} ASKS ${idx}`);
+            if (idx > -1) {
+                console.log(asks[idx]);
+                console.log(line);
+                console.log('=========================')
+            }
+            //console.log(`ASKS ${line.status} BIDS ${idx1}`);
+        } else if (line.direction === 'buy') {
+            // {
+            //     "direction": "buy",
+            //     "quantity": {
+            //         "currency": "CSC",
+            //         "counterparty": "rCSCManTZ8ME9EoLrSHHYKW8PPwWMgkwr",
+            //         "value": "36556.548"
+            //     },
+            //     "totalPrice": {
+            //         "currency": "XRP",
+            //         "value": "71"
+            //     },
+            //     "sequence": 70116481,
+            //     "status": "cancelled",
+            //     "makerExchangeRate": "514.8809577464789",
+            //     "id": "rBPY3PTXVcszr89W1voEE4Hrk9noF9BtK:70116481"
+            // }
+            let idx = bids.findIndex((e => e.id === line.id));
+            let idx1 = asks.findIndex((e => e.id === line.id));
+            //console.log(`BIDS ${line.status} BIDS ${idx}`);
+            //console.log(`BIDS ${line.status} ASKS ${idx1}`);
         }
     }
 
     const processMessages = (event) => {
         const orderBook = JSON.parse(event.data);
 
-        if (orderBook.hasOwnProperty('result')) {
-            const parsedAsks = orderBookParser(orderBook.result.asks, ORDER_TYPE_ASKS);
-            const parsedBids = orderBookParser(orderBook.result.bids, ORDER_TYPE_BIDS);
-            setAsks(parsedAsks);
-            setBids(parsedBids);
-        } else {
-            const epochToDate = (epoch) => {
-                let date = new Date('2000-01-01T00:00:00Z')
-                date.setUTCSeconds(epoch)
+        if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
+            const r = orderBook.id % 2;
+            console.log(`Received id ${orderBook.id}`)
+            if (r === 1) {
+                const parsed = orderBookParser(orderBook.result.offers, ORDER_TYPE_ASKS);
+                setAsks(parsed);
+            }
+            if (r === 0) {
+                const parsed = orderBookParser(orderBook.result.offers, ORDER_TYPE_BIDS);
+                setBids(parsed);
+            }
+        } 
+        // else {
+        //     const epochToDate = (epoch) => {
+        //         let date = new Date('2000-01-01T00:00:00Z')
+        //         date.setUTCSeconds(epoch)
     
-                return date.toJSON()
-            }
-            const tx = orderBook;
-            if (tx.engine_result === 'tesSUCCESS') {
-                const changes = parseOrderbookChanges(tx.meta);
-                //console.log(changes);
-                for (let party in changes) {
-                    for (let line of changes[party]) {
-                        applyChanges(line);
-                    }
-                }
-            }
-        }
+        //         return date.toJSON()
+        //     }
+        //     const tx = orderBook;
+        //     if (tx.engine_result === 'tesSUCCESS') {
+        //         const changes = parseOrderbookChanges(tx.meta);
+        //         //console.log(changes);
+        //         for (let party in changes) {
+        //             for (let line of changes[party]) {
+        //                 applyChanges(line);
+        //             }
+        //         }
+        //     }
+        // }
     };
 
     const parseOrderbookChanges1 = (tx) => {
@@ -381,45 +581,6 @@ export default function OrderBook({token, pair}) {
         
         return percentage
     }
-
-    useEffect(() => {
-        function connect(pair) {
-            const curr1 = pair.curr1;
-            const curr2 = pair.curr2;
-            const subscribeMessage = {
-                id: 'book',
-                command: 'subscribe',
-                books: [
-                    {
-                        taker_pays: {
-                            currency: curr1.currency,
-                            issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-                        },
-                        taker_gets: {
-                            currency: curr2.currency,
-                            issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-                        },
-                        snapshot: true,
-                        both: true
-                    }
-                ]
-            }
-            // const unSubscribeMessage = {
-            //     event: 'unsubscribe',
-            //     feed: 'book_ui_1',
-            //     product_ids: [ProductsMap[product]]
-            // };
-            // sendJsonMessage(unSubscribeMessage);
-
-            sendJsonMessage(subscribeMessage);
-        }
-
-        if (isFeedKilled) {
-            getWebSocket()?.close();
-        } else {
-            connect(pair);
-        }
-    }, [pair, isFeedKilled, sendJsonMessage, getWebSocket]);
 
     const buildPriceLevels = (levels, orderType = ORDER_TYPE_BIDS) => {
         const sortedLevelsByPrice = [ ...levels ].sort(
