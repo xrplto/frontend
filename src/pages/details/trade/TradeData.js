@@ -24,10 +24,20 @@ import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import OrderBook from "./OrderBook";
 import History from './History';
+import {
+    useGmailTabsStyles,
+    useGmailTabItemStyles
+} from './gmail';
+
+import Inbox from '@mui/icons-material/Inbox';
+import LocalOffer from '@mui/icons-material/LocalOffer';
+import People from '@mui/icons-material/People';
+import Info from '@mui/icons-material/Info';
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
 // ----------------------------------------------------------------------
+const indicatorColors = ['#d93025', '#1a73e8', '#188038', '#e37400'];
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -182,12 +192,14 @@ export default function TradeData({token, pairs}) {
     const [pair, setPair] = useState(pairs[0]);
     const [value, setValue] = useState(0);
 
-    const [tabIndex, setTabIndex] = React.useState(0);
+    const [tabIndex, setTabIndex] = useState(0);
     const tabsStyles = useGmailTabsStyles({ indicatorColors });
     const tabItem1Styles = useGmailTabItemStyles({ color: indicatorColors[0] });
     const tabItem2Styles = useGmailTabItemStyles({ color: indicatorColors[1] });
     const tabItem3Styles = useGmailTabItemStyles({ color: indicatorColors[2] });
     const tabItem4Styles = useGmailTabItemStyles({ color: indicatorColors[3] });
+
+    console.log(tabsStyles);
 
     const {
         acct,
@@ -357,14 +369,6 @@ export default function TradeData({token, pairs}) {
                     <Tabs value={value} onChange={handleChangeTab} aria-label="basic tabs example">
                         <TabStyle label="Buy"  {...a11yProps(0)} />
                         <TabStyle label="Sell" {...a11yProps(1)} />
-
-                        <Tab label="Tab01"
-                            className=
-                                {value===0 ? classes.active_tab :classes.default_tabStyle} />
-
-                            <Tab label="Tab02" 
-                            className=
-                                {value===1 ?classes.active_tab :classes.default_tabStyle}/>
                     </Tabs>
                     {/* <Typography variant="h4" sx={{ color: '#007B55' }}>BUY</Typography> */}
                     {/* <Typography variant="h4" sx={{ color: '#B72136' }}>SELL</Typography> */}
