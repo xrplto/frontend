@@ -5,7 +5,6 @@ import { makeStyles } from "@mui/styles";
 const tabsStyles = () => ({
     root: {
         width: '100%',
-        backgroundColor: '#fff',
         boxShadow: 'inset 0 -1px 0 rgba(100,121,143,0.122)',
     },
     indicator: ({ indicatorColors = [] }) => ({
@@ -27,7 +26,7 @@ const tabsStyles = () => ({
     }),
 });
 
-const tabItemStyles = ({ palette }) => ({
+const tabItemStyles = () => ({
     root: {
         opacity: 1,
         '&:hover': {
@@ -50,7 +49,7 @@ const tabItemStyles = ({ palette }) => ({
           fontSize: 20,
       },
     },
-    wrapper: ({ color = palette.primary.main }) => ({
+    wrapper: ({ color = '#fff' }) => ({
         color: 'rgba(0,0,0,0.6)',
         flexDirection: 'row',
         justifyContent: 'flex-start',
@@ -92,10 +91,21 @@ const tabItemStyles = ({ palette }) => ({
     }),
 });
 
-export { tabsStyles as gmailTabsStyles, tabItemStyles as gmailTabItemStyles };
+export const useGmailTabsStyles = makeStyles(tabsStyles)
 
-export const useGmailTabsStyles = (props) => makeStyles(tabsStyles);
+export const useGmailTabItemStyles = makeStyles(tabItemStyles)
 
-export const useGmailTabItemStyles = (props) => {return makeStyles(tabItemStyles);};
+// export type GmailTabsStyleProps = {
+//     indicatorColors?: Array<string>
+// }
+// export const useGmailTabsStyles: (
+//     props?: GmailTabsStyleProps
+// ) => ClassNameMap<GmailTabsClassKey> = makeStyles(tabsStyles);
 
-//export const useGmailTabItemStyles: (props?: GmailTabItemStyleProps) => ClassNameMap<GmailTabItemClassKey> = makeStyles(tabItemStyles);
+// export type GmailTabItemStyleProps = {
+//     color?: string;
+// };
+// export const useGmailTabItemStyles: (
+//     props?: GmailTabItemStyleProps
+// ) => ClassNameMap<GmailTabItemClassKey> = makeStyles(tabItemStyles);
+

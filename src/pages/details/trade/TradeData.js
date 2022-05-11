@@ -37,7 +37,6 @@ import Info from '@mui/icons-material/Info';
 // utils
 import { fNumber } from '../../../utils/formatNumber';
 // ----------------------------------------------------------------------
-const indicatorColors = ['#d93025', '#1a73e8', '#188038', '#e37400'];
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -96,6 +95,71 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
     borderRadius: '8px',
     border: `1px solid ${theme.palette.divider}`,
     padding: '0px 12px'
+}));
+
+const NewTabStyle = styled(Tab)(({ theme }) => ({
+    root: {
+        opacity: 1,
+        '&:hover': {
+            backgroundColor: 'rgba(32,33,36,0.059)',
+        },
+        '&:hover,&:focus': {
+            '& $wrapper': {
+              color: 'rgba(0,0,0,0.87)',
+            },
+        },
+        minHeight: 56,
+        flex: 1,
+        maxWidth: 253,
+        padding: '6px 16px',
+    },
+    labelIcon: {
+      '& $wrapper > *:first-child': {
+          marginBottom: 0,
+          marginRight: 16,
+          fontSize: 20,
+      },
+    },
+    wrapper: ({ color = '#fff' }) => ({
+        color: 'rgba(0,0,0,0.6)',
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        fontSize: 14,
+        fontFamily: "'Google Sans', Roboto,RobotoDraft,Helvetica,Arial,sans-serif",
+        textTransform: 'initial',
+        '& .MuiTabItem-labelGroup': {
+            minWidth: 0,
+        },
+        '& .MuiTabItem-label': {
+            display: 'flex',
+            alignItems: 'center',
+        },
+        '& .MuiTabItem-subLabel': {
+            color: 'rgba(0,0,0,0.38)',
+            fontSize: '0.75rem',
+            textAlign: 'left',
+            fontWeight: 'normal',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+        },
+        '& .MuiTabItem-tag': {
+            backgroundColor: color,
+            color: '#fff',
+            fontSize: '0.75rem',
+            borderRadius: 2,
+            lineHeight: '16px',
+            padding: '1px 4px',
+            letterSpacing: 0.3,
+            marginLeft: 8,
+            whiteSpace: 'nowrap',
+        },
+    }),
+    selected: ({ color }) => ({
+        '& $wrapper': {
+            color: `${color} !important`,
+        },
+    }),
 }));
 
 // function getPair(issuer, code) {
@@ -163,29 +227,7 @@ function a11yProps(index) {
     };
 }
 
-const TabStyle = withStyles((theme) => ({
-    root: {
-        '&$selected': {
-            backgroundColor: '#004C9B'
-        },
-        '&:hover': {
-            //backgroundColor: '#004C9B',
-            //color: 'white',
-            //opacity: 1,
-         },
-    },
-    tab: {
-        // backgroundColor: 'grey',
-        // color: 'black',
-        // '&:hover': {
-        //     backgroundColor: 'red',
-        //     color: 'white',
-        //     opacity: 1,
-        // },
-    },
-    selected: {},
-}))(Tab);
-// }))((props) => <Tab {...props} />)
+const indicatorColors = ['#d93025', '#1a73e8', '#188038', '#e37400'];
 
 export default function TradeData({token, pairs}) {
     const [sel, setSel] = useState(1);
@@ -193,13 +235,14 @@ export default function TradeData({token, pairs}) {
     const [value, setValue] = useState(0);
 
     const [tabIndex, setTabIndex] = useState(0);
+
     const tabsStyles = useGmailTabsStyles({ indicatorColors });
     const tabItem1Styles = useGmailTabItemStyles({ color: indicatorColors[0] });
     const tabItem2Styles = useGmailTabItemStyles({ color: indicatorColors[1] });
     const tabItem3Styles = useGmailTabItemStyles({ color: indicatorColors[2] });
     const tabItem4Styles = useGmailTabItemStyles({ color: indicatorColors[3] });
 
-    console.log(tabsStyles);
+    console.log(tabItem1Styles);
 
     const {
         acct,
@@ -245,12 +288,17 @@ export default function TradeData({token, pairs}) {
                     children: <div className={`MuiIndicator-${tabIndex}`} />,
                 }}
                 >
-                <Tab
-                    classes={tabItem1Styles}
+                <NewTabStyle
                     disableTouchRipple
                     label={'Primary'}
                     icon={<Inbox />}
                 />
+                {/* <Tab
+                    classes={tabItem1Styles}
+                    disableTouchRipple
+                    label={'Primary'}
+                    icon={<Inbox />}
+                /> */}
                 <Tab
                     classes={tabItem2Styles}
                     disableTouchRipple
@@ -367,8 +415,8 @@ export default function TradeData({token, pairs}) {
                 </Stack>
                 <StackDexStyle sx={{ m: 1, minWidth: 200 }}>
                     <Tabs value={value} onChange={handleChangeTab} aria-label="basic tabs example">
-                        <TabStyle label="Buy"  {...a11yProps(0)} />
-                        <TabStyle label="Sell" {...a11yProps(1)} />
+                        <Tab label="Buy"  {...a11yProps(0)} />
+                        <Tab label="Sell" {...a11yProps(1)} />
                     </Tabs>
                     {/* <Typography variant="h4" sx={{ color: '#007B55' }}>BUY</Typography> */}
                     {/* <Typography variant="h4" sx={{ color: '#B72136' }}>SELL</Typography> */}
