@@ -26,7 +26,7 @@ const tabsStyles = () => ({
     }),
 });
 
-const tabItemStyles = () => ({
+/*const tabItemStyles = () => ({
     root: {
         opacity: 1,
         '&:hover': {
@@ -37,6 +37,9 @@ const tabItemStyles = () => ({
               color: 'rgba(0,0,0,0.87)',
             },
         },
+        '&.Mui-selected': {
+            color: '#0f0'
+          },
         minHeight: 56,
         flex: 1,
         maxWidth: 253,
@@ -89,6 +92,19 @@ const tabItemStyles = () => ({
             color: `${color} !important`,
         },
     }),
+});*/
+
+const tabItemStyles = () => ({
+    root: {
+        textTransform: 'none',
+        // color: 'rgba(255, 0, 0, 0.7)',
+        '&.Mui-selected': {
+            color: props => props.color,
+        },
+        '&.Mui-focusVisible': {
+            backgroundColor: 'rgba(100, 95, 228, 0.32)',
+        },
+    },
 });
 
 export const useGmailTabsStyles = makeStyles(tabsStyles)

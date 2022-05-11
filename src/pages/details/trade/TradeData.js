@@ -97,70 +97,21 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
     padding: '0px 12px'
 }));
 
-const NewTabStyle = styled(Tab)(({ theme }) => ({
-    root: {
-        opacity: 1,
-        '&:hover': {
-            backgroundColor: 'rgba(32,33,36,0.059)',
-        },
-        '&:hover,&:focus': {
-            '& $wrapper': {
-              color: 'rgba(0,0,0,0.87)',
-            },
-        },
-        minHeight: 56,
-        flex: 1,
-        maxWidth: 253,
-        padding: '6px 16px',
-    },
-    labelIcon: {
-      '& $wrapper > *:first-child': {
-          marginBottom: 0,
-          marginRight: 16,
-          fontSize: 20,
+const StyledTab = styled((props) => <Tab disableRipple {...props} />)(
+    ({ theme }) => ({
+      textTransform: 'none',
+      fontWeight: theme.typography.fontWeightRegular,
+      fontSize: theme.typography.pxToRem(15),
+      marginRight: theme.spacing(1),
+      color: 'rgba(255, 0, 0, 0.7)',
+      '&.Mui-selected': {
+        color: '#0f0'
       },
-    },
-    wrapper: ({ color = '#fff' }) => ({
-        color: 'rgba(0,0,0,0.6)',
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        fontSize: 14,
-        fontFamily: "'Google Sans', Roboto,RobotoDraft,Helvetica,Arial,sans-serif",
-        textTransform: 'initial',
-        '& .MuiTabItem-labelGroup': {
-            minWidth: 0,
-        },
-        '& .MuiTabItem-label': {
-            display: 'flex',
-            alignItems: 'center',
-        },
-        '& .MuiTabItem-subLabel': {
-            color: 'rgba(0,0,0,0.38)',
-            fontSize: '0.75rem',
-            textAlign: 'left',
-            fontWeight: 'normal',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-        },
-        '& .MuiTabItem-tag': {
-            backgroundColor: color,
-            color: '#fff',
-            fontSize: '0.75rem',
-            borderRadius: 2,
-            lineHeight: '16px',
-            padding: '1px 4px',
-            letterSpacing: 0.3,
-            marginLeft: 8,
-            whiteSpace: 'nowrap',
-        },
+      '&.Mui-focusVisible': {
+        backgroundColor: 'rgba(100, 95, 228, 0.32)',
+      },
     }),
-    selected: ({ color }) => ({
-        '& $wrapper': {
-            color: `${color} !important`,
-        },
-    }),
-}));
+  );
 
 // function getPair(issuer, code) {
 //     // issuer, currencyCode, 'XRP', undefined
@@ -237,12 +188,8 @@ export default function TradeData({token, pairs}) {
     const [tabIndex, setTabIndex] = useState(0);
 
     const tabsStyles = useGmailTabsStyles({ indicatorColors });
-    const tabItem1Styles = useGmailTabItemStyles({ color: indicatorColors[0] });
-    const tabItem2Styles = useGmailTabItemStyles({ color: indicatorColors[1] });
-    const tabItem3Styles = useGmailTabItemStyles({ color: indicatorColors[2] });
-    const tabItem4Styles = useGmailTabItemStyles({ color: indicatorColors[3] });
-
-    console.log(tabItem1Styles);
+    const tabItem1Styles = useGmailTabItemStyles({ color: '#d93025' });
+    const tabItem2Styles = useGmailTabItemStyles({ color: '#1a73e8' });
 
     const {
         acct,
@@ -288,41 +235,17 @@ export default function TradeData({token, pairs}) {
                     children: <div className={`MuiIndicator-${tabIndex}`} />,
                 }}
                 >
-                <NewTabStyle
-                    disableTouchRipple
-                    label={'Primary'}
-                    icon={<Inbox />}
-                />
-                {/* <Tab
+                <Tab
                     classes={tabItem1Styles}
                     disableTouchRipple
                     label={'Primary'}
                     icon={<Inbox />}
-                /> */}
+                />
                 <Tab
                     classes={tabItem2Styles}
                     disableTouchRipple
-                    label={
-                    <div className={'MuiTabItem-labelGroup'}>
-                        <div className={'MuiTabItem-label'}>
-                        Social <span className={'MuiTabItem-tag'}>2 new</span>
-                        </div>
-                        <div className={'MuiTabItem-subLabel'}>Youtube, LinkedIn</div>
-                    </div>
-                    }
-                    icon={<People />}
-                />
-                <Tab
-                    classes={tabItem3Styles}
-                    disableTouchRipple
                     label={'Promotions'}
                     icon={<LocalOffer />}
-                />
-                <Tab
-                    classes={tabItem4Styles}
-                    disableTouchRipple
-                    label={'Updates'}
-                    icon={<Info />}
                 />
             </Tabs>
             <Stack direction="row">
@@ -414,7 +337,7 @@ export default function TradeData({token, pairs}) {
                     </Stack> */}
                 </Stack>
                 <StackDexStyle sx={{ m: 1, minWidth: 200 }}>
-                    <Tabs value={value} onChange={handleChangeTab} aria-label="basic tabs example">
+                    <Tabs value={value} indicatorColor='#00ffff' onChange={handleChangeTab} aria-label="basic tabs example">
                         <Tab label="Buy"  {...a11yProps(0)} />
                         <Tab label="Sell" {...a11yProps(1)} />
                     </Tabs>
