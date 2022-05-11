@@ -233,7 +233,7 @@ export default function OrderBook({token, pair}) {
 
         if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
             const r = orderBook.id % 2;
-            console.log(`Received id ${orderBook.id}`)
+            //console.log(`Received id ${orderBook.id}`)
             if (r === 1) {
                 const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS);
                 setAsks(parsed);
@@ -288,7 +288,7 @@ export default function OrderBook({token, pair}) {
             }
         );
 
-        const array = sortedLevelsByPrice.slice(0, 30);
+        const array = sortedLevelsByPrice.slice(0, 20);
 
         return (
             array.map((level, idx) => {

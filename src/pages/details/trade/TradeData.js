@@ -1,9 +1,11 @@
 // material
+import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 import { withStyles } from '@mui/styles';
 import {
     Avatar,
+    Box,
     FormControl,
     Grid,
     IconButton,
@@ -12,6 +14,8 @@ import {
     MenuItem,
     Select,
     Stack,
+    Tab,
+    Tabs,
     Tooltip,
     Typography
 } from '@mui/material';
@@ -19,6 +23,7 @@ import { MD5 } from 'crypto-js';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import OrderBook from "./OrderBook";
+import History from './History';
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
@@ -99,9 +104,91 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
 //     return '';
 // }
 
+function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+  
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            {...other}
+        >
+            {value === index && (
+            <Box sx={{ p: 3 }}>
+                {children}
+            </Box>
+            )}
+        </div>
+    );
+}
+  
+TabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired,
+};
+
+const styles = theme => ({
+
+    default_tabStyle:{
+        color: 'black',
+        fontSize:11,
+        backgroundColor: 'blue',
+    },
+   
+    active_tabStyle:{
+        fontSize:11,
+        color: 'white',
+        backgroundColor: 'red',
+    }
+})
+
+function a11yProps(index) {
+    return {
+        id: `simple-tab-${index}`,
+        'aria-controls': `simple-tabpanel-${index}`,
+        backgroundColor: '#ff0000'
+    };
+}
+
+const TabStyle = withStyles((theme) => ({
+    root: {
+        '&$selected': {
+            backgroundColor: '#004C9B'
+        },
+        '&:hover': {
+            //backgroundColor: '#004C9B',
+            //color: 'white',
+            //opacity: 1,
+         },
+    },
+    tab: {
+        // backgroundColor: 'grey',
+        // color: 'black',
+        // '&:hover': {
+        //     backgroundColor: 'red',
+        //     color: 'white',
+        //     opacity: 1,
+        // },
+    },
+    selected: {},
+}))(Tab);
+// }))((props) => <Tab {...props} />)
+
 export default function TradeData({token, pairs}) {
     const [sel, setSel] = useState(1);
     const [pair, setPair] = useState(pairs[0]);
+    const [value, setValue] = useState(0);
+
+    const [tabIndex, setTabIndex] = React.useState(0);
+    const tabsStyles = useGmailTabsStyles({ indicatorColors });
+    const tabItem1Styles = useGmailTabItemStyles({ color: indicatorColors[0] });
+    const tabItem2Styles = useGmailTabItemStyles({ color: indicatorColors[1] });
+    const tabItem3Styles = useGmailTabItemStyles({ color: indicatorColors[2] });
+    const tabItem4Styles = useGmailTabItemStyles({ color: indicatorColors[3] });
+
     const {
         acct,
         code,
@@ -113,6 +200,10 @@ export default function TradeData({token, pairs}) {
         setSel(idx);
         setPair(pairs[idx-1]);
     }
+
+    const handleChangeTab = (event, newValue) => {
+        setValue(newValue);
+    };
 
     const curr1 = pair.curr1;
     const curr2 = pair.curr2;
@@ -134,96 +225,158 @@ export default function TradeData({token, pairs}) {
 
     return (
         <StackStyle>
-            <Stack direction="row" alignItems="center">
-                <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-                    <InputLabel id="demo-select-small">Pairs</InputLabel>
-                    <CustomSelect
-                        labelId="demo-select-small"
-                        id="demo-select-small"
-                        value={sel}
-                        label="Pair"
-                        onChange={handleChangePair}
-                    >
-                        {
-                        pairs.map((row) => {
-                                const {
-                                    id,
-                                    pair,
-                                    curr1,
-                                    curr2
-                                } = row;
+            <Tabs
+                classes={tabsStyles}
+                value={tabIndex}
+                onChange={(e, index) => setTabIndex(index)}
+                TabIndicatorProps={{
+                    children: <div className={`MuiIndicator-${tabIndex}`} />,
+                }}
+                >
+                <Tab
+                    classes={tabItem1Styles}
+                    disableTouchRipple
+                    label={'Primary'}
+                    icon={<Inbox />}
+                />
+                <Tab
+                    classes={tabItem2Styles}
+                    disableTouchRipple
+                    label={
+                    <div className={'MuiTabItem-labelGroup'}>
+                        <div className={'MuiTabItem-label'}>
+                        Social <span className={'MuiTabItem-tag'}>2 new</span>
+                        </div>
+                        <div className={'MuiTabItem-subLabel'}>Youtube, LinkedIn</div>
+                    </div>
+                    }
+                    icon={<People />}
+                />
+                <Tab
+                    classes={tabItem3Styles}
+                    disableTouchRipple
+                    label={'Promotions'}
+                    icon={<LocalOffer />}
+                />
+                <Tab
+                    classes={tabItem4Styles}
+                    disableTouchRipple
+                    label={'Updates'}
+                    icon={<Info />}
+                />
+            </Tabs>
+            <Stack direction="row">
+                <Stack alignItems="left">
+                    <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                        <InputLabel id="demo-select-small">Pairs</InputLabel>
+                        <CustomSelect
+                            labelId="demo-select-small"
+                            id="demo-select-small"
+                            value={sel}
+                            label="Pair"
+                            onChange={handleChangePair}
+                        >
+                            {
+                            pairs.map((row) => {
+                                    const {
+                                        id,
+                                        pair,
+                                        curr1,
+                                        curr2
+                                    } = row;
 
-                                const name1 = curr1.name;
-                                const name2 = curr2.name;
+                                    const name1 = curr1.name;
+                                    const name2 = curr2.name;
 
-                                return (
-                                    <MenuItem key={id} value={id}>
-                                        <Stack direction="row" alignItems='center'>
-                                            <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
-                                            <Icon icon={arrowsExchange} width="16" height="16"/>
-                                            <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{name2}</Typography>
-                                            <span style={badge24hStyle}>24h</span>
-                                            <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{fNumber(curr1.value)}</Typography>
-                                        </Stack>
-                                    </MenuItem>
-                                );
-                            })
-                        }
-                    </CustomSelect>
-                </FormControl>
-                <StackDexStyle direction="row" spacing={2} alignItems="center">
-                    DEX
-                    <Tooltip title="Sologenic">
-                        <Link
-                            underline="none"
-                            color="inherit"
-                            target="_blank"
-                            href={soloDexURL}
-                            rel="noreferrer noopener"
-                        >
-                            <IconButton edge="end" aria-label="solo">
-                                <Avatar variant="rounded" alt="sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
-                            </IconButton>
-                        </Link>
-                    </Tooltip>
-                    <Tooltip title="GateHub">
-                        <Link
-                            underline="none"
-                            color="inherit"
-                            target="_blank"
-                            href={gatehubDexURL}
-                            rel="noreferrer noopener"
-                        >
-                            <IconButton edge="end" aria-label="solo">
-                                <Avatar variant="rounded" alt="gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
-                            </IconButton>
-                        </Link>
-                    </Tooltip>
-                    <Tooltip title="XUMM">
-                        <Link
-                            underline="none"
-                            color="inherit"
-                            target="_blank"
-                            href={xummDexURL}
-                            rel="noreferrer noopener"
-                        >
-                            <IconButton edge="end" aria-label="solo">
-                                <Avatar variant="rounded" alt="xumm" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
-                            </IconButton>
-                        </Link>
-                    </Tooltip>
+                                    return (
+                                        <MenuItem key={id} value={id}>
+                                            <Stack direction="row" alignItems='center'>
+                                                <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
+                                                <Icon icon={arrowsExchange} width="16" height="16"/>
+                                                <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{name2}</Typography>
+                                                <span style={badge24hStyle}>24h</span>
+                                                <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{fNumber(curr1.value)}</Typography>
+                                            </Stack>
+                                        </MenuItem>
+                                    );
+                                })
+                            }
+                        </CustomSelect>
+                    </FormControl>
+                    <Stack direction="row">
+                    {/* B78103 */}
+                        <StackDexStyle direction="row" sx={{ m: 1, minWidth: 120 }} spacing={2} alignItems="center">
+                            DEX
+                            <Tooltip title="Sologenic">
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={soloDexURL}
+                                    rel="noreferrer noopener"
+                                >
+                                    <IconButton edge="end" aria-label="solo">
+                                        <Avatar variant="rounded" alt="sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
+                                    </IconButton>
+                                </Link>
+                            </Tooltip>
+                            <Tooltip title="GateHub">
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={gatehubDexURL}
+                                    rel="noreferrer noopener"
+                                >
+                                    <IconButton edge="end" aria-label="solo">
+                                        <Avatar variant="rounded" alt="gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
+                                    </IconButton>
+                                </Link>
+                            </Tooltip>
+                            <Tooltip title="XUMM">
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={xummDexURL}
+                                    rel="noreferrer noopener"
+                                >
+                                    <IconButton edge="end" aria-label="solo">
+                                        <Avatar variant="rounded" alt="xumm" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
+                                    </IconButton>
+                                </Link>
+                            </Tooltip>
+                        </StackDexStyle>
+                    </Stack>
+                    {/* <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography variant="caption">24H Volume:</Typography>
+                        <Typography variant="h5" sx={{ color: '#B72136' }}>{fNumber(vol)}</Typography>
+                    </Stack> */}
+                </Stack>
+                <StackDexStyle sx={{ m: 1, minWidth: 200 }}>
+                    <Tabs value={value} onChange={handleChangeTab} aria-label="basic tabs example">
+                        <TabStyle label="Buy"  {...a11yProps(0)} />
+                        <TabStyle label="Sell" {...a11yProps(1)} />
+
+                        <Tab label="Tab01"
+                            className=
+                                {value===0 ? classes.active_tab :classes.default_tabStyle} />
+
+                            <Tab label="Tab02" 
+                            className=
+                                {value===1 ?classes.active_tab :classes.default_tabStyle}/>
+                    </Tabs>
+                    {/* <Typography variant="h4" sx={{ color: '#007B55' }}>BUY</Typography> */}
+                    {/* <Typography variant="h4" sx={{ color: '#B72136' }}>SELL</Typography> */}
                 </StackDexStyle>
-                {/* <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="caption">24H Volume:</Typography>
-                    <Typography variant="h5" sx={{ color: '#B72136' }}>{fNumber(vol)}</Typography>
-                </Stack> */}
             </Stack>
             
             <Grid container spacing={3} sx={{p:0}}>
+                <Grid item xs={12} md={4} lg={4}>
+                    <History token={token} pair={pair}/>
+                </Grid>
                 <Grid item xs={12} md={8} lg={8}>
                     <OrderBook token={token} pair={pair}/>
-                </Grid>
-                <Grid item xs={12} md={4} lg={4}>
                 </Grid>
             </Grid>
         </StackStyle>
