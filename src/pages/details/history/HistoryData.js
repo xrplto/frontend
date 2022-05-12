@@ -3,9 +3,7 @@ import axios from 'axios'
 import { useState, useEffect } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 import { withStyles } from '@mui/styles';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {
-    Alert,
     Avatar,
     FormControl,
     IconButton,
@@ -13,7 +11,6 @@ import {
     Link,
     MenuItem,
     Select,
-    Snackbar,
     Stack,
     Table,
     TableBody,
@@ -24,7 +21,7 @@ import {
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
 import HistoryToolbar from './HistoryToolbar';
-import HistoryMoreMenu from './HistoryMoreMenu';
+// import HistoryMoreMenu from './HistoryMoreMenu';
 import { MD5 } from 'crypto-js';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
@@ -123,10 +120,8 @@ export default function HistoryData({token, pairs}) {
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);
     const [count, setCount] = useState(0);
-    const [copied, setCopied] = useState(false);
     const [exchs, setExchs] = useState([]);
     const [pair, setPair] = useState('');
-    const [vol, setVol] = useState(0);
     const theme = useTheme();
     const {
         acct,
@@ -134,35 +129,14 @@ export default function HistoryData({token, pairs}) {
         // md5
     } = token;
 
-    const setPairVolume = (p) => {
-        setPair(p);
-        for (var pi of pairs) {
-            if (pi.pair === p) {
-                if (pi.curr1.currency === code)
-                    setVol(pi.curr1.value);
-                if (pi.curr2.currency === code)
-                    setVol(pi.curr2.value);
-                break;
-            }
-        }
-    }
-
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setCopied(false);
-    };
-
     const handleChangePair = (event, value) => {
-        setPairVolume(event.target.value);
+        setPair(event.target.value);
     }
 
     useEffect(() => {
         function getExchanges() {
             if (!pair) {
-                setPairVolume(getPair(acct, code));
-                //console.log(pair);
+                setPair(getPair(acct, code));
                 return;
             }
             // XPUNK
@@ -200,11 +174,6 @@ export default function HistoryData({token, pairs}) {
 
     return (
         <StackStyle>
-             <Snackbar open={copied} autoHideDuration={800} onClose={handleClose}>
-                <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-                    Copied
-                </Alert>
-            </Snackbar>
             <Stack direction="row" alignItems="center">
                 <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
                     <InputLabel id="demo-select-small">Pairs</InputLabel>
@@ -326,110 +295,105 @@ export default function HistoryData({token, pairs}) {
                             const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
 
                             return (
-                                // <CopyToClipboard
-                                //     key={`id${_id}`}
-                                //     text={hash}
-                                //     onCopy={() => setCopied(true)}>
-                                    <TableRow
-                                        hover
-                                        key={_id}
-                                        tabIndex={-1}
-                                        sx={{
-                                            [`& .${tableCellClasses.root}`]: {
-                                                color: (/*buy*/dir === 'buy' ? '#007B55' : '#B72136')
-                                            }
-                                        }}
-                                    >
-                                        <TableCell align="left"><Typography variant="subtitle2">{id}</Typography></TableCell>
-                                        <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
-                                        <TableCell align="left"><Typography variant="subtitle2">{fNumber(value)}</Typography></TableCell>
-                                        <TableCell align="left">
-                                            <Stack spacing={1}>
-                                                {dir==='buy' && (
-                                                    <Stack direction="row">
-                                                        <BuyTypography variant="caption">
-                                                        buy
-                                                        </BuyTypography>
-                                                    </Stack>
-                                                )}
-                                                
-                                                {dir==='sell' && (
-                                                    <Stack direction="row">
-                                                        <SellTypography variant="caption">
-                                                        sell
-                                                        </SellTypography>
-                                                    </Stack>
-                                                )}
-                                                {cancel && (
-                                                    <Stack direction="row">
-                                                        <CancelTypography variant="caption">
-                                                        cancel
-                                                        </CancelTypography>
-                                                    </Stack>
-                                                )}
-                                            </Stack>
-                                        </TableCell>
-
-                                        <TableCell align="left">
-                                            {fNumber(takerPaid.value)} <Typography variant="caption">{namePaid}</Typography>
-                                        </TableCell>
-
-                                        <TableCell align="left">
-                                            {fNumber(takerGot.value)} <Typography variant="caption">{nameGot}</Typography>
-                                        </TableCell>
-
-                                        <TableCell align="left">
-                                            <Stack>
-                                                <Typography variant="subtitle2">{strTime}</Typography>
-                                                <Typography variant="caption">{strDate}</Typography>
-                                            </Stack>
-                                            
-                                        </TableCell>
-                                        <TableCell align="left">{ledger}</TableCell>
-                                        <TableCell align="left">{seq}</TableCell>
-                                        <TableCell align="left">
-                                            <Link
-                                                underline="none"
-                                                color="inherit"
-                                                target="_blank"
-                                                href={`https://bithomp.com/explorer/${maker}`}
-                                                rel="noreferrer noopener"
-                                            >
-                                                {tMaker}
-                                            </Link>
-                                        </TableCell>
-                                        <TableCell align="left">
-                                            <Link
-                                                underline="none"
-                                                color="inherit"
-                                                target="_blank"
-                                                href={`https://bithomp.com/explorer/${taker}`}
-                                                rel="noreferrer noopener"
-                                            >
-                                                {tTaker}
-                                            </Link>
-                                        </TableCell>
-                                        <TableCell align="left">
-                                            <Link
-                                                underline="none"
-                                                color="inherit"
-                                                target="_blank"
-                                                href={`https://bithomp.com/explorer/${hash}`}
-                                                rel="noreferrer noopener"
-                                            >
-                                                <Stack direction="row" alignItems='center'>
-                                                    {tHash}
-                                                    <IconButton edge="end" aria-label="bithomp">
-                                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
-                                                    </IconButton>
+                                <TableRow
+                                    hover
+                                    key={_id}
+                                    tabIndex={-1}
+                                    sx={{
+                                        [`& .${tableCellClasses.root}`]: {
+                                            color: (/*buy*/dir === 'buy' ? '#007B55' : '#B72136')
+                                        }
+                                    }}
+                                >
+                                    <TableCell align="left"><Typography variant="subtitle2">{id}</Typography></TableCell>
+                                    <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
+                                    <TableCell align="left"><Typography variant="subtitle2">{fNumber(value)}</Typography></TableCell>
+                                    <TableCell align="left">
+                                        <Stack spacing={1}>
+                                            {dir==='buy' && (
+                                                <Stack direction="row">
+                                                    <BuyTypography variant="caption">
+                                                    buy
+                                                    </BuyTypography>
                                                 </Stack>
-                                            </Link>
-                                        </TableCell>
-                                        {/* <TableCell align="right">
-                                            <HistoryMoreMenu hash={hash} />
-                                        </TableCell> */}
-                                    </TableRow>
-                                // </CopyToClipboard>
+                                            )}
+                                            
+                                            {dir==='sell' && (
+                                                <Stack direction="row">
+                                                    <SellTypography variant="caption">
+                                                    sell
+                                                    </SellTypography>
+                                                </Stack>
+                                            )}
+                                            {cancel && (
+                                                <Stack direction="row">
+                                                    <CancelTypography variant="caption">
+                                                    cancel
+                                                    </CancelTypography>
+                                                </Stack>
+                                            )}
+                                        </Stack>
+                                    </TableCell>
+
+                                    <TableCell align="left">
+                                        {fNumber(takerPaid.value)} <Typography variant="caption">{namePaid}</Typography>
+                                    </TableCell>
+
+                                    <TableCell align="left">
+                                        {fNumber(takerGot.value)} <Typography variant="caption">{nameGot}</Typography>
+                                    </TableCell>
+
+                                    <TableCell align="left">
+                                        <Stack>
+                                            <Typography variant="subtitle2">{strTime}</Typography>
+                                            <Typography variant="caption">{strDate}</Typography>
+                                        </Stack>
+                                        
+                                    </TableCell>
+                                    <TableCell align="left">{ledger}</TableCell>
+                                    <TableCell align="left">{seq}</TableCell>
+                                    <TableCell align="left">
+                                        <Link
+                                            underline="none"
+                                            color="inherit"
+                                            target="_blank"
+                                            href={`https://bithomp.com/explorer/${maker}`}
+                                            rel="noreferrer noopener"
+                                        >
+                                            {tMaker}
+                                        </Link>
+                                    </TableCell>
+                                    <TableCell align="left">
+                                        <Link
+                                            underline="none"
+                                            color="inherit"
+                                            target="_blank"
+                                            href={`https://bithomp.com/explorer/${taker}`}
+                                            rel="noreferrer noopener"
+                                        >
+                                            {tTaker}
+                                        </Link>
+                                    </TableCell>
+                                    <TableCell align="left">
+                                        <Link
+                                            underline="none"
+                                            color="inherit"
+                                            target="_blank"
+                                            href={`https://bithomp.com/explorer/${hash}`}
+                                            rel="noreferrer noopener"
+                                        >
+                                            <Stack direction="row" alignItems='center'>
+                                                {tHash}
+                                                <IconButton edge="end" aria-label="bithomp">
+                                                    <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                </IconButton>
+                                            </Stack>
+                                        </Link>
+                                    </TableCell>
+                                    {/* <TableCell align="right">
+                                        <HistoryMoreMenu hash={hash} />
+                                    </TableCell> */}
+                                </TableRow>
                             );
                         })}
                 </TableBody>

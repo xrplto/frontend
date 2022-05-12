@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
-import { withStyles } from '@mui/styles';
+// import { withStyles } from '@mui/styles';
 import {
     Avatar,
     Box,
@@ -19,7 +19,6 @@ import {
     Tooltip,
     Typography
 } from '@mui/material';
-import { MD5 } from 'crypto-js';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import OrderBook from "./OrderBook";
@@ -30,9 +29,6 @@ import {
 } from './gmail';
 
 import Inbox from '@mui/icons-material/Inbox';
-import LocalOffer from '@mui/icons-material/LocalOffer';
-import People from '@mui/icons-material/People';
-import Info from '@mui/icons-material/Info';
 import SellIcon from '@mui/icons-material/Sell';
 // ----------------------------------------------------------------------
 // utils
@@ -140,21 +136,6 @@ TabPanel.propTypes = {
     value: PropTypes.number.isRequired,
 };
 
-const styles = theme => ({
-
-    default_tabStyle:{
-        color: 'black',
-        fontSize:11,
-        backgroundColor: 'blue',
-    },
-   
-    active_tabStyle:{
-        fontSize:11,
-        color: 'white',
-        backgroundColor: 'red',
-    }
-})
-
 function a11yProps(index) {
     return {
         id: `simple-tab-${index}`,
@@ -166,29 +147,17 @@ function a11yProps(index) {
 export default function TradeData({token, pairs}) {
     const [sel, setSel] = useState(1);
     const [pair, setPair] = useState(pairs[0]);
-    const [value, setValue] = useState(0);
-
     const [tabIndex, setTabIndex] = useState(0);
 
     const tabsStyles = useGmailTabsStyles({ indicatorColors: ['#007B55', '#bb3336'] });
     const tabItem1Styles = useGmailTabItemStyles({ color: '#007B55' });
     const tabItem2Styles = useGmailTabItemStyles({ color: '#bb3336' });
 
-    const {
-        acct,
-        code,
-        // md5
-    } = token;
-
     const handleChangePair = (event, value) => {
         const idx = parseInt(event.target.value, 10);
         setSel(idx);
         setPair(pairs[idx-1]);
     }
-
-    const handleChangeTab = (event, newValue) => {
-        setValue(newValue);
-    };
 
     const curr1 = pair.curr1;
     const curr2 = pair.curr2;
@@ -299,33 +268,29 @@ export default function TradeData({token, pairs}) {
                     </Stack> */}
                 </Stack>
                 <StackDexStyle sx={{ m: 1, minWidth: 200 }}>
-                <Tabs
-                    classes={tabsStyles}
-                    value={tabIndex}
-                    onChange={(e, index) => setTabIndex(index)}
-                    TabIndicatorProps={{
-                        children: <div className={`MuiIndicator-${tabIndex}`} />,
-                    }}
-                    >
-                    <Tab
-                        classes={tabItem1Styles}
-                        disableTouchRipple
-                        label={'Buy'}
-                        icon={<Inbox />}
-                        iconPosition="start"
-                    />
-                    <Tab
-                        classes={tabItem2Styles}
-                        disableTouchRipple
-                        label={'Sell'}
-                        icon={<SellIcon />}
-                        iconPosition="start"
-                    />
-                </Tabs>
-                    {/* <Tabs value={value} indicatorColor='#00ffff' onChange={handleChangeTab} aria-label="basic tabs example">
-                        <Tab label="Buy"  {...a11yProps(0)} />
-                        <Tab label="Sell" {...a11yProps(1)} />
-                    </Tabs> */}
+                    <Tabs
+                        classes={tabsStyles}
+                        value={tabIndex}
+                        onChange={(e, index) => setTabIndex(index)}
+                        TabIndicatorProps={{
+                            children: <div className={`MuiIndicator-${tabIndex}`} />,
+                        }}
+                        >
+                        <Tab
+                            classes={tabItem1Styles}
+                            disableTouchRipple
+                            label={'Buy'}
+                            icon={<Inbox />}
+                            iconPosition="start"
+                        />
+                        <Tab
+                            classes={tabItem2Styles}
+                            disableTouchRipple
+                            label={'Sell'}
+                            icon={<SellIcon />}
+                            iconPosition="start"
+                        />
+                    </Tabs>
                 </StackDexStyle>
             </Stack>
             

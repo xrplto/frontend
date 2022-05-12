@@ -13,11 +13,6 @@ import { ORDER_TYPE_ASKS, ORDER_TYPE_BIDS } from "./constants";
 
 //import {Decimal} from 'decimal.js';
 
-// import {
-//     CSSTransition,
-//     TransitionGroup,
-// } from 'react-transition-group';
-
 import {
     Button,
     Grid,
@@ -266,14 +261,14 @@ export default function OrderBook({token, pair}) {
                 setAsks(parsed);
                 setTimeout(() => {
                     setClearAsks(true);
-                }, 1000);
+                }, 2000);
             }
             if (r === 0) {
                 const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, bids);
                 setBids(parsed);
                 setTimeout(() => {
                     setClearBids(true);
-                }, 1000);
+                }, 2000);
             }
         }
     };

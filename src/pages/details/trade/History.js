@@ -2,17 +2,8 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
-import { withStyles } from '@mui/styles';
+// import { withStyles } from '@mui/styles';
 import {
-    Alert,
-    Avatar,
-    FormControl,
-    IconButton,
-    InputLabel,
-    Link,
-    MenuItem,
-    Select,
-    Snackbar,
     Stack,
     Table,
     TableBody,
@@ -23,7 +14,7 @@ import {
     Typography
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
-import { MD5 } from 'crypto-js';
+// import { MD5 } from 'crypto-js';
 import { Icon } from '@iconify/react';
 import infoFilled from '@iconify/icons-ep/info-filled';
 // ----------------------------------------------------------------------
@@ -41,80 +32,7 @@ const StackStyle = styled(Stack)(({ theme }) => ({
     //padding: '0em 0.5em 1.5em 0.5em',
     //backgroundColor: alpha("#919EAB", 0.03),
 }));
-
-const CancelTypography = withStyles({
-    root: {
-        color: "#FF6C40",
-        borderRadius: '6px',
-        border: '0.05em solid #FF6C40',
-        //fontSize: '0.5rem',
-        lineHeight: '1',
-        paddingLeft: '3px',
-        paddingRight: '3px',
-    }
-})(Typography);
-
-const BuyTypography = withStyles({
-    root: {
-        color: "#007B55",
-        borderRadius: '6px',
-        border: '0.05em solid #007B55',
-        //fontSize: '0.5rem',
-        lineHeight: '1',
-        paddingLeft: '3px',
-        paddingRight: '3px',
-    }
-})(Typography);
-
-const SellTypography = withStyles({
-    root: {
-        color: "#B72136",
-        borderRadius: '6px',
-        border: '0.05em solid #B72136',
-        //fontSize: '0.5rem',
-        lineHeight: '1',
-        paddingLeft: '3px',
-        paddingRight: '3px',
-    }
-})(Typography);
-
-const CustomSelect = styled(Select)(({ theme }) => ({
-    // '& .MuiOutlinedInput-notchedOutline' : {
-    //     border: 'none'
-    // }
-}));
 // ----------------------------------------------------------------------
-
-const badge24hStyle = {
-    display: 'inline-block',
-    marginLeft: '4px',
-    marginRight: '4px',
-    color: '#C4CDD5',
-    fontSize: '11px',
-    fontWeight: '500',
-    lineHeight: '18px',
-    //backgroundColor: '#323546',
-    borderRadius: '4px',
-    border: '1px solid #323546',
-    padding: '1px 4px'
-};
-
-function getPair(issuer, code) {
-    // issuer, currencyCode, 'XRP', undefined
-    const t1 = 'undefined_XRP';
-    const t2 = issuer  + '_' +  code;
-    let pair = t1 + t2;
-    if (t1.localeCompare(t2) > 0)
-        pair = t2 + t1;
-    return MD5(pair).toString();
-}
-
-function truncate(str, n){
-    if (!str) return '';
-    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
-    return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
-};
-
 export default function HistoryData({token, pair}) {
     const EPOCH_OFFSET = 946684800;
     const BASE_URL = 'https://api.xrpl.to/api';

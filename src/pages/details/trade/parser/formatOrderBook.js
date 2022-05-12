@@ -93,8 +93,6 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
     const array = []
     let sum = 0;
     let mapOldOffers = new Map();
-    const oldLen = arrOffers.length;
-
     for (var offer of arrOffers) {
         mapOldOffers.set(offer.id, true);
     }
@@ -147,8 +145,7 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
         obj.amount = amount
         obj.value = amount * price
         obj.sum = sum
-        //if (oldLen > 0)
-            obj.isNew = !mapOldOffers.has(id)
+        obj.isNew = !mapOldOffers.has(id)
         //obj.partial = partial
 
         if (amount > 0)
