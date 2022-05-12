@@ -82,12 +82,12 @@ export default function LinkDesc({token}) {
                     onDelete={handleDelete} onClick={handleDelete}
                     icon={<Icon icon={chatIcon} width="16" height="16" />} />
             </Grid>
-            <Grid item sx={{pb:1}}>
+            {/* <Grid item sx={{pb:1}}>
                 <Chip label="Source code" sx={{pl:0.5,pr:0.5}}
                     deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
                     onDelete={handleDelete} onClick={handleDelete}
                     icon={<Icon icon={codeIcon} width="16" height="16" />} />
-            </Grid>
+            </Grid> */}
             <Grid item sx={{pb:1}}>
                 <CommunityMenu acct={acct} code={code}/>
             </Grid>

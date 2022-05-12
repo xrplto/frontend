@@ -22,7 +22,7 @@ import { ORDER_TYPE_BIDS } from "../constants";
 //     }
 // }
 
-const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
+const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
     // { ASK
     //     "Account": "rsoLoDTcxn9wCEHHBR7enMhzQMThkB2w28",
     //     "BookDirectory": "5C8970D155D65DB8FF49B291D7EFFA4A09F9E8A68D9974B25A1997F7E14CDA39",
@@ -92,17 +92,26 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
     // let index = 0
     const array = []
     let sum = 0;
+    let mapOldOffers = new Map();
+    const oldLen = arrOffers.length;
+
+    for (var offer of arrOffers) {
+        mapOldOffers.set(offer.id, true);
+    }
+
 
     for (let i = 0; i < offers.length; i++) {
         const offer = offers[i]
         const obj = {
-            id: `${offer.Account}:${offer.Sequence}`,
+            id: '',
             price: 0,
             amount: 0,
             value: 0,
             sum: 0,
+            isNew: false
         }
 
+        const id = `${offer.Account}:${offer.Sequence}`;
         const gets = offer.taker_gets_funded || offer.TakerGets;
         const pays = offer.taker_pays_funded || offer.TakerPays;
         // const partial = (offer.taker_gets_funded || offer.taker_pays_funded) ? true: false;
@@ -133,10 +142,13 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
         //     }
         // }
         sum += amount;
+        obj.id = id;
         obj.price = price
         obj.amount = amount
         obj.value = amount * price
         obj.sum = sum
+        //if (oldLen > 0)
+            obj.isNew = !mapOldOffers.has(id)
         //obj.partial = partial
 
         if (amount > 0)

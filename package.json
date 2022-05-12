@@ -76,7 +76,8 @@
     "styled-components": "^5.3.5",
     "bignumber.js": "^9.0.2",
     "decimal.js": "^10.3.1",
-    "assert": "^2.0.0"
+    "assert": "^2.0.0",
+    "react-transition-group": "4.4.2"
   },
   "devDependencies": {
     "prettier": "^2.4.1"

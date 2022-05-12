@@ -119,7 +119,7 @@ export default function HistoryData({token, pair}) {
     const EPOCH_OFFSET = 946684800;
     const BASE_URL = 'https://api.xrpl.to/api';
     const [page, setPage] = useState(0);
-    const [rows, setRows] = useState(20);
+    const [rows, setRows] = useState(30);
     const [exchs, setExchs] = useState([]);
     const theme = useTheme();
     const {
@@ -167,25 +167,32 @@ export default function HistoryData({token, pair}) {
                 }}
             >
                 <TableHead>
-                    <TableRow>
-                        <TableCell align="left">Time</TableCell>
-                        <TableCell align="left">
+                    <TableRow
+                        sx={{
+                            [`& .${tableCellClasses.root}`]: {
+                                borderBottom: "1px solid",
+                                borderBottomColor: theme.palette.divider
+                            }
+                        }}
+                    >
+                        <TableCell align="left" sx={{ p:0 }}>Time</TableCell>
+                        <TableCell align="left" sx={{ p:0 }}>
                             <Stack direction="row" alignItems="center" gap={1}>
                                 <Typography variant="body2">Paid</Typography>
-                                <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Taker Paid</Typography>}>
+                                <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Taker Paid Amount<br/>Cancelled offers are yellow colored.</Typography>}>
                                     <Icon icon={infoFilled} />
                                 </Tooltip>
                             </Stack>
                         </TableCell>
-                        <TableCell align="left">
+                        <TableCell align="left" sx={{ p:0 }}>
                             <Stack direction="row" alignItems="center" gap={1}>
                                 <Typography variant="body2">Got</Typography>
-                                <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Taker Got</Typography>}>
+                                <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Taker Got Amount<br/>Cancelled offers are yellow colored.</Typography>}>
                                     <Icon icon={infoFilled} />
                                 </Tooltip>
                             </Stack>
                         </TableCell>
-                        <TableCell align="left">Price</TableCell>
+                        <TableCell align="left" sx={{ p:0 }}>Price</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -253,20 +260,20 @@ export default function HistoryData({token, pair}) {
                                             }
                                         }}
                                     >
-                                        <TableCell align="left">
+                                        <TableCell align="left" sx={{ p:0 }}>
                                             <Stack>
                                                 <Typography variant="subtitle2">{strTime}</Typography>
                                                 {/* <Typography variant="caption">{strDate}</Typography> */}
                                             </Stack>
                                         </TableCell>
-                                        <TableCell align="left">
+                                        <TableCell align="left" sx={{ p:0 }}>
                                             {fNumber(takerPaid.value)} <Typography variant="caption">{namePaid}</Typography>
                                         </TableCell>
 
-                                        <TableCell align="left">
+                                        <TableCell align="left" sx={{ p:0 }}>
                                             {fNumber(takerGot.value)} <Typography variant="caption">{nameGot}</Typography>
                                         </TableCell>
-                                        <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
+                                        <TableCell align="left" sx={{ p:0 }}><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
                                     </TableRow>
                                 // </CopyToClipboard>
                             );

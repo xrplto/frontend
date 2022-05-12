@@ -5,13 +5,18 @@ import { styled, useTheme } from '@mui/material/styles';
 
 import {formatOrderBook} from './parser';
 
-import { fNumber } from '../../../utils/formatNumber';
+//import { fNumber } from '../../../utils/formatNumber';
 
 import { ORDER_TYPE_ASKS, ORDER_TYPE_BIDS } from "./constants";
 
 // import { parseOrderbookChanges, parseBalanceChanges } from './parser'
 
 //import {Decimal} from 'decimal.js';
+
+// import {
+//     CSSTransition,
+//     TransitionGroup,
+// } from 'react-transition-group';
 
 import {
     Button,
@@ -42,6 +47,8 @@ export default function OrderBook({token, pair}) {
     const [asks, setAsks] = useState([]);
     const [ready, setReady] = useState(false);
     const [reqID, setReqID] = useState(1);
+    const [clearAsks, setClearAsks] = useState(false);
+    const [clearBids, setClearBids] = useState(false);
 
     // Page Visibility detection
     useEffect(() => {
@@ -83,6 +90,26 @@ export default function OrderBook({token, pair}) {
             document.addEventListener(visibilityChange, handleVisibilityChange, false);
         }
     }, []);
+
+    useEffect(() => {
+        let arr = [];
+        if (clearAsks) {
+            setClearAsks(false);
+            for (let o of asks) {
+                o.isNew = false;
+                arr.push(o);
+            }
+            setAsks(arr);
+        }
+        if (clearBids) {
+            setClearBids(false);
+            for (let o of bids) {
+                o.isNew = false;
+                arr.push(o);
+            }
+            setBids(arr);
+        }
+    }, [clearAsks, clearBids, asks, bids]);
 
     const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
         onOpen: () => {console.log('wss://ws.xrpl.to opened');setReady(true);},
@@ -235,12 +262,18 @@ export default function OrderBook({token, pair}) {
             const r = orderBook.id % 2;
             //console.log(`Received id ${orderBook.id}`)
             if (r === 1) {
-                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS);
+                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS, asks);
                 setAsks(parsed);
+                setTimeout(() => {
+                    setClearAsks(true);
+                }, 1000);
             }
             if (r === 0) {
-                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS);
+                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, bids);
                 setBids(parsed);
+                setTimeout(() => {
+                    setClearBids(true);
+                }, 1000);
             }
         }
     };
@@ -288,17 +321,37 @@ export default function OrderBook({token, pair}) {
             }
         );
 
-        const array = sortedLevelsByPrice.slice(0, 20);
+        const array = sortedLevelsByPrice.slice(0, 30);
 
         return (
             array.map((level, idx) => {
-                const price = fNumber(level.price);
-                const amount = fNumber(level.amount);
-                const value = fNumber(level.value);
-                const sum = fNumber(level.sum);
-                const depth = getIndicatorProgress(level.amount);
-                
+                const price = level.price.toFixed(5);//fNumber(level.price);
+                const amount = level.amount.toFixed(2); // fNumber(level.amount);
+                const value = level.value.toFixed(2); // fNumber(level.value);
+                const sum = level.sum.toFixed(2); // fNumber(level.sum);
+                const isNew = level.isNew;
                 const isBid= orderType === ORDER_TYPE_BIDS;
+                const depth = getIndicatorProgress(level.amount);
+
+                // if (level.isNew) {
+                //     isNew = true;
+                //     setTimeout(() => {
+                //         level.isNew = false;
+                //     }, 100);
+                // }
+
+                let bidBackgroundColor;
+                if (isNew)
+                    bidBackgroundColor = `#00AB5588`;
+                else
+                    bidBackgroundColor = `linear-gradient(to right, #00AB5533, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`;
+
+                let askBackgroundColor;
+                if (isNew)
+                    askBackgroundColor = `#FF484288`;
+                else
+                    askBackgroundColor = `linear-gradient(to left, #FF484233, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`;
+
                 return (
                     <>
                     {isBid ?
@@ -307,28 +360,39 @@ export default function OrderBook({token, pair}) {
                             tabIndex={-1}
                             hover
                             style={{
-                                background: `linear-gradient(to left, #113534, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`,
+                                background: `${bidBackgroundColor}`,
+                                transition: "all .5s ease",
+                                WebkitTransition: "all .5s ease",
+                                MozTransition: "all .5s ease",
                                 "&:hover": {
                                     background: "blue !important"
                                 }
                             }}
                         >
-                            <TableCell>{sum}</TableCell>
-                            <TableCell>{value}</TableCell>
-                            <TableCell>{amount}</TableCell>
-                            <TableCell style={{color: '#118860'}}>{price}</TableCell>
+                            <TableCell sx={{ p:0 }} align="right">{sum}</TableCell>
+                            <TableCell sx={{ p:0 }} align="right">{value}</TableCell>
+                            <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
+                            <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew?'':'#118860'}`}}>{price}</TableCell>
                         </TableRow>
                     :
                         <TableRow
                             hover
                             key={'ASK' + sum + amount}
                             tabIndex={-1}
-                            style={{background: `linear-gradient(to right, #3d1e28, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`}}
+                            style={{
+                                background: `${askBackgroundColor}`,
+                                transition: "all .5s ease",
+                                WebkitTransition: "all .5s ease",
+                                MozTransition: "all .5s ease",
+                                "&:hover": {
+                                    background: "blue !important"
+                                }
+                            }}
                         >
-                            <TableCell style={{color: '#bb3336'}}>{price}</TableCell>
-                            <TableCell>{amount}</TableCell>
-                            <TableCell>{value}</TableCell>
-                            <TableCell>{sum}</TableCell>
+                            <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew?'':'#bb3336'}`}}>{price}</TableCell>
+                            <TableCell sx={{ p:0 }}>{amount}</TableCell>
+                            <TableCell sx={{ p:0 }}>{value}</TableCell>
+                            <TableCell sx={{ p:0 }}>{sum}</TableCell>
                         </TableRow>}
                     </>
                 );
@@ -342,7 +406,7 @@ export default function OrderBook({token, pair}) {
             {bids.length || asks.length ?
                 <Grid container spacing={0} sx={{p:0}}>
                     <Grid item xs={12} md={6} lg={6}>
-                        <Typography variant='subtitle1' sx={{color:'#007B55', ml:2, mt:2, mb:1}}>Buy Orders</Typography>
+                        <Typography variant='subtitle1' sx={{color:'#007B55', ml:0, mt:2, mb:1}}>Buy Orders</Typography>
                         <Table
                             stickyHeader
                             size={'small'}
@@ -354,11 +418,18 @@ export default function OrderBook({token, pair}) {
                             }}
                         >
                             <TableHead>
-                                <TableRow>
-                                    <TableCell align="left">Sum</TableCell>
-                                    <TableCell align="left">Value</TableCell>
-                                    <TableCell align="left">Amount</TableCell>
-                                    <TableCell align="left">Bid</TableCell>
+                                <TableRow
+                                    sx={{
+                                        [`& .${tableCellClasses.root}`]: {
+                                            borderBottom: "1px solid",
+                                            borderBottomColor: theme.palette.divider
+                                        }
+                                    }}
+                                >
+                                    <TableCell align="right" sx={{ p:0 }}>Sum</TableCell>
+                                    <TableCell align="right" sx={{ p:0 }}>Value</TableCell>
+                                    <TableCell align="right" sx={{ p:0 }}>Amount</TableCell>
+                                    <TableCell align="right" sx={{ p:0, pr: 1 }}>Bid</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -367,7 +438,7 @@ export default function OrderBook({token, pair}) {
                         </Table>
                     </Grid>
                     <Grid item xs={12} md={6} lg={6} sx={{p:0}}>
-                        <Typography variant='subtitle1' sx={{color:'#B72136', ml:2, mt:2, mb:1}}>Sell Orders</Typography>
+                        <Typography align='right' variant='subtitle1' sx={{color:'#B72136', ml:2, mt:2, mb:1}}>Sell Orders</Typography>
                         <Table
                             stickyHeader
                             size={'small'}
@@ -379,11 +450,18 @@ export default function OrderBook({token, pair}) {
                             }}
                         >
                             <TableHead>
-                                <TableRow>
-                                    <TableCell align="left">Ask</TableCell>
-                                    <TableCell align="left">Amount</TableCell>
-                                    <TableCell align="left">Value</TableCell>
-                                    <TableCell align="left">Sum</TableCell>
+                                <TableRow
+                                    sx={{
+                                        [`& .${tableCellClasses.root}`]: {
+                                            borderBottom: "1px solid",
+                                            borderBottomColor: theme.palette.divider
+                                        }
+                                    }}
+                                >
+                                    <TableCell align="left" sx={{ p:0, pl: 1 }}>Ask</TableCell>
+                                    <TableCell align="left" sx={{ p:0 }}>Amount</TableCell>
+                                    <TableCell align="left" sx={{ p:0 }}>Value</TableCell>
+                                    <TableCell align="left" sx={{ p:0 }}>Sum</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>

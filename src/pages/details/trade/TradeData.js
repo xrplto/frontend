@@ -33,6 +33,7 @@ import Inbox from '@mui/icons-material/Inbox';
 import LocalOffer from '@mui/icons-material/LocalOffer';
 import People from '@mui/icons-material/People';
 import Info from '@mui/icons-material/Info';
+import SellIcon from '@mui/icons-material/Sell';
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
@@ -96,22 +97,6 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
     border: `1px solid ${theme.palette.divider}`,
     padding: '0px 12px'
 }));
-
-const StyledTab = styled((props) => <Tab disableRipple {...props} />)(
-    ({ theme }) => ({
-      textTransform: 'none',
-      fontWeight: theme.typography.fontWeightRegular,
-      fontSize: theme.typography.pxToRem(15),
-      marginRight: theme.spacing(1),
-      color: 'rgba(255, 0, 0, 0.7)',
-      '&.Mui-selected': {
-        color: '#0f0'
-      },
-      '&.Mui-focusVisible': {
-        backgroundColor: 'rgba(100, 95, 228, 0.32)',
-      },
-    }),
-  );
 
 // function getPair(issuer, code) {
 //     // issuer, currencyCode, 'XRP', undefined
@@ -178,8 +163,6 @@ function a11yProps(index) {
     };
 }
 
-const indicatorColors = ['#d93025', '#1a73e8', '#188038', '#e37400'];
-
 export default function TradeData({token, pairs}) {
     const [sel, setSel] = useState(1);
     const [pair, setPair] = useState(pairs[0]);
@@ -187,9 +170,9 @@ export default function TradeData({token, pairs}) {
 
     const [tabIndex, setTabIndex] = useState(0);
 
-    const tabsStyles = useGmailTabsStyles({ indicatorColors });
-    const tabItem1Styles = useGmailTabItemStyles({ color: '#d93025' });
-    const tabItem2Styles = useGmailTabItemStyles({ color: '#1a73e8' });
+    const tabsStyles = useGmailTabsStyles({ indicatorColors: ['#007B55', '#bb3336'] });
+    const tabItem1Styles = useGmailTabItemStyles({ color: '#007B55' });
+    const tabItem2Styles = useGmailTabItemStyles({ color: '#bb3336' });
 
     const {
         acct,
@@ -227,27 +210,6 @@ export default function TradeData({token, pairs}) {
 
     return (
         <StackStyle>
-            <Tabs
-                classes={tabsStyles}
-                value={tabIndex}
-                onChange={(e, index) => setTabIndex(index)}
-                TabIndicatorProps={{
-                    children: <div className={`MuiIndicator-${tabIndex}`} />,
-                }}
-                >
-                <Tab
-                    classes={tabItem1Styles}
-                    disableTouchRipple
-                    label={'Primary'}
-                    icon={<Inbox />}
-                />
-                <Tab
-                    classes={tabItem2Styles}
-                    disableTouchRipple
-                    label={'Promotions'}
-                    icon={<LocalOffer />}
-                />
-            </Tabs>
             <Stack direction="row">
                 <Stack alignItems="left">
                     <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
@@ -337,12 +299,33 @@ export default function TradeData({token, pairs}) {
                     </Stack> */}
                 </Stack>
                 <StackDexStyle sx={{ m: 1, minWidth: 200 }}>
-                    <Tabs value={value} indicatorColor='#00ffff' onChange={handleChangeTab} aria-label="basic tabs example">
+                <Tabs
+                    classes={tabsStyles}
+                    value={tabIndex}
+                    onChange={(e, index) => setTabIndex(index)}
+                    TabIndicatorProps={{
+                        children: <div className={`MuiIndicator-${tabIndex}`} />,
+                    }}
+                    >
+                    <Tab
+                        classes={tabItem1Styles}
+                        disableTouchRipple
+                        label={'Buy'}
+                        icon={<Inbox />}
+                        iconPosition="start"
+                    />
+                    <Tab
+                        classes={tabItem2Styles}
+                        disableTouchRipple
+                        label={'Sell'}
+                        icon={<SellIcon />}
+                        iconPosition="start"
+                    />
+                </Tabs>
+                    {/* <Tabs value={value} indicatorColor='#00ffff' onChange={handleChangeTab} aria-label="basic tabs example">
                         <Tab label="Buy"  {...a11yProps(0)} />
                         <Tab label="Sell" {...a11yProps(1)} />
-                    </Tabs>
-                    {/* <Typography variant="h4" sx={{ color: '#007B55' }}>BUY</Typography> */}
-                    {/* <Typography variant="h4" sx={{ color: '#B72136' }}>SELL</Typography> */}
+                    </Tabs> */}
                 </StackDexStyle>
             </Stack>
             
