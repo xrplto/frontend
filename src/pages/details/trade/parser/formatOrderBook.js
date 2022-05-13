@@ -91,9 +91,9 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
 
     // let index = 0
     const array = []
-    let sum = 0;
-    let sumGets = 0;
-    let sumPays = 0;
+    let sumAmount = 0;
+    let sumValue = 0;
+
     let mapOldOffers = new Map();
     for (var offer of arrOffers) {
         mapOldOffers.set(offer.id, true);
@@ -107,7 +107,8 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
             price: 0,
             amount: 0,
             value: 0,
-            sum: 0,
+            sumAmount: 0, // SOLO
+            sumValue: 0, // XRP
             avgPrice: 0,
             sumGets: 0,
             sumPays: 0,
@@ -124,6 +125,7 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
 
         const amount = Number(isBID ? takerPays : takerGets)
         const price = isBID ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier
+        const value = amount * price;
 
         // const quantity = Number(isBID ? (offer.TakerPays?.value || offer.TakerPays) : (offer.TakerGets?.value || offer.TakerGets))
         // const price = round(isBID ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier, precision)
@@ -144,29 +146,20 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
         //         index++
         //     }
         // }
-        sum += amount;
-        
-        sumGets += Number(takerGets);
-        sumPays += Number(takerPays);
-
+        sumAmount += amount;
+        sumValue += value;
         obj.id = id;
         obj.price = price
-        obj.amount = amount
-        obj.value = amount * price
-        obj.sum = sum
-        obj.sumGets = sumGets
-        obj.sumPays = sumPays
-        if (isBID) {
-            if (sumPays > 0)
-                obj.avgPrice = sumGets / sumPays
-            else
-                obj.avgPrice = 0
-        } else {
-            if (sumGets > 0)
-                obj.avgPrice = sumPays / sumGets
-            else
-                obj.avgPrice = 0
-        }
+        obj.amount = amount // SOLO
+        obj.value = value // XRP
+        obj.sumAmount = sumAmount
+        obj.sumValue = sumValue
+
+        if (sumAmount > 0)
+            obj.avgPrice = sumValue / sumAmount
+        else
+            obj.avgPrice = 0
+
         obj.isNew = !mapOldOffers.has(id)
         //obj.partial = partial
 

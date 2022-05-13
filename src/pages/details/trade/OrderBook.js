@@ -322,19 +322,17 @@ export default function OrderBook({token, pair}) {
         return (
             levels.map((level, idx) => {
                 const price = level.price.toFixed(5);//fNumber(level.price);
+                const avgPrice = level.avgPrice.toFixed(2);
                 const amount = level.amount.toFixed(2); // fNumber(level.amount);
                 const value = level.value.toFixed(2); // fNumber(level.value);
-                const sum = level.sum.toFixed(2); // fNumber(level.sum);
+                const sumAmount = level.sumAmount.toFixed(2); // fNumber(level.sumAmount);
+                const sumValue = level.sumValue.toFixed(2); // fNumber(level.sumValue);
                 const isNew = level.isNew;
                 const isBid = orderType === ORDER_TYPE_BIDS;
                 const depth = getIndicatorProgress(level.amount);
                 const currName1 = pair.curr1.name;
                 const currName2 = pair.curr2.name;
-
-                const sumGets = level.sumGets.toFixed(2);
-                const sumPays = level.sumPays.toFixed(2);
-                const avgPrice = level.avgPrice;
-
+              
                 let bidBackgroundColor;
                 if (isNew)
                     bidBackgroundColor = `#00AB5588`;
@@ -365,18 +363,18 @@ export default function OrderBook({token, pair}) {
                                     </Stack>
                                     <Stack direction="row">
                                         <Typography variant='body2'>Sum {currName1}:</Typography>
-                                        <Typography variant='body2'>{sumGets}</Typography>
+                                        <Typography variant='body2'>{sumAmount}</Typography>
                                     </Stack>
                                     <Stack direction="row">
                                         <Typography variant='body2'>Sum {currName2}:</Typography>
-                                        <Typography variant='body2'>{sumPays}</Typography>
+                                        <Typography variant='body2'>{sumValue}</Typography>
                                     </Stack>
                                 </Stack>
                             }
                             placement='right-end' arrow
                         >
                             <TableRow
-                                key={'BID' + sum + amount}
+                                key={'BID' + sumAmount + amount}
                                 tabIndex={-1}
                                 hover
                                 sx={{
@@ -392,17 +390,35 @@ export default function OrderBook({token, pair}) {
                                 onMouseOver={e=>onBidMouseOver(e, idx)}
                                 onMouseLeave={e=>onMouseLeave(e, idx)}
                             >
-                                <TableCell sx={{ p:0 }} align="right">{sum}</TableCell>
+                                <TableCell sx={{ p:0 }} align="right">{sumAmount}</TableCell>
                                 <TableCell sx={{ p:0 }} align="right">{value}</TableCell>
                                 <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
                                 <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selected[0] > 0?'':'#118860'}`}}>{price}</TableCell>
                             </TableRow>
                         </Tooltip>
                     :
-                        <Tooltip title="All" placement='left-end' arrow>
+                        <Tooltip
+                            title={
+                                <Stack>
+                                    <Stack direction="row">
+                                        <Typography variant='body2'>Avg Price:</Typography>
+                                        <Typography variant='body2'>{avgPrice}</Typography>
+                                    </Stack>
+                                    <Stack direction="row">
+                                        <Typography variant='body2'>Sum {currName1}:</Typography>
+                                        <Typography variant='body2'>{sumAmount}</Typography>
+                                    </Stack>
+                                    <Stack direction="row">
+                                        <Typography variant='body2'>Sum {currName2}:</Typography>
+                                        <Typography variant='body2'>{sumValue}</Typography>
+                                    </Stack>
+                                </Stack>
+                            }
+                            placement='right-end' arrow
+                        >
                             <TableRow
                                 hover
-                                key={'ASK' + sum + amount}
+                                key={'ASK' + sumAmount + amount}
                                 tabIndex={-1}
                                 sx={{
                                     cursor: 'pointer',
@@ -420,7 +436,7 @@ export default function OrderBook({token, pair}) {
                                 <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selected[1] > 0?'':'#bb3336'}`}}>{price}</TableCell>
                                 <TableCell sx={{ p:0 }}>{amount}</TableCell>
                                 <TableCell sx={{ p:0 }}>{value}</TableCell>
-                                <TableCell sx={{ p:0 }}>{sum}</TableCell>
+                                <TableCell sx={{ p:0 }}>{sumAmount}</TableCell>
                             </TableRow>
                         </Tooltip>
                     }
