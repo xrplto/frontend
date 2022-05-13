@@ -46,8 +46,7 @@ export default function OrderBook({token, pair}) {
     const [reqID, setReqID] = useState(1);
     const [clearAsks, setClearAsks] = useState(false);
     const [clearBids, setClearBids] = useState(false);
-    const [selectAsk, setSelectAsk] = useState(0);
-    const [selectBid, setSelectBid] = useState(0);
+    const [selected, setSelected] = useState([0, 0]);
 
     // Page Visibility detection
     useEffect(() => {
@@ -308,35 +307,20 @@ export default function OrderBook({token, pair}) {
     }
 
     const buildPriceLevels = (levels, orderType = ORDER_TYPE_BIDS) => {
-        const sortedLevelsByPrice = [ ...levels ].sort(
-            (a, b) => {
-                let result = 0;
-                if (orderType === ORDER_TYPE_BIDS) {
-                    result = b.price - a.price;
-                } else {
-                    result = a.price - b.price;
-                }
-                return result;
-            }
-        );
-
-        const array = sortedLevelsByPrice.slice(0, 30);
-
         const onBidMouseOver = (e, idx) => {
-            setSelectBid(idx + 1);
+            setSelected([idx + 1, 0]);
         }
 
         const onAskMouseOver = (e, idx) => {
-            setSelectAsk(idx + 1);
+            setSelected([0, idx + 1]);
         }
 
         const onMouseLeave = (e, idx) => {
-            setSelectAsk(0);
-            setSelectBid(0);
+            setSelected([0, 0]);
         }
 
         return (
-            array.map((level, idx) => {
+            levels.map((level, idx) => {
                 const price = level.price.toFixed(5);//fNumber(level.price);
                 const amount = level.amount.toFixed(2); // fNumber(level.amount);
                 const value = level.value.toFixed(2); // fNumber(level.value);
@@ -344,13 +328,12 @@ export default function OrderBook({token, pair}) {
                 const isNew = level.isNew;
                 const isBid = orderType === ORDER_TYPE_BIDS;
                 const depth = getIndicatorProgress(level.amount);
+                const currName1 = pair.curr1.name;
+                const currName2 = pair.curr2.name;
 
-                // if (level.isNew) {
-                //     isNew = true;
-                //     setTimeout(() => {
-                //         level.isNew = false;
-                //     }, 100);
-                // }
+                const sumGets = level.sumGets.toFixed(2);
+                const sumPays = level.sumPays.toFixed(2);
+                const avgPrice = level.avgPrice;
 
                 let bidBackgroundColor;
                 if (isNew)
@@ -364,16 +347,34 @@ export default function OrderBook({token, pair}) {
                 else
                     askBackgroundColor = `linear-gradient(to left, #FF484233, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`;
 
-                if (idx < selectBid)
+                if (idx < selected[0])
                     bidBackgroundColor = `#00AB5588`;
 
-                if (idx < selectAsk)
+                if (idx < selected[1])
                     askBackgroundColor = `#FF484288`;
 
                 return (
                     <>
                     {isBid ?
-                        <Tooltip title="All" placement='right-end' arrow>
+                        <Tooltip
+                            title={
+                                <Stack>
+                                    <Stack direction="row">
+                                        <Typography variant='body2'>Avg Price:</Typography>
+                                        <Typography variant='body2'>{avgPrice}</Typography>
+                                    </Stack>
+                                    <Stack direction="row">
+                                        <Typography variant='body2'>Sum {currName1}:</Typography>
+                                        <Typography variant='body2'>{sumGets}</Typography>
+                                    </Stack>
+                                    <Stack direction="row">
+                                        <Typography variant='body2'>Sum {currName2}:</Typography>
+                                        <Typography variant='body2'>{sumPays}</Typography>
+                                    </Stack>
+                                </Stack>
+                            }
+                            placement='right-end' arrow
+                        >
                             <TableRow
                                 key={'BID' + sum + amount}
                                 tabIndex={-1}
@@ -384,9 +385,9 @@ export default function OrderBook({token, pair}) {
                                     "&:hover": {
                                         background: "#00AB5588 !important"
                                     },
-                                    transition: "all .5s ease",
-                                    WebkitTransition: "all .5s ease",
-                                    MozTransition: "all .5s ease",
+                                    transition: "all .3s ease",
+                                    WebkitTransition: "all .3s ease",
+                                    MozTransition: "all .3s ease",
                                 }}
                                 onMouseOver={e=>onBidMouseOver(e, idx)}
                                 onMouseLeave={e=>onMouseLeave(e, idx)}
@@ -394,7 +395,7 @@ export default function OrderBook({token, pair}) {
                                 <TableCell sx={{ p:0 }} align="right">{sum}</TableCell>
                                 <TableCell sx={{ p:0 }} align="right">{value}</TableCell>
                                 <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
-                                <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selectBid > 0?'':'#118860'}`}}>{price}</TableCell>
+                                <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selected[0] > 0?'':'#118860'}`}}>{price}</TableCell>
                             </TableRow>
                         </Tooltip>
                     :
@@ -406,9 +407,9 @@ export default function OrderBook({token, pair}) {
                                 sx={{
                                     cursor: 'pointer',
                                     background: `${askBackgroundColor}`,
-                                    transition: "all .5s ease",
-                                    WebkitTransition: "all .5s ease",
-                                    MozTransition: "all .5s ease",
+                                    transition: "all .3s ease",
+                                    WebkitTransition: "all .3s ease",
+                                    MozTransition: "all .3s ease",
                                     "&:hover": {
                                         background: "#FF484288 !important"
                                     },
@@ -416,7 +417,7 @@ export default function OrderBook({token, pair}) {
                                 onMouseOver={e=>onAskMouseOver(e, idx)}
                                 onMouseLeave={e=>onMouseLeave(e, idx)}
                             >
-                                <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selectAsk > 0?'':'#bb3336'}`}}>{price}</TableCell>
+                                <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selected[1] > 0?'':'#bb3336'}`}}>{price}</TableCell>
                                 <TableCell sx={{ p:0 }}>{amount}</TableCell>
                                 <TableCell sx={{ p:0 }}>{value}</TableCell>
                                 <TableCell sx={{ p:0 }}>{sum}</TableCell>

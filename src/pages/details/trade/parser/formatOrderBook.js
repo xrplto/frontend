@@ -92,6 +92,8 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
     // let index = 0
     const array = []
     let sum = 0;
+    let sumGets = 0;
+    let sumPays = 0;
     let mapOldOffers = new Map();
     for (var offer of arrOffers) {
         mapOldOffers.set(offer.id, true);
@@ -106,6 +108,9 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
             amount: 0,
             value: 0,
             sum: 0,
+            avgPrice: 0,
+            sumGets: 0,
+            sumPays: 0,
             isNew: false
         }
 
@@ -140,18 +145,73 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
         //     }
         // }
         sum += amount;
+        
+        sumGets += Number(takerGets);
+        sumPays += Number(takerPays);
+
         obj.id = id;
         obj.price = price
         obj.amount = amount
         obj.value = amount * price
         obj.sum = sum
+        obj.sumGets = sumGets
+        obj.sumPays = sumPays
+        if (isBID) {
+            if (sumPays > 0)
+                obj.avgPrice = sumGets / sumPays
+            else
+                obj.avgPrice = 0
+        } else {
+            if (sumGets > 0)
+                obj.avgPrice = sumPays / sumGets
+            else
+                obj.avgPrice = 0
+        }
         obj.isNew = !mapOldOffers.has(id)
         //obj.partial = partial
 
         if (amount > 0)
             array.push(obj)
+
+        // if (i === 0 && isBID)
+        //    console.log(offer)
+
+        /*{ BID Offer
+            "Account": "rsoLoDTcxn9wCEHHBR7enMhzQMThkB2w28",
+            "BookDirectory": "C73FAC6C294EBA5B9E22A8237AAE80725E85372510A6CA794F05DD7327B65E9E",
+            "BookNode": "0",
+            "Expiration": 705752036,
+            "Flags": 0,
+            "LedgerEntryType": "Offer",
+            "OwnerNode": "0",
+            "PreviousTxnID": "8380F74C503D629EE39908E58E702252FE048BFB8FCA3331ED084915EDEB1DDE",
+            "PreviousTxnLgrSeq": 71621302,
+            "Sequence": 67629249,
+            "TakerGets": "90000000",
+            "TakerPays": {
+                "currency": "534F4C4F00000000000000000000000000000000",
+                "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+                "value": "148.5775386714613"
+            },
+            "index": "862539A8D6773FB25965D788DA7313A11BA2C52535DCA05859149A3A0F8BD565",
+            "owner_funds": "524244729",
+            "quality": "0.000001650861540794014"
+        }*/
     }
-    return array
+
+    const sortedArrayByPrice = [ ...array ].sort(
+        (a, b) => {
+            let result = 0;
+            if (orderType === ORDER_TYPE_BIDS) {
+                result = b.price - a.price;
+            } else {
+                result = a.price - b.price;
+            }
+            return result;
+        }
+    );
+
+    return sortedArrayByPrice.slice(0, 30);
 }
 
 export default formatOrderBook
