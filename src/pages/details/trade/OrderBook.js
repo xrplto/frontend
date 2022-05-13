@@ -23,6 +23,7 @@ import {
     TableCell,
     TableHead,
     TableRow,
+    Tooltip,
     Typography
 } from '@mui/material';
 
@@ -47,9 +48,6 @@ export default function OrderBook({token, pair}) {
     const [clearBids, setClearBids] = useState(false);
     const [selectAsk, setSelectAsk] = useState(0);
     const [selectBid, setSelectBid] = useState(0);
-
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [open, setOpen] = useState(false);
 
     // Page Visibility detection
     useEffect(() => {
@@ -325,23 +323,16 @@ export default function OrderBook({token, pair}) {
         const array = sortedLevelsByPrice.slice(0, 30);
 
         const onBidMouseOver = (e, idx) => {
-            console.log(idx)
             setSelectBid(idx + 1);
-            setAnchorEl(e.currentTarget);
-            setOpen(true);
         }
 
         const onAskMouseOver = (e, idx) => {
             setSelectAsk(idx + 1);
-            setAnchorEl(e.currentTarget);
-            setOpen(true);
         }
 
         const onMouseLeave = (e, idx) => {
             setSelectAsk(0);
             setSelectBid(0);
-            setOpen(false);
-            setAnchorEl(null);
         }
 
         return (
@@ -382,49 +373,56 @@ export default function OrderBook({token, pair}) {
                 return (
                     <>
                     {isBid ?
-                        <TableRow
-                            key={'BID' + sum + amount}
-                            tabIndex={-1}
-                            hover
-                            sx={{
-                                background: `${bidBackgroundColor}`,
-                                transition: "all .5s ease",
-                                WebkitTransition: "all .5s ease",
-                                MozTransition: "all .5s ease",
-                                "&:hover": {
-                                    background: "#00AB5588 !important"
-                                },
-                            }}
-                            onMouseOver={e=>onBidMouseOver(e, idx)}
-                            onMouseLeave={e=>onMouseLeave(e, idx)}
-                        >
-                            <TableCell sx={{ p:0 }} align="right">{sum}</TableCell>
-                            <TableCell sx={{ p:0 }} align="right">{value}</TableCell>
-                            <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
-                            <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selectBid > 0?'':'#118860'}`}}>{price}</TableCell>
-                        </TableRow>
+                        <Tooltip title="All" placement='right-end' arrow>
+                            <TableRow
+                                key={'BID' + sum + amount}
+                                tabIndex={-1}
+                                hover
+                                sx={{
+                                    cursor: 'pointer',
+                                    background: `${bidBackgroundColor}`,
+                                    "&:hover": {
+                                        background: "#00AB5588 !important"
+                                    },
+                                    transition: "all .5s ease",
+                                    WebkitTransition: "all .5s ease",
+                                    MozTransition: "all .5s ease",
+                                }}
+                                onMouseOver={e=>onBidMouseOver(e, idx)}
+                                onMouseLeave={e=>onMouseLeave(e, idx)}
+                            >
+                                <TableCell sx={{ p:0 }} align="right">{sum}</TableCell>
+                                <TableCell sx={{ p:0 }} align="right">{value}</TableCell>
+                                <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
+                                <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selectBid > 0?'':'#118860'}`}}>{price}</TableCell>
+                            </TableRow>
+                        </Tooltip>
                     :
-                        <TableRow
-                            hover
-                            key={'ASK' + sum + amount}
-                            tabIndex={-1}
-                            sx={{
-                                background: `${askBackgroundColor}`,
-                                transition: "all .5s ease",
-                                WebkitTransition: "all .5s ease",
-                                MozTransition: "all .5s ease",
-                                "&:hover": {
-                                    background: "#FF484288 !important"
-                                },
-                            }}
-                            onMouseOver={e=>onAskMouseOver(e, idx)}
-                            onMouseLeave={e=>onMouseLeave(e, idx)}
-                        >
-                            <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selectAsk > 0?'':'#bb3336'}`}}>{price}</TableCell>
-                            <TableCell sx={{ p:0 }}>{amount}</TableCell>
-                            <TableCell sx={{ p:0 }}>{value}</TableCell>
-                            <TableCell sx={{ p:0 }}>{sum}</TableCell>
-                        </TableRow>}
+                        <Tooltip title="All" placement='left-end' arrow>
+                            <TableRow
+                                hover
+                                key={'ASK' + sum + amount}
+                                tabIndex={-1}
+                                sx={{
+                                    cursor: 'pointer',
+                                    background: `${askBackgroundColor}`,
+                                    transition: "all .5s ease",
+                                    WebkitTransition: "all .5s ease",
+                                    MozTransition: "all .5s ease",
+                                    "&:hover": {
+                                        background: "#FF484288 !important"
+                                    },
+                                }}
+                                onMouseOver={e=>onAskMouseOver(e, idx)}
+                                onMouseLeave={e=>onMouseLeave(e, idx)}
+                            >
+                                <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selectAsk > 0?'':'#bb3336'}`}}>{price}</TableCell>
+                                <TableCell sx={{ p:0 }}>{amount}</TableCell>
+                                <TableCell sx={{ p:0 }}>{value}</TableCell>
+                                <TableCell sx={{ p:0 }}>{sum}</TableCell>
+                            </TableRow>
+                        </Tooltip>
+                    }
                     </>
                 );
             })
@@ -448,24 +446,6 @@ export default function OrderBook({token, pair}) {
                                 }
                             }}
                         >
-                            <Menu
-                                id="simple-menu"
-                                anchorEl={anchorEl}
-                                open={open}
-                                anchorOrigin={{
-                                    vertical: "bottom",
-                                    horizontal: "center"
-                                }}
-                                transformOrigin={{
-                                    vertical: "top",
-                                    horizontal: "center"
-                                }}
-                                // PaperProps={{
-                                //   sx: { width: 170, maxWidth: '100%' }
-                                // }}
-                            >
-                                ASDFqwert
-                            </Menu>
                             <TableHead>
                                 <TableRow
                                     sx={{
