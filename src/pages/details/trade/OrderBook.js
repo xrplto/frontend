@@ -16,6 +16,7 @@ import { ORDER_TYPE_ASKS, ORDER_TYPE_BIDS } from "./constants";
 import {
     Button,
     Grid,
+    Menu,
     Stack,
     Table,
     TableBody,
@@ -44,6 +45,11 @@ export default function OrderBook({token, pair}) {
     const [reqID, setReqID] = useState(1);
     const [clearAsks, setClearAsks] = useState(false);
     const [clearBids, setClearBids] = useState(false);
+    const [selectAsk, setSelectAsk] = useState(0);
+    const [selectBid, setSelectBid] = useState(0);
+
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [open, setOpen] = useState(false);
 
     // Page Visibility detection
     useEffect(() => {
@@ -318,6 +324,26 @@ export default function OrderBook({token, pair}) {
 
         const array = sortedLevelsByPrice.slice(0, 30);
 
+        const onBidMouseOver = (e, idx) => {
+            console.log(idx)
+            setSelectBid(idx + 1);
+            setAnchorEl(e.currentTarget);
+            setOpen(true);
+        }
+
+        const onAskMouseOver = (e, idx) => {
+            setSelectAsk(idx + 1);
+            setAnchorEl(e.currentTarget);
+            setOpen(true);
+        }
+
+        const onMouseLeave = (e, idx) => {
+            setSelectAsk(0);
+            setSelectBid(0);
+            setOpen(false);
+            setAnchorEl(null);
+        }
+
         return (
             array.map((level, idx) => {
                 const price = level.price.toFixed(5);//fNumber(level.price);
@@ -325,7 +351,7 @@ export default function OrderBook({token, pair}) {
                 const value = level.value.toFixed(2); // fNumber(level.value);
                 const sum = level.sum.toFixed(2); // fNumber(level.sum);
                 const isNew = level.isNew;
-                const isBid= orderType === ORDER_TYPE_BIDS;
+                const isBid = orderType === ORDER_TYPE_BIDS;
                 const depth = getIndicatorProgress(level.amount);
 
                 // if (level.isNew) {
@@ -347,6 +373,12 @@ export default function OrderBook({token, pair}) {
                 else
                     askBackgroundColor = `linear-gradient(to left, #FF484233, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`;
 
+                if (idx < selectBid)
+                    bidBackgroundColor = `#00AB5588`;
+
+                if (idx < selectAsk)
+                    askBackgroundColor = `#FF484288`;
+
                 return (
                     <>
                     {isBid ?
@@ -354,37 +386,41 @@ export default function OrderBook({token, pair}) {
                             key={'BID' + sum + amount}
                             tabIndex={-1}
                             hover
-                            style={{
+                            sx={{
                                 background: `${bidBackgroundColor}`,
                                 transition: "all .5s ease",
                                 WebkitTransition: "all .5s ease",
                                 MozTransition: "all .5s ease",
                                 "&:hover": {
-                                    background: "blue !important"
-                                }
+                                    background: "#00AB5588 !important"
+                                },
                             }}
+                            onMouseOver={e=>onBidMouseOver(e, idx)}
+                            onMouseLeave={e=>onMouseLeave(e, idx)}
                         >
                             <TableCell sx={{ p:0 }} align="right">{sum}</TableCell>
                             <TableCell sx={{ p:0 }} align="right">{value}</TableCell>
                             <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
-                            <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew?'':'#118860'}`}}>{price}</TableCell>
+                            <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selectBid > 0?'':'#118860'}`}}>{price}</TableCell>
                         </TableRow>
                     :
                         <TableRow
                             hover
                             key={'ASK' + sum + amount}
                             tabIndex={-1}
-                            style={{
+                            sx={{
                                 background: `${askBackgroundColor}`,
                                 transition: "all .5s ease",
                                 WebkitTransition: "all .5s ease",
                                 MozTransition: "all .5s ease",
                                 "&:hover": {
-                                    background: "blue !important"
-                                }
+                                    background: "#FF484288 !important"
+                                },
                             }}
+                            onMouseOver={e=>onAskMouseOver(e, idx)}
+                            onMouseLeave={e=>onMouseLeave(e, idx)}
                         >
-                            <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew?'':'#bb3336'}`}}>{price}</TableCell>
+                            <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selectAsk > 0?'':'#bb3336'}`}}>{price}</TableCell>
                             <TableCell sx={{ p:0 }}>{amount}</TableCell>
                             <TableCell sx={{ p:0 }}>{value}</TableCell>
                             <TableCell sx={{ p:0 }}>{sum}</TableCell>
@@ -412,6 +448,24 @@ export default function OrderBook({token, pair}) {
                                 }
                             }}
                         >
+                            <Menu
+                                id="simple-menu"
+                                anchorEl={anchorEl}
+                                open={open}
+                                anchorOrigin={{
+                                    vertical: "bottom",
+                                    horizontal: "center"
+                                }}
+                                transformOrigin={{
+                                    vertical: "top",
+                                    horizontal: "center"
+                                }}
+                                // PaperProps={{
+                                //   sx: { width: 170, maxWidth: '100%' }
+                                // }}
+                            >
+                                ASDFqwert
+                            </Menu>
                             <TableHead>
                                 <TableRow
                                     sx={{
