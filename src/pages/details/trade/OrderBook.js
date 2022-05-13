@@ -322,7 +322,7 @@ export default function OrderBook({token, pair}) {
         return (
             levels.map((level, idx) => {
                 const price = level.price.toFixed(5);//fNumber(level.price);
-                const avgPrice = level.avgPrice.toFixed(2);
+                const avgPrice = level.avgPrice.toFixed(5);
                 const amount = level.amount.toFixed(2); // fNumber(level.amount);
                 const value = level.value.toFixed(2); // fNumber(level.value);
                 const sumAmount = level.sumAmount.toFixed(2); // fNumber(level.sumAmount);
@@ -359,15 +359,15 @@ export default function OrderBook({token, pair}) {
                                 <Stack>
                                     <Stack direction="row">
                                         <Typography variant='body2'>Avg Price:</Typography>
-                                        <Typography variant='body2'>{avgPrice}</Typography>
+                                        <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{avgPrice}</Typography>
                                     </Stack>
                                     <Stack direction="row">
                                         <Typography variant='body2'>Sum {currName1}:</Typography>
-                                        <Typography variant='body2'>{sumAmount}</Typography>
+                                        <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumAmount}</Typography>
                                     </Stack>
                                     <Stack direction="row">
                                         <Typography variant='body2'>Sum {currName2}:</Typography>
-                                        <Typography variant='body2'>{sumValue}</Typography>
+                                        <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumValue}</Typography>
                                     </Stack>
                                 </Stack>
                             }
@@ -402,15 +402,15 @@ export default function OrderBook({token, pair}) {
                                 <Stack>
                                     <Stack direction="row">
                                         <Typography variant='body2'>Avg Price:</Typography>
-                                        <Typography variant='body2'>{avgPrice}</Typography>
+                                        <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{avgPrice}</Typography>
                                     </Stack>
                                     <Stack direction="row">
                                         <Typography variant='body2'>Sum {currName1}:</Typography>
-                                        <Typography variant='body2'>{sumAmount}</Typography>
+                                        <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumAmount}</Typography>
                                     </Stack>
                                     <Stack direction="row">
                                         <Typography variant='body2'>Sum {currName2}:</Typography>
-                                        <Typography variant='body2'>{sumValue}</Typography>
+                                        <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumValue}</Typography>
                                     </Stack>
                                 </Stack>
                             }
