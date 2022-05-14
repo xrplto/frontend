@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 // import { withStyles } from '@mui/styles';
+import { makeStyles } from "@mui/styles";
+
 import {
     Avatar,
     Box,
@@ -23,10 +25,10 @@ import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import OrderBook from "./OrderBook";
 import History from './History';
-import {
-    useGmailTabsStyles,
-    useGmailTabItemStyles
-} from './gmail';
+// import {
+//     useGmailTabsStyles,
+//     useGmailTabItemStyles
+// } from './gmail';
 
 import Inbox from '@mui/icons-material/Inbox';
 import SellIcon from '@mui/icons-material/Sell';
@@ -93,6 +95,48 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
     border: `1px solid ${theme.palette.divider}`,
     padding: '0px 12px'
 }));
+
+const tabsStyles = () => ({
+    root: {
+        width: '100%',
+        boxShadow: 'inset 0 -1px 0 rgba(100,121,143,0.122)',
+    },
+    indicator: ({ indicatorColors = [] }) => ({
+        height: 3,
+        backgroundColor: 'rgba(0,0,0,0)',
+        '& > div': {
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            borderTopLeftRadius: 3,
+            borderTopRightRadius: 3,
+            height: 3,
+            margin: '0 4px',
+            ...indicatorColors.reduce((result, color, index) => ({
+                ...result,
+                [`&.MuiIndicator-${index}`]: {
+                    backgroundColor: color,
+                }
+            }), {}),
+        },
+    }),
+});
+
+const tabItemStyles = () => ({
+    root: {
+        minHeight: '56px',
+        textTransform: 'none',
+        color: '#454F5B',
+        '&.Mui-selected': {
+            color: props => props.color,
+        },
+        '&.Mui-focusVisible': {
+            backgroundColor: 'rgba(100, 95, 228, 0.32)',
+        },
+    },
+});
+
+const useGmailTabsStyles = makeStyles(tabsStyles)
+
+const useGmailTabItemStyles = makeStyles(tabItemStyles)
 
 // function getPair(issuer, code) {
 //     // issuer, currencyCode, 'XRP', undefined

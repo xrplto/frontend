@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import useWebSocket from "react-use-websocket";
 import { PuffLoader } from "react-spinners";
 import { styled, useTheme } from '@mui/material/styles';
-
 import {formatOrderBook} from './parser';
 
 //import { fNumber } from '../../../utils/formatNumber';
@@ -301,12 +300,8 @@ export default function OrderBook({token, pair}) {
 
         const progress = value / max100 > 1 ? 1 : (value / max100).toFixed(2)
 
-        // const percentage = (progress * 100).toFixed(0)
+        const percentage = (progress * 100).toFixed(0)
 
-        const percentage = Number((progress * 50).toFixed(0));
-
-        console.log(percentage);
-        
         return percentage
     }
 
@@ -341,15 +336,15 @@ export default function OrderBook({token, pair}) {
                 if (isNew)
                     bidBackgroundColor = `#00AB5588`;
                 else
-                    bidBackgroundColor = `#00AB55${depth}`;
-                    //bidBackgroundColor = `linear-gradient(to right, #00AB5533, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`;
+                    bidBackgroundColor = `linear-gradient(to right, #00AB5533, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`;
+                    // bidBackgroundColor = `#00AB55${depth}`;
 
                 let askBackgroundColor;
                 if (isNew)
                     askBackgroundColor = `#FF484288`;
                 else
-                    askBackgroundColor = `#FF4842${depth}`;
-                    //askBackgroundColor = `linear-gradient(to left, #FF484233, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`;
+                    askBackgroundColor = `linear-gradient(to left, #FF484233, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`;
+                    // askBackgroundColor = `#FF4842${depth}`;
 
                 if (idx < selected[0])
                     bidBackgroundColor = `#00AB5588`;
@@ -399,8 +394,8 @@ export default function OrderBook({token, pair}) {
                                 <TableCell sx={{ p:0 }} align="right">{sumAmount}</TableCell>
                                 <TableCell sx={{ p:0 }} align="right">{value}</TableCell>
                                 <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
-                                <TableCell sx={{ p:0, pr:1 }} align="right">{price}</TableCell>
-                                {/* <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selected[0] > 0?'':'#118860'}`}}>{price}</TableCell> */}
+                                {/* <TableCell sx={{ p:0, pr:1 }} align="right">{price}</TableCell> */}
+                                <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selected[0] > idx?'':'#118860'}`}}>{price}</TableCell>
                             </TableRow>
                         </Tooltip>
                     :
@@ -440,8 +435,8 @@ export default function OrderBook({token, pair}) {
                                 onMouseOver={e=>onAskMouseOver(e, idx)}
                                 onMouseLeave={e=>onMouseLeave(e, idx)}
                             >
-                                <TableCell sx={{ p:0, pl:1 }}>{price}</TableCell>
-                                {/* <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selected[1] > 0?'':'#bb3336'}`}}>{price}</TableCell> */}
+                                {/* <TableCell sx={{ p:0, pl:1 }}>{price}</TableCell> */}
+                                <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selected[1] > idx?'':'#bb3336'}`}}>{price}</TableCell>
                                 <TableCell sx={{ p:0 }}>{amount}</TableCell>
                                 <TableCell sx={{ p:0 }}>{value}</TableCell>
                                 <TableCell sx={{ p:0 }}>{sumAmount}</TableCell>
