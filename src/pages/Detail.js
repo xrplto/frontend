@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { useParams/*, useSearchParams*/ } from "react-router-dom";
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
+import useWebSocket from "react-use-websocket";
+import {formatOrderBook} from './details/trade/parser';
 
 import {UserDesc, PriceDesc, LinkDesc, ExtraDesc} from "./details/common"
 import {PriceChart, PriceStatistics, Description} from './details/overview';
@@ -76,13 +78,25 @@ function a11yProps(index) {
     };
 }
 
+const ORDER_TYPE_BIDS = 1;
+const ORDER_TYPE_ASKS = 2;
+
 export default function Detail(props) {
+    const WSS_FEED_URL = 'wss://ws.xrpl.to';
     const BASE_URL = 'https://api.xrpl.to/api'; // 'http://localhost/api';
     const [history, setHistory] = useState([]);
     const [range, setRange] = useState('1D');
     const [token, setToken] = useState(null); // JSON.parse(localStorage.getItem('selectToken')));
     const [value, setValue] = useState(0);
     const [pairs, setPairs] = useState([]);
+    const [pair, setPair] = useState(pairs[0]);
+
+    const [bids, setBids] = useState([]); // Orderbook Bids
+    const [asks, setAsks] = useState([]); // Orderbook Asks
+    const [ready, setReady] = useState(false);
+    const [reqID, setReqID] = useState(1);
+    const [clearAsks, setClearAsks] = useState(false);
+    const [clearBids, setClearBids] = useState(false);
 
     const gotoTabView = (event) => {
         const anchor = (event.target.ownerDocument || document).querySelector(
@@ -173,7 +187,9 @@ export default function Detail(props) {
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
-                        setPairs(ret.pairs);
+                        const newPairs = ret.pairs;
+                        setPairs(newPairs);
+                        setPair(newPairs[0])
                     }
                 }).catch(err => {
                     console.log("Error on getting pairs!!!", err);
@@ -191,6 +207,135 @@ export default function Detail(props) {
         }
 
     }, [md5]);
+
+    useEffect(() => {
+        let arr = [];
+        if (clearAsks) {
+            setClearAsks(false);
+            for (let o of asks) {
+                o.isNew = false;
+                arr.push(o);
+            }
+            setAsks(arr);
+        }
+        if (clearBids) {
+            setClearBids(false);
+            for (let o of bids) {
+                o.isNew = false;
+                arr.push(o);
+            }
+            setBids(arr);
+        }
+    }, [clearAsks, clearBids, asks, bids]);
+
+    const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
+        onOpen: () => {console.log('wss://ws.xrpl.to opened');setReady(true);},
+        onClose: () => {console.log('wss://ws.xrpl.to closed');setReady(false);},
+        shouldReconnect: (closeEvent) => true,
+        onMessage: (event) =>  processMessages(event)
+    });
+
+    // Orderbook related useEffect - Start
+    useEffect(() => {
+        function setRequestID() {
+            if (!ready) return;
+            if (!pair) return;
+            setReqID(reqID + 2);
+            /*{
+                "id":17,
+                "command":"book_offers",
+                "taker_gets":{
+                    "currency":"534F4C4F00000000000000000000000000000000",
+                    "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
+                },
+                "taker_pays":{
+                    "currency":"XRP"
+                },
+                "ledger_index":"validated",
+                "limit":200
+            }
+
+            {
+                "id":20,
+                "command":"book_offers",
+                "taker_gets":{"currency":"XRP"},
+                "taker_pays":{
+                    "currency":"534F4C4F00000000000000000000000000000000",
+                    "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
+                },
+                "ledger_index":"validated",
+                "limit":200
+            }*/
+            const curr1 = pair.curr1;
+            const curr2 = pair.curr2;
+            const cmdAsk = {
+                id: reqID,
+                command: 'book_offers',
+                taker_gets: {
+                    currency: curr1.currency,
+                    issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+                },
+                taker_pays: {
+                    currency: curr2.currency,
+                    issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+                },
+                ledger_index: 'validated',
+                limit: 200
+            }
+            const cmdBid = {
+                id: reqID+1,
+                command: 'book_offers',
+                taker_gets: {
+                    currency: curr2.currency,
+                    issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+                },
+                taker_pays: {
+                    currency: curr1.currency,
+                    issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+                },
+                ledger_index: 'validated',
+                limit: 200
+            }
+            sendJsonMessage(cmdAsk);
+            sendJsonMessage(cmdBid);
+        }
+
+        if (reqID === 1)
+            setRequestID();
+
+        const timer = setInterval(() => setRequestID(), 5000);
+
+        return () => {
+            clearInterval(timer);
+        }
+
+    }, [reqID, ready, pair, sendJsonMessage]);
+    // Orderbook related useEffect - END
+
+    // web socket process messages for orderbook
+    const processMessages = (event) => {
+        const orderBook = JSON.parse(event.data);
+
+        if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
+            const r = orderBook.id % 2;
+            //console.log(`Received id ${orderBook.id}`)
+            if (r === 1) {
+                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS, asks);
+                setAsks(parsed);
+                setTimeout(() => {
+                    setClearAsks(true);
+                }, 2000);
+            }
+            if (r === 0) {
+                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, bids);
+                setBids(parsed);
+                setTimeout(() => {
+                    setClearBids(true);
+                }, 2000);
+            }
+        }
+    };
+
 
     if (!token) {
         return (
@@ -283,7 +428,7 @@ export default function Detail(props) {
                             <MarketData token={token} pairs={pairs}/>
                         </TabPanel>
                         <TabPanel value={value} index={2}>
-                            <TradeData token={token} pairs={pairs}/>
+                            <TradeData token={token} pairs={pairs} pair={pair} setPair={setPair} asks={asks} bids={bids}/>
                         </TabPanel>
                         <TabPanel value={value} index={3}>
                             <HistoryData token={token} pairs={pairs}/>

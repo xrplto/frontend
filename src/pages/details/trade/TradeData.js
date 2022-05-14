@@ -188,9 +188,8 @@ function a11yProps(index) {
     };
 }
 
-export default function TradeData({token, pairs}) {
+export default function TradeData({token, pairs, pair, setPair, asks, bids}) {
     const [sel, setSel] = useState(1);
-    const [pair, setPair] = useState(pairs[0]);
     const [tabIndex, setTabIndex] = useState(0);
 
     const tabsStyles = useGmailTabsStyles({ indicatorColors: ['#007B55', '#bb3336'] });
@@ -343,7 +342,7 @@ export default function TradeData({token, pairs}) {
                     <History token={token} pair={pair}/>
                 </Grid>
                 <Grid item xs={12} md={8} lg={8}>
-                    <OrderBook token={token} pair={pair}/>
+                    <OrderBook token={token} pair={pair} asks={asks} bids={bids}/>
                 </Grid>
             </Grid>
         </StackStyle>

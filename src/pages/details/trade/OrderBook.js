@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import useWebSocket from "react-use-websocket";
 import { PuffLoader } from "react-spinners";
 import { styled, useTheme } from '@mui/material/styles';
-import {formatOrderBook} from './parser';
 
 //import { fNumber } from '../../../utils/formatNumber';
 
@@ -35,16 +33,9 @@ const LoaderContainer = styled('div')({
     height: '79vh'
 });
 
-export default function OrderBook({token, pair}) {
-    const WSS_FEED_URL = 'wss://ws.xrpl.to';
+export default function OrderBook({token, pair, asks, bids}) {
     const theme = useTheme();
     const [isPageVisible, setIsPageVisible] = useState(true);
-    const [bids, setBids] = useState([]);
-    const [asks, setAsks] = useState([]);
-    const [ready, setReady] = useState(false);
-    const [reqID, setReqID] = useState(1);
-    const [clearAsks, setClearAsks] = useState(false);
-    const [clearBids, setClearBids] = useState(false);
     const [selected, setSelected] = useState([0, 0]);
 
     // Page Visibility detection
@@ -87,108 +78,6 @@ export default function OrderBook({token, pair}) {
             document.addEventListener(visibilityChange, handleVisibilityChange, false);
         }
     }, []);
-
-    useEffect(() => {
-        let arr = [];
-        if (clearAsks) {
-            setClearAsks(false);
-            for (let o of asks) {
-                o.isNew = false;
-                arr.push(o);
-            }
-            setAsks(arr);
-        }
-        if (clearBids) {
-            setClearBids(false);
-            for (let o of bids) {
-                o.isNew = false;
-                arr.push(o);
-            }
-            setBids(arr);
-        }
-    }, [clearAsks, clearBids, asks, bids]);
-
-    const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-        onOpen: () => {console.log('wss://ws.xrpl.to opened');setReady(true);},
-        onClose: () => {console.log('wss://ws.xrpl.to closed');setReady(false);},
-        shouldReconnect: (closeEvent) => true,
-        onMessage: (event) =>  processMessages(event)
-    });
-
-    useEffect(() => {
-        function setRequestID() {
-            if (!ready) return;
-            if (!pair) return;
-            setReqID(reqID + 2);
-            /*{
-                "id":17,
-                "command":"book_offers",
-                "taker_gets":{
-                    "currency":"534F4C4F00000000000000000000000000000000",
-                    "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
-                },
-                "taker_pays":{
-                    "currency":"XRP"
-                },
-                "ledger_index":"validated",
-                "limit":200
-            }
-
-            {
-                "id":20,
-                "command":"book_offers",
-                "taker_gets":{"currency":"XRP"},
-                "taker_pays":{
-                    "currency":"534F4C4F00000000000000000000000000000000",
-                    "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
-                },
-                "ledger_index":"validated",
-                "limit":200
-            }*/
-            const curr1 = pair.curr1;
-            const curr2 = pair.curr2;
-            const cmdAsk = {
-                id: reqID,
-                command: 'book_offers',
-                taker_gets: {
-                    currency: curr1.currency,
-                    issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-                },
-                taker_pays: {
-                    currency: curr2.currency,
-                    issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-                },
-                ledger_index: 'validated',
-                limit: 200
-            }
-            const cmdBid = {
-                id: reqID+1,
-                command: 'book_offers',
-                taker_gets: {
-                    currency: curr2.currency,
-                    issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-                },
-                taker_pays: {
-                    currency: curr1.currency,
-                    issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-                },
-                ledger_index: 'validated',
-                limit: 200
-            }
-            sendJsonMessage(cmdAsk);
-            sendJsonMessage(cmdBid);
-        }
-
-        if (reqID === 1)
-            setRequestID();
-
-        const timer = setInterval(() => setRequestID(), 5000);
-
-        return () => {
-            clearInterval(timer);
-        }
-
-    }, [reqID, ready, pair, sendJsonMessage]);
 
     // useEffect(() => {
     //     function connect(pair) {
@@ -251,29 +140,6 @@ export default function OrderBook({token, pair}) {
     //         connect(pair);
     //     }
     // }, [pair, isFeedKilled, sendJsonMessage, getWebSocket]);
-
-    const processMessages = (event) => {
-        const orderBook = JSON.parse(event.data);
-
-        if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
-            const r = orderBook.id % 2;
-            //console.log(`Received id ${orderBook.id}`)
-            if (r === 1) {
-                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS, asks);
-                setAsks(parsed);
-                setTimeout(() => {
-                    setClearAsks(true);
-                }, 2000);
-            }
-            if (r === 0) {
-                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, bids);
-                setBids(parsed);
-                setTimeout(() => {
-                    setClearBids(true);
-                }, 2000);
-            }
-        }
-    };
 
     const getIndicatorProgress = (value) => {
         if(isNaN(value)) throw new Error('Needs a value')
