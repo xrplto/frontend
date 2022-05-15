@@ -171,21 +171,22 @@ export default function OrderBook({token, pair, asks, bids}) {
         return percentage
     }
 
+    const onBidMouseOver = (e, idx) => {
+        setSelected([idx + 1, 0]);
+    }
+
+    const onAskMouseOver = (e, idx) => {
+        setSelected([0, idx + 1]);
+    }
+
+    const onMouseLeave = (e, idx) => {
+        setSelected([0, 0]);
+    }
+
     const buildPriceLevels = (levels, orderType = ORDER_TYPE_BIDS) => {
-        const onBidMouseOver = (e, idx) => {
-            setSelected([idx + 1, 0]);
-        }
-
-        const onAskMouseOver = (e, idx) => {
-            setSelected([0, idx + 1]);
-        }
-
-        const onMouseLeave = (e, idx) => {
-            setSelected([0, 0]);
-        }
-
         return (
             levels.map((level, idx) => {
+                const id = level.id;
                 const price = level.price.toFixed(5);//fNumber(level.price);
                 const avgPrice = level.avgPrice.toFixed(5);
                 const amount = level.amount.toFixed(2); // fNumber(level.amount);
@@ -218,98 +219,81 @@ export default function OrderBook({token, pair, asks, bids}) {
                 if (idx < selected[1])
                     askBackgroundColor = `#FF484288`;
 
+                // TableRow
+                // sx={{
+                //     cursor: 'pointer',
+                //     background: `${bidBackgroundColor}`,
+                //     "&:hover": {
+                //         background: "#00AB5588 !important"
+                //     },
+                //     transition: "all .3s ease",
+                //     WebkitTransition: "all .3s ease",
+                //     MozTransition: "all .3s ease",
+                // }}
+
                 return (
-                    <>
+                    <Tooltip
+                        key={`Tooltip${orderType}${idx}`}
+                        title={
+                            <Stack>
+                                <Stack direction="row">
+                                    <Typography variant='body2'>Avg Price:</Typography>
+                                    <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{avgPrice}</Typography>
+                                </Stack>
+                                <Stack direction="row">
+                                    <Typography variant='body2'>Sum {currName1}:</Typography>
+                                    <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumAmount}</Typography>
+                                </Stack>
+                                <Stack direction="row">
+                                    <Typography variant='body2'>Sum {currName2}:</Typography>
+                                    <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumValue}</Typography>
+                                </Stack>
+                            </Stack>
+                        }
+                        placement='right-end' arrow
+                    >
                     {isBid ?
-                        <Tooltip
-                            title={
-                                <Stack>
-                                    <Stack direction="row">
-                                        <Typography variant='body2'>Avg Price:</Typography>
-                                        <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{avgPrice}</Typography>
-                                    </Stack>
-                                    <Stack direction="row">
-                                        <Typography variant='body2'>Sum {currName1}:</Typography>
-                                        <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumAmount}</Typography>
-                                    </Stack>
-                                    <Stack direction="row">
-                                        <Typography variant='body2'>Sum {currName2}:</Typography>
-                                        <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumValue}</Typography>
-                                    </Stack>
-                                </Stack>
-                            }
-                            placement='right-end' arrow
+                        <TableRow
+                            tabIndex={-1}
+                            hover
+                            sx={{
+                                cursor: 'pointer',
+                                background: `${bidBackgroundColor}`,
+                                "&:hover": {
+                                    background: "#00AB5588 !important"
+                                }
+                            }}
+                            onMouseOver={e=>onBidMouseOver(e, idx)}
+                            onMouseLeave={e=>onMouseLeave(e, idx)}
                         >
-                            <TableRow
-                                key={'BID' + sumAmount + amount}
-                                tabIndex={-1}
-                                hover
-                                sx={{
-                                    cursor: 'pointer',
-                                    background: `${bidBackgroundColor}`,
-                                    "&:hover": {
-                                        background: "#00AB5588 !important"
-                                    },
-                                    transition: "all .3s ease",
-                                    WebkitTransition: "all .3s ease",
-                                    MozTransition: "all .3s ease",
-                                }}
-                                onMouseOver={e=>onBidMouseOver(e, idx)}
-                                onMouseLeave={e=>onMouseLeave(e, idx)}
-                            >
-                                <TableCell sx={{ p:0 }} align="right">{sumAmount}</TableCell>
-                                <TableCell sx={{ p:0 }} align="right">{value}</TableCell>
-                                <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
-                                {/* <TableCell sx={{ p:0, pr:1 }} align="right">{price}</TableCell> */}
-                                <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selected[0] > idx?'':'#118860'}`}}>{price}</TableCell>
-                            </TableRow>
-                        </Tooltip>
+                            <TableCell sx={{ p:0 }} align="right">{sumAmount}</TableCell>
+                            <TableCell sx={{ p:0 }} align="right">{value}</TableCell>
+                            <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
+                            {/* <TableCell sx={{ p:0, pr:1 }} align="right">{price}</TableCell> */}
+                            <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selected[0] > idx?'':'#118860'}`}}>{price}</TableCell>
+                        </TableRow>
                     :
-                        <Tooltip
-                            title={
-                                <Stack>
-                                    <Stack direction="row">
-                                        <Typography variant='body2'>Avg Price:</Typography>
-                                        <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{avgPrice}</Typography>
-                                    </Stack>
-                                    <Stack direction="row">
-                                        <Typography variant='body2'>Sum {currName1}:</Typography>
-                                        <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumAmount}</Typography>
-                                    </Stack>
-                                    <Stack direction="row">
-                                        <Typography variant='body2'>Sum {currName2}:</Typography>
-                                        <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumValue}</Typography>
-                                    </Stack>
-                                </Stack>
-                            }
-                            placement='right-end' arrow
+                        <TableRow
+                            hover
+                            tabIndex={-1}
+                            sx={{
+                                cursor: 'pointer',
+                                background: `${askBackgroundColor}`,
+                                "&:hover": {
+                                    background: "#FF484288 !important"
+                                },
+                            }}
+                            onMouseOver={e=>onAskMouseOver(e, idx)}
+                            onMouseLeave={e=>onMouseLeave(e, idx)}
                         >
-                            <TableRow
-                                hover
-                                key={'ASK' + sumAmount + amount}
-                                tabIndex={-1}
-                                sx={{
-                                    cursor: 'pointer',
-                                    background: `${askBackgroundColor}`,
-                                    transition: "all .3s ease",
-                                    WebkitTransition: "all .3s ease",
-                                    MozTransition: "all .3s ease",
-                                    "&:hover": {
-                                        background: "#FF484288 !important"
-                                    },
-                                }}
-                                onMouseOver={e=>onAskMouseOver(e, idx)}
-                                onMouseLeave={e=>onMouseLeave(e, idx)}
-                            >
-                                {/* <TableCell sx={{ p:0, pl:1 }}>{price}</TableCell> */}
-                                <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selected[1] > idx?'':'#bb3336'}`}}>{price}</TableCell>
-                                <TableCell sx={{ p:0 }}>{amount}</TableCell>
-                                <TableCell sx={{ p:0 }}>{value}</TableCell>
-                                <TableCell sx={{ p:0 }}>{sumAmount}</TableCell>
-                            </TableRow>
-                        </Tooltip>
+                            {/* <TableCell sx={{ p:0, pl:1 }}>{price}</TableCell> */}
+                            <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selected[1] > idx?'':'#bb3336'}`}}>{price}</TableCell>
+                            <TableCell sx={{ p:0 }}>{amount}</TableCell>
+                            <TableCell sx={{ p:0 }}>{value}</TableCell>
+                            <TableCell sx={{ p:0 }}>{sumAmount}</TableCell>
+                        </TableRow>
                     }
-                    </>
+                    </Tooltip>
                 );
             })
         );
@@ -334,6 +318,7 @@ export default function OrderBook({token, pair, asks, bids}) {
                         >
                             <TableHead>
                                 <TableRow
+                                    key={'BID_KEY'}
                                     sx={{
                                         [`& .${tableCellClasses.root}`]: {
                                             borderBottom: "1px solid",
@@ -366,6 +351,7 @@ export default function OrderBook({token, pair, asks, bids}) {
                         >
                             <TableHead>
                                 <TableRow
+                                    key={'ASK_KEY'}
                                     sx={{
                                         [`& .${tableCellClasses.root}`]: {
                                             borderBottom: "1px solid",
