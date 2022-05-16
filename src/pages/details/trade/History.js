@@ -33,18 +33,16 @@ const StackStyle = styled(Stack)(({ theme }) => ({
     //backgroundColor: alpha("#919EAB", 0.03),
 }));
 // ----------------------------------------------------------------------
-export default function HistoryData({token, pair}) {
+export default function HistoryData({pair}) {
     const EPOCH_OFFSET = 946684800;
     const BASE_URL = 'https://api.xrpl.to/api';
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(30);
     const [exchs, setExchs] = useState([]);
     const theme = useTheme();
-    const {
-        acct,
-        code,
-        // md5
-    } = token;
+
+    const curr1 = pair.curr1;
+    const curr2 = pair.curr2;
 
     useEffect(() => {
         function getExchanges() {
@@ -134,7 +132,7 @@ export default function HistoryData({token, pair}) {
                             let value;
                             let exch;
                             let buy;
-                            if (takerPaid.issuer === acct && takerPaid.currency === code) {
+                            if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency) {
                                 // SELL, Red
                                 const t = parseFloat(takerGot.value);
                                 value = parseFloat(takerPaid.value);

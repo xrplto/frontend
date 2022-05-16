@@ -33,7 +33,7 @@ const LoaderContainer = styled('div')({
     height: '79vh'
 });
 
-export default function OrderBook({token, pair, asks, bids}) {
+export default function OrderBook({pair, asks, bids}) {
     const theme = useTheme();
     const [isPageVisible, setIsPageVisible] = useState(true);
     const [selected, setSelected] = useState([0, 0]);

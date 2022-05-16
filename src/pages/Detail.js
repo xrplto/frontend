@@ -89,7 +89,7 @@ export default function Detail(props) {
     const [token, setToken] = useState(null); // JSON.parse(localStorage.getItem('selectToken')));
     const [value, setValue] = useState(0);
     const [pairs, setPairs] = useState([]);
-    const [pair, setPair] = useState(pairs[0]);
+    const [pair, setPair] = useState(null);
 
     const [bids, setBids] = useState([]); // Orderbook Bids
     const [asks, setAsks] = useState([]); // Orderbook Asks
@@ -189,7 +189,8 @@ export default function Detail(props) {
                     if (ret) {
                         const newPairs = ret.pairs;
                         setPairs(newPairs);
-                        setPair(newPairs[0])
+                        if (!pair)
+                            setPair(newPairs[0])
                     }
                 }).catch(err => {
                     console.log("Error on getting pairs!!!", err);
@@ -200,10 +201,10 @@ export default function Detail(props) {
 
         getPairs();
 
-        const timer = setInterval(() => getPairs(), 10000);
+        //const timer = setInterval(() => getPairs(), 10000);
 
         return () => {
-            clearInterval(timer);
+            //clearInterval(timer);
         }
 
     }, [md5]);

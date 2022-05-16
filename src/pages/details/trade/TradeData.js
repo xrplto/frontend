@@ -4,6 +4,11 @@ import { useState } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 // import { withStyles } from '@mui/styles';
 import { makeStyles } from "@mui/styles";
+import {
+    Token as TokenIcon,
+    PriceChange as PriceChangeIcon,
+    MonetizationOn as MonetizationOnIcon
+} from '@mui/icons-material';
 
 import {
     Avatar,
@@ -17,6 +22,9 @@ import {
     Select,
     Stack,
     Switch,
+    TextField,
+    ToggleButton,
+    ToggleButtonGroup,
     Tooltip,
     Typography
 } from '@mui/material';
@@ -133,47 +141,6 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
     },
 }));
 
-const AntSwitch = styled(Switch)(({ theme }) => ({
-    width: 28,
-    height: 16,
-    padding: 0,
-    display: 'flex',
-    '&:active': {
-        '& .MuiSwitch-thumb': {
-            width: 15,
-        },
-        '& .MuiSwitch-switchBase.Mui-checked': {
-            transform: 'translateX(9px)',
-        },
-    },
-    '& .MuiSwitch-switchBase': {
-        padding: 2,
-        '&.Mui-checked': {
-            transform: 'translateX(12px)',
-            color: '#fff',
-            '& + .MuiSwitch-track': {
-                opacity: 1,
-                backgroundColor: '#FF484288',
-            },
-        },
-    },
-    '& .MuiSwitch-thumb': {
-        boxShadow: '0 2px 4px 0 rgb(0 35 11 / 20%)',
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        transition: theme.transitions.create(['width'], {
-            duration: 200,
-        }),
-    },
-    '& .MuiSwitch-track': {
-        borderRadius: 16 / 2,
-        opacity: 1,
-        backgroundColor: '#00AB5588',
-        boxSizing: 'border-box',
-    },
-}));
-
 // function getPair(issuer, code) {
 //     // issuer, currencyCode, 'XRP', undefined
 //     const t1 = 'undefined_XRP';
@@ -190,14 +157,20 @@ const AntSwitch = styled(Switch)(({ theme }) => ({
 //     return '';
 // }
 
-export default function TradeData({token, pairs, pair, setPair, asks, bids}) {
+export default function TradeData({pairs, pair, setPair, asks, bids}) {
     const [sel, setSel] = useState(1);
+    const [buySell, setBuySell] = useState('BUY');
 
     const handleChangePair = (event, value) => {
         const idx = parseInt(event.target.value, 10);
         setSel(idx);
         setPair(pairs[idx-1]);
     }
+
+    const handleChangeBuySell = (event, newValue) => {
+        if (newValue)
+            setBuySell(newValue);
+    };
 
     const curr1 = pair.curr1;
     const curr2 = pair.curr2;
@@ -220,7 +193,7 @@ export default function TradeData({token, pairs, pair, setPair, asks, bids}) {
     return (
         <StackStyle>
             <Stack direction="row">
-                <Stack alignItems="left">
+                <Stack direction='row' alignItems="left">
                     <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
                         <InputLabel id="demo-select-small">Pairs</InputLabel>
                         <CustomSelect
@@ -231,7 +204,7 @@ export default function TradeData({token, pairs, pair, setPair, asks, bids}) {
                             onChange={handleChangePair}
                         >
                             {
-                            pairs.map((row) => {
+                                pairs.map((row) => {
                                     const {
                                         id,
                                         pair,
@@ -307,21 +280,51 @@ export default function TradeData({token, pairs, pair, setPair, asks, bids}) {
                         <Typography variant="h5" sx={{ color: '#B72136' }}>{fNumber(vol)}</Typography>
                     </Stack> */}
                 </Stack>
-                <StackDexStyle sx={{ m: 1, minWidth: 200 }}>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography variant='h6'>Buy</Typography>
-                        <AntSwitch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
-                        <Typography variant='h6'>Sell</Typography>
-                    </Stack>
-                </StackDexStyle>
             </Stack>
             
             <Grid container spacing={3} sx={{p:0}}>
-                <Grid item xs={12} md={4} lg={4}>
-                    <History token={token} pair={pair}/>
+                <Grid item xs={0} md={3} lg={3}>
+                    <History pair={pair}/>
                 </Grid>
-                <Grid item xs={12} md={8} lg={8}>
-                    <OrderBook token={token} pair={pair} asks={asks} bids={bids}/>
+                <Grid item xs={12} md={6.5} lg={6.5}>
+                    <OrderBook pair={pair} asks={asks} bids={bids}/>
+                </Grid>
+                <Grid item xs={12} md={2.5} lg={2.5}>
+                    <Stack spacing={1} alignItems="center">
+                        <Typography variant='subtitle1' sx={{color:'#FFC107', textAlign: 'center', ml:0, mt:2, mb:0}}>Trade Now</Typography>
+                        <Stack direction="row" alignItems='center'>
+                            <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{curr1.name}</Typography>
+                            <Icon icon={arrowsExchange} width="16" height="16"/>
+                            <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
+                        </Stack>
+                    </Stack>
+                    <StackDexStyle sx={{ m: 1, mt:0, pt:2, pb:2 }}>
+                        <Stack spacing={1} alignItems="left">
+                            <ToggleButtonGroup
+                                color="primary"
+                                // orientation="vertical"
+                                value={buySell}
+                                fullWidth
+                                exclusive
+                                onChange={handleChangeBuySell}
+                            >
+                                <ToggleButton sx={{pt:1,pb:1}} value="BUY">BUY</ToggleButton>
+                                <ToggleButton color="error" sx={{pt:1,pb:1}} value="SELL">SELL</ToggleButton>
+                            </ToggleButtonGroup>
+
+                            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                                <TokenIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
+                                <TextField id="input-with-sx1" label="Amount" variant="standard" sx={{ width: 150 }}/>
+                                <Typography color='#FF4842'>{curr1.name}</Typography>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                                <PriceChangeIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
+                                <TextField id="input-with-sx2" label="Price" variant="standard" sx={{ width: 150 }}/>
+                                <Typography color='#00AB5588'>{curr2.name}</Typography>
+                            </Box>
+                        </Stack>
+                    </StackDexStyle>
                 </Grid>
             </Grid>
         </StackStyle>
