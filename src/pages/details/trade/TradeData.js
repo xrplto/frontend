@@ -16,8 +16,7 @@ import {
     MenuItem,
     Select,
     Stack,
-    Tab,
-    Tabs,
+    Switch,
     Tooltip,
     Typography
 } from '@mui/material';
@@ -25,10 +24,6 @@ import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import OrderBook from "./OrderBook";
 import History from './History';
-// import {
-//     useGmailTabsStyles,
-//     useGmailTabItemStyles
-// } from './gmail';
 
 import Inbox from '@mui/icons-material/Inbox';
 import SellIcon from '@mui/icons-material/Sell';
@@ -107,19 +102,17 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
         '&.Mui-checked': {
             color: '#fff',
             transform: 'translateX(22px)',
-            '& .MuiSwitch-thumb:before': {
-            backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
-                '#fff',
-            )}" d="M4.2 2.5l-.7 1.8-1.8.7 1.8.7.7 1.8.6-1.8L6.7 5l-1.9-.7-.6-1.8zm15 8.3a6.7 6.7 0 11-6.6-6.6 5.8 5.8 0 006.6 6.6z"/></svg>')`,
-            },
+            // '& .MuiSwitch-thumb:before': {
+            //     backgroundColor: '#FF484288'
+            // },
             '& + .MuiSwitch-track': {
-            opacity: 1,
-            backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be',
+                opacity: 1,
+                backgroundColor: '#FF484288',
             },
         },
     },
     '& .MuiSwitch-thumb': {
-        backgroundColor: theme.palette.mode === 'dark' ? '#003892' : '#001e3c',
+        backgroundColor: '#FF4842',
         width: 32,
         height: 32,
         '&:before': {
@@ -130,60 +123,56 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
             left: 0,
             top: 0,
             backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
-            '#fff',
-            )}" d="M9.305 1.667V3.75h1.389V1.667h-1.39zm-4.707 1.95l-.982.982L5.09 6.072l.982-.982-1.473-1.473zm10.802 0L13.927 5.09l.982.982 1.473-1.473-.982-.982zM10 5.139a4.872 4.872 0 00-4.862 4.86A4.872 4.872 0 0010 14.862 4.872 4.872 0 0014.86 10 4.872 4.872 0 0010 5.139zm0 1.389A3.462 3.462 0 0113.471 10a3.462 3.462 0 01-3.473 3.472A3.462 3.462 0 016.527 10 3.462 3.462 0 0110 6.528zM1.665 9.305v1.39h2.083v-1.39H1.666zm14.583 0v1.39h2.084v-1.39h-2.084zM5.09 13.928L3.616 15.4l.982.982 1.473-1.473-.982-.982zm9.82 0l-.982.982 1.473 1.473.982-.982-1.473-1.473zM9.305 16.25v2.083h1.389V16.25h-1.39z"/></svg>')`,
+            backgroundPosition: 'center'
         },
     },
     '& .MuiSwitch-track': {
         opacity: 1,
-        backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be',
+        backgroundColor: '#00AB5588',
         borderRadius: 20 / 2,
     },
 }));
 
-const tabsStyles = () => ({
-    root: {
-        width: '100%',
-        boxShadow: 'inset 0 -1px 0 rgba(100,121,143,0.122)',
-    },
-    indicator: ({ indicatorColors = [] }) => ({
-        height: 3,
-        backgroundColor: 'rgba(0,0,0,0)',
-        '& > div': {
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            borderTopLeftRadius: 3,
-            borderTopRightRadius: 3,
-            height: 3,
-            margin: '0 4px',
-            ...indicatorColors.reduce((result, color, index) => ({
-                ...result,
-                [`&.MuiIndicator-${index}`]: {
-                    backgroundColor: color,
-                }
-            }), {}),
+const AntSwitch = styled(Switch)(({ theme }) => ({
+    width: 28,
+    height: 16,
+    padding: 0,
+    display: 'flex',
+    '&:active': {
+        '& .MuiSwitch-thumb': {
+            width: 15,
         },
-    }),
-});
-
-const tabItemStyles = () => ({
-    root: {
-        minHeight: '56px',
-        textTransform: 'none',
-        color: '#454F5B',
-        '&.Mui-selected': {
-            color: props => props.color,
-        },
-        '&.Mui-focusVisible': {
-            backgroundColor: 'rgba(100, 95, 228, 0.32)',
+        '& .MuiSwitch-switchBase.Mui-checked': {
+            transform: 'translateX(9px)',
         },
     },
-});
-
-const useGmailTabsStyles = makeStyles(tabsStyles)
-
-const useGmailTabItemStyles = makeStyles(tabItemStyles)
+    '& .MuiSwitch-switchBase': {
+        padding: 2,
+        '&.Mui-checked': {
+            transform: 'translateX(12px)',
+            color: '#fff',
+            '& + .MuiSwitch-track': {
+                opacity: 1,
+                backgroundColor: '#FF484288',
+            },
+        },
+    },
+    '& .MuiSwitch-thumb': {
+        boxShadow: '0 2px 4px 0 rgb(0 35 11 / 20%)',
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        transition: theme.transitions.create(['width'], {
+            duration: 200,
+        }),
+    },
+    '& .MuiSwitch-track': {
+        borderRadius: 16 / 2,
+        opacity: 1,
+        backgroundColor: '#00AB5588',
+        boxSizing: 'border-box',
+    },
+}));
 
 // function getPair(issuer, code) {
 //     // issuer, currencyCode, 'XRP', undefined
@@ -201,47 +190,8 @@ const useGmailTabItemStyles = makeStyles(tabItemStyles)
 //     return '';
 // }
 
-function TabPanel(props) {
-    const { children, value, index, ...other } = props;
-  
-    return (
-        <div
-            role="tabpanel"
-            hidden={value !== index}
-            id={`simple-tabpanel-${index}`}
-            aria-labelledby={`simple-tab-${index}`}
-            {...other}
-        >
-            {value === index && (
-            <Box sx={{ p: 3 }}>
-                {children}
-            </Box>
-            )}
-        </div>
-    );
-}
-  
-TabPanel.propTypes = {
-    children: PropTypes.node,
-    index: PropTypes.number.isRequired,
-    value: PropTypes.number.isRequired,
-};
-
-function a11yProps(index) {
-    return {
-        id: `simple-tab-${index}`,
-        'aria-controls': `simple-tabpanel-${index}`,
-        backgroundColor: '#ff0000'
-    };
-}
-
 export default function TradeData({token, pairs, pair, setPair, asks, bids}) {
     const [sel, setSel] = useState(1);
-    const [tabIndex, setTabIndex] = useState(0);
-
-    const tabsStyles = useGmailTabsStyles({ indicatorColors: ['#007B55', '#bb3336'] });
-    const tabItem1Styles = useGmailTabItemStyles({ color: '#007B55' });
-    const tabItem2Styles = useGmailTabItemStyles({ color: '#bb3336' });
 
     const handleChangePair = (event, value) => {
         const idx = parseInt(event.target.value, 10);
@@ -358,30 +308,11 @@ export default function TradeData({token, pairs, pair, setPair, asks, bids}) {
                     </Stack> */}
                 </Stack>
                 <StackDexStyle sx={{ m: 1, minWidth: 200 }}>
-                    <MaterialUISwitch sx={{ m: 1 }} defaultChecked />
-                    <Tabs
-                        classes={tabsStyles}
-                        value={tabIndex}
-                        onChange={(e, index) => setTabIndex(index)}
-                        TabIndicatorProps={{
-                            children: <div className={`MuiIndicator-${tabIndex}`} />,
-                        }}
-                        >
-                        <Tab
-                            classes={tabItem1Styles}
-                            disableTouchRipple
-                            label={'Buy'}
-                            icon={<Inbox />}
-                            iconPosition="start"
-                        />
-                        <Tab
-                            classes={tabItem2Styles}
-                            disableTouchRipple
-                            label={'Sell'}
-                            icon={<SellIcon />}
-                            iconPosition="start"
-                        />
-                    </Tabs>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography variant='h6'>Buy</Typography>
+                        <AntSwitch defaultChecked inputProps={{ 'aria-label': 'ant design' }} />
+                        <Typography variant='h6'>Sell</Typography>
+                    </Stack>
                 </StackDexStyle>
             </Stack>
             
