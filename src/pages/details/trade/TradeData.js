@@ -7,12 +7,14 @@ import { makeStyles } from "@mui/styles";
 import {
     Token as TokenIcon,
     PriceChange as PriceChangeIcon,
-    MonetizationOn as MonetizationOnIcon
+    MonetizationOn as MonetizationOnIcon,
+    SwapVerticalCircle as SwapVerticalCircleIcon
 } from '@mui/icons-material';
 
 import {
     Avatar,
     Box,
+    Button,
     FormControl,
     Grid,
     IconButton,
@@ -32,9 +34,6 @@ import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import OrderBook from "./OrderBook";
 import History from './History';
-
-import Inbox from '@mui/icons-material/Inbox';
-import SellIcon from '@mui/icons-material/Sell';
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
@@ -160,8 +159,9 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 export default function TradeData({pairs, pair, setPair, asks, bids}) {
     const [sel, setSel] = useState(1);
     const [buySell, setBuySell] = useState('BUY');
-    const [amount, setAmount] = useState('AAA');
-    const [price, setPrice] = useState('BBB');
+    const [amount, setAmount] = useState('');
+    const [price, setPrice] = useState('');
+    const [value, setValue] = useState('');
 
     const handleChangePair = (event, value) => {
         const idx = parseInt(event.target.value, 10);
@@ -175,15 +175,39 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
     };
 
     const onBidClick = (e, idx) => {
+        setBuySell('SELL');
         const bid = bids[idx - 1];
+        const sumAmount = bid.sumAmount;
+        const sumValue = bid.sumValue;
+        const price = bid.price;
+        setAmount(sumAmount);
+        setPrice(price);
+        setValue(sumValue);
     }
 
     const onAskClick = (e, idx) => {
-        const ask = asks[idx - 1];
+        setBuySell('BUY');
+        const ask = asks[idx];
         const sumAmount = ask.sumAmount;
         const sumValue = ask.sumValue;
-        setAmount(sumAmount.toString());
-        setPrice(sumValue.toString());
+        const price = ask.price;
+        setAmount(sumAmount);
+        setPrice(price);
+        setValue(sumValue);
+    }
+
+    const handleChangeAmount = (e) => {
+        const amt = Number(e.target.value);
+        setAmount(amt);
+        const val = (amt * price);
+        setValue(val);
+    }
+
+    const handleChangePrice = (e) => {
+        const newPrice = Number(e.target.value);
+        setPrice(newPrice);
+        const val = (amount * newPrice);
+        setValue(val);
     }
 
     const curr1 = pair.curr1;
@@ -313,7 +337,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                         </Stack>
                     </Stack>
                     <StackDexStyle sx={{ m: 1, mt:0, pt:2, pb:2 }}>
-                        <Stack spacing={1} alignItems="left">
+                        <Stack spacing={4} alignItems="left">
                             <ToggleButtonGroup
                                 color="primary"
                                 // orientation="vertical"
@@ -327,16 +351,25 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                             </ToggleButtonGroup>
 
                             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                                <TokenIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
-                                <TextField id="input-with-sx1" label="Amount" value={amount} variant="standard" sx={{ width: 150 }}/>
-                                <Typography color='#FF4842'>{curr1.name}</Typography>
+                                <TokenIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
+                                <TextField id="input-with-sx1" label="Amount" value={amount.toFixed(2)} onChange={handleChangeAmount} variant="standard"/>
+                                <Typography variant="caption" color='#FF4842'>{curr1.name}</Typography>
                             </Box>
 
                             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                                <PriceChangeIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
-                                <TextField id="input-with-sx2" label="Price" value={price} variant="standard" sx={{ width: 150 }}/>
-                                <Typography color='#00AB5588'>{curr2.name}</Typography>
+                                <PriceChangeIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
+                                <TextField id="input-with-sx2" label="Price" value={price.toFixed(5)} onChange={handleChangePrice} variant="standard"/>
+                                <Typography variant="caption" color='#00AB5588'>{curr2.name}</Typography>
                             </Box>
+
+                            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                                <SwapVerticalCircleIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
+                                <Typography>Total ≈</Typography>
+                                <Box sx={{ flexGrow: 1 }} />
+                                <Typography alignItems='right'>{value.toFixed(5)} <Typography variant="caption"> {curr2.name}</Typography></Typography>
+                            </Box>
+
+                            <Button variant="outlined" sx={{ mt: 1.5 }}>PLACE  ORDER</Button>
                         </Stack>
                     </StackDexStyle>
                 </Grid>
