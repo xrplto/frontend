@@ -160,6 +160,8 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 export default function TradeData({pairs, pair, setPair, asks, bids}) {
     const [sel, setSel] = useState(1);
     const [buySell, setBuySell] = useState('BUY');
+    const [amount, setAmount] = useState('AAA');
+    const [price, setPrice] = useState('BBB');
 
     const handleChangePair = (event, value) => {
         const idx = parseInt(event.target.value, 10);
@@ -171,6 +173,18 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
         if (newValue)
             setBuySell(newValue);
     };
+
+    const onBidClick = (e, idx) => {
+        const bid = bids[idx - 1];
+    }
+
+    const onAskClick = (e, idx) => {
+        const ask = asks[idx - 1];
+        const sumAmount = ask.sumAmount;
+        const sumValue = ask.sumValue;
+        setAmount(sumAmount.toString());
+        setPrice(sumValue.toString());
+    }
 
     const curr1 = pair.curr1;
     const curr2 = pair.curr2;
@@ -287,7 +301,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                     <History pair={pair}/>
                 </Grid>
                 <Grid item xs={12} md={6.5} lg={6.5}>
-                    <OrderBook pair={pair} asks={asks} bids={bids}/>
+                    <OrderBook pair={pair} asks={asks} bids={bids} onBidClick={onBidClick} onAskClick={onAskClick}/>
                 </Grid>
                 <Grid item xs={12} md={2.5} lg={2.5}>
                     <Stack spacing={1} alignItems="center">
@@ -314,13 +328,13 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
 
                             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
                                 <TokenIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
-                                <TextField id="input-with-sx1" label="Amount" variant="standard" sx={{ width: 150 }}/>
+                                <TextField id="input-with-sx1" label="Amount" value={amount} variant="standard" sx={{ width: 150 }}/>
                                 <Typography color='#FF4842'>{curr1.name}</Typography>
                             </Box>
 
                             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
                                 <PriceChangeIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
-                                <TextField id="input-with-sx2" label="Price" variant="standard" sx={{ width: 150 }}/>
+                                <TextField id="input-with-sx2" label="Price" value={price} variant="standard" sx={{ width: 150 }}/>
                                 <Typography color='#00AB5588'>{curr2.name}</Typography>
                             </Box>
                         </Stack>

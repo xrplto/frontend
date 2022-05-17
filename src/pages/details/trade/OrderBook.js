@@ -33,7 +33,7 @@ const LoaderContainer = styled('div')({
     height: '79vh'
 });
 
-export default function OrderBook({pair, asks, bids}) {
+export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
     const theme = useTheme();
     const [isPageVisible, setIsPageVisible] = useState(true);
     const [selected, setSelected] = useState([0, 0]);
@@ -265,6 +265,7 @@ export default function OrderBook({pair, asks, bids}) {
                             }}
                             onMouseOver={e=>onBidMouseOver(e, idx)}
                             onMouseLeave={e=>onMouseLeave(e, idx)}
+                            onClick={e=>onBidClick(e, idx)}
                         >
                             <TableCell sx={{ p:0 }} align="right">{sumAmount}</TableCell>
                             <TableCell sx={{ p:0 }} align="right">{value}</TableCell>
@@ -285,6 +286,7 @@ export default function OrderBook({pair, asks, bids}) {
                             }}
                             onMouseOver={e=>onAskMouseOver(e, idx)}
                             onMouseLeave={e=>onMouseLeave(e, idx)}
+                            onClick={e=>onAskClick(e, idx)}
                         >
                             {/* <TableCell sx={{ p:0, pl:1 }}>{price}</TableCell> */}
                             <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selected[1] > idx?'':'#bb3336'}`}}>{price}</TableCell>

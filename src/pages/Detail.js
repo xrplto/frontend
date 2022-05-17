@@ -95,8 +95,7 @@ export default function Detail(props) {
     const [asks, setAsks] = useState([]); // Orderbook Asks
     const [ready, setReady] = useState(false);
     const [reqID, setReqID] = useState(1);
-    const [clearAsks, setClearAsks] = useState(false);
-    const [clearBids, setClearBids] = useState(false);
+    const [clearNewFlag, setClearNewFlag] = useState(false);
 
     const gotoTabView = (event) => {
         const anchor = (event.target.ownerDocument || document).querySelector(
@@ -182,6 +181,7 @@ export default function Detail(props) {
     useEffect(() => {
         function getPairs() {
             if (!md5) return;
+            if (!token) return;
             // https://api.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
             axios.get(`${BASE_URL}/pairs?md5=${md5}`)
                 .then(res => {
@@ -201,33 +201,32 @@ export default function Detail(props) {
 
         getPairs();
 
-        //const timer = setInterval(() => getPairs(), 10000);
+        const timer = setInterval(() => getPairs(), 10000);
 
         return () => {
-            //clearInterval(timer);
+            clearInterval(timer);
         }
 
-    }, [md5]);
+    }, [md5, token]);
 
     useEffect(() => {
         let arr = [];
-        if (clearAsks) {
-            setClearAsks(false);
+        if (clearNewFlag) {
+            setClearNewFlag(false);
             for (let o of asks) {
                 o.isNew = false;
                 arr.push(o);
             }
             setAsks(arr);
-        }
-        if (clearBids) {
-            setClearBids(false);
+
+            arr = [];
             for (let o of bids) {
                 o.isNew = false;
                 arr.push(o);
             }
             setBids(arr);
         }
-    }, [clearAsks, clearBids, asks, bids]);
+    }, [clearNewFlag, asks, bids]);
 
     const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
         onOpen: () => {console.log('wss://ws.xrpl.to opened');setReady(true);},
@@ -323,15 +322,12 @@ export default function Detail(props) {
             if (r === 1) {
                 const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS, asks);
                 setAsks(parsed);
-                setTimeout(() => {
-                    setClearAsks(true);
-                }, 2000);
             }
             if (r === 0) {
                 const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, bids);
                 setBids(parsed);
                 setTimeout(() => {
-                    setClearBids(true);
+                    setClearNewFlag(true);
                 }, 2000);
             }
         }
