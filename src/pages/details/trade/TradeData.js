@@ -8,7 +8,8 @@ import {
     Token as TokenIcon,
     PriceChange as PriceChangeIcon,
     MonetizationOn as MonetizationOnIcon,
-    SwapVerticalCircle as SwapVerticalCircleIcon
+    SwapVerticalCircle as SwapVerticalCircleIcon,
+    AccountBalanceWallet as AccountBalanceWalletIcon
 } from '@mui/icons-material';
 
 import {
@@ -34,6 +35,7 @@ import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import OrderBook from "./OrderBook";
 import History from './History';
+import AccountPopover from './Account';
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
@@ -177,9 +179,9 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
     const onBidClick = (e, idx) => {
         setBuySell('SELL');
         const bid = bids[idx - 1];
-        const sumAmount = bid.sumAmount;
-        const sumValue = bid.sumValue;
-        const price = bid.price;
+        const sumAmount = bid.sumAmount.toFixed(2);
+        const sumValue = bid.sumValue.toFixed(5);
+        const price = bid.price.toFixed(5);
         setAmount(sumAmount);
         setPrice(price);
         setValue(sumValue);
@@ -188,9 +190,9 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
     const onAskClick = (e, idx) => {
         setBuySell('BUY');
         const ask = asks[idx];
-        const sumAmount = ask.sumAmount;
-        const sumValue = ask.sumValue;
-        const price = ask.price;
+        const sumAmount = ask.sumAmount.toFixed(2);
+        const sumValue = ask.sumValue.toFixed(5);
+        const price = ask.price.toFixed(5);
         setAmount(sumAmount);
         setPrice(price);
         setValue(sumValue);
@@ -199,14 +201,14 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
     const handleChangeAmount = (e) => {
         const amt = Number(e.target.value);
         setAmount(amt);
-        const val = (amt * price);
+        const val = (amt * price).toFixed(5);
         setValue(val);
     }
 
     const handleChangePrice = (e) => {
         const newPrice = Number(e.target.value);
         setPrice(newPrice);
-        const val = (amount * newPrice);
+        const val = (amount * newPrice).toFixed(5);
         setValue(val);
     }
 
@@ -352,13 +354,13 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
 
                             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
                                 <TokenIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                                <TextField id="input-with-sx1" label="Amount" value={amount.toFixed(2)} onChange={handleChangeAmount} variant="standard"/>
+                                <TextField id="input-with-sx1" label="Amount" value={amount} onChange={handleChangeAmount} variant="standard"/>
                                 <Typography variant="caption" color='#FF4842'>{curr1.name}</Typography>
                             </Box>
 
                             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
                                 <PriceChangeIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                                <TextField id="input-with-sx2" label="Price" value={price.toFixed(5)} onChange={handleChangePrice} variant="standard"/>
+                                <TextField id="input-with-sx2" label="Price" value={price} onChange={handleChangePrice} variant="standard"/>
                                 <Typography variant="caption" color='#00AB5588'>{curr2.name}</Typography>
                             </Box>
 
@@ -366,7 +368,15 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                                 <SwapVerticalCircleIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
                                 <Typography>Total ≈</Typography>
                                 <Box sx={{ flexGrow: 1 }} />
-                                <Typography alignItems='right'>{value.toFixed(5)} <Typography variant="caption"> {curr2.name}</Typography></Typography>
+                                <Typography alignItems='right'>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                                <AccountPopover color='error'/>
+                                <Box sx={{ flexGrow: 1 }} />
+                                <Button variant="outlined" color='error' endIcon={<AccountBalanceWalletIcon />}>
+                                    Connect
+                                </Button>
                             </Box>
 
                             <Button variant="outlined" sx={{ mt: 1.5 }}>PLACE  ORDER</Button>
