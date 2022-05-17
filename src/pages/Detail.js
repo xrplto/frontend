@@ -356,14 +356,13 @@ export default function Detail(props) {
 
         let user = token.user;
         if (!user) user = name;
-
         const meta = {
             title: `${user} price today, ${name} to USD live, volume, trading history, markets and chart`,
             description: `Get the latest XRPL DEX ${user} price, 24-hour volume, trading pairs, history, charts, and data today in real-time.`,
             canonical: `https://xrpl.to/${exMD5}`,
-            'og:image': `/static/tokens/${name}.jpg`,
+            'og:image': `/static/tokens/${name.replace(/[^a-zA-Z]/g, "")}.jpg`,
             meta: {
-                'og:image': `/static/tokens/${name}.jpg`,
+                'og:image': `/static/tokens/${name.replace(/[^a-zA-Z]/g, "")}.jpg`,
                 charset: 'utf-8',
                 name: {
                     keywords: 'react,meta,document,html,tags'

@@ -35,7 +35,7 @@ import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import OrderBook from "./OrderBook";
 import History from './History';
-import AccountPopover from './Account';
+import Account from './Account';
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
@@ -178,7 +178,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
 
     const onBidClick = (e, idx) => {
         setBuySell('SELL');
-        const bid = bids[idx - 1];
+        const bid = bids[idx];
         const sumAmount = bid.sumAmount.toFixed(2);
         const sumValue = bid.sumValue.toFixed(5);
         const price = bid.price.toFixed(5);
@@ -371,13 +371,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                                 <Typography alignItems='right'>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
                             </Box>
 
-                            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                                <AccountPopover color='error'/>
-                                <Box sx={{ flexGrow: 1 }} />
-                                <Button variant="outlined" color='error' endIcon={<AccountBalanceWalletIcon />}>
-                                    Connect
-                                </Button>
-                            </Box>
+                            <Account />
 
                             <Button variant="outlined" sx={{ mt: 1.5 }}>PLACE  ORDER</Button>
                         </Stack>

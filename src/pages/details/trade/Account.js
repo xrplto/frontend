@@ -1,16 +1,17 @@
 import { Icon } from '@iconify/react';
 import { useRef, useState, useEffect } from 'react';
 import userLock from '@iconify/icons-fa-solid/user-lock';
-//import homeFill from '@iconify/icons-eva/home-fill';
-//import personFill from '@iconify/icons-eva/person-fill';
-//import settings2Fill from '@iconify/icons-eva/settings-2-fill';
-//import { Link as RouterLink } from 'react-router-dom';
-// material
-//import { alpha } from '@mui/material/styles';
+
+import {
+    Logout as LogoutIcon,
+    AccountBalanceWallet as AccountBalanceWalletIcon
+} from '@mui/icons-material';
+
 import { 
     Box,
     Typography,
     Button,
+    Link,
     MenuItem,
     Avatar,
     IconButton,
@@ -18,11 +19,10 @@ import {
 } from '@mui/material';
 
 // components
-import MenuPopover from './MenuPopover';
 import LoginDialog from './LoginDialog';
 //
 import { useContext } from 'react'
-import Context from '../Context'
+import Context from '../../../Context'
 
 //import profile from '../_mocks_/profile';
 import axios from 'axios';
@@ -36,10 +36,15 @@ import axios from 'axios';
 //const SERVER_BASE_URL = 'http://127.0.0.1/api/xumm';
 const SERVER_BASE_URL = 'https://api.xrpl.to/api/xumm';
 // ----------------------------------------------------------------------
+function truncate(str, n){
+    if (!str) return '';
+    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
+    return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
+};
+
 export default function AccountPopover() {
     const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
     const anchorRef = useRef(null);
-    const [open, setOpen] = useState(false);
     const [openLogin, setOpenLogin] = useState(false);
     const [uuid, setUuid] = useState(null);
     //const [wsUrl, setWsUrl] = useState(null);
@@ -66,7 +71,6 @@ export default function AccountPopover() {
                     const res = await axios.get(`${SERVER_BASE_URL}/payload/${uuid}`);
                     const account = res.data.data.response.account;
                     if (account) {
-                        setOpen(true);
                         setOpenLogin(false);
                         setAccountProfile({account: account, uuid: uuid});
                         return;
@@ -121,20 +125,11 @@ export default function AccountPopover() {
         setLoading(false);
     };
 
-    const handleOpen = () => {
-        setOpen(true);
-    };
-    const handleClose = () => {
-        setOpen(false);
-    };
-
     const handleLogin = () => {
-        setOpen(false);
         onConnectXumm();
     };
 
     const handleLogout = () => {
-        setOpen(false);
         onDisconnectXumm(accountProfile.uuid);
     }
 
@@ -164,49 +159,41 @@ export default function AccountPopover() {
 
     return (
         <>
-            <IconButton
-                ref={anchorRef}
-                onClick={handleOpen} >
-                {/* <SupervisorAccountIcon fontSize="medium"/> */}
-                <Icon icon={userLock}/>
-            </IconButton>
-
-            <MenuPopover
-                open={open}
-                onClose={handleClose}
-                anchorEl={anchorRef.current}
-                sx={{ width: 220 }}
-            >
-
+            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
                 {accountProfile && accountProfile.account ? (
-                        <>
-                        <Stack spacing={1} sx={{ pt: 2 }} alignItems='center'>
-                            <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ mr:1, width: 24, height: 24 }}/>
-                            <Typography align="center" style={{ wordWrap: "break-word" }} variant="body2" sx={{ width: 180, color: 'text.secondary' }} >
-                                {accountProfile.account}
+                    <>
+                    <Link
+                        // underline="none"
+                        color="inherit"
+                        target="_blank"
+                        href={`https://bithomp.com/explorer/${accountProfile.account}`}
+                        rel="noreferrer noopener"
+                    >
+                        <Stack direction="row" alignItems='center'>
+                            <Typography align="center" style={{ wordWrap: "break-word" }} variant="body2" >
+                                {truncate(accountProfile.account, 12)}
                             </Typography>
+                            <IconButton edge="end" aria-label="bithomp">
+                                <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                            </IconButton>
                         </Stack>
-                        <Box sx={{ p: 2, pt: 1.5 }}>
-                            <Button fullWidth color="inherit" variant="outlined" onClick={handleLogout}>
-                                Logout
-                            </Button>
-                        </Box>
-                        </>
-                    ) : (
-                        <MenuItem
-                            key="xumm"
-                            onClick={handleLogin}
-                            sx={{ typography: 'body2', py: 2, px: 2.5 }}
-                        >
-                            <Stack direction='row' spacing={1} sx={{mr: 2}} alignItems='center'>
-                                <Avatar alt="xumm" src="/static/xumm.jpg"/>
-                                <h3 style={{marginLeft: '10px'}}>XUMM</h3>
-                            </Stack>
-                        </MenuItem>
+                    </Link>
+                    
+                    <Box sx={{ flexGrow: 1 }} />
+                    <Button variant="outlined" color='error' onClick={handleLogout} endIcon={<AccountBalanceWalletIcon />}>
+                        Logout
+                    </Button>
+                    </>
+                ) : (
+                    <>
+                    <Box sx={{ flexGrow: 1 }} />
+                    <Button variant="outlined" color='error' onClick={handleLogin} endIcon={<AccountBalanceWalletIcon />}>
+                        Connect
+                    </Button>
+                    </>
                 )}
-
-            {/* <Divider sx={{ my: 1 }} /> */}
-            </MenuPopover>
+                
+            </Box>
 
             <LoginDialog
                 open={openLogin}

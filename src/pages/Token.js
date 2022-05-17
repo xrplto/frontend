@@ -295,7 +295,7 @@ export default function Token() {
                                 p7d,
                                 p24h,
                                 exch } = row;
-                            const imgUrl = `/static/tokens/${name}.jpg`;
+                            const imgUrl = `/static/tokens/${name.replace(/[^a-zA-Z]/g, "")}.jpg`;
                             const isItemSelected = false;//selected.indexOf(id) !== -1;
 
                             const marketcap = amt * exch / status.USD;
