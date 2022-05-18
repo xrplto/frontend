@@ -10,7 +10,7 @@ import GlobalStyles from './theme/globalStyles';
 //import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 // material
 import { Backdrop } from "@mui/material";
-import { HashLoader } from "react-spinners";
+import { PuffLoader, HashLoader } from "react-spinners";
 // ----------------------------------------------------------------------
 import statusReducer from "./redux/statusSlice";
 import { Provider } from "react-redux";
@@ -83,7 +83,8 @@ export default function App() {
                     sx={{ color: "#000", zIndex: (theme) => theme.zIndex.drawer + 1 }}
                     open={loading}
                 >
-                    <HashLoader color={"#00AB55"} size={50} />
+                    {/* <HashLoader color={"#00AB55"} size={50} /> */}
+                    <PuffLoader color={"#00AB55"} size={50} />
                 </Backdrop>
                 <ThemeConfig>
                 <GlobalStyles />

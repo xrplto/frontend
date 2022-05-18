@@ -13,6 +13,7 @@ import {
 } from '@mui/icons-material';
 
 import {
+    Alert,
     Avatar,
     Box,
     Button,
@@ -23,6 +24,7 @@ import {
     Link,
     MenuItem,
     Select,
+    Snackbar,
     Stack,
     Switch,
     TextField,
@@ -36,9 +38,13 @@ import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import OrderBook from "./OrderBook";
 import History from './History';
 import Account from './Account';
+
+import { useContext } from 'react'
+import Context from '../../../Context'
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
+import PlaceOrder from './PlaceOrder';
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
@@ -159,6 +165,7 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 // }
 
 export default function TradeData({pairs, pair, setPair, asks, bids}) {
+    const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
     const [sel, setSel] = useState(1);
     const [buySell, setBuySell] = useState('BUY');
     const [amount, setAmount] = useState('');
@@ -199,16 +206,16 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
     }
 
     const handleChangeAmount = (e) => {
-        const amt = Number(e.target.value);
+        const amt = e.target.value;
         setAmount(amt);
-        const val = (amt * price).toFixed(5);
+        const val = (amt * price).toFixed(6);
         setValue(val);
     }
 
     const handleChangePrice = (e) => {
-        const newPrice = Number(e.target.value);
+        const newPrice = e.target.value;
         setPrice(newPrice);
-        const val = (amount * newPrice).toFixed(5);
+        const val = (amount * newPrice).toFixed(6);
         setValue(val);
     }
 
@@ -338,43 +345,57 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                             <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
                         </Stack>
                     </Stack>
-                    <StackDexStyle sx={{ m: 1, mt:0, pt:2, pb:2 }}>
-                        <Stack spacing={4} alignItems="left">
-                            <ToggleButtonGroup
-                                color="primary"
-                                // orientation="vertical"
-                                value={buySell}
-                                fullWidth
-                                exclusive
-                                onChange={handleChangeBuySell}
-                            >
-                                <ToggleButton sx={{pt:1,pb:1}} value="BUY">BUY</ToggleButton>
-                                <ToggleButton color="error" sx={{pt:1,pb:1}} value="SELL">SELL</ToggleButton>
-                            </ToggleButtonGroup>
+                    <StackDexStyle spacing={3} sx={{ m: 1, mt:0, pt:2, pb:2 }}>
+                        <ToggleButtonGroup
+                            color="primary"
+                            // orientation="vertical"
+                            value={buySell}
+                            fullWidth
+                            exclusive
+                            onChange={handleChangeBuySell}
+                        >
+                            <ToggleButton sx={{pt:1,pb:1}} value="BUY">BUY</ToggleButton>
+                            <ToggleButton color="error" sx={{pt:1,pb:1}} value="SELL">SELL</ToggleButton>
+                        </ToggleButtonGroup>
 
-                            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                                <TokenIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                                <TextField id="input-with-sx1" label="Amount" value={amount} onChange={handleChangeAmount} variant="standard"/>
-                                <Typography variant="caption" color='#FF4842'>{curr1.name}</Typography>
-                            </Box>
+                        <Stack alignItems="center">
 
-                            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                                <PriceChangeIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                                <TextField id="input-with-sx2" label="Price" value={price} onChange={handleChangePrice} variant="standard"/>
-                                <Typography variant="caption" color='#00AB5588'>{curr2.name}</Typography>
-                            </Box>
+                            {buySell === 'BUY' &&
+                                <Typography variant='caption' alignItems={'center'}>
+                                    Get <Typography variant="caption" sx={{ color: '#B72136' }}>{curr1.name}</Typography> by selling <Typography variant="caption" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
+                                </Typography>
+                            }
 
-                            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                                <SwapVerticalCircleIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                                <Typography>Total ≈</Typography>
-                                <Box sx={{ flexGrow: 1 }} />
-                                <Typography alignItems='right'>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
-                            </Box>
+                            {buySell === 'SELL' &&
+                                <Typography variant='caption' alignItems={'center'}>
+                                    Sell <Typography variant="caption" sx={{ color: '#B72136' }}>{curr1.name}</Typography> to get <Typography variant="caption" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
+                                </Typography>
+                            }
 
-                            <Account />
-
-                            <Button variant="outlined" sx={{ mt: 1.5 }}>PLACE  ORDER</Button>
                         </Stack>
+
+                        <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                            <TokenIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
+                            <TextField id="input-with-sx1" label="Amount" value={amount} onChange={handleChangeAmount} variant="standard"/>
+                            <Typography variant="caption" color='#FF4842'>{curr1.name}</Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                            <PriceChangeIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
+                            <TextField id="input-with-sx2" label="Price" value={price} onChange={handleChangePrice} variant="standard"/>
+                            <Typography variant="caption" color='#00AB5588'>{curr2.name}</Typography>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                            <SwapVerticalCircleIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
+                            <Typography>Total ≈</Typography>
+                            <Box sx={{ flexGrow: 1 }} />
+                            <Typography alignItems='right'>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
+                        </Box>
+
+                        {/* <Account /> */}
+
+                        <PlaceOrder buySell={buySell} pair={pair} amount={amount} value={value}/>
                     </StackDexStyle>
                 </Grid>
             </Grid>

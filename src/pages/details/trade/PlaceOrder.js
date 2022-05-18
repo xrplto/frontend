@@ -53,8 +53,8 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
     const [showAccountAlert, setShowAccountAlert] = useState(false);
-
     const [showResult, setShowResult] = useState(0);
+    const [showInvalidValue, setShowInvalidValue] = useState(false);
     
     /*const connectionStatus = {
         [ReadyState.CONNECTING]: "Connecting",
@@ -179,7 +179,16 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
     };
 
     const handlePlaceOrder = (e) => {
-        onOfferCreateXumm();
+        const fAmount = Number(amount);
+        const fValue = Number(value);
+        if (fAmount > 0 && fValue > 0)
+            onOfferCreateXumm();
+        else {
+            setShowInvalidValue(true);
+            setTimeout(() => {
+                setShowInvalidValue(false);
+            }, 2000);
+        }
 
         // if (accountProfile && accountProfile.account) {
         //     // Create offer
@@ -227,7 +236,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
     // </Snackbar>
 
     return (
-        <>
+        <Stack alignItems='center'>
             <Button variant="outlined" sx={{ mt: 1.5 }}
                 onClick={handlePlaceOrder}
                 color={buySell === 'BUY' ? 'primary':'error'}
@@ -247,12 +256,16 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 Successfully submitted the order!
             </Alert>}
 
+            {showInvalidValue && <Alert variant="filled" severity="error" sx={{ m: 2, mt:0 }}>
+                Invalid values!
+            </Alert>}
+
             <CreateOfferDialog
                 open={openLogin}
                 handleClose={handleLoginClose}
                 qrUrl={qrUrl}
                 nextUrl={nextUrl}
             />
-        </>
+        </Stack>
     );
 }
