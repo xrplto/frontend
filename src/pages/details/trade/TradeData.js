@@ -1,22 +1,17 @@
 // material
-import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
-// import { withStyles } from '@mui/styles';
-import { makeStyles } from "@mui/styles";
+import { Icon } from '@iconify/react';
+import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import {
     Token as TokenIcon,
     PriceChange as PriceChangeIcon,
-    MonetizationOn as MonetizationOnIcon,
     SwapVerticalCircle as SwapVerticalCircleIcon,
-    AccountBalanceWallet as AccountBalanceWalletIcon
 } from '@mui/icons-material';
 
 import {
-    Alert,
     Avatar,
     Box,
-    Button,
     FormControl,
     Grid,
     IconButton,
@@ -24,28 +19,22 @@ import {
     Link,
     MenuItem,
     Select,
-    Snackbar,
     Stack,
-    Switch,
     TextField,
     ToggleButton,
     ToggleButtonGroup,
     Tooltip,
     Typography
 } from '@mui/material';
-import { Icon } from '@iconify/react';
-import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
+
+// Components
 import OrderBook from "./OrderBook";
 import History from './History';
 import Account from './Account';
-
-import { useContext } from 'react'
-import Context from '../../../Context'
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
 import PlaceOrder from './PlaceOrder';
-// ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -78,20 +67,6 @@ const badge24hStyle = {
     padding: '1px 4px'
 };
 
-const badgeDEXStyle = {
-    display: 'inline-block',
-    marginLeft: '4px',
-    marginRight: '4px',
-    color: '#C4CDD5',
-    fontSize: '11px',
-    fontWeight: '500',
-    lineHeight: '18px',
-    // backgroundColor: '#7A0C2E',
-    borderRadius: '4px',
-    border: '1px solid #B78103',
-    padding: '1px 4px'
-};
-
 const StackDexStyle = styled(Stack)(({ theme }) => ({
     display: 'inline-block',
     marginLeft: '4px',
@@ -104,48 +79,6 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
     borderRadius: '8px',
     border: `1px solid ${theme.palette.divider}`,
     padding: '0px 12px'
-}));
-
-const MaterialUISwitch = styled(Switch)(({ theme }) => ({
-    width: 62,
-    height: 34,
-    padding: 7,
-    '& .MuiSwitch-switchBase': {
-        margin: 1,
-        padding: 0,
-        transform: 'translateX(6px)',
-        '&.Mui-checked': {
-            color: '#fff',
-            transform: 'translateX(22px)',
-            // '& .MuiSwitch-thumb:before': {
-            //     backgroundColor: '#FF484288'
-            // },
-            '& + .MuiSwitch-track': {
-                opacity: 1,
-                backgroundColor: '#FF484288',
-            },
-        },
-    },
-    '& .MuiSwitch-thumb': {
-        backgroundColor: '#FF4842',
-        width: 32,
-        height: 32,
-        '&:before': {
-            content: "''",
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            left: 0,
-            top: 0,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center'
-        },
-    },
-    '& .MuiSwitch-track': {
-        opacity: 1,
-        backgroundColor: '#00AB5588',
-        borderRadius: 20 / 2,
-    },
 }));
 
 // function getPair(issuer, code) {
@@ -165,7 +98,6 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 // }
 
 export default function TradeData({pairs, pair, setPair, asks, bids}) {
-    const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
     const [sel, setSel] = useState(1);
     const [buySell, setBuySell] = useState('BUY');
     const [amount, setAmount] = useState('');

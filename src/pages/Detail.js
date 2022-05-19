@@ -4,14 +4,14 @@ import { useParams/*, useSearchParams*/ } from "react-router-dom";
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
 import useWebSocket from "react-use-websocket";
-import {formatOrderBook} from './details/trade/parser';
 
+import formatOrderBook from './details/trade/formatOrderBook';
 import {UserDesc, PriceDesc, LinkDesc, ExtraDesc} from "./details/common"
 import {PriceChart, PriceStatistics, Description} from './details/overview';
 import {HistoryData} from './details/history';
 import {MarketData} from './details/market';
 import {TradeData} from './details/trade';
-import DocumentMeta from 'react-document-meta';
+// import DocumentMeta from 'react-document-meta';
 
 import {
     Box,
@@ -356,24 +356,25 @@ export default function Detail(props) {
 
         let user = token.user;
         if (!user) user = name;
-        const meta = {
-            title: `${user} price today, ${name} to USD live, volume, trading history, markets and chart`,
-            description: `Get the latest XRPL DEX ${user} price, 24-hour volume, trading pairs, history, charts, and data today in real-time.`,
-            canonical: `https://xrpl.to/${exMD5}`,
-            'og:image': `/static/tokens/${name.replace(/[^a-zA-Z]/g, "")}.jpg`,
-            meta: {
-                'og:image': `/static/tokens/${name.replace(/[^a-zA-Z]/g, "")}.jpg`,
-                charset: 'utf-8',
-                name: {
-                    keywords: 'react,meta,document,html,tags'
-                }
-            }
-        }
+
+        // const meta = {
+        //     title: `${user} price today, ${name} to USD live, volume, trading history, markets and chart`,
+        //     description: `Get the latest XRPL DEX ${user} price, 24-hour volume, trading pairs, history, charts, and data today in real-time.`,
+        //     canonical: `https://xrpl.to/${exMD5}`,
+        //     'og:image': `/static/tokens/${name.replace(/[^a-zA-Z]/g, "")}.jpg`,
+        //     meta: {
+        //         'og:image': `/static/tokens/${name.replace(/[^a-zA-Z]/g, "")}.jpg`,
+        //         charset: 'utf-8',
+        //         name: {
+        //             keywords: 'react,meta,document,html,tags'
+        //         }
+        //     }
+        // }
 
         // sx={{borderRight: '1px solid #323546'}}
         return (
             <Page title={`${user} price today, ${name} to USD live, volume, trading history, markets and chart `}>
-                <DocumentMeta {...meta} >
+                {/* <DocumentMeta {...meta} > */}
                     <TopMark md5={md5}/>
                     <Container maxWidth="xl">
                         <Grid item container direction="row" >
@@ -431,7 +432,7 @@ export default function Detail(props) {
                         </TabPanel>
                     </Container>
                     <ScrollToTop />
-                </DocumentMeta>
+                {/* </DocumentMeta> */}
             </Page>
         );
     }

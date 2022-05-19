@@ -1,6 +1,5 @@
-import { Icon } from '@iconify/react';
-import { useRef, useState, useEffect } from 'react';
-import userLock from '@iconify/icons-fa-solid/user-lock';
+import axios from 'axios';
+import { useState, useEffect } from 'react';
 
 import {
     Logout as LogoutIcon,
@@ -12,42 +11,27 @@ import {
     Typography,
     Button,
     Link,
-    MenuItem,
     Avatar,
     IconButton,
     Stack
 } from '@mui/material';
 
 // components
-import LoginDialog from './LoginDialog';
+import QRLoginDialog from './QRLoginDialog';
 //
 import { useContext } from 'react'
 import Context from '../../../Context'
-
-//import profile from '../_mocks_/profile';
-import axios from 'axios';
-
-
-
-// import {
-//     SupervisorAccount as SupervisorAccountIcon
-// } from '@mui/icons-material'
-// ----------------------------------------------------------------------
-//const SERVER_BASE_URL = 'http://127.0.0.1/api/xumm';
-const SERVER_BASE_URL = 'https://api.xrpl.to/api/xumm';
 // ----------------------------------------------------------------------
 function truncate(str, n){
     if (!str) return '';
-    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
 };
 
 export default function AccountPopover() {
+    const SERVER_BASE_URL = 'https://api.xrpl.to/api/xumm';
     const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
-    const anchorRef = useRef(null);
     const [openLogin, setOpenLogin] = useState(false);
     const [uuid, setUuid] = useState(null);
-    //const [wsUrl, setWsUrl] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
 
@@ -58,6 +42,7 @@ export default function AccountPopover() {
         [ReadyState.CLOSED]: "Closed",
         [ReadyState.UNINSTANTIATED]: "Uninstantiated",
     }[readyState];*/
+
     useEffect(() => {
         var timer = null;
         var isRunning = false;
@@ -138,25 +123,6 @@ export default function AccountPopover() {
         onDisconnectXumm(uuid);
     };
 
-    // <Alert
-    //     variant="outlined"
-    //     severity="success">
-    //     <AlertTitle>{accountProfile.account}</AlertTitle>
-    //     <br/>
-    //     Login successful!
-    //     <br/>
-    // </Alert>
-
-    // <Alert severity="success" color="info">
-    //     Login Successful!
-    // </Alert>
-
-    // <Snackbar open={true} autoHideDuration={2000} onClose={handleClose}>
-    //     <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-    //         Login Successful!
-    //     </Alert>
-    // </Snackbar>
-
     return (
         <>
             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
@@ -192,10 +158,9 @@ export default function AccountPopover() {
                     </Button>
                     </>
                 )}
-                
             </Box>
 
-            <LoginDialog
+            <QRLoginDialog
                 open={openLogin}
                 handleClose={handleLoginClose}
                 qrUrl={qrUrl}
