@@ -1,5 +1,4 @@
 import React from 'react';
-import { formatNumber } from "./helpers";
 import { styled, useTheme } from '@mui/material/styles';
 
 const Container = styled('div')({
@@ -8,6 +7,10 @@ const Container = styled('div')({
     width: '50%',
     textAlign: 'center'
 });
+
+const formatNumber = (arg) => {
+    return new Intl.NumberFormat('en-US').format(arg);
+};
 
 const Spread = ({ bids, asks }) => {
     const getHighestBid = (bids) => {

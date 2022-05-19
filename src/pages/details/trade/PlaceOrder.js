@@ -1,68 +1,30 @@
-import { Icon } from '@iconify/react';
-import { useRef, useState, useEffect } from 'react';
-import userLock from '@iconify/icons-fa-solid/user-lock';
-
-import {
-    Logout as LogoutIcon,
-    AccountBalanceWallet as AccountBalanceWalletIcon
-} from '@mui/icons-material';
+import { useState, useEffect } from 'react';
 
 import {
     Alert,
-    Box,
-    Typography,
     Button,
-    Link,
-    MenuItem,
-    Avatar,
-    IconButton,
     Stack
 } from '@mui/material';
 
-// components
-import LoginDialog from './LoginDialog';
-//
+import axios from 'axios';
 import { useContext } from 'react'
 import Context from '../../../Context'
 
-//import profile from '../_mocks_/profile';
-import axios from 'axios';
-import CreateOfferDialog from './CreateOfferDialog';
+// Components
+import QROfferDialog from './QROfferDialog';
 
-
-
-// import {
-//     SupervisorAccount as SupervisorAccountIcon
-// } from '@mui/icons-material'
 // ----------------------------------------------------------------------
-//const SERVER_BASE_URL = 'http://127.0.0.1/api/xumm';
-const SERVER_BASE_URL = 'https://api.xrpl.to/api/xumm';
-// ----------------------------------------------------------------------
-function truncate(str, n){
-    if (!str) return '';
-    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
-    return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
-};
-
 export default function PlaceOrder({buySell, pair, amount, value}) {
-    const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
-    const anchorRef = useRef(null);
+    const SERVER_BASE_URL = 'https://api.xrpl.to/api/xumm';
+    const { setLoading } = useContext(Context);
     const [openLogin, setOpenLogin] = useState(false);
     const [uuid, setUuid] = useState(null);
-    //const [wsUrl, setWsUrl] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
     const [showAccountAlert, setShowAccountAlert] = useState(false);
     const [showResult, setShowResult] = useState(0);
     const [showInvalidValue, setShowInvalidValue] = useState(false);
     
-    /*const connectionStatus = {
-        [ReadyState.CONNECTING]: "Connecting",
-        [ReadyState.OPEN]: "Open",
-        [ReadyState.CLOSING]: "Closing",
-        [ReadyState.CLOSED]: "Closed",
-        [ReadyState.UNINSTANTIATED]: "Uninstantiated",
-    }[readyState];*/
     useEffect(() => {
         var timer = null;
         var isRunning = false;
@@ -88,7 +50,6 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                         setTimeout(() => {
                             setShowResult(0);
                         }, 2000);
-                        // setAccountProfile({account: account, uuid: uuid});
                         return;
                     }
                 } catch (err) {
@@ -105,7 +66,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 clearInterval(timer)
             }
         };
-    }, [openLogin, uuid, setAccountProfile]);
+    }, [openLogin, uuid]);
 
     const onOfferCreateXumm = async () => {
         setLoading(true);
@@ -161,17 +122,12 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
             const res = await axios.delete(`${SERVER_BASE_URL}/logout/${uuid}`);
             if (res.status === 200) {
                 //setLog(res.data.status ? "disconnect success" : "disconnect failed");
-                //setAccountProfile(null);
                 setUuid(null);
             }
         } catch(err) {
         }
         setLoading(false);
     };
-
-    const handleLogout = () => {
-        //onDisconnectXumm(accountProfile.uuid);
-    }
 
     const handleLoginClose = () => {
         setOpenLogin(false);
@@ -216,25 +172,6 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
         // }
     }
 
-    // <Alert
-    //     variant="outlined"
-    //     severity="success">
-    //     <AlertTitle>{accountProfile.account}</AlertTitle>
-    //     <br/>
-    //     Login successful!
-    //     <br/>
-    // </Alert>
-
-    // <Alert severity="success" color="info">
-    //     Login Successful!
-    // </Alert>
-
-    // <Snackbar open={true} autoHideDuration={2000} onClose={handleClose}>
-    //     <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-    //         Login Successful!
-    //     </Alert>
-    // </Snackbar>
-
     return (
         <Stack alignItems='center'>
             <Button variant="outlined" sx={{ mt: 1.5 }}
@@ -260,7 +197,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 Invalid values!
             </Alert>}
 
-            <CreateOfferDialog
+            <QROfferDialog
                 open={openLogin}
                 handleClose={handleLoginClose}
                 qrUrl={qrUrl}

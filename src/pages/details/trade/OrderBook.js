@@ -1,19 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { PuffLoader } from "react-spinners";
 import { styled, useTheme } from '@mui/material/styles';
-
-//import { fNumber } from '../../../utils/formatNumber';
-
-import { ORDER_TYPE_ASKS, ORDER_TYPE_BIDS } from "./constants";
-
-// import { parseOrderbookChanges, parseBalanceChanges } from './parser'
-
-//import {Decimal} from 'decimal.js';
-
 import {
-    Button,
     Grid,
-    Menu,
     Stack,
     Table,
     TableBody,
@@ -32,6 +21,9 @@ const LoaderContainer = styled('div')({
     alignItems: 'center',
     height: '79vh'
 });
+
+const ORDER_TYPE_BIDS = 1;
+const ORDER_TYPE_ASKS = 2;
 
 export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
     const theme = useTheme();
@@ -186,7 +178,7 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
     const buildPriceLevels = (levels, orderType = ORDER_TYPE_BIDS) => {
         return (
             levels.map((level, idx) => {
-                const id = level.id;
+                // const id = level.id;
                 const price = level.price.toFixed(5);//fNumber(level.price);
                 const avgPrice = level.avgPrice.toFixed(5);
                 const amount = level.amount.toFixed(2); // fNumber(level.amount);
