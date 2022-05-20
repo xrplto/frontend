@@ -80,7 +80,7 @@ export default function OpenOrders({pair}) {
     const [rows, setRows] = useState(30);
     const [exchs, setExchs] = useState([]);
     
-    const [value, setValue] = useState(0);
+    const [value, setValue] = useState(1);
 
     const curr1 = pair.curr1;
     const curr2 = pair.curr2;
@@ -113,12 +113,13 @@ export default function OpenOrders({pair}) {
     }, [page, rows, pair]);
 
     const handleChange = (event, newValue) => {
-        setValue(newValue);
+        //setValue(newValue);
+        setValue(1);
     };
 
     return (
         <StackStyle>
-            <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+            <Tabs value={value} onChange={handleChange} aria-label="basic tabs example" sx={{mb: 3}}>
                 <Tab label="OPEN ORDERS" {...a11yProps(0)} />
                 <Tab label="TRADE HISTORY" {...a11yProps(1)} />
             </Tabs>

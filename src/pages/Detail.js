@@ -82,8 +82,8 @@ const ORDER_TYPE_BIDS = 1;
 const ORDER_TYPE_ASKS = 2;
 
 export default function Detail(props) {
-    const WSS_FEED_URL = 'wss://ws.xrpl.to';
-    const BASE_URL = 'https://api.xrpl.to/api'; // 'http://localhost/api';
+    const WSS_URL = 'wss://ws.xrpl.to';
+    const BASE_URL = 'https://api.xrpl.to/api';
     const [history, setHistory] = useState([]);
     const [range, setRange] = useState('1D');
     const [token, setToken] = useState(null); // JSON.parse(localStorage.getItem('selectToken')));
@@ -228,7 +228,7 @@ export default function Detail(props) {
         }
     }, [clearNewFlag, asks, bids]);
 
-    const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
+    const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_URL, {
         onOpen: () => {console.log('wss://ws.xrpl.to opened');setReady(true);},
         onClose: () => {console.log('wss://ws.xrpl.to closed');setReady(false);},
         shouldReconnect: (closeEvent) => true,

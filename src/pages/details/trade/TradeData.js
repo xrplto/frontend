@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
+import { makeStyles } from "@mui/styles";
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import {
     Token as TokenIcon,
@@ -83,6 +84,12 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
     padding: '0px 12px'
 }));
 
+const useStyles = makeStyles({
+    gridItem: {
+      border: "1px solid red"
+    }
+});
+
 // function getPair(issuer, code) {
 //     // issuer, currencyCode, 'XRP', undefined
 //     const t1 = 'undefined_XRP';
@@ -100,6 +107,7 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
 // }
 
 export default function TradeData({pairs, pair, setPair, asks, bids}) {
+    const classes = useStyles();
     const [sel, setSel] = useState(1);
     const [buySell, setBuySell] = useState('BUY');
     const [amount, setAmount] = useState('');
@@ -263,13 +271,23 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                 </Stack>
             </Stack>
             
-            <Grid container spacing={3} sx={{p:0}}>
-                <Grid item xs={0} md={3} lg={3}>
-                    <History pair={pair}/>
+            {/* https://mui.com/system/display/ */}
+
+            <Grid container spacing={0} sx={{p:0}}>
+                <Grid item xs={12} md={9.5} lg={9.5} >
+                    <Grid container spacing={3} sx={{p:0}}>
+                        <Grid item xs={12} md={4} lg={4} sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
+                            <History pair={pair}/>
+                        </Grid>
+                        <Grid item xs={12} md={8} lg={8}>
+                            <OrderBook pair={pair} asks={asks} bids={bids} onBidClick={onBidClick} onAskClick={onAskClick}/>
+                        </Grid>
+                        <Grid item xs={12} md={12} lg={12} sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
+                            <OpenOrders pair={pair}/>
+                        </Grid>
+                    </Grid>
                 </Grid>
-                <Grid item xs={12} md={6.5} lg={6.5}>
-                    <OrderBook pair={pair} asks={asks} bids={bids} onBidClick={onBidClick} onAskClick={onAskClick}/>
-                </Grid>
+                
                 <Grid item xs={12} md={2.5} lg={2.5}>
                     <Stack spacing={1} alignItems="center">
                         <Typography variant='subtitle1' sx={{color:'#FFC107', textAlign: 'center', ml:0, mt:2, mb:0}}>Trade Now</Typography>
@@ -339,9 +357,6 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                     <StackDexStyle spacing={2} sx={{ m: 1, mt:0, pt:2, pb:2 }}>
                         <Account />
                     </StackDexStyle>
-                </Grid>
-                <Grid item xs={12} md={12} lg={12}>
-                    <OpenOrders pair={pair}/>
                 </Grid>
             </Grid>
         </StackStyle>
