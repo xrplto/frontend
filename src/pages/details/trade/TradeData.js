@@ -30,6 +30,7 @@ import {
 // Components
 import OrderBook from "./OrderBook";
 import History from './History';
+import OpenOrders from './OpenOrders';
 import Account from './Account';
 // ----------------------------------------------------------------------
 // utils
@@ -68,6 +69,7 @@ const badge24hStyle = {
 };
 
 const StackDexStyle = styled(Stack)(({ theme }) => ({
+    width: '100%',
     display: 'inline-block',
     marginLeft: '4px',
     marginRight: '4px',
@@ -277,7 +279,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                             <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
                         </Stack>
                     </Stack>
-                    <StackDexStyle spacing={3} sx={{ m: 1, mt:0, pt:2, pb:2 }}>
+                    <StackDexStyle spacing={2} sx={{ m: 1, mt:0, pt:2, pb:2 }}>
                         <ToggleButtonGroup
                             color="primary"
                             // orientation="vertical"
@@ -329,6 +331,17 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
 
                         <PlaceOrder buySell={buySell} pair={pair} amount={amount} value={value}/>
                     </StackDexStyle>
+
+                    <Stack spacing={1} alignItems="center">
+                        <Typography variant='subtitle1' sx={{color:'#FFC107', textAlign: 'center', ml:0, mt:1, mb:1}}>Account Worth</Typography>
+                    </Stack>
+
+                    <StackDexStyle spacing={2} sx={{ m: 1, mt:0, pt:2, pb:2 }}>
+                        <Account />
+                    </StackDexStyle>
+                </Grid>
+                <Grid item xs={12} md={12} lg={12}>
+                    <OpenOrders pair={pair}/>
                 </Grid>
             </Grid>
         </StackStyle>

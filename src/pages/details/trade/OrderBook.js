@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PuffLoader } from "react-spinners";
 import { styled, useTheme } from '@mui/material/styles';
 import {
+    Box,
     Grid,
     Stack,
     Table,
@@ -14,6 +15,8 @@ import {
 } from '@mui/material';
 
 import { tableCellClasses } from "@mui/material/TableCell";
+
+import Spread from './Spread';
 
 const LoaderContainer = styled('div')({
     display: 'flex',
@@ -299,7 +302,11 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
             {bids.length || asks.length ?
                 <Grid container spacing={0} sx={{p:0}}>
                     <Grid item xs={12} md={6} lg={6}>
-                        <Typography variant='subtitle1' sx={{color:'#007B55', ml:0, mt:2, mb:1}}>Buy Orders</Typography>
+                        <Stack direction='row' alignItems='center'>
+                            <Typography variant='subtitle1' sx={{color:'#007B55', ml:0, mt:2, mb:1}}>Buy Orders</Typography>
+                            <Box sx={{ flexGrow: 1 }} />
+                            <Spread bids={bids} asks={asks}/>
+                        </Stack>
                         <Table
                             stickyHeader
                             size={'small'}
