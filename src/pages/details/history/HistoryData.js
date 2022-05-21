@@ -375,20 +375,34 @@ export default function HistoryData({token, pairs}) {
                                         </Link>
                                     </TableCell>
                                     <TableCell align="left">
-                                        <Link
-                                            underline="none"
-                                            color="inherit"
-                                            target="_blank"
-                                            href={`https://bithomp.com/explorer/${hash}`}
-                                            rel="noreferrer noopener"
-                                        >
-                                            <Stack direction="row" alignItems='center'>
-                                                {tHash}
+                                        <Stack direction="row" alignItems='center'>
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={`https://bithomp.com/explorer/${hash}`}
+                                                rel="noreferrer noopener"
+                                            >
+                                                <Stack direction="row" alignItems='center'>
+                                                    {tHash}
+                                                    <IconButton edge="end" aria-label="bithomp">
+                                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                    </IconButton>
+                                                </Stack>
+                                            </Link>
+
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={`https://livenet.xrpl.org/transactions/${hash}`}
+                                                rel="noreferrer noopener"
+                                            >
                                                 <IconButton edge="end" aria-label="bithomp">
-                                                    <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                    <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
                                                 </IconButton>
-                                            </Stack>
-                                        </Link>
+                                            </Link>
+                                        </Stack>
                                     </TableCell>
                                     {/* <TableCell align="right">
                                         <HistoryMoreMenu hash={hash} />
