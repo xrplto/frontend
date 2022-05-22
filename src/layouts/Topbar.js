@@ -9,6 +9,7 @@ import { Box, Stack, Tooltip, Typography } from '@mui/material';
 //
 import { fIntNumber, fCurrency3, fNumber } from '../utils/formatNumber';
 import { Icon } from '@iconify/react';
+import infoFilled from '@iconify/icons-ep/info-filled';
 import postageStamp from '@iconify/icons-mdi/postage-stamp';
 // ----------------------------------------------------------------------
 import { useSelector } from "react-redux";
@@ -106,7 +107,7 @@ export default function Topbar() {
                     </Typography>
                 </Typography>
                 {/* <h6>|</h6> */}
-                <h5>Trades:</h5>
+                <h5>Tokens Traded:</h5>
                 <Typography align="center" style={{ color: "#3366FF" }} variant="subtitle2">{fIntNumber(status.tradedTokens24H)}</Typography>
                 <Box sx={{ flexGrow: 1 }} />
                 <h5>1 XRP</h5>
