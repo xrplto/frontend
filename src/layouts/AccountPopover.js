@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { Icon } from '@iconify/react';
 import { useRef, useState, useEffect } from 'react';
 import userLock from '@iconify/icons-fa-solid/user-lock';
@@ -24,19 +25,8 @@ import LoginDialog from './LoginDialog';
 import { useContext } from 'react'
 import Context from '../Context'
 
-//import profile from '../_mocks_/profile';
-import axios from 'axios';
-
-
-
-// import {
-//     SupervisorAccount as SupervisorAccountIcon
-// } from '@mui/icons-material'
-// ----------------------------------------------------------------------
-//const SERVER_BASE_URL = 'http://127.0.0.1/api/xumm';
-const SERVER_BASE_URL = 'https://api.xrpl.to/api/xumm';
-// ----------------------------------------------------------------------
 export default function AccountPopover() {
+    const BASE_URL = 'https://api.xrpl.to/api';
     const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
     const anchorRef = useRef(null);
     const [open, setOpen] = useState(false);
@@ -63,7 +53,7 @@ export default function AccountPopover() {
                 if (isRunning) return;
                 isRunning = true;
                 try {
-                    const res = await axios.get(`${SERVER_BASE_URL}/payload/${uuid}`);
+                    const res = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
                     const account = res.data.data.response.account;
                     if (account) {
                         setOpen(true);
@@ -90,7 +80,7 @@ export default function AccountPopover() {
     const onConnectXumm = async () => {
         setLoading(true);
         try {
-            const res = await axios.post(`${SERVER_BASE_URL}/login`);
+            const res = await axios.post(`${BASE_URL}/xumm/login`);
             if (res.status === 200) {
                 const uuid = res.data.data.uuid;
                 const qrlink = res.data.data.qrUrl;
@@ -110,7 +100,7 @@ export default function AccountPopover() {
     const onDisconnectXumm = async (uuid) => {
         setLoading(true);
         try {
-            const res = await axios.delete(`${SERVER_BASE_URL}/logout/${uuid}`);
+            const res = await axios.delete(`${BASE_URL}/xumm/logout/${uuid}`);
             if (res.status === 200) {
                 //setLog(res.data.status ? "disconnect success" : "disconnect failed");
                 setAccountProfile(null);

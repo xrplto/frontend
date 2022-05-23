@@ -15,9 +15,9 @@ import QROfferDialog from './QROfferDialog';
 
 // ----------------------------------------------------------------------
 export default function PlaceOrder({buySell, pair, amount, value}) {
-    const SERVER_BASE_URL = 'https://api.xrpl.to/api/xumm';
+    const BASE_URL = 'https://api.xrpl.to/api';
     const { setLoading } = useContext(Context);
-    const [openLogin, setOpenLogin] = useState(false);
+    const [openScanQR, setOpenScanQR] = useState(false);
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
@@ -29,19 +29,19 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
         var timer = null;
         var isRunning = false;
         var counter = 150;
-        if (openLogin) {
+        if (openScanQR) {
             timer = setInterval(async () => {
                 if (isRunning) return;
                 isRunning = true;
                 try {
-                    const ret = await axios.get(`${SERVER_BASE_URL}/payload/${uuid}`);
+                    const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
                     const res = ret.data.data.response;
 
                     const account = res.account;
                     const resolved_at = res.resolved_at;
                     const dispatched_result = res.dispatched_result;
                     if (resolved_at) {
-                        setOpenLogin(false);
+                        setOpenScanQR(false);
                         if (dispatched_result && dispatched_result === 'tesSUCCESS')
                             setShowResult(1);
                         else
@@ -57,7 +57,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 isRunning = false;
                 counter--;
                 if (counter <= 0) {
-                    setOpenLogin(false);
+                    setOpenScanQR(false);
                 }
             }, 2000);
         }
@@ -66,7 +66,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 clearInterval(timer)
             }
         };
-    }, [openLogin, uuid]);
+    }, [openScanQR, uuid]);
 
     const onOfferCreateXumm = async () => {
         setLoading(true);
@@ -98,7 +98,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
             }
             const body={/*Account,*/ TakerGets, TakerPays};
 
-            const res = await axios.post(`${SERVER_BASE_URL}/offercreate`, body);
+            const res = await axios.post(`${BASE_URL}/xumm/offercreate`, body);
 
             if (res.status === 200) {
                 const uuid = res.data.data.uuid;
@@ -108,7 +108,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 setUuid(uuid);
                 setQrUrl(qrlink);
                 setNextUrl(nextlink);
-                setOpenLogin(true);
+                setOpenScanQR(true);
             }
         } catch (err) {
             alert(err);
@@ -119,7 +119,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
     const onDisconnectXumm = async (uuid) => {
         setLoading(true);
         try {
-            const res = await axios.delete(`${SERVER_BASE_URL}/logout/${uuid}`);
+            const res = await axios.delete(`${BASE_URL}/xumm/logout/${uuid}`);
             if (res.status === 200) {
                 //setLog(res.data.status ? "disconnect success" : "disconnect failed");
                 setUuid(null);
@@ -129,8 +129,8 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
         setLoading(false);
     };
 
-    const handleLoginClose = () => {
-        setOpenLogin(false);
+    const handleScanQRClose = () => {
+        setOpenScanQR(false);
         onDisconnectXumm(uuid);
     };
 
@@ -198,8 +198,8 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
             </Alert>}
 
             <QROfferDialog
-                open={openLogin}
-                handleClose={handleLoginClose}
+                open={openScanQR}
+                handleClose={handleScanQRClose}
                 qrUrl={qrUrl}
                 nextUrl={nextUrl}
             />
