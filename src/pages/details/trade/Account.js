@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 
 import {
+    Login as LoginIcon,
     Logout as LogoutIcon,
     AccountBalanceWallet as AccountBalanceWalletIcon
 } from '@mui/icons-material';
@@ -20,6 +21,7 @@ import {
     TableCell,
     TableHead,
     TableRow,
+    Tooltip
 } from '@mui/material';
 
 import { tableCellClasses } from "@mui/material/TableCell";
@@ -179,7 +181,7 @@ export default function AccountPopover() {
                     >
                         <Stack direction="row" alignItems='center'>
                             <Typography align="center" style={{ wordWrap: "break-word" }} variant="body2" >
-                                {truncate(accountProfile.account, 12)}
+                                {truncate(accountProfile.account, 16)}
                             </Typography>
                             <IconButton edge="end" aria-label="bithomp">
                                 <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
@@ -188,17 +190,22 @@ export default function AccountPopover() {
                     </Link>
                     
                     <Box sx={{ flexGrow: 1 }} />
-                    <Button variant="outlined" color='error' onClick={handleLogout} endIcon={<AccountBalanceWalletIcon />}>
-                        Logout
-                    </Button>
+                    <Tooltip title='Logout'>
+                        <IconButton color='primary' onClick={handleLogout} aria-label="logout">
+                            <LogoutIcon fontSize="small"/>
+                        </IconButton>
+                    </Tooltip>
                     </>
                 ) : (
                     <>
                     <Typography variant='caption' alignItems='center' color='primary'>Connect to check your account balances and tokens.</Typography>
                     <Box sx={{ flexGrow: 1 }} />
-                    <Button variant="outlined" color='error' onClick={handleLogin} endIcon={<AccountBalanceWalletIcon />} sx={{minWidth:100, ml:1}}>
-                        Connect
-                    </Button>
+
+                    <Tooltip title='Login'>
+                        <IconButton color='primary' onClick={handleLogin} aria-label="login">
+                            <LoginIcon fontSize="small"/>
+                        </IconButton>
+                    </Tooltip>
                     </>
                 )}
             </Box>

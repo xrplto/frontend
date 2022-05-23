@@ -6,6 +6,7 @@ import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 // import { withStyles } from '@mui/styles';
 import {
     Box,
+    IconButton,
     Stack,
     Tab,
     Tabs,
@@ -85,6 +86,8 @@ export default function OpenOrders({pair}) {
     const [tabValue, setTabValue] = useState(0);
 
     const [offers, setOffers] = useState([]);
+    
+    const [getOrders, setGetOrders] = useState(1);
 
     const [openScanQR, setOpenScanQR] = useState(false);
     const [uuid, setUuid] = useState(null);
@@ -118,7 +121,7 @@ export default function OpenOrders({pair}) {
         }
         getAccountInfo(accountProfile);
 
-    }, [accountProfile]);
+    }, [accountProfile, getOrders]);
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
@@ -140,13 +143,26 @@ export default function OpenOrders({pair}) {
                     const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
                     const res = ret.data.data.response;
 
-                    console.log(res);
+                    /*
+                    {
+                        "hex": "120008228000000024043DCAC32019043DCAC2201B0448348868400000000000000F732103924E47158D3980DDAF7479A838EF3C0AE53D953BD2A526E658AC5F3EF0FA7D2174473045022100D10E91E2704A4BDAB510B599B8258956F9F34592B2B62BE383ED3E4DBF57DE2B02204837DD77A787D4E0DC43DCC53A7BBE160B164617FE3D0FFCFF9F6CC808D46DEE811406598086E863F1FF42AD87DCBE2E1B5F5A8B5EB8",
+                        "txid": "EC13B221808A21EA1012C95FB0EF53BF0110D7AB2EB17104154A27E5E70C39C5",
+                        "resolved_at": "2022-05-23T07:45:37.000Z",
+                        "dispatched_to": "wss://s2.ripple.com",
+                        "dispatched_result": "tesSUCCESS",
+                        "dispatched_nodetype": "MAINNET",
+                        "multisign_account": "",
+                        "account": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm"
+                    }
+                     */
 
                     const account = res.account;
                     const resolved_at = res.resolved_at;
                     const dispatched_result = res.dispatched_result;
                     if (resolved_at) {
                         setOpenScanQR(false);
+                        if (dispatched_result === 'tesSUCCESS')
+                            setGetOrders(getOrders + 1);
                         return;
                     }
                 } catch (err) {
@@ -168,34 +184,11 @@ export default function OpenOrders({pair}) {
     const onOfferCancelXumm = async (seq) => {
         setLoading(true);
         try {
-            const curr1 = pair.curr1;
-            const curr2 = pair.curr2;
-            // const Account = accountProfile.account;
-            let TakerGets, TakerPays;
-            if (buySell === 'BUY') {
-                // BUY logic
-                // TakerGets: curr2(value) TakerPays: curr1(amount)
-                if (curr2.currency === 'XRP') {
-                    TakerGets = (value * 1000000).toString();
-                    TakerPays = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
-                } else {
-                    TakerGets = {currency:curr2.currency, issuer:curr2.issuer, value: value.toString()};
-                    TakerPays = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
-                }
-            } else {
-                // SELL logic
-                // TakerGets: curr1(amount) TakerPays: curr2(value)
-                if (curr2.currency === 'XRP') {
-                    TakerGets = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
-                    TakerPays = (value * 1000000).toString();
-                } else {
-                    TakerGets = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
-                    TakerPays = {currency:curr2.currency, issuer:curr2.issuer, value: value.toString()};
-                }
-            }
-            const body={/*Account,*/ TakerGets, TakerPays};
+            const OfferSequence = seq;
+            
+            const body={OfferSequence};
 
-            const res = await axios.post(`${BASE_URL}/xumm/offercreate`, body);
+            const res = await axios.post(`${BASE_URL}/xumm/offercancel`, body);
 
             if (res.status === 200) {
                 const uuid = res.data.data.uuid;
@@ -231,6 +224,8 @@ export default function OpenOrders({pair}) {
         onDisconnectXumm(uuid);
     };
 
+    // https://api.sologenic.org/api/v1/trades?symbol=534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz%2FXRP&account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
+
     return (
         <StackStyle>
             <Tabs value={tabValue} onChange={handleTabChange} aria-label="basic tabs example" sx={{mb: 3}}>
@@ -262,7 +257,7 @@ export default function OpenOrders({pair}) {
                                 <TableCell align="left">Price</TableCell>
                                 <TableCell align="left">Taker Gets</TableCell>
                                 <TableCell align="left">Taker Pays</TableCell>
-                                <TableCell align="left"></TableCell>
+                                <TableCell align="left">Cancel</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -322,7 +317,7 @@ export default function OpenOrders({pair}) {
                     </Table>
                     <QROfferCancelDialog
                         open={openScanQR}
-                        handleClose={handleLoginClose}
+                        handleClose={handleScanQRClose}
                         qrUrl={qrUrl}
                         nextUrl={nextUrl}
                     />
@@ -345,8 +340,8 @@ export default function OpenOrders({pair}) {
                                     }
                                 }}
                             >
-                                <TableCell align="left" sx={{ p:0 }}>Time</TableCell>
-                                <TableCell align="left" sx={{ p:0 }}>
+                                <TableCell align="left">Time</TableCell>
+                                <TableCell align="left">
                                     <Stack direction="row" alignItems="center" gap={1}>
                                         <Typography variant="body2">Paid</Typography>
                                         <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Taker Paid Amount<br/>Cancelled offers are yellow colored.</Typography>}>
@@ -354,7 +349,7 @@ export default function OpenOrders({pair}) {
                                         </Tooltip>
                                     </Stack>
                                 </TableCell>
-                                <TableCell align="left" sx={{ p:0 }}>
+                                <TableCell align="left">
                                     <Stack direction="row" alignItems="center" gap={1}>
                                         <Typography variant="body2">Got</Typography>
                                         <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Taker Got Amount<br/>Cancelled offers are yellow colored.</Typography>}>
@@ -362,7 +357,7 @@ export default function OpenOrders({pair}) {
                                         </Tooltip>
                                     </Stack>
                                 </TableCell>
-                                <TableCell align="left" sx={{ p:0 }}>Price</TableCell>
+                                <TableCell align="left">Price</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -430,20 +425,20 @@ export default function OpenOrders({pair}) {
                                                     }
                                                 }}
                                             >
-                                                <TableCell align="left" sx={{ p:0 }}>
+                                                <TableCell align="left">
                                                     <Stack>
                                                         <Typography variant="subtitle2">{strTime}</Typography>
                                                         {/* <Typography variant="caption">{strDate}</Typography> */}
                                                     </Stack>
                                                 </TableCell>
-                                                <TableCell align="left" sx={{ p:0 }}>
+                                                <TableCell align="left">
                                                     {fNumber(takerPaid.value)} <Typography variant="caption">{namePaid}</Typography>
                                                 </TableCell>
 
-                                                <TableCell align="left" sx={{ p:0 }}>
+                                                <TableCell align="left">
                                                     {fNumber(takerGot.value)} <Typography variant="caption">{nameGot}</Typography>
                                                 </TableCell>
-                                                <TableCell align="left" sx={{ p:0 }}><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
+                                                <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
                                             </TableRow>
                                         // </CopyToClipboard>
                                     );
