@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { withStyles } from '@mui/styles';
+import { alpha, styled/*, useTheme*/ } from '@mui/material/styles';
 
 import {
     Alert,
@@ -14,9 +16,19 @@ import Context from '../../../Context'
 import QROfferDialog from './QROfferDialog';
 
 // ----------------------------------------------------------------------
+
+const DisabledButton = withStyles({
+    root: {
+        "&.Mui-disabled": {
+            pointerEvents: "unset", // allow :hover styles to be triggered
+            cursor: "not-allowed", // and custom cursor can be defined without :hover state
+        }
+    }
+})(Button);
+
 export default function PlaceOrder({buySell, pair, amount, value}) {
     const BASE_URL = 'https://api.xrpl.to/api';
-    const { setLoading } = useContext(Context);
+    const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
     const [openScanQR, setOpenScanQR] = useState(false);
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
@@ -174,12 +186,25 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
 
     return (
         <Stack alignItems='center'>
-            <Button variant="outlined" sx={{ mt: 1.5 }}
-                onClick={handlePlaceOrder}
-                color={buySell === 'BUY' ? 'primary':'error'}
-            >
-                PLACE  ORDER
-            </Button>
+            {accountProfile && accountProfile.account ? (
+                <Button
+                    variant="outlined"
+                    sx={{ mt: 1.5 }}
+                    onClick={handlePlaceOrder}
+                    color={buySell === 'BUY' ? 'primary':'error'}
+                >
+                    PLACE ORDER
+                </Button>
+            ) : (
+                <DisabledButton
+                    variant="outlined"
+                    sx={{ mt: 1.5 }}
+                    disabled
+                >
+                    PLACE ORDER
+                </DisabledButton>
+            )}
+            
 
             {showAccountAlert && <Alert variant="filled" severity="error" sx={{ m: 2, mt:0 }}>
                 Please login first!

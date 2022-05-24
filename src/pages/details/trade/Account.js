@@ -38,7 +38,7 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
 };
 
-export default function AccountPopover() {
+export default function Account() {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const { accountProfile, setAccountProfile, setLoading } = useContext(Context);

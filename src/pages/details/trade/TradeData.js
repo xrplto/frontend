@@ -32,7 +32,7 @@ import {
 import OrderBook from "./OrderBook";
 import History from './History';
 import OpenOrders from './OpenOrders';
-import Account from './Account';
+import AccountBalance from './AccountBalance';
 // ----------------------------------------------------------------------
 // utils
 import { fNumber } from '../../../utils/formatNumber';
@@ -220,7 +220,6 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                         </CustomSelect>
                     </FormControl>
                     <Stack direction="row">
-                    {/* B78103 */}
                         <StackDexStyle direction="row" sx={{ m: 1, minWidth: 120 }} spacing={2} alignItems="center">
                             DEX
                             <Tooltip title="Sologenic">
@@ -291,13 +290,15 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                 <Grid item xs={12} md={2.5} lg={2.5}>
                     <Stack spacing={1} alignItems="center">
                         <Typography variant='subtitle1' sx={{color:'#FFC107', textAlign: 'center', ml:0, mt:2, mb:0}}>Trade Now</Typography>
-                        <Stack direction="row" alignItems='center'>
+                        {/* <Stack direction="row" alignItems='center'>
                             <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{curr1.name}</Typography>
                             <Icon icon={arrowsExchange} width="16" height="16"/>
                             <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
-                        </Stack>
+                        </Stack> */}
                     </Stack>
-                    <StackDexStyle spacing={2} sx={{ m: 1, mt:0, pt:2, pb:2 }}>
+                    <StackDexStyle spacing={2} sx={{ m: 1, mt:4, pt:2, pb:2 }}>
+                        <AccountBalance pair={pair}/>
+
                         <ToggleButtonGroup
                             color="primary"
                             // orientation="vertical"
@@ -306,8 +307,8 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                             exclusive
                             onChange={handleChangeBuySell}
                         >
-                            <ToggleButton sx={{pt:1,pb:1}} value="BUY">BUY</ToggleButton>
-                            <ToggleButton color="error" sx={{pt:1,pb:1}} value="SELL">SELL</ToggleButton>
+                            <ToggleButton sx={{pt:0.5,pb:0.5}} value="BUY">BUY</ToggleButton>
+                            <ToggleButton color="error" sx={{pt:0.5, pb:0.5}} value="SELL">SELL</ToggleButton>
                         </ToggleButtonGroup>
 
                         <Stack alignItems="center">
@@ -344,18 +345,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                             <Box sx={{ flexGrow: 1 }} />
                             <Typography alignItems='right'>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
                         </Box>
-
-                        {/* <Account /> */}
-
                         <PlaceOrder buySell={buySell} pair={pair} amount={amount} value={value}/>
-                    </StackDexStyle>
-
-                    <Stack spacing={1} alignItems="center">
-                        <Typography variant='subtitle1' sx={{color:'#FFC107', textAlign: 'center', ml:0, mt:1, mb:1}}>Account Worth</Typography>
-                    </Stack>
-
-                    <StackDexStyle spacing={2} sx={{ m: 1, mt:0, pt:2, pb:2 }}>
-                        <Account />
                     </StackDexStyle>
                 </Grid>
             </Grid>
