@@ -34,12 +34,12 @@ const StackStyle = styled(Stack)(({ theme }) => ({
 }));
 // ----------------------------------------------------------------------
 export default function HistoryData({pair}) {
+    const theme = useTheme();
     const EPOCH_OFFSET = 946684800;
     const BASE_URL = 'https://api.xrpl.to/api';
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(30);
     const [exchs, setExchs] = useState([]);
-    const theme = useTheme();
 
     const curr1 = pair.curr1;
     const curr2 = pair.curr2;

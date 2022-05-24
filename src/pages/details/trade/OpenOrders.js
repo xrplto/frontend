@@ -33,7 +33,7 @@ import Context from '../../../Context'
 import QROfferCancelDialog from './QROfferCancelDialog';
 // ----------------------------------------------------------------------
 import { useSelector, useDispatch } from "react-redux";
-import { selectAccount, update_account } from "../../../redux/statusSlice";
+import { selectAccountData, updateAccountData } from "../../../redux/statusSlice";
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -83,7 +83,7 @@ export default function OpenOrders({pair}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const EPOCH_OFFSET = 946684800;
     const theme = useTheme();
-    const account = useSelector(selectAccount);
+    const accountData = useSelector(selectAccountData);
     const dispatch = useDispatch();
     const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
     const [exchs, setExchs] = useState([]);
@@ -133,23 +133,22 @@ export default function OpenOrders({pair}) {
                     }
                      */
 
-                    const account = res.account;
                     const resolved_at = res.resolved_at;
                     const dispatched_result = res.dispatched_result;
                     if (resolved_at) {
                         setOpenScanQR(false);
                         if (dispatched_result === 'tesSUCCESS') {
                             let newOffers = [];
-                            for (var o of account.offers) {
+                            for (var o of accountData.offers) {
                                 if (o.seq !== cancelSeq)
                                     newOffers.push(o);
                             }
-                            const newAccount = {
-                                account: account.account,
-                                pair: account.pair,
+                            const newAccountData = {
+                                account: accountData.account,
+                                pair: accountData.pair,
                                 offers: newOffers
                             };
-                            dispatch(update_account(newAccount));
+                            dispatch(updateAccountData(newAccountData));
                         }
                         return;
                     }
@@ -242,7 +241,7 @@ export default function OpenOrders({pair}) {
                                     }
                                 }}
                             >
-                                {/* <TableCell align="left">Side</TableCell> */}
+                                <TableCell align="left">Side</TableCell>
                                 <TableCell align="left">Price</TableCell>
                                 <TableCell align="left">Taker Gets</TableCell>
                                 <TableCell align="left">Taker Pays</TableCell>
@@ -251,7 +250,7 @@ export default function OpenOrders({pair}) {
                         </TableHead>
                         <TableBody>
                         {
-                            account.offers?.map((row) => {
+                            accountData?.offers?.map((row) => {
                                     const {
                                         flags,
                                         quality,
@@ -263,6 +262,7 @@ export default function OpenOrders({pair}) {
                                     const _id = seq;
                                     const takerPays = taker_pays.value || taker_pays / 1000000;
                                     const takerGets = taker_gets.value || taker_gets / 1000000;
+                                    const account = accountProfile.account;
 
                                     let name_pays;
                                     let name_gets;
@@ -285,6 +285,7 @@ export default function OpenOrders({pair}) {
                                             key={_id}
                                             tabIndex={-1}
                                         >
+                                            <TableCell align="left"></TableCell>
                                             <TableCell align="left">{exch}</TableCell>
                                             <TableCell align="left">
                                                 {fNumber(takerGets)} <Typography variant="caption">{name_gets}</Typography>
@@ -296,7 +297,7 @@ export default function OpenOrders({pair}) {
 
                                             <TableCell align="left">
                                                 <IconButton color='error' onClick={e=>handleCancel(e, seq)} aria-label="cancel">
-                                                    <CancelIcon />
+                                                    <CancelIcon fontSize='small'/>
                                                 </IconButton>
                                             </TableCell>
                                         </TableRow>

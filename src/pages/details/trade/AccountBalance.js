@@ -34,7 +34,7 @@ import Context from '../../../Context'
 import { fNumber } from '../../../utils/formatNumber';
 // ----------------------------------------------------------------------
 import { useDispatch } from "react-redux";
-import { update_account } from "../../../redux/statusSlice";
+import { updateAccountData } from "../../../redux/statusSlice";
 // ----------------------------------------------------------------------
 function truncate(str, n){
     if (!str) return '';
@@ -96,12 +96,12 @@ export default function AccountBalance({pair}) {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
                         setAccountPairBalance(ret.pair);
-                        const account = {
+                        const accountData = {
                             account: account,
                             pair: ret.pair,
                             offers: ret.offers
                         };
-                        dispatch(update_account(account));
+                        dispatch(updateAccountData(accountData));
                     }
                 }).catch(err => {
                     console.log("Error on getting details!!!", err);
