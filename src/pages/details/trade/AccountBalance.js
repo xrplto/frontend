@@ -33,6 +33,9 @@ import { useContext } from 'react'
 import Context from '../../../Context'
 import { fNumber } from '../../../utils/formatNumber';
 // ----------------------------------------------------------------------
+import { useDispatch } from "react-redux";
+import { update_account } from "../../../redux/statusSlice";
+// ----------------------------------------------------------------------
 function truncate(str, n){
     if (!str) return '';
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
@@ -41,54 +44,37 @@ function truncate(str, n){
 export default function AccountBalance({pair}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
+    const dispatch = useDispatch();
     const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
     const [openLogin, setOpenLogin] = useState(false);
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
-    const [lines, setLines] = useState([]);
-    const [balance, setBalance] = useState(null);
-    const [accountBalance, setAccountBalance] = useState(null);
+    const [accountPairBalance, setAccountPairBalance] = useState(null);
 
     let curr1 = { ...pair.curr1 };
     let curr2 = { ...pair.curr2 };
 
-    
-    /*{
-        "currency": "XRP",
-        "value": 408593.89259000024,
-        "md5": "71dbd3aabf2d99d205e0e2556ae4cf55",
-        "name": "XRP"
-    }*/
-
-    for (var line of lines) {
-        const {
-            id,
-            issuer,
-            currency,
-            name,
-            balance
-        } = line;
-
-        /*if (currency === 'XRP') {
-            if (curr1.currency === 'XRP')
-                curr1.value = balance / 1000000;
-            else if (curr2.currency === 'XRP')
-            curr2.value = balance / 1000000;
-        }*/
-
-        if (curr1.currency === currency) {
-            if (curr1.currency === 'XRP' || (curr1.currency !== 'XRP' && curr1.issuer === issuer)) {
-                curr1.value = balance;
-            }
+    /*
+        {
+            "currency": "534F4C4F00000000000000000000000000000000",
+            "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+            "value": "0.0199999",
+            "md5": "0413ca7cfc258dfaf698c02fe304e607",
+            "name": "SOLO",
+            "user": "Sologenic",
+            "domain": "sologenic.com",
+            "verified": true,
+            "twitter": "realSologenic"
+        },
+        {
+            "currency": "XRP",
+            "value": 408593.89259000024,
+            "md5": "71dbd3aabf2d99d205e0e2556ae4cf55",
+            "name": "XRP"
         }
+    */
 
-        if (curr2.currency === currency) {
-            if (curr2.currency === 'XRP' || (curr2.currency !== 'XRP' && curr2.issuer === issuer)) {
-                curr2.value = balance;
-            }
-        }
-    }
     /*const connectionStatus = {
         [ReadyState.CONNECTING]: "Connecting",
         [ReadyState.OPEN]: "Open",
@@ -101,20 +87,21 @@ export default function AccountBalance({pair}) {
         function getAccountInfo(profile, pair) {
             if (!profile || !profile.account) return;
             if (!pair) return;
+            const curr1 = pair.curr1;
+            const curr2 = pair.curr2;
             const account = profile.account;
-            // https://api.xrpl.to/api/accountinfo/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?pair=fa99aff608a10186d3b1ff33b5cd665f
-            axios.get(`${BASE_URL}/accountinfo/${account}?pair=${pair.pair}`)
+            // https://api.xrpl.to/api/accountinfo/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=undefined
+            axios.get(`${BASE_URL}/accountinfo/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
-                        const lines = ret.lines;
-                        if (lines) {
-                            setLines(lines);
-                        }
-                        const account_data = ret.info?.account_data;
-                        if (account_data) {
-                            setBalance(account_data.Balance);
-                        }
+                        setAccountPairBalance(ret.pair);
+                        const account = {
+                            account: account,
+                            pair: ret.pair,
+                            offers: ret.offers
+                        };
+                        dispatch(update_account(account));
                     }
                 }).catch(err => {
                     console.log("Error on getting details!!!", err);
@@ -187,7 +174,7 @@ export default function AccountBalance({pair}) {
                 //setLog(res.data.status ? "disconnect success" : "disconnect failed");
                 setAccountProfile(null);
                 setUuid(null);
-                setLines([]);
+                setAccountPairBalance(null);
             }
         } catch(err) {
         }
@@ -210,7 +197,7 @@ export default function AccountBalance({pair}) {
     return (
         <>
             {accountProfile && accountProfile.account ? (
-                accountBalance && <Table size={'small'}
+                accountPairBalance && <Table size={'small'}
                         sx={{
                             [`& .${tableCellClasses.root}`]: {
                                 borderBottom: "0px solid",
@@ -226,11 +213,11 @@ export default function AccountBalance({pair}) {
                             >
                                 <TableCell align="center" sx={{ p:0 }}>
                                     <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{curr1.name}</Typography>
-                                    {fNumber(curr1.value)}
+                                    {fNumber(accountPairBalance.curr1.value)}
                                 </TableCell>
                                 <TableCell align="center" sx={{ p:0 }}>
                                     <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
-                                    {fNumber(curr2.value)}
+                                    {fNumber(accountPairBalance.curr2.value)}
                                 </TableCell>
                             </TableRow>
                         </TableBody>

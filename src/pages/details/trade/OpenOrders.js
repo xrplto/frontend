@@ -32,6 +32,9 @@ import { useContext } from 'react'
 import Context from '../../../Context'
 import QROfferCancelDialog from './QROfferCancelDialog';
 // ----------------------------------------------------------------------
+import { useSelector, useDispatch } from "react-redux";
+import { selectAccount, update_account } from "../../../redux/statusSlice";
+// ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
     //backdropFilter: 'blur(2px)',
@@ -80,48 +83,22 @@ export default function OpenOrders({pair}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const EPOCH_OFFSET = 946684800;
     const theme = useTheme();
+    const account = useSelector(selectAccount);
+    const dispatch = useDispatch();
     const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
     const [exchs, setExchs] = useState([]);
     
     const [tabValue, setTabValue] = useState(0);
-
-    const [offers, setOffers] = useState([]);
-    
-    const [getOrders, setGetOrders] = useState(1);
 
     const [openScanQR, setOpenScanQR] = useState(false);
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
 
+    const [cancelSeq, setCancelSeq] = useState(0);
+
     const curr1 = pair.curr1;
     const curr2 = pair.curr2;
-
-    useEffect(() => {
-        // const lsfSell = 0x00020000 // See "lsfSell" flag in rippled source code
-        // let dir = (flags & lsfSell) !== 0?'sell':'buy'
-        function getAccountInfo(profile) {
-            if (!profile || !profile.account) return;
-            const account = profile.account;
-            // https://api.xrpl.to/api/accountinfo/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
-            axios.get(`${BASE_URL}/accountinfo/${account}`)
-                .then(res => {
-                    let ret = res.status === 200 ? res.data : undefined;
-                    if (ret) {
-                        const offers = ret.offers;
-                        if (offers) {
-                            setOffers(offers);
-                        }
-                    }
-                }).catch(err => {
-                    console.log("Error on getting details!!!", err);
-                }).then(function () {
-                    // always executed
-                });
-        }
-        getAccountInfo(accountProfile);
-
-    }, [accountProfile, getOrders]);
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
@@ -161,8 +138,19 @@ export default function OpenOrders({pair}) {
                     const dispatched_result = res.dispatched_result;
                     if (resolved_at) {
                         setOpenScanQR(false);
-                        if (dispatched_result === 'tesSUCCESS')
-                            setGetOrders(getOrders + 1);
+                        if (dispatched_result === 'tesSUCCESS') {
+                            let newOffers = [];
+                            for (var o of account.offers) {
+                                if (o.seq !== cancelSeq)
+                                    newOffers.push(o);
+                            }
+                            const newAccount = {
+                                account: account.account,
+                                pair: account.pair,
+                                offers: newOffers
+                            };
+                            dispatch(update_account(newAccount));
+                        }
                         return;
                     }
                 } catch (err) {
@@ -199,6 +187,7 @@ export default function OpenOrders({pair}) {
                 setQrUrl(qrlink);
                 setNextUrl(nextlink);
                 setOpenScanQR(true);
+                setCancelSeq(seq);
             }
         } catch (err) {
             alert(err);
@@ -262,7 +251,7 @@ export default function OpenOrders({pair}) {
                         </TableHead>
                         <TableBody>
                         {
-                            offers.map((row) => {
+                            account.offers?.map((row) => {
                                     const {
                                         flags,
                                         quality,
