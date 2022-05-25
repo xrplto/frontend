@@ -4,9 +4,12 @@ import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 import { withStyles } from '@mui/styles';
+import BigNumber from 'bignumber.js';
 import {
+    Avatar,
     Box,
     IconButton,
+    Link,
     Stack,
     Tab,
     Tabs,
@@ -107,6 +110,12 @@ const SellTypography = withStyles({
     }
 })(Typography);
 
+function truncate(str, n){
+    if (!str) return '';
+    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
+    return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
+};
+
 export default function OpenOrders({pair}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const EPOCH_OFFSET = 946684800;
@@ -135,6 +144,31 @@ export default function OpenOrders({pair}) {
     const handleCancel = (event, seq) => {
         onOfferCancelXumm(seq);
     }
+
+    useEffect(() => {
+        function getExchanges(profile, pair) {
+            if (!profile || !profile.account) return;
+            if (!pair) return;
+            const curr1 = pair.curr1;
+            const curr2 = pair.curr2;
+            const account = profile.account;
+            // https://api.xrpl.to/api/accounttx/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=undefined
+            axios.get(`${BASE_URL}/accounttx/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        setExchs(ret.exchs);
+                    }
+                }).catch(err => {
+                    console.log("Error on getting exchanges!!!", err);
+                }).then(function () {
+                    // always executed
+                });
+        }
+        if (tabValue === 1)
+            getExchanges(accountProfile, pair);
+
+    }, [accountProfile, pair, tabValue]);
 
     useEffect(() => {
         var timer = null;
@@ -378,128 +412,200 @@ export default function OpenOrders({pair}) {
                     />
                     </>
                 ):(
-                    <Table stickyHeader size={'small'}
-                        sx={{
-                            [`& .${tableCellClasses.root}`]: {
-                                borderBottom: "0px solid",
-                                borderBottomColor: theme.palette.divider
-                            }
-                        }}
-                    >
-                        <TableHead>
-                            <TableRow
-                                sx={{
-                                    [`& .${tableCellClasses.root}`]: {
-                                        borderBottom: "1px solid",
-                                        borderBottomColor: theme.palette.divider
-                                    }
-                                }}
-                            >
-                                <TableCell align="left">Time</TableCell>
-                                <TableCell align="left">
-                                    <Stack direction="row" alignItems="center" gap={1}>
-                                        <Typography variant="body2">Paid</Typography>
-                                        <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Taker Paid Amount<br/>Cancelled offers are yellow colored.</Typography>}>
-                                            <Icon icon={infoFilled} />
-                                        </Tooltip>
-                                    </Stack>
-                                </TableCell>
-                                <TableCell align="left">
-                                    <Stack direction="row" alignItems="center" gap={1}>
-                                        <Typography variant="body2">Got</Typography>
-                                        <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Taker Got Amount<br/>Cancelled offers are yellow colored.</Typography>}>
-                                            <Icon icon={infoFilled} />
-                                        </Tooltip>
-                                    </Stack>
-                                </TableCell>
-                                <TableCell align="left">Price</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                        {
-                            exchs.map((row) => {
-                                    const {
-                                        _id,
-                                        dir,
-                                        //hash,
-                                        //maker,
-                                        //taker,
-                                        //ledger,
-                                        //seq,
-                                        takerPaid,
-                                        takerGot,
-                                        date,
-                                        cancel,
-                                        // pair,
-                                        // xUSD
+                    <>
+                    {accountProfile && accountProfile.account && (
+                        <Table stickyHeader size={'small'}
+                            sx={{
+                                [`& .${tableCellClasses.root}`]: {
+                                    borderBottom: "0px solid",
+                                    borderBottomColor: theme.palette.divider
+                                }
+                            }}
+                        >
+                            <TableHead>
+                                <TableRow
+                                    sx={{
+                                        [`& .${tableCellClasses.root}`]: {
+                                            borderBottom: "1px solid",
+                                            borderBottomColor: theme.palette.divider
+                                        }
+                                    }}
+                                >
+                                    <TableCell align="left">Side</TableCell>
+                                    <TableCell align="left">Price</TableCell>
+                                    <TableCell align="left">Taker Paid</TableCell>
+                                    <TableCell align="left">Taker Got</TableCell>
+                                    <TableCell align="left">Time</TableCell>
+                                    <TableCell align="left">Maker</TableCell>
+                                    <TableCell align="left">Taker</TableCell>
+                                    <TableCell align="left">Hash</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                            {
+                                exchs.map((row) => {
+                                        const {
+                                            _id,
+                                            dir,
+                                            hash,
+                                            maker,
+                                            taker,
+                                            //ledger,
+                                            //seq,
+                                            takerPaid,
+                                            takerGot,
+                                            date,
+                                            cancel,
+                                            // pair,
+                                            // xUSD
                                         } = row;
-                                    let value;
-                                    let exch;
-                                    let buy;
-                                    if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency) {
-                                        // SELL, Red
-                                        const t = parseFloat(takerGot.value);
-                                        value = parseFloat(takerPaid.value);
-                                        exch = t / value;
-                                        buy = false;
-                                    } else {
-                                        // BUY, Green
-                                        const t = parseFloat(takerPaid.value);
-                                        value = parseFloat(takerGot.value);
-                                        exch = t / value; 
-                                        buy = true;
-                                    }
-                                    const nDate = new Date((date + EPOCH_OFFSET) * 1000); 
-                                    const year = nDate.getFullYear();
-                                    const month = nDate.getMonth() + 1;
-                                    const day = nDate.getDate();
-                                    const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                                    const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                                    const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
 
-                                    //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
-                                    //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
-                                    const strDate = `${year}-${month}-${day}`;
-                                    const strTime = `${hour}:${min}:${sec}`;
+                                        const account = accountProfile.account;
 
-                                    const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
-                                    const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
+                                        const tMaker = truncate(maker, 12);
+                                        const tTaker = truncate(taker, 12);
+                                        const tHash = truncate(hash, 8);
 
-                                    return (
-                                        // <CopyToClipboard
-                                        //     key={`id${_id}`}
-                                        //     text={hash}
-                                        //     onCopy={() => setCopied(true)}>
-                                            <TableRow
-                                                hover
-                                                key={_id}
-                                                tabIndex={-1}
-                                                sx={{
-                                                    [`& .${tableCellClasses.root}`]: {
-                                                        color: (cancel ? '#FFC107': (dir === 'buy' ? '#007B55' : '#B72136'))
-                                                    }
-                                                }}
-                                            >
-                                                <TableCell align="left">
-                                                    <Stack>
-                                                        <Typography variant="subtitle2">{strTime}</Typography>
-                                                        {/* <Typography variant="caption">{strDate}</Typography> */}
-                                                    </Stack>
-                                                </TableCell>
-                                                <TableCell align="left">
-                                                    {fNumber(takerPaid.value)} <Typography variant="caption">{namePaid}</Typography>
-                                                </TableCell>
+                                        const vPaid = takerPaid.value;
+                                        const vGot = takerGot.value;
+            
+                                        let exch;
+                                        let buy = false;
+                                        if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency) {
+                                            exch = vGot / vPaid;
+                                        } else {
+                                            exch = vPaid / vGot;
+                                        }
 
-                                                <TableCell align="left">
-                                                    {fNumber(takerGot.value)} <Typography variant="caption">{nameGot}</Typography>
-                                                </TableCell>
-                                                <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
-                                            </TableRow>
-                                        // </CopyToClipboard>
-                                    );
-                                })}
-                        </TableBody>
-                    </Table>
+                                        if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency && maker === account) {
+                                            buy = true;
+                                        } else if (takerGot.issuer === curr1.issuer && takerGot.currency === curr1.currency && taker === account) {
+                                            buy = true;
+                                        }
+
+                                        const nDate = new Date((date + EPOCH_OFFSET) * 1000); 
+                                        const year = nDate.getFullYear();
+                                        const month = (nDate.getMonth() + 1).toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                        const day = nDate.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                        const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                        const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                        const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+
+                                        //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
+                                        //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
+                                        const strDate = `${year}-${month}-${day}`;
+                                        const strTime = `${hour}:${min}:${sec}`;
+
+                                        const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
+                                        const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
+
+                                        return (
+                                            // <CopyToClipboard
+                                            //     key={`id${_id}`}
+                                            //     text={hash}
+                                            //     onCopy={() => setCopied(true)}>
+                                                <TableRow
+                                                    hover
+                                                    key={_id}
+                                                    tabIndex={-1}
+                                                    sx={{
+                                                        [`& .${tableCellClasses.root}`]: {
+                                                            // color: (cancel ? '#FFC107': (dir === 'buy' ? '#007B55' : '#B72136'))
+                                                            color: (buy ? '#007B55' : '#B72136')
+                                                        }
+                                                    }}
+                                                >
+                                                    <TableCell align="left">
+                                                        {
+                                                            buy ? (
+                                                                <BuyTypography variant="caption">
+                                                                    BUY
+                                                                </BuyTypography>
+                                                            ):(
+                                                                <SellTypography variant="caption">
+                                                                    SELL
+                                                                </SellTypography>
+                                                            )
+                                                        }
+                                                    </TableCell>
+                                                    <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
+                                                    
+                                                    <TableCell align="left">
+                                                        {new BigNumber(vPaid).decimalPlaces(6).toNumber()} <Typography variant="caption">{namePaid}</Typography>
+                                                    </TableCell>
+
+                                                    <TableCell align="left">
+                                                        {new BigNumber(vGot).decimalPlaces(6).toNumber()} <Typography variant="caption">{nameGot}</Typography>
+                                                    </TableCell>
+
+                                                    <TableCell align="left">
+                                                        <Stack>
+                                                            <Typography variant="subtitle2">{strDate} {strTime}</Typography>
+                                                            {/* <Typography variant="caption">{strDate}</Typography> */}
+                                                        </Stack>
+                                                    </TableCell>
+                                                    
+                                                    <TableCell align="left">
+                                                        <Link
+                                                            underline="none"
+                                                            color="inherit"
+                                                            target="_blank"
+                                                            href={`https://bithomp.com/explorer/${maker}`}
+                                                            rel="noreferrer noopener"
+                                                        >
+                                                            {tMaker}
+                                                        </Link>
+                                                    </TableCell>
+                                                    <TableCell align="left">
+                                                        <Link
+                                                            underline="none"
+                                                            color="inherit"
+                                                            target="_blank"
+                                                            href={`https://bithomp.com/explorer/${taker}`}
+                                                            rel="noreferrer noopener"
+                                                        >
+                                                            {tTaker}
+                                                        </Link>
+                                                    </TableCell>
+                                                    <TableCell align="left">
+                                                        <Stack direction="row" alignItems='center'>
+                                                            <Link
+                                                                underline="none"
+                                                                color="inherit"
+                                                                target="_blank"
+                                                                href={`https://bithomp.com/explorer/${hash}`}
+                                                                rel="noreferrer noopener"
+                                                            >
+                                                                <Stack direction="row" alignItems='center'>
+                                                                    {tHash}
+                                                                    <IconButton edge="end" aria-label="bithomp">
+                                                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                                    </IconButton>
+                                                                </Stack>
+                                                            </Link>
+
+                                                            <Link
+                                                                underline="none"
+                                                                color="inherit"
+                                                                target="_blank"
+                                                                href={`https://livenet.xrpl.org/transactions/${hash}`}
+                                                                rel="noreferrer noopener"
+                                                            >
+                                                                <IconButton edge="end" aria-label="bithomp">
+                                                                    <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
+                                                                </IconButton>
+                                                            </Link>
+                                                        </Stack>
+                                                    </TableCell>
+                                                    
+                                                </TableRow>
+                                            // </CopyToClipboard>
+                                        );
+                                    })}
+                            </TableBody>
+                        </Table>
+                    )}
+                    </>
                 )
             }
         </StackStyle>

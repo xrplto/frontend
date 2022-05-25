@@ -3,6 +3,7 @@ import axios from 'axios'
 import { useState, useEffect } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 // import { withStyles } from '@mui/styles';
+import BigNumber from 'bignumber.js';
 import {
     Stack,
     Table,
@@ -129,22 +130,22 @@ export default function HistoryData({pair}) {
                                 // pair,
                                 // xUSD
                                 } = row;
-                            let value;
+
+                            const vPaid = takerPaid.value;
+                            const vGot = takerGot.value;
+
                             let exch;
                             let buy;
                             if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency) {
                                 // SELL, Red
-                                const t = parseFloat(takerGot.value);
-                                value = parseFloat(takerPaid.value);
-                                exch = t / value;
+                                exch = vGot / vPaid;
                                 buy = false;
                             } else {
                                 // BUY, Green
-                                const t = parseFloat(takerPaid.value);
-                                value = parseFloat(takerGot.value);
-                                exch = t / value;
+                                exch = vPaid / vGot;
                                 buy = true;
                             }
+                            
                             const nDate = new Date((date + EPOCH_OFFSET) * 1000);
                             const year = nDate.getFullYear();
                             const month = nDate.getMonth() + 1;
@@ -158,8 +159,11 @@ export default function HistoryData({pair}) {
                             const strDate = `${year}-${month}-${day}`;
                             const strTime = `${hour}:${min}:${sec}`;
 
-                            const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
-                            const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
+                            // const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
+                            // const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
+
+                            const namePaid = '';
+                            const nameGot = '';
 
                             return (
                                 // <CopyToClipboard
@@ -183,11 +187,11 @@ export default function HistoryData({pair}) {
                                             </Stack>
                                         </TableCell>
                                         <TableCell align="left" sx={{ p:0 }}>
-                                            {fNumber(takerPaid.value)} <Typography variant="caption">{namePaid}</Typography>
+                                            {new BigNumber(vPaid).decimalPlaces(2).toNumber()} <Typography variant="caption">{namePaid}</Typography>
                                         </TableCell>
 
                                         <TableCell align="left" sx={{ p:0 }}>
-                                            {fNumber(takerGot.value)} <Typography variant="caption">{nameGot}</Typography>
+                                            {new BigNumber(vGot).decimalPlaces(2).toNumber()} <Typography variant="caption">{nameGot}</Typography>
                                         </TableCell>
                                         <TableCell align="left" sx={{ p:0 }}><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
                                     </TableRow>
