@@ -172,7 +172,7 @@ export default function HistoryData({pair}) {
                                         tabIndex={-1}
                                         sx={{
                                             [`& .${tableCellClasses.root}`]: {
-                                                color: (cancel ? '#FFC107': (dir === 'buy' ? '#007B55' : '#B72136'))
+                                                color: (cancel ? '#FFC107': (dir === 'sell' ? '#007B55' : '#B72136'))
                                             }
                                         }}
                                     >

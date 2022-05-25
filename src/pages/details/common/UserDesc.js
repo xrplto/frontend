@@ -33,7 +33,7 @@ export default function UserDesc({token, id, sort}) {
         exch*/
     } = token;
 
-    const imgUrl = `/static/tokens/${name.replace(/[^a-zA-Z]/g, "")}.jpg`;
+    const imgUrl = `/static/tokens/${name.replace(/[^a-zA-Z0-9]/g, "")}.jpg`;
   
     let user = token.user;
     if (!user) user = name;

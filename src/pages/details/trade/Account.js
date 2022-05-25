@@ -246,7 +246,7 @@ export default function Account() {
                                     balance
                                 } = row;
 
-                                const imgUrl = `/static/tokens/${name.replace(/[^a-zA-Z]/g, "")}.jpg`;
+                                const imgUrl = `/static/tokens/${name.replace(/[^a-zA-Z0-9]/g, "")}.jpg`;
 
                                 return (
                                     <TableRow

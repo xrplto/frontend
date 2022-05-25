@@ -1,27 +1,19 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
+import { /*alpha, styled,*/ useTheme } from '@mui/material/styles';
 
 import {
-    Login as LoginIcon,
-    Logout as LogoutIcon,
     AccountBalanceWallet as AccountBalanceWalletIcon
 } from '@mui/icons-material';
 
 import { 
-    Box,
     Typography,
     Button,
-    Link,
-    Avatar,
-    IconButton,
     Stack,
     Table,
     TableBody,
     TableCell,
-    TableHead,
     TableRow,
-    Tooltip
 } from '@mui/material';
 
 import { tableCellClasses } from "@mui/material/TableCell";
@@ -31,7 +23,6 @@ import QRLoginDialog from './QRLoginDialog';
 //
 import { useContext } from 'react'
 import Context from '../../../Context'
-import { fNumber } from '../../../utils/formatNumber';
 // ----------------------------------------------------------------------
 import { useDispatch } from "react-redux";
 import { updateAccountData } from "../../../redux/statusSlice";
@@ -213,11 +204,11 @@ export default function AccountBalance({pair}) {
                             >
                                 <TableCell align="center" sx={{ p:0 }}>
                                     <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{curr1.name}</Typography>
-                                    {fNumber(accountPairBalance.curr1.value)}
+                                    {accountPairBalance.curr1.value}
                                 </TableCell>
                                 <TableCell align="center" sx={{ p:0 }}>
                                     <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
-                                    {fNumber(accountPairBalance.curr2.value)}
+                                    {accountPairBalance.curr2.value}
                                 </TableCell>
                             </TableRow>
                         </TableBody>

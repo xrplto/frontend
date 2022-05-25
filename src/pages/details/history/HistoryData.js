@@ -301,7 +301,7 @@ export default function HistoryData({token, pairs}) {
                                     tabIndex={-1}
                                     sx={{
                                         [`& .${tableCellClasses.root}`]: {
-                                            color: (/*buy*/dir === 'buy' ? '#007B55' : '#B72136')
+                                            color: (/*buy*/dir === 'sell' ? '#007B55' : '#B72136')
                                         }
                                     }}
                                 >
@@ -310,7 +310,7 @@ export default function HistoryData({token, pairs}) {
                                     <TableCell align="left"><Typography variant="subtitle2">{fNumber(value)}</Typography></TableCell>
                                     <TableCell align="left">
                                         <Stack spacing={1}>
-                                            {dir==='buy' && (
+                                            {dir==='sell' && (
                                                 <Stack direction="row">
                                                     <BuyTypography variant="caption">
                                                     buy
@@ -318,7 +318,7 @@ export default function HistoryData({token, pairs}) {
                                                 </Stack>
                                             )}
                                             
-                                            {dir==='sell' && (
+                                            {dir==='buy' && (
                                                 <Stack direction="row">
                                                     <SellTypography variant="caption">
                                                     sell

@@ -3,7 +3,7 @@ import axios from 'axios'
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
-// import { withStyles } from '@mui/styles';
+import { withStyles } from '@mui/styles';
 import {
     Box,
     IconButton,
@@ -78,6 +78,34 @@ function a11yProps(index) {
         'aria-controls': `simple-tabpanel-${index}`,
     };
 }
+
+const BuyTypography = withStyles({
+    root: {
+        color: "#007B55",
+        borderRadius: '5px',
+        border: '0.05em solid #007B55',
+        fontSize: '0.7rem',
+        lineHeight: '1',
+        paddingLeft: '8px',
+        paddingRight: '8px',
+        paddingTop: '3px',
+        paddingBottom: '3px',
+    }
+})(Typography);
+
+const SellTypography = withStyles({
+    root: {
+        color: "#B72136",
+        borderRadius: '5px',
+        border: '0.05em solid #B72136',
+        fontSize: '0.7rem',
+        lineHeight: '1',
+        paddingLeft: '6px',
+        paddingRight: '6px',
+        paddingTop: '3px',
+        paddingBottom: '3px',
+    }
+})(Typography);
 
 export default function OpenOrders({pair}) {
     const BASE_URL = 'https://api.xrpl.to/api';
@@ -260,8 +288,10 @@ export default function OpenOrders({pair}) {
                                     } = row;
                                     let exch = quality;
                                     const _id = seq;
-                                    const takerPays = taker_pays.value || taker_pays / 1000000;
-                                    const takerGets = taker_gets.value || taker_gets / 1000000;
+
+                                    const gets = taker_gets.value || taker_gets / 1000000;
+                                    const pays = taker_pays.value || taker_pays / 1000000;
+
                                     const account = accountProfile.account;
 
                                     let name_pays;
@@ -269,7 +299,6 @@ export default function OpenOrders({pair}) {
 
                                     if (!taker_pays.value) {
                                         name_pays = 'XRP';
-                                        exch /= 1000000;
                                     } else
                                         name_pays = normalizeCurrencyCodeXummImpl(taker_pays.currency);
 
@@ -279,20 +308,56 @@ export default function OpenOrders({pair}) {
                                     else
                                         name_gets = normalizeCurrencyCodeXummImpl(taker_gets.currency);
 
+                                    let buy;
+                                    let value;
+                                    
+
+                                    if (taker_pays.issuer === curr1.issuer && taker_pays.currency === curr1.currency) {
+                                        // BUY
+                                        buy = true;
+                                        const t = gets;
+                                        value = pays;
+                                        exch = t / value;
+                                    } else {
+                                        // SELL
+                                        buy = false;
+
+                                        const t = pays;
+                                        value = gets;
+                                        exch = t / value;
+                                    }
+
                                     return (
                                         <TableRow
                                             hover
                                             key={_id}
                                             tabIndex={-1}
+                                            sx={{
+                                                [`& .${tableCellClasses.root}`]: {
+                                                    color: (buy ? '#007B55' : '#B72136')
+                                                }
+                                            }}
                                         >
-                                            <TableCell align="left"></TableCell>
-                                            <TableCell align="left">{exch}</TableCell>
                                             <TableCell align="left">
-                                                {fNumber(takerGets)} <Typography variant="caption">{name_gets}</Typography>
+                                                {
+                                                    buy ? (
+                                                        <BuyTypography variant="caption">
+                                                            BUY
+                                                        </BuyTypography>
+                                                    ):(
+                                                        <SellTypography variant="caption">
+                                                            SELL
+                                                        </SellTypography>
+                                                    )
+                                                }
+                                            </TableCell>
+                                            <TableCell align="left">{fNumber(exch)}</TableCell>
+                                            <TableCell align="left">
+                                                {fNumber(gets)} <Typography variant="caption">{name_gets}</Typography>
                                             </TableCell>
 
                                             <TableCell align="left">
-                                                {fNumber(takerPays)} <Typography variant="caption">{name_pays}</Typography>
+                                                {fNumber(pays)} <Typography variant="caption">{name_pays}</Typography>
                                             </TableCell>
 
                                             <TableCell align="left">
