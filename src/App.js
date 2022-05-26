@@ -25,7 +25,7 @@ const store = configureStore({
 export default function App() {
     const [loading, setLoading] = useState(false);
     const key_darkmode = 'theme:isDarkMode'
-    const key_profile = 'account:profile2'
+    const key_profile = 'account:profile8'
     const [isDarkMode, setIsDarkMode] = useState(true);
     const [accountProfile, setAccountProfile] = useState(null);
 

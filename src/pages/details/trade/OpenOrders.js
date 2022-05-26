@@ -110,6 +110,13 @@ const SellTypography = withStyles({
     }
 })(Typography);
 
+const ConnectWalletContainer = styled('div')({
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '30vh'
+});
+
 function truncate(str, n){
     if (!str) return '';
     //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
@@ -133,6 +140,8 @@ export default function OpenOrders({pair}) {
     const [nextUrl, setNextUrl] = useState(null);
 
     const [cancelSeq, setCancelSeq] = useState(0);
+
+    const accountAddress = accountProfile?.account;
 
     const curr1 = pair.curr1;
     const curr2 = pair.curr2;
@@ -235,7 +244,9 @@ export default function OpenOrders({pair}) {
         try {
             const OfferSequence = seq;
             
-            const body={OfferSequence};
+            const user_token = accountProfile.token;
+            
+            const body={OfferSequence, user_token};
 
             const res = await axios.post(`${BASE_URL}/xumm/offercancel`, body);
 
@@ -278,14 +289,18 @@ export default function OpenOrders({pair}) {
 
     return (
         <StackStyle>
+            <QROfferCancelDialog
+                open={openScanQR}
+                handleClose={handleScanQRClose}
+                qrUrl={qrUrl}
+                nextUrl={nextUrl}
+            />
             <Tabs value={tabValue} onChange={handleTabChange} aria-label="basic tabs example" sx={{mb: 3}}>
                 <Tab label="OPEN ORDERS" {...a11yProps(0)} />
                 <Tab label="TRADE HISTORY" {...a11yProps(1)} />
             </Tabs>
-            {/* <Account sx={{m:30}} /> */}
             {tabValue === 0 ? 
                 (
-                    <>
                     <Table stickyHeader size={'small'}
                         sx={{
                             [`& .${tableCellClasses.root}`]: {
@@ -312,7 +327,7 @@ export default function OpenOrders({pair}) {
                         </TableHead>
                         <TableBody>
                         {
-                            accountData?.offers?.map((row) => {
+                            accountAddress && accountData?.offers?.map((row) => {
                                     const {
                                         flags,
                                         quality,
@@ -325,8 +340,6 @@ export default function OpenOrders({pair}) {
 
                                     const gets = taker_gets.value || taker_gets / 1000000;
                                     const pays = taker_pays.value || taker_pays / 1000000;
-
-                                    const account = accountProfile.account;
 
                                     let name_pays;
                                     let name_gets;
@@ -404,209 +417,200 @@ export default function OpenOrders({pair}) {
                                 })}
                         </TableBody>
                     </Table>
-                    <QROfferCancelDialog
-                        open={openScanQR}
-                        handleClose={handleScanQRClose}
-                        qrUrl={qrUrl}
-                        nextUrl={nextUrl}
-                    />
-                    </>
                 ):(
-                    <>
-                    {accountProfile && accountProfile.account && (
-                        <Table stickyHeader size={'small'}
-                            sx={{
-                                [`& .${tableCellClasses.root}`]: {
-                                    borderBottom: "0px solid",
-                                    borderBottomColor: theme.palette.divider
+                    <Table stickyHeader size={'small'}
+                        sx={{
+                            [`& .${tableCellClasses.root}`]: {
+                                borderBottom: "0px solid",
+                                borderBottomColor: theme.palette.divider
+                            }
+                        }}
+                    >
+                        <TableHead>
+                            <TableRow
+                                sx={{
+                                    [`& .${tableCellClasses.root}`]: {
+                                        borderBottom: "1px solid",
+                                        borderBottomColor: theme.palette.divider
+                                    }
+                                }}
+                            >
+                                <TableCell align="left">Side</TableCell>
+                                <TableCell align="left">Price</TableCell>
+                                <TableCell align="left">Taker Paid</TableCell>
+                                <TableCell align="left">Taker Got</TableCell>
+                                <TableCell align="left">Time</TableCell>
+                                <TableCell align="left">Maker</TableCell>
+                                <TableCell align="left">Taker</TableCell>
+                                <TableCell align="left">Hash</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {accountAddress && exchs.map((row) => {
+                                const {
+                                    _id,
+                                    dir,
+                                    hash,
+                                    maker,
+                                    taker,
+                                    //ledger,
+                                    //seq,
+                                    takerPaid,
+                                    takerGot,
+                                    date,
+                                    cancel,
+                                    // pair,
+                                    // xUSD
+                                } = row;
+
+                                const tMaker = truncate(maker, 12);
+                                const tTaker = truncate(taker, 12);
+                                const tHash = truncate(hash, 8);
+
+                                const vPaid = takerPaid.value;
+                                const vGot = takerGot.value;
+    
+                                let exch;
+                                let buy = false;
+                                if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency) {
+                                    exch = vGot / vPaid;
+                                } else {
+                                    exch = vPaid / vGot;
                                 }
-                            }}
-                        >
-                            <TableHead>
-                                <TableRow
-                                    sx={{
-                                        [`& .${tableCellClasses.root}`]: {
-                                            borderBottom: "1px solid",
-                                            borderBottomColor: theme.palette.divider
-                                        }
-                                    }}
-                                >
-                                    <TableCell align="left">Side</TableCell>
-                                    <TableCell align="left">Price</TableCell>
-                                    <TableCell align="left">Taker Paid</TableCell>
-                                    <TableCell align="left">Taker Got</TableCell>
-                                    <TableCell align="left">Time</TableCell>
-                                    <TableCell align="left">Maker</TableCell>
-                                    <TableCell align="left">Taker</TableCell>
-                                    <TableCell align="left">Hash</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                            {
-                                exchs.map((row) => {
-                                        const {
-                                            _id,
-                                            dir,
-                                            hash,
-                                            maker,
-                                            taker,
-                                            //ledger,
-                                            //seq,
-                                            takerPaid,
-                                            takerGot,
-                                            date,
-                                            cancel,
-                                            // pair,
-                                            // xUSD
-                                        } = row;
 
-                                        const account = accountProfile.account;
+                                if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency && maker === accountAddress) {
+                                    buy = true;
+                                } else if (takerGot.issuer === curr1.issuer && takerGot.currency === curr1.currency && taker === accountAddress) {
+                                    buy = true;
+                                }
 
-                                        const tMaker = truncate(maker, 12);
-                                        const tTaker = truncate(taker, 12);
-                                        const tHash = truncate(hash, 8);
+                                const nDate = new Date((date + EPOCH_OFFSET) * 1000); 
+                                const year = nDate.getFullYear();
+                                const month = (nDate.getMonth() + 1).toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                const day = nDate.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
 
-                                        const vPaid = takerPaid.value;
-                                        const vGot = takerGot.value;
-            
-                                        let exch;
-                                        let buy = false;
-                                        if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency) {
-                                            exch = vGot / vPaid;
-                                        } else {
-                                            exch = vPaid / vGot;
-                                        }
+                                //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
+                                //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
+                                const strDate = `${year}-${month}-${day}`;
+                                const strTime = `${hour}:${min}:${sec}`;
 
-                                        if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency && maker === account) {
-                                            buy = true;
-                                        } else if (takerGot.issuer === curr1.issuer && takerGot.currency === curr1.currency && taker === account) {
-                                            buy = true;
-                                        }
+                                const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
+                                const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
 
-                                        const nDate = new Date((date + EPOCH_OFFSET) * 1000); 
-                                        const year = nDate.getFullYear();
-                                        const month = (nDate.getMonth() + 1).toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                                        const day = nDate.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                                        const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                                        const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                                        const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                return (
+                                    // <CopyToClipboard
+                                    //     key={`id${_id}`}
+                                    //     text={hash}
+                                    //     onCopy={() => setCopied(true)}>
+                                        <TableRow
+                                            hover
+                                            key={_id}
+                                            tabIndex={-1}
+                                            sx={{
+                                                [`& .${tableCellClasses.root}`]: {
+                                                    // color: (cancel ? '#FFC107': (dir === 'buy' ? '#007B55' : '#B72136'))
+                                                    color: (buy ? '#007B55' : '#B72136')
+                                                }
+                                            }}
+                                        >
+                                            <TableCell align="left">
+                                                {
+                                                    buy ? (
+                                                        <BuyTypography variant="caption">
+                                                            BUY
+                                                        </BuyTypography>
+                                                    ):(
+                                                        <SellTypography variant="caption">
+                                                            SELL
+                                                        </SellTypography>
+                                                    )
+                                                }
+                                            </TableCell>
+                                            <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
+                                            
+                                            <TableCell align="left">
+                                                {new BigNumber(vPaid).decimalPlaces(6).toNumber()} <Typography variant="caption">{namePaid}</Typography>
+                                            </TableCell>
 
-                                        //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
-                                        //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
-                                        const strDate = `${year}-${month}-${day}`;
-                                        const strTime = `${hour}:${min}:${sec}`;
+                                            <TableCell align="left">
+                                                {new BigNumber(vGot).decimalPlaces(6).toNumber()} <Typography variant="caption">{nameGot}</Typography>
+                                            </TableCell>
 
-                                        const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
-                                        const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
-
-                                        return (
-                                            // <CopyToClipboard
-                                            //     key={`id${_id}`}
-                                            //     text={hash}
-                                            //     onCopy={() => setCopied(true)}>
-                                                <TableRow
-                                                    hover
-                                                    key={_id}
-                                                    tabIndex={-1}
-                                                    sx={{
-                                                        [`& .${tableCellClasses.root}`]: {
-                                                            // color: (cancel ? '#FFC107': (dir === 'buy' ? '#007B55' : '#B72136'))
-                                                            color: (buy ? '#007B55' : '#B72136')
-                                                        }
-                                                    }}
+                                            <TableCell align="left">
+                                                <Stack>
+                                                    <Typography variant="subtitle2">{strDate} {strTime}</Typography>
+                                                    {/* <Typography variant="caption">{strDate}</Typography> */}
+                                                </Stack>
+                                            </TableCell>
+                                            
+                                            <TableCell align="left">
+                                                <Link
+                                                    underline="none"
+                                                    color="inherit"
+                                                    target="_blank"
+                                                    href={`https://bithomp.com/explorer/${maker}`}
+                                                    rel="noreferrer noopener"
                                                 >
-                                                    <TableCell align="left">
-                                                        {
-                                                            buy ? (
-                                                                <BuyTypography variant="caption">
-                                                                    BUY
-                                                                </BuyTypography>
-                                                            ):(
-                                                                <SellTypography variant="caption">
-                                                                    SELL
-                                                                </SellTypography>
-                                                            )
-                                                        }
-                                                    </TableCell>
-                                                    <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
-                                                    
-                                                    <TableCell align="left">
-                                                        {new BigNumber(vPaid).decimalPlaces(6).toNumber()} <Typography variant="caption">{namePaid}</Typography>
-                                                    </TableCell>
-
-                                                    <TableCell align="left">
-                                                        {new BigNumber(vGot).decimalPlaces(6).toNumber()} <Typography variant="caption">{nameGot}</Typography>
-                                                    </TableCell>
-
-                                                    <TableCell align="left">
-                                                        <Stack>
-                                                            <Typography variant="subtitle2">{strDate} {strTime}</Typography>
-                                                            {/* <Typography variant="caption">{strDate}</Typography> */}
-                                                        </Stack>
-                                                    </TableCell>
-                                                    
-                                                    <TableCell align="left">
-                                                        <Link
-                                                            underline="none"
-                                                            color="inherit"
-                                                            target="_blank"
-                                                            href={`https://bithomp.com/explorer/${maker}`}
-                                                            rel="noreferrer noopener"
-                                                        >
-                                                            {tMaker}
-                                                        </Link>
-                                                    </TableCell>
-                                                    <TableCell align="left">
-                                                        <Link
-                                                            underline="none"
-                                                            color="inherit"
-                                                            target="_blank"
-                                                            href={`https://bithomp.com/explorer/${taker}`}
-                                                            rel="noreferrer noopener"
-                                                        >
-                                                            {tTaker}
-                                                        </Link>
-                                                    </TableCell>
-                                                    <TableCell align="left">
+                                                    {tMaker}
+                                                </Link>
+                                            </TableCell>
+                                            <TableCell align="left">
+                                                <Link
+                                                    underline="none"
+                                                    color="inherit"
+                                                    target="_blank"
+                                                    href={`https://bithomp.com/explorer/${taker}`}
+                                                    rel="noreferrer noopener"
+                                                >
+                                                    {tTaker}
+                                                </Link>
+                                            </TableCell>
+                                            <TableCell align="left">
+                                                <Stack direction="row" alignItems='center'>
+                                                    <Link
+                                                        underline="none"
+                                                        color="inherit"
+                                                        target="_blank"
+                                                        href={`https://bithomp.com/explorer/${hash}`}
+                                                        rel="noreferrer noopener"
+                                                    >
                                                         <Stack direction="row" alignItems='center'>
-                                                            <Link
-                                                                underline="none"
-                                                                color="inherit"
-                                                                target="_blank"
-                                                                href={`https://bithomp.com/explorer/${hash}`}
-                                                                rel="noreferrer noopener"
-                                                            >
-                                                                <Stack direction="row" alignItems='center'>
-                                                                    {tHash}
-                                                                    <IconButton edge="end" aria-label="bithomp">
-                                                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
-                                                                    </IconButton>
-                                                                </Stack>
-                                                            </Link>
-
-                                                            <Link
-                                                                underline="none"
-                                                                color="inherit"
-                                                                target="_blank"
-                                                                href={`https://livenet.xrpl.org/transactions/${hash}`}
-                                                                rel="noreferrer noopener"
-                                                            >
-                                                                <IconButton edge="end" aria-label="bithomp">
-                                                                    <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
-                                                                </IconButton>
-                                                            </Link>
+                                                            {tHash}
+                                                            <IconButton edge="end" aria-label="bithomp">
+                                                                <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                            </IconButton>
                                                         </Stack>
-                                                    </TableCell>
-                                                    
-                                                </TableRow>
-                                            // </CopyToClipboard>
-                                        );
-                                    })}
-                            </TableBody>
-                        </Table>
-                    )}
-                    </>
+                                                    </Link>
+
+                                                    <Link
+                                                        underline="none"
+                                                        color="inherit"
+                                                        target="_blank"
+                                                        href={`https://livenet.xrpl.org/transactions/${hash}`}
+                                                        rel="noreferrer noopener"
+                                                    >
+                                                        <IconButton edge="end" aria-label="bithomp">
+                                                            <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
+                                                        </IconButton>
+                                                    </Link>
+                                                </Stack>
+                                            </TableCell>
+                                            
+                                        </TableRow>
+                                    // </CopyToClipboard>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
                 )
+            }
+            {!accountAddress &&
+                <ConnectWalletContainer>
+                    <Typography variant='subtitle2' color='error'>Connect your wallet to access data</Typography>
+                </ConnectWalletContainer>
             }
         </StackStyle>
     );

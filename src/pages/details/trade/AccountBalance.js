@@ -115,10 +115,22 @@ export default function AccountBalance({pair}) {
                 isRunning = true;
                 try {
                     const res = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
-                    const account = res.data.data.response.account;
+                    const data = res.data.data;
+                    const account = data.response.account;
+                    const token = data.application.issued_user_token;
+                    /*
+                    "application": {
+                        "name": "XRPL.TO",
+                        "description": "Top XRPL DEX tokens prices and charts, listed by 24h volume. Free access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.",
+                        "disabled": 0,
+                        "uuidv4": "1735e8c8-6a04-46ea-a7a9-a9a3c9b657dd",
+                        "icon_url": "https://xumm-cdn.imgix.net/app-logo/8f92a3f4-aa4e-40f9-ba23-b38b7085814f.png",
+                        "issued_user_token": "c3f5d9f8-ee58-43ff-bb6c-e2a84263e4e0"
+                    },
+                     */
                     if (account) {
                         setOpenLogin(false);
-                        setAccountProfile({account: account, uuid: uuid});
+                        setAccountProfile({account: account, uuid: uuid, token:token});
                         return;
                     }
                 } catch (err) {
