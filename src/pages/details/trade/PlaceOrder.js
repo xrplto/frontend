@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { withStyles } from '@mui/styles';
-import { alpha, styled/*, useTheme*/ } from '@mui/material/styles';
+// import { alpha, styled, useTheme } from '@mui/material/styles';
 
 import {
     Alert,
     Button,
+    Slide,
+    Snackbar,
     Stack
 } from '@mui/material';
 
@@ -13,7 +15,7 @@ import { useContext } from 'react'
 import Context from '../../../Context'
 
 // Components
-import QROfferDialog from './QROfferDialog';
+import QROfferCreateDialog from './QROfferCreateDialog';
 
 // ----------------------------------------------------------------------
 
@@ -26,52 +28,68 @@ const DisabledButton = withStyles({
     }
 })(Button);
 
+function TransitionLeft(props) {
+    return <Slide {...props} direction="left" />;
+}
+
+const ERR_NONE = 0;
+const ERR_ACCOUNT_LOGIN = 1;
+const ERR_INVALID_VALUE = 2;
+const ERR_REJECTED_BY_USER = 3;
+const MSG_SUCCESSFUL = 4;
+
 export default function PlaceOrder({buySell, pair, amount, value}) {
     const BASE_URL = 'https://api.xrpl.to/api';
-    const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
+    const { accountProfile, setLoading } = useContext(Context);
     const [openScanQR, setOpenScanQR] = useState(false);
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
-    const [showAccountAlert, setShowAccountAlert] = useState(false);
-    const [showResult, setShowResult] = useState(0);
-    const [showInvalidValue, setShowInvalidValue] = useState(false);
+
+    const [state, setState] = useState({
+        openSnack: false,
+        message: ERR_NONE
+    });
+
+    const { message, openSnack } = state;
+
+    const handleCloseSnack = () => {
+        setState({ openSnack: false, message: message });
+    };
     
     useEffect(() => {
         var timer = null;
         var isRunning = false;
         var counter = 150;
-        if (openScanQR) {
-            timer = setInterval(async () => {
-                if (isRunning) return;
-                isRunning = true;
-                try {
-                    const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
-                    const res = ret.data.data.response;
-
-                    const account = res.account;
-                    const resolved_at = res.resolved_at;
-                    const dispatched_result = res.dispatched_result;
-                    if (resolved_at) {
-                        setOpenScanQR(false);
-                        if (dispatched_result && dispatched_result === 'tesSUCCESS')
-                            setShowResult(1);
-                        else
-                            setShowResult(2);
-                        
-                        setTimeout(() => {
-                            setShowResult(0);
-                        }, 2000);
-                        return;
-                    }
-                } catch (err) {
-                }
-                isRunning = false;
-                counter--;
-                if (counter <= 0) {
+        async function getPayload() {
+            console.log(counter + " " + isRunning, uuid);
+            if (isRunning) return;
+            isRunning = true;
+            try {
+                const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+                const res = ret.data.data.response;
+                // const account = res.account;
+                const resolved_at = res.resolved_at;
+                const dispatched_result = res.dispatched_result;
+                if (resolved_at) {
                     setOpenScanQR(false);
+                    if (dispatched_result && dispatched_result === 'tesSUCCESS')
+                        setState({ openSnack: true, message: MSG_SUCCESSFUL });
+                    else
+                        setState({ openSnack: true, message: ERR_REJECTED_BY_USER });
+
+                    return;
                 }
-            }, 2000);
+            } catch (err) {
+            }
+            isRunning = false;
+            counter--;
+            if (counter <= 0) {
+                setOpenScanQR(false);
+            }
+        }
+        if (openScanQR) {
+            timer = setInterval(getPayload, 2000);
         }
         return () => {
             if (timer) {
@@ -86,6 +104,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
             const curr1 = pair.curr1;
             const curr2 = pair.curr2;
             // const Account = accountProfile.account;
+            const user_token = accountProfile.token;
             let TakerGets, TakerPays;
             if (buySell === 'BUY') {
                 // BUY logic
@@ -108,7 +127,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                     TakerPays = {currency:curr2.currency, issuer:curr2.issuer, value: value.toString()};
                 }
             }
-            const body={/*Account,*/ TakerGets, TakerPays};
+            const body={/*Account,*/ TakerGets, TakerPays, user_token};
 
             const res = await axios.post(`${BASE_URL}/xumm/offercreate`, body);
 
@@ -152,10 +171,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
         if (fAmount > 0 && fValue > 0)
             onOfferCreateXumm();
         else {
-            setShowInvalidValue(true);
-            setTimeout(() => {
-                setShowInvalidValue(false);
-            }, 2000);
+            setState({ openSnack: true, message: ERR_INVALID_VALUE });
         }
 
         // if (accountProfile && accountProfile.account) {
@@ -186,6 +202,21 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
 
     return (
         <Stack alignItems='center'>
+            <Snackbar
+                autoHideDuration={2000}
+                anchorOrigin={{ vertical:'top', horizontal:'right' }}
+                open={openSnack}
+                onClose={handleCloseSnack}
+                TransitionComponent={TransitionLeft}
+                key={'TransitionLeft'}
+            >
+                <Alert variant="filled" severity={message === MSG_SUCCESSFUL?"success":"error"} sx={{ m: 2, mt:0 }}>
+                    {message === ERR_ACCOUNT_LOGIN && 'Please connect wallet!'}
+                    {message === ERR_REJECTED_BY_USER && 'Transaction signing rejected!'}
+                    {message === MSG_SUCCESSFUL && 'Successfully submitted the order!'}
+                    {message === ERR_INVALID_VALUE && 'Invalid values!'}
+                </Alert>
+            </Snackbar>
             {accountProfile && accountProfile.account ? (
                 <Button
                     variant="outlined"
@@ -199,30 +230,14 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 <DisabledButton
                     variant="outlined"
                     sx={{ mt: 1.5 }}
+                    onClick={()=>setState({ openSnack: true, message: ERR_ACCOUNT_LOGIN })}
                     disabled
                 >
                     PLACE ORDER
                 </DisabledButton>
             )}
-            
 
-            {showAccountAlert && <Alert variant="filled" severity="error" sx={{ m: 2, mt:0 }}>
-                Please login first!
-            </Alert>}
-
-            {showResult === 2 && <Alert variant="filled" severity="error" sx={{ m: 2, mt:0 }}>
-                Failed by user!
-            </Alert>}
-
-            {showResult === 1 && <Alert variant="filled" severity="success" sx={{ m: 2, mt:0 }}>
-                Successfully submitted the order!
-            </Alert>}
-
-            {showInvalidValue && <Alert variant="filled" severity="error" sx={{ m: 2, mt:0 }}>
-                Invalid values!
-            </Alert>}
-
-            <QROfferDialog
+            <QROfferCreateDialog
                 open={openScanQR}
                 handleClose={handleScanQRClose}
                 qrUrl={qrUrl}

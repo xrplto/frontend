@@ -20,13 +20,13 @@ const QRDialog = styled(Dialog)(({ theme }) => ({
     //backgroundColor: alpha("#00AB88", 0.99),
 }));
 
-const LinkTypography = styled(Typography)(({ theme }) => ({
-    backgroundColor: alpha(theme.palette.background.paper, 0.0),
-    borderRadius: '2px',
-    border: '0px solid #00AB88',
-    padding: '0.5em',
-    // backgroundColor: alpha("#00AB88", 0.99),
-}));
+// const LinkTypography = styled(Typography)(({ theme }) => ({
+//     backgroundColor: alpha(theme.palette.background.paper, 0.0),
+//     borderRadius: '2px',
+//     border: '0px solid #00AB88',
+//     padding: '0.5em',
+//     // backgroundColor: alpha("#00AB88", 0.99),
+// }));
 
 const ContentContainer = styled('div')({
     display: 'flex',
@@ -36,10 +36,10 @@ const ContentContainer = styled('div')({
     height: '28vh',
 });
 
-export default function QROfferCancelDialog(props) {
+export default function QROfferCreateDialog(props) {
     const open = props.open;
     const qrUrl = props.qrUrl;
-    const nextUrl = props.nextUrl;
+    // const nextUrl = props.nextUrl;
     const [showQR, setShowQR] = useState(false);
 
     useEffect(() => {
@@ -48,7 +48,6 @@ export default function QROfferCancelDialog(props) {
 
     const onClose = () => {
         props.handleClose();
-        setShowQR(false);
     };
 
     return (
@@ -57,7 +56,7 @@ export default function QROfferCancelDialog(props) {
             <Divider />
             <ContentContainer>
                 <Stack alignItems='center' spacing={2} pb={3}>
-                    <Typography variant='subtitle1'>OfferCancel</Typography>
+                    <Typography variant='subtitle1'>OfferCreate</Typography>
                     <Typography variant='subtitle1'>Sign the transaction on your XUMM App</Typography>
                     <Link
                         component="button"
@@ -95,7 +94,7 @@ export default function QROfferCancelDialog(props) {
                     href={nextUrl}
                     rel="noreferrer noopener"
                 >
-                    <LinkTypography variant="h4" color='primary'>Open in XUMM</LinkTypography>
+                    <LinkTypography variant="subtitle2" color='primary'>Open in XUMM</LinkTypography>
                 </Link> */}
             </div>
         </QRDialog>

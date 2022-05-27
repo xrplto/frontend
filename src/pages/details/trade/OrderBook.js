@@ -22,7 +22,7 @@ const LoaderContainer = styled('div')({
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    height: '79vh'
+    height: '49vh'
 });
 
 const ORDER_TYPE_BIDS = 1;
@@ -299,82 +299,81 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
     if (isPageVisible) {
         return (
         <Stack>
-            {bids.length || asks.length ?
-                <Grid container spacing={0} sx={{p:0}}>
-                    <Grid item xs={12} md={6} lg={6}>
-                        <Stack direction='row' alignItems='center'>
-                            <Typography variant='subtitle1' sx={{color:'#007B55', ml:0, mt:2, mb:1}}>Buy Orders</Typography>
-                            <Box sx={{ flexGrow: 1 }} />
-                            <Spread bids={bids} asks={asks}/>
-                        </Stack>
-                        <Table
-                            stickyHeader
-                            size={'small'}
-                            sx={{
-                                [`& .${tableCellClasses.root}`]: {
-                                    borderBottom: "0px solid",
-                                    borderBottomColor: theme.palette.divider
-                                }
-                            }}
-                        >
-                            <TableHead>
-                                <TableRow
-                                    key={'BID_KEY'}
-                                    sx={{
-                                        [`& .${tableCellClasses.root}`]: {
-                                            borderBottom: "1px solid",
-                                            borderBottomColor: theme.palette.divider
-                                        }
-                                    }}
-                                >
-                                    <TableCell align="right" sx={{ p:0 }}>Sum</TableCell>
-                                    <TableCell align="right" sx={{ p:0 }}>Value</TableCell>
-                                    <TableCell align="right" sx={{ p:0 }}>Amount</TableCell>
-                                    <TableCell align="right" sx={{ p:0, pr: 1 }}>Bid</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {buildPriceLevels(bids, ORDER_TYPE_BIDS)}
-                            </TableBody>
-                        </Table>
-                    </Grid>
-                    <Grid item xs={12} md={6} lg={6} sx={{p:0}}>
-                        <Typography align='right' variant='subtitle1' sx={{color:'#B72136', ml:2, mt:2, mb:1}}>Sell Orders</Typography>
-                        <Table
-                            stickyHeader
-                            size={'small'}
-                            sx={{
-                                [`& .${tableCellClasses.root}`]: {
-                                    borderBottom: "0px solid",
-                                    borderBottomColor: theme.palette.divider
-                                }
-                            }}
-                        >
-                            <TableHead>
-                                <TableRow
-                                    key={'ASK_KEY'}
-                                    sx={{
-                                        [`& .${tableCellClasses.root}`]: {
-                                            borderBottom: "1px solid",
-                                            borderBottomColor: theme.palette.divider
-                                        }
-                                    }}
-                                >
-                                    <TableCell align="left" sx={{ p:0, pl: 1 }}>Ask</TableCell>
-                                    <TableCell align="left" sx={{ p:0 }}>Amount</TableCell>
-                                    <TableCell align="left" sx={{ p:0 }}>Value</TableCell>
-                                    <TableCell align="left" sx={{ p:0 }}>Sum</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {buildPriceLevels(asks, ORDER_TYPE_ASKS)}
-                            </TableBody>
-                        </Table>
-                    </Grid>
+            <Grid container spacing={0} sx={{p:0}}>
+                <Grid item xs={12} md={6} lg={6}>
+                    <Stack direction='row' alignItems='center'>
+                        <Typography variant='subtitle1' sx={{color:'#007B55', ml:0, mt:2, mb:1}}>Buy Orders</Typography>
+                        <Box sx={{ flexGrow: 1 }} />
+                        <Spread bids={bids} asks={asks}/>
+                    </Stack>
+                    <Table
+                        stickyHeader
+                        size={'small'}
+                        sx={{
+                            [`& .${tableCellClasses.root}`]: {
+                                borderBottom: "0px solid",
+                                borderBottomColor: theme.palette.divider
+                            }
+                        }}
+                    >
+                        <TableHead>
+                            <TableRow
+                                key={'BID_KEY'}
+                                sx={{
+                                    [`& .${tableCellClasses.root}`]: {
+                                        borderBottom: "1px solid",
+                                        borderBottomColor: theme.palette.divider
+                                    }
+                                }}
+                            >
+                                <TableCell align="right" sx={{ p:0 }}>Sum</TableCell>
+                                <TableCell align="right" sx={{ p:0 }}>Value</TableCell>
+                                <TableCell align="right" sx={{ p:0 }}>Amount</TableCell>
+                                <TableCell align="right" sx={{ p:0, pr: 1 }}>Bid</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {buildPriceLevels(bids, ORDER_TYPE_BIDS)}
+                        </TableBody>
+                    </Table>
                 </Grid>
-            :
+                <Grid item xs={12} md={6} lg={6} sx={{p:0}}>
+                    <Typography align='right' variant='subtitle1' sx={{color:'#B72136', ml:2, mt:2, mb:1}}>Sell Orders</Typography>
+                    <Table
+                        stickyHeader
+                        size={'small'}
+                        sx={{
+                            [`& .${tableCellClasses.root}`]: {
+                                borderBottom: "0px solid",
+                                borderBottomColor: theme.palette.divider
+                            }
+                        }}
+                    >
+                        <TableHead>
+                            <TableRow
+                                key={'ASK_KEY'}
+                                sx={{
+                                    [`& .${tableCellClasses.root}`]: {
+                                        borderBottom: "1px solid",
+                                        borderBottomColor: theme.palette.divider
+                                    }
+                                }}
+                            >
+                                <TableCell align="left" sx={{ p:0, pl: 1 }}>Ask</TableCell>
+                                <TableCell align="left" sx={{ p:0 }}>Amount</TableCell>
+                                <TableCell align="left" sx={{ p:0 }}>Value</TableCell>
+                                <TableCell align="left" sx={{ p:0 }}>Sum</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {buildPriceLevels(asks, ORDER_TYPE_ASKS)}
+                        </TableBody>
+                    </Table>
+                </Grid>
+            </Grid>
+            {bids.length === 0 && asks.length === 0 &&
                 <LoaderContainer>
-                    <PuffLoader color={"#00AB55"} size={50} />
+                    {/* <PuffLoader color={"#00AB55"} size={50} /> */}
                 </LoaderContainer>
             }
         </Stack> )

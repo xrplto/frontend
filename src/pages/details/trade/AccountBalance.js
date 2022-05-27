@@ -212,13 +212,12 @@ export default function AccountBalance({pair}) {
                     >
                         <TableBody>
                             <TableRow
-                                hover
                                 key={-1}
                                 tabIndex={-1}
                             >
                                 <TableCell align="center" sx={{ p:0 }}>
                                     <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{curr1.name}</Typography>
-                                    {accountPairBalance.curr1.value}
+                                    {new BigNumber(accountPairBalance.curr1.value).decimalPlaces(8).toNumber()}
                                 </TableCell>
                                 <TableCell align="center" sx={{ p:0 }}>
                                     <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
