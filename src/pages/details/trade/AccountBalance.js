@@ -6,6 +6,8 @@ import {
     AccountBalanceWallet as AccountBalanceWalletIcon
 } from '@mui/icons-material';
 
+import BigNumber from 'bignumber.js';
+
 import { 
     Typography,
     Button,
@@ -27,10 +29,6 @@ import Context from '../../../Context'
 import { useDispatch } from "react-redux";
 import { updateAccountData } from "../../../redux/statusSlice";
 // ----------------------------------------------------------------------
-function truncate(str, n){
-    if (!str) return '';
-    return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
-};
 
 export default function AccountBalance({pair}) {
     const theme = useTheme();
@@ -108,40 +106,44 @@ export default function AccountBalance({pair}) {
         var timer = null;
         var isRunning = false;
         var counter = 150;
-        if (openLogin) {
-            timer = setInterval(async () => {
-                console.log(counter + " " + isRunning, uuid);
-                if (isRunning) return;
-                isRunning = true;
-                try {
-                    const res = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
-                    const data = res.data.data;
-                    const account = data.response.account;
-                    const token = data.application.issued_user_token;
-                    /*
-                    "application": {
-                        "name": "XRPL.TO",
-                        "description": "Top XRPL DEX tokens prices and charts, listed by 24h volume. Free access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.",
-                        "disabled": 0,
-                        "uuidv4": "1735e8c8-6a04-46ea-a7a9-a9a3c9b657dd",
-                        "icon_url": "https://xumm-cdn.imgix.net/app-logo/8f92a3f4-aa4e-40f9-ba23-b38b7085814f.png",
-                        "issued_user_token": "c3f5d9f8-ee58-43ff-bb6c-e2a84263e4e0"
-                    },
-                     */
-                    if (account) {
-                        setOpenLogin(false);
-                        setAccountProfile({account: account, uuid: uuid, token:token});
-                        return;
-                    }
-                } catch (err) {
-                }
-                isRunning = false;
-                counter--;
-                if (counter <= 0) {
+
+        async function getPayload() {
+            console.log(counter + " " + isRunning, uuid);
+            if (isRunning) return;
+            isRunning = true;
+            try {
+                const res = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+                const data = res.data.data;
+                const account = data.response.account;
+                const token = data.application.issued_user_token;
+                /*
+                "application": {
+                    "name": "XRPL.TO",
+                    "description": "Top XRPL DEX tokens prices and charts, listed by 24h volume. Free access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.",
+                    "disabled": 0,
+                    "uuidv4": "1735e8c8-6a04-46ea-a7a9-a9a3c9b657dd",
+                    "icon_url": "https://xumm-cdn.imgix.net/app-logo/8f92a3f4-aa4e-40f9-ba23-b38b7085814f.png",
+                    "issued_user_token": "c3f5d9f8-ee58-43ff-bb6c-e2a84263e4e0"
+                },
+                */
+                if (account) {
                     setOpenLogin(false);
+                    setAccountProfile({account: account, uuid: uuid, token:token});
+                    return;
                 }
-            }, 2000);
+            } catch (err) {
+            }
+            isRunning = false;
+            counter--;
+            if (counter <= 0) {
+                setOpenLogin(false);
+            }
         }
+
+        if (openLogin) {
+            timer = setInterval(getPayload, 2000);
+        }
+
         return () => {
             if (timer) {
                 clearInterval(timer)
@@ -220,7 +222,7 @@ export default function AccountBalance({pair}) {
                                 </TableCell>
                                 <TableCell align="center" sx={{ p:0 }}>
                                     <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
-                                    {accountPairBalance.curr2.value}
+                                    {new BigNumber(accountPairBalance.curr2.value).decimalPlaces(6).toNumber()}
                                 </TableCell>
                             </TableRow>
                         </TableBody>

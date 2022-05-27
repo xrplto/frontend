@@ -65,7 +65,7 @@ export default function HistoryData({pair}) {
         }
         getExchanges();
 
-        const timer = setInterval(() => getExchanges(), 10000);
+        const timer = setInterval(getExchanges, 10000);
 
         return () => {
             clearInterval(timer);

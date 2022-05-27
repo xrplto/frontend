@@ -18,13 +18,9 @@ import {
     TableCell,
     TableHead,
     TableRow,
-    Tooltip,
     Typography
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
-// import { MD5 } from 'crypto-js';
-import { Icon } from '@iconify/react';
-import infoFilled from '@iconify/icons-ep/info-filled';
 import CancelIcon from '@mui/icons-material/Cancel';
 // ----------------------------------------------------------------------
 // utils
@@ -124,12 +120,14 @@ function truncate(str, n){
 };
 
 export default function OpenOrders({pair}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
-    const EPOCH_OFFSET = 946684800;
     const theme = useTheme();
-    const accountData = useSelector(selectAccountData);
     const dispatch = useDispatch();
-    const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
+    const EPOCH_OFFSET = 946684800;
+    const BASE_URL = 'https://api.xrpl.to/api';
+    
+    const accountData = useSelector(selectAccountData);
+    
+    const { accountProfile, setLoading } = useContext(Context);
     const [exchs, setExchs] = useState([]);
     
     const [tabValue, setTabValue] = useState(0);
@@ -144,7 +142,7 @@ export default function OpenOrders({pair}) {
     const accountAddress = accountProfile?.account;
 
     const curr1 = pair.curr1;
-    const curr2 = pair.curr2;
+    // const curr2 = pair.curr2;
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
@@ -183,54 +181,55 @@ export default function OpenOrders({pair}) {
         var timer = null;
         var isRunning = false;
         var counter = 150;
-        if (openScanQR) {
-            timer = setInterval(async () => {
-                if (isRunning) return;
-                isRunning = true;
-                try {
-                    const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
-                    const res = ret.data.data.response;
+        async function getPayload() {
+            if (isRunning) return;
+            isRunning = true;
+            try {
+                const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+                const res = ret.data.data.response;
 
-                    /*
-                    {
-                        "hex": "120008228000000024043DCAC32019043DCAC2201B0448348868400000000000000F732103924E47158D3980DDAF7479A838EF3C0AE53D953BD2A526E658AC5F3EF0FA7D2174473045022100D10E91E2704A4BDAB510B599B8258956F9F34592B2B62BE383ED3E4DBF57DE2B02204837DD77A787D4E0DC43DCC53A7BBE160B164617FE3D0FFCFF9F6CC808D46DEE811406598086E863F1FF42AD87DCBE2E1B5F5A8B5EB8",
-                        "txid": "EC13B221808A21EA1012C95FB0EF53BF0110D7AB2EB17104154A27E5E70C39C5",
-                        "resolved_at": "2022-05-23T07:45:37.000Z",
-                        "dispatched_to": "wss://s2.ripple.com",
-                        "dispatched_result": "tesSUCCESS",
-                        "dispatched_nodetype": "MAINNET",
-                        "multisign_account": "",
-                        "account": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm"
-                    }
-                     */
-
-                    const resolved_at = res.resolved_at;
-                    const dispatched_result = res.dispatched_result;
-                    if (resolved_at) {
-                        setOpenScanQR(false);
-                        if (dispatched_result === 'tesSUCCESS') {
-                            let newOffers = [];
-                            for (var o of accountData.offers) {
-                                if (o.seq !== cancelSeq)
-                                    newOffers.push(o);
-                            }
-                            const newAccountData = {
-                                account: accountData.account,
-                                pair: accountData.pair,
-                                offers: newOffers
-                            };
-                            dispatch(updateAccountData(newAccountData));
-                        }
-                        return;
-                    }
-                } catch (err) {
+                /*
+                {
+                    "hex": "120008228000000024043DCAC32019043DCAC2201B0448348868400000000000000F732103924E47158D3980DDAF7479A838EF3C0AE53D953BD2A526E658AC5F3EF0FA7D2174473045022100D10E91E2704A4BDAB510B599B8258956F9F34592B2B62BE383ED3E4DBF57DE2B02204837DD77A787D4E0DC43DCC53A7BBE160B164617FE3D0FFCFF9F6CC808D46DEE811406598086E863F1FF42AD87DCBE2E1B5F5A8B5EB8",
+                    "txid": "EC13B221808A21EA1012C95FB0EF53BF0110D7AB2EB17104154A27E5E70C39C5",
+                    "resolved_at": "2022-05-23T07:45:37.000Z",
+                    "dispatched_to": "wss://s2.ripple.com",
+                    "dispatched_result": "tesSUCCESS",
+                    "dispatched_nodetype": "MAINNET",
+                    "multisign_account": "",
+                    "account": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm"
                 }
-                isRunning = false;
-                counter--;
-                if (counter <= 0) {
+                    */
+
+                const resolved_at = res.resolved_at;
+                const dispatched_result = res.dispatched_result;
+                if (resolved_at) {
                     setOpenScanQR(false);
+                    if (dispatched_result === 'tesSUCCESS') {
+                        let newOffers = [];
+                        for (var o of accountData.offers) {
+                            if (o.seq !== cancelSeq)
+                                newOffers.push(o);
+                        }
+                        const newAccountData = {
+                            account: accountData.account,
+                            pair: accountData.pair,
+                            offers: newOffers
+                        };
+                        dispatch(updateAccountData(newAccountData));
+                    }
+                    return;
                 }
-            }, 2000);
+            } catch (err) {
+            }
+            isRunning = false;
+            counter--;
+            if (counter <= 0) {
+                setOpenScanQR(false);
+            }
+        }
+        if (openScanQR) {
+            timer = setInterval(getPayload, 2000);
         }
         return () => {
             if (timer) {
@@ -243,7 +242,7 @@ export default function OpenOrders({pair}) {
         setLoading(true);
         try {
             const OfferSequence = seq;
-            
+
             const user_token = accountProfile.token;
             
             const body={OfferSequence, user_token};
@@ -329,7 +328,7 @@ export default function OpenOrders({pair}) {
                         {
                             accountAddress && accountData?.offers?.map((row) => {
                                     const {
-                                        flags,
+                                        // flags,
                                         quality,
                                         seq,
                                         taker_gets,
@@ -356,22 +355,14 @@ export default function OpenOrders({pair}) {
                                         name_gets = normalizeCurrencyCodeXummImpl(taker_gets.currency);
 
                                     let buy;
-                                    let value;
-                                    
-
                                     if (taker_pays.issuer === curr1.issuer && taker_pays.currency === curr1.currency) {
                                         // BUY
                                         buy = true;
-                                        const t = gets;
-                                        value = pays;
-                                        exch = t / value;
+                                        exch = gets / pays;
                                     } else {
                                         // SELL
                                         buy = false;
-
-                                        const t = pays;
-                                        value = gets;
-                                        exch = t / value;
+                                        exch = pays / gets;
                                     }
 
                                     return (
@@ -449,7 +440,7 @@ export default function OpenOrders({pair}) {
                             {accountAddress && exchs.map((row) => {
                                 const {
                                     _id,
-                                    dir,
+                                    // dir,
                                     hash,
                                     maker,
                                     taker,
@@ -458,7 +449,7 @@ export default function OpenOrders({pair}) {
                                     takerPaid,
                                     takerGot,
                                     date,
-                                    cancel,
+                                    // cancel,
                                     // pair,
                                     // xUSD
                                 } = row;
