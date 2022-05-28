@@ -21,7 +21,6 @@ import {
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
 import HistoryToolbar from './HistoryToolbar';
-// import HistoryMoreMenu from './HistoryMoreMenu';
 import { MD5 } from 'crypto-js';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
@@ -235,7 +234,6 @@ export default function HistoryData({token, pairs}) {
                         <TableCell align="left">Maker</TableCell>
                         <TableCell align="left">Taker</TableCell>
                         <TableCell align="left">Hash</TableCell>
-                        {/* <TableCell align="left"></TableCell> */}
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -404,9 +402,6 @@ export default function HistoryData({token, pairs}) {
                                             </Link>
                                         </Stack>
                                     </TableCell>
-                                    {/* <TableCell align="right">
-                                        <HistoryMoreMenu hash={hash} />
-                                    </TableCell> */}
                                 </TableRow>
                             );
                         })}

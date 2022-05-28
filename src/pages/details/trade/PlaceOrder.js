@@ -35,7 +35,7 @@ function TransitionLeft(props) {
 const ERR_NONE = 0;
 const ERR_ACCOUNT_LOGIN = 1;
 const ERR_INVALID_VALUE = 2;
-const ERR_REJECTED_BY_USER = 3;
+const ERR_REJECTED = 3;
 const MSG_SUCCESSFUL = 4;
 
 export default function PlaceOrder({buySell, pair, amount, value}) {
@@ -80,7 +80,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                     if (dispatched_result && dispatched_result === 'tesSUCCESS')
                         showAlert(MSG_SUCCESSFUL);
                     else
-                        showAlert(ERR_REJECTED_BY_USER);
+                        showAlert(ERR_REJECTED);
 
                     return;
                 }
@@ -215,7 +215,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
             >
                 <Alert variant="filled" severity={message === MSG_SUCCESSFUL?"success":"error"} sx={{ m: 2, mt:0 }}>
                     {message === ERR_ACCOUNT_LOGIN && 'Please connect wallet!'}
-                    {message === ERR_REJECTED_BY_USER && 'Transaction signing rejected!'}
+                    {message === ERR_REJECTED && 'Transaction signing rejected!'}
                     {message === MSG_SUCCESSFUL && 'Successfully submitted the order!'}
                     {message === ERR_INVALID_VALUE && 'Invalid values!'}
                 </Alert>

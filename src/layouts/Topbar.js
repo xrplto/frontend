@@ -9,7 +9,6 @@ import { Box, Stack, Tooltip, Typography } from '@mui/material';
 //
 import { fIntNumber, fCurrency3, fNumber } from '../utils/formatNumber';
 import { Icon } from '@iconify/react';
-import infoFilled from '@iconify/icons-ep/info-filled';
 import postageStamp from '@iconify/icons-mdi/postage-stamp';
 // ----------------------------------------------------------------------
 import { useSelector } from "react-redux";
@@ -55,36 +54,12 @@ const H24Style = styled('div')(({ theme }) => ({
     '&:hover': { opacity: 1 }
 }));
 
-const AllStyle = styled('div')(({ theme }) => ({
-    cursor: 'pointer',
-    paddingLeft: theme.spacing(0.8),
-    paddingRight: theme.spacing(0.8),
-    paddingTop: theme.spacing(0.2),
-    paddingBottom: theme.spacing(0.2),
-    boxShadow: theme.customShadows.z20,
-    color: theme.palette.text.widget,
-    backgroundColor: '#0C53B7',
-    borderRadius: 8,
-    transition: theme.transitions.create('opacity'),
-    opacity: 1,
-    '&:hover': { opacity: 1 }
-}));
-
 // ----------------------------------------------------------------------
 export default function Topbar() {
     const status = useSelector(selectStatus);
 
     return (
         <StackStyle direction="row" spacing={2} sx={{pl:2, pr:3, pt:0.5, pb:0.5}} alignItems="center">
-                {/* <AllStyle>
-                    <Tooltip title="All">
-                        <Stack direction="row" spacing={0.1} alignItems='center'>
-                            <Typography align="center" style={{ wordWrap: "break-word" }} variant="caption" >
-                                All
-                            </Typography>
-                        </Stack>
-                    </Tooltip>
-                </AllStyle> */}
                 <h5>Tokens: </h5>
                 <h5>{fIntNumber(status.token_count)}</h5>
                 <H24Style>

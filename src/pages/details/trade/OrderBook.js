@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PuffLoader } from "react-spinners";
+// import { PuffLoader } from "react-spinners";
 import { styled, useTheme } from '@mui/material/styles';
 import {
     Box,
@@ -180,7 +180,7 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
 
     const buildPriceLevels = (levels, orderType = ORDER_TYPE_BIDS) => {
         return (
-            levels.map((level, idx) => {
+            levels.slice(0, 30).map((level, idx) => {
                 // const id = level.id;
                 const price = level.price.toFixed(5);//fNumber(level.price);
                 const avgPrice = level.avgPrice.toFixed(5);
@@ -302,7 +302,7 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
             <Grid container spacing={0} sx={{p:0}}>
                 <Grid item xs={12} md={6} lg={6}>
                     <Stack direction='row' alignItems='center'>
-                        <Typography variant='subtitle1' sx={{color:'#007B55', ml:0, mt:2, mb:1}}>Buy Orders</Typography>
+                        <Typography variant='subtitle1' sx={{color:'#007B55', ml:0, mt:2, mb:1}}>Buy Orders({bids.length})</Typography>
                         <Box sx={{ flexGrow: 1 }} />
                         <Spread bids={bids} asks={asks}/>
                     </Stack>
@@ -338,7 +338,7 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                     </Table>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sx={{p:0}}>
-                    <Typography align='right' variant='subtitle1' sx={{color:'#B72136', ml:2, mt:2, mb:1}}>Sell Orders</Typography>
+                    <Typography align='right' variant='subtitle1' sx={{color:'#B72136', ml:2, mt:2, mb:1}}>Sell Orders({asks.length})</Typography>
                     <Table
                         stickyHeader
                         size={'small'}

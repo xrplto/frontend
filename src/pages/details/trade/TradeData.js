@@ -1,8 +1,8 @@
 // material
 import { useState } from 'react';
-import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
+import { styled, /*alpha, useTheme*/ } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
-import { makeStyles } from "@mui/styles";
+// import { makeStyles } from "@mui/styles";
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import {
     Token as TokenIcon,
@@ -84,11 +84,11 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
     padding: '0px 12px'
 }));
 
-const useStyles = makeStyles({
-    gridItem: {
-      border: "1px solid red"
-    }
-});
+// const useStyles = makeStyles({
+//     gridItem: {
+//       border: "1px solid red"
+//     }
+// });
 
 // function getPair(issuer, code) {
 //     // issuer, currencyCode, 'XRP', undefined
@@ -106,8 +106,8 @@ const useStyles = makeStyles({
 //     return '';
 // }
 
-export default function TradeData({pairs, pair, setPair, asks, bids}) {
-    const classes = useStyles();
+export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}) {
+    // const classes = useStyles();
     const [sel, setSel] = useState(1);
     const [buySell, setBuySell] = useState('BUY');
     const [amount, setAmount] = useState('');
@@ -196,7 +196,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                                 pairs.map((row) => {
                                     const {
                                         id,
-                                        pair,
+                                        // pair,
                                         curr1,
                                         curr2
                                     } = row;
@@ -276,7 +276,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids}) {
                 <Grid item xs={12} md={9.5} lg={9.5} >
                     <Grid container spacing={3} sx={{p:0}}>
                         <Grid item xs={12} md={4.5} lg={4.5} sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
-                            <History pair={pair}/>
+                            <History pair={pair} tradeExchs={tradeExchs}/>
                         </Grid>
                         <Grid item xs={12} md={7.5} lg={7.5}>
                             <OrderBook pair={pair} asks={asks} bids={bids} onBidClick={onBidClick} onAskClick={onAskClick}/>
