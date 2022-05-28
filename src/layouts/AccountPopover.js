@@ -104,7 +104,6 @@ export default function AccountPopover() {
         try {
             const res = await axios.delete(`${BASE_URL}/xumm/logout/${uuid}`);
             if (res.status === 200) {
-                //setLog(res.data.status ? "disconnect success" : "disconnect failed");
                 setAccountProfile(null);
                 setUuid(null);
             }

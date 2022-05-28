@@ -29,7 +29,7 @@ import { normalizeCurrencyCodeXummImpl } from '../../../utils/normalizers';
 // ----------------------------------------------------------------------
 import { useContext } from 'react'
 import Context from '../../../Context'
-import QROfferCancelDialog from './QROfferCancelDialog';
+import QROfferDialog from './QROfferDialog';
 // ----------------------------------------------------------------------
 import { useSelector, useDispatch } from "react-redux";
 import { selectAccountData, updateAccountData } from "../../../redux/statusSlice";
@@ -271,7 +271,6 @@ export default function OpenOrders({pair}) {
         try {
             const res = await axios.delete(`${BASE_URL}/xumm/logout/${uuid}`);
             if (res.status === 200) {
-                //setLog(res.data.status ? "disconnect success" : "disconnect failed");
                 setUuid(null);
             }
         } catch(err) {
@@ -288,17 +287,18 @@ export default function OpenOrders({pair}) {
 
     return (
         <StackStyle>
-            <QROfferCancelDialog
+            <QROfferDialog
                 open={openScanQR}
                 handleClose={handleScanQRClose}
                 qrUrl={qrUrl}
                 nextUrl={nextUrl}
+                offerType='Cancel'
             />
             <Tabs value={tabValue} onChange={handleTabChange} aria-label="basic tabs example" sx={{mb: 3}}>
                 <Tab label="OPEN ORDERS" {...a11yProps(0)} />
                 <Tab label="TRADE HISTORY" {...a11yProps(1)} />
             </Tabs>
-            {tabValue === 0 ? 
+            {tabValue === 0 ?
                 (
                     <Table stickyHeader size={'small'}
                         sx={{

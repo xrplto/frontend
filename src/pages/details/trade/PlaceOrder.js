@@ -15,7 +15,7 @@ import { useContext } from 'react'
 import Context from '../../../Context'
 
 // Components
-import QROfferCreateDialog from './QROfferCreateDialog';
+import QROfferDialog from './QROfferDialog';
 
 // ----------------------------------------------------------------------
 
@@ -54,8 +54,12 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
     const { message, openSnack } = state;
 
     const handleCloseSnack = () => {
-        setState({ openSnack: false, message: message });
+        showAlert(message);
     };
+
+    const showAlert = (msg) => {
+        setState({ openSnack: true, message: msg });
+    }
     
     useEffect(() => {
         var timer = null;
@@ -74,9 +78,9 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 if (resolved_at) {
                     setOpenScanQR(false);
                     if (dispatched_result && dispatched_result === 'tesSUCCESS')
-                        setState({ openSnack: true, message: MSG_SUCCESSFUL });
+                        showAlert(MSG_SUCCESSFUL);
                     else
-                        setState({ openSnack: true, message: ERR_REJECTED_BY_USER });
+                        showAlert(ERR_REJECTED_BY_USER);
 
                     return;
                 }
@@ -152,7 +156,6 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
         try {
             const res = await axios.delete(`${BASE_URL}/xumm/logout/${uuid}`);
             if (res.status === 200) {
-                //setLog(res.data.status ? "disconnect success" : "disconnect failed");
                 setUuid(null);
             }
         } catch(err) {
@@ -171,7 +174,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
         if (fAmount > 0 && fValue > 0)
             onOfferCreateXumm();
         else {
-            setState({ openSnack: true, message: ERR_INVALID_VALUE });
+            showAlert(ERR_INVALID_VALUE);
         }
 
         // if (accountProfile && accountProfile.account) {
@@ -230,18 +233,19 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 <DisabledButton
                     variant="outlined"
                     sx={{ mt: 1.5 }}
-                    onClick={()=>setState({ openSnack: true, message: ERR_ACCOUNT_LOGIN })}
+                    onClick={()=>showAlert(ERR_ACCOUNT_LOGIN)}
                     disabled
                 >
                     PLACE ORDER
                 </DisabledButton>
             )}
 
-            <QROfferCreateDialog
+            <QROfferDialog
                 open={openScanQR}
                 handleClose={handleScanQRClose}
                 qrUrl={qrUrl}
                 nextUrl={nextUrl}
+                offerType='Create'
             />
         </Stack>
     );
