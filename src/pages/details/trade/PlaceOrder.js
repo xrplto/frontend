@@ -54,7 +54,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
     const { message, openSnack } = state;
 
     const handleCloseSnack = () => {
-        showAlert(message);
+        setState({ openSnack: false, message: message });
     };
 
     const showAlert = (msg) => {

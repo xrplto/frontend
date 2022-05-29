@@ -55,23 +55,21 @@ export default function QROfferDialog(props) {
         <QRDialog onClose={onClose} open={open}>
             <DialogTitle textAlign="center">Sign Transaction</DialogTitle>
             <Divider />
-            <ContentContainer>
-                <Stack alignItems='center' spacing={2} pb={3}>
-                    <Typography variant='subtitle1'>{offerType==='Create'?'OfferCreate':'OfferCancel'}</Typography>
-                    <Typography variant='subtitle1'>Sign the transaction on your XUMM App</Typography>
-                    <Link
-                        component="button"
-                        underline="hover"
-                        variant="body2"
-                        color="inherit"
-                        onClick={() => {
-                            setShowQR(true);
-                        }}
-                    >
-                        <Typography variant='caption' color='error'>Didn't receive a notification? Click here to scan QR!</Typography>
-                    </Link>
-                </Stack>
-            </ContentContainer>
+            <Stack alignItems='center' spacing={2} pb={7} pl={10} pr={10} pt={5}>
+                <Typography variant='subtitle1'>{offerType==='Create'?'OfferCreate':'OfferCancel'}</Typography>
+                <Typography variant='subtitle1'>Sign the transaction on your XUMM App</Typography>
+                <Link
+                    component="button"
+                    underline="hover"
+                    variant="body2"
+                    color="inherit"
+                    onClick={() => {
+                        setShowQR(true);
+                    }}
+                >
+                    <Typography variant='caption' color='error'>Didn't receive a notification? Click here to scan QR!</Typography>
+                </Link>
+            </Stack>
             <div
                 style={{
                     display: showQR?"flex":"none",

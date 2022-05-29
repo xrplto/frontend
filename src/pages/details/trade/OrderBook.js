@@ -178,21 +178,36 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
         setSelected([0, 0]);
     }
 
+    const expo = (x, f) => {
+        return Number.parseFloat(x).toExponential(f);
+    }
+
     const buildPriceLevels = (levels, orderType = ORDER_TYPE_BIDS) => {
         return (
             levels.slice(0, 30).map((level, idx) => {
                 // const id = level.id;
-                const price = level.price.toFixed(5);//fNumber(level.price);
+                let price = level.price;//fNumber(level.price);
                 const avgPrice = level.avgPrice.toFixed(5);
-                const amount = level.amount.toFixed(2); // fNumber(level.amount);
+                let amount = level.amount.toFixed(2); // fNumber(level.amount);
                 const value = level.value.toFixed(2); // fNumber(level.value);
-                const sumAmount = level.sumAmount.toFixed(2); // fNumber(level.sumAmount);
+                let sumAmount = level.sumAmount.toFixed(2); // fNumber(level.sumAmount);
                 const sumValue = level.sumValue.toFixed(2); // fNumber(level.sumValue);
                 const isNew = level.isNew;
                 const isBid = orderType === ORDER_TYPE_BIDS;
                 const depth = getIndicatorProgress(level.amount);
                 const currName1 = pair.curr1.name;
                 const currName2 = pair.curr2.name;
+
+                if (price < 0.00000001)
+                    price = expo(price, 2);
+                else
+                    price = price.toFixed(5);
+
+                if (amount.toString().length > 8)
+                    amount = expo(amount, 2);
+
+                if (sumAmount.toString().length > 8)
+                    sumAmount = expo(sumAmount, 2);
               
                 let bidBackgroundColor;
                 if (isNew)

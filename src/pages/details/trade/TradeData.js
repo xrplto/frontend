@@ -1,8 +1,11 @@
 // material
+import { merge } from 'lodash';
 import { useState } from 'react';
-import { styled, /*alpha, useTheme*/ } from '@mui/material/styles';
+import { styled, useTheme/*, alpha*/ } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
+import ReactApexChart from 'react-apexcharts';
 // import { makeStyles } from "@mui/styles";
+import ChartOptions from './ChartOptions';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import {
     Token as TokenIcon,
@@ -106,7 +109,16 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
 //     return '';
 // }
 
+function getChartValue(offers) {
+    let data = [];
+    for (var o of offers) {
+        data.push([o.price, o.sumAmount]);
+    }
+    return data;
+}
+
 export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}) {
+    const theme = useTheme();
     // const classes = useStyles();
     const [sel, setSel] = useState(1);
     const [buySell, setBuySell] = useState('BUY');
@@ -159,6 +171,110 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
         setPrice(newPrice);
         const val = (amount * newPrice).toFixed(6);
         setValue(val);
+    }
+
+    const graphBidData = getChartValue(bids);
+    const graphAskData = getChartValue(asks);
+
+    const CHART_DATA = [
+        {
+            name: 'BID',
+            type: 'area',
+            data: graphBidData
+        },
+        {
+            name: 'ASK',
+            type: 'area',
+            data: graphAskData
+        },
+    ];
+
+    const CHART_OPTION = merge(ChartOptions(), {
+        chart: {
+            id: 'bid-ask-chart',
+            animations: { enabled: true },
+            foreColor: theme.palette.text.primary,
+            fontFamily: theme.typography.fontFamily,
+            redrawOnParentResize: true,
+            toolbar: {
+                autoSelected: 'pan',
+                show: false
+            },
+            zoom: {
+                type: 'y',
+                enabled: true,
+                autoScaleYaxis: true
+            }
+        },
+
+        series:[
+            {
+                name: '',
+                type: 'area',
+                data: graphBidData
+            },
+            {
+                name: '',
+                type: 'area',
+                data: graphAskData
+            },
+        ],
+
+        // Grid
+        grid: {
+            strokeDashArray: 2,
+            borderColor: theme.palette.divider
+        },
+        colors: ['#007B55', '#B72136'],
+
+        // Fill
+        fill: {
+            type: 'gradient',
+            opacity: 1,
+            gradient: {
+                type: 'vertical',
+                shadeIntensity: 0,
+                opacityFrom: 0.4,
+                opacityTo: 0,
+                stops: [0, 100]
+            },
+        },
+        // X Axis
+        xaxis: {
+            type: 'numeric',
+            tickAmount: 1,
+            axisBorder: { show: false },
+            axisTicks: { show: false }
+        },
+        // Y Axis
+        yaxis: {
+            show: true,
+            tickAmount: 3,
+            labels: {
+                /**
+                * Allows users to apply a custom formatter function to yaxis labels.
+                *
+                * @param { String } val - The generated value of the y-axis tick
+                * @param { index } index of the tick / currently executing iteration in yaxis labels array
+                */
+                formatter: function(val, index) {
+                    if (val > 1000) {
+                        val /= 1000;
+                        let label = val.toFixed(0) + 'k';
+                        if (label.length > 8)
+                            label = expo(val, 0);
+                        return label;
+                    }
+                        
+                    return fNumber(val);
+                }
+            }
+        },
+
+    });
+
+    const expo = (x, f) => {
+        return Number.parseFloat(x).toExponential(f);
     }
 
     const curr1 = pair.curr1;
@@ -346,6 +462,10 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
                             <Typography alignItems='right'>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
                         </Box>
                         <PlaceOrder buySell={buySell} pair={pair} amount={amount} value={value}/>
+                    </StackDexStyle>
+
+                    <StackDexStyle spacing={0} sx={{ m: 1, mt:4, pt:1, pb:0, pl:0 }}>
+                        <ReactApexChart series={CHART_DATA} options={CHART_OPTION} height={256} />
                     </StackDexStyle>
                 </Grid>
             </Grid>
