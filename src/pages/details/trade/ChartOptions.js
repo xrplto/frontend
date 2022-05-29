@@ -1,9 +1,12 @@
 // material
 import { /*alpha,*/ useTheme } from '@mui/material/styles';
 //import { GlobalStyles } from '@mui/material';
-import { fCurrency5/*, fNumber*/ } from '../../../utils/formatNumber';
+import { fCurrency5, fNumber } from '../../../utils/formatNumber';
 
 // ----------------------------------------------------------------------
+function expo(x, f) {
+    return Number.parseFloat(x).toExponential(f);
+}
 
 export default function ChartOptions() {
     const theme = useTheme();
@@ -22,15 +25,77 @@ export default function ChartOptions() {
     };
 
     return {
-        // Colors
-        colors: [
-            theme.palette.primary.primary,
-            theme.palette.chart.yellow[0],
-            theme.palette.chart.blue[0],
-            theme.palette.chart.violet[0],
-            theme.palette.chart.green[0],
-            theme.palette.chart.red[0]
-        ],
+        chart: {
+            id: 'bid-ask-chart',
+            animations: { enabled: true },
+            foreColor: theme.palette.text.primary,
+            fontFamily: theme.typography.fontFamily,
+            redrawOnParentResize: true,
+            toolbar: {
+                autoSelected: 'pan',
+                show: false
+            },
+            zoom: {
+                type: 'y',
+                enabled: true,
+                autoScaleYaxis: true
+            }
+        },
+
+        // Grid
+        grid: {
+            strokeDashArray: 2,
+            borderColor: theme.palette.divider
+        },
+
+        // Colors for BID and ASK
+        colors: ['#007B55', '#B72136'],
+
+        
+
+        // Fill
+        fill: {
+            type: 'gradient',
+            opacity: 1,
+            gradient: {
+                type: 'vertical',
+                shadeIntensity: 0,
+                opacityFrom: 0.4,
+                opacityTo: 0,
+                stops: [0, 100]
+            },
+        },
+        // X Axis
+        xaxis: {
+            type: 'numeric',
+            tickAmount: 1,
+            axisBorder: { show: false },
+            axisTicks: { show: false }
+        },
+        // Y Axis
+        yaxis: {
+            show: true,
+            tickAmount: 3,
+            labels: {
+                /**
+                * Allows users to apply a custom formatter function to yaxis labels.
+                *
+                * @param { String } val - The generated value of the y-axis tick
+                * @param { index } index of the tick / currently executing iteration in yaxis labels array
+                */
+                formatter: function(val, index) {
+                    if (val > 1000) {
+                        val /= 1000;
+                        let label = val.toFixed(0) + 'k';
+                        if (label.length > 8)
+                            label = expo(val, 0);
+                        return label;
+                    }
+                        
+                    return fNumber(val);
+                }
+            }
+        },
 
         // States
         states: {
