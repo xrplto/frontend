@@ -30,12 +30,7 @@ import { useDispatch } from "react-redux";
 import { updateAccountData } from "../../../redux/statusSlice";
 // ----------------------------------------------------------------------
 
-function getPair(pairs, strPair) {
-    const pair = pairs.find(e => e.pair === strPair);
-    return pair;
-}
-
-export default function AccountBalance({pairs, strPair}) {
+export default function AccountBalance({pair}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
@@ -46,7 +41,6 @@ export default function AccountBalance({pairs, strPair}) {
     const [nextUrl, setNextUrl] = useState(null);
     const [accountPairBalance, setAccountPairBalance] = useState(null);
 
-    const pair = getPair(pairs, strPair);
     let curr1 = { ...pair.curr1 };
     let curr2 = { ...pair.curr2 };
 

@@ -1,6 +1,6 @@
 // material
 import { useState } from 'react';
-import { styled, useTheme/*, alpha*/ } from '@mui/material/styles';
+import { styled, /*useTheme, alpha*/ } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
 import ReactApexChart from 'react-apexcharts';
 // import { makeStyles } from "@mui/styles";
@@ -117,9 +117,7 @@ function getChartData(offers) {
     return data;
 }
 
-export default function TradeData({pairs, strPair, setStrPair, asks, bids, tradeExchs}) {
-    // const theme = useTheme();
-    // const classes = useStyles();
+export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}) {
     const [buySell, setBuySell] = useState('BUY');
     const [amount, setAmount] = useState('');
     const [price, setPrice] = useState('');
@@ -140,18 +138,15 @@ export default function TradeData({pairs, strPair, setStrPair, asks, bids, trade
 
     const CHART_OPTION = ChartOptions();
 
-    const getPair = () => {
-        const pair = pairs.find(e => e.pair === strPair);
-        return pair;
-    }
-
-    const pair = getPair();
     const curr1 = pair.curr1;
     const curr2 = pair.curr2;
 
     const handleChangePair = (event, value) => {
         //const idx = parseInt(event.target.value, 10);
-        setStrPair(event.target.value);
+        const strPair = event.target.value;
+        const newPair = pairs.find(e => e.pair === strPair);
+        if (newPair)
+            setPair(newPair);
     }
 
     const handleChangeBuySell = (event, newValue) => {
@@ -219,7 +214,7 @@ export default function TradeData({pairs, strPair, setStrPair, asks, bids, trade
                         <CustomSelect
                             labelId="demo-select-small"
                             id="demo-select-small"
-                            value={pair}
+                            value={pair.pair}
                             label="Pair"
                             onChange={handleChangePair}
                         >

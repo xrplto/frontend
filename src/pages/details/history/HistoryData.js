@@ -113,14 +113,13 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
 };
 
-export default function HistoryData({token, pairs}) {
+export default function HistoryData({token, pairs, pair, setPair}) {
     const EPOCH_OFFSET = 946684800;
     const BASE_URL = 'https://api.xrpl.to/api';
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);
     const [count, setCount] = useState(0);
     const [exchs, setExchs] = useState([]);
-    const [pair, setPair] = useState('');
     const theme = useTheme();
     const {
         acct,
@@ -129,20 +128,20 @@ export default function HistoryData({token, pairs}) {
     } = token;
 
     const handleChangePair = (event, value) => {
-        setPair(event.target.value);
+        const strPair = event.target.value;
+        const newPair = pairs.find(e => e.pair === strPair);
+        if (newPair)
+            setPair(newPair);
     }
 
     useEffect(() => {
         function getExchanges() {
-            if (!pair) {
-                setPair(getPair(acct, code));
-                return;
-            }
+            if (!pair) return;
             // XPUNK
             // https://api.xrpl.to/api/exchanges?pair=d12119be3c1749470903414dff032761&page=0&limit=5
             // SOLO
             // https://api.xrpl.to/api/exchanges?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
-            axios.get(`${BASE_URL}/exchanges?pair=${pair}&page=${page}&limit=${rows}`)
+            axios.get(`${BASE_URL}/exchanges?pair=${pair.pair}&page=${page}&limit=${rows}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -179,7 +178,7 @@ export default function HistoryData({token, pairs}) {
                     <CustomSelect
                         labelId="demo-select-small"
                         id="demo-select-small"
-                        value={pair}
+                        value={pair.pair}
                         label="Pair"
                         onChange={handleChangePair}
                     >

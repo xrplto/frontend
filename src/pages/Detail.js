@@ -92,8 +92,7 @@ export default function Detail(props) {
 
     const [bids, setBids] = useState([]); // Orderbook Bids
     const [asks, setAsks] = useState([]); // Orderbook Asks
-    const [ready, setReady] = useState(false);
-    const [reqID, setReqID] = useState(1);
+    const [wsReady, setWsReady] = useState(false);
     const [clearNewFlag, setClearNewFlag] = useState(false);
 
     const [tradeExchs, setTradeExchs] = useState([]);
@@ -187,10 +186,37 @@ export default function Detail(props) {
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
+                        /*{
+                            "pair": "fa99aff608a10186d3b1ff33b5cd665f",
+                            "curr1": {
+                                "currency": "534F4C4F00000000000000000000000000000000",
+                                "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+                                "value": 460186.2755587654,
+                                "md5": "0413ca7cfc258dfaf698c02fe304e607",
+                                "name": "SOLO",
+                                "user": "Sologenic",
+                                "domain": "sologenic.com",
+                                "verified": true,
+                                "twitter": "realSologenic"
+                            },
+                            "curr2": {
+                                "currency": "XRP",
+                                "value": 328571.7821960003,
+                                "md5": "71dbd3aabf2d99d205e0e2556ae4cf55",
+                                "name": "XRP"
+                            },
+                            "count": 1697,
+                            "id": 1
+                        }*/
                         const newPairs = ret.pairs;
                         setPairs(newPairs);
                         if (!pair) {
                             setPair(newPairs[0]);
+                        } else {
+                            const check = newPairs.find(e => e.pair === pair.pair);
+                            if (!check) {
+                                setPair(newPairs[0]);
+                            }
                         }
                     }
                 }).catch(err => {
@@ -200,15 +226,17 @@ export default function Detail(props) {
                 });
         }
 
-        getPairs();
+        if (!pair && pairs.length === 0) {
+            getPairs();
+        }
 
-        const timer = setInterval(() => getPairs(), 10000);
+        const timer = setInterval(getPairs, 10000);
 
         return () => {
             clearInterval(timer);
         }
 
-    }, [md5, token, pair]);
+    }, [md5, token, pair, pairs]);
 
     useEffect(() => {
         let arr = [];
@@ -230,19 +258,18 @@ export default function Detail(props) {
     }, [clearNewFlag, asks, bids]);
 
     const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_URL, {
-        onOpen: () => {console.log('wss://ws.xrpl.to opened');setReady(true);},
-        onClose: () => {console.log('wss://ws.xrpl.to closed');setReady(false);},
+        onOpen: () => {console.log('wss://ws.xrpl.to opened');setWsReady(true);},
+        onClose: () => {console.log('wss://ws.xrpl.to closed');setWsReady(false);},
         shouldReconnect: (closeEvent) => true,
         onMessage: (event) =>  processMessages(event)
     });
 
     // Orderbook related useEffect - Start
     useEffect(() => {
-        function setRequestID() {
-            if (!ready) return;
+        let reqID = 1;
+        function sendRequest() {
+            if (!wsReady) return;
             if (!pair) return;
-
-            setReqID(reqID + 2);
             /*{
                 "id":17,
                 "command":"book_offers",
@@ -302,18 +329,18 @@ export default function Detail(props) {
             }
             sendJsonMessage(cmdAsk);
             sendJsonMessage(cmdBid);
+            reqID += 2;
         }
 
-        if (reqID === 1)
-            setRequestID();
+        sendRequest();
 
-        const timer = setInterval(() => setRequestID(), 5000);
+        const timer = setInterval(() => sendRequest(), 5000);
 
         return () => {
             clearInterval(timer);
         }
 
-    }, [reqID, ready, pair, sendJsonMessage]);
+    }, [wsReady, pair, sendJsonMessage]);
     // Orderbook related useEffect - END
 
     // web socket process messages for orderbook
@@ -460,7 +487,7 @@ export default function Detail(props) {
                             <TradeData token={token} pairs={pairs} pair={pair} setPair={setPair} asks={asks} bids={bids} tradeExchs={tradeExchs}/>
                         </TabPanel>
                         <TabPanel value={value} index={3}>
-                            <HistoryData token={token} pairs={pairs}/>
+                            <HistoryData token={token} pairs={pairs} pair={pair} setPair={setPair}/>
                         </TabPanel>
                     </Container>
                     <ScrollToTop />
