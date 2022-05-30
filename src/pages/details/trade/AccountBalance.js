@@ -26,15 +26,17 @@ import QRLoginDialog from './QRLoginDialog';
 import { useContext } from 'react'
 import Context from '../../../Context'
 // ----------------------------------------------------------------------
-import { useDispatch } from "react-redux";
-import { updateAccountData } from "../../../redux/statusSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { updateAccountData, selectRefreshAccount } from "../../../redux/statusSlice";
 // ----------------------------------------------------------------------
 
 export default function AccountBalance({pair}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
+    const refreshAccount = useSelector(selectRefreshAccount);
     const { accountProfile, setAccountProfile, setLoading } = useContext(Context);
+
     const [openLogin, setOpenLogin] = useState(false);
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
@@ -99,9 +101,10 @@ export default function AccountBalance({pair}) {
                     // always executed
                 });
         }
+        // console.log('account_info')
         getAccountInfo();
 
-    }, [accountProfile, pair]);
+    }, [dispatch, accountProfile, pair, refreshAccount]);
 
     useEffect(() => {
         var timer = null;
@@ -190,9 +193,9 @@ export default function AccountBalance({pair}) {
         onConnectXumm();
     };
 
-    const handleLogout = () => {
-        onDisconnectXumm(accountProfile.uuid);
-    }
+    // const handleLogout = () => {
+    //     onDisconnectXumm(accountProfile.uuid);
+    // }
 
     const handleLoginClose = () => {
         setOpenLogin(false);

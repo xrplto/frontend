@@ -16,7 +16,8 @@ const initialState = {
     accountData: {
         balance: {},
         offers:[]
-    }
+    },
+    refreshAccount: 0
 }
 
 export const statusSlice = createSlice({
@@ -33,10 +34,13 @@ export const statusSlice = createSlice({
         updateAccountData: (state, action) => {
             state.accountData = action.payload;
         },
+        refreshAccountData: (state, action) => {
+            state.refreshAccount++;
+        },
     },
 });
 
-export const { update_status, updateAccountData } = statusSlice.actions;
+export const { update_status, updateAccountData, refreshAccountData } = statusSlice.actions;
 
 // The function below is called a thunk and allows us to perform async logic. It
 // can be dispatched like a regular action: `dispatch(incrementAsync(10))`. This
@@ -54,5 +58,6 @@ export const { update_status, updateAccountData } = statusSlice.actions;
 // in the slice file. For example: `useSelector((state) => state.counter.value)`
 export const selectStatus = (state) => state.status.status;
 export const selectAccountData = (state) => state.status.accountData;
+export const selectRefreshAccount = (state) => state.status.refreshAccount;
 
 export default statusSlice.reducer;

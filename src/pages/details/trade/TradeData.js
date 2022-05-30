@@ -33,7 +33,7 @@ import {
 // Components
 import OrderBook from "./OrderBook";
 import History from './History';
-import OpenOrders from './OpenOrders';
+import AccountOrdersHistory from './AccountOrdersHistory';
 import AccountBalance from './AccountBalance';
 // ----------------------------------------------------------------------
 // utils
@@ -308,7 +308,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
                             <OrderBook pair={pair} asks={asks} bids={bids} onBidClick={onBidClick} onAskClick={onAskClick}/>
                         </Grid>
                         <Grid item xs={12} md={12} lg={12} sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
-                            <OpenOrders pair={pair}/>
+                            <AccountOrdersHistory pair={pair}/>
                         </Grid>
                     </Grid>
                 </Grid>

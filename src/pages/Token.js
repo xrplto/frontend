@@ -62,8 +62,8 @@ const TABLE_HEAD = [
     { no: 0, id: 'id', label: '#', align: 'left', order: false },
     { no: 1, id: 'name', label: 'Name', align: 'left', order: true },
     { no: 2, id: 'exch', label: 'Price', align: 'left', order: true },
-    { no: 3, id: 'percent_24h', label: '24h (%)', align: 'left', order: false },
-    { no: 4, id: 'percent_7d', label: '7d (%)', align: 'left', order: false },
+    { no: 3, id: 'pro24h', label: '24h (%)', align: 'left', order: false },
+    { no: 4, id: 'pro7d', label: '7d (%)', align: 'left', order: false },
     { no: 5, id: 'vol24h', label: 'Volume(24h)', align: 'left', order: true },
     { no: 6, id: 'vol24htx', label: 'Tx(24h)', align: 'left', order: true },
     { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
@@ -133,7 +133,7 @@ export default function Token() {
             // https://livenet.xrpl.org/api/v1/token/top
             // https://api.xrpl.to/api/tokens/-1
             // https://github.com/WietseWind/fetch-xrpl-transactions
-            // https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=marketcap&sortType=desc
+            // https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24h&sortType=desc
             const start = page * rows + offset * 20;
             //console.log(`${offset} Load tokens from ${start+1}`);
             axios.get(`${BASE_URL}/tokens?start=${start}&limit=20&sortBy=${orderBy}&sortType=${order}&filter=${filterName}`)

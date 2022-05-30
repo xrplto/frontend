@@ -32,7 +32,7 @@ import Context from '../../../Context'
 import QROfferDialog from './QROfferDialog';
 // ----------------------------------------------------------------------
 import { useSelector, useDispatch } from "react-redux";
-import { selectAccountData, updateAccountData } from "../../../redux/statusSlice";
+import { selectAccountData, selectRefreshAccount, refreshAccountData } from "../../../redux/statusSlice";
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -113,19 +113,20 @@ const ConnectWalletContainer = styled('div')({
     height: '30vh'
 });
 
-function truncate(str, n){
+function truncate(str, n) {
     if (!str) return '';
     //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
 };
 
-export default function OpenOrders({pair}) {
+export default function AccountOrdersHistory({pair}) {
     const theme = useTheme();
     const dispatch = useDispatch();
     const EPOCH_OFFSET = 946684800;
     const BASE_URL = 'https://api.xrpl.to/api';
     
     const accountData = useSelector(selectAccountData);
+    const refreshAccount = useSelector(selectRefreshAccount);
     
     const { accountProfile, setLoading } = useContext(Context);
     const [exchs, setExchs] = useState([]);
@@ -137,12 +138,10 @@ export default function OpenOrders({pair}) {
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
 
-    const [cancelSeq, setCancelSeq] = useState(0);
-
     const accountAddress = accountProfile?.account;
 
     const curr1 = pair.curr1;
-    const curr2 = pair.curr2;
+    // const curr2 = pair.curr2;
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);
@@ -153,12 +152,12 @@ export default function OpenOrders({pair}) {
     }
 
     useEffect(() => {
-        function getExchanges(profile, pair) {
-            if (!profile || !profile.account) return;
+        function getExchanges() {
+            if (!accountProfile || !accountProfile.account) return;
             if (!pair) return;
             const curr1 = pair.curr1;
             const curr2 = pair.curr2;
-            const account = profile.account;
+            const account = accountProfile.account;
             // https://api.xrpl.to/api/accounttx/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=undefined
             axios.get(`${BASE_URL}/accounttx/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`)
                 .then(res => {
@@ -172,10 +171,12 @@ export default function OpenOrders({pair}) {
                     // always executed
                 });
         }
-        if (tabValue === 1)
-            getExchanges(accountProfile, pair);
 
-    }, [accountProfile, pair, tabValue]);
+        // console.log('account_tx');
+        if (tabValue === 1)
+            getExchanges();
+
+    }, [accountProfile, pair, tabValue, refreshAccount]);
 
     useEffect(() => {
         var timer = null;
@@ -187,7 +188,6 @@ export default function OpenOrders({pair}) {
             try {
                 const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
                 const res = ret.data.data.response;
-
                 /*
                 {
                     "hex": "120008228000000024043DCAC32019043DCAC2201B0448348868400000000000000F732103924E47158D3980DDAF7479A838EF3C0AE53D953BD2A526E658AC5F3EF0FA7D2174473045022100D10E91E2704A4BDAB510B599B8258956F9F34592B2B62BE383ED3E4DBF57DE2B02204837DD77A787D4E0DC43DCC53A7BBE160B164617FE3D0FFCFF9F6CC808D46DEE811406598086E863F1FF42AD87DCBE2E1B5F5A8B5EB8",
@@ -199,24 +199,15 @@ export default function OpenOrders({pair}) {
                     "multisign_account": "",
                     "account": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm"
                 }
-                    */
+                */
 
                 const resolved_at = res.resolved_at;
                 const dispatched_result = res.dispatched_result;
                 if (resolved_at) {
                     setOpenScanQR(false);
                     if (dispatched_result === 'tesSUCCESS') {
-                        let newOffers = [];
-                        for (var o of accountData.offers) {
-                            if (o.seq !== cancelSeq)
-                                newOffers.push(o);
-                        }
-                        const newAccountData = {
-                            account: accountData.account,
-                            pair: accountData.pair,
-                            offers: newOffers
-                        };
-                        dispatch(updateAccountData(newAccountData));
+                        // TRIGGER account refresh
+                        dispatch(refreshAccountData());
                     }
                     return;
                 }
@@ -236,7 +227,7 @@ export default function OpenOrders({pair}) {
                 clearInterval(timer)
             }
         };
-    }, [openScanQR, uuid]);
+    }, [dispatch, openScanQR, uuid]);
 
     const onOfferCancelXumm = async (seq) => {
         setLoading(true);
@@ -258,7 +249,6 @@ export default function OpenOrders({pair}) {
                 setQrUrl(qrlink);
                 setNextUrl(nextlink);
                 setOpenScanQR(true);
-                setCancelSeq(seq);
             }
         } catch (err) {
             alert(err);
@@ -438,14 +428,36 @@ export default function OpenOrders({pair}) {
                         </TableHead>
                         <TableBody>
                             {accountAddress && exchs.map((row) => {
+                                /*
+                                {
+                                    "dir": "buy",
+                                    "flags": 0,
+                                    "ledger": 71729458,
+                                    "ledger_index": 71729458,
+                                    "hash": "0F2CC103A3CD21BCAEF33ED7CEEC4AEB70660FE92A3140ED9506B80BFFFE710E",
+                                    "maker": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm",
+                                    "taker": "rMXN4AK1uKyFazVzTBTCTwcv17o9Az4rs2",
+                                    "seq": 71158461,
+                                    "date": 706175182,
+                                    "takerPaid": {
+                                        "currency": "534F4C4F00000000000000000000000000000000",
+                                        "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+                                        "value": "0.01"
+                                    },
+                                    "takerGot": {
+                                        "currency": "XRP",
+                                        "value": "0.0061"
+                                    },
+                                    "pair": "fa99aff608a10186d3b1ff33b5cd665f"
+                                }
+                                */
                                 const {
-                                    _id,
                                     // dir,
                                     hash,
                                     maker,
                                     taker,
                                     //ledger,
-                                    //seq,
+                                    seq,
                                     takerPaid,
                                     takerGot,
                                     date,
@@ -492,106 +504,101 @@ export default function OpenOrders({pair}) {
                                 const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
 
                                 return (
-                                    // <CopyToClipboard
-                                    //     key={`id${_id}`}
-                                    //     text={hash}
-                                    //     onCopy={() => setCopied(true)}>
-                                        <TableRow
-                                            hover
-                                            key={_id}
-                                            tabIndex={-1}
-                                            sx={{
-                                                [`& .${tableCellClasses.root}`]: {
-                                                    // color: (cancel ? '#FFC107': (dir === 'buy' ? '#007B55' : '#B72136'))
-                                                    color: (buy ? '#007B55' : '#B72136')
-                                                }
-                                            }}
-                                        >
-                                            <TableCell align="left">
-                                                {
-                                                    buy ? (
-                                                        <BuyTypography variant="caption">
-                                                            BUY
-                                                        </BuyTypography>
-                                                    ):(
-                                                        <SellTypography variant="caption">
-                                                            SELL
-                                                        </SellTypography>
-                                                    )
-                                                }
-                                            </TableCell>
-                                            <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
-                                            
-                                            <TableCell align="left">
-                                                {new BigNumber(vPaid).decimalPlaces(6).toNumber()} <Typography variant="caption">{namePaid}</Typography>
-                                            </TableCell>
+                                    <TableRow
+                                        hover
+                                        key={seq}
+                                        tabIndex={-1}
+                                        sx={{
+                                            [`& .${tableCellClasses.root}`]: {
+                                                // color: (cancel ? '#FFC107': (dir === 'buy' ? '#007B55' : '#B72136'))
+                                                color: (buy ? '#007B55' : '#B72136')
+                                            }
+                                        }}
+                                    >
+                                        <TableCell align="left">
+                                            {
+                                                buy ? (
+                                                    <BuyTypography variant="caption">
+                                                        BUY
+                                                    </BuyTypography>
+                                                ):(
+                                                    <SellTypography variant="caption">
+                                                        SELL
+                                                    </SellTypography>
+                                                )
+                                            }
+                                        </TableCell>
+                                        <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
+                                        
+                                        <TableCell align="left">
+                                            {new BigNumber(vPaid).decimalPlaces(6).toNumber()} <Typography variant="caption">{namePaid}</Typography>
+                                        </TableCell>
 
-                                            <TableCell align="left">
-                                                {new BigNumber(vGot).decimalPlaces(6).toNumber()} <Typography variant="caption">{nameGot}</Typography>
-                                            </TableCell>
+                                        <TableCell align="left">
+                                            {new BigNumber(vGot).decimalPlaces(6).toNumber()} <Typography variant="caption">{nameGot}</Typography>
+                                        </TableCell>
 
-                                            <TableCell align="left">
-                                                <Stack>
-                                                    <Typography variant="subtitle2">{strDate} {strTime}</Typography>
-                                                    {/* <Typography variant="caption">{strDate}</Typography> */}
-                                                </Stack>
-                                            </TableCell>
-                                            
-                                            <TableCell align="left">
+                                        <TableCell align="left">
+                                            <Stack>
+                                                <Typography variant="subtitle2">{strDate} {strTime}</Typography>
+                                                {/* <Typography variant="caption">{strDate}</Typography> */}
+                                            </Stack>
+                                        </TableCell>
+                                        
+                                        <TableCell align="left">
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={`https://bithomp.com/explorer/${maker}`}
+                                                rel="noreferrer noopener"
+                                            >
+                                                {tMaker}
+                                            </Link>
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={`https://bithomp.com/explorer/${taker}`}
+                                                rel="noreferrer noopener"
+                                            >
+                                                {tTaker}
+                                            </Link>
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            <Stack direction="row" alignItems='center'>
                                                 <Link
                                                     underline="none"
                                                     color="inherit"
                                                     target="_blank"
-                                                    href={`https://bithomp.com/explorer/${maker}`}
+                                                    href={`https://bithomp.com/explorer/${hash}`}
                                                     rel="noreferrer noopener"
                                                 >
-                                                    {tMaker}
-                                                </Link>
-                                            </TableCell>
-                                            <TableCell align="left">
-                                                <Link
-                                                    underline="none"
-                                                    color="inherit"
-                                                    target="_blank"
-                                                    href={`https://bithomp.com/explorer/${taker}`}
-                                                    rel="noreferrer noopener"
-                                                >
-                                                    {tTaker}
-                                                </Link>
-                                            </TableCell>
-                                            <TableCell align="left">
-                                                <Stack direction="row" alignItems='center'>
-                                                    <Link
-                                                        underline="none"
-                                                        color="inherit"
-                                                        target="_blank"
-                                                        href={`https://bithomp.com/explorer/${hash}`}
-                                                        rel="noreferrer noopener"
-                                                    >
-                                                        <Stack direction="row" alignItems='center'>
-                                                            {tHash}
-                                                            <IconButton edge="end" aria-label="bithomp">
-                                                                <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
-                                                            </IconButton>
-                                                        </Stack>
-                                                    </Link>
-
-                                                    <Link
-                                                        underline="none"
-                                                        color="inherit"
-                                                        target="_blank"
-                                                        href={`https://livenet.xrpl.org/transactions/${hash}`}
-                                                        rel="noreferrer noopener"
-                                                    >
+                                                    <Stack direction="row" alignItems='center'>
+                                                        {tHash}
                                                         <IconButton edge="end" aria-label="bithomp">
-                                                            <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
+                                                            <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
                                                         </IconButton>
-                                                    </Link>
-                                                </Stack>
-                                            </TableCell>
-                                            
-                                        </TableRow>
-                                    // </CopyToClipboard>
+                                                    </Stack>
+                                                </Link>
+
+                                                <Link
+                                                    underline="none"
+                                                    color="inherit"
+                                                    target="_blank"
+                                                    href={`https://livenet.xrpl.org/transactions/${hash}`}
+                                                    rel="noreferrer noopener"
+                                                >
+                                                    <IconButton edge="end" aria-label="bithomp">
+                                                        <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
+                                                    </IconButton>
+                                                </Link>
+                                            </Stack>
+                                        </TableCell>
+                                        
+                                    </TableRow>
                                 );
                             })}
                         </TableBody>

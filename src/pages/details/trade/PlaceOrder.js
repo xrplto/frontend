@@ -16,9 +16,10 @@ import Context from '../../../Context'
 
 // Components
 import QROfferDialog from './QROfferDialog';
-
 // ----------------------------------------------------------------------
-
+import { useDispatch } from "react-redux";
+import { refreshAccountData } from "../../../redux/statusSlice";
+// ----------------------------------------------------------------------
 const DisabledButton = withStyles({
     root: {
         "&.Mui-disabled": {
@@ -40,6 +41,7 @@ const MSG_SUCCESSFUL = 4;
 
 export default function PlaceOrder({buySell, pair, amount, value}) {
     const BASE_URL = 'https://api.xrpl.to/api';
+    const dispatch = useDispatch();
     const { accountProfile, setLoading } = useContext(Context);
     const [openScanQR, setOpenScanQR] = useState(false);
     const [uuid, setUuid] = useState(null);
@@ -77,8 +79,11 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 const dispatched_result = res.dispatched_result;
                 if (resolved_at) {
                     setOpenScanQR(false);
-                    if (dispatched_result && dispatched_result === 'tesSUCCESS')
+                    if (dispatched_result && dispatched_result === 'tesSUCCESS') {
+                        // TRIGGER account refresh
+                        dispatch(refreshAccountData());
                         showAlert(MSG_SUCCESSFUL);
+                    }
                     else
                         showAlert(ERR_REJECTED);
 
@@ -100,7 +105,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 clearInterval(timer)
             }
         };
-    }, [openScanQR, uuid]);
+    }, [dispatch, openScanQR, uuid]);
 
     const onOfferCreateXumm = async () => {
         setLoading(true);

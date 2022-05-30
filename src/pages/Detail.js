@@ -1,16 +1,18 @@
+import axios from 'axios'
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useParams/*, useSearchParams*/ } from "react-router-dom";
-import ScrollToTop from '../layouts/ScrollToTop';
-import TopMark from '../layouts/TopMark';
 import useWebSocket from "react-use-websocket";
+
+import Page from '../layouts/Page';
+import TopMark from '../layouts/TopMark';
+import ScrollToTop from '../layouts/ScrollToTop';
 
 import {UserDesc, PriceDesc, LinkDesc, ExtraDesc} from "./details/common"
 import {PriceChart, PriceStatistics, Description} from './details/overview';
 import {HistoryData} from './details/history';
 import {MarketData} from './details/market';
 import {TradeData} from './details/trade';
-// import DocumentMeta from 'react-document-meta';
 
 import {
     Box,
@@ -21,20 +23,17 @@ import {
     Tabs
 } from '@mui/material';
 
-// ----------------------------------------------------------------------
-import axios from 'axios'
+// ---------------------------------------------------
 import { useDispatch } from "react-redux";
 import { update_status } from "../redux/statusSlice";
-// ----------------------------------------------------------------------
-
-import Page from '../layouts/Page';
+// ---------------------------------------------------
 
 const TABLE_HEAD = [
     { no: 0, id: 'id', label: '#', align: 'left', order: false },
     { no: 1, id: 'name', label: 'Name', align: 'left', order: true },
     { no: 2, id: 'exch', label: 'Price', align: 'left', order: true },
-    { no: 3, id: 'percent_24h', label: '24h (%)', align: 'left', order: false },
-    { no: 4, id: 'percent_7d', label: '7d (%)', align: 'left', order: false },
+    { no: 3, id: 'pro24h', label: '24h (%)', align: 'left', order: false },
+    { no: 4, id: 'pro7d', label: '7d (%)', align: 'left', order: false },
     { no: 5, id: 'vol24h', label: 'Volume(24h)', align: 'left', order: true },
     { no: 6, id: 'vol24htx', label: 'Tx(24h)', align: 'left', order: true },
     { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
@@ -46,7 +45,7 @@ const TABLE_HEAD = [
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
-  
+ 
     return (
         <div
             role="tabpanel"
@@ -85,13 +84,13 @@ export default function Detail(props) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const [history, setHistory] = useState([]);
     const [range, setRange] = useState('1D');
-    const [token, setToken] = useState(null); // JSON.parse(localStorage.getItem('selectToken')));
+    const [token, setToken] = useState(null);
     const [value, setValue] = useState(0);
     const [pairs, setPairs] = useState([]);
     const [pair, setPair] = useState(null);
-
     const [bids, setBids] = useState([]); // Orderbook Bids
     const [asks, setAsks] = useState([]); // Orderbook Asks
+
     const [wsReady, setWsReady] = useState(false);
     const [clearNewFlag, setClearNewFlag] = useState(false);
 
@@ -257,11 +256,11 @@ export default function Detail(props) {
         }
     }, [clearNewFlag, asks, bids]);
 
-    const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_URL, {
+    const { sendJsonMessage/*, getWebSocket*/ } = useWebSocket(WSS_URL, {
         onOpen: () => {console.log('wss://ws.xrpl.to opened');setWsReady(true);},
         onClose: () => {console.log('wss://ws.xrpl.to closed');setWsReady(false);},
         shouldReconnect: (closeEvent) => true,
-        onMessage: (event) =>  processMessages(event)
+        onMessage: (event) => processMessages(event)
     });
 
     // Orderbook related useEffect - Start
@@ -348,13 +347,13 @@ export default function Detail(props) {
         const orderBook = JSON.parse(event.data);
 
         if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
-            const r = orderBook.id % 2;
+            const req = orderBook.id % 2;
             //console.log(`Received id ${orderBook.id}`)
-            if (r === 1) {
+            if (req === 1) {
                 const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS, asks);
                 setAsks(parsed);
             }
-            if (r === 0) {
+            if (req === 0) {
                 const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, bids);
                 setBids(parsed);
                 setTimeout(() => {
