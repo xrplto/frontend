@@ -119,6 +119,11 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
 };
 
+function getPair(pairs, strPair) {
+    const pair = pairs.find(e => e.pair === strPair);
+    return pair;
+}
+
 export default function OpenOrders({pair}) {
     const theme = useTheme();
     const dispatch = useDispatch();
@@ -141,8 +146,8 @@ export default function OpenOrders({pair}) {
 
     const accountAddress = accountProfile?.account;
 
-    const curr1 = pair.curr1;
-    // const curr2 = pair.curr2;
+    const curr1 = pair?.curr1;
+    const curr2 = pair?.curr2;
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue);

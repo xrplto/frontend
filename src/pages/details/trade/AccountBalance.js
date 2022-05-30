@@ -30,7 +30,12 @@ import { useDispatch } from "react-redux";
 import { updateAccountData } from "../../../redux/statusSlice";
 // ----------------------------------------------------------------------
 
-export default function AccountBalance({pair}) {
+function getPair(pairs, strPair) {
+    const pair = pairs.find(e => e.pair === strPair);
+    return pair;
+}
+
+export default function AccountBalance({pairs, strPair}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
@@ -41,6 +46,7 @@ export default function AccountBalance({pair}) {
     const [nextUrl, setNextUrl] = useState(null);
     const [accountPairBalance, setAccountPairBalance] = useState(null);
 
+    const pair = getPair(pairs, strPair);
     let curr1 = { ...pair.curr1 };
     let curr2 = { ...pair.curr2 };
 
@@ -73,12 +79,13 @@ export default function AccountBalance({pair}) {
     }[readyState];*/
 
     useEffect(() => {
-        function getAccountInfo(profile, pair) {
-            if (!profile || !profile.account) return;
+        function getAccountInfo() {
+            if (!accountProfile || !accountProfile.account) return;
             if (!pair) return;
+
             const curr1 = pair.curr1;
             const curr2 = pair.curr2;
-            const account = profile.account;
+            const account = accountProfile.account;
             // https://api.xrpl.to/api/accountinfo/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=undefined
             axios.get(`${BASE_URL}/accountinfo/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`)
                 .then(res => {
@@ -98,7 +105,7 @@ export default function AccountBalance({pair}) {
                     // always executed
                 });
         }
-        getAccountInfo(accountProfile, pair);
+        getAccountInfo();
 
     }, [accountProfile, pair]);
 

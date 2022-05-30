@@ -151,7 +151,6 @@ export default function Detail(props) {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
                         const exch = ret.exch;
-                        //console.log(ret);
                         const status = {
                             session: 0,
                             USD: exch.USD,
@@ -190,8 +189,9 @@ export default function Detail(props) {
                     if (ret) {
                         const newPairs = ret.pairs;
                         setPairs(newPairs);
-                        if (!pair)
-                            setPair(newPairs[0])
+                        if (!pair) {
+                            setPair(newPairs[0]);
+                        }
                     }
                 }).catch(err => {
                     console.log("Error on getting pairs!!!", err);
@@ -208,7 +208,7 @@ export default function Detail(props) {
             clearInterval(timer);
         }
 
-    }, [md5, token]);
+    }, [md5, token, pair]);
 
     useEffect(() => {
         let arr = [];
@@ -241,6 +241,7 @@ export default function Detail(props) {
         function setRequestID() {
             if (!ready) return;
             if (!pair) return;
+
             setReqID(reqID + 2);
             /*{
                 "id":17,
@@ -267,8 +268,10 @@ export default function Detail(props) {
                 "ledger_index":"validated",
                 "limit":200
             }*/
+
             const curr1 = pair.curr1;
             const curr2 = pair.curr2;
+
             const cmdAsk = {
                 id: reqID,
                 command: 'book_offers',
@@ -363,7 +366,7 @@ export default function Detail(props) {
     }, [pair]);
 
 
-    if (!token) {
+    if (!token || !pair) {
         return (
             <>
                 {/* <CircularProgress /> */}

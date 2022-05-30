@@ -110,16 +110,16 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
 
 function getChartData(offers) {
     let data = [];
-    for (var o of offers) {
+    for (var o of offers.slice(0, 30)) {
         data.push([o.price, o.sumAmount]);
     }
+    
     return data;
 }
 
-export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}) {
+export default function TradeData({pairs, strPair, setStrPair, asks, bids, tradeExchs}) {
     // const theme = useTheme();
     // const classes = useStyles();
-    const [sel, setSel] = useState(1);
     const [buySell, setBuySell] = useState('BUY');
     const [amount, setAmount] = useState('');
     const [price, setPrice] = useState('');
@@ -140,10 +140,18 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
 
     const CHART_OPTION = ChartOptions();
 
+    const getPair = () => {
+        const pair = pairs.find(e => e.pair === strPair);
+        return pair;
+    }
+
+    const pair = getPair();
+    const curr1 = pair.curr1;
+    const curr2 = pair.curr2;
+
     const handleChangePair = (event, value) => {
-        const idx = parseInt(event.target.value, 10);
-        setSel(idx);
-        setPair(pairs[idx-1]);
+        //const idx = parseInt(event.target.value, 10);
+        setStrPair(event.target.value);
     }
 
     const handleChangeBuySell = (event, newValue) => {
@@ -187,9 +195,6 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
         setValue(val);
     }
 
-    const curr1 = pair.curr1;
-    const curr2 = pair.curr2;
-
     let soloDexURL = '';
     if (curr2.issuer)
         soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}%2B${curr2.issuer}`;
@@ -214,7 +219,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
                         <CustomSelect
                             labelId="demo-select-small"
                             id="demo-select-small"
-                            value={sel}
+                            value={pair}
                             label="Pair"
                             onChange={handleChangePair}
                         >
@@ -222,7 +227,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
                                 pairs.map((row) => {
                                     const {
                                         id,
-                                        // pair,
+                                        pair,
                                         curr1,
                                         curr2
                                     } = row;
@@ -231,7 +236,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
                                     const name2 = curr2.name;
 
                                     return (
-                                        <MenuItem key={id} value={id}>
+                                        <MenuItem key={id} value={pair}>
                                             <Stack direction="row" alignItems='center'>
                                                 <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
                                                 <Icon icon={arrowsExchange} width="16" height="16"/>

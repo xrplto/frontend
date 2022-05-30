@@ -74,68 +74,6 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
         }
     }, []);
 
-    // useEffect(() => {
-    //     function connect(pair) {
-    //         const curr1 = pair.curr1;
-    //         const curr2 = pair.curr2;
-    //         setReady(true);
-    //         /*
-    //         { ASKs
-    //             "Account": "r4A8CVAgcxBSvrw45YgjQEgwAC5zikx5ZF",
-    //             "BookDirectory": "B288090D3C8C2DFE50D835DB4C0F09EAF4C1ABF29B1F92DD5806FECB896B8EE7",
-    //             "BookNode": "0",
-    //             "Flags": 131072,
-    //             "LedgerEntryType": "Offer",
-    //             "OwnerNode": "1",
-    //             "PreviousTxnID": "2C6830E26108F374726B0C53824A1547B6017485E2863640C0B22AD57377669B",
-    //             "PreviousTxnLgrSeq": 71537721,
-    //             "Sequence": 67110224,
-    //             "TakerGets": {
-    //                 "currency": "CSC",
-    //                 "issuer": "rCSCManTZ8ME9EoLrSHHYKW8PPwWMgkwr",
-    //                 "value": "415460.6399156552"
-    //             },
-    //             "TakerPays": "818041999",
-    //             "index": "CBF6BA4481EA2D4C12C2D78231C1DA8935D54406E8CB264DB6D7BC3CAEF2DA33",
-    //             "owner_funds": "874562.6699156552",
-    //             "quality": "1968.999997607655"
-    //         }
-    //         const subscribeMessage = {
-    //             id: 'book',
-    //             command: 'subscribe',
-    //             books: [
-    //                 {
-    //                     taker_pays: {
-    //                         currency: curr1.currency,
-    //                         issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-    //                     },
-    //                     taker_gets: {
-    //                         currency: curr2.currency,
-    //                         issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-    //                     },
-    //                     snapshot: true,
-    //                     both: true
-    //                 }
-    //             ]
-    //         }
-
-    //         // const unSubscribeMessage = {
-    //         //     event: 'unsubscribe',
-    //         //     feed: 'book_ui_1',
-    //         //     product_ids: [ProductsMap[product]]
-    //         // };
-    //         // sendJsonMessage(unSubscribeMessage);
-
-    //         sendJsonMessage(subscribeMessage);
-    //     }
-
-    //     if (isFeedKilled) {
-    //         getWebSocket()?.close();
-    //     } else {
-    //         connect(pair);
-    //     }
-    // }, [pair, isFeedKilled, sendJsonMessage, getWebSocket]);
-
     const getIndicatorProgress = (value) => {
         if(isNaN(value)) throw new Error('Needs a value')
 
@@ -195,8 +133,8 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                 const isNew = level.isNew;
                 const isBid = orderType === ORDER_TYPE_BIDS;
                 const depth = getIndicatorProgress(level.amount);
-                const currName1 = pair.curr1.name;
-                const currName2 = pair.curr2.name;
+                const currName1 = pair?.curr1.name;
+                const currName2 = pair?.curr2.name;
 
                 if (price < 0.00000001)
                     price = expo(price, 2);
