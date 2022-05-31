@@ -21,8 +21,8 @@ export default function PriceDesc({token}) {
     const {
         name,
         exch,
-        p7d,
-        p24h,
+        pro7d,
+        pro24h,
         md5,
         /*id,
         acct,
@@ -55,8 +55,8 @@ export default function PriceDesc({token}) {
             </Stack>
 
             <Stack direction="row" spacing={1}>
-                <BearBullChip value={p24h[0]} tooltip='24h(%)'/>
-                <BearBullChip value={p7d[0]} tooltip={
+                <BearBullChip value={pro24h} tooltip='24h(%)'/>
+                <BearBullChip value={pro7d} tooltip={
                     <Stack alignItems='center'>
                         7d (%)
                         <Box

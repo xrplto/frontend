@@ -16,7 +16,7 @@ export default function Description({token}) {
         id,
         name,
         exch,
-        p24h,
+        pro24h,
         amt,
         acct,
         code,
@@ -24,7 +24,7 @@ export default function Description({token}) {
         /*
         date,
         md5,
-        p7d,
+        pro7d,
         trline,
         holders,
         offers*/
@@ -38,8 +38,8 @@ export default function Description({token}) {
     const supply = fNumber(amt);
     const volume24h = fNumber(vol24h);
 
-    //const vpro7d = fPercent(p7d[0]);
-    const vpro24h = fPercent(p24h[0]);
+    //const vpro7d = fPercent(pro7d);
+    const vpro24h = fPercent(pro24h);
 
     let strPro24h = 0;
     if (vpro24h < 0) {

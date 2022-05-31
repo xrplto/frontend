@@ -62,8 +62,8 @@ const TABLE_HEAD = [
     { no: 0, id: 'id', label: '#', align: 'left', order: false },
     { no: 1, id: 'name', label: 'Name', align: 'left', order: true },
     { no: 2, id: 'exch', label: 'Price', align: 'left', order: true },
-    { no: 3, id: 'pro24h', label: '24h (%)', align: 'left', order: false },
-    { no: 4, id: 'pro7d', label: '7d (%)', align: 'left', order: false },
+    { no: 3, id: 'pro24h', label: '24h (%)', align: 'left', order: true },
+    { no: 4, id: 'pro7d', label: '7d (%)', align: 'left', order: true },
     { no: 5, id: 'vol24h', label: 'Volume(24h)', align: 'left', order: true },
     { no: 6, id: 'vol24htx', label: 'Tx(24h)', align: 'left', order: true },
     { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
@@ -288,13 +288,14 @@ export default function Token() {
                                 vol24htx,
                                 //holders,
                                 //offers,
-                                xrpPair,
+                                pairXRP,
                                 kyc,
                                 md5,
                                 user,
-                                p7d,
-                                p24h,
+                                pro7d,
+                                pro24h,
                                 exch } = row;
+
                             const imgUrl = `/static/tokens/${name.replace(/[^a-zA-Z0-9]/g, "")}.jpg`;
 
                             const isItemSelected = false;//selected.indexOf(id) !== -1;
@@ -310,29 +311,11 @@ export default function Token() {
                                 }
                             } catch (e) { }
 
-                            /*"xrpPair": {
-                                "curr1": {
-                                    "currency": "534F4C4F00000000000000000000000000000000",
-                                    "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-                                    "value": 1494231.0359380918
-                                },
-                                "curr2": {
-                                    "currency": "XRP",
-                                    "issuer": null,
-                                    "value": 1152170.3078069987
-                                }
-                            }*/
+                            /* "pairXRP": [1494231.0359380918, 1152170.3078069987] */
 
                             let tradedAmountWithXRP = 0;
-                            if (xrpPair) {
-                                const curr1 = xrpPair.curr1;
-                                const curr2 = xrpPair.curr2;
-                                if (acct === curr1.issuer)
-                                    tradedAmountWithXRP = curr1.value;
-
-                                if (acct === curr2.issuer)
-                                    tradedAmountWithXRP = curr2.value;
-                            }
+                            if (pairXRP)
+                                tradedAmountWithXRP = pairXRP[0];
 
                             /*const uri = [id, orderBy];
                             const encodedUri = Buffer.from(encode(uri)).toString('hex');
@@ -399,10 +382,10 @@ export default function Token() {
                                         </Stack>
                                     </TableCell>
                                     <TableCell align="left">
-                                        <BearBullTypography value={p24h[0]} variant="subtitle1" />
+                                        <BearBullTypography value={pro24h} variant="subtitle1" />
                                     </TableCell>
                                     <TableCell align="left">
-                                        <BearBullTypography value={p7d[0]} variant="subtitle1" />
+                                        <BearBullTypography value={pro7d} variant="subtitle1" />
                                     </TableCell>
                                     <TableCell align="left">
                                         <Stack>

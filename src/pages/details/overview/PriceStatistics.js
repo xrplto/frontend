@@ -59,9 +59,11 @@ export default function PriceStatistics({token}) {
         amt,
         exch,
         maxmin24h,
+        pro24h,
         p24h,
         vol24h,
         /*
+        pro7d,
         p7d,
         holders,
         offers,
@@ -79,13 +81,12 @@ export default function PriceStatistics({token}) {
     if (marketcap > 0)
         voldivmarket = fNumber(vol24h / marketcap);
    
-    const pc24 = p24h[1];
     let strPc24h;
-    if (pc24 < 0) {
-        strPc24h = fNumber(-pc24);
+    if (p24h < 0) {
+        strPc24h = fNumber(-p24h);
         strPc24h = '-$' + strPc24h;
     } else {
-        strPc24h = '$' + fNumber(pc24);
+        strPc24h = '$' + fNumber(p24h);
     }
 
     return (
@@ -111,7 +112,7 @@ export default function PriceStatistics({token}) {
                         <TableCell align="left">
                             <Stack>
                             {strPc24h}
-                            <BearBullTypography value={p24h[0]} variant="subtitle2"/>
+                            <BearBullTypography value={pro24h} variant="subtitle2"/>
                             </Stack>
                         </TableCell>
                     </TableRow>
