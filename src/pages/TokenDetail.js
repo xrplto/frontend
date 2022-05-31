@@ -28,21 +28,6 @@ import { useDispatch } from "react-redux";
 import { update_status } from "../redux/statusSlice";
 // ---------------------------------------------------
 
-const TABLE_HEAD = [
-    { no: 0, id: 'id', label: '#', align: 'left', order: false },
-    { no: 1, id: 'name', label: 'Name', align: 'left', order: true },
-    { no: 2, id: 'exch', label: 'Price', align: 'left', order: true },
-    { no: 3, id: 'pro24h', label: '24h (%)', align: 'left', order: false },
-    { no: 4, id: 'pro7d', label: '7d (%)', align: 'left', order: false },
-    { no: 5, id: 'vol24h', label: 'Volume(24h)', align: 'left', order: true },
-    { no: 6, id: 'vol24htx', label: 'Tx(24h)', align: 'left', order: true },
-    { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
-    { no: 8, id: 'trline', label: 'Trust Lines', align: 'left', order: true },
-    { no: 9, id: 'amt', label: 'Total Supply', align: 'left', order: true },
-    { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
-    { id: '' }
-];
-
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
  
@@ -79,9 +64,12 @@ function a11yProps(index) {
 const ORDER_TYPE_BIDS = 1;
 const ORDER_TYPE_ASKS = 2;
 
-export default function Detail(props) {
+export default function TokenDetail(props) {
+    const { md5 } = useParams();
     const WSS_URL = 'wss://ws.xrpl.to';
     const BASE_URL = 'https://api.xrpl.to/api';
+    const dispatch = useDispatch();
+    //const status = useSelector(selectStatus);
     const [history, setHistory] = useState([]);
     const [range, setRange] = useState('1D');
     const [token, setToken] = useState(null);
@@ -113,33 +101,8 @@ export default function Detail(props) {
         setValue(newValue);
         gotoTabView(event);
     };
-    // const [searchParams, setSearchParams] = useSearchParams();
-    // const id = searchParams.get("id");
-    // const sort = searchParams.get("sort");
 
-    const { exMD5 } = useParams();
-
-    let md5 = null;
-    let id = 0;
-    let sort = null;
-
-    if (exMD5 && exMD5.length > 10) {
-        try {
-            id = parseInt(exMD5.substring(0, 5), 16);
-            const sortInt = parseInt(exMD5.substring(5, 7), 16);
-            if (sortInt < TABLE_HEAD.length) {
-                sort = TABLE_HEAD[sortInt].label;
-                md5 = exMD5.substring(7);
-            }
-        } catch(err) {
-            md5 = null;
-            id = 0;
-            sort = null;
-        }
-    }
-
-    //const status = useSelector(selectStatus);
-    const dispatch = useDispatch();
+    
 
     useEffect(() => {
         function getDetail() {
@@ -437,7 +400,7 @@ export default function Detail(props) {
                     <Container maxWidth="xl">
                         <Grid item container direction="row" >
                             <Grid item xs={12} md={6} lg={5} sx={{ mt: 3 }}>
-                                <UserDesc token={token} id={id} sort={sort} />
+                                <UserDesc token={token} />
                             </Grid>
                             
                             <Grid item xs={12} md={6} lg={7} sx={{ mt: 3 }}>

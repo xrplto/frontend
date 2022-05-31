@@ -109,7 +109,7 @@ const TABLE_HEAD = [
 //     return stabilizedThis.map((el) => el[0]);
 // }
 
-export default function Token() {
+export default function TokenList() {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api'; // 'http://localhost/api';
     const dispatch = useDispatch();
@@ -118,7 +118,6 @@ export default function Token() {
     const [order, setOrder] = useState('desc');
     // -----------------------------------------------
     const [orderBy, setOrderBy] = useState('vol24h');
-    const [selHead, setSelHead] = useState(5);
     // -----------------------------------------------
     const [rows, setRows] = useState(100);
     const [tokens, setTokens] = useState([]);
@@ -190,7 +189,6 @@ export default function Token() {
         const isDesc = orderBy === id && order === 'desc';
         setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(id);
-        setSelHead(no);
         setOffset(0);
         setPage(0);
         setLoad(true);
@@ -302,8 +300,6 @@ export default function Token() {
 
                             const marketcap = amt * exch / status.USD;
 
-                            const detail = id.toString(16).padStart(5, '0') + selHead.toString(16).padStart(2, '0');
-                            
                             let date_fixed = '';
                             try {
                                 if (date) {
@@ -348,7 +344,7 @@ export default function Token() {
                                                     style={{ textDecoration: 'none' }}
                                                     underline="hover"
                                                     color="inherit"
-                                                    to={`detail/${detail}${md5}`}
+                                                    to={`token/${md5}`}
                                                     onClick={() => { localStorage.setItem("selectToken", JSON.stringify(row)); }}
                                                 >
                                                     <CoinNameTypography variant="h6" noWrap>
