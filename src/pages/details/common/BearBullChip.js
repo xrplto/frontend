@@ -5,10 +5,8 @@ import caretDown from '@iconify/icons-bx/caret-down';
 import caretUp from '@iconify/icons-bx/caret-up';
 // material
 import { Chip, Tooltip, Typography } from '@mui/material';
-//import {styled, alpha, useTheme } from '@mui/material/styles';
 import { fPercent } from '../../../utils/formatNumber';
 // ----------------------------------------------------------------------
-
 const BearishChip = withStyles({
     root: {
         backgroundColor: "#B72136"

@@ -38,7 +38,7 @@ export default function ExtraDesc({token}) {
 
     const {
         name,
-        amt,
+        amount,
         exch,
         vol24h,
         /*vol24hamt,
@@ -46,17 +46,17 @@ export default function ExtraDesc({token}) {
         holders,
         offers,
         id
-        acct,
-        code,
+        issuer,
+        currency,
         date,
-        trline,*/
+        trustlines,*/
     } = token;
   
     let user = token.user;
     if (!user) user = name;
 
-    const marketcap = fNumber(amt * exch / status.USD);
-    const supply = fNumber(amt);
+    const marketcap = fNumber(amount * exch / status.USD);
+    const supply = fNumber(amount);
     const volume = fNumber(vol24h);
 
     return (

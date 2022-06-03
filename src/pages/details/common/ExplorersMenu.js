@@ -25,7 +25,7 @@ const LinkChip = styled(Chip)(({ theme }) => ({
 }));
 
 
-export default function ExplorersMenu({acct, code}) {
+export default function ExplorersMenu({issuer}) {
     const [anchorEl, setAnchorEl] = useState(null);
     const [open, setOpen] = useState(false);
 
@@ -83,7 +83,7 @@ export default function ExplorersMenu({acct, code}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://bithomp.com/explorer/${acct}`}
+                    href={`https://bithomp.com/explorer/${issuer}`}
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
@@ -95,7 +95,7 @@ export default function ExplorersMenu({acct, code}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://gatehub.net/explorer/${acct}`}
+                    href={`https://gatehub.net/explorer/${issuer}`}
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
@@ -107,7 +107,7 @@ export default function ExplorersMenu({acct, code}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://xrpscan.com/account/${acct}`}
+                    href={`https://xrpscan.com/account/${issuer}`}
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() =>  handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
@@ -122,7 +122,7 @@ export default function ExplorersMenu({acct, code}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://explorer.xrplf.org/${acct}`}
+                    href={`https://explorer.xrplf.org/${issuer}`}
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
@@ -134,7 +134,7 @@ export default function ExplorersMenu({acct, code}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://livenet.xrpl.org/accounts/${acct}`}
+                    href={`https://livenet.xrpl.org/accounts/${issuer}`}
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
@@ -146,7 +146,7 @@ export default function ExplorersMenu({acct, code}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://xrplorer.com/account/${acct}`}
+                    href={`https://xrplorer.com/account/${issuer}`}
                     rel="noreferrer noopener"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>

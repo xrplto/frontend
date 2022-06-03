@@ -53,14 +53,15 @@ export default function AccountPopover() {
                 if (isRunning) return;
                 isRunning = true;
                 try {
-                    const res = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+                    const res = await axios.get(`${BASE_URL}/xumm/payloadlogin/${uuid}`);
                     const data = res.data.data;
+                    const admin = res.data.admin;
                     const account = data.response.account;
                     const token = data.application.issued_user_token;
                     if (account) {
                         setOpen(true);
                         setOpenLogin(false);
-                        setAccountProfile({account: account, uuid: uuid, token:token});
+                        setAccountProfile({account: account, uuid: uuid, token:token, admin:admin});
                         return;
                     }
                 } catch (err) {

@@ -16,6 +16,8 @@ import numeral from 'numeral';
 }*/
 
 export function fNumber(num) {
+    if (!num) return 0;
+
     const strNum = num.toString().trim();
     const intNum = num - (num % 1);
 

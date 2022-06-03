@@ -17,7 +17,7 @@ export default function Router() {
             element: <MainLayout />,
             children: [
                 { path: '/', element: <TokenList /> },
-                { path: 'token/:md5', element: <TokenDetail/> },
+                { path: 'token/:urlSlug', element: <TokenDetail/> },
                 { path: '*', element: <Navigate to="/404/NotFound" /> }
             ]
         },

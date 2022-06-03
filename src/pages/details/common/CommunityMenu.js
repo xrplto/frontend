@@ -25,7 +25,7 @@ const LinkChip = styled(Chip)(({ theme }) => ({
 }));
 
 
-export default function CommunityMenu({acct, code}) {
+export default function CommunityMenu() {
     const [anchorEl, setAnchorEl] = useState(null);
     const [open, setOpen] = useState(false);
 

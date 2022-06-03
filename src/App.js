@@ -1,20 +1,19 @@
 import { /*useContext, useMemo,*/ useState, useEffect } from 'react';
 import Context from './Context'
-// routes
+// Routes
 import Router from './routes';
-// theme
+// Theme
 import ThemeConfig from './theme';
 import GlobalStyles from './theme/globalStyles';
-// components
-// react loader spinner
-//import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
-// material
+// Material
 import { Backdrop } from "@mui/material";
-import { PuffLoader, HashLoader } from "react-spinners";
 // ----------------------------------------------------------------------
-import statusReducer from "./redux/statusSlice";
+// Redux
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
+import statusReducer from "./redux/statusSlice";
+// Loader
+import { PuffLoader } from "react-spinners";
 
 const store = configureStore({
     reducer: {
@@ -25,7 +24,7 @@ const store = configureStore({
 export default function App() {
     const [loading, setLoading] = useState(false);
     const key_darkmode = 'theme:isDarkMode'
-    const key_profile = 'account:profile8'
+    const key_profile = 'account:profile88'
     const [isDarkMode, setIsDarkMode] = useState(true);
     const [accountProfile, setAccountProfile] = useState(null);
 

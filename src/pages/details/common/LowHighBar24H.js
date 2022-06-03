@@ -53,11 +53,11 @@ export default function LowHighBar24H({token}) {
     const status = useSelector(selectStatus);
     const {
         exch,
-        maxmin24h
+        maxMin24h
     } = token;
     const price = fNumber(exch / status.USD);
-    const min = maxmin24h[1];
-    const max = maxmin24h[0];
+    const min = maxMin24h[1];
+    const max = maxMin24h[0];
     const delta = max - min;
     let percent = 0;
     if (delta > 0)

@@ -22,15 +22,6 @@ export default function UserDesc({token}) {
         kyc,
         holders,
         offers,
-        /*
-        acct,
-        domain,
-        twitter,
-        code,
-        date,
-        amt,
-        trline,        
-        exch*/
     } = token;
 
     const imgUrl = `/static/tokens/${name.replace(/[^a-zA-Z0-9]/g, "")}.jpg`;

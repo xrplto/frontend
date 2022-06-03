@@ -24,14 +24,6 @@ export default function PriceDesc({token}) {
         pro7d,
         pro24h,
         md5,
-        /*id,
-        acct,
-        code,
-        date,
-        amt,
-        trline,
-        holders,
-        offers*/
     } = token;
 
     let user = token.user;

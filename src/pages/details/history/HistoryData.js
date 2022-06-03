@@ -21,7 +21,6 @@ import {
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
 import HistoryToolbar from './HistoryToolbar';
-import { MD5 } from 'crypto-js';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 // ----------------------------------------------------------------------
@@ -97,15 +96,15 @@ const badge24hStyle = {
     padding: '1px 4px'
 };
 
-function getPair(issuer, code) {
-    // issuer, currencyCode, 'XRP', undefined
-    const t1 = 'undefined_XRP';
-    const t2 = issuer  + '_' +  code;
-    let pair = t1 + t2;
-    if (t1.localeCompare(t2) > 0)
-        pair = t2 + t1;
-    return MD5(pair).toString();
-}
+// function getPair(issuer, currency) {
+//     // issuer, currency, 'XRP', undefined
+//     const t1 = 'undefined_XRP';
+//     const t2 = issuer  + '_' +  currency;
+//     let pair = t1 + t2;
+//     if (t1.localeCompare(t2) > 0)
+//         pair = t2 + t1;
+//     return MD5(pair).toString();
+// }
 
 function truncate(str, n){
     if (!str) return '';
@@ -122,8 +121,8 @@ export default function HistoryData({token, pairs, pair, setPair}) {
     const [exchs, setExchs] = useState([]);
     const theme = useTheme();
     const {
-        acct,
-        code,
+        issuer,
+        currency,
         // md5
     } = token;
 
@@ -257,19 +256,19 @@ export default function HistoryData({token, pairs, pair, setPair}) {
                                 } = row;
                             let value;
                             let exch;
-                            let buy;
-                            if (takerPaid.issuer === acct && takerPaid.currency === code) {
+                            // let buy;
+                            if (takerPaid.issuer === issuer && takerPaid.currency === currency) {
                                 // SELL, Red
                                 const t = parseFloat(takerGot.value);
                                 value = parseFloat(takerPaid.value);
                                 exch = t / value;
-                                buy = false;
+                                // buy = false;
                             } else {
                                 // BUY, Green
                                 const t = parseFloat(takerPaid.value);
                                 value = parseFloat(takerGot.value);
                                 exch = t / value;
-                                buy = true;
+                                // buy = true;
                             }
                             const nDate = new Date((date + EPOCH_OFFSET) * 1000);
                             const year = nDate.getFullYear();

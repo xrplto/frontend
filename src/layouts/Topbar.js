@@ -1,16 +1,12 @@
 import * as React from 'react';
-//import { useContext } from 'react'
-//import { useState, useEffect } from 'react';
-//import Context from '../Context'
-// material
+// Material
 import { alpha, styled/*, useTheme*/ } from '@mui/material/styles';
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
-// components
-//
+// Components
 import { fIntNumber, fCurrency3, fNumber } from '../utils/formatNumber';
 import { Icon } from '@iconify/react';
 import postageStamp from '@iconify/icons-mdi/postage-stamp';
-// ----------------------------------------------------------------------
+// Redux
 import { useSelector } from "react-redux";
 import { selectStatus } from "../redux/statusSlice";
 // ----------------------------------------------------------------------

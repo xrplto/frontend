@@ -16,7 +16,7 @@ export default function TopMark({ md5 }) {
         sendMessage,
         lastMessage,
         readyState,
-    } = useWebSocket(`wss://api.xrpl.to/api/ws/detail/${md5}`);
+    } = useWebSocket(`wss://api.xrpl.to/ws/detail/${md5}`);
 
     /*const connectionStatus = {
         [ReadyState.CONNECTING]: 'Connecting',

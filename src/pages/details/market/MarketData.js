@@ -1,18 +1,10 @@
 // material
-// import axios from 'axios'
-// import { useState, useEffect } from 'react';
 import { /*alpha,*/ styled } from '@mui/material/styles';
-// import { withStyles } from '@mui/styles';
 import {
     Grid,
     Stack
 } from '@mui/material';
 import PairsList from './PairsList';
-// import { MD5 } from 'crypto-js';
-// ----------------------------------------------------------------------
-// utils
-// import { fNumber } from '../../../utils/formatNumber';
-// ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -24,16 +16,6 @@ const StackStyle = styled(Stack)(({ theme }) => ({
     //backgroundColor: alpha("#919EAB", 0.03),
 }));
 // ----------------------------------------------------------------------
-
-// function getPair(issuer, code) {
-//     // issuer, currencyCode, 'XRP', undefined
-//     const t1 = 'undefined_XRP';
-//     const t2 = issuer  + '_' +  code;
-//     let pair = t1 + t2;
-//     if (t1.localeCompare(t2) > 0)
-//         pair = t2 + t1;
-//     return MD5(pair).toString();
-// }
 
 export default function MarketData({token, pairs}) {
     return (

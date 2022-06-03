@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-// material
+// Material
 import { Paper, Typography } from '@mui/material';
 
 // ----------------------------------------------------------------------
