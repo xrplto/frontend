@@ -13,7 +13,7 @@ import {
 import { tableCellClasses } from "@mui/material/TableCell";
 import BearBullTypography from '../../../layouts/BearBullTypography';
 // ----------------------------------------------------------------------
-// utils
+// Utils
 import { fNumber } from '../../../utils/formatNumber';
 // ----------------------------------------------------------------------
 // Redux
@@ -56,9 +56,9 @@ export default function PriceStatistics({token}) {
     const {
         id,
         name,
-        amt,
+        amount,
         exch,
-        maxmin24h,
+        maxMin24h,
         pro24h,
         p24h,
         vol24h,
@@ -67,16 +67,16 @@ export default function PriceStatistics({token}) {
         p7d,
         holders,
         offers,
-        acct,
-        code,
+        issuer,
+        currency,
         date,
-        trline,*/
+        trustlines,*/
     } = token;
 
     let user = token.user;
     if (!user) user = name;
 
-    const marketcap = amt * exch / status.USD;
+    const marketcap = amount * exch / status.USD;
     let voldivmarket = 0;
     if (marketcap > 0)
         voldivmarket = fNumber(vol24h / marketcap);
@@ -119,7 +119,7 @@ export default function PriceStatistics({token}) {
                     <TableRow>
                         <TableCell align="left"><Label variant="subtitle1" noWrap >24h Low / 24h High</Label></TableCell>
                         <TableCell align="left">
-                            <Typography variant="subtitle2">${fNumber(maxmin24h[1])} / ${fNumber(maxmin24h[0])}</Typography>
+                            <Typography variant="subtitle2">${fNumber(maxMin24h[1])} / ${fNumber(maxMin24h[0])}</Typography>
                         </TableCell>
                     </TableRow>
                     <TableRow>

@@ -22,9 +22,11 @@ export default function UserDesc({token}) {
         kyc,
         holders,
         offers,
+        imgExt,
+        md5
     } = token;
 
-    const imgUrl = `/static/tokens/${name.replace(/[^a-zA-Z0-9]/g, "")}.jpg`;
+    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
   
     let user = token.user;
     if (!user) user = name;

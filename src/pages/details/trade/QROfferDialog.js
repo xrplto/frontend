@@ -28,14 +28,6 @@ const QRDialog = styled(Dialog)(({ theme }) => ({
 //     // backgroundColor: alpha("#00AB88", 0.99),
 // }));
 
-const ContentContainer = styled('div')({
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '60vh',
-    height: '28vh',
-});
-
 export default function QROfferDialog(props) {
     const open = props.open;
     const qrUrl = props.qrUrl;

@@ -2,7 +2,7 @@
 import axios from 'axios'
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
-import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import { withStyles } from '@mui/styles';
 import BigNumber from 'bignumber.js';
 import {

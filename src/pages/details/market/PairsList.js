@@ -1,5 +1,4 @@
 // material
-//import { useState, useEffect } from 'react';
 import { /*alpha,*/ styled, useTheme } from '@mui/material/styles';
 import {
     Avatar,
@@ -73,8 +72,8 @@ export default function PairsList({token, pairs}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
     // const {
-    //     acct,
-    //     code,
+    //     issuer,
+    //     currency,
     //     md5
     // } = token;
     // https://api.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607

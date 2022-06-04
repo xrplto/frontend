@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import { /*alpha, styled,*/ useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 
 import {
     AccountBalanceWallet as AccountBalanceWalletIcon
@@ -116,7 +116,8 @@ export default function AccountBalance({pair}) {
             if (isRunning) return;
             isRunning = true;
             try {
-                const res = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+                const res = await axios.get(`${BASE_URL}/xumm/payloadlogin/${uuid}`);
+                const admin = res.data.admin;
                 const data = res.data.data;
                 const account = data.response.account;
                 const token = data.application.issued_user_token;
@@ -132,7 +133,7 @@ export default function AccountBalance({pair}) {
                 */
                 if (account) {
                     setOpenLogin(false);
-                    setAccountProfile({account: account, uuid: uuid, token:token});
+                    setAccountProfile({account: account, uuid: uuid, token:token, admin:admin});
                     return;
                 }
             } catch (err) {

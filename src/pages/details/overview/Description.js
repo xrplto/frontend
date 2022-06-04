@@ -17,15 +17,15 @@ export default function Description({token}) {
         name,
         exch,
         pro24h,
-        amt,
-        acct,
-        code,
+        amount,
+        issuer,
+        currency,
         vol24h,
         /*
         date,
         md5,
         pro7d,
-        trline,
+        trustlines,
         holders,
         offers*/
     } = token;
@@ -34,8 +34,8 @@ export default function Description({token}) {
     if (!user) user = name;
 
     const price = fNumber(exch / status.USD);
-    const marketcap = fNumber(amt * exch / status.USD);
-    const supply = fNumber(amt);
+    const marketcap = fNumber(amount * exch / status.USD);
+    const supply = fNumber(amount);
     const volume24h = fNumber(vol24h);
 
     //const vpro7d = fPercent(pro7d);
@@ -59,10 +59,10 @@ export default function Description({token}) {
             <Typography sx={{pl:2, mt:2}}>
                 If you would like to know where to buy {user}, the top XRPL DEX for trading in {user} token are currently 
                 <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener"
-                    href={`https://xumm.app/detect/xapp:xumm.dex?issuer=${acct}&currency=${code}`}
+                    href={`https://xumm.app/detect/xapp:xumm.dex?issuer=${issuer}&currency=${currency}`}
                 >{' Xumm DEX'}</Link> and
                 <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener"
-                    href={`https://sologenic.org/trade?network=mainnet&market=${code}%2B${acct}%2FXRP`}
+                    href={`https://sologenic.org/trade?network=mainnet&market=${currency}%2B${issuer}%2FXRP`}
                 >{' Sologenic DEX'}</Link>.
                 
             </Typography>
