@@ -1,18 +1,10 @@
 import React from 'react';
-import { styled, useTheme } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
 import infoFilled from '@iconify/icons-ep/info-filled';
 import {
     Tooltip,
     Typography
 } from '@mui/material';
-
-const Container = styled('div')({
-    color: '#98a6af',
-    backgroundColor: '#121723',
-    width: '50%',
-    textAlign: 'center'
-});
 
 const formatNumber = (arg) => {
     return new Intl.NumberFormat('en-US').format(arg);

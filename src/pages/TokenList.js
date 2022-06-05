@@ -67,47 +67,11 @@ const TABLE_HEAD = [
     { no: 5, id: 'vol24h', label: 'Volume(24h)', align: 'left', order: true },
     { no: 6, id: 'vol24htx', label: 'Tx(24h)', align: 'left', order: true },
     { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
-    { no: 8, id: 'trline', label: 'Trust Lines', align: 'left', order: true },
-    { no: 9, id: 'amt', label: 'Total Supply', align: 'left', order: true },
+    { no: 8, id: 'trustlines', label: 'Trust Lines', align: 'left', order: true },
+    { no: 9, id: 'amount', label: 'Total Supply', align: 'left', order: true },
     { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
     { id: '' }
 ];
-
-// ----------------------------------------------------------------------
-// function descendingComparator(a, b, orderBy) {
-//     if (b[orderBy] < a[orderBy]) {
-//         return -1;
-//     }
-//     if (b[orderBy] > a[orderBy]) {
-//         return 1;
-//     }
-//     return 0;
-// }
-
-// function getComparator(order, orderBy) {
-//     return order === 'desc'
-//         ? (a, b) => descendingComparator(a, b, orderBy)
-//         : (a, b) => -descendingComparator(a, b, orderBy);
-// }
-
-// function applySortFilter(array, comparator, query) {
-//     const stabilizedThis = array.map((el, index) => [el, index]);
-//     stabilizedThis.sort((a, b) => {
-//         const order = comparator(a[0], b[0]);
-//         if (order !== 0) return order;
-//         return a[1] - b[1];
-//     });
-//     if (query) {
-//         return filter(array, (_token) => _token.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-//     }
-//     /*let idx = 1;
-//     const res = stabilizedThis.map((el) => {
-//         el[0].id = idx++;
-//         return el[0];
-//     });
-//     return res;*/
-//     return stabilizedThis.map((el) => el[0]);
-// }
 
 export default function TokenList() {
     const theme = useTheme();
@@ -275,12 +239,12 @@ export default function TokenList() {
                         .map((row) => {
                             const {
                                 id,
-                                acct,
+                                // issuer,
                                 name,
-                                code,
+                                // currency,
                                 date,
-                                amt,
-                                trline,
+                                amount,
+                                trustlines,
                                 vol24h,
                                 //vol24hamt,
                                 vol24htx,
@@ -289,16 +253,19 @@ export default function TokenList() {
                                 pairXRP,
                                 kyc,
                                 md5,
+                                urlSlug,
                                 user,
                                 pro7d,
                                 pro24h,
-                                exch } = row;
+                                exch,
+                                imgExt
+                            } = row;
 
-                            const imgUrl = `/static/tokens/${name.replace(/[^a-zA-Z0-9]/g, "")}.jpg`;
+                            const imgUrl = `/static/tokens/${md5}.${imgExt}`;
 
                             const isItemSelected = false;//selected.indexOf(id) !== -1;
 
-                            const marketcap = amt * exch / status.USD;
+                            const marketcap = amount * exch / status.USD;
 
                             let date_fixed = '';
                             try {
@@ -344,7 +311,7 @@ export default function TokenList() {
                                                     style={{ textDecoration: 'none' }}
                                                     underline="hover"
                                                     color="inherit"
-                                                    to={`token/${md5}`}
+                                                    to={`token/${urlSlug}`}
                                                     onClick={() => { localStorage.setItem("selectToken", JSON.stringify(row)); }}
                                                 >
                                                     <CoinNameTypography variant="h6" noWrap>
@@ -412,10 +379,10 @@ export default function TokenList() {
                                     <TableCell align="left">$ {fNumber(marketcap)}</TableCell>
                                     {/* <TableCell align="left">{holders}</TableCell>
                                     <TableCell align="left">{offers}</TableCell> */}
-                                    <TableCell align="left">{trline}</TableCell>
-                                    <TableCell align="left">{fNumber(amt)} <Typography variant="caption" noWrap>{name}</Typography></TableCell>
+                                    <TableCell align="left">{trustlines}</TableCell>
+                                    <TableCell align="left">{fNumber(amount)} <Typography variant="caption" noWrap>{name}</Typography></TableCell>
                                     <TableCell align="left">
-                                        {/* {Str(acct).limit(10, '...').get()} */}
+                                        {/* {Str(issuer).limit(10, '...').get()} */}
                                         <Box
                                             component="img"
                                             alt=""
@@ -424,7 +391,7 @@ export default function TokenList() {
                                         />
                                     </TableCell>
                                     {/*
-                                    <a href={`https://bithomp.com/explorer/${acct}`} target="_blank" rel="noreferrer noopener"> 
+                                    <a href={`https://bithomp.com/explorer/${issuer}`} target="_blank" rel="noreferrer noopener"> 
                                     </a>
                                     <TableCell align="left">{price}</TableCell>
                                     <TableCell align="left">{dailypercent}</TableCell>
@@ -442,7 +409,7 @@ export default function TokenList() {
                                     </TableCell> */}
 
                                     <TableCell align="right">
-                                        <TokenMoreMenu acct={acct} currency={code} />
+                                        <TokenMoreMenu token={row} />
                                     </TableCell>
                                 </TableRow>
                             );

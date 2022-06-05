@@ -65,7 +65,7 @@ const ORDER_TYPE_BIDS = 1;
 const ORDER_TYPE_ASKS = 2;
 
 export default function TokenDetail(props) {
-    const { md5 } = useParams();
+    const { urlSlug } = useParams();
     const WSS_URL = 'wss://ws.xrpl.to';
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
@@ -107,7 +107,7 @@ export default function TokenDetail(props) {
     useEffect(() => {
         function getDetail() {
             // https://api.xrpl.to/api/detail/0413ca7cfc258dfaf698c02fe304e607?range=1D
-            axios.get(`${BASE_URL}/detail/${md5}?range=${range}`)
+            axios.get(`${BASE_URL}/detail/${urlSlug}?range=${range}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -134,17 +134,16 @@ export default function TokenDetail(props) {
                     // always executed
                 });
         }
-        if (md5)
+        if (urlSlug)
             getDetail();
 
-    }, [md5, range, dispatch]);
+    }, [urlSlug, range, dispatch]);
 
     useEffect(() => {
         function getPairs() {
-            if (!md5) return;
             if (!token) return;
             // https://api.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
-            axios.get(`${BASE_URL}/pairs?md5=${md5}`)
+            axios.get(`${BASE_URL}/pairs?md5=${token.md5}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -198,7 +197,7 @@ export default function TokenDetail(props) {
             clearInterval(timer);
         }
 
-    }, [md5, token, pair, pairs]);
+    }, [token, pair, pairs]);
 
     useEffect(() => {
         let arr = [];
@@ -220,8 +219,8 @@ export default function TokenDetail(props) {
     }, [clearNewFlag, asks, bids]);
 
     const { sendJsonMessage/*, getWebSocket*/ } = useWebSocket(WSS_URL, {
-        onOpen: () => {console.log('wss://ws.xrpl.to opened');setWsReady(true);},
-        onClose: () => {console.log('wss://ws.xrpl.to closed');setWsReady(false);},
+        onOpen: () => {setWsReady(true);},
+        onClose: () => {setWsReady(false);},
         shouldReconnect: (closeEvent) => true,
         onMessage: (event) => processMessages(event)
     });
@@ -364,12 +363,13 @@ export default function TokenDetail(props) {
     } else {
         const {
             name,
+            md5,
             /*id,
-            acct,
-            code,
+            issuer,
+            currency,
             date,
-            amt,
-            trline,
+            amount,
+            trustlines,
             holders,
             offers,
             exch*/
