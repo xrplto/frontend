@@ -4,6 +4,9 @@ import { useRef, useState, useEffect } from 'react';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
 import infoFilled from '@iconify/icons-ep/info-filled';
+// Loader
+import { PulseLoader } from "react-spinners";
+
 import {
     Edit as EditIcon,
     Save as SaveIcon,
@@ -14,12 +17,16 @@ import {
 } from '@mui/icons-material';
 
 import {
+    Alert,
     Avatar,
+    Backdrop,
     Dialog,
     DialogTitle,
     Divider,
     IconButton,
     Link,
+    Slide,
+    Snackbar,
     Stack,
     Table,
     TableBody,
@@ -36,8 +43,8 @@ import EditDialog from './EditDialog';
 
 const QRDialog = styled(Dialog)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
-    backdropFilter: 'blur(2px)',
-    WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
+    backdropFilter: 'blur(1px)',
+    WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
     backgroundColor: alpha(theme.palette.background.paper, 0.0),
     borderRadius: '0px',
     //padding: '0.5em'
@@ -110,12 +117,24 @@ function getDate(date) {
     return date_fixed;
 }
 
+function TransitionLeft(props) {
+    return <Slide {...props} direction="left" />;
+}
+
+const ERR_NONE = 0;
+const ERR_NOT_VALID = 1;
+const ERR_URL_SLUG_DUPLICATED  = 2;
+const ERR_INVALID_URL_SLUG  = 3;
+const ERR_INTERNAL  = 4;
+const MSG_SUCCESSFUL = 5;
+
 export default function EditTokenDialog({open, token, onCloseEditToken}) {
     const theme = useTheme();
     const fileRef = useRef();
 
     const BASE_URL = 'https://api.xrpl.to/api';
-    const { accountProfile, setLoading } = useContext(Context);
+    const { accountProfile } = useContext(Context);
+    const [loading, setLoading] = useState(false);
 
     const {
         issuer,
@@ -125,13 +144,13 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
         dateon
     } = token;
 
-    const [kyc, setKYC] = useState(token.kyc);
-
     const [file, setFile] = useState(null);
+
+    const [kyc, setKYC] = useState(token.kyc);
 
     const [imgExt, setImgExt] = useState(token.imgExt);
 
-    const [imgUrl, setImgUrl] = useState(`/static/tokens/${md5}.${imgExt}`);
+    const [imgData, setImgData] = useState(`/static/tokens/${md5}.${token.imgExt}`);
 
     const [user, setUser] = useState(token.user);
 
@@ -153,37 +172,95 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
 
     const [youtube, setYoutube] = useState(token.social?.youtube);
 
+    const [state, setState] = useState({
+        openSnack: false,
+        message: ERR_NONE
+    });
+
+    const { message, openSnack } = state;
+
+    const handleCloseSnack = () => {
+        setState({ openSnack: false, message: message });
+    };
+
+    const showAlert = (msg) => {
+        setState({ openSnack: true, message: msg });
+    }
+
+    const setInitialState = () => {
+        setKYC(token.kyc);
+        setImgExt(token.imgExt);
+        setImgData(`/static/tokens/${md5}.${token.imgExt}`)
+        setUser(token.user);
+        setDomain(token.domain);
+        setDate(getDate(token.date));
+        setUrlSlug(token.urlSlug);
+        setTwitter(token.social?.twitter);
+        setFacebook(token.social?.facebook);
+        setLinkedIn(token.social?.linkedin);
+        setInstagram(token.social?.instagram);
+        setTelegram(token.social?.telegram);
+        setYoutube(token.social?.youtube);
+    }
+
     const onUpdateToken = async (data) => {
         setLoading(true);
         try {
-            const account = accountProfile.account;
-            
-            const body = {account, data};
+            let res;
 
-            const res = await axios.post(`${BASE_URL}/admin/update_token`, body);
+            const account = accountProfile.account;
+
+            const formdata = new FormData();
+            formdata.append('avatar', file);
+            formdata.append('account', account);
+            formdata.append('data', JSON.stringify(data));
+            res = await axios.post(`http://localhost:8080/api/admin/image_upload1`, formdata, {
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+
+            console.log(`${res.status} ${res.data.success}`);
+
+            /*const res = await axios.post(`${BASE_URL}/admin/update_token`, formdata, {
+                headers: { "Content-Type": "multipart/form-data" }
+            });*/
+            
+            /*const body = {account, data};
+
+            res = await axios.post(`${BASE_URL}/admin/update_token`, body);
 
             if (res.status === 200) {
-                console.log(res.data);
-                // const uuid = res.data.data.uuid;
-                // const qrlink = res.data.data.qrUrl;
-                // const nextlink = res.data.data.next;
-
-                // setUuid(uuid);
-                // setQrUrl(qrlink);
-                // setNextUrl(nextlink);
-                // setOpenScanQR(true);
-            }
+                const ret = res.data;
+                if (ret.status) {
+                    // Update myself
+                    Object.assign(token, data);
+                    showAlert(MSG_SUCCESSFUL);
+                    onCloseEditToken();
+                } else {
+                    // { status: false, data: null, err: 'ERR_URL_SLUG' }
+                    // ERR_GENERAL
+                    // ERR_URL_SLUG
+                    // ERR_INTERNAL
+                    const err = ret.err;
+                    if (err === 'ERR_GENERAL')
+                        showAlert(ERR_NOT_VALID);
+                    else if (err === 'ERR_URL_SLUG')
+                        showAlert(ERR_URL_SLUG_DUPLICATED);
+                    else
+                        showAlert(ERR_INTERNAL);
+                }
+            }*/
         } catch (err) {
-            alert(err);
+            console.log(err);
         }
         setLoading(false);
     };
 
-    const onClose = () => {
-        onCloseEditToken();
-    };
-
     const handleSave = () => {
+        const slug = urlSlug?urlSlug.replace(/[^a-zA-Z0-9-]/g, ""):null;
+        if (!slug || slug !== urlSlug) {
+            showAlert(ERR_INVALID_URL_SLUG);
+            return;
+        }
         /*
         amount: 9989.174941923571,
         holders: 15415,
@@ -193,7 +270,7 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
         urlSlug: "47c6a1d2de5ad3391a58e4f0523c16a3",
         verified: false,
         imgExt: "jpg"
-         */
+        */
 
         const newToken = {};
         newToken.md5 = md5;
@@ -229,6 +306,7 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
     }
 
     const handleCancel = () => {
+        setInitialState();
         onCloseEditToken();
     }
 
@@ -244,11 +322,12 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
             if (ext === 'jpg' || ext === 'png') {
                 setImgExt(ext);
                 setFile(pickedFile);
+                console.log(JSON.stringify(pickedFile));
                 // This is used as src of image
                 const reader = new FileReader();
                 reader.readAsDataURL(pickedFile)
                 reader.onloadend = function (e) {
-                    setImgUrl(reader.result); // data:image/jpeg;base64
+                    setImgData(reader.result); // data:image/jpeg;base64
                 }
             }
         }
@@ -263,7 +342,33 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
     */
 
     return (
-        <QRDialog onClose={onClose} open={open} sx={{p:5}}>
+        <>
+        <Snackbar
+            autoHideDuration={3000}
+            anchorOrigin={{ vertical:'top', horizontal:'right' }}
+            open={openSnack}
+            onClose={handleCloseSnack}
+            TransitionComponent={TransitionLeft}
+            key={'TransitionLeft'}
+        >
+            <Alert variant="filled" severity={message === MSG_SUCCESSFUL?"success":"error"} sx={{ m: 2, mt:0 }}>
+                {message === ERR_NOT_VALID && 'Invalid data, please check again'}
+                {message === ERR_URL_SLUG_DUPLICATED && 'Duplicated URL Slug'}
+                {message === ERR_INVALID_URL_SLUG && 'Invalid URL Slug, only alphabetic(A-Z, a-z, 0-9, -) allowed'}
+                {message === ERR_INTERNAL && 'Internal error occured'}
+                {message === MSG_SUCCESSFUL && 'Successfully changed the token info'}
+            </Alert>
+        </Snackbar>
+
+        <Backdrop
+            sx={{ color: "#000", zIndex: (theme) => theme.zIndex.modal + 1 }}
+            open={loading}
+        >
+            {/* <HashLoader color={"#00AB55"} size={50} /> */}
+            <PulseLoader color={"#FF4842"} size={10} />
+        </Backdrop>
+        
+        <QRDialog onClose={handleCancel} open={open} sx={{p:5}} hideBackdrop={true}>
             <DialogTitle sx={{pl:4,pr:4,pt:1,pb:1}}>
                 <input
                     ref={fileRef}
@@ -278,7 +383,7 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                 />
                 <Stack direction='row' spacing={2} alignItems='center' justifyContent='space-between'>
                     <Stack direction='row' alignItems='center'>
-                        <TokenImage alt={name} src={imgUrl}
+                        <TokenImage alt={name} src={imgData}
                             sx={{ mr: 1, width: 56, height: 56 }}
                             onClick={() => fileRef.current.click()}
                         />
@@ -595,17 +700,7 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
 
                 </TableBody>
             </Table>
-            
-            
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center"
-                }}
-            >
-            </div>
         </QRDialog>
+        </>
     );
 }

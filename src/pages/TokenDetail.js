@@ -126,7 +126,10 @@ export default function TokenDetail(props) {
                         };
                         dispatch(update_status(status));
                         setHistory(ret.history);
-                        setToken(ret.token);
+                        if (ret.token && ret.token.md5) {
+                            setToken(ret.token);
+                            console.log(ret.token);
+                        }
                     }
                 }).catch(err => {
                     console.log("Error on getting details!!!", err);

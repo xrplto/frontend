@@ -181,20 +181,12 @@ export default function TokenList() {
         setLoad(true);
     };
 
-    const emptyRows = 0;//Math.max(0, rows - tokens.length);//page > 0 ? Math.max(0, (1 + page) * rows - tokens.length) : 0;
-
-    const filteredTokens = tokens; // applySortFilter(tokens, getComparator(order, orderBy), filterName);
-
-    //const isTokenNotFound = filteredTokens.length === 0;
-
     const handleFilterByName = (event) => {
         setFilterName(event.target.value);
         setPage(0);
         setOffset(0);
         setLoad(true);
     };
-
-    // style={{border: '1px solid red'}}
 
     return (
         <Page title="XRPL Token Prices, Charts, Market Volume And Transaction Activity">
@@ -235,7 +227,7 @@ export default function TokenList() {
                 <TableBody>
                     {
                     //filteredTokens.slice(page * rows, page * rows + rows)
-                    filteredTokens.slice(0, rows)
+                    tokens.slice(0, rows)
                         .map((row) => {
                             const {
                                 id,
@@ -414,11 +406,11 @@ export default function TokenList() {
                                 </TableRow>
                             );
                         })}
-                    {emptyRows > 0 && (
+                    {/* {emptyRows > 0 && (
                             <TableRow style={{ height: 53 * emptyRows }}>
                                 <TableCell colSpan={6} />
                             </TableRow>
-                        )}
+                        )} */}
                 </TableBody>
                 {/*isTokenNotFound && (
                     <TableBody>

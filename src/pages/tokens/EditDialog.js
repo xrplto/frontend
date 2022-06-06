@@ -42,8 +42,9 @@ export default function EditDialog({label, value, setValue}) {
             <IconButton onClick={handleClickOpen} edge="end" aria-label="edit" size="small">
                 <EditIcon fontSize="inherit"/>
             </IconButton>
+            {/* hideBackdrop={true} */}
             <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Edit</DialogTitle>
+                {/* <DialogTitle>{label}</DialogTitle> */}
                 <DialogContent>
                     {/* <DialogContentText>
                         Please enter the value here.
@@ -55,8 +56,8 @@ export default function EditDialog({label, value, setValue}) {
                         margin="dense"
                         id="name"
                         label={label}
-                        fullWidth
                         variant="standard"
+                        style ={{width: '300px'}}
                     />
                 </DialogContent>
                 <DialogActions>
