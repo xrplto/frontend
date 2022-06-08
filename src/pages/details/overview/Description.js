@@ -53,7 +53,7 @@ export default function Description({token}) {
         <Stack>
             <CardHeader title={`${name} Price Live Data`}  subheader='' sx={{p:2}}/>
             <Typography sx={{pl:2, mt:2}}>
-                The live {user} price today is ${price} USD with a 24-hour trading volume of ${volume24h} USD. We update our {name} to USD price in real-time. {user} is {strPro24h} in the last 24 hours. The current XRPL.TO ranking is #{id}, with a live market cap of ${marketcap} USD. It has a circulating supply of {supply} {name} coins.
+                The live {user} price today is ${price} USD with a 24-hour trading volume of ${volume24h} USD. We update our {name} to USD price in real-time. {user} is {strPro24h} in the last 24 hours. The current XRPL.TO ranking is #{id}, with a live market cap of ${marketcap} USD. It has a circulating supply of {supply} {name} tokens.
             </Typography>
 
             <Typography sx={{pl:2, mt:2}}>

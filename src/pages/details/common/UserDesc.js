@@ -23,10 +23,12 @@ export default function UserDesc({token}) {
         holders,
         offers,
         imgExt,
-        md5
+        md5,
+        tags
     } = token;
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+    // const imgUrl = `https://api.xrpl.to/img/${md5}.${imgExt}`;
   
     let user = token.user;
     if (!user) user = name;
@@ -45,7 +47,7 @@ export default function UserDesc({token}) {
                         name="simple-controlled"
                         value={rating}
                         onChange={(event, newValue) => {
-                          setRating(newValue);
+                            setRating(newValue);
                         }}
                     />
                 </Stack>
@@ -60,6 +62,17 @@ export default function UserDesc({token}) {
                 {kyc && (
                     <Chip label={'KYC'} color="success" variant="outlined" size="small"/>
                 )}
+            </Stack>
+            <Stack direction="row" spacing={1} sx={{mt:2}}>
+                {tags && tags.map((tag, idx) => {
+                    return (
+                        <Chip
+                            key={md5 + idx}
+                            size="small"
+                            label={tag}
+                        />
+                    );
+                })}
             </Stack>
         </Stack>
     );

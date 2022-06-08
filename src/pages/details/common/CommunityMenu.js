@@ -25,9 +25,17 @@ const LinkChip = styled(Chip)(({ theme }) => ({
 }));
 
 
-export default function CommunityMenu() {
+export default function CommunityMenu({token}) {
     const [anchorEl, setAnchorEl] = useState(null);
     const [open, setOpen] = useState(false);
+
+    const {
+        name,
+        domain,
+        whitepaper,
+        social,
+        issuer,
+    } = token;
 
     const handleClick = () => {
     }
@@ -79,6 +87,132 @@ export default function CommunityMenu() {
                 //   sx: { width: 170, maxWidth: '100%' }
                 // }}
             >
+                {social && social.twitter && (
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        target="_blank"
+                        href={`https://twitter.com/${social.twitter}`}
+                        rel="noreferrer noopener"
+                    >
+                        <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                            <Avatar alt="twitter" src="/static/twitter.png" sx={{ mr:1, width: 24, height: 24 }} />
+                            <ListItemText primary="Twitter" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        </MenuItem>
+                    </Link>
+                )}
+                {social && social.facebook && (
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        target="_blank"
+                        href={`https://facebook.com/${social.facebook}`}
+                        rel="noreferrer noopener"
+                    >
+                        <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                            <Avatar alt="facebook" src="/static/facebook.png" sx={{ mr:1, width: 24, height: 24 }} />
+                            <ListItemText primary="Facebook" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        </MenuItem>
+                    </Link>
+                )}
+                {social && social.linkedin && (
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        target="_blank"
+                        href={`https://linkedin.com/${social.linkedin}`}
+                        rel="noreferrer noopener"
+                    >
+                        <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                            <Avatar alt="linkedin" src="/static/linkedin.png" sx={{ mr:1, width: 24, height: 24 }} />
+                            <ListItemText primary="LinkedIn" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        </MenuItem>
+                    </Link>
+                )}
+                {social && social.instagram && (
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        target="_blank"
+                        href={`https://instagram.com/${social.instagram}`}
+                        rel="noreferrer noopener"
+                    >
+                        <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                            <Avatar alt="instagram" src="/static/instagram.png" sx={{ mr:1, width: 24, height: 24 }} />
+                            <ListItemText primary="Instagram" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        </MenuItem>
+                    </Link>
+                )}
+                {social && social.youtube && (
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        target="_blank"
+                        href={`https://youtube.com/${social.youtube}`}
+                        rel="noreferrer noopener"
+                    >
+                        <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                            <Avatar alt="youtube" src="/static/youtube.png" sx={{ mr:1, width: 24, height: 24 }} />
+                            <ListItemText primary="Youtube" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        </MenuItem>
+                    </Link>
+                )}
+                {social && social.medium && (
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        target="_blank"
+                        href={`https://medium.com/${social.medium}`}
+                        rel="noreferrer noopener"
+                    >
+                        <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                            <Avatar alt="medium" src="/static/medium.png" sx={{ mr:1, width: 24, height: 24 }} />
+                            <ListItemText primary="Medium" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        </MenuItem>
+                    </Link>
+                )}
+                {social && social.twitch && (
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        target="_blank"
+                        href={`https://twitch.tv/${social.twitch}`}
+                        rel="noreferrer noopener"
+                    >
+                        <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                            <Avatar alt="twitch" src="/static/twitch.png" sx={{ mr:1, width: 24, height: 24 }} />
+                            <ListItemText primary="Twitch" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        </MenuItem>
+                    </Link>
+                )}
+                {social && social.tiktok && (
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        target="_blank"
+                        href={`https://tiktok.com/${social.tiktok}`}
+                        rel="noreferrer noopener"
+                    >
+                        <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                            <Avatar alt="tiktok" src="/static/tiktok.png" sx={{ mr:1, width: 24, height: 24 }} />
+                            <ListItemText primary="Tiktok" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        </MenuItem>
+                    </Link>
+                )}
+                {social && social.reddit && (
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        target="_blank"
+                        href={`https://www.reddit.com/${social.reddit}`}
+                        rel="noreferrer noopener"
+                    >
+                        <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                            <Avatar alt="reddit" src="/static/reddit.svg" sx={{ mr:1, width: 24, height: 24 }} />
+                            <ListItemText primary="Reddit" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        </MenuItem>
+                    </Link>
+                )}
                 <Link
                     underline="none"
                     color="inherit"
@@ -89,18 +223,6 @@ export default function CommunityMenu() {
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xrpchat" src="/static/xrpchat.png" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRP Chat" primaryTypographyProps={{ variant: 'subtitle2' }} />
-                    </MenuItem>
-                </Link>
-                <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://www.reddit.com/r/xrp`}
-                    rel="noreferrer noopener"
-                >
-                    <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="reddit" src="/static/reddit.svg" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="Reddit" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
             </Menu>
