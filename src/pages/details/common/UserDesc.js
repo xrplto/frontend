@@ -1,5 +1,13 @@
 import { useState } from 'react';
 
+import { Icon } from '@iconify/react';
+import link45deg from '@iconify/icons-bi/link-45deg';
+import chatIcon from '@iconify/icons-bi/chat';
+import linkExternal from '@iconify/icons-charm/link-external';
+import chevronDown from '@iconify/icons-akar-icons/chevron-down';
+import twitterFill from '@iconify/icons-akar-icons/twitter-fill';
+import paperIcon from '@iconify/icons-akar-icons/paper';
+
 import {
     Token as TokenIcon
 } from '@mui/icons-material';
@@ -7,32 +15,49 @@ import {
 import {
     Avatar,
     Chip,
+    Grid,
+    Link,
     Rating,
     Stack,
     Tooltip,
     Typography
 } from '@mui/material';
 
+import ExplorersMenu from './ExplorersMenu';
+import CommunityMenu from './CommunityMenu';
+import ChatMenu from './ChatMenu';
+
 export default function UserDesc({token}) {
     const [rating, setRating] = useState(2);
 
     const {
         id,
+        issuer,
         name,
+        domain,
+        whitepaper,
         kyc,
         holders,
         offers,
         imgExt,
         md5,
-        tags
+        tags,
+        social
     } = token;
 
-    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
-    // const imgUrl = `https://api.xrpl.to/img/${md5}.${imgExt}`;
-  
     let user = token.user;
     if (!user) user = name;
 
+    const isCommunity = true; /*social && (social.twitter || social.facebook || social.linkedin 
+        || social.instagram || social.youtube || social.medium || social.twitch || social.tiktok || social.reddit);*/
+    const isChat = social && (social.telegram || social.discord);
+
+    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+    // const imgUrl = `https://api.xrpl.to/img/${md5}.${imgExt}`;
+
+    const handleDelete = () => {
+    }
+  
     return (
         <Stack>
             <Stack direction="row" spacing={1} alignItems='center'>
@@ -63,17 +88,71 @@ export default function UserDesc({token}) {
                     <Chip label={'KYC'} color="success" variant="outlined" size="small"/>
                 )}
             </Stack>
-            <Stack direction="row" spacing={1} sx={{mt:2}}>
+            <Grid container spacing={1} alignItems='center' sx={{mt:2}}>
                 {tags && tags.map((tag, idx) => {
                     return (
-                        <Chip
-                            key={md5 + idx}
-                            size="small"
-                            label={tag}
-                        />
+                        <Grid item key={md5 + idx + tag}>
+                            <Chip
+                                size="small"
+                                label={tag}
+                            />
+                        </Grid>
                     );
                 })}
-            </Stack>
+            </Grid>
+            <Grid container spacing={1} sx={{p:0,mt:2}} >
+                {domain && (
+                    <Grid item sx={{pb:1}}>
+                        <Link
+                            underline="none"
+                            color="inherit"
+                            target="_blank"
+                            href={`https://${domain}`}
+                            rel="noreferrer noopener"
+                        >
+                            <Chip label={domain} sx={{pl:0.5,pr:0.5}}
+                                deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
+                                onDelete={handleDelete} onClick={handleDelete}
+                                icon={<Icon icon={link45deg} width="16" height="16" />} />
+                        </Link>
+                    </Grid>
+                )}
+                <Grid item sx={{pb:1}}>
+                    <ExplorersMenu issuer={issuer}/>
+                </Grid>
+                {isChat && (
+                    <Grid item sx={{pb:1}}>
+                        <ChatMenu token={token}/>
+                    </Grid>
+                )}
+                {/* <Grid item sx={{pb:1}}>
+                    <Chip label="Source code" sx={{pl:0.5,pr:0.5}}
+                        deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
+                        onDelete={handleDelete} onClick={handleDelete}
+                        icon={<Icon icon={codeIcon} width="16" height="16" />} />
+                </Grid> */}
+                {isCommunity && (
+                    <Grid item sx={{pb:1}}>
+                        <CommunityMenu token={token}/>
+                    </Grid>
+                )}
+                {whitepaper && (
+                    <Grid item sx={{pb:1}}>
+                        <Link
+                            underline="none"
+                            color="inherit"
+                            target="_blank"
+                            href={`${whitepaper}`}
+                            rel="noreferrer noopener"
+                        >
+                            <Chip label={'Whitepaper'} sx={{pl:0.5,pr:0.5}}
+                                deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
+                                onDelete={handleDelete} onClick={handleDelete}
+                                icon={<Icon icon={paperIcon} width="16" height="16" />} />
+                        </Link>
+                    </Grid>
+                )}
+            </Grid>
         </Stack>
     );
 }

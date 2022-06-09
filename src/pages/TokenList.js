@@ -1,16 +1,18 @@
 //import { filter } from 'lodash';
+import axios from 'axios'
 import { useState, useEffect } from 'react';
 import { BeatLoader } from "react-spinners";
 import { fNumber } from '../utils/formatNumber';
 import { withStyles } from '@mui/styles';
 import { Link } from 'react-router-dom'
 import InfiniteScroll from "react-infinite-scroll-component";
-import ScrollToTop from '../layouts/ScrollToTop';
-import TopMark from '../layouts/TopMark';
-import {/*styled, alpha,*/ useTheme } from '@mui/material/styles';
+import { styled, alpha, useTheme } from '@mui/material/styles';
 import BearBullTypography from '../layouts/BearBullTypography';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
+
+import ScrollToTop from '../layouts/ScrollToTop';
+import TopMark from '../layouts/TopMark';
 // material
 import {
     Avatar,
@@ -29,12 +31,12 @@ import { tableCellClasses } from "@mui/material/TableCell";
 import Page from '../layouts/Page';
 //import SearchNotFound from '../../components/SearchNotFound';
 import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu } from './tokens';
-
 // ----------------------------------------------------------------------
-import axios from 'axios'
-
 import { useSelector, useDispatch } from "react-redux";
 import { selectStatus, update_status } from "../redux/statusSlice";
+
+import { useContext } from 'react'
+import Context from '../Context'
 // ----------------------------------------------------------------------
 
 const CoinNameTypography = withStyles({
@@ -54,6 +56,13 @@ const KYCTypography = withStyles({
         paddingRight: '3px',
     }
 })(Typography);
+
+const TokenImage = styled(Avatar)(({ theme }) => ({
+    '&:hover': {
+        cursor: 'pointer',
+        opacity: 0.6
+    },
+}));
 
 //    { id: 'holders', label: 'Holders', align: 'left', order: true },
 //    { id: 'offers', label: 'Offers', align: 'left', order: true },
@@ -76,8 +85,10 @@ const TABLE_HEAD = [
 export default function TokenList() {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api'; // 'http://localhost/api';
+    const { accountProfile } = useContext(Context);
     const dispatch = useDispatch();
     const [filterName, setFilterName] = useState('');
+    const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState('desc');
     // -----------------------------------------------
@@ -140,15 +151,19 @@ export default function TokenList() {
             }).catch(err => {
                 console.log("err->>", err);
             }).then(function () {
-                // always executed
+                // Always executed
+                setSearch(filterName);
+                setLoad(false);
             });
         };
         if (load) {
-            setLoad(false);
             loadTokens();
+        } else {
+            if (search !== filterName)
+                loadTokens();
         }
     }, [load]);
-    
+
     const handleRequestSort = (event, id, no) => {
         const isDesc = orderBy === id && order === 'desc';
         setOrder(isDesc ? 'asc' : 'desc');
@@ -254,6 +269,7 @@ export default function TokenList() {
                             } = row;
 
                             const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+                            // const imgUrl = `https://api.xrpl.to/img/${md5}.${imgExt}`;
 
                             const isItemSelected = false;//selected.indexOf(id) !== -1;
 
@@ -297,7 +313,11 @@ export default function TokenList() {
                                     <TableCell align="left">{id}</TableCell>
                                     <TableCell component="th" scope="row" padding="none">
                                         <Stack direction="row" alignItems="center" spacing={2}>
-                                            <Avatar alt={name} src={imgUrl} />
+                                            {accountProfile && accountProfile.account && accountProfile.admin ? (
+                                                <TokenImage alt={name} src={imgUrl} onClick={() => {}} />
+                                            ):(
+                                                <Avatar alt={name} src={imgUrl} />
+                                            )}
                                             <Stack>
                                                 <Link
                                                     style={{ textDecoration: 'none' }}
