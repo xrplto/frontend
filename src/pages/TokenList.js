@@ -6,13 +6,15 @@ import { fNumber } from '../utils/formatNumber';
 import { withStyles } from '@mui/styles';
 import { Link } from 'react-router-dom'
 import InfiniteScroll from "react-infinite-scroll-component";
-import { styled, alpha, useTheme } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import BearBullTypography from '../layouts/BearBullTypography';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
+import EditToken from './tokens/EditToken';
+
 // material
 import {
     Avatar,
@@ -101,6 +103,8 @@ export default function TokenList() {
     const [hasMore, setHasMore] = useState(false);
 
     const status = useSelector(selectStatus);
+
+    const [editToken, setEditToken] = useState(null);
 
     useEffect(() => {
         const loadTokens=() => {
@@ -215,6 +219,9 @@ export default function TokenList() {
                 rows={rows}
                 setRows={updateRows}
             />
+
+            <EditToken token={editToken} setToken={setEditToken}/>
+
             <InfiniteScroll
                 style={{overflow: "inherit"}}
                 dataLength={tokens.length}
@@ -269,9 +276,6 @@ export default function TokenList() {
                             } = row;
 
                             const imgUrl = `/static/tokens/${md5}.${imgExt}`;
-                            // const imgUrl = `https://api.xrpl.to/img/${md5}.${imgExt}`;
-
-                            const isItemSelected = false;//selected.indexOf(id) !== -1;
 
                             const marketcap = amount * exch / status.USD;
 
@@ -301,20 +305,12 @@ export default function TokenList() {
                                     key={id}
                                     tabIndex={-1}
                                     role="checkbox"
-                                    selected={isItemSelected}
-                                    aria-checked={isItemSelected}
                                 >
-                                    {/* <TableCell padding="checkbox">
-                                    <Checkbox
-                                        checked={isItemSelected}
-                                        onChange={(event) => handleClick(event, id)}
-                                    />
-                                    </TableCell> */}
                                     <TableCell align="left">{id}</TableCell>
                                     <TableCell component="th" scope="row" padding="none">
                                         <Stack direction="row" alignItems="center" spacing={2}>
                                             {accountProfile && accountProfile.account && accountProfile.admin ? (
-                                                <TokenImage alt={name} src={imgUrl} onClick={() => {}} />
+                                                <TokenImage alt={name} src={imgUrl} onClick={() => setEditToken(row)} />
                                             ):(
                                                 <Avatar alt={name} src={imgUrl} />
                                             )}
@@ -421,7 +417,7 @@ export default function TokenList() {
                                     </TableCell> */}
 
                                     <TableCell align="right">
-                                        <TokenMoreMenu token={row} />
+                                        <TokenMoreMenu token={row} setEditToken={setEditToken} />
                                     </TableCell>
                                 </TableRow>
                             );

@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { withStyles } from '@mui/styles';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
 import infoFilled from '@iconify/icons-ep/info-filled';
@@ -8,29 +8,20 @@ import infoFilled from '@iconify/icons-ep/info-filled';
 import { PulseLoader } from "react-spinners";
 
 import {
-    Edit as EditIcon,
-    Save as SaveIcon,
-    Cancel as CancelIcon,
     Check as CheckIcon,
-    Close as CloseIcon,
-    ThumbUpOffAlt as ThumbUpOffAltIcon,
-    AddCircle as AddCircleIcon
+    Close as CloseIcon
 } from '@mui/icons-material';
 
 import {
-    Alert,
     Avatar,
     Backdrop,
     Chip,
     Dialog,
     DialogTitle,
     Divider,
+    Grid,
     IconButton,
     Link,
-    ListItem,
-    Paper,
-    Slide,
-    Snackbar,
     Stack,
     Table,
     TableBody,
@@ -47,20 +38,12 @@ import EditDialog from './EditDialog';
 import AddDialog from './AddDialog';
 
 const AdminDialog = styled(Dialog)(({ theme }) => ({
-    //boxShadow: theme.customShadows.z0,
+    // boxShadow: theme.customShadows.z0,
     backdropFilter: 'blur(1px)',
     WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
-    backgroundColor: alpha(theme.palette.background.paper, 0.0),
-    borderRadius: '0px',
-    //padding: '0.5em'
-    //backgroundColor: alpha("#00AB88", 0.99),
-}));
-
-const LinkTypography = styled(Typography)(({ theme }) => ({
-    backgroundColor: alpha(theme.palette.background.paper, 0.0),
-    borderRadius: '2px',
-    border: '0px solid #00AB88',
-    padding: '0.5em',
+    // backgroundColor: alpha(theme.palette.background.paper, 0.0),
+    // borderRadius: '0px',
+    // padding: '0.5em'
     // backgroundColor: alpha("#00AB88", 0.99),
 }));
 
@@ -107,10 +90,6 @@ const TokenImage = styled(Avatar)(({ theme }) => ({
     },
 }));
 
-const Input = styled('input')({
-    display: 'none',
-});
-
 function getDate(date) {
     let date_fixed = 'undefined';
     try {
@@ -122,18 +101,15 @@ function getDate(date) {
     return date_fixed;
 }
 
-function TransitionLeft(props) {
-    return <Slide {...props} direction="left" />;
-}
+// const ERR_NONE = 0;
+const ERR_TRANSFER = 1;
+const ERR_NOT_VALID = 2;
+const ERR_URL_SLUG_DUPLICATED  = 3;
+const ERR_INVALID_URL_SLUG  = 4;
+const ERR_INTERNAL  = 5;
+const MSG_SUCCESSFUL = 6;
 
-const ERR_NONE = 0;
-const ERR_NOT_VALID = 1;
-const ERR_URL_SLUG_DUPLICATED  = 2;
-const ERR_INVALID_URL_SLUG  = 3;
-const ERR_INTERNAL  = 4;
-const MSG_SUCCESSFUL = 5;
-
-export default function EditTokenDialog({open, token, onCloseEditToken}) {
+export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
     const theme = useTheme();
     const fileRef = useRef();
 
@@ -149,13 +125,15 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
         dateon
     } = token;
 
+    const imgUrl = `/static/tokens/${md5}.${token.imgExt}`;
+
     const [file, setFile] = useState(null);
 
     const [kyc, setKYC] = useState(token.kyc);
 
     const [imgExt, setImgExt] = useState(token.imgExt);
 
-    const [imgData, setImgData] = useState(`/static/tokens/${md5}.${token.imgExt}`);
+    const [imgData, setImgData] = useState(imgUrl);
 
     const [user, setUser] = useState(token.user);
 
@@ -175,18 +153,11 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
     const [discord, setDiscord] = useState(token.social?.discord);
     const [youtube, setYoutube] = useState(token.social?.youtube);
     const [medium, setMedium] = useState(token.social?.medium); // medium.com
-    const [twitch, setTwitch] = useState(token.social?.medium); // twitch.tv
-    const [tiktok, setTiktok] = useState(token.social?.medium); // tiktok
-    const [reddit, setReddit] = useState(token.social?.medium); // reddit
+    const [twitch, setTwitch] = useState(token.social?.twitch); // twitch.tv
+    const [tiktok, setTiktok] = useState(token.social?.tiktok); // tiktok
+    const [reddit, setReddit] = useState(token.social?.reddit); // reddit
 
     const [tags, setTags] = useState(token.tags);
-
-    const [state, setState] = useState({
-        openSnack: false,
-        message: ERR_NONE
-    });
-
-    const { message, openSnack } = state;
 
     const handleDeleteTags = (tagToDelete) => () => {
         setTags((tags) => tags.filter((tag) => tag !== tagToDelete));
@@ -201,46 +172,14 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
         if (tags) {
             newTags.push(...tags);
             newTags.push(val);
-            console.log(newTags);
             setTags(newTags);
         } else {
             setTags([val]);
         }
     };
 
-    const handleCloseSnack = () => {
-        setState({ openSnack: false, message: message });
-    };
-
-    const showAlert = (msg) => {
-        setState({ openSnack: true, message: msg });
-    }
-
-    const setInitialState = () => {
-        setKYC(token.kyc);
-        setImgExt(token.imgExt);
-        setFile(null);
-        setImgData(`/static/tokens/${md5}.${token.imgExt}`)
-        setUser(token.user);
-        setDomain(token.domain);
-        setDate(getDate(token.date));
-        setUrlSlug(token.urlSlug);
-        setWhitePaper(token.whitepaper);
-        setTags(token.tags);
-        setTwitter(token.social?.twitter);
-        setFacebook(token.social?.facebook);
-        setLinkedIn(token.social?.linkedin);
-        setInstagram(token.social?.instagram);
-        setTelegram(token.social?.telegram);
-        setDiscord(token.social?.discord);
-        setYoutube(token.social?.youtube);
-        setMedium(token.social?.medium);
-        setTwitch(token.social?.twitch);
-        setTiktok(token.social?.tiktok);
-        setReddit(token.social?.reddit);
-    }
-
     const onUpdateToken = async (data) => {
+        let finish = false;
         setLoading(true);
         try {
             let res;
@@ -271,14 +210,17 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                     Object.assign(token, data);
                     setFile(null);
                     showAlert(MSG_SUCCESSFUL);
-                    onCloseEditToken();
+                    finish = true;
                 } else {
                     // { status: false, data: null, err: 'ERR_URL_SLUG' }
+                    // ERR_TRANSFER
                     // ERR_GENERAL
                     // ERR_URL_SLUG
                     // ERR_INTERNAL
                     const err = ret.err;
-                    if (err === 'ERR_GENERAL')
+                    if (err === 'ERR_TRANSFER')
+                        showAlert(ERR_TRANSFER);
+                    else if (err === 'ERR_GENERAL')
                         showAlert(ERR_NOT_VALID);
                     else if (err === 'ERR_URL_SLUG')
                         showAlert(ERR_URL_SLUG_DUPLICATED);
@@ -290,6 +232,8 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
             console.log(err);
         }
         setLoading(false);
+        if (finish)
+            onCloseEditToken();
     };
 
     const handleSave = () => {
@@ -357,7 +301,6 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
     }
 
     const handleCancel = () => {
-        setInitialState();
         onCloseEditToken();
     }
 
@@ -393,23 +336,6 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
 
     return (
         <>
-        <Snackbar
-            autoHideDuration={3000}
-            anchorOrigin={{ vertical:'top', horizontal:'right' }}
-            open={openSnack}
-            onClose={handleCloseSnack}
-            TransitionComponent={TransitionLeft}
-            key={'TransitionLeft'}
-        >
-            <Alert variant="filled" severity={message === MSG_SUCCESSFUL?"success":"error"} sx={{ m: 2, mt:0 }}>
-                {message === ERR_NOT_VALID && 'Invalid data, please check again'}
-                {message === ERR_URL_SLUG_DUPLICATED && 'Duplicated URL Slug'}
-                {message === ERR_INVALID_URL_SLUG && 'Invalid URL Slug, only alphabetic(A-Z, a-z, 0-9, -) allowed'}
-                {message === ERR_INTERNAL && 'Internal error occured'}
-                {message === MSG_SUCCESSFUL && 'Successfully changed the token info'}
-            </Alert>
-        </Snackbar>
-
         <Backdrop
             sx={{ color: "#000", zIndex: (theme) => theme.zIndex.modal + 1 }}
             open={loading}
@@ -418,7 +344,7 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
             <PulseLoader color={"#FF4842"} size={10} />
         </Backdrop>
         
-        <AdminDialog onClose={handleCancel} open={open} sx={{p:5}} hideBackdrop={true} fullWidth={true} maxWidth={'md'}>
+        <AdminDialog onClose={handleCancel} open={true} sx={{p:5}} hideBackdrop={true} fullWidth={true} maxWidth={'md'}>
             <DialogTitle sx={{pl:4,pr:4,pt:1,pb:1}}>
                 <input
                     ref={fileRef}
@@ -520,7 +446,15 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                         </TableCell>
                         <TableCell align="left" sx={{pt:0, pb:0.2}}>
                             <Stack direction='row' alignItems='center' spacing={1}>
-                                <Typography variant="subtitle2" noWrap color='primary'>{domain}</Typography>
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://${domain}`}
+                                    rel="noreferrer noopener"
+                                >
+                                    <Typography variant="subtitle2" noWrap color='primary'>{domain}</Typography>
+                                </Link>
                                 <EditDialog label='Domain' value={domain} setValue={setDomain}/>
                             </Stack>
                         </TableCell>
@@ -573,7 +507,7 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                         <TableCell align="right" sx={{pt:0, pb:0.2}}>
                             <Label variant="subtitle2" noWrap>Created Date</Label>
                         </TableCell>
-                        <TableCell align="left" colSpan={3} sx={{pt:0, pb:0.2}}>
+                        <TableCell align="left" sx={{pt:0, pb:0.2}}>
                             <Stack direction='row' alignItems='center' spacing={1}>
                                 <Typography variant="subtitle2" color='primary'>{date}</Typography>
                                 <EditDialog label='Date' value={date} setValue={setDate}/>
@@ -591,7 +525,15 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                         </TableCell>
                         <TableCell align="left" sx={{pt:0, pb:0.2}}>
                             <Stack direction='row' alignItems='center' spacing={1}>
-                                <Typography variant="subtitle2" color='primary'>{urlSlug}</Typography>
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`token/${urlSlug}`}
+                                    rel="noreferrer noopener"
+                                >
+                                    <Typography variant="subtitle2" color='primary'>{urlSlug}</Typography>
+                                </Link>
                                 <EditDialog label='URL Slug' value={urlSlug} setValue={setUrlSlug}/>
                             </Stack>
                         </TableCell>
@@ -625,23 +567,26 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                             borderBottomColor: theme.palette.divider
                         }
                     }}>
-                        <TableCell align="right" sx={{pt:0, pb:0.2}}>
+                        <TableCell align="right" sx={{pt:0, pb:0.5}}>
                             <Label variant="subtitle2" noWrap>Tags</Label>
                         </TableCell>
-                        <TableCell align="left" colSpan={3} sx={{pt:0, pb:0.2}}>
-                            <Stack direction='row' spacing={1} alignItems='center'>
+                        <TableCell align="left" colSpan={3} sx={{pt:0, pb:0.5}}>
+                            <Grid container spacing={1} justifyContent="flex-start">
                                 {tags && tags.map((tag, idx) => {
                                     return (
-                                        <Chip
-                                            key={md5 + idx}
-                                            size="small"
-                                            label={tag}
-                                            onDelete={handleDeleteTags(tag)}
-                                        />
+                                        <Grid item key={md5 + idx + tag}>
+                                            <Chip
+                                                size="small"
+                                                label={tag}
+                                                onDelete={handleDeleteTags(tag)}
+                                            />
+                                        </Grid>
                                     );
                                 })}
-                                <AddDialog label='Tag' onAddTag={onAddTag}/>
-                            </Stack>
+                                <Grid item>
+                                    <AddDialog label='Tag' onAddTag={onAddTag}/>
+                                </Grid>
+                            </Grid>
                         </TableCell>
                     </TableRow>
                 </TableBody>
@@ -653,10 +598,10 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                     borderBottomColor: theme.palette.divider
                 },
                 tableLayout: 'fixed',
-                width: '100%'
+                width: '100%',
+                mb: 3
             }}>
                 <TableBody>
-
                     <TableRow>
                         <TableCell align="right" sx={{pt:1, pb:0.2, width: '15%'}}>
                             <Label variant="subtitle2" noWrap>Twitter</Label>
@@ -689,7 +634,7 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                                 >
                                     <Typography variant="subtitle2" color='primary'>{youtube}</Typography>
                                 </Link>
-                                <EditDialog label='YouTube' alue={youtube} setValue={setYoutube}/>
+                                <EditDialog label='YouTube' value={youtube} setValue={setYoutube}/>
                             </Stack>
                         </TableCell>
                     </TableRow>
@@ -726,7 +671,7 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                                 >
                                     <Typography variant="subtitle2" color='primary'>{medium}</Typography>
                                 </Link>
-                                <EditDialog label='Medium' alue={medium} setValue={setMedium}/>
+                                <EditDialog label='Medium' value={medium} setValue={setMedium}/>
                             </Stack>
                         </TableCell>
                     </TableRow>
@@ -763,7 +708,7 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                                 >
                                     <Typography variant="subtitle2" color='primary'>{twitch}</Typography>
                                 </Link>
-                                <EditDialog label='Twitch' alue={twitch} setValue={setTwitch}/>
+                                <EditDialog label='Twitch' value={twitch} setValue={setTwitch}/>
                             </Stack>
                         </TableCell>
                     </TableRow>
@@ -800,7 +745,7 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                                 >
                                     <Typography variant="subtitle2" color='primary'>{tiktok}</Typography>
                                 </Link>
-                                <EditDialog label='Tiktok' alue={tiktok} setValue={setTiktok}/>
+                                <EditDialog label='Tiktok' value={tiktok} setValue={setTiktok}/>
                             </Stack>
                         </TableCell>
                     </TableRow>
@@ -811,7 +756,15 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                         </TableCell>
                         <TableCell align="left" sx={{pt:0, pb:0.2}}>
                             <Stack direction='row' alignItems='center' spacing={1}>
-                                <Typography variant="subtitle2" color='primary'>{discord}</Typography>
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://discord.gg/${discord}`}
+                                    rel="noreferrer noopener"
+                                >
+                                    <Typography variant="subtitle2" color='primary'>{discord}</Typography>
+                                </Link>
                                 <EditDialog label='Discord' value={discord} setValue={setDiscord}/>
                             </Stack>
                         </TableCell>
@@ -829,7 +782,7 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                                 >
                                     <Typography variant="subtitle2" color='primary'>{reddit}</Typography>
                                 </Link>
-                                <EditDialog label='Reddit' alue={reddit} setValue={setReddit}/>
+                                <EditDialog label='Reddit' value={reddit} setValue={setReddit}/>
                             </Stack>
                         </TableCell>
                     </TableRow>
@@ -853,11 +806,6 @@ export default function EditTokenDialog({open, token, onCloseEditToken}) {
                             </Stack>
                         </TableCell>
                     </TableRow>
-
-                    <Stack direction='row' sx={{p:1}} spacing={2} justifyContent="flex-end" alignItems="flex-end">
-
-                    </Stack>
-
                 </TableBody>
             </Table>
         </AdminDialog>

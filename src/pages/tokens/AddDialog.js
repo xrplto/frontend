@@ -42,7 +42,7 @@ export default function EditDialog({label, onAddTag}) {
 
     return (
         <div>
-            <IconButton onClick={handleClickOpen} size="medium" edge="end" aria-label="save">
+            <IconButton onClick={handleClickOpen} size="small" edge="end" aria-label="save">
                 <AddCircleIcon fontSize="inherit" />
             </IconButton>
             <Dialog open={open} onClose={handleClose}>

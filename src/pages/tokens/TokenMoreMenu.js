@@ -2,7 +2,6 @@ import { Icon } from '@iconify/react';
 import { useRef, useState } from 'react';
 import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
 import EditIcon from '@mui/icons-material/Edit';
-import EditTokenDialog from './EditTokenDialog';
 
 // Material
 import {
@@ -18,7 +17,7 @@ import { useContext } from 'react'
 import Context from '../../Context'
 // ----------------------------------------------------------------------
 
-export default function TokenMoreMenu({token}) {
+export default function TokenMoreMenu({token, setEditToken}) {
     const ref = useRef(null);
     const {
         issuer,
@@ -26,26 +25,14 @@ export default function TokenMoreMenu({token}) {
     } = token;
 
     const [isOpen, setIsOpen] = useState(false);
-    const [openEditToken, setOpenEditToken] = useState(false);
-    const { accountProfile } = useContext(Context);
     
-
-    const onEditToken = () => {
-        setIsOpen(false);
-        setOpenEditToken(true);
-    }
-
-    const onCloseEditToken = () => {
-        setOpenEditToken(false);
-    }
+    const { accountProfile } = useContext(Context);
 
     return (
         <>
             <IconButton ref={ref} onClick={() => setIsOpen(true)}>
                 <Icon icon={moreVerticalFill} width={20} height={20} />
             </IconButton>
-
-            <EditTokenDialog token={token} open={openEditToken} onCloseEditToken={onCloseEditToken}/>
 
             <Menu
                 open={isOpen}
@@ -58,7 +45,7 @@ export default function TokenMoreMenu({token}) {
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
                 {accountProfile && accountProfile.account && accountProfile.admin && (
-                    <MenuItem onClick={() => onEditToken()} disableRipple sx={{ color: 'text.secondary' }}>
+                    <MenuItem onClick={() => {setIsOpen(false);setEditToken(token);}} disableRipple sx={{ color: 'text.secondary' }}>
                         <EditIcon color='error' sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Edit Token" primaryTypographyProps={{ variant: 'subtitle2', color:'error' }} />
                     </MenuItem>

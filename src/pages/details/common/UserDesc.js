@@ -2,10 +2,7 @@ import { useState } from 'react';
 
 import { Icon } from '@iconify/react';
 import link45deg from '@iconify/icons-bi/link-45deg';
-import chatIcon from '@iconify/icons-bi/chat';
 import linkExternal from '@iconify/icons-charm/link-external';
-import chevronDown from '@iconify/icons-akar-icons/chevron-down';
-import twitterFill from '@iconify/icons-akar-icons/twitter-fill';
 import paperIcon from '@iconify/icons-akar-icons/paper';
 
 import {
@@ -53,7 +50,6 @@ export default function UserDesc({token}) {
     const isChat = social && (social.telegram || social.discord);
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
-    // const imgUrl = `https://api.xrpl.to/img/${md5}.${imgExt}`;
 
     const handleDelete = () => {
     }
