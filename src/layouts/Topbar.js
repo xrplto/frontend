@@ -4,11 +4,13 @@ import { alpha, styled/*, useTheme*/ } from '@mui/material/styles';
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
 // Components
 import { fIntNumber, fCurrency3, fNumber } from '../utils/formatNumber';
-import { Icon } from '@iconify/react';
 import postageStamp from '@iconify/icons-mdi/postage-stamp';
 // Redux
 import { useSelector } from "react-redux";
 import { selectStatus } from "../redux/statusSlice";
+// Iconify Icons
+import { Icon } from '@iconify/react';
+import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -72,10 +74,12 @@ export default function Topbar() {
                 {/* <h6>|</h6> */}
                 <h5>Vol:</h5>
                 <Typography align="center" style={{ color: "#FF6C40" }} variant="subtitle2">
-                    ${fNumber(status.tradedUSD24H)}
-                    <Typography align="center" style={{ color: "#54D62C" }} variant="caption">
-                        ({fNumber(status.tradedXRP24H)} XRP)
-                    </Typography>
+                    <Stack direction="row" spacing={0.5} alignItems='center'>
+                        <Icon icon={rippleSolid} color="#54D62C"/>
+                        <Typography align="center" style={{ color: "#54D62C" }} variant="subtitle1">
+                            {fNumber(status.tradedXRP24H)}
+                        </Typography>
+                    </Stack>
                 </Typography>
                 {/* <h6>|</h6> */}
                 <h5>Tokens Traded:</h5>

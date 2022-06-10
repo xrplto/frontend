@@ -10,6 +10,8 @@ import { styled, useTheme } from '@mui/material/styles';
 import BearBullTypography from '../layouts/BearBullTypography';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
+import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+import outlineToken from '@iconify/icons-ic/outline-token';
 
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
@@ -47,6 +49,12 @@ const CoinNameTypography = withStyles({
     }
 })(Typography);
 
+const CoinNameTypography1 = withStyles({
+    root: {
+        color: "#B72136"
+    }
+})(Typography);
+
 const KYCTypography = withStyles({
     root: {
         color: "#34B60C",
@@ -75,7 +83,7 @@ const TABLE_HEAD = [
     { no: 2, id: 'exch', label: 'Price', align: 'left', order: true },
     { no: 3, id: 'pro24h', label: '24h (%)', align: 'left', order: true },
     { no: 4, id: 'pro7d', label: '7d (%)', align: 'left', order: true },
-    { no: 5, id: 'vol24h', label: 'Volume(24h)', align: 'left', order: true },
+    { no: 5, id: 'vol24hxrp', label: 'Volume(24h)', align: 'left', order: true },
     { no: 6, id: 'vol24htx', label: 'Tx(24h)', align: 'left', order: true },
     { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
     { no: 8, id: 'trustlines', label: 'Trust Lines', align: 'left', order: true },
@@ -94,7 +102,7 @@ export default function TokenList() {
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState('desc');
     // -----------------------------------------------
-    const [orderBy, setOrderBy] = useState('vol24h');
+    const [orderBy, setOrderBy] = useState('vol24hxrp');
     // -----------------------------------------------
     const [rows, setRows] = useState(100);
     const [tokens, setTokens] = useState([]);
@@ -105,6 +113,8 @@ export default function TokenList() {
     const status = useSelector(selectStatus);
 
     const [editToken, setEditToken] = useState(null);
+
+    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     useEffect(() => {
         const loadTokens=() => {
@@ -129,7 +139,6 @@ export default function TokenList() {
                             CNY: exch.CNY,
                             token_count: ret.token_count,
                             transactions24H: ret.transactions24H,
-                            tradedUSD24H: ret.tradedUSD24H,
                             tradedXRP24H: ret.tradedXRP24H,
                             tradedTokens24H: ret.tradedTokens24H,
                         };
@@ -259,12 +268,12 @@ export default function TokenList() {
                                 date,
                                 amount,
                                 trustlines,
-                                vol24h,
-                                //vol24hamt,
+                                vol24hxrp, // XRP amount with pair token
+                                vol24hx, // Token amount with pair XRP
+                                //vol24h,
                                 vol24htx,
                                 //holders,
                                 //offers,
-                                pairXRP,
                                 kyc,
                                 md5,
                                 urlSlug,
@@ -286,12 +295,6 @@ export default function TokenList() {
                                 }
                             } catch (e) { }
 
-                            /* "pairXRP": [1494231.0359380918, 1152170.3078069987] */
-
-                            let tradedAmountWithXRP = 0;
-                            if (pairXRP)
-                                tradedAmountWithXRP = pairXRP[0];
-
                             /*const uri = [id, orderBy];
                             const encodedUri = Buffer.from(encode(uri)).toString('hex');
                             console.log("encodedUri", encodedUri);
@@ -309,7 +312,7 @@ export default function TokenList() {
                                     <TableCell align="left">{id}</TableCell>
                                     <TableCell component="th" scope="row" padding="none">
                                         <Stack direction="row" alignItems="center" spacing={2}>
-                                            {accountProfile && accountProfile.account && accountProfile.admin ? (
+                                            {isAdmin ? (
                                                 <TokenImage alt={name} src={imgUrl} onClick={() => setEditToken(row)} />
                                             ):(
                                                 <Avatar alt={name} src={imgUrl} />
@@ -322,9 +325,12 @@ export default function TokenList() {
                                                     to={`token/${urlSlug}`}
                                                     onClick={() => { localStorage.setItem("selectToken", JSON.stringify(row)); }}
                                                 >
-                                                    <CoinNameTypography variant="h6" noWrap>
-                                                        {name}
-                                                    </CoinNameTypography>
+                                                    {isAdmin && urlSlug === md5 ? (
+                                                        <CoinNameTypography1 variant="h6" noWrap>{name}</CoinNameTypography1>
+                                                    ):(
+                                                        <CoinNameTypography variant="h6" noWrap>{name}</CoinNameTypography>
+                                                    )
+                                                    }
                                                 </Link>
                                                 <Stack direction="row" alignItems="center" spacing={0.2}>
                                                     <Typography variant="caption">
@@ -360,23 +366,22 @@ export default function TokenList() {
                                     </TableCell>
                                     <TableCell align="left">
                                         <Stack>
-                                            <Typography variant="subtitle1" noWrap>
-                                                ${fNumber(vol24h)}
-                                            </Typography>
-                                            <Typography variant="subtitle1" color="#0C53B7">
-                                                <Stack>
-                                                    {fNumber(tradedAmountWithXRP)}
-                                                    <Typography variant="caption">
-                                                        <Stack direction="row" alignItems='center'>
-                                                            {name}
-                                                            <Icon icon={arrowsExchange} width="16" height="16"/>
-                                                            XRP
-                                                        </Stack>
-                                                    </Typography>
-                                                </Stack>
-                                            </Typography>
+                                            <Stack direction="row" spacing={0.5} alignItems='center'>
+                                                <Icon icon={rippleSolid} />
+                                                <Typography variant="subtitle1" noWrap>{fNumber(vol24hxrp)}</Typography>
+                                            </Stack>
+                                            <Stack direction="row" spacing={0.5} alignItems='center'>
+                                                {/* <Icon icon={outlineToken} color="#0C53B7"/> */}
+                                                <Icon icon={arrowsExchange} color="#0C53B7" width="16" height="16"/>
+                                                <Typography variant="subtitle1" color="#0C53B7">{fNumber(vol24hx)}</Typography>
+                                            </Stack>
+                                            
                                             {/* <Typography variant="caption">
-                                                {fNumber(vol24hamt)} {name}
+                                                <Stack direction="row" alignItems='center'>
+                                                    {name}
+                                                    <Icon icon={arrowsExchange} width="16" height="16"/>
+                                                    XRP
+                                                </Stack>
                                             </Typography> */}
                                             {/* <Typography variant="caption">
                                                 {fNumber(vol24htx)} tx

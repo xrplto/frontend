@@ -120,7 +120,6 @@ export default function TokenDetail(props) {
                             CNY: exch.CNY,
                             token_count: ret.token_count,
                             transactions24H: ret.transactions24H,
-                            tradedUSD24H: ret.tradedUSD24H,
                             tradedXRP24H: ret.tradedXRP24H,
                             tradedTokens24H: ret.tradedTokens24H,
                         };

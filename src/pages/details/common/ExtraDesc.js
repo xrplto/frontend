@@ -41,8 +41,7 @@ export default function ExtraDesc({token}) {
         amount,
         exch,
         vol24h,
-        /*vol24hamt,
-        vol24htx,
+        /*vol24htx,
         holders,
         offers,
         id
@@ -94,12 +93,13 @@ export default function ExtraDesc({token}) {
                 <Grid item xs={4} sx={{pl:3, borderRight: '1px solid', borderRightColor: theme.palette.divider}}>
                     <Stack direction="row" alignItems="center" gap={1}>
                         <Typography variant="body1">Volume (24h)</Typography>
-                        <Tooltip title={<Typography variant="body2">A measure of how much of a cryptocurrency was traded in the last 24 hours.</Typography>}>
+                        <Tooltip title={<Typography variant="body2">A measure of how much of a token was traded in the last 24 hours.</Typography>}>
                             <Icon icon={infoFilled} />
                         </Tooltip>
                     </Stack>
                     <Stack alignItems="center">
-                        <VolumeTypography variant="h5" sx={{mt:5,mb:5}}>${volume}</VolumeTypography>
+                        <VolumeTypography variant="h5" sx={{mt:5,mb:0}}>{volume}</VolumeTypography>
+                        <VolumeTypography variant="caption" sx={{mt:0,mb:5}}>{name}</VolumeTypography>
                     </Stack>
                 </Grid>
 

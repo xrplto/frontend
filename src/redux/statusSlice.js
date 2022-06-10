@@ -9,7 +9,6 @@ const initialState = {
         CNY:100,
         token_count:0,
         transactions24H: 0,
-        tradedUSD24H: 0,
         tradedXRP24H: 0,
         tradedTokens24H: 0
     },
