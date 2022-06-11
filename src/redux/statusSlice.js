@@ -8,6 +8,7 @@ const initialState = {
         JPY:100,
         CNY:100,
         token_count:0,
+        filter_count:0,
         transactions24H: 0,
         tradedXRP24H: 0,
         tradedTokens24H: 0
@@ -28,7 +29,8 @@ export const statusSlice = createSlice({
         // which detects changes to a "draft state" and produces a brand new
         // immutable state based off those changes
         update_status: (state, action) => {
-            state.status = action.payload;
+            Object.assign(state.status, action.payload);
+            // state.status = action.payload;
         },
         updateAccountData: (state, action) => {
             state.accountData = action.payload;

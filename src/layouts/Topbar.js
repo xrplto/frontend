@@ -76,7 +76,7 @@ export default function Topbar() {
                 <Typography align="center" style={{ color: "#FF6C40" }} variant="subtitle2">
                     <Stack direction="row" spacing={0.5} alignItems='center'>
                         <Icon icon={rippleSolid} color="#54D62C"/>
-                        <Typography align="center" style={{ color: "#54D62C" }} variant="subtitle1">
+                        <Typography align="center" style={{ color: "#54D62C" }} variant="subtitle2">
                             {fNumber(status.tradedXRP24H)}
                         </Typography>
                     </Stack>
@@ -85,7 +85,10 @@ export default function Topbar() {
                 <h5>Tokens Traded:</h5>
                 <Typography align="center" style={{ color: "#3366FF" }} variant="subtitle2">{fIntNumber(status.tradedTokens24H)}</Typography>
                 <Box sx={{ flexGrow: 1 }} />
-                <h5>1 XRP</h5>
+                <Stack direction="row" spacing={0.5} alignItems='center'>
+                    <Icon icon={rippleSolid} width='12' height='12'/>
+                    <Typography align="center" variant="subtitle2">1</Typography>
+                </Stack>
                 <h6>|</h6>
                 <h5>$ {fCurrency3(1/status.USD)}</h5>
                 <h6>|</h6>
