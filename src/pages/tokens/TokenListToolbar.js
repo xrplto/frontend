@@ -1,12 +1,5 @@
-//import PropTypes from 'prop-types';
-//import { Icon } from '@iconify/react';
-//import searchFill from '@iconify/icons-eva/search-fill';
-//import trash2Fill from '@iconify/icons-eva/trash-2-fill';
-//import roundFilterList from '@iconify/icons-ic/round-filter-list';
-// material
+// Material
 import { styled } from '@mui/material/styles';
-//import { Link as RouterLink } from 'react-router-dom';
-//import { fCurrency3 } from '../../utils/formatNumber';
 import {
     Stack,
     Toolbar,
@@ -14,11 +7,9 @@ import {
     Select,
     MenuItem
 } from '@mui/material';
-
-//import { makeStyles } from "@mui/styles";
-
+// ----------------------------------------------------------------------
+// Redux
 import { useSelector } from "react-redux";
-
 import { selectStatus } from "../../redux/statusSlice";
 // ----------------------------------------------------------------------
 
@@ -28,23 +19,7 @@ const RootStyle = styled(Toolbar)(({ theme }) => ({
     justifyContent: 'space-between',
     padding: theme.spacing(0, 1, 0, 3)
 }));
-
-
 // ----------------------------------------------------------------------
-
-/*TokenListToolbar.propTypes = {
-  filterName: PropTypes.string,
-  onFilterName: PropTypes.func
-};*/
-
-/*const dropdownStyles = makeStyles({
-    underline: {
-        borderBottom: "0px solid red !important",
-        "&:hover": {
-            borderBottom: "0px solid rgba(0,0,0,0)"
-        }
-    }
-});*/
 
 const CustomSelect = styled(Select)(({ theme }) => ({
     '& .MuiOutlinedInput-notchedOutline' : {

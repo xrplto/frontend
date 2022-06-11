@@ -1,8 +1,9 @@
-//import PropTypes from 'prop-types';
+// Material
+import { styled } from '@mui/material/styles';
+
+// Iconify
 import { Icon } from '@iconify/react';
 import searchFill from '@iconify/icons-eva/search-fill';
-// material
-import { styled } from '@mui/material/styles';
 
 import {
     Box,
@@ -35,12 +36,6 @@ const SearchStyle = styled(OutlinedInput)(({ theme }) => ({
 }));
 
 // ----------------------------------------------------------------------
-
-/*TokenListToolbar.propTypes = {
-  filterName: PropTypes.string,
-  onFilterName: PropTypes.func
-};*/
-
 export default function SearchToolbar({ filterName, onFilterName, rows, setRows }) {
    
     const handleChangeRows = (event) => {

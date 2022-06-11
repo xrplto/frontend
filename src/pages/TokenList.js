@@ -11,7 +11,6 @@ import BearBullTypography from '../layouts/BearBullTypography';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
-import outlineToken from '@iconify/icons-ic/outline-token';
 
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';

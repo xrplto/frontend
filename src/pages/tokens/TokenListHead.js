@@ -1,8 +1,7 @@
 import PropTypes from 'prop-types';
-// material
+// Material
 import { visuallyHidden } from '@mui/utils';
 import { Box, TableRow, TableCell, TableHead, TableSortLabel } from '@mui/material';
-
 // ----------------------------------------------------------------------
 
 TokenListHead.propTypes = {

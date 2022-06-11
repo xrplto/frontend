@@ -1,8 +1,8 @@
 import { Icon } from '@iconify/react';
 import postageStamp from '@iconify/icons-mdi/postage-stamp';
-// material
+// Material
 import { styled } from '@mui/material/styles';
-import { /*Badge,*/ Typography, Stack } from '@mui/material';
+import { Typography, Stack } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -30,9 +30,6 @@ const RootStyle = styled('div')(({ theme }) => ({
 }));
 
 // ----------------------------------------------------------------------
-//<Badge showZero badgeContent={0} color="error" max={99}>
-//<Icon icon={postageStamp} width={24} height={24} />
-//</Badge>
 export default function NFTWidget() {
     return (
         <RootStyle>
