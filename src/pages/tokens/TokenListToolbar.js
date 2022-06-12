@@ -30,7 +30,7 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 export default function TokenListToolbar({ rows, setRows, page, setPage}) {
     const status = useSelector(selectStatus);
 
-    const count = status.token_count;
+    const count = status.filter_count;
     const page_count = Math.floor(count / rows) + 1;
 
     const start = page * rows + 1;

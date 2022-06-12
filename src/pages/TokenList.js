@@ -104,6 +104,8 @@ export default function TokenList() {
     const [orderBy, setOrderBy] = useState('vol24hxrp');
     // -----------------------------------------------
     const [rows, setRows] = useState(100);
+    const [showNew, setShowNew] = useState(false);
+    const [showSlug, setShowSlug] = useState(false);
     const [tokens, setTokens] = useState([]);
     const [offset, setOffset] = useState(0);
     const [load, setLoad] = useState(true);
@@ -123,7 +125,7 @@ export default function TokenList() {
             // https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24h&sortType=desc
             const start = page * rows + offset * 20;
             //console.log(`${offset} Load tokens from ${start+1}`);
-            axios.get(`${BASE_URL}/tokens?start=${start}&limit=20&sortBy=${orderBy}&sortType=${order}&filter=${filterName}`)
+            axios.get(`${BASE_URL}/tokens?start=${start}&limit=20&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}`)
             .then(res => {
                 try {
                     if (res.status === 200 && res.data) {
@@ -137,6 +139,7 @@ export default function TokenList() {
                             JPY: exch.JPY,
                             CNY: exch.CNY,
                             token_count: ret.token_count,
+                            filter_count: ret.filter_count,
                             transactions24H: ret.transactions24H,
                             tradedXRP24H: ret.tradedXRP24H,
                             tradedTokens24H: ret.tradedTokens24H,
@@ -199,6 +202,20 @@ export default function TokenList() {
             setHasMore(true);
     }
 
+    const updateShowNew = (val) => {
+        setShowNew(val);
+        setPage(0);
+        setOffset(0);
+        setLoad(true);
+    }
+
+    const updateShowSlug = (val) => {
+        setShowSlug(val);
+        setPage(0);
+        setOffset(0);
+        setLoad(true);
+    }
+
     const fetchMoreData = () => {
         if (tokens.length >= rows) {
             setHasMore(false);
@@ -226,6 +243,10 @@ export default function TokenList() {
                 onFilterName={handleFilterByName}
                 rows={rows}
                 setRows={updateRows}
+                showNew={showNew}
+                setShowNew={updateShowNew}
+                showSlug={showSlug}
+                setShowSlug={updateShowSlug}
             />
 
             <EditToken token={editToken} setToken={setEditToken}/>
