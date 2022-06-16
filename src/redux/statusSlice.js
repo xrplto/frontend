@@ -11,7 +11,11 @@ const initialState = {
         filter_count:0,
         transactions24H: 0,
         tradedXRP24H: 0,
-        tradedTokens24H: 0
+        tradedTokens24H: 0,
+        timeCalc24H: 0,
+        timeSchedule: 0,
+        countApiCall: 0,
+        timeTokens: 0
     },
     accountData: {
         balance: {},

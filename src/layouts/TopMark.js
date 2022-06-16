@@ -29,8 +29,11 @@ export default function TopMark({ md5 }) {
     useEffect(() => {
         try {
             /*
-            "transactions24H": 46499,
-            "tradedTokens24H": 494,
+            "transactions24H": 52976,
+            "tradedXRP24H": 9163859.547288,
+            "tradedTokens24H": 743,
+            "timeCalc24H": "353.36",
+            "timeSchedule": "5411.07",
             */
             const res = lastMessage.data;
             const json = JSON.parse(res);
@@ -46,6 +49,9 @@ export default function TopMark({ md5 }) {
                 transactions24H: json.transactions24H,
                 tradedXRP24H: json.tradedXRP24H,
                 tradedTokens24H: json.tradedTokens24H,
+                timeCalc24H: json.timeCalc24H,
+                timeSchedule: json.timeSchedule,
+                countApiCall: json.countApiCall,
             };
             dispatch(update_status(status));
         } catch(err) {}

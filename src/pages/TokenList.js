@@ -143,6 +143,10 @@ export default function TokenList() {
                             transactions24H: ret.transactions24H,
                             tradedXRP24H: ret.tradedXRP24H,
                             tradedTokens24H: ret.tradedTokens24H,
+                            timeCalc24H: ret.timeCalc24H,
+                            timeSchedule: ret.timeSchedule,
+                            countApiCall: ret.countApiCall,
+                            timeTokens: ret.took
                         };
                         dispatch(update_status(status));
                         let newTokens;

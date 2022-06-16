@@ -33,6 +33,11 @@ import {
 import { tableCellClasses } from "@mui/material/TableCell";
 import { useContext } from 'react'
 import Context from '../../Context'
+
+// Redux
+import { useSelector, useDispatch } from "react-redux";
+import { selectStatus, update_status } from "../../redux/statusSlice";
+
 //import { ImageSelect } from './ImageSelect';
 import EditDialog from './EditDialog';
 import AddDialog from './AddDialog';
@@ -110,6 +115,8 @@ const ERR_INTERNAL  = 5;
 const MSG_SUCCESSFUL = 6;
 
 export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
+    const status = useSelector(selectStatus);
+
     const theme = useTheme();
     const fileRef = useRef();
 
@@ -410,10 +417,13 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                 </Link>
                             </Stack>
                         </TableCell>
-                        <TableCell align="right" sx={{pt:0, pb:0.2, width: '15%'}}></TableCell>
-                        <TableCell align="right" sx={{pt:0, pb:0.2, width: '30%'}}></TableCell>
+                        <TableCell align="right" sx={{pt:1, pb:0.2, width: '15%'}}>
+                            <Label variant="subtitle2" noWrap>Calc24H</Label>
+                        </TableCell>
+                        <TableCell align="left" sx={{pt:1, pb:0.2, width: '30%'}}>
+                            <Label variant="subtitle2" noWrap>{status.timeCalc24H} ms</Label>
+                        </TableCell>
                     </TableRow>
-
                     <TableRow>
                         <TableCell align="right" sx={{pt:0, pb:0.2}}>
                             <Label variant="subtitle2" noWrap>Currency</Label>
@@ -424,8 +434,12 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                 <Label variant="caption" noWrap>({currency})</Label>
                             </Stack>
                         </TableCell>
-                        <TableCell align="right" sx={{pt:0, pb:0.2}}></TableCell>
-                        <TableCell align="right" sx={{pt:0, pb:0.2}}></TableCell>
+                        <TableCell align="right" sx={{pt:0, pb:0.2}}>
+                            <Label variant="subtitle2" noWrap>Schedule</Label>
+                        </TableCell>
+                        <TableCell align="left" sx={{pt:0, pb:0.2}}>
+                            <Label variant="subtitle2" noWrap>{status.timeSchedule} ms</Label>
+                        </TableCell>
                     </TableRow>
 
                     <TableRow>
@@ -437,6 +451,12 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                 <Label variant="subtitle2" noWrap>{md5}</Label>
                                 <Label variant="subtitle2" noWrap>{imgExt.toUpperCase()}</Label>
                             </Stack>
+                        </TableCell>
+                        <TableCell align="right" sx={{pt:0.5, pb:0.2, width: '15%'}}>
+                            <Label variant="subtitle2" noWrap>Tokens</Label>
+                        </TableCell>
+                        <TableCell align="left" sx={{pt:0.5, pb:0.2, width: '30%'}}>
+                            <Label variant="subtitle2" noWrap>{status.timeTokens} ms</Label>
                         </TableCell>
                     </TableRow>
 
@@ -458,8 +478,12 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                 <EditDialog label='Domain' value={domain} setValue={setDomain}/>
                             </Stack>
                         </TableCell>
-                        <TableCell align="right" sx={{pt:0, pb:0.2}}></TableCell>
-                        <TableCell align="right" sx={{pt:0, pb:0.2}}></TableCell>
+                        <TableCell align="right" sx={{pt:0, pb:0.2}}>
+                            <Label variant="subtitle2" noWrap>API Call</Label>
+                        </TableCell>
+                        <TableCell align="left" sx={{pt:0, pb:0.2}}>
+                            <Label variant="subtitle2" noWrap>{status.countApiCall} / min</Label>
+                        </TableCell>
                     </TableRow>
 
                     <TableRow>

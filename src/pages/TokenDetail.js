@@ -122,6 +122,9 @@ export default function TokenDetail(props) {
                             transactions24H: ret.transactions24H,
                             tradedXRP24H: ret.tradedXRP24H,
                             tradedTokens24H: ret.tradedTokens24H,
+                            timeCalc24H: ret.timeCalc24H,
+                            timeSchedule: ret.timeSchedule,
+                            countApiCall: ret.countApiCall,
                         };
                         dispatch(update_status(status));
                         setHistory(ret.history);
@@ -332,8 +335,8 @@ export default function TokenDetail(props) {
             const page = 0;
             const rows = 30;
             // SOLO
-            // https://api.xrpl.to/api/exchanges?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
-            axios.get(`${BASE_URL}/exchanges?pair=${pair.pair}&page=${page}&limit=${rows}`)
+            // https://api.xrpl.to/api/exchs?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
+            axios.get(`${BASE_URL}/exchs?pair=${pair.pair}&page=${page}&limit=${rows}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {

@@ -137,10 +137,10 @@ export default function HistoryData({token, pairs, pair, setPair}) {
         function getExchanges() {
             if (!pair) return;
             // XPUNK
-            // https://api.xrpl.to/api/exchanges?pair=d12119be3c1749470903414dff032761&page=0&limit=5
+            // https://api.xrpl.to/api/exchs?pair=d12119be3c1749470903414dff032761&page=0&limit=5
             // SOLO
-            // https://api.xrpl.to/api/exchanges?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
-            axios.get(`${BASE_URL}/exchanges?pair=${pair.pair}&page=${page}&limit=${rows}`)
+            // https://api.xrpl.to/api/exchs?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
+            axios.get(`${BASE_URL}/exchs?pair=${pair.pair}&page=${page}&limit=${rows}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
