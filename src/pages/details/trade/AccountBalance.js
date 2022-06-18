@@ -124,7 +124,7 @@ export default function AccountBalance({pair}) {
                 /*
                 "application": {
                     "name": "XRPL.TO",
-                    "description": "Top XRPL DEX tokens prices and charts, listed by 24h volume. Free access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.",
+                    "description": "Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.",
                     "disabled": 0,
                     "uuidv4": "1735e8c8-6a04-46ea-a7a9-a9a3c9b657dd",
                     "icon_url": "https://xumm-cdn.imgix.net/app-logo/8f92a3f4-aa4e-40f9-ba23-b38b7085814f.png",

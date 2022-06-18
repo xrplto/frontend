@@ -237,7 +237,7 @@ export default function TokenList() {
     };
 
     return (
-        <Page title="XRPL Token Prices, Charts, Market Volume And Transaction Activity">
+        <Page title="XRPL Token Prices, Charts, Market Volume And Activity">
             <Container maxWidth="xl">
 
             <TopMark md5={'NONE'}/>
