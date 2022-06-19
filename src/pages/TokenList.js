@@ -11,21 +11,25 @@ import BearBullTypography from '../layouts/BearBullTypography';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+import searchFill from '@iconify/icons-eva/search-fill';
 
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
 import EditToken from './tokens/EditToken';
 
-// material
+// Material
 import {
     Avatar,
     Box,
     Container,
+    InputAdornment,
+    OutlinedInput,
     Stack,
     Table,
     TableRow,
     TableBody,
     TableCell,
+    Toolbar,
     Typography
 } from '@mui/material';
 
@@ -33,7 +37,7 @@ import { tableCellClasses } from "@mui/material/TableCell";
 // components
 import Page from '../layouts/Page';
 //import SearchNotFound from '../../components/SearchNotFound';
-import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu } from './tokens';
+import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu, WidgetNew, WidgetSlug } from './tokens';
 // ----------------------------------------------------------------------
 import { useSelector, useDispatch } from "react-redux";
 import { selectStatus, update_status } from "../redux/statusSlice";
@@ -41,6 +45,33 @@ import { selectStatus, update_status } from "../redux/statusSlice";
 import { useContext } from 'react'
 import Context from '../Context'
 // ----------------------------------------------------------------------
+
+const RootStyle = styled(Toolbar)(({ theme }) => ({
+    height: 96,
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: theme.spacing(0, 1, 0, 3)
+}));
+
+const SearchStyle = styled(OutlinedInput)(({ theme }) => ({
+    width: 200,
+    transition: theme.transitions.create(['box-shadow', 'width'], {
+        easing: theme.transitions.easing.easeInOut,
+        duration: theme.transitions.duration.shorter
+    }),
+    '&.Mui-focused': { width: 280, boxShadow: theme.customShadows.z8 },
+    '& fieldset': {
+        borderWidth: `1px !important`,
+        borderColor: `${theme.palette.grey[500_32]} !important`
+    }
+}));
+
+
+const TitleTypography = withStyles({
+    root: {
+        fontSize: '1.2rem'
+    }
+})(Typography);
 
 const CoinNameTypography = withStyles({
     root: {
@@ -59,7 +90,7 @@ const KYCTypography = withStyles({
         color: "#34B60C",
         borderRadius: '6px',
         border: '0.05em solid #34B60C',
-        //fontSize: '0.5rem',
+        fontSize: '0.6rem',
         lineHeight: '1',
         paddingLeft: '3px',
         paddingRight: '3px',
@@ -87,8 +118,6 @@ const TABLE_HEAD = [
     { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
     { no: 8, id: 'trustlines', label: 'Trust Lines', align: 'left', order: true },
     { no: 9, id: 'amount', label: 'Total Supply', align: 'left', order: true },
-    { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
-    { id: '' }
 ];
 
 export default function TokenList() {
@@ -236,21 +265,47 @@ export default function TokenList() {
         setLoad(true);
     };
 
+    
+
     return (
         <Page title="XRPL Token Prices, Charts, Market Volume And Activity">
+            {isAdmin &&
+                <WidgetNew showNew={showNew} setShowNew={updateShowNew}/>
+            }
+
+            {isAdmin &&
+                <WidgetSlug showSlug={showSlug} setShowSlug={updateShowSlug}/>
+            }
+
             <Container maxWidth="xl">
 
             <TopMark md5={'NONE'}/>
 
+            <Stack spacing={1} sx={{pl:2, pr:2, pt:4, pb:0.5}}>
+                <TitleTypography variant='h1'>Today's XRPL Token Prices by Volume</TitleTypography>
+                <Typography variant='subtitle2'>The global token market cap is $890.88B, a 1.08% decrease over the last day. Read Less</Typography>
+                {/* Today's XRPL Token Prices by Volume
+                The global token market cap is $890.88B, a 1.08% decrease over the last day.Read Less
+                The total XRPL  Dex volume over the last 24 hours is $72.75B, which makes a 29.79% decrease. The total volume in DeFi is currently $5.21B, 7.16% of the total crypto market 24-hour volume. The volume of all stable coins is now $64.66B, which is 88.87% of the total token market 24-hour volume.
+                XRP price is currently .30c
+                XRP dominance is currently 99.01%, a decrease of 0.42% over the day.
+
+                we won't be able to do some of these metrics
+
+                Might be able to do "The volume of all stable coins is now $64.66B, which is 88.87% of the total token market 24-hour volume."
+
+                by using the tag that I place on stablecoin tokens
+
+                which is named "Stablecoin"
+
+                eventually we're moving the search bar 
+
+                to the NAV bar like CMC also. */}
+            </Stack>
+
             <SearchToolbar
                 filterName={filterName}
                 onFilterName={handleFilterByName}
-                rows={rows}
-                setRows={updateRows}
-                showNew={showNew}
-                setShowNew={updateShowNew}
-                showSlug={showSlug}
-                setShowSlug={updateShowSlug}
             />
 
             <EditToken token={editToken} setToken={setEditToken}/>
@@ -273,11 +328,25 @@ export default function TokenList() {
                     borderBottomColor: theme.palette.divider
                 }
             }}>
+                {/* <SearchStyle
+                    value={filterName}
+                    onChange={handleFilterByName}
+                    placeholder="Search ..."
+                    size="small"
+                    startAdornment={
+                        <InputAdornment position="start">
+                            <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
+                        </InputAdornment>
+                    }
+                    sx={{pb:0.3}}
+                /> */}
                 <TokenListHead
                     order={order}
                     orderBy={orderBy}
                     headLabel={TABLE_HEAD}
                     onRequestSort={handleRequestSort}
+                    rows={rows}
+                    setRows={updateRows}
                 />
                 <TableBody>
                     {
@@ -359,12 +428,12 @@ export default function TokenList() {
                                                 <Stack direction="row" alignItems="center" spacing={0.2}>
                                                     <Typography variant="caption">
                                                         {user}
+                                                        {kyc && (
+                                                            <KYCTypography variant="caption">
+                                                            KYC
+                                                            </KYCTypography>
+                                                        )}
                                                     </Typography>
-                                                    {kyc && (
-                                                        <KYCTypography variant="caption">
-                                                        KYC
-                                                        </KYCTypography>
-                                                    )}
                                                 </Stack>
                                                 <Typography variant="caption">
                                                     {date_fixed}

@@ -1,7 +1,17 @@
 import PropTypes from 'prop-types';
+
 // Material
 import { visuallyHidden } from '@mui/utils';
-import { Box, TableRow, TableCell, TableHead, TableSortLabel } from '@mui/material';
+import {
+    Box,
+    MenuItem,
+    Stack,
+    Select,
+    TableRow,
+    TableCell,
+    TableHead,
+    TableSortLabel
+} from '@mui/material';
 // ----------------------------------------------------------------------
 
 TokenListHead.propTypes = {
@@ -16,9 +26,15 @@ export default function TokenListHead({
     orderBy,
     headLabel,
     onRequestSort,
+    rows,
+    setRows
 }) {
     const createSortHandler = (id, no) => (event) => {
         onRequestSort(event, id, no);
+    };
+
+    const handleChangeRows = (e) => {
+        setRows(parseInt(e.target.value, 10));
     };
 
     return (
@@ -29,11 +45,6 @@ export default function TokenListHead({
                         key={headCell.id}
                         align={headCell.align}
                         sortDirection={orderBy === headCell.id ? order : false}
-                        sx={{
-                            ...(headCell.id === 'historyGraph' && {
-                                minWidth: 130,
-                              })
-                        }}
                     >
                         <TableSortLabel
                             hideSortIcon
@@ -50,6 +61,32 @@ export default function TokenListHead({
                         </TableSortLabel>
                     </TableCell>
                 ))}
+                {/* { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false }, */}
+                <TableCell
+                    key={'historyGraph'}
+                    align={'left'}
+                    sortDirection={false}
+                    colSpan={2}
+                    sx={{ minWidth: 160 }}
+                >
+                    <Stack direction='row' alignItems="center">
+                        Last 7 Days
+                        <Stack direction='row' alignItems="center" sx={{ml: 2}}>
+                            Rows
+                            <Select
+                                value={rows}
+                                onChange={handleChangeRows}
+                                sx={{'& .MuiOutlinedInput-notchedOutline' : {
+                                    border: 'none'
+                                }}}
+                            >
+                                <MenuItem value={100}>100</MenuItem>
+                                <MenuItem value={50}>50</MenuItem>
+                                <MenuItem value={20}>20</MenuItem>
+                            </Select>
+                        </Stack>
+                    </Stack>
+                </TableCell>
             </TableRow>
         </TableHead>
     );

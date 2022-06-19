@@ -2,5 +2,7 @@ export { default as TokenListHead } from './TokenListHead';
 export { default as TokenListToolbar } from './TokenListToolbar';
 export { default as TokenMoreMenu } from './TokenMoreMenu';
 export { default as NFTWidget } from './NFTWidget';
+export { default as WidgetNew } from './WidgetNew';
+export { default as WidgetSlug } from './WidgetSlug';
 export { default as SearchToolbar } from './SearchToolbar';
 export { default as TokenSort } from './TokenSort';
