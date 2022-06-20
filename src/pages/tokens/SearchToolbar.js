@@ -17,16 +17,16 @@ const RootStyle = styled(Toolbar)(({ theme }) => ({
     height: 96,
     display: 'flex',
     justifyContent: 'space-between',
-    padding: theme.spacing(0, 1, 0, 3)
+    padding: theme.spacing(0, 0, 0, 0)
 }));
 
 const SearchStyle = styled(OutlinedInput)(({ theme }) => ({
     width: 200,
-    transition: theme.transitions.create(['box-shadow', 'width'], {
+    transition: theme.transitions.create(['width'], {
         easing: theme.transitions.easing.easeInOut,
         duration: theme.transitions.duration.shorter
     }),
-    '&.Mui-focused': { width: 280, boxShadow: theme.customShadows.z8 },
+    '&.Mui-focused': { width: 280 },
     '& fieldset': {
         borderWidth: `1px !important`,
         borderColor: `${theme.palette.grey[500_32]} !important`
@@ -36,7 +36,7 @@ const SearchStyle = styled(OutlinedInput)(({ theme }) => ({
 // ----------------------------------------------------------------------
 export default function SearchToolbar({ filterName, onFilterName }) {
     return (
-        <RootStyle>
+        // <RootStyle>
             <SearchStyle
                 value={filterName}
                 onChange={onFilterName}
@@ -49,6 +49,6 @@ export default function SearchToolbar({ filterName, onFilterName }) {
                 }
                 sx={{pb:0.3}}
             />
-        </RootStyle>
+        // </RootStyle>
     );
 }

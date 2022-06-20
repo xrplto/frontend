@@ -1,7 +1,12 @@
 import * as React from 'react';
 // Material
 import { alpha, styled/*, useTheme*/ } from '@mui/material/styles';
-import { Box, Stack, Tooltip, Typography } from '@mui/material';
+import {
+    Box,
+    Stack,
+    Tooltip,
+    Typography
+} from '@mui/material';
 // Components
 import { fIntNumber, fCurrency3, fNumber } from '../utils/formatNumber';
 import postageStamp from '@iconify/icons-mdi/postage-stamp';
@@ -52,14 +57,23 @@ const H24Style = styled('div')(({ theme }) => ({
     '&:hover': { opacity: 1 }
 }));
 
+const Label = styled('span')(({ theme }) => ({
+    fontSize: '0.87rem'
+}));
 // ----------------------------------------------------------------------
+
+function Rate(num) {
+    if (num === 0)
+        return 0;
+    return fCurrency3(1/num);
+}
 export default function Topbar() {
     const status = useSelector(selectStatus);
 
     return (
         <StackStyle direction="row" spacing={2} sx={{pl:2, pr:3, pt:0.5, pb:0.5}} alignItems="center">
-                <h5>Tokens: </h5>
-                <h5>{fIntNumber(status.token_count)}</h5>
+                <Label>Tokens: </Label>
+                <Label>{fIntNumber(status.token_count)}</Label>
                 <H24Style>
                     <Tooltip title="Metrics on 24 hours">
                         <Stack spacing={0.05} alignItems='center'>
@@ -69,10 +83,10 @@ export default function Topbar() {
                         </Stack>
                     </Tooltip>
                 </H24Style>
-                <h5>Tx:</h5>
+                <Label>Tx:</Label>
                 <Typography align="center" style={{ color: "#74CAFF" }} variant="subtitle2">{fIntNumber(status.transactions24H)}</Typography>
-                {/* <h6>|</h6> */}
-                <h5>Vol:</h5>
+                {/* <Label>|</Label> */}
+                <Label>Vol:</Label>
                 <Typography align="center" style={{ color: "#FF6C40" }} variant="subtitle2">
                     <Stack direction="row" spacing={0.5} alignItems='center'>
                         <Icon icon={rippleSolid} color="#54D62C"/>
@@ -81,20 +95,20 @@ export default function Topbar() {
                         </Typography>
                     </Stack>
                 </Typography>
-                {/* <h6>|</h6> */}
-                <h5>Tokens Traded:</h5>
+                {/* <Label>|</Label> */}
+                <Label>Tokens Traded:</Label>
                 <Typography align="center" style={{ color: "#3366FF" }} variant="subtitle2">{fIntNumber(status.tradedTokens24H)}</Typography>
                 <Box sx={{ flexGrow: 1 }} />
                 <Stack direction="row" spacing={0.5} alignItems='center'>
                     <Icon icon={rippleSolid} width='12' height='12'/>
                     <Typography align="center" variant="subtitle2">1</Typography>
                 </Stack>
-                <h6>|</h6>
-                <h5>$ {fCurrency3(1/status.USD)}</h5>
-                <h6>|</h6>
-                <h5>€ {fCurrency3(1/status.EUR)}</h5>
-                <h6>|</h6>
-                <h5>¥ {fCurrency3(1/status.JPY)}</h5>
+                <Label>|</Label>
+                <Label>$ {Rate(status.USD)}</Label>
+                <Label>|</Label>
+                <Label>€ {Rate(status.EUR)}</Label>
+                <Label>|</Label>
+                <Label>¥ {Rate(status.JPY)}</Label>
                 <XLS14DStyle>
                     <Tooltip title="Deprecated">
                         <Stack direction="row" spacing={0.1} alignItems='center'>

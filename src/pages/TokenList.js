@@ -4,9 +4,8 @@ import { useState, useEffect } from 'react';
 import { BeatLoader } from "react-spinners";
 import { fNumber } from '../utils/formatNumber';
 import { withStyles } from '@mui/styles';
-import { Link } from 'react-router-dom'
 import InfiniteScroll from "react-infinite-scroll-component";
-import { styled, useTheme } from '@mui/material/styles';
+import { alpha, styled, useTheme } from '@mui/material/styles';
 import BearBullTypography from '../layouts/BearBullTypography';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
@@ -23,6 +22,7 @@ import {
     Box,
     Container,
     InputAdornment,
+    Link,
     OutlinedInput,
     Stack,
     Table,
@@ -66,6 +66,11 @@ const SearchStyle = styled(OutlinedInput)(({ theme }) => ({
     }
 }));
 
+const ContentTypography = withStyles({
+    root: {
+        color: alpha('#919EAB', 0.99)
+    }
+})(Typography);
 
 const TitleTypography = withStyles({
     root: {
@@ -143,6 +148,8 @@ export default function TokenList() {
     const status = useSelector(selectStatus);
 
     const [editToken, setEditToken] = useState(null);
+
+    const [showContent, setShowContent] = useState(false);
 
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
@@ -265,8 +272,6 @@ export default function TokenList() {
         setLoad(true);
     };
 
-    
-
     return (
         <Page title="XRPL Token Prices, Charts, Market Volume And Activity">
             {isAdmin &&
@@ -281,9 +286,33 @@ export default function TokenList() {
 
             <TopMark md5={'NONE'}/>
 
-            <Stack spacing={1} sx={{pl:2, pr:2, pt:4, pb:0.5}}>
+            <Stack sx={{pl:2, pr:50, pt:4, pb:4}}>
                 <TitleTypography variant='h1'>Today's XRPL Token Prices by Volume</TitleTypography>
-                <Typography variant='subtitle2'>The global token market cap is $890.88B, a 1.08% decrease over the last day. Read Less</Typography>
+                <Stack direction="row" sx={{mt:2}}>
+                    <ContentTypography variant='subtitle1'>The global token market cap is $0.0B, a 0.0% decrease over the last day.</ContentTypography>
+                    <Link
+                        component="button"
+                        underline="always"
+                        variant="body2"
+                        color="#637381"
+                        onClick={() => {
+                            setShowContent(!showContent);
+                        }}
+                    >
+                        <ContentTypography variant='subtitle1' sx={{ml:1}}>{showContent?'Read Less':'Read More'}</ContentTypography>
+                    </Link>
+                </Stack>
+
+                <div
+                    style={{
+                        display: showContent?"flex":"none",
+                        flexDirection: "column",
+                    }}
+                >
+                    <ContentTypography variant='subtitle1'>The total XRPL Dex volume over the last 24 hours is $-, which makes a -% decrease. The total volume in DeFi is currently $-, -% of the total crypto market 24-hour volume. The volume of all stable coins is now $-, which is -% of the total token market 24-hour volume.</ContentTypography>
+                    <ContentTypography variant='subtitle1'>XRP price is currently $0.0.</ContentTypography>
+                    <ContentTypography variant='subtitle1'>XRP dominance is currently ---%, a decrease of -% over the day.</ContentTypography>
+                </div>
                 {/* Today's XRPL Token Prices by Volume
                 The global token market cap is $890.88B, a 1.08% decrease over the last day.Read Less
                 The total XRPL  Dex volume over the last 24 hours is $72.75B, which makes a 29.79% decrease. The total volume in DeFi is currently $5.21B, 7.16% of the total crypto market 24-hour volume. The volume of all stable coins is now $64.66B, which is 88.87% of the total token market 24-hour volume.
@@ -411,12 +440,11 @@ export default function TokenList() {
                                                 <Avatar alt={name} src={imgUrl} />
                                             )}
                                             <Stack>
+                                            
                                                 <Link
-                                                    style={{ textDecoration: 'none' }}
-                                                    underline="hover"
+                                                    underline="none"
                                                     color="inherit"
-                                                    to={`token/${urlSlug}`}
-                                                    onClick={() => { localStorage.setItem("selectToken", JSON.stringify(row)); }}
+                                                    href={`token/${urlSlug}`}
                                                 >
                                                     {isAdmin && urlSlug === md5 ? (
                                                         <CoinNameTypography1 variant="h6" noWrap>{name}</CoinNameTypography1>
