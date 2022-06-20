@@ -1,7 +1,7 @@
 import { styled } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
 import { useState } from 'react';
-import personFill from '@iconify/icons-bi/person-fill';
+// import personFill from '@iconify/icons-bi/person-fill';
 import chevronDown from '@iconify/icons-akar-icons/chevron-down';
 import chatIcon from '@iconify/icons-bi/chat';
 // material
@@ -31,11 +31,11 @@ export default function CommunityMenu({token}) {
     const [open, setOpen] = useState(false);
 
     const {
-        name,
-        domain,
-        whitepaper,
+        // name,
+        // domain,
+        // whitepaper,
+        // issuer,
         social,
-        issuer,
     } = token;
 
     const handleClick = () => {

@@ -35,8 +35,8 @@ import { useContext } from 'react'
 import Context from '../../Context'
 
 // Redux
-import { useSelector, useDispatch } from "react-redux";
-import { selectStatus, update_status } from "../../redux/statusSlice";
+import { useSelector } from "react-redux";
+import { selectStatus } from "../../redux/statusSlice";
 
 //import { ImageSelect } from './ImageSelect';
 import EditDialog from './EditDialog';

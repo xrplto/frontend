@@ -30,11 +30,11 @@ export default function CommunityMenu({token}) {
     const [open, setOpen] = useState(false);
 
     const {
-        name,
-        domain,
-        whitepaper,
+        // name,
+        // domain,
+        // whitepaper,
         social,
-        issuer,
+        // issuer,
     } = token;
 
     const handleClick = () => {

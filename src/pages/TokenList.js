@@ -2,7 +2,7 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react';
 import { BeatLoader } from "react-spinners";
-import { fCurrency3, fNumber } from '../utils/formatNumber';
+import { fNumber } from '../utils/formatNumber';
 import { withStyles } from '@mui/styles';
 import InfiniteScroll from "react-infinite-scroll-component";
 import { alpha, styled, useTheme } from '@mui/material/styles';
@@ -10,7 +10,6 @@ import BearBullTypography from '../layouts/BearBullTypography';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
-import searchFill from '@iconify/icons-eva/search-fill';
 
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
@@ -21,21 +20,18 @@ import {
     Avatar,
     Box,
     Container,
-    InputAdornment,
     Link,
-    OutlinedInput,
     Stack,
     Table,
     TableRow,
     TableBody,
     TableCell,
-    Toolbar,
     Typography
 } from '@mui/material';
 
 import { tableCellClasses } from "@mui/material/TableCell";
 // components
-import Page from '../layouts/Page';
+import PageList from '../layouts/PageList';
 //import SearchNotFound from '../../components/SearchNotFound';
 import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu, WidgetNew, WidgetSlug } from './tokens';
 // ----------------------------------------------------------------------
@@ -45,26 +41,6 @@ import { selectStatus, update_status } from "../redux/statusSlice";
 import { useContext } from 'react'
 import Context from '../Context'
 // ----------------------------------------------------------------------
-
-const RootStyle = styled(Toolbar)(({ theme }) => ({
-    height: 96,
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: theme.spacing(0, 1, 0, 3)
-}));
-
-const SearchStyle = styled(OutlinedInput)(({ theme }) => ({
-    width: 200,
-    transition: theme.transitions.create(['box-shadow', 'width'], {
-        easing: theme.transitions.easing.easeInOut,
-        duration: theme.transitions.duration.shorter
-    }),
-    '&.Mui-focused': { width: 280, boxShadow: theme.customShadows.z8 },
-    '& fieldset': {
-        borderWidth: `1px !important`,
-        borderColor: `${theme.palette.grey[500_32]} !important`
-    }
-}));
 
 const ContentTypography = withStyles({
     root: {
@@ -279,7 +255,7 @@ export default function TokenList() {
     };
 
     return (
-        <Page title="XRPL Token Prices, Charts, Market Volume And Activity">
+        <PageList title="XRPL Token Prices, Charts, Market Volume And Activity">
             {isAdmin &&
                 <WidgetNew showNew={showNew} setShowNew={updateShowNew}/>
             }
@@ -579,6 +555,6 @@ export default function TokenList() {
             />
             <ScrollToTop />
             </Container>
-        </Page>
+        </PageList>
     );
 }

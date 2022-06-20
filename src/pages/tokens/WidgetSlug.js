@@ -11,16 +11,6 @@ import {
 import DoNotTouchIcon from '@mui/icons-material/DoNotTouch';
 // ----------------------------------------------------------------------
 
-const RootStyle1 = styled('div')(({ theme }) => ({
-    boxShadow: theme.customShadows.z0,
-    backdropFilter: 'blur(2px)',
-    WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
-    backgroundColor: alpha(theme.palette.background.default, 0.0),
-    borderRadius: '13px',
-    padding: '0em 0.5em 1.5em 0.5em',
-    // backgroundColor: alpha("#919EAB", 0.03),
-}));
-
 const RootStyle = styled('div')(({ theme }) => ({
     zIndex: 999,
     right: 0,

@@ -10,6 +10,7 @@ import { Buffer } from 'buffer'
 window.Buffer = Buffer
 
 // ----------------------------------------------------------------------
+// ReactDOM.hydrate
 
 ReactDOM.render(
   <HelmetProvider>
