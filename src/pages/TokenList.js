@@ -2,7 +2,7 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react';
 import { BeatLoader } from "react-spinners";
-import { fNumber } from '../utils/formatNumber';
+import { fCurrency3, fNumber } from '../utils/formatNumber';
 import { withStyles } from '@mui/styles';
 import InfiniteScroll from "react-infinite-scroll-component";
 import { alpha, styled, useTheme } from '@mui/material/styles';
@@ -124,6 +124,12 @@ const TABLE_HEAD = [
     { no: 8, id: 'trustlines', label: 'Trust Lines', align: 'left', order: true },
     { no: 9, id: 'amount', label: 'Total Supply', align: 'left', order: true },
 ];
+
+function Rate(num, exch) {
+    if (num === 0 || exch === 0)
+        return 0;
+    return fNumber(num / exch);
+}
 
 export default function TokenList() {
     const theme = useTheme();
@@ -309,8 +315,8 @@ export default function TokenList() {
                         flexDirection: "column",
                     }}
                 >
-                    <ContentTypography variant='subtitle1'>The total XRPL Dex volume over the last 24 hours is $-, which makes a -% decrease. The total volume in DeFi is currently $-, -% of the total crypto market 24-hour volume. The volume of all stable coins is now $-, which is -% of the total token market 24-hour volume.</ContentTypography>
-                    <ContentTypography variant='subtitle1'>XRP price is currently $0.0.</ContentTypography>
+                    <ContentTypography variant='subtitle1'>The total XRPL Dex volume over the last 24 hours is ${Rate(status.tradedXRP24H, status.USD)}, which makes a -% decrease. The total volume in DeFi is currently $-, -% of the total crypto market 24-hour volume. The volume of all stable coins is now $-, which is -% of the total token market 24-hour volume.</ContentTypography>
+                    <ContentTypography variant='subtitle1'>XRP price is currently ${Rate(1, status.USD)}.</ContentTypography>
                     <ContentTypography variant='subtitle1'>XRP dominance is currently ---%, a decrease of -% over the day.</ContentTypography>
                 </div>
                 {/* Today's XRPL Token Prices by Volume

@@ -67,6 +67,7 @@ function Rate(num) {
         return 0;
     return fCurrency3(1/num);
 }
+
 export default function Topbar() {
     const status = useSelector(selectStatus);
 
