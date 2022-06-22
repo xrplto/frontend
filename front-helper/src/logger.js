@@ -2,7 +2,12 @@ const bunyan = require('bunyan');
 
 const logger = bunyan.createLogger({
     name: ' ',
-    streams: [
+    streams: [{
+        type: 'rotating-file',
+        path: '../log/server.log',
+        period: '1d',   // daily rotation
+        count: 15       // keep 15 back copies
+    },
     {
         level: 'trace',
         stream: process.stdout

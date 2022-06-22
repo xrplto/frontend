@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useParams/*, useSearchParams*/ } from "react-router-dom";
 import useWebSocket from "react-use-websocket";
 
-import PageDetail from '../layouts/PageDetail';
 import TopMark from '../layouts/TopMark';
 import ScrollToTop from '../layouts/ScrollToTop';
 
@@ -13,8 +12,6 @@ import {PriceChart, PriceStatistics, Description} from './details/overview';
 import {HistoryData} from './details/history';
 import {MarketData} from './details/market';
 import {TradeData} from './details/trade';
-
-import { fPercent, fNumber } from '../utils/formatNumber';
 
 import {
     Box,
@@ -26,8 +23,8 @@ import {
 } from '@mui/material';
 
 // ---------------------------------------------------
-import { useSelector, useDispatch } from "react-redux";
-import { selectStatus, update_status } from "../redux/statusSlice";
+import { useDispatch } from "react-redux";
+import { update_status } from "../redux/statusSlice";
 // ---------------------------------------------------
 
 function TabPanel(props) {
@@ -71,7 +68,6 @@ export default function TokenDetail(props) {
     const WSS_URL = 'wss://ws.xrpl.to';
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
-    const status = useSelector(selectStatus);
     const [history, setHistory] = useState([]);
     const [range, setRange] = useState('1D');
     const [token, setToken] = useState(null);
@@ -103,8 +99,6 @@ export default function TokenDetail(props) {
         setValue(newValue);
         gotoTabView(event);
     };
-
-    
 
     useEffect(() => {
         function getDetail() {
@@ -368,65 +362,11 @@ export default function TokenDetail(props) {
         );
     } else {
         const {
-            name,
-            md5,
-            imgExt,
-            urlSlug,
-            id,
-            pro24h,
-            vol24h,
-            // issuer,
-            // currency,
-            // date,
-            amount,
-            // trustlines,
-            // holders,
-            // offers,
-            exch
+            md5
         } = token;
 
-        let user = token.user;
-        if (!user) user = name;
-
-        const title = `${user} price today, ${name} to USD live, volume, trading history, markets and chart`;
-        const url = `https://xrpl.to/token/${urlSlug}`;
-        const imgUrl = `/static/tokens/${md5}.${imgExt}`;
-
-        const price = fNumber(exch / status.USD);
-        const marketcap = fNumber(amount * exch / status.USD);
-        const supply = fNumber(amount);
-        const volume24h = fNumber(vol24h);
-
-        //const vpro7d = fPercent(pro7d);
-        const vpro24h = fPercent(pro24h);
-
-        let strPro24h = 0;
-        if (vpro24h < 0) {
-            strPro24h = -vpro24h;
-            strPro24h = 'down ' + strPro24h + '%';
-        } else {
-            strPro24h = 'up ' + vpro24h + '%';
-        }
-
-        const desc=`The live ${user} price today is $${price} USD with a 24-hour trading volume of $${volume24h} ${name}. We update our ${name} to USD price in real-time. ${user} is ${strPro24h} in the last 24 hours. The current XRPL.TO ranking is #${id}, with a live market cap of $${marketcap} USD. It has a circulating supply of ${supply} ${name} tokens.`;
-
-        // const meta = {
-        //     title: `${user} price today, ${name} to USD live, volume, trading history, markets and chart`,
-        //     description: `Get the latest XRPL DEX ${user} price, 24-hour volume, trading pairs, history, charts, and data today in real-time.`,
-        //     canonical: `https://xrpl.to/${exMD5}`,
-        //     'og:image': `/static/tokens/${name.replace(/[^a-zA-Z]/g, "")}.jpg`,
-        //     meta: {
-        //         'og:image': `/static/tokens/${name.replace(/[^a-zA-Z]/g, "")}.jpg`,
-        //         charset: 'utf-8',
-        //         name: {
-        //             keywords: 'react,meta,document,html,tags'
-        //         }
-        //     }
-        // }
-
-        // sx={{borderRight: '1px solid #323546'}}
         return (
-            <PageDetail title={title} url={url} image={imgUrl} desc={desc}>
+            <>
                 {/* <DocumentMeta {...meta} > */}
                     <TopMark md5={md5}/>
                     <Container maxWidth="xl">
@@ -485,7 +425,7 @@ export default function TokenDetail(props) {
                     </Container>
                     <ScrollToTop />
                 {/* </DocumentMeta> */}
-            </PageDetail>
+            </>
         );
     }
 }

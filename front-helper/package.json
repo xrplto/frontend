@@ -1,9 +1,9 @@
 {
-  "name": "frontend-helper",
+  "name": "frontend-server",
   "version": "1.0.0",
   "author": "Mahiros",
   "license": "MIT",
-  "description": "Server for static build",
+  "description": "Server for static build of xrpl.to frontend",
   "scripts": {
     "start": "node src|bunyan -o short"
   },

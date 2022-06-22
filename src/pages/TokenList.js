@@ -6,7 +6,6 @@ import { fNumber } from '../utils/formatNumber';
 import { withStyles } from '@mui/styles';
 import InfiniteScroll from "react-infinite-scroll-component";
 import { alpha, styled, useTheme } from '@mui/material/styles';
-import BearBullTypography from '../layouts/BearBullTypography';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
@@ -14,6 +13,7 @@ import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 import ScrollToTop from '../layouts/ScrollToTop';
 import TopMark from '../layouts/TopMark';
 import EditToken from './tokens/EditToken';
+import BearBullTypography from '../layouts/BearBullTypography';
 
 // Material
 import {
@@ -23,15 +23,14 @@ import {
     Link,
     Stack,
     Table,
-    TableRow,
     TableBody,
     TableCell,
+    TableRow,
     Typography
 } from '@mui/material';
 
 import { tableCellClasses } from "@mui/material/TableCell";
 // components
-import PageList from '../layouts/PageList';
 //import SearchNotFound from '../../components/SearchNotFound';
 import { TokenListHead, TokenListToolbar, SearchToolbar, TokenMoreMenu, WidgetNew, WidgetSlug } from './tokens';
 // ----------------------------------------------------------------------
@@ -255,7 +254,7 @@ export default function TokenList() {
     };
 
     return (
-        <PageList title="XRPL Token Prices, Charts, Market Volume And Activity">
+        <>
             {isAdmin &&
                 <WidgetNew showNew={showNew} setShowNew={updateShowNew}/>
             }
@@ -555,6 +554,6 @@ export default function TokenList() {
             />
             <ScrollToTop />
             </Container>
-        </PageList>
+        </>
     );
 }

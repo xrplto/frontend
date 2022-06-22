@@ -1,13 +1,16 @@
 import { Link as RouterLink } from 'react-router-dom';
-// material
+// Material
 import { styled } from '@mui/material/styles';
-import { Box, Button, Typography, Container } from '@mui/material';
-// components
-import PageList from './PageList';
+import {
+    Box,
+    Button,
+    Container,
+    Typography
+} from '@mui/material';
 
 // ----------------------------------------------------------------------
 
-const RootStyle = styled(PageList)(({ theme }) => ({
+const RootStyle = styled(Box)(({ theme }) => ({
   display: 'flex',
   minHeight: '100%',
   alignItems: 'center',

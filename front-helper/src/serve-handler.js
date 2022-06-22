@@ -283,7 +283,8 @@ const getPossiblePaths = (relativePath, extension) => [
 ].filter(item => path.basename(item) !== extension);
 
 const findRelated = async (current, relativePath, rewrittenPath, originalStat) => {
-	const possible = rewrittenPath ? [rewrittenPath] : getPossiblePaths(relativePath, '.html');
+	// MAHIROS-TODO
+	const possible = rewrittenPath ? [rewrittenPath, '/index.html'] : getPossiblePaths(relativePath, '.html');
 
 	let stats = null;
 
@@ -622,18 +623,26 @@ module.exports = async (request, response, config = {}, methods = {}) => {
 	let rewrittenPath = applyRewrites(relativePath, config.rewrites);
 
 	// TODO
+	let rewritten = false;
 	const matches = sourceMatches('/token/:slug', relativePath, true);
 	if (matches) {
 		const {keys, results} = matches;
-		slug = results[1];
-		rewrittenPath = `/slugs/${slug}.html`
-		log.info(rewrittenPath)
+		const slug = results[1];
+		rewrittenPath = `/slugs/${slug}.html`;
+		rewritten = true;
+		let exist = null;
+		// try {
+		// 	exist = await handlers.lstat(absolutePath);
+		// } catch (err) {
+		// 	if (err.code !== 'ENOENT' && err.code !== 'ENOTDIR') {
+		// 		return internalError(absolutePath, response, acceptsJSON, current, handlers, config, err);
+		// 	}
+		// }
 	}
 
 	if (!stats && (cleanUrl || rewrittenPath)) {
 		try {
 			const related = await findRelated(current, relativePath, rewrittenPath, handlers.lstat);
-
 			if (related) {
 				({stats, absolutePath} = related);
 			}
