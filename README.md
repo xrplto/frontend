@@ -1,27 +1,16 @@
-## XRPL Token Prices, Charts, Market Volume And Activity | [XRPL.TO](https://xrpl.to) (Front-End)
-
-## Setup
-
-```
-npm install
-```
-
-## Build
-
-```
-npm run build
-```
+## XRPL Token Prices, Charts, Market Volume And Activity | [XRPL.TO](https://xrpl.to) (Front-End, Next.js)
 
 ## Deploy to the Frontend server - [65.21.204.118]
 
-Using WinSCP, upload build directory to ```/user/src/```
+Using WinSCP, upload frontend directory to ```/user/src/```
 
 ## Run Frontend Server
 
 Login to the server using SSH
 ```
-cd /usr/src
-serve -s build -l 80
+cd /usr/src/frontend
+npm run build
+npm start
 ```
 
 ![Screen1 ](./docs/screen1.png)
