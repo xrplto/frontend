@@ -975,7 +975,7 @@ export const XrplToLightTheme = createTheme({
     MuiTableRow: {
       styleOverrides: {
         head: {
-          background: colors.alpha.black[5]
+          // background: colors.alpha.black[5]
         },
         root: {
           transition: 'background-color .2s',
@@ -993,10 +993,11 @@ export const XrplToLightTheme = createTheme({
           fontSize: 14
         },
         head: {
-          textTransform: 'uppercase',
+          // textTransform: 'uppercase',
           fontSize: 13,
           fontWeight: 'bold',
-          color: colors.alpha.black[70]
+          // color: colors.alpha.black[70],
+          background: 'inherit'
         }
       }
     },
@@ -1170,21 +1171,21 @@ export const XrplToLightTheme = createTheme({
       '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
     h1: {
       fontWeight: 700,
-      fontSize: 35
+      fontSize: 20
     },
     h2: {
       fontWeight: 700,
-      fontSize: 30
+      fontSize: 18
     },
     h3: {
       fontWeight: 700,
-      fontSize: 25,
+      fontSize: 16,
       lineHeight: 1.4,
       color: colors.alpha.black[100]
     },
     h4: {
       fontWeight: 700,
-      fontSize: 16
+      fontSize: 15
     },
     h5: {
       fontWeight: 700,
@@ -1204,8 +1205,8 @@ export const XrplToLightTheme = createTheme({
     },
     caption: {
       fontSize: 13,
-      textTransform: 'uppercase',
-      color: colors.alpha.black[50]
+      // textTransform: 'uppercase',
+      // color: colors.alpha.black[50]
     },
     subtitle1: {
       fontSize: 14,

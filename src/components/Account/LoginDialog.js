@@ -10,16 +10,16 @@ import {
 
 const QRDialog = styled(Dialog)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
-    backdropFilter: 'blur(2px)',
-    WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
-    backgroundColor: alpha(theme.palette.background.paper, 0.0),
-    borderRadius: '0px',
+    // backdropFilter: 'blur(2px)',
+    // WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
+    // backgroundColor: alpha(theme.palette.background.paper, 0.0),
+    // borderRadius: '0px',
     // padding: '0.5em'
     // backgroundColor: alpha("#00AB88", 0.99),
 }));
 
 const LinkTypography = styled(Typography)(({ theme }) => ({
-    backgroundColor: alpha(theme.palette.background.paper, 0.0),
+    // backgroundColor: alpha(theme.palette.background.paper, 0.0),
     borderRadius: '2px',
     border: '0px solid #00AB88',
     padding: '0.5em',
@@ -53,7 +53,7 @@ export default function LoginDialog(props) {
                     }}
                     alt="QR"
                     src={qrUrl}
-                    />
+                />
                 
                 <Link
                     underline="none"

@@ -80,8 +80,6 @@ function Logo() {
 
     const { darkMode } = useContext(AppContext);
 
-    console.log(darkMode);
-
     const img_black = "/XRPL_Logo2_Colored_(Black).png";
     const img_white = "/XRPL_Logo2_Colored_(White).png";
     

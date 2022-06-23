@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { AppContext } from 'src/contexts/AppContext';
-// import { useState, createContext, useEffect } from 'react';
+import { useState, createContext, useEffect } from 'react';
 import { ThemeProvider } from '@mui/material';
 import { themeCreator } from './base';
 import { StylesProvider } from '@mui/styles';
@@ -8,13 +8,21 @@ import { StylesProvider } from '@mui/styles';
 // export const ThemeContext = createContext((_themeName) => {});
 
 const ThemeProviderWrapper = (props) => {
+    const [isMounted, setIsMounted] = useState(false)
+
     const { darkMode } = useContext(AppContext);
     
     const theme = themeCreator(darkMode);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
     
     return (
         <StylesProvider injectFirst>
-            <ThemeProvider theme={theme}>{props.children}</ThemeProvider>
+            <ThemeProvider theme={theme}>
+                {isMounted && props.children}
+            </ThemeProvider>
         </StylesProvider>
     );
 };
