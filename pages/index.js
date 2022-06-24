@@ -1,6 +1,9 @@
 import { useContext } from 'react';
 import { AppContext } from 'src/contexts/AppContext';
 import { NextSeo } from 'next-seo';
+
+// Material
+import { alpha } from '@mui/material/styles';
 import {
     Box,
     Button,
@@ -38,14 +41,15 @@ import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 // Components
 import Topbar from 'src/layouts/Topbar';
 
-const HeaderWrapper = styled(Card)(
-  ({ theme }) => `
-  width: 100%;
-  display: flex;
-  align-items: center;
-  height: ${theme.spacing(10)};
-  margin-bottom: ${theme.spacing(0)};
-  border-radius: 0px;
+const HeaderWrapper = styled(Box)(
+    ({ theme }) => `
+    width: 100%;
+    display: flex;
+    align-items: center;
+    height: ${theme.spacing(10)};
+    margin-bottom: ${theme.spacing(0)};
+    border-radius: 0px;
+    border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
 `
 );
 
@@ -58,7 +62,7 @@ const OverviewWrapper = styled(Box)(
 `
 );
 
-function Overview() {
+function Overview(props) {
     const { toggleTheme, darkMode } = useContext(AppContext);
     // const status = useSelector(selectStatus);
     return (
@@ -109,3 +113,10 @@ export default Overview;
 Overview.getLayout = function getLayout(page) {
   return <BaseLayout>{page}</BaseLayout>;
 };
+
+export async function getServerSideProps(ctx) {
+    console.log('getServerSideProps - List is called!');
+    return {
+        props: {}, // will be passed to the page component as props
+    }
+}

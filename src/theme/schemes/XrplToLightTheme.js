@@ -1171,21 +1171,21 @@ export const XrplToLightTheme = createTheme({
       '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
     h1: {
       fontWeight: 700,
-      fontSize: 20
+      fontSize: 35
     },
     h2: {
       fontWeight: 700,
-      fontSize: 18
+      fontSize: 30
     },
     h3: {
       fontWeight: 700,
-      fontSize: 16,
+      fontSize: 25,
       lineHeight: 1.4,
       color: colors.alpha.black[100]
     },
     h4: {
-      fontWeight: 700,
-      fontSize: 15
+      // fontWeight: 700,
+      fontSize: 16
     },
     h5: {
       fontWeight: 700,
@@ -1208,6 +1208,30 @@ export const XrplToLightTheme = createTheme({
       // textTransform: 'uppercase',
       // color: colors.alpha.black[50]
     },
+    kyc: {
+      fontSize: 10,
+      color: "#34B60C",
+      borderRadius: '6px',
+      border: '0.05em solid #34B60C',
+      paddingLeft: '2px',
+      paddingRight: '2px',
+    },
+    nokyc: {
+      fontSize: 10,
+      color: "#454F5B",
+      borderRadius: '6px',
+      border: '0.05em solid #454F5B',
+      paddingLeft: '2px',
+      paddingRight: '2px',
+    },
+    token: {
+      fontWeight: 700,
+      fontSize: 16,
+      color: "#3366FF"
+    },
+    small: {
+      fontSize: 12
+    },
     subtitle1: {
       fontSize: 14,
       color: colors.alpha.black[70]
@@ -1215,7 +1239,7 @@ export const XrplToLightTheme = createTheme({
     subtitle2: {
       fontWeight: 400,
       fontSize: 15,
-      color: colors.alpha.black[70]
+      color: colors.alpha.black[50]
     },
     overline: {
       fontSize: 13,

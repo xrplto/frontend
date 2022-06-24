@@ -1,7 +1,12 @@
+import axios from 'axios'
 import { useContext } from 'react';
 import { AppContext } from 'src/contexts/AppContext';
 import { NextSeo } from 'next-seo';
 import { useRouter } from 'next/router'
+import { performance } from 'perf_hooks';
+
+// Material
+import { alpha } from '@mui/material/styles';
 import {
     Box,
     Button,
@@ -39,7 +44,7 @@ import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 // Components
 import Topbar from 'src/layouts/Topbar';
 
-const HeaderWrapper = styled(Card)(
+const HeaderWrapper = styled(Box)(
   ({ theme }) => `
   width: 100%;
   display: flex;
@@ -47,6 +52,7 @@ const HeaderWrapper = styled(Card)(
   height: ${theme.spacing(10)};
   margin-bottom: ${theme.spacing(0)};
   border-radius: 0px;
+  border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
 `
 );
 
@@ -59,18 +65,15 @@ const OverviewWrapper = styled(Box)(
 `
 );
 
-function Detail() {
-    const router = useRouter()
-    const { toggleTheme, darkMode } = useContext(AppContext);
-    // const status = useSelector(selectStatus);
+function Detail(props) {
+    const { toggleTheme, darkMode, setLoading } = useContext(AppContext);
+    let data = {};
+    if (props && props.data) data = props.data;
 
-    // const { slug } = router.query
-
-    // console.log(slug);
     return (
         <OverviewWrapper>
             {/* <Head>
-                <title>2XRPL Token Prices, Charts, Market Volume And Activity</title>
+            <title>2XRPL Token Prices, Charts, Market Volume And Activity</title>
             </Head> */}
             <Topbar/>
             <HeaderWrapper>
@@ -93,7 +96,7 @@ function Detail() {
                 </Container>
             </HeaderWrapper>
             
-            <TokenDetail />
+            <TokenDetail data={data}/>
 
             <Container maxWidth="xl" sx={{ mt: 8 }}>
                 <Typography textAlign="center" variant="subtitle1">
@@ -109,3 +112,31 @@ export default Detail;
 Detail.getLayout = function getLayout(page) {
     return <BaseLayout>{page}</BaseLayout>;
 };
+
+
+const BASE_URL = 'https://api.xrpl.to/api';
+
+export async function getServerSideProps(ctx) {
+    let data = null;
+    try {
+        const slug = ctx.params.slug;
+        var t1 = performance.now();
+
+        const res = await axios.get(`${BASE_URL}/detail/${slug}?range=1D`);
+
+        data = res.data;
+
+        var t2 = performance.now();
+        var dt = (t2 - t1).toFixed(2);
+
+        console.log(`getServerSideProps slug: ${slug} took: ${dt}ms`);
+    } catch (e) {
+
+    }
+    let ret = {};
+    if (data) ret = {data};
+
+    return {
+        props: ret, // will be passed to the page component as props
+    }
+}

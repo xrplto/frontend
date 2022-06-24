@@ -13,7 +13,7 @@ import {
 
 // Context
 import { useContext } from 'react';
-import AppContext from 'src/contexts/AppContext';
+import { AppContext } from 'src/contexts/AppContext'
 
 // Redux
 import { useDispatch } from "react-redux";

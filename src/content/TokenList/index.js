@@ -2,39 +2,46 @@ import Head from 'next/head';
 import SidebarLayout from 'src/layouts/SidebarLayout';
 import PageHeader from 'src/content/Management/Transactions/PageHeader';
 import PageTitleWrapper from 'src/components/PageTitleWrapper';
-import { Grid, Container } from '@mui/material';
-import Footer from 'src/components/Footer';
 
-import RecentOrders from 'src/content/Management/Transactions/RecentOrders';
+// Mui
+import {
+    Container,
+    Grid
+} from '@mui/material';
 
-import Tokens from './TokenList';
+// Components
+import TokenTable from './TokenTable';
+import ScrollToTop from 'src/layouts/ScrollToTop';
+import Summary from 'src/content/TokenList/tokens/Summary';
 
 function TokenList() {
-  return (
-    <>
-      <Head>
-        <title>XRPL Token Prices, Charts, Market Volume And Activity</title>
-      </Head>
-      <Container maxWidth="xl">
-        <Grid
-          container
-          direction="row"
-          justifyContent="center"
-          alignItems="stretch"
-          spacing={3}
-        >
-          <Grid item xs={12}>
-            <Tokens />
-          </Grid>
-        </Grid>
-      </Container>
-      {/* <Footer /> */}
-    </>
-  );
+    return (
+        <>
+            <Head>
+              <title>XRPL Token Prices, Charts, Market Volume And Activity</title>
+            </Head>
+            <Container maxWidth="xl">
+                <Grid
+                    container
+                    direction="row"
+                    justifyContent="left"
+                    alignItems="stretch"
+                    spacing={3}
+                >
+                    <Grid item xs={12} md={12} lg={8} >
+                        <Summary />
+                    </Grid>
+                </Grid>
+                <TokenTable />
+            </Container>
+            <ScrollToTop />
+            {/* <Footer /> */}
+        </>
+    );
 }
 
 TokenList.getLayout = (page) => (
-  <SidebarLayout>{page}</SidebarLayout>
+    <SidebarLayout>{page}</SidebarLayout>
 );
 
 export default TokenList;

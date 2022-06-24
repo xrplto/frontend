@@ -65,15 +65,6 @@ function XRPLToApp(props) {
                 {/* <!-- Meta Tags Generated via https://www.opengraph.xyz --> */}
 
                 <meta name="google-site-verification" content="hh6F1f8GQ-_d3L7eGAcBc9G020PM2jSDzIjT12_I-Mc" />
-
-                {/* <!-- Global site tag (gtag.js) - Google Analytics --> */}
-                {/* <script async src="https://www.googletagmanager.com/gtag/js?id=G-PHYSGW6VJ9"/>
-                <script>
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){window.dataLayer.push(arguments)}
-                    gtag('js', new Date());
-                    gtag('config', 'G-PHYSGW6VJ9');
-                </script> */}
             </Head>
             <ContextProvider>
                 <ThemeProvider>

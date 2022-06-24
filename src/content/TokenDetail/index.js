@@ -65,16 +65,16 @@ function a11yProps(index) {
 const ORDER_TYPE_BIDS = 1;
 const ORDER_TYPE_ASKS = 2;
 
-export default function TokenDetail(props) {
+export default function TokenDetail({data}) {
     const router = useRouter();
     const { slug } = router.query;
 
     const WSS_URL = 'wss://ws.xrpl.to';
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
-    const [history, setHistory] = useState([]);
+    const [history, setHistory] = useState(data.history||[]);
     const [range, setRange] = useState('1D');
-    const [token, setToken] = useState(null);
+    const [token, setToken] = useState(data.token);
     const [value, setValue] = useState(0);
     const [pairs, setPairs] = useState([]);
     const [pair, setPair] = useState(null);
@@ -105,43 +105,25 @@ export default function TokenDetail(props) {
     };
 
     useEffect(() => {
-        function getDetail() {
-            // https://api.xrpl.to/api/detail/0413ca7cfc258dfaf698c02fe304e607?range=1D
-            axios.get(`${BASE_URL}/detail/${slug}?range=${range}`)
-                .then(res => {
-                    let ret = res.status === 200 ? res.data : undefined;
-                    if (ret) {
-                        const exch = ret.exch;
-                        const status = {
-                            session: 0,
-                            USD: exch.USD,
-                            EUR: exch.EUR,
-                            JPY: exch.JPY,
-                            CNY: exch.CNY,
-                            token_count: ret.token_count,
-                            transactions24H: ret.transactions24H,
-                            tradedXRP24H: ret.tradedXRP24H,
-                            tradedTokens24H: ret.tradedTokens24H,
-                            timeCalc24H: ret.timeCalc24H,
-                            timeSchedule: ret.timeSchedule,
-                            countApiCall: ret.countApiCall,
-                        };
-                        dispatch(update_status(status));
-                        setHistory(ret.history);
-                        if (ret.token && ret.token.md5) {
-                            setToken(ret.token);
-                        }
-                    }
-                }).catch(err => {
-                    console.log("Error on getting details!!!", err);
-                }).then(function () {
-                    // always executed
-                });
+        if (data.exch) {
+            const exch = data.exch;
+            const status = {
+                session: 0,
+                USD: exch.USD,
+                EUR: exch.EUR,
+                JPY: exch.JPY,
+                CNY: exch.CNY,
+                token_count: data.token_count,
+                transactions24H: data.transactions24H,
+                tradedXRP24H: data.tradedXRP24H,
+                tradedTokens24H: data.tradedTokens24H,
+                timeCalc24H: data.timeCalc24H,
+                timeSchedule: data.timeSchedule,
+                countApiCall: data.countApiCall,
+            };
+            dispatch(update_status(status));
         }
-        if (slug)
-            getDetail();
-
-    }, [slug, range, dispatch]);
+    }, []);
 
     useEffect(() => {
         function getPairs() {
@@ -357,8 +339,47 @@ export default function TokenDetail(props) {
         }
     }, [pair]);
 
+    const getDetail = (val) => {
+        // https://api.xrpl.to/api/detail/0413ca7cfc258dfaf698c02fe304e607?range=1D
+        axios.get(`${BASE_URL}/detail/${slug}?range=${val}`)
+            .then(res => {
+                let ret = res.status === 200 ? res.data : undefined;
+                if (ret) {
+                    const exch = ret.exch;
+                    const status = {
+                        session: 0,
+                        USD: exch.USD,
+                        EUR: exch.EUR,
+                        JPY: exch.JPY,
+                        CNY: exch.CNY,
+                        token_count: ret.token_count,
+                        transactions24H: ret.transactions24H,
+                        tradedXRP24H: ret.tradedXRP24H,
+                        tradedTokens24H: ret.tradedTokens24H,
+                        timeCalc24H: ret.timeCalc24H,
+                        timeSchedule: ret.timeSchedule,
+                        countApiCall: ret.countApiCall,
+                    };
+                    dispatch(update_status(status));
+                    setHistory(ret.history);
+                    if (ret.token && ret.token.md5) {
+                        setToken(ret.token);
+                    }
+                }
+            }).catch(err => {
+                console.log("Error on getting details!!!", err);
+            }).then(function () {
+                // always executed
+            });
+    }
 
-    if (!token || !pair) {
+    const updateRange = (val) => {
+        setRange(val);
+        getDetail(val);
+    }
+
+
+    if (!token) {
         return (
             <>
                 {/* <CircularProgress /> */}
@@ -401,7 +422,7 @@ export default function TokenDetail(props) {
                     <TabPanel value={value} index={0}>
                         <Grid container spacing={3} sx={{p:0}}>
                             <Grid item xs={12} md={6} lg={8} sx={{pl:0}}>
-                                <PriceChart history={history} token={token} range={range} setRange={setRange} />
+                                <PriceChart history={history} token={token} range={range} setRange={updateRange} />
                             </Grid>
 
                             <Grid item xs={12} md={6} lg={4}>
