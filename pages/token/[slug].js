@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { AppContext } from 'src/contexts/AppContext';
 import { NextSeo } from 'next-seo';
+import { useRouter } from 'next/router'
 import {
     Box,
     Button,
@@ -14,15 +15,15 @@ import {
 } from '@mui/material';
 import BaseLayout from 'src/layouts/BaseLayout';
 
-import Link from 'src/components/Link';
-import Head from 'next/head';
+// import Link from 'src/components/Link';
+// import Head from 'next/head';
 
 import Logo from 'src/components/LogoSign';
 import Account from 'src/components/Account';
 import Hero from 'src/content/Overview';
 
 import TopMark from 'src/layouts/TopMark';
-import TokenList from 'src/content/TokenList';
+import TokenDetail from 'src/content/TokenDetail';
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
@@ -58,18 +59,19 @@ const OverviewWrapper = styled(Box)(
 `
 );
 
-function Overview() {
+function Detail() {
+    const router = useRouter()
     const { toggleTheme, darkMode } = useContext(AppContext);
     // const status = useSelector(selectStatus);
+
+    // const { slug } = router.query
+
+    // console.log(slug);
     return (
         <OverviewWrapper>
             {/* <Head>
                 <title>2XRPL Token Prices, Charts, Market Volume And Activity</title>
             </Head> */}
-            <NextSeo
-                title="Simple Usage Example"
-                description="A short description goes here."
-            />
             <Topbar/>
             <HeaderWrapper>
                 <Container maxWidth="xl">
@@ -91,9 +93,7 @@ function Overview() {
                 </Container>
             </HeaderWrapper>
             
-            <TopMark md5={'NONE'}/>
-
-            <TokenList />
+            <TokenDetail />
 
             <Container maxWidth="xl" sx={{ mt: 8 }}>
                 <Typography textAlign="center" variant="subtitle1">
@@ -104,8 +104,8 @@ function Overview() {
     );
 }
 
-export default Overview;
+export default Detail;
 
-Overview.getLayout = function getLayout(page) {
-  return <BaseLayout>{page}</BaseLayout>;
+Detail.getLayout = function getLayout(page) {
+    return <BaseLayout>{page}</BaseLayout>;
 };

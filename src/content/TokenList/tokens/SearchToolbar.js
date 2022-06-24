@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 // Material
-import { styled } from '@mui/material/styles';
+import { alpha, styled, useTheme } from '@mui/material/styles';
 import {
     Box,
-    Toolbar,
+    InputAdornment,
+    MenuItem,
     OutlinedInput,
-    InputAdornment
+    Select,
+    Stack,
+    Toolbar
 } from '@mui/material';
 
 // Iconify
@@ -14,9 +17,10 @@ import searchFill from '@iconify/icons-eva/search-fill';
 
 // ----------------------------------------------------------------------
 const RootStyle = styled(Toolbar)(({ theme }) => ({
-    height: 96,
     display: 'flex',
     justifyContent: 'space-between',
+    border: `1px solid ${alpha('#CBCCD2', 0.1)}`,
+    // borderBottomColor: alpha('#CBCCD2', 0.1),
     padding: theme.spacing(0, 0, 0, 0)
 }));
 
@@ -34,9 +38,13 @@ const SearchStyle = styled(OutlinedInput)(({ theme }) => ({
 }));
 
 // ----------------------------------------------------------------------
-export default function SearchToolbar({ filterName, onFilterName }) {
+export default function SearchToolbar({ filterName, onFilterName, rows, setRows }) {
+    const handleChangeRows = (e) => {
+        setRows(parseInt(e.target.value, 10));
+    };
+
     return (
-        // <RootStyle>
+        <RootStyle>
             <SearchStyle
                 value={filterName}
                 onChange={onFilterName}
@@ -49,6 +57,21 @@ export default function SearchToolbar({ filterName, onFilterName }) {
                 }
                 sx={{pb:0.3}}
             />
-        // </RootStyle>
+
+            <Stack direction='row' alignItems="center" sx={{ml: 2}}>
+                Rows
+                <Select
+                    value={rows}
+                    onChange={handleChangeRows}
+                    sx={{'& .MuiOutlinedInput-notchedOutline' : {
+                        border: 'none'
+                    }}}
+                >
+                    <MenuItem value={100}>100</MenuItem>
+                    <MenuItem value={50}>50</MenuItem>
+                    <MenuItem value={20}>20</MenuItem>
+                </Select>
+            </Stack>
+        </RootStyle>
     );
 }

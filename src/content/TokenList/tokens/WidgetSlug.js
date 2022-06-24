@@ -18,12 +18,11 @@ const RootStyle = styled('div')(({ theme }) => ({
     cursor: 'pointer',
     position: 'fixed',
     alignItems: 'center',
-    top: theme.spacing(28),
-    height: theme.spacing(6),
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
+    top: theme.spacing(22),
+    paddingLeft: theme.spacing(1.5),
+    paddingRight: theme.spacing(1),
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
     // boxShadow: theme.customShadows.z20,
     backdropFilter: 'blur(3px)',
     WebkitBackdropFilter: 'blur(3px)', // Fix on Mobile
@@ -37,25 +36,23 @@ const RootStyle = styled('div')(({ theme }) => ({
 // ----------------------------------------------------------------------
 export default function NFTWidget({showSlug, setShowSlug}) {
     return (
-    <Tooltip title="Show tokens without URL Slug set">
-        <RootStyle>
-            <Link
-                component="button"
-                underline="none"
-                variant="body2"
-                color={showSlug?'error':'inherit'}
-                onClick={() => {
-                    setShowSlug(!showSlug);
-                }}
-            >
-                <Stack spacing={0} sx={{ pt: 2, pb: 2 }} alignItems='center'>
-                    <DoNotTouchIcon />
-                    <Typography align="center" style={{ wordWrap: "break-word" }} variant="caption" >
-                        URL Slug
-                    </Typography>
-                </Stack>
-            </Link>
-        </RootStyle>
-    </Tooltip>
+        <Link
+            component="button"
+            underline="none"
+            variant="body2"
+            color={showSlug?'error':'inherit'}
+            onClick={() => {
+                setShowSlug(!showSlug);
+            }}
+        >
+            <RootStyle>
+                    <Stack direction="row" spacing={0.8} alignItems='center'>
+                        <DoNotTouchIcon />
+                        <Typography align="center" style={{ wordWrap: "break-word" }} variant="caption" >
+                            URL Slug
+                        </Typography>
+                    </Stack>
+            </RootStyle>
+        </Link>
     );
 }

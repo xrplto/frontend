@@ -93,8 +93,10 @@ const TABLE_HEAD = [
     { no: 5, id: 'vol24hxrp', label: 'Volume(24h)', align: 'left', order: true },
     { no: 6, id: 'vol24htx', label: 'Tx(24h)', align: 'left', order: true },
     { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
-    { no: 8, id: 'trustlines', label: 'Trust Lines', align: 'left', order: true },
+    { no: 8, id: 'trustlines', label: 'TrustLines', align: 'left', order: true },
     { no: 9, id: 'amount', label: 'Total Supply', align: 'left', order: true },
+    { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
+    { id: '' }
 ];
 
 function Rate(num, exch) {
@@ -262,7 +264,7 @@ export default function TokenList() {
 
             <Container maxWidth="xl">
 
-            <Stack sx={{pr:50, pt:4, pb:4}}>
+            <Stack sx={{pr:50, pt:2, pb:4}}>
                 <TitleTypography variant='h1'>Today's XRPL Token Prices by Volume</TitleTypography>
                 <Stack direction="row" sx={{mt:2}}>
                     <ContentTypography variant='subtitle1'>The global token market cap is $0.0B, a 0.0% decrease over the last day.</ContentTypography>
@@ -311,6 +313,8 @@ export default function TokenList() {
             <SearchToolbar
                 filterName={filterName}
                 onFilterName={handleFilterByName}
+                rows={rows}
+                setRows={updateRows}
             />
 
             <EditToken token={editToken} setToken={setEditToken}/>
@@ -332,8 +336,6 @@ export default function TokenList() {
                     orderBy={orderBy}
                     headLabel={TABLE_HEAD}
                     onRequestSort={handleRequestSort}
-                    rows={rows}
-                    setRows={updateRows}
                 />
                 <TableBody>
                     {

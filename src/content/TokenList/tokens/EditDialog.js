@@ -1,17 +1,18 @@
 import { useState } from 'react';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
+
+// Material
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    IconButton,
+    TextField
+} from '@mui/material';
 
 import {
     Edit as EditIcon
 } from '@mui/icons-material';
-
-import {
-    IconButton
-} from '@mui/material';
 
 export default function EditDialog({label, value, setValue}) {
     const [val, setVal] = useState(value?value:'');

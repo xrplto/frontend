@@ -5,6 +5,7 @@ import {
     Button,
     Card,
     Container,
+    Divider,
     IconButton,
     styled,
     Stack,
@@ -60,10 +61,10 @@ const XLS14DStyle = styled('div')(({ theme }) => ({
 
 const H24Style = styled('div')(({ theme }) => ({
     cursor: 'pointer',
-    paddingLeft: theme.spacing(0.8),
-    paddingRight: theme.spacing(0.8),
-    paddingTop: theme.spacing(0.2),
-    paddingBottom: theme.spacing(0.2),
+    paddingLeft: theme.spacing(0.5),
+    paddingRight: theme.spacing(0.5),
+    paddingTop: theme.spacing(0.07),
+    paddingBottom: theme.spacing(0.07),
     // boxShadow: theme.customShadows.z20,
     // color: theme.palette.text.widget,
     backgroundColor: '#0C53B7',
@@ -73,9 +74,20 @@ const H24Style = styled('div')(({ theme }) => ({
     '&:hover': { opacity: 1 }
 }));
 
-const Label = styled('span')(({ theme }) => ({
-    fontSize: '0.87rem'
+const Label = styled(Typography)(({ theme }) => ({
+    // fontSize: '0.7rem',
+    variant: 'subtitle1'
 }));
+
+const Separator = styled('span')(({ theme }) => ({
+    fontSize: '0.6rem'
+}));
+
+// const ContentTypography = withStyles({
+//     root: {
+//         color: alpha('#919EAB', 0.99)
+//     }
+// })(Typography);
 // ----------------------------------------------------------------------
 
 function Rate(num) {
@@ -96,7 +108,7 @@ function Overview() {
                         <Label>{fIntNumber(status.token_count)}</Label>
                         <H24Style>
                             <Tooltip title="Metrics on 24 hours">
-                                <Stack spacing={0.05} alignItems='center'>
+                                <Stack spacing={0} alignItems='center'>
                                     <Typography align="center" style={{ wordWrap: "break-word" }} variant="caption" >
                                         24h
                                     </Typography>
@@ -122,13 +134,13 @@ function Overview() {
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Stack direction="row" spacing={0.5} alignItems='center'>
                             <Icon icon={rippleSolid} width='12' height='12'/>
-                            <Typography align="center" variant="subtitle2">1</Typography>
+                            <Label>1</Label>
                         </Stack>
-                        <Label>|</Label>
+                        <Separator>|</Separator>
                         <Label>$ {Rate(status.USD)}</Label>
-                        <Label>|</Label>
+                        <Separator>|</Separator>
                         <Label>€ {Rate(status.EUR)}</Label>
-                        <Label>|</Label>
+                        <Separator>|</Separator>
                         <Label>¥ {Rate(status.JPY)}</Label>
                     </Stack>
                 </Box>

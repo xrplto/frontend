@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
+
+// Material
+import {
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    IconButton,
+    TextField
+} from '@mui/material';
 
 import {
     AddCircle as AddCircleIcon
 } from '@mui/icons-material';
-
-import {
-    IconButton
-} from '@mui/material';
 
 export default function EditDialog({label, onAddTag}) {
     const [val, setVal] = useState('');

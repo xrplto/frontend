@@ -1,23 +1,28 @@
-// Context
-import { useContext } from 'react';
-import { AppContext } from 'src/contexts/AppContext';
-// Redux
-import { useSelector } from "react-redux";
-import { selectStatus } from "src/redux/statusSlice";
-
-import axios from 'axios'
-import { withStyles } from '@mui/styles';
+import axios from 'axios';
 import { useRef, useState } from 'react';
-import { alpha, styled, useTheme } from '@mui/material/styles';
-import { Icon } from '@iconify/react';
-import infoFilled from '@iconify/icons-ep/info-filled';
-// Loader
-import { PulseLoader } from "react-spinners";
 
+// Material
+import { withStyles } from '@mui/styles';
+import { alpha, styled, useTheme } from '@mui/material/styles';
 import {
     Check as CheckIcon,
     Close as CloseIcon
 } from '@mui/icons-material';
+
+// Iconify
+import { Icon } from '@iconify/react';
+import infoFilled from '@iconify/icons-ep/info-filled';
+
+// Loader
+import { PulseLoader } from "react-spinners";
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/contexts/AppContext';
+
+// Redux
+import { useSelector } from "react-redux";
+import { selectStatus } from "src/redux/statusSlice";
 
 import {
     Avatar,

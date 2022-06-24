@@ -1,12 +1,8 @@
 import PropTypes from 'prop-types';
-import { StickyContainer, Sticky } from 'react-sticky';
 // Material
 import { visuallyHidden } from '@mui/utils';
 import {
     Box,
-    MenuItem,
-    Stack,
-    Select,
     TableRow,
     TableCell,
     TableHead,
@@ -25,16 +21,10 @@ export default function TokenListHead({
     order,
     orderBy,
     headLabel,
-    onRequestSort,
-    rows,
-    setRows
+    onRequestSort
 }) {
     const createSortHandler = (id, no) => (event) => {
         onRequestSort(event, id, no);
-    };
-
-    const handleChangeRows = (e) => {
-        setRows(parseInt(e.target.value, 10));
     };
 
     return (
@@ -45,6 +35,7 @@ export default function TokenListHead({
                         key={headCell.id}
                         align={headCell.align}
                         sortDirection={orderBy === headCell.id ? order : false}
+                        sx={{pt: 0, pb: 0}}
                     >
                         <TableSortLabel
                             hideSortIcon
@@ -61,32 +52,6 @@ export default function TokenListHead({
                         </TableSortLabel>
                     </TableCell>
                 ))}
-                {/* { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false }, */}
-                <TableCell
-                    key={'historyGraph'}
-                    align={'left'}
-                    sortDirection={false}
-                    colSpan={2}
-                    sx={{ minWidth: 160 }}
-                >
-                    <Stack direction='row' alignItems="center">
-                        Last 7 Days
-                        <Stack direction='row' alignItems="center" sx={{ml: 2}}>
-                            Rows
-                            <Select
-                                value={rows}
-                                onChange={handleChangeRows}
-                                sx={{'& .MuiOutlinedInput-notchedOutline' : {
-                                    border: 'none'
-                                }}}
-                            >
-                                <MenuItem value={100}>100</MenuItem>
-                                <MenuItem value={50}>50</MenuItem>
-                                <MenuItem value={20}>20</MenuItem>
-                            </Select>
-                        </Stack>
-                    </Stack>
-                </TableCell>
             </TableRow>
         </TableHead>
     );

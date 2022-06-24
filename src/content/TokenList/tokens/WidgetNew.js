@@ -19,12 +19,11 @@ const RootStyle = styled('div')(({ theme }) => ({
     cursor: 'pointer',
     position: 'fixed',
     alignItems: 'center',
-    top: theme.spacing(20),
-    height: theme.spacing(6),
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-    paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
+    top: theme.spacing(16),
+    paddingLeft: theme.spacing(1.5),
+    paddingRight: theme.spacing(1),
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
     // boxShadow: theme.customShadows.z20,
     backdropFilter: 'blur(3px)',
     WebkitBackdropFilter: 'blur(3px)', // Fix on Mobile
@@ -38,25 +37,23 @@ const RootStyle = styled('div')(({ theme }) => ({
 // ----------------------------------------------------------------------
 export default function NFTWidget({showNew, setShowNew}) {
     return (
-        <Tooltip title="Show recently added tokens">
+        <Link
+            component="button"
+            underline="none"
+            variant="body2"
+            color={showNew?'error':'inherit'}
+            onClick={() => {
+                setShowNew(!showNew);
+            }}
+        >
             <RootStyle>
-                <Link
-                    component="button"
-                    underline="none"
-                    variant="body2"
-                    color={showNew?'error':'inherit'}
-                    onClick={() => {
-                        setShowNew(!showNew);
-                    }}
-                >
-                    <Stack spacing={0} sx={{ pt: 2, pb: 2 }} alignItems='center'>
-                        <FiberNewIcon />
-                        <Typography align="center" style={{ wordWrap: "break-word" }} variant="caption" >
-                            Recent
-                        </Typography>
-                    </Stack>
-                </Link>
+                <Stack direction="row" spacing={0.8} sx={{ p:0 }} alignItems='center'>
+                    <FiberNewIcon />
+                    <Typography align="center" style={{ wordWrap: "break-word" }} variant="caption" >
+                        Recent
+                    </Typography>
+                </Stack>
             </RootStyle>
-        </Tooltip>
+        </Link>
     );
 }

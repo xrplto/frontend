@@ -1,10 +1,13 @@
 import { useState } from 'react';
 
+// Material
 import {
     Alert,
     Slide,
     Snackbar
 } from '@mui/material';
+
+// Components
 import EditTokenDialog from './EditTokenDialog';
 
 function TransitionLeft(props) {
