@@ -1,18 +1,17 @@
+import axios from 'axios'
 import { useContext } from 'react';
 import { AppContext } from 'src/contexts/AppContext';
 import { NextSeo } from 'next-seo';
+import { performance } from 'perf_hooks';
 
 // Material
 import { alpha } from '@mui/material/styles';
 import {
     Box,
-    Button,
-    Card,
     Container,
     IconButton,
     styled,
     Stack,
-    Tooltip,
     Typography
 } from '@mui/material';
 import BaseLayout from 'src/layouts/BaseLayout';
@@ -22,7 +21,6 @@ import Head from 'next/head';
 
 import Logo from 'src/components/LogoSign';
 import Account from 'src/components/Account';
-import Hero from 'src/content/Overview';
 
 import TopMark from 'src/layouts/TopMark';
 import TokenList from 'src/content/TokenList';
@@ -65,15 +63,10 @@ const OverviewWrapper = styled(Box)(
 function Overview(props) {
     const { toggleTheme, darkMode } = useContext(AppContext);
     // const status = useSelector(selectStatus);
+    const data = props.data;
+
     return (
         <OverviewWrapper>
-            {/* <Head>
-                <title>2XRPL Token Prices, Charts, Market Volume And Activity</title>
-            </Head> */}
-            <NextSeo
-                title="Simple Usage Example"
-                description="A short description goes here."
-            />
             <Topbar/>
             <HeaderWrapper>
                 <Container maxWidth="xl">
@@ -97,10 +90,10 @@ function Overview(props) {
             
             <TopMark md5={'NONE'}/>
 
-            <TokenList />
+            <TokenList data={data}/>
 
-            <Container maxWidth="xl" sx={{ mt: 8 }}>
-                <Typography textAlign="center" variant="subtitle1">
+            <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 2, mb: 8 }}>
+                <Typography textAlign="left" variant="subtitle1">
                     &copy; 2022 XRPL.TO
                 </Typography>
             </Container>
@@ -111,12 +104,43 @@ function Overview(props) {
 export default Overview;
 
 Overview.getLayout = function getLayout(page) {
-  return <BaseLayout>{page}</BaseLayout>;
+    return <BaseLayout>{page}</BaseLayout>;
 };
 
+const BASE_URL = 'https://api.xrpl.to/api';
+
 export async function getServerSideProps(ctx) {
-    console.log('getServerSideProps - List is called!');
+    // https://api.xrpl.to/api/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false
+    let data = null;
+    try {
+        var t1 = performance.now();
+
+        const res = await axios.get(`${BASE_URL}/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false`);
+
+        data = res.data;
+
+        var t2 = performance.now();
+        var dt = (t2 - t1).toFixed(2);
+
+        console.log(`1. getServerSideProps tokens: ${data.tokens.length} took: ${dt}ms`);
+    } catch (e) {
+        console.log(e);
+    }
+    let ret = {};
+    if (data) {
+        let ogp = {};
+
+        ogp.title = 'XRPL Token Prices, Charts, Market Volume And Activity';
+        ogp.ogTitle = 'XRPL Token Prices, Charts, Market Volume And Activity | XRPL.TO';
+        ogp.url = 'https://xrpl.to/';
+        ogp.imgUrl = '/static/ogp.png';
+        ogp.imgUrlTwitter = 'http://xrpl.to/static/ogp.png';
+        ogp.desc = 'Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.';
+
+        ret = {data, ogp};
+    }
+
     return {
-        props: {}, // will be passed to the page component as props
+        props: ret, // will be passed to the page component as props
     }
 }

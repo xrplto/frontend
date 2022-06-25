@@ -33,7 +33,7 @@ import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 
 // Context
 import { useContext } from 'react'
-import AppContext from 'src/contexts/AppContext'
+import { AppContext } from 'src/contexts/AppContext'
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
@@ -133,7 +133,6 @@ export default function AccountOrdersHistory({pair}) {
     const accountData = useSelector(selectAccountData);
     const refreshAccount = useSelector(selectRefreshAccount);
     
-    console.log(AppContext);
     const { accountProfile, setLoading } = useContext(AppContext);
     
     const [exchs, setExchs] = useState([]);

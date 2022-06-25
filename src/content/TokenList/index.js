@@ -14,12 +14,9 @@ import TokenTable from './TokenTable';
 import ScrollToTop from 'src/layouts/ScrollToTop';
 import Summary from 'src/content/TokenList/tokens/Summary';
 
-function TokenList() {
+function TokenList({data}) {
     return (
         <>
-            <Head>
-              <title>XRPL Token Prices, Charts, Market Volume And Activity</title>
-            </Head>
             <Container maxWidth="xl">
                 <Grid
                     container
@@ -32,7 +29,7 @@ function TokenList() {
                         <Summary />
                     </Grid>
                 </Grid>
-                <TokenTable />
+                <TokenTable data={data}/>
             </Container>
             <ScrollToTop />
             {/* <Footer /> */}

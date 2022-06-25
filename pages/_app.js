@@ -13,8 +13,6 @@ import { ContextProvider } from 'src/contexts/AppContext';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 
-import GoogleAnalytics from 'src/GoogleAnalytics';
-
 const clientSideEmotionCache = createEmotionCache();
 
 function XRPLToApp(props) {
@@ -38,42 +36,47 @@ function XRPLToApp(props) {
         };
     }, [router.events]);
 
+    const ogp = pageProps.ogp||{};
+    const data = pageProps.data;
+
     return (
         <CacheProvider value={emotionCache}>
             <Head>
-                <title>XRPL Token Prices, Charts, Market Volume And Activity</title>
                 <meta
                     name="viewport"
                     content="width=device-width, initial-scale=1, shrink-to-fit=no"
                 />
-                <meta name="description" content="Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed."/>
+                <meta name="google-site-verification" content="hh6F1f8GQ-_d3L7eGAcBc9G020PM2jSDzIjT12_I-Mc" />
+
+                {/* <!-- HTML Meta Tags --> */}
+                <title>{ogp.title}</title>
+                <meta name="description" content={ogp.desc}/>
+
                 {/* <!-- Facebook Meta Tags --> */}
-                <meta property="og:url" content="https://xrpl.to/"/>
+                <meta property="og:url" content={ogp.url}/>
                 <meta property="og:type" content="website"/>
-                <meta property="og:title" content="XRPL Token Prices, Charts, Market Volume And Activity | XRPL.TO"/>
-                <meta property="og:description" content="Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed."/>
-                <meta property="og:image" content="/static/ogp.png"/>
+                <meta property="og:title" content={ogp.ogTitle}/>
+                <meta property="og:description" content={ogp.desc}/>
+                <meta property="og:image" content={ogp.imgUrl}/>
                 {/* <!-- Twitter Meta Tags --> */}
                 <meta name="twitter:card" content="summary_large_image"/>
                 <meta property="twitter:domain" content="xrpl.to"/>
-                <meta property="twitter:url" content="https://xrpl.to/"/>
-                <meta name="twitter:title" content="XRPL Token Prices, Charts, Market Volume And Activity | XRPL.TO"/>
-                <meta name="twitter:description" content="Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed."/>
+                <meta property="twitter:url" content={ogp.url}/>
+                <meta name="twitter:title" content={ogp.title}/>
+                <meta name="twitter:description" content={ogp.desc}/>
                 {/* <!-- <meta name="twitter:image" content="/static/ogp.png"/> --> */}
-                <meta name="twitter:image" content="http://xrpl.to/static/ogp.png"/>
-                <meta name="twitter:image:src" content="http://xrpl.to/static/ogp.png"/>
+                <meta name="twitter:image" content={ogp.imgUrlTwitter}/>
+                <meta name="twitter:image:src" content={ogp.imgUrlTwitter}/>
                 {/* <!-- Meta Tags Generated via https://www.opengraph.xyz --> */}
-
-                <meta name="google-site-verification" content="hh6F1f8GQ-_d3L7eGAcBc9G020PM2jSDzIjT12_I-Mc" />
             </Head>
-            <ContextProvider>
+            <ContextProvider data={data}>
                 <ThemeProvider>
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <CssBaseline />
                         {getLayout(<Component {...pageProps} />)}
                     </LocalizationProvider>
                 </ThemeProvider>
-              </ContextProvider>
+            </ContextProvider>
         </CacheProvider>
     );
 }

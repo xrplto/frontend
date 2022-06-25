@@ -23,7 +23,7 @@ import QRLoginDialog from './QRLoginDialog';
 
 // Context
 import { useContext } from 'react'
-import AppContext from 'src/contexts/AppContext'
+import { AppContext } from 'src/contexts/AppContext'
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
@@ -31,7 +31,6 @@ import { updateAccountData, selectRefreshAccount } from "src/redux/statusSlice";
 // ----------------------------------------------------------------------
 
 // Utils
-
 
 export default function AccountBalance({pair}) {
     const theme = useTheme();

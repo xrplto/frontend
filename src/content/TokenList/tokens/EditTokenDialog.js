@@ -501,31 +501,17 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                 <Typography variant="subtitle2" noWrap color='primary'>{user}</Typography>
                                 <EditDialog label='User' value={user} setValue={setUser}/>
                                 <Tooltip title={'Click to toggle'}>
-                                    {kyc ? (
-                                        <Link
-                                            component="button"
-                                            underline="none"
-                                            variant="body2"
-                                            color="inherit"
-                                            onClick={() => {
-                                                setKYC(false);
-                                            }}
-                                        >
-                                            <KYCTypography variant="subtitle2">KYC</KYCTypography>
-                                        </Link>
-                                    ):(
-                                        <Link
-                                            component="button"
-                                            underline="none"
-                                            variant="body2"
-                                            color="inherit"
-                                            onClick={() => {
-                                                setKYC(true);
-                                            }}
-                                        >
-                                            <NoneKYCTypography variant="subtitle2">KYC</NoneKYCTypography>
-                                        </Link>
-                                    )}
+                                    <Link
+                                        component="button"
+                                        underline="none"
+                                        variant="body2"
+                                        color="inherit"
+                                        onClick={() => {
+                                            setKYC(!kyc);
+                                        }}
+                                    >
+                                        <Typography variant={kyc?"kyc":"nokyc"}>KYC</Typography>
+                                    </Link>
                                 </Tooltip>
                             </Stack>
                         </TableCell>

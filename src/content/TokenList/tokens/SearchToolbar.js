@@ -16,15 +16,14 @@ import { Icon } from '@iconify/react';
 import searchFill from '@iconify/icons-eva/search-fill';
 
 // ----------------------------------------------------------------------
-const RootStyle = styled(Toolbar)(({ theme }) => ({
+const RootStyle = styled(Box)(({ theme }) => ({
     display: 'flex',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    border: `1px solid ${alpha('#CBCCD2', 0.1)}`,
-    // borderBottomColor: alpha('#CBCCD2', 0.1),
-    padding: theme.spacing(0, 0, 0, 0)
+    borderBottom: `1px solid ${alpha('#CBCCD2', 0.1)}`,
 }));
 
-const SearchStyle = styled(OutlinedInput)(({ theme }) => ({
+const SearchBox = styled(OutlinedInput)(({ theme }) => ({
     width: 200,
     transition: theme.transitions.create(['width'], {
         easing: theme.transitions.easing.easeInOut,
@@ -44,8 +43,8 @@ export default function SearchToolbar({ filterName, onFilterName, rows, setRows 
     };
 
     return (
-        <RootStyle>
-            <SearchStyle
+        <RootStyle sx={{ml:2.5, mr:3}}>
+            <SearchBox
                 value={filterName}
                 onChange={onFilterName}
                 placeholder="Search ..."
@@ -63,9 +62,10 @@ export default function SearchToolbar({ filterName, onFilterName, rows, setRows 
                 <Select
                     value={rows}
                     onChange={handleChangeRows}
-                    sx={{'& .MuiOutlinedInput-notchedOutline' : {
-                        border: 'none'
-                    }}}
+                    sx={{
+                        mt:0.4,
+                        '& .MuiOutlinedInput-notchedOutline' : { border: 'none' }
+                    }}
                 >
                     <MenuItem value={100}>100</MenuItem>
                     <MenuItem value={50}>50</MenuItem>

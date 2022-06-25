@@ -35,7 +35,6 @@ export default function TokenListHead({
                         key={headCell.id}
                         align={headCell.align}
                         sortDirection={orderBy === headCell.id ? order : false}
-                        sx={{pt: 0, pb: 0}}
                     >
                         <TableSortLabel
                             hideSortIcon

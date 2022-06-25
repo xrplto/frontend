@@ -24,7 +24,7 @@ const initialState = {
     refreshAccount: 0
 }
 
-export const statusSlice = createSlice({
+const statusSlice = createSlice({
     name: "status",
     initialState,
     reducers: {

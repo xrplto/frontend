@@ -1,8 +1,8 @@
 // Material
-import { styled } from '@mui/material/styles';
+import { alpha, styled } from '@mui/material/styles';
 import {
+    Box,
     Stack,
-    Toolbar,
     Pagination,
     Select,
     MenuItem
@@ -12,12 +12,11 @@ import {
 import { useSelector } from "react-redux";
 import { selectStatus } from "src/redux/statusSlice";
 // ----------------------------------------------------------------------
-
-const RootStyle = styled(Toolbar)(({ theme }) => ({
-    height: 64,
+const RootStyle = styled(Box)(({ theme }) => ({
     display: 'flex',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    padding: theme.spacing(0, 1, 0, 3)
+    // borderBottom: `1px solid ${alpha('#CBCCD2', 0.1)}`,
 }));
 // ----------------------------------------------------------------------
 
@@ -60,7 +59,7 @@ export default function TokenListToolbar({ rows, setRows, page, setPage}) {
     };
 
     return (
-        <RootStyle>
+        <RootStyle sx={{ml:2.5, mr:3}}>
             Showing {start} - {end} out of {count}
             <Pagination page={page+1} onChange={handleChangePage} count={page_count} variant="outlined" shape="rounded" />
 

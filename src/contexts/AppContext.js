@@ -1,26 +1,30 @@
 import { useState, createContext, useEffect } from 'react';
 
 import { Backdrop } from "@mui/material";
+
 // Redux
 import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import statusReducer from "src/redux/statusSlice";
+
 // Loader
 import { PuffLoader } from "react-spinners";
 
-const store = configureStore({
-    reducer: {
-        status: statusReducer
-    },
-});
-
 export const AppContext = createContext({});
 
-export function ContextProvider({ children }) {
+export function ContextProvider({ children, data }) {
     const [sidebarToggle, setSidebarToggle] = useState(false);
     const [loading, setLoading] = useState(false);
     const [darkMode, setDarkMode] = useState(true);
     const [accountProfile, _setAccountProfile] = useState(null);
+
+    const store = configureStore({
+        reducer: {
+            status: statusReducer
+        },
+    });
+
+    // console.log(data);
 
     const toggleSidebar = () => {
         setSidebarToggle(!sidebarToggle);

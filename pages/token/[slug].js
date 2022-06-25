@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useContext } from 'react';
 import { AppContext } from 'src/contexts/AppContext';
+import Head from 'next/head';
 import { NextSeo } from 'next-seo';
 import { useRouter } from 'next/router'
 import { performance } from 'perf_hooks';
@@ -66,15 +67,51 @@ const OverviewWrapper = styled(Box)(
 );
 
 function Detail(props) {
-    const { toggleTheme, darkMode, setLoading } = useContext(AppContext);
+    const { toggleTheme, darkMode } = useContext(AppContext);
     let data = {};
     if (props && props.data) data = props.data;
+    const token = data.token;
+
+    const {
+        name,
+        imgExt,
+        md5,
+        urlSlug
+    } = token;
+
+    let user = token.user;
+    if (!user) user = name;
+
+    const title = `${user} price today, ${name} to USD live, volume, trading history, markets and chart`;
+    const url = `https://xrpl.to/token/${urlSlug}`;
+    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+    const desc = `Get the latest ${user} price, ${name} market cap, trading pairs, charts and data today from the world's number one cryptocurrency price-tracking website`;
 
     return (
         <OverviewWrapper>
-            {/* <Head>
-            <title>2XRPL Token Prices, Charts, Market Volume And Activity</title>
-            </Head> */}
+            <Head>
+            {/* <!-- HTML Meta Tags --> */}
+            {/* <title>{title}</title> */}
+            {/* <meta name="description" content={desc}/> */}
+
+            {/* <!-- Facebook Meta Tags --> */}
+            {/* <meta property="og:url" content={url}/> */}
+            {/* <meta property="og:type" content="website"/> */}
+            {/* <meta property="og:title" content={`${title} | XRPL.TO`}/> */}
+            {/* <meta property="og:description" content={desc}/> */}
+            {/* <meta property="og:image" content={imgUrl}/> */}
+            {/* <!-- Twitter Meta Tags --> */}
+            {/* <meta name="twitter:card" content="summary_large_image"/> */}
+            {/* <meta property="twitter:domain" content="xrpl.to"/> */}
+            {/* <meta property="twitter:url" content={url}/> */}
+            {/* <meta name="twitter:title" content={`${title} | XRPL.TO`}/> */}
+            {/* <meta name="twitter:description" content={desc}/> */}
+            {/* <!-- <meta name="twitter:image" content="/static/ogp.png"/> --> */}
+            {/* <meta name="twitter:image" content={`http://xrpl.to/static/tokens/${md5}.${imgExt}`}/> */}
+            {/* <meta name="twitter:image:src" content={`http://xrpl.to/static/tokens/${md5}.${imgExt}`}/> */}
+            {/* <!-- Meta Tags Generated via https://www.opengraph.xyz --> */}
+
+            </Head>
             <Topbar/>
             <HeaderWrapper>
                 <Container maxWidth="xl">
@@ -98,8 +135,8 @@ function Detail(props) {
             
             <TokenDetail data={data}/>
 
-            <Container maxWidth="xl" sx={{ mt: 8 }}>
-                <Typography textAlign="center" variant="subtitle1">
+            <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 2, mb: 8 }}>
+                <Typography textAlign="left" variant="subtitle1">
                     &copy; 2022 XRPL.TO
                 </Typography>
             </Container>
@@ -112,7 +149,6 @@ export default Detail;
 Detail.getLayout = function getLayout(page) {
     return <BaseLayout>{page}</BaseLayout>;
 };
-
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -129,12 +165,33 @@ export async function getServerSideProps(ctx) {
         var t2 = performance.now();
         var dt = (t2 - t1).toFixed(2);
 
-        console.log(`getServerSideProps slug: ${slug} took: ${dt}ms`);
+        console.log(`2. getServerSideProps slug: ${slug} took: ${dt}ms`);
     } catch (e) {
-
+        console.log(e);
     }
     let ret = {};
-    if (data) ret = {data};
+    if (data && data.token) {
+        let ogp = {};
+        const token = data.token;
+        const {
+            name,
+            imgExt,
+            md5,
+            urlSlug
+        } = token;
+
+        let user = token.user;
+        if (!user) user = name;
+
+        ogp.title = `${user} price today, ${name} to USD live, volume, trading history, markets and chart`;
+        ogp.ogTitle = `${user} price today, ${name} to USD live, volume, trading history, markets and chart | XRPL.TO`;
+        ogp.url = `https://xrpl.to/token/${urlSlug}`;
+        ogp.imgUrl = `/static/tokens/${md5}.${imgExt}`;
+        ogp.imgUrlTwitter = `http://xrpl.to/static/tokens/${md5}.${imgExt}`;
+        ogp.desc = `Get the latest ${user} price, ${name} market cap, trading pairs, charts and data today from the world's number one cryptocurrency price-tracking website`;
+
+        ret = {data, ogp};
+    }
 
     return {
         props: ret, // will be passed to the page component as props
