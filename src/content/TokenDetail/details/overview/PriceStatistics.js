@@ -17,7 +17,7 @@ import BearBullTypography from 'src/layouts/BearBullTypography';
 
 // Redux
 import { useSelector/*, useDispatch*/ } from "react-redux";
-import { selectStatus } from "src/redux/statusSlice";
+import { selectMetrics } from "src/redux/statusSlice";
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
@@ -54,7 +54,7 @@ const badge24hStyle = {
 
 export default function PriceStatistics({token}) {
     const theme = useTheme();
-    const status = useSelector(selectStatus);
+    const metrics = useSelector(selectMetrics);
 
     const {
         id,
@@ -79,7 +79,7 @@ export default function PriceStatistics({token}) {
     let user = token.user;
     if (!user) user = name;
 
-    const marketcap = amount * exch / status.USD;
+    const marketcap = amount * exch / metrics.USD;
     let voldivmarket = 0;
     if (marketcap > 0)
         voldivmarket = fNumber(vol24h / marketcap);
@@ -108,7 +108,7 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                     <TableRow>
                     <TableCell align="left"><Label variant="subtitle1" noWrap >{user} Price</Label></TableCell>
-                        <TableCell align="left">${fNumber(exch / status.USD)}</TableCell>
+                        <TableCell align="left">${fNumber(exch / metrics.USD)}</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left"><Label variant="subtitle1" noWrap >Price Change<span style={badge24hStyle}>24h</span></Label></TableCell>

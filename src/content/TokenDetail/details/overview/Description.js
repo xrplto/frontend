@@ -8,13 +8,13 @@ import {
 
 // Redux
 import { useSelector/*, useDispatch*/ } from "react-redux";
-import { selectStatus } from "src/redux/statusSlice";
+import { selectMetrics } from "src/redux/statusSlice";
 
 // Utils
 import { fPercent, fNumber } from 'src/utils/formatNumber';
 
 export default function Description({token}) {
-    const status = useSelector(selectStatus);
+    const metrics = useSelector(selectMetrics);
     const {
         id,
         name,
@@ -36,8 +36,8 @@ export default function Description({token}) {
     let user = token.user;
     if (!user) user = name;
 
-    const price = fNumber(exch / status.USD);
-    const marketcap = fNumber(amount * exch / status.USD);
+    const price = fNumber(exch / metrics.USD);
+    const marketcap = fNumber(amount * exch / metrics.USD);
     const supply = fNumber(amount);
     const volume24h = fNumber(vol24h);
 

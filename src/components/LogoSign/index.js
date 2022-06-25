@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import { AppContext } from 'src/contexts/AppContext';
+import Router from 'next/router';
 import {
     Box,
     styled,
@@ -85,10 +86,10 @@ function Logo() {
     
     const img = darkMode?img_white:img_black;
 
+    // <LogoWrapper href="/">
+
     return (
-        <LogoWrapper href="/">
-            <Box component="img" src={img} sx={{ height: 46 }} />
-        </LogoWrapper>
+        <Box component="img" src={img} sx={{ height: 46 }} onClick={()=>{Router.reload(window.location.pathname)}}/>
     );
 }
 

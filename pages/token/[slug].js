@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from 'axios';
 import { useContext } from 'react';
 import { AppContext } from 'src/contexts/AppContext';
 import Head from 'next/head';
@@ -33,7 +33,7 @@ import TokenDetail from 'src/content/TokenDetail';
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
-import { selectStatus, update_status } from "src/redux/statusSlice";
+import { selectMetrics, update_metrics } from "src/redux/statusSlice";
 
 // Iconify Icons
 import { Icon } from '@iconify/react';
@@ -71,21 +71,6 @@ function Detail(props) {
     let data = {};
     if (props && props.data) data = props.data;
     const token = data.token;
-
-    const {
-        name,
-        imgExt,
-        md5,
-        urlSlug
-    } = token;
-
-    let user = token.user;
-    if (!user) user = name;
-
-    const title = `${user} price today, ${name} to USD live, volume, trading history, markets and chart`;
-    const url = `https://xrpl.to/token/${urlSlug}`;
-    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
-    const desc = `Get the latest ${user} price, ${name} market cap, trading pairs, charts and data today from the world's number one cryptocurrency price-tracking website`;
 
     return (
         <OverviewWrapper>
@@ -135,11 +120,11 @@ function Detail(props) {
             
             <TokenDetail data={data}/>
 
-            <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 2, mb: 8 }}>
+            {/* <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 2, mb: 8 }}>
                 <Typography textAlign="left" variant="subtitle1">
                     &copy; 2022 XRPL.TO
                 </Typography>
-            </Container>
+            </Container> */}
         </OverviewWrapper>
     );
 }
@@ -188,7 +173,7 @@ export async function getServerSideProps(ctx) {
         ogp.url = `https://xrpl.to/token/${urlSlug}`;
         ogp.imgUrl = `/static/tokens/${md5}.${imgExt}`;
         ogp.imgUrlTwitter = `http://xrpl.to/static/tokens/${md5}.${imgExt}`;
-        ogp.desc = `Get the latest ${user} price, ${name} market cap, trading pairs, charts and data today from the world's number one cryptocurrency price-tracking website`;
+        ogp.desc = `Get the latest ${user} price, ${name} market cap, trading pairs, charts and data today from the world's number one XRP Ledger token price-tracking website`;
 
         ret = {data, ogp};
     }

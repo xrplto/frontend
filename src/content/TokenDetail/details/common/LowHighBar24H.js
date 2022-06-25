@@ -13,7 +13,7 @@ import {
 
 // Redux
 import { useSelector } from "react-redux";
-import { selectStatus } from "src/redux/statusSlice";
+import { selectMetrics } from "src/redux/statusSlice";
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
@@ -58,12 +58,12 @@ const LowhighBarSlider = styled(Slider)(({ theme }) => ({
 }));
 
 export default function LowHighBar24H({token}) {
-    const status = useSelector(selectStatus);
+    const metrics = useSelector(selectMetrics);
     const {
         exch,
         maxMin24h
     } = token;
-    const price = fNumber(exch / status.USD);
+    const price = fNumber(exch / metrics.USD);
     const min = maxMin24h[1];
     const max = maxMin24h[0];
     const delta = max - min;

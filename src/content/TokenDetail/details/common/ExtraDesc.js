@@ -18,7 +18,7 @@ import { fNumber } from 'src/utils/formatNumber';
 
 // Redux
 import { useSelector } from "react-redux";
-import { selectStatus } from "src/redux/statusSlice";
+import { selectMetrics } from "src/redux/statusSlice";
 
 // ----------------------------------------------------------------------
 const MarketTypography = withStyles({
@@ -41,7 +41,7 @@ const SupplyTypography = withStyles({
 
 export default function ExtraDesc({token}) {
     const theme = useTheme();
-    const status = useSelector(selectStatus);
+    const metrics = useSelector(selectMetrics);
 
     const {
         name,
@@ -61,7 +61,7 @@ export default function ExtraDesc({token}) {
     let user = token.user;
     if (!user) user = name;
 
-    const marketcap = fNumber(amount * exch / status.USD);
+    const marketcap = fNumber(amount * exch / metrics.USD);
     const supply = fNumber(amount);
     const volume = fNumber(vol24h);
 

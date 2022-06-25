@@ -27,7 +27,7 @@ import TokenList from 'src/content/TokenList';
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
-import { selectStatus, update_status } from "src/redux/statusSlice";
+import { selectMetrics, update_metrics } from "src/redux/statusSlice";
 
 // Iconify Icons
 import { Icon } from '@iconify/react';
@@ -62,7 +62,6 @@ const OverviewWrapper = styled(Box)(
 
 function Overview(props) {
     const { toggleTheme, darkMode } = useContext(AppContext);
-    // const status = useSelector(selectStatus);
     const data = props.data;
 
     return (
@@ -92,11 +91,11 @@ function Overview(props) {
 
             <TokenList data={data}/>
 
-            <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 2, mb: 8 }}>
+            {/* <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 2, mb: 8 }}>
                 <Typography textAlign="left" variant="subtitle1">
                     &copy; 2022 XRPL.TO
                 </Typography>
-            </Container>
+            </Container> */}
         </OverviewWrapper>
     );
 }

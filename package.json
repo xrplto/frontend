@@ -63,7 +63,7 @@
     "dev": "next",
     "build": "next build",
     "start": "next start",
-    "start_production": "next start -p 80",
+    "production": "next start -p 80",
     "export": "next export",
     "lint": "next lint",
     "lint-fix": "next lint --fix",
