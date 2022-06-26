@@ -5,25 +5,13 @@ import { AppContext } from 'src/AppContext';
 import { alpha } from '@mui/material/styles';
 import {
     Box,
-    Button,
-    Card,
     Container,
-    Divider,
-    IconButton,
     styled,
     Stack,
     Tooltip,
     Typography
 } from '@mui/material';
 import BaseLayout from 'src/layouts/BaseLayout';
-
-import Link from 'src/components/Link';
-import Head from 'next/head';
-
-import Logo from 'src/components/LogoSign';
-import Account from 'src/components/Account';
-import Hero from 'src/content/Overview';
-import TokenList from 'src/TokenList';
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
