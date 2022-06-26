@@ -9,7 +9,7 @@ import ThemeProvider from 'src/theme/ThemeProvider';
 import CssBaseline from '@mui/material/CssBaseline';
 import { CacheProvider } from '@emotion/react';
 import createEmotionCache from 'src/createEmotionCache';
-import { ContextProvider } from 'src/contexts/AppContext';
+import { ContextProvider } from 'src/AppContext';
 import AdapterDateFns from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 

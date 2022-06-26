@@ -11,7 +11,7 @@ import {
   ListItem
 } from '@mui/material';
 import NextLink from 'next/link';
-import { AppContext } from 'src/contexts/AppContext';
+import { AppContext } from 'src/AppContext';
 
 import DesignServicesTwoToneIcon from '@mui/icons-material/DesignServicesTwoTone';
 import BrightnessLowTwoToneIcon from '@mui/icons-material/BrightnessLowTwoTone';

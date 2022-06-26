@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 // ----------------------------------------------------------------------
 import { useDispatch } from "react-redux";
-import { update_status } from "src/redux/statusSlice";
+import { update_metrics } from "src/redux/statusSlice";
 import useWebSocket/*, { ReadyState }*/ from 'react-use-websocket';
 // ----------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ export default function TopMark({ md5 }) {
             const json = JSON.parse(res);
             const exch = json.exch;
             //console.log(json);
-            const status = {
+            const metrics = {
                 session: json.session,
                 USD: exch.USD,
                 EUR: exch.EUR,
@@ -53,7 +53,7 @@ export default function TopMark({ md5 }) {
                 timeSchedule: json.timeSchedule,
                 countApiCall: json.countApiCall,
             };
-            dispatch(update_status(status));
+            dispatch(update_metrics(metrics));
         } catch(err) {}
     }, [lastMessage, dispatch]);
 

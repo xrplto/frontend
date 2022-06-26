@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { AppContext } from 'src/contexts/AppContext';
+import { AppContext } from 'src/AppContext';
 
 // Material
 import { alpha } from '@mui/material/styles';
@@ -23,11 +23,11 @@ import Head from 'next/head';
 import Logo from 'src/components/LogoSign';
 import Account from 'src/components/Account';
 import Hero from 'src/content/Overview';
-import TokenList from 'src/content/TokenList';
+import TokenList from 'src/TokenList';
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
-import { selectStatus, update_status } from "src/redux/statusSlice";
+import { selectMetrics, update_metrics } from "src/redux/statusSlice";
 
 // Iconify Icons
 import { Icon } from '@iconify/react';
@@ -82,14 +82,14 @@ function Rate(num) {
 
 function Overview() {
     const { toggleTheme, darkMode } = useContext(AppContext);
-    const status = useSelector(selectStatus);
+    const metrics = useSelector(selectMetrics);
     return (
         <TopWrapper>
             <Container maxWidth="xl">
                 <Box display="flex" alignItems="center" justifyContent="space-between" flex={1} sx={{pl:2.5, pr:3}}>
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Typography variant="small">Tokens: </Typography>
-                        <Typography variant="small">{fIntNumber(status.token_count)}</Typography>
+                        <Typography variant="small">{fIntNumber(metrics.token_count)}</Typography>
                         <H24Style>
                             <Tooltip title="Metrics on 24 hours">
                                 <Stack spacing={0} alignItems='center'>
@@ -100,20 +100,20 @@ function Overview() {
                             </Tooltip>
                         </H24Style>
                         <Typography variant="small">Tx:</Typography>
-                        <Typography align="center" color="#74CAFF" variant="small">{fIntNumber(status.transactions24H)}</Typography>
+                        <Typography align="center" color="#74CAFF" variant="small">{fIntNumber(metrics.transactions24H)}</Typography>
                         {/* <Typography variant="small">|</Typography> */}
                         <Typography variant="small">Vol:</Typography>
                         <Typography align="center" color="#FF6C40" variant="small">
                             <Stack direction="row" spacing={0.5} alignItems='center'>
                                 <Icon icon={rippleSolid} color="#54D62C"/>
                                 <Typography align="center" color="#54D62C" variant="small">
-                                    {fNumber(status.tradedXRP24H)}
+                                    {fNumber(metrics.tradedXRP24H)}
                                 </Typography>
                             </Stack>
                         </Typography>
                         {/* <Typography variant="small">|</Typography> */}
                         <Typography variant="small">Tokens Traded:</Typography>
-                        <Typography align="center" color="#3366FF" variant="small">{fIntNumber(status.tradedTokens24H)}</Typography>
+                        <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.tradedTokens24H)}</Typography>
                     </Stack>
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Stack direction="row" spacing={0.5} alignItems='center'>
@@ -121,11 +121,11 @@ function Overview() {
                             <Typography variant="small">1</Typography>
                         </Stack>
                         <Separator>|</Separator>
-                        <Typography variant="small">$ {Rate(status.USD)}</Typography>
+                        <Typography variant="small">$ {Rate(metrics.USD)}</Typography>
                         <Separator>|</Separator>
-                        <Typography variant="small">€ {Rate(status.EUR)}</Typography>
+                        <Typography variant="small">€ {Rate(metrics.EUR)}</Typography>
                         <Separator>|</Separator>
-                        <Typography variant="small">¥ {Rate(status.JPY)}</Typography>
+                        <Typography variant="small">¥ {Rate(metrics.JPY)}</Typography>
                     </Stack>
                 </Box>
             </Container>

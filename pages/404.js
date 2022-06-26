@@ -15,7 +15,7 @@ import SearchTwoToneIcon from '@mui/icons-material/SearchTwoTone';
 
 import BaseLayout from 'src/layouts/BaseLayout';
 
-const MainContent = styled(Box)(
+const MainContent = styled(Box) (
   () => `
     height: 100%;
     display: flex;

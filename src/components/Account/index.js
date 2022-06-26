@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { AppContext } from 'src/contexts/AppContext';
+import { AppContext } from 'src/AppContext';
 import axios from 'axios';
 import { Icon } from '@iconify/react';
 import { useRef, useState, useEffect } from 'react';
