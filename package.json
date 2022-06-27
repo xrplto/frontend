@@ -57,7 +57,8 @@
     "react-use-websocket": "^3.0.0",
     "next-seo": "^5.4.0",
     "decimal.js": "^10.3.1",
-    "perf_hooks": "^0.0.1"
+    "perf_hooks": "^0.0.1",
+    "react-lazy-load-image-component": "^1.5.4"
   },
   "scripts": {
     "dev": "next",

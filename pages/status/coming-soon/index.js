@@ -17,7 +17,7 @@ import {
 import BaseLayout from 'src/layouts/BaseLayout';
 
 import Head from 'next/head';
-import Logo from 'src/components/LogoSign';
+import Logo from 'src/components/Logo';
 
 import FacebookIcon from '@mui/icons-material/Facebook';
 import TwitterIcon from '@mui/icons-material/Twitter';

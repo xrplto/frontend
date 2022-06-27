@@ -90,7 +90,11 @@ export function fPercent(number) {
     if (number < 1)
         return fp(number);
     else {
-        const res = numeral(number).format(Number.isInteger(number) ? '0,0' : '0,0.00');
+        const strNum = number.toFixed(0).trim();
+        if (strNum.length > 5)
+            return Number(number).toExponential(0);
+
+        const res = numeral(number).format(Number.isInteger(number) ? '0,0' : '0,0.0');
         if (res === 'NaN') return 0;
         return res;
     }

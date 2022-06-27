@@ -13,7 +13,7 @@ import {
 import { tableCellClasses } from "@mui/material/TableCell";
 
 // Components
-import BearBullTypography from 'src/layouts/BearBullTypography';
+import BearBullLabel from 'src/layouts/BearBullLabel';
 
 // Redux
 import { useSelector/*, useDispatch*/ } from "react-redux";
@@ -115,7 +115,7 @@ export default function PriceStatistics({token}) {
                         <TableCell align="left">
                             <Stack>
                             {strPc24h}
-                            <BearBullTypography value={pro24h} variant="subtitle2"/>
+                            <BearBullLabel value={pro24h} variant="small"/>
                             </Stack>
                         </TableCell>
                     </TableRow>

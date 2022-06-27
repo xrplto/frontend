@@ -42,7 +42,7 @@ export default function PriceDesc({token}) {
             </Stack>
             <Stack direction="row" spacing={2} sx={{mt:0}} alignItems='center'>
                 <Stack direction="row" spacing={1} alignItems='center'>
-                    <Typography variant="h3" noWrap>
+                    <Typography variant="price" noWrap>
                         $ {fNumber(exch / metrics.USD)}
                     </Typography>
                     <Typography variant="subtitle1" style={{marginTop:8}}>
@@ -51,7 +51,7 @@ export default function PriceDesc({token}) {
                 </Stack>
             </Stack>
 
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1} sx={{mt:0.5}}>
                 <BearBullChip value={pro24h} tooltip='24h(%)'/>
                 <BearBullChip value={pro7d} tooltip={
                     <Stack alignItems='center'>

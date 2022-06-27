@@ -93,42 +93,88 @@ const colors = {
       100: themeColors.black
     }
   },
-  secondary: {
-    lighter: alpha(themeColors.secondary, 0.85),
-    light: alpha(themeColors.secondary, 0.6),
-    main: themeColors.secondary,
-    dark: darken(themeColors.secondary, 0.2)
-  },
   primary: {
-    lighter: alpha(themeColors.primary, 0.85),
-    light: alpha(themeColors.primary, 0.3),
-    main: themeColors.primary,
-    dark: darken(themeColors.primary, 0.2)
+      lighter: '#C8FACD',
+      light: '#5BE584',
+      main: '#00AB55',
+      dark: '#007B55',
+      darker: '#005249',
+      contrastText: '#fff'
   },
-  success: {
-    lighter: alpha(themeColors.success, 0.85),
-    light: alpha(themeColors.success, 0.3),
-    main: themeColors.success,
-    dark: darken(themeColors.success, 0.2)
+  // primary: {
+  //   lighter: alpha(themeColors.primary, 0.85),
+  //   light: alpha(themeColors.primary, 0.3),
+  //   main: themeColors.primary,
+  //   dark: darken(themeColors.primary, 0.2)
+  // },
+  secondary: {
+      lighter: '#D6E4FF',
+      light: '#84A9FF',
+      main: '#3366FF',
+      dark: '#1939B7',
+      darker: '#091A7A',
+      contrastText: '#fff'
   },
-  warning: {
-    lighter: alpha(themeColors.warning, 0.85),
-    light: alpha(themeColors.warning, 0.3),
-    main: themeColors.warning,
-    dark: darken(themeColors.warning, 0.2)
-  },
-  error: {
-    lighter: alpha(themeColors.error, 0.85),
-    light: alpha(themeColors.error, 0.3),
-    main: themeColors.error,
-    dark: darken(themeColors.error, 0.2)
-  },
+  // secondary: {
+  //   lighter: alpha(themeColors.secondary, 0.85),
+  //   light: alpha(themeColors.secondary, 0.6),
+  //   main: themeColors.secondary,
+  //   dark: darken(themeColors.secondary, 0.2)
+  // },
   info: {
-    lighter: alpha(themeColors.info, 0.85),
-    light: alpha(themeColors.info, 0.3),
-    main: themeColors.info,
-    dark: darken(themeColors.info, 0.2)
-  }
+    lighter: '#D0F2FF',
+    light: '#74CAFF',
+    main: '#1890FF',
+    dark: '#0C53B7',
+    darker: '#04297A',
+    contrastText: '#fff'
+  },
+  // info: {
+  //   lighter: alpha(themeColors.info, 0.85),
+  //   light: alpha(themeColors.info, 0.3),
+  //   main: themeColors.info,
+  //   dark: darken(themeColors.info, 0.2)
+  // },
+  success: {
+      lighter: '#E9FCD4',
+      light: '#AAF27F',
+      main: '#54D62C',
+      dark: '#229A16',
+      darker: '#08660D',
+  },
+  // success: {
+  //   lighter: alpha(themeColors.success, 0.85),
+  //   light: alpha(themeColors.success, 0.3),
+  //   main: themeColors.success,
+  //   dark: darken(themeColors.success, 0.2)
+  // },
+  warning: {
+      lighter: '#FFF7CD',
+      light: '#FFE16A',
+      main: '#FFC107',
+      dark: '#B78103',
+      darker: '#7A4F01',
+  },
+  // warning: {
+  //   lighter: alpha(themeColors.warning, 0.85),
+  //   light: alpha(themeColors.warning, 0.3),
+  //   main: themeColors.warning,
+  //   dark: darken(themeColors.warning, 0.2)
+  // },
+  error: {
+      lighter: '#FFE7D9',
+      light: '#FFA48D',
+      main: '#FF4842',
+      dark: '#B72136',
+      darker: '#7A0C2E',
+      contrastText: '#fff'
+  },
+  // error: {
+  //   lighter: alpha(themeColors.error, 0.85),
+  //   light: alpha(themeColors.error, 0.3),
+  //   main: themeColors.error,
+  //   dark: darken(themeColors.error, 0.2)
+  // },
 };
 
 export const XrplToDarkTheme = createTheme({
@@ -506,6 +552,9 @@ export const XrplToDarkTheme = createTheme({
     },
     MuiChip: {
       styleOverrides: {
+        root: {
+          
+        },
         colorSecondary: {
           background: colors.alpha.black[5],
           color: colors.alpha.black[100],
@@ -656,23 +705,23 @@ export const XrplToDarkTheme = createTheme({
         }
       }
     },
-    MuiToggleButton: {
-      defaultProps: {
-        disableRipple: true
-      },
-      styleOverrides: {
-        root: {
-          color: colors.primary.main,
-          background: colors.alpha.white[100],
-          transition: 'all .2s',
+    // MuiToggleButton: {
+    //   defaultProps: {
+    //     disableRipple: true
+    //   },
+    //   styleOverrides: {
+    //     root: {
+    //       color: colors.primary.main,
+    //       background: colors.alpha.white[100],
+    //       transition: 'all .2s',
 
-          '&:hover, &.Mui-selected, &.Mui-selected:hover': {
-            color: themeColors.trueWhite,
-            background: colors.primary.main
-          }
-        }
-      }
-    },
+    //       '&:hover, &.Mui-selected, &.Mui-selected:hover': {
+    //         color: themeColors.trueWhite,
+    //         background: colors.primary.main
+    //       }
+    //     }
+    //   }
+    // },
     MuiIconButton: {
       styleOverrides: {
         root: {
@@ -831,13 +880,13 @@ export const XrplToDarkTheme = createTheme({
           minHeight: 38,
           overflow: 'visible'
         },
-        indicator: {
-          height: 38,
-          minHeight: 38,
-          borderRadius: 6,
-          border: '1px solid ' + colors.primary.dark,
-          boxShadow: '0px 2px 10px ' + colors.primary.light
-        },
+        // indicator: {
+        //   height: 38,
+        //   minHeight: 38,
+        //   borderRadius: 6,
+        //   border: '1px solid ' + colors.primary.dark,
+        //   boxShadow: '0px 2px 10px ' + colors.primary.light
+        // },
         scrollableX: {
           overflow: 'visible !important'
         }
@@ -859,13 +908,13 @@ export const XrplToDarkTheme = createTheme({
             paddingRight: 20,
             marginRight: 4
           },
-          '&.Mui-selected, &.Mui-selected:hover': {
-            color: colors.alpha.trueWhite[100],
-            zIndex: 5
-          },
-          '&:hover': {
-            color: colors.alpha.trueWhite[70]
-          }
+          // '&.Mui-selected, &.Mui-selected:hover': {
+          //   color: colors.alpha.trueWhite[100],
+          //   zIndex: 5
+          // },
+          // '&:hover': {
+          //   color: colors.alpha.trueWhite[70]
+          // }
         }
       }
     },
@@ -1234,6 +1283,16 @@ export const XrplToDarkTheme = createTheme({
       fontSize: 16,
       color: "#3366FF"
     },
+    desc: {
+      fontWeight: 700,
+      fontSize: '1.25rem',
+      lineHeight: 1.5,
+    },
+    price: {
+      fontWeight: 700,
+      fontSize: '2rem',
+      lineHeight: 1.5,
+    },
     small: {
       fontSize: 12
     },
@@ -1249,7 +1308,7 @@ export const XrplToDarkTheme = createTheme({
     overline: {
       fontSize: 13,
       fontWeight: 700,
-      textTransform: 'uppercase'
+      // textTransform: 'uppercase'
     }
   },
   shadows: [

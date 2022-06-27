@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useContext } from 'react';
-import { AppContext } from 'src/contexts/AppContext';
+import { AppContext } from 'src/AppContext';
 import Head from 'next/head';
 import { NextSeo } from 'next-seo';
 import { useRouter } from 'next/router'
@@ -10,30 +10,12 @@ import { performance } from 'perf_hooks';
 import { alpha } from '@mui/material/styles';
 import {
     Box,
-    Button,
-    Card,
     Container,
     IconButton,
     styled,
     Stack,
-    Tooltip,
-    Typography
 } from '@mui/material';
 import BaseLayout from 'src/layouts/BaseLayout';
-
-// import Link from 'src/components/Link';
-// import Head from 'next/head';
-
-import Logo from 'src/components/LogoSign';
-import Account from 'src/components/Account';
-import Hero from 'src/content/Overview';
-
-import TopMark from 'src/layouts/TopMark';
-import TokenDetail from 'src/content/TokenDetail';
-
-// Redux
-import { useSelector, useDispatch } from "react-redux";
-import { selectMetrics, update_metrics } from "src/redux/statusSlice";
 
 // Iconify Icons
 import { Icon } from '@iconify/react';
@@ -44,6 +26,9 @@ import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 
 // Components
 import Topbar from 'src/layouts/Topbar';
+import Logo from 'src/components/Logo';
+import Account from 'src/components/Account';
+import TokenDetail from 'src/TokenDetail';
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -143,6 +128,7 @@ export async function getServerSideProps(ctx) {
         const slug = ctx.params.slug;
         var t1 = performance.now();
 
+        // https://api.xrpl.to/api/detail/bitstamp-usd?range=1D
         const res = await axios.get(`${BASE_URL}/detail/${slug}?range=1D`);
 
         data = res.data;
