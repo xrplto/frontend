@@ -17,7 +17,6 @@ const clientSideEmotionCache = createEmotionCache();
 
 function XRPLToApp(props) {
     const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
-    const getLayout = Component.getLayout ?? ((page) => page);
 
     Router.events.on('routeChangeStart', nProgress.start);
     Router.events.on('routeChangeError', nProgress.done);
@@ -73,7 +72,7 @@ function XRPLToApp(props) {
                 <ThemeProvider>
                     <LocalizationProvider dateAdapter={AdapterDateFns}>
                         <CssBaseline />
-                        {getLayout(<Component {...pageProps} />)}
+                        <Component {...pageProps} />
                     </LocalizationProvider>
                 </ThemeProvider>
             </ContextProvider>

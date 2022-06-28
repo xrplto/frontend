@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { NextSeo } from 'next-seo';
 import { performance } from 'perf_hooks';
 
 // Material
@@ -9,21 +8,19 @@ import { alpha } from '@mui/material/styles';
 import {
     Box,
     Container,
+    Grid,
     IconButton,
     styled,
     Stack
 } from '@mui/material';
-import BaseLayout from 'src/layouts/BaseLayout';
 
 import Logo from 'src/components/Logo';
 import Account from 'src/components/Account';
 
 import TopMark from 'src/layouts/TopMark';
 import TokenList from 'src/TokenList';
-
-// Redux
-import { useSelector, useDispatch } from "react-redux";
-import { selectMetrics, update_metrics } from "src/redux/statusSlice";
+import ScrollToTop from 'src/layouts/ScrollToTop';
+import Summary from 'src/TokenList/Summary';
 
 // Iconify Icons
 import { Icon } from '@iconify/react';
@@ -85,7 +82,22 @@ function Overview(props) {
             
             <TopMark md5={'NONE'}/>
 
-            <TokenList data={data}/>
+            <Container maxWidth="xl">
+                <Grid
+                    container
+                    direction="row"
+                    justifyContent="left"
+                    alignItems="stretch"
+                    spacing={3}
+                >
+                    <Grid item xs={12} md={12} lg={8} >
+                        <Summary />
+                    </Grid>
+                </Grid>
+                <TokenList data={data}/>
+            </Container>
+
+            <ScrollToTop />
 
             {/* <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 2, mb: 8 }}>
                 <Typography textAlign="left" variant="subtitle1">
@@ -98,11 +110,7 @@ function Overview(props) {
 
 export default Overview;
 
-Overview.getLayout = function getLayout(page) {
-    return <BaseLayout>{page}</BaseLayout>;
-};
-
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'http://135.181.118.217/api';
 
 // This function gets called at build time on server-side.
 // It may be called again, on a serverless function, if

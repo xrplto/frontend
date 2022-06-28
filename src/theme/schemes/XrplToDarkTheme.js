@@ -1229,7 +1229,7 @@ export const XrplToDarkTheme = createTheme({
     },
     h2: {
       fontWeight: 700,
-      fontSize: 30
+      fontSize: '1rem' // 30
     },
     h3: {
       fontWeight: 700,

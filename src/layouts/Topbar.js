@@ -123,6 +123,3 @@ function Overview() {
 
 export default Overview;
 
-Overview.getLayout = function getLayout(page) {
-    return <BaseLayout>{page}</BaseLayout>;
-};

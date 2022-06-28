@@ -116,11 +116,7 @@ function Detail(props) {
 
 export default Detail;
 
-Detail.getLayout = function getLayout(page) {
-    return <BaseLayout>{page}</BaseLayout>;
-};
-
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = 'http://135.181.118.217/api';
 
 export async function getServerSideProps(ctx) {
     let data = null;

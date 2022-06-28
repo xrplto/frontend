@@ -8,8 +8,6 @@ import {
     styled
 } from '@mui/material';
 
-import BaseLayout from 'src/layouts/BaseLayout';
-
 import Head from 'next/head';
 import Logo from 'src/components/Logo';
 
@@ -112,6 +110,3 @@ function StatusMaintenance() {
 
 export default StatusMaintenance;
 
-StatusMaintenance.getLayout = function getLayout(page) {
-  return <BaseLayout>{page}</BaseLayout>;
-};

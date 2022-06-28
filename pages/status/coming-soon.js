@@ -195,6 +195,3 @@ function StatusComingSoon() {
 
 export default StatusComingSoon;
 
-StatusComingSoon.getLayout = function getLayout(page) {
-  return <BaseLayout>{page}</BaseLayout>;
-};

@@ -1174,11 +1174,11 @@ export const XrplToLightTheme = createTheme({
       '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
     h1: {
       fontWeight: 700,
-      fontSize: 35
+      fontSize: '1.2rem'// 35
     },
     h2: {
       fontWeight: 700,
-      fontSize: 30
+      fontSize: '1rem' // 30
     },
     h3: {
       fontWeight: 700,
@@ -1257,7 +1257,7 @@ export const XrplToLightTheme = createTheme({
     overline: {
       fontSize: 13,
       fontWeight: 700,
-      textTransform: 'uppercase'
+      // textTransform: 'uppercase'
     }
   },
   shadows: [

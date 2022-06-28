@@ -67,7 +67,7 @@ export default function UserDesc({token}) {
                     sx={{ width: 56, height: 56 }}
                 />
                 <Stack spacing={0.2}>
-                    <Typography variant={"h3"}>{user}</Typography>
+                    <Typography variant="h2" color='#22B14C' fontSize='1.1rem'>{user}</Typography>
                     <Rating
                         name="simple-controlled"
                         value={rating}

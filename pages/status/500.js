@@ -124,10 +124,10 @@ function Status500() {
                     fontWeight="normal"
                     sx={{ mb: 4 }}
                   >
-                    High performance React template built with lots of powerful MUI (Material-UI) components across multiple product niches for fast & perfect apps development processes.
+                    Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.
                   </TypographySecondary>
                   <Button href="/" size="large" variant="contained">
-                    Overview
+                    View
                   </Button>
                 </Box>
               </Container>
@@ -140,7 +140,3 @@ function Status500() {
 }
 
 export default Status500;
-
-Status500.getLayout = function getLayout(page) {
-  return <BaseLayout>{page}</BaseLayout>;
-};
