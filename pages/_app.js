@@ -47,6 +47,8 @@ function XRPLToApp(props) {
                 />
                 <meta name="google-site-verification" content="hh6F1f8GQ-_d3L7eGAcBc9G020PM2jSDzIjT12_I-Mc" />
 
+                <meta name="robots" content="nofollow"/>
+
                 {/* <!-- HTML Meta Tags --> */}
                 <title>{ogp.title}</title>
                 <meta name="description" content={ogp.desc}/>
