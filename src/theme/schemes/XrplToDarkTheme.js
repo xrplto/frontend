@@ -1196,14 +1196,14 @@ export const XrplToDarkTheme = createTheme({
         variantMapping: {
           h1: 'h1',
           h2: 'h2',
-          h3: 'div',
-          h4: 'div',
-          h5: 'div',
-          h6: 'div',
-          subtitle1: 'div',
-          subtitle2: 'div',
-          body1: 'div',
-          body2: 'div'
+          h3: 'h3',
+          h4: 'span',
+          h5: 'span',
+          h6: 'span',
+          subtitle1: 'span',
+          subtitle2: 'span',
+          body1: 'span',
+          body2: 'span'
         }
       },
       styleOverrides: {
@@ -1233,10 +1233,14 @@ export const XrplToDarkTheme = createTheme({
     },
     h3: {
       fontWeight: 700,
-      fontSize: 25,
-      lineHeight: 1.4,
-      color: colors.alpha.black[100]
+      fontSize: '0.9rem' // 30
     },
+    // h3: {
+    //   fontWeight: 700,
+    //   fontSize: 25,
+    //   lineHeight: 1.4,
+    //   color: colors.alpha.black[100]
+    // },
     h4: {
       // fontWeight: 700,
       fontSize: 16
@@ -1297,8 +1301,7 @@ export const XrplToDarkTheme = createTheme({
       fontSize: 12
     },
     subtitle1: {
-      fontSize: 14,
-      color: colors.alpha.black[70]
+      fontSize: 14
     },
     subtitle2: {
       fontWeight: 400,

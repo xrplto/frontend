@@ -52,6 +52,7 @@ export default function TopMark({ md5 }) {
                 timeCalc24H: json.timeCalc24H,
                 timeSchedule: json.timeSchedule,
                 countApiCall: json.countApiCall,
+                global: json.metricsGlobal
             };
             dispatch(update_metrics(metrics));
         } catch(err) {}

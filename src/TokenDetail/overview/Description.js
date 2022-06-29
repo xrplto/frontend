@@ -54,12 +54,13 @@ export default function Description({token}) {
 
     return (
         <Stack>
-            <CardHeader title={`${name} Price Live Data`}  subheader='' sx={{p:2}}/>
-            <Typography sx={{pl:2, mt:2}}>
+            <Typography variant="h2" fontSize='1.1rem' sx={{ml:2, mt:0}}>{`${name} Price Live Data`}</Typography>
+
+            <Typography sx={{ml:2, mt:3}}>
                 The live {user} price today is ${price} USD with a 24-hour trading volume of ${volume24h} {name}. We update our {name} to USD price in real-time. {user} is {strPro24h} in the last 24 hours. The current XRPL.TO ranking is #{id}, with a live market cap of ${marketcap} USD. It has a circulating supply of {supply} {name} tokens.
             </Typography>
 
-            <Typography sx={{pl:2, mt:2}}>
+            <Typography sx={{ml:2, mt:2}}>
                 If you would like to know where to buy {user}, the top XRPL DEX for trading in {user} token are currently 
                 <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener"
                     href={`https://xumm.app/detect/xapp:xumm.dex?issuer=${issuer}&currency=${currency}`}

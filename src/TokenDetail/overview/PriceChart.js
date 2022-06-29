@@ -6,7 +6,8 @@ import {
     CardHeader,
     Stack,
     ToggleButton,
-    ToggleButtonGroup
+    ToggleButtonGroup,
+    Typography
 } from '@mui/material';
 
 // Chart
@@ -245,7 +246,8 @@ export default function PriceChart({ history, token, range, setRange }) {
     return (
         <>
             <Stack direction="row" spacing={2} sx={{mt:0}} alignItems="center">
-                <CardHeader title={`${user} to USD Chart`} subheader='' />
+                <Typography variant="h3" sx={{ml:2, mt:0}}>{`${user} to USD Chart`}</Typography>
+                {/* <CardHeader title={`${user} to USD Chart`} subheader='' /> */}
                 <Box sx={{ flexGrow: 1 }} />
                 <ToggleButtonGroup
                     color="primary"

@@ -16,7 +16,8 @@ const initialState = {
         timeCalc24H: 0,
         timeSchedule: 0,
         countApiCall: 0,
-        timeTokens: 0
+        timeTokens: 0,
+        global: [0,0,0,0,0,0,0,0,0,0]
     },
     accountData: {
         balance: {},
@@ -73,7 +74,8 @@ export function configureRedux(data) {
                 timeCalc24H: data.timeCalc24H,
                 timeSchedule: data.timeSchedule,
                 countApiCall: data.countApiCall,
-                timeTokens: data.took
+                timeTokens: data.took,
+                global: data.metricsGlobal
             },
             accountData: {
                 balance: {},

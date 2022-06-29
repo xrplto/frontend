@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 import {
     Box,
     Link,
@@ -18,7 +19,13 @@ function Logo() {
 
     return (
         <Link href="/" sx={{ pl: 0, pr: 0, py: 3, display: 'inline-flex' }} underline="none">
-            <Box component="img" src={img} sx={{ height: 46 }} />
+            {/* <Box component="img" src={img} sx={{ height: 46 }} /> */}
+            <LazyLoadImage
+                alt=''
+                src={img}
+                // width={56}
+                height={46}
+            />
         </Link>
     );
 }
