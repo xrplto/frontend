@@ -169,7 +169,7 @@ export default function PairsList({token, pairs}) {
                                                 color="inherit"
                                                 target="_blank"
                                                 href={`https://${curr1.domain}`}
-                                                rel="noreferrer noopener"
+                                                rel="noreferrer noopener nofollow"
                                             >
                                                 <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{curr1.domain}</Typography>
                                             </Link>
@@ -180,7 +180,7 @@ export default function PairsList({token, pairs}) {
                                                 color="inherit"
                                                 target="_blank"
                                                 href={`https://${curr2.domain}`}
-                                                rel="noreferrer noopener"
+                                                rel="noreferrer noopener nofollow"
                                             >
                                                 <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.domain}</Typography>
                                             </Link>
@@ -222,7 +222,7 @@ export default function PairsList({token, pairs}) {
                                                     color="inherit"
                                                     target="_blank"
                                                     href={`https://bithomp.com/explorer/${curr1.issuer}`}
-                                                    rel="noreferrer noopener"
+                                                    rel="noreferrer noopener nofollow"
                                                 >
                                                     <IconButton edge="end" aria-label="bithomp">
                                                         <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
@@ -238,7 +238,7 @@ export default function PairsList({token, pairs}) {
                                                     color="inherit"
                                                     target="_blank"
                                                     href={`https://bithomp.com/explorer/${curr2.issuer}`}
-                                                    rel="noreferrer noopener"
+                                                    rel="noreferrer noopener nofollow"
                                                 >
                                                     <IconButton edge="end" aria-label="bithomp">
                                                         <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
@@ -255,7 +255,7 @@ export default function PairsList({token, pairs}) {
                                             color="inherit"
                                             target="_blank"
                                             href={soloDexURL}
-                                            rel="noreferrer noopener"
+                                            rel="noreferrer noopener nofollow"
                                         >
                                             <IconButton edge="end" aria-label="solo">
                                                 <Avatar alt="sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
@@ -266,7 +266,7 @@ export default function PairsList({token, pairs}) {
                                             color="inherit"
                                             target="_blank"
                                             href={gatehubDexURL}
-                                            rel="noreferrer noopener"
+                                            rel="noreferrer noopener nofollow"
                                         >
                                             <IconButton edge="end" aria-label="solo">
                                                 <Avatar alt="gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
@@ -277,7 +277,7 @@ export default function PairsList({token, pairs}) {
                                             color="inherit"
                                             target="_blank"
                                             href={xummDexURL}
-                                            rel="noreferrer noopener"
+                                            rel="noreferrer noopener nofollow"
                                         >
                                             <IconButton edge="end" aria-label="solo">
                                                 <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />

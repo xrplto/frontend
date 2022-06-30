@@ -1,11 +1,9 @@
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { useState, createContext, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ThemeProvider } from '@mui/material';
 import { themeCreator } from './base';
 import { StylesProvider } from '@mui/styles';
-
-// export const ThemeContext = createContext((_themeName) => {});
 
 const ThemeProviderWrapper = (props) => {
     const [isMounted, setIsMounted] = useState(false)

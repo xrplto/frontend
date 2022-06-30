@@ -87,7 +87,7 @@ export default function ExplorersMenu({issuer}) {
                     color="inherit"
                     target="_blank"
                     href={`https://bithomp.com/explorer/${issuer}`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="bithomp" src="/static/bithomp.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -99,7 +99,7 @@ export default function ExplorersMenu({issuer}) {
                     color="inherit"
                     target="_blank"
                     href={`https://gatehub.net/explorer/${issuer}`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xumm" src="/static/gatehub.jpg" sx={{ mr:1, width: 24, height: 24 }} />
@@ -111,7 +111,7 @@ export default function ExplorersMenu({issuer}) {
                     color="inherit"
                     target="_blank"
                     href={`https://xrpscan.com/account/${issuer}`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() =>  handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xrpscan" src="/static/xrpscan.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -126,7 +126,7 @@ export default function ExplorersMenu({issuer}) {
                     color="inherit"
                     target="_blank"
                     href={`https://explorer.xrplf.org/${issuer}`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xrplf" src="/static/explorerxrplf.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -138,7 +138,7 @@ export default function ExplorersMenu({issuer}) {
                     color="inherit"
                     target="_blank"
                     href={`https://livenet.xrpl.org/accounts/${issuer}`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="sologenic" src="/static/livenetxrplorg.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -150,7 +150,7 @@ export default function ExplorersMenu({issuer}) {
                     color="inherit"
                     target="_blank"
                     href={`https://xrplorer.com/account/${issuer}`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xumm" src="/static/xrplorer.png" sx={{ mr:1, width: 24, height: 24 }} />

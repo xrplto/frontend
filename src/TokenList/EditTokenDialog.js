@@ -415,7 +415,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://bithomp.com/explorer/${issuer}`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <IconButton edge="end" aria-label="bithomp">
                                         <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
@@ -477,7 +477,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://${domain}`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" noWrap color='primary'>{domain}</Typography>
                                 </Link>
@@ -546,7 +546,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`token/${urlSlug}`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{urlSlug}</Typography>
                                 </Link>
@@ -568,7 +568,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`${whitepaper}`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{whitepaper}</Typography>
                                 </Link>
@@ -629,7 +629,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://twitter.com/${twitter}`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{twitter}</Typography>
                                 </Link>
@@ -646,7 +646,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://www.youtube.com/${youtube}`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{youtube}</Typography>
                                 </Link>
@@ -666,7 +666,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://www.facebook.com/${facebook}/`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{facebook}</Typography>
                                 </Link>
@@ -683,7 +683,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://medium.com/${medium}`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{medium}</Typography>
                                 </Link>
@@ -703,7 +703,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://www.linkedin.com/company/${linkedin}/`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{linkedin}</Typography>
                                 </Link>
@@ -720,7 +720,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://twitch.tv/${twitch}`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{twitch}</Typography>
                                 </Link>
@@ -740,7 +740,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://www.instagram.com/${instagram}/`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{instagram}</Typography>
                                 </Link>
@@ -757,7 +757,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://tiktok.com/${tiktok}`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{tiktok}</Typography>
                                 </Link>
@@ -777,7 +777,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://discord.gg/${discord}`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{discord}</Typography>
                                 </Link>
@@ -794,7 +794,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://reddit.com/${reddit}`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{reddit}</Typography>
                                 </Link>
@@ -814,7 +814,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                     color="inherit"
                                     target="_blank"
                                     href={`https://t.me/${telegram}`}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <Typography variant="subtitle2" color='primary'>{telegram}</Typography>
                                 </Link>

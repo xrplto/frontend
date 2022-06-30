@@ -59,7 +59,7 @@ export default function QRLoginDialog(props) {
                     color="inherit"
                     target="_blank"
                     href={nextUrl}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <LinkTypography variant="h4" color='primary'>Open in XUMM</LinkTypography>
                 </Link>

@@ -97,7 +97,7 @@ export default function CommunityMenu({token}) {
                         color="inherit"
                         target="_blank"
                         href={`https://t.me/${social.telegram}`}
-                        rel="noreferrer noopener"
+                        rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                             <Avatar alt="telegram" src="/static/telegram.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -111,7 +111,7 @@ export default function CommunityMenu({token}) {
                         color="inherit"
                         target="_blank"
                         href={`https://discord.gg/${social.discord}`}
-                        rel="noreferrer noopener"
+                        rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                             <Avatar alt="discord" src="/static/discord.png" sx={{ mr:1, width: 24, height: 24 }} />

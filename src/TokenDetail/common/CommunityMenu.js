@@ -96,7 +96,7 @@ export default function CommunityMenu({token}) {
                         color="inherit"
                         target="_blank"
                         href={`https://twitter.com/${social.twitter}`}
-                        rel="noreferrer noopener"
+                        rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                             <Avatar alt="twitter" src="/static/twitter.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -110,7 +110,7 @@ export default function CommunityMenu({token}) {
                         color="inherit"
                         target="_blank"
                         href={`https://facebook.com/${social.facebook}`}
-                        rel="noreferrer noopener"
+                        rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                             <Avatar alt="facebook" src="/static/facebook.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -124,7 +124,7 @@ export default function CommunityMenu({token}) {
                         color="inherit"
                         target="_blank"
                         href={`https://linkedin.com/${social.linkedin}`}
-                        rel="noreferrer noopener"
+                        rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                             <Avatar alt="linkedin" src="/static/linkedin.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -138,7 +138,7 @@ export default function CommunityMenu({token}) {
                         color="inherit"
                         target="_blank"
                         href={`https://instagram.com/${social.instagram}`}
-                        rel="noreferrer noopener"
+                        rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                             <Avatar alt="instagram" src="/static/instagram.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -152,7 +152,7 @@ export default function CommunityMenu({token}) {
                         color="inherit"
                         target="_blank"
                         href={`https://youtube.com/${social.youtube}`}
-                        rel="noreferrer noopener"
+                        rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                             <Avatar alt="youtube" src="/static/youtube.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -166,7 +166,7 @@ export default function CommunityMenu({token}) {
                         color="inherit"
                         target="_blank"
                         href={`https://medium.com/${social.medium}`}
-                        rel="noreferrer noopener"
+                        rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                             <Avatar alt="medium" src="/static/medium.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -180,7 +180,7 @@ export default function CommunityMenu({token}) {
                         color="inherit"
                         target="_blank"
                         href={`https://twitch.tv/${social.twitch}`}
-                        rel="noreferrer noopener"
+                        rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                             <Avatar alt="twitch" src="/static/twitch.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -194,7 +194,7 @@ export default function CommunityMenu({token}) {
                         color="inherit"
                         target="_blank"
                         href={`https://tiktok.com/${social.tiktok}`}
-                        rel="noreferrer noopener"
+                        rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                             <Avatar alt="tiktok" src="/static/tiktok.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -208,7 +208,7 @@ export default function CommunityMenu({token}) {
                         color="inherit"
                         target="_blank"
                         href={`https://www.reddit.com/${social.reddit}`}
-                        rel="noreferrer noopener"
+                        rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                             <Avatar alt="reddit" src="/static/reddit.svg" sx={{ mr:1, width: 24, height: 24 }} />
@@ -221,7 +221,7 @@ export default function CommunityMenu({token}) {
                     color="inherit"
                     target="_blank"
                     href={`https://www.xrpchat.com/`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xrpchat" src="/static/xrpchat.png" sx={{ mr:1, width: 24, height: 24 }} />

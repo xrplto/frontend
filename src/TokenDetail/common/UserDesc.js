@@ -108,7 +108,7 @@ export default function UserDesc({token}) {
                             color="inherit"
                             target="_blank"
                             href={`https://${domain}`}
-                            rel="noreferrer noopener"
+                            rel="noreferrer noopener nofollow"
                         >
                             <Chip label={domain} sx={{pl:0.5,pr:0.5}}
                                 deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
@@ -143,7 +143,7 @@ export default function UserDesc({token}) {
                             color="inherit"
                             target="_blank"
                             href={`${whitepaper}`}
-                            rel="noreferrer noopener"
+                            rel="noreferrer noopener nofollow"
                         >
                             <Chip label={'Whitepaper'} sx={{pl:0.5,pr:0.5}}
                                 deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}

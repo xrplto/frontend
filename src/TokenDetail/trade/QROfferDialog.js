@@ -85,7 +85,7 @@ export default function QROfferDialog(props) {
                     color="inherit"
                     target="_blank"
                     href={nextUrl}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <LinkTypography variant="subtitle2" color='primary'>Open in XUMM</LinkTypography>
                 </Link> */}

@@ -47,12 +47,12 @@ export default function BearBull({value}) {
     return (
         <>
             {pro < 0 ? (
-                <span alignItems='center'>
+                <span>
                     <Icon icon={caretDown} color="#FF6C40"/>
                     <BearishTypography variant='subtitle1' noWrap>{strPro}</BearishTypography>
                 </span>
             ) : (
-                <span alignItems='center'>
+                <span>
                     <Icon icon={caretUp} color="#54D62C"/>
                     <BullishTypography variant='subtitle1' noWrap>{strPro}</BullishTypography>
                 </span>

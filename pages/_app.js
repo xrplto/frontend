@@ -1,45 +1,16 @@
-import { useRouter } from 'next/router';
-import { useEffect } from "react";
-
 import Head from 'next/head';
-import Router from 'next/router';
-import nProgress from 'nprogress';
-import 'nprogress/nprogress.css';
 import ThemeProvider from 'src/theme/ThemeProvider';
 import CssBaseline from '@mui/material/CssBaseline';
-import { CacheProvider } from '@emotion/react';
-import createEmotionCache from 'src/createEmotionCache';
 import { ContextProvider } from 'src/AppContext';
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import LocalizationProvider from '@mui/lab/LocalizationProvider';
-
-const clientSideEmotionCache = createEmotionCache();
 
 function XRPLToApp(props) {
-    const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
-
-    Router.events.on('routeChangeStart', nProgress.start);
-    Router.events.on('routeChangeError', nProgress.done);
-    Router.events.on('routeChangeComplete', nProgress.done);
-
-    const router = useRouter();
-
-    const handleRouteChange = (url) => {
-        window.gtag('config', 'G-PHYSGW6VJ9', {page_path: url});
-    };
-  
-    useEffect(() => {
-        router.events.on('routeChangeComplete', handleRouteChange);
-        return () => {
-            router.events.off('routeChangeComplete', handleRouteChange);
-        };
-    }, [router.events]);
+    const { Component, pageProps } = props;
 
     const ogp = pageProps.ogp||{};
     const data = pageProps.data;
 
     return (
-        <CacheProvider value={emotionCache}>
+        <>
             <Head>
                 <meta
                     name="viewport"
@@ -47,7 +18,7 @@ function XRPLToApp(props) {
                 />
                 <meta name="google-site-verification" content="hh6F1f8GQ-_d3L7eGAcBc9G020PM2jSDzIjT12_I-Mc" />
 
-                <meta name="robots" content="nofollow"/>
+                {/* <meta name="robots" content="nofollow"/> */}
 
                 <link rel="canonical" href={ogp.canonical}/>
 
@@ -68,19 +39,17 @@ function XRPLToApp(props) {
                 <meta name="twitter:title" content={ogp.title}/>
                 <meta name="twitter:description" content={ogp.desc}/>
                 {/* <!-- <meta name="twitter:image" content="/static/ogp.png"/> --> */}
-                <meta name="twitter:image" content={ogp.imgUrlTwitter}/>
-                <meta name="twitter:image:src" content={ogp.imgUrlTwitter}/>
+                <meta name="twitter:image" content={ogp.imgUrl}/>
+                <meta name="twitter:image:src" content={ogp.imgUrl}/>
                 {/* <!-- Meta Tags Generated via https://www.opengraph.xyz --> */}
             </Head>
             <ContextProvider data={data}>
                 <ThemeProvider>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <CssBaseline />
-                        <Component {...pageProps} />
-                    </LocalizationProvider>
+                    <CssBaseline />
+                    <Component {...pageProps} />
                 </ThemeProvider>
             </ContextProvider>
-        </CacheProvider>
+        </>
     );
 }
 

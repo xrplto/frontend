@@ -18,12 +18,16 @@ function Logo() {
     const img = darkMode?img_white:img_black;
 
     return (
-        <Link href="/" sx={{ pl: 0, pr: 0, py: 3, display: 'inline-flex' }} underline="none">
+        <Link
+            href="/"
+            sx={{ pl: 0, pr: 0, py: 3, display: 'inline-flex' }}
+            underline="none"
+            rel="noreferrer noopener nofollow"
+        >
             {/* <Box component="img" src={img} sx={{ height: 46 }} /> */}
             <LazyLoadImage
-                alt=''
                 src={img}
-                // width={56}
+                width={125}
                 height={46}
             />
         </Link>

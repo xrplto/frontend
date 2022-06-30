@@ -360,7 +360,7 @@ export default function HistoryData({token, pairs, pair, setPair}) {
                                             color="inherit"
                                             target="_blank"
                                             href={`https://bithomp.com/explorer/${maker}`}
-                                            rel="noreferrer noopener"
+                                            rel="noreferrer noopener nofollow"
                                         >
                                             {tMaker}
                                         </Link>
@@ -371,7 +371,7 @@ export default function HistoryData({token, pairs, pair, setPair}) {
                                             color="inherit"
                                             target="_blank"
                                             href={`https://bithomp.com/explorer/${taker}`}
-                                            rel="noreferrer noopener"
+                                            rel="noreferrer noopener nofollow"
                                         >
                                             {tTaker}
                                         </Link>
@@ -383,7 +383,7 @@ export default function HistoryData({token, pairs, pair, setPair}) {
                                                 color="inherit"
                                                 target="_blank"
                                                 href={`https://bithomp.com/explorer/${hash}`}
-                                                rel="noreferrer noopener"
+                                                rel="noreferrer noopener nofollow"
                                             >
                                                 <Stack direction="row" alignItems='center'>
                                                     {tHash}
@@ -398,7 +398,7 @@ export default function HistoryData({token, pairs, pair, setPair}) {
                                                 color="inherit"
                                                 target="_blank"
                                                 href={`https://livenet.xrpl.org/transactions/${hash}`}
-                                                rel="noreferrer noopener"
+                                                rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="bithomp">
                                                     <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />

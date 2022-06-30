@@ -142,8 +142,7 @@ export async function getStaticProps() {
         ogp.title = 'XRPL Token Prices, Charts, Market Volume And Activity';
         ogp.ogTitle = 'XRPL Token Prices, Charts, Market Volume And Activity | XRPL.TO';
         ogp.url = 'https://xrpl.to/';
-        ogp.imgUrl = '/static/ogp.png';
-        ogp.imgUrlTwitter = 'http://xrpl.to/static/ogp.png';
+        ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
         ogp.desc = 'Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.';
 
         ret = {data, ogp};
@@ -182,8 +181,7 @@ export async function getStaticProps() {
 //         ogp.title = 'XRPL Token Prices, Charts, Market Volume And Activity';
 //         ogp.ogTitle = 'XRPL Token Prices, Charts, Market Volume And Activity | XRPL.TO';
 //         ogp.url = 'https://xrpl.to/';
-//         ogp.imgUrl = '/static/ogp.png';
-//         ogp.imgUrlTwitter = 'http://xrpl.to/static/ogp.png';
+//         ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
 //         ogp.desc = 'Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.';
 
 //         ret = {data, ogp};

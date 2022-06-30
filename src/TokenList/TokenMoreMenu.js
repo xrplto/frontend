@@ -55,7 +55,7 @@ export default function TokenMoreMenu({token, setEditToken}) {
                     color="inherit"
                     target="_blank"
                     href={`https://bithomp.com/explorer/${issuer}`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="bithomp" src="/static/bithomp.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -67,7 +67,7 @@ export default function TokenMoreMenu({token, setEditToken}) {
                     color="inherit"
                     target="_blank"
                     href={`https://xrpscan.com/account/${issuer}`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xrpscan" src="/static/xrpscan.png" sx={{ mr:1, width: 24, height: 24 }} />
@@ -79,7 +79,7 @@ export default function TokenMoreMenu({token, setEditToken}) {
                     color="inherit"
                     target="_blank"
                     href={`https://gatehub.net/explorer/${issuer}`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="gatehub" src="/static/gatehub.jpg" sx={{ mr:1, width: 24, height: 24 }} />
@@ -91,7 +91,7 @@ export default function TokenMoreMenu({token, setEditToken}) {
                     color="inherit"
                     target="_blank"
                     href={`https://xrplorer.com/account/${issuer}`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xrplorer" src="/static/xrplorer.svg" sx={{ mr:1, width: 24, height: 24 }} />
@@ -103,7 +103,7 @@ export default function TokenMoreMenu({token, setEditToken}) {
                     color="inherit"
                     target="_blank"
                     href={`https://xumm.app/detect/xapp:xumm.dex?issuer=${issuer}&currency=${currency}`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ mr:1, width: 24, height: 24 }} />
@@ -115,7 +115,7 @@ export default function TokenMoreMenu({token, setEditToken}) {
                     color="inherit"
                     target="_blank"
                     href={`https://sologenic.org/trade?network=mainnet&market=${currency}%2B${issuer}%2FXRP`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="sologenic" src="/static/solo.jpg" sx={{ mr:1, width: 24, height: 24 }} />
@@ -127,7 +127,7 @@ export default function TokenMoreMenu({token, setEditToken}) {
                     color="inherit"
                     target="_blank"
                     href={`https://gatehub.net/markets/${currency}+${issuer}/XRP`}
-                    rel="noreferrer noopener"
+                    rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="gatehub" src="/static/gatehub.jpg" sx={{ mr:1, width: 24, height: 24 }} />

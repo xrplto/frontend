@@ -261,7 +261,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
                                     color="inherit"
                                     target="_blank"
                                     href={soloDexURL}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <IconButton edge="end" aria-label="solo">
                                         <Avatar variant="rounded" alt="sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
@@ -274,7 +274,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
                                     color="inherit"
                                     target="_blank"
                                     href={gatehubDexURL}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <IconButton edge="end" aria-label="solo">
                                         <Avatar variant="rounded" alt="gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
@@ -287,7 +287,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
                                     color="inherit"
                                     target="_blank"
                                     href={xummDexURL}
-                                    rel="noreferrer noopener"
+                                    rel="noreferrer noopener nofollow"
                                 >
                                     <IconButton edge="end" aria-label="solo">
                                         <Avatar variant="rounded" alt="xumm" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
