@@ -1,8 +1,8 @@
 import Decimal from 'decimal.js';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 // Material
 import { withStyles } from '@mui/styles';
-import { alpha, styled, useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import {
     Link,
     Stack,
@@ -17,7 +17,7 @@ import { selectMetrics } from "src/redux/statusSlice";
 import { fNumber } from 'src/utils/formatNumber';
 
 // Components
-import BearBullLabel from 'src/layouts/BearBullLabel';
+import BearBull from 'src/layouts/BearBull';
 
 // CBCCD2
 const ContentTypography = withStyles({
@@ -41,9 +41,9 @@ export default function Summary() {
     const gDexVolume = new Decimal(metrics.global[2]).toNumber();
     const gDexVolumePro = new Decimal(metrics.global[3]).toNumber();
     const gScamVolume = new Decimal(metrics.global[4]).toNumber();
-    const gScamVolumePro = new Decimal(metrics.global[5]).toNumber();
+    const gScamVolumePro = new Decimal(metrics.global[5]).toFixed(2, Decimal.ROUND_DOWN);
     const gStableVolume = new Decimal(metrics.global[6]).toNumber();
-    const gStableVolumePro = new Decimal(metrics.global[7]).toNumber();
+    const gStableVolumePro = new Decimal(metrics.global[7]).toFixed(2, Decimal.ROUND_DOWN);
     const gXRPdominance = new Decimal(metrics.global[8]).toNumber();
     const gXRPdominancePro = new Decimal(metrics.global[9]).toNumber();
 
@@ -51,7 +51,7 @@ export default function Summary() {
         <Stack sx={{pt:2, pl:2.5}}>
             <Typography variant='h1'>Today's XRPL Token Prices by Volume</Typography>
             <Stack direction="row" sx={{mt:2}}>
-                <ContentTypography variant='subtitle1'>The global token market cap is ${gMarketcap}B, a <BearBullLabel value={gMarketcapPro} variant="subtitle1" sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last day.</ContentTypography>
+                <ContentTypography variant='subtitle1'>The global token market cap is <strong>${fNumber(gMarketcap)}B</strong>, a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last day.</ContentTypography>
                 <Link
                     component="button"
                     underline="always"
@@ -71,8 +71,8 @@ export default function Summary() {
                     flexDirection: "column",
                 }}
             >
-                <ContentTypography variant='subtitle1'>The total XRPL Dex volume over the last 24 hours is ${Rate(metrics.tradedXRP24H, metrics.USD)}, which makes a -% decrease. The total volume in Scams is currently $-, -% of the total crypto market 24-hour volume. The volume of all stable coins is now $-, which is -% of the total token market 24-hour volume.</ContentTypography>
-                <ContentTypography variant='subtitle1'>XRP price is currently ${Rate(1, metrics.USD)}.</ContentTypography>
+                <ContentTypography variant='subtitle1'>The total XRPL Dex volume over the last 24 hours is <strong>${fNumber(gDexVolume)}</strong>, which makes a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. The total volume in Scams is currently <strong>${fNumber(gScamVolume)}</strong>, <strong>{gScamVolumePro}%</strong> of the total crypto market 24-hour volume. The volume of all stable coins is now <strong>${fNumber(gStableVolume)}</strong>, which is <strong>{gStableVolumePro}%</strong> of the total token market 24-hour volume.</ContentTypography>
+                <ContentTypography variant='subtitle1'>XRP price is currently <strong>${Rate(1, metrics.USD)}</strong>.</ContentTypography>
                 <ContentTypography variant='subtitle1'>XRP dominance is currently ---%, a decrease of -% over the day.</ContentTypography>
             </div>
             
@@ -88,17 +88,9 @@ export default function Summary() {
             XRP price is currently .30c
             XRP dominance is currently 99.01%, a decrease of 0.42% over the day.
 
-            we won't be able to do some of these metrics
-
             Might be able to do "The volume of all stable coins is now $64.66B, which is 88.87% of the total token market 24-hour volume."
 
-            by using the tag that I place on stablecoin tokens
-
-            which is named "Stablecoin"
-
-            eventually we're moving the search bar 
-
-            to the NAV bar like CMC also. */}
+            */}
         </Stack>
     )
 }

@@ -49,6 +49,8 @@ function XRPLToApp(props) {
 
                 <meta name="robots" content="nofollow"/>
 
+                <link rel="canonical" href={ogp.canonical}/>
+
                 {/* <!-- HTML Meta Tags --> */}
                 <title>{ogp.title}</title>
                 <meta name="description" content={ogp.desc}/>

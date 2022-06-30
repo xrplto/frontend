@@ -138,6 +138,7 @@ export async function getStaticProps() {
     if (data) {
         let ogp = {};
 
+        ogp.canonical = 'https://xrpl.to';
         ogp.title = 'XRPL Token Prices, Charts, Market Volume And Activity';
         ogp.ogTitle = 'XRPL Token Prices, Charts, Market Volume And Activity | XRPL.TO';
         ogp.url = 'https://xrpl.to/';

@@ -11,18 +11,17 @@ import {
     Tooltip,
     Typography
 } from '@mui/material';
-import BaseLayout from 'src/layouts/BaseLayout';
 
 // Redux
-import { useSelector, useDispatch } from "react-redux";
-import { selectMetrics, update_metrics } from "src/redux/statusSlice";
+import { useSelector } from "react-redux";
+import { selectMetrics } from "src/redux/statusSlice";
 
 // Iconify Icons
 import { Icon } from '@iconify/react';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
-import postageStamp from '@iconify/icons-mdi/postage-stamp';
-import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
-import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
+// import postageStamp from '@iconify/icons-mdi/postage-stamp';
+// import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
+// import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 
 // Utils
 import { fIntNumber, fCurrency3, fNumber } from 'src/utils/formatNumber';

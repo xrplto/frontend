@@ -2,8 +2,6 @@ import axios from 'axios';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import Head from 'next/head';
-import { NextSeo } from 'next-seo';
-import { useRouter } from 'next/router'
 import { performance } from 'perf_hooks';
 
 // Material
@@ -15,7 +13,6 @@ import {
     styled,
     Stack,
 } from '@mui/material';
-import BaseLayout from 'src/layouts/BaseLayout';
 
 // Iconify Icons
 import { Icon } from '@iconify/react';
@@ -150,6 +147,7 @@ export async function getServerSideProps(ctx) {
         let user = token.user;
         if (!user) user = name;
 
+        ogp.canonical = `https://xrpl.to/token/${urlSlug}`;
         ogp.title = `${user} price today, ${name} to USD live, volume, trading history, markets and chart`;
         ogp.ogTitle = `${user} price today, ${name} to USD live, volume, trading history, markets and chart | XRPL.TO`;
         ogp.url = `https://xrpl.to/token/${urlSlug}`;
