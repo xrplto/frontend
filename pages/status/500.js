@@ -77,7 +77,7 @@ function Status500() {
                 <img
                   alt="500"
                   height={260}
-                  src="/static/images/status/500.svg"
+                  src="/static/status/500.svg"
                 />
                 <Typography variant="h2" sx={{ my: 2 }}>
                   There was an error, please try again later

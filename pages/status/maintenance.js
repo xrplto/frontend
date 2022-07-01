@@ -38,9 +38,6 @@ const TopWrapper = styled(Box)(
 function StatusMaintenance() {
     return (
         <>
-            <Head>
-              <title>Status - Maintenance</title>
-            </Head>
             <MainContent>
               <TopWrapper>
                 <Container maxWidth="md">
@@ -62,7 +59,7 @@ function StatusMaintenance() {
                     <img
                       alt="Maintenance"
                       height={250}
-                      src="/static/images/status/maintenance.svg"
+                      src="/static/status/maintenance.svg"
                     />
                   </Box>
                   <Divider sx={{ my: 4 }} />
