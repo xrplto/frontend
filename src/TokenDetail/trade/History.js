@@ -20,10 +20,30 @@ import infoFilled from '@iconify/icons-ep/info-filled';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
+import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 // ----------------------------------------------------------------------
 export default function HistoryData({pair, tradeExchs}) {
     const theme = useTheme();
     const EPOCH_OFFSET = 946684800;
+
+    // {
+    //     "pair": "fa99aff608a10186d3b1ff33b5cd665f",
+    //     "curr1": {
+    //         "currency": "534F4C4F00000000000000000000000000000000",
+    //         "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+    //         "value": 1170095.762918316,
+    //         "md5": "0413ca7cfc258dfaf698c02fe304e607",
+    //         "name": "SOLO"
+    //     },
+    //     "curr2": {
+    //         "currency": "XRP",
+    //         "value": 873555.2630949989,
+    //         "md5": "71dbd3aabf2d99d205e0e2556ae4cf55",
+    //         "name": "XRP"
+    //     },
+    //     "count": 2678,
+    //     "id": 1
+    // }
 
     return (
         <Stack>
@@ -45,24 +65,9 @@ export default function HistoryData({pair, tradeExchs}) {
                             }
                         }}
                     >
+                        <TableCell align="left" sx={{ p:0 }}>Price ({pair.curr2.name})</TableCell>
+                        <TableCell align="left" colSpan={2} sx={{ p:0 }}>Amount ({pair.curr1.name})</TableCell>
                         <TableCell align="left" sx={{ p:0 }}>Time</TableCell>
-                        <TableCell align="left" sx={{ p:0 }}>
-                            <Stack direction="row" alignItems="center" gap={1}>
-                                <Typography variant="body2">Paid</Typography>
-                                <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Taker Paid Amount<br/>Cancelled offers are yellow colored.</Typography>}>
-                                    <Icon icon={infoFilled} />
-                                </Tooltip>
-                            </Stack>
-                        </TableCell>
-                        <TableCell align="left" sx={{ p:0 }}>
-                            <Stack direction="row" alignItems="center" gap={1}>
-                                <Typography variant="body2">Got</Typography>
-                                <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Taker Got Amount<br/>Cancelled offers are yellow colored.</Typography>}>
-                                    <Icon icon={infoFilled} />
-                                </Tooltip>
-                            </Stack>
-                        </TableCell>
-                        <TableCell align="left" sx={{ p:0 }}>Price</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -84,20 +89,23 @@ export default function HistoryData({pair, tradeExchs}) {
                                 // xUSD
                             } = row;
                             const curr1 = pair.curr1;
-                            // const curr2 = pair.curr2;
+                            const curr2 = pair.curr2;
                             
                             const vPaid = takerPaid.value;
                             const vGot = takerGot.value;
 
                             let exch;
+                            let amount;
                             // let buy;
                             if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency) {
                                 // SELL, Red
                                 exch = vGot / vPaid;
+                                amount = vPaid;
                                 // buy = false;
                             } else {
                                 // BUY, Green
                                 exch = vPaid / vGot;
+                                amount = vGot;
                                 // buy = true;
                             }
                             
@@ -114,11 +122,11 @@ export default function HistoryData({pair, tradeExchs}) {
                             // const strDate = `${year}-${month}-${day}`;
                             const strTime = `${hour}:${min}:${sec}`;
 
-                            // const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
-                            // const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
+                            const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
+                            const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
 
-                            const namePaid = '';
-                            const nameGot = '';
+                            //const namePaid = '';
+                            //const nameGot = '';
 
                             return (
                                 <TableRow
@@ -132,19 +140,26 @@ export default function HistoryData({pair, tradeExchs}) {
                                     }}
                                 >
                                     <TableCell align="left" sx={{ p:0 }}>
+                                        <Typography variant="subtitle2">{fNumber(exch)}</Typography>
+                                    </TableCell>
+                                    <TableCell align="left" colSpan={2} sx={{ p:0 }}>
+                                        {new Decimal(amount).toFixed(2, Decimal.ROUND_DOWN)}
+                                    </TableCell>
+
+                                    {/* <TableCell align="left" sx={{ p:0 }}>
+                                        {new Decimal(vPaid).toFixed(2, Decimal.ROUND_DOWN)} <Typography variant="small">{namePaid}</Typography>
+                                    </TableCell>
+
+                                    <TableCell align="left" sx={{ p:0 }}>
+                                        {new Decimal(vGot).toFixed(2, Decimal.ROUND_DOWN)} <Typography variant="small">{nameGot}</Typography>
+                                    </TableCell> */}
+
+                                    <TableCell align="left" sx={{ p:0 }}>
                                         <Stack>
                                             <Typography variant="subtitle2">{strTime}</Typography>
                                             {/* <Typography variant="caption">{strDate}</Typography> */}
                                         </Stack>
                                     </TableCell>
-                                    <TableCell align="left" sx={{ p:0 }}>
-                                        {new Decimal(vPaid).toFixed(2, Decimal.ROUND_DOWN)} <Typography variant="caption">{namePaid}</Typography>
-                                    </TableCell>
-
-                                    <TableCell align="left" sx={{ p:0 }}>
-                                        {new Decimal(vGot).toFixed(2, Decimal.ROUND_DOWN)} <Typography variant="caption">{nameGot}</Typography>
-                                    </TableCell>
-                                    <TableCell align="left" sx={{ p:0 }}><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
                                 </TableRow>
                             );
                         })}

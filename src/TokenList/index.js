@@ -85,24 +85,16 @@ export default function TokenList({data}) {
                 try {
                     if (res.status === 200 && res.data) {
                         const ret = res.data;
-                        const exch = ret.exch;
                         //console.log(ret);
                         const metrics = {
-                            session: 0,
-                            USD: exch.USD,
-                            EUR: exch.EUR,
-                            JPY: exch.JPY,
-                            CNY: exch.CNY,
-                            token_count: ret.token_count,
-                            filter_count: ret.filter_count,
-                            transactions24H: ret.transactions24H,
-                            tradedXRP24H: ret.tradedXRP24H,
-                            tradedTokens24H: ret.tradedTokens24H,
-                            timeCalc24H: ret.timeCalc24H,
-                            timeSchedule: ret.timeSchedule,
-                            countApiCall: ret.countApiCall,
-                            timeTokens: ret.took,
-                            global: ret.metricsGlobal
+                            count: ret.count,
+                            length: ret.length,
+                            USD: ret.exch.USD,
+                            EUR: ret.exch.EUR,
+                            JPY: ret.exch.JPY,
+                            CNY: ret.exch.CNY,
+                            H24: ret.H24,
+                            global: ret.global
                         };
                         dispatch(update_metrics(metrics));
                         setTokens(ret.tokens);

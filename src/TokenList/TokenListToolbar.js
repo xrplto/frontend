@@ -29,12 +29,12 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 export default function TokenListToolbar({ rows, setRows, page, setPage}) {
     const metrics = useSelector(selectMetrics);
 
-    const count = metrics.filter_count;
-    const page_count = Math.floor(count / rows) + 1;
+    const length = metrics.length;
+    const page_count = Math.floor(length / rows) + 1;
 
     const start = page * rows + 1;
     let end = start + rows - 1;
-    if (end > count) end = count;
+    if (end > length) end = length;
 
     const handleChangeRows = (event) => {
         setRows(parseInt(event.target.value, 10));
@@ -60,7 +60,7 @@ export default function TokenListToolbar({ rows, setRows, page, setPage}) {
 
     return (
         <RootStyle sx={{ml:2.5, mr:3}}>
-            Showing {start} - {end} out of {count}
+            Showing {start} - {end} out of {length}
             <Pagination page={page+1} onChange={handleChangePage} count={page_count} variant="outlined" shape="rounded" />
 
             <Stack direction="row" alignItems="center">

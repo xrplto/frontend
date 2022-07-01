@@ -118,9 +118,8 @@ export default function TokenDetail({data}) {
 
     useEffect(() => {
         function getPairs() {
-            if (!token) return;
             // https://api.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
-            axios.get(`${BASE_URL}/pairs?md5=${token.md5}`)
+            axios.get(`${BASE_URL}/pairs?md5=${md5}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -330,44 +329,50 @@ export default function TokenDetail({data}) {
         }
     }, [pair]);
 
-    const getDetail = (val) => {
-        // https://api.xrpl.to/api/detail/bitstamp-usd?range=1D
-        axios.get(`${BASE_URL}/detail/${slug}?range=${val}`)
-            .then(res => {
-                let ret = res.status === 200 ? res.data : undefined;
-                if (ret) {
-                    const exch = ret.exch;
-                    const metrics = {
-                        session: 0,
-                        USD: exch.USD,
-                        EUR: exch.EUR,
-                        JPY: exch.JPY,
-                        CNY: exch.CNY,
-                        token_count: ret.token_count,
-                        transactions24H: ret.transactions24H,
-                        tradedXRP24H: ret.tradedXRP24H,
-                        tradedTokens24H: ret.tradedTokens24H,
-                        timeCalc24H: ret.timeCalc24H,
-                        timeSchedule: ret.timeSchedule,
-                        countApiCall: ret.countApiCall,
-                        global: ret.metricsGlobal
-                    };
-                    dispatch(update_metrics(metrics));
-                    setHistory(ret.history);
-                    if (ret.token && ret.token.md5) {
-                        setToken(ret.token);
+    useEffect(() => {
+        function getGraph () {
+            // https://api.xrpl.to/api/detail/bitstamp-usd?range=1D
+            axios.get(`${BASE_URL}/graph/${md5}?range=${range}`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        const metrics = {
+                            count: ret.count,
+                            length: ret.length,
+                            USD: ret.exch.USD,
+                            EUR: ret.exch.EUR,
+                            JPY: ret.exch.JPY,
+                            CNY: ret.exch.CNY,
+                            H24: ret.H24,
+                            global: ret.global
+                        };
+                        dispatch(update_metrics(metrics));
+                        const items = ret.history;
+                        let vals = [];
+                        items.forEach((item, i) => {
+                            let obj = null;
+                            try {
+                                obj = JSON.parse(item);
+                                if (obj) {
+                                    vals.push(obj);
+                                }
+                            } catch(err) {}
+                        })
+                        setHistory(vals);
                     }
-                }
-            }).catch(err => {
-                console.log("Error on getting details!!!", err);
-            }).then(function () {
-                // always executed
-            });
-    }
+                }).catch(err => {
+                    console.log("Error on getting graph data.", err);
+                }).then(function () {
+                    // always executed
+                });
+        }
+
+        getGraph();
+
+    }, [range]);
 
     const updateRange = (val) => {
         setRange(val);
-        getDetail(val);
     }
 
     return (

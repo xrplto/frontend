@@ -427,7 +427,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                             <Label variant="subtitle2" noWrap>Calc24H</Label>
                         </TableCell>
                         <TableCell align="left" sx={{pt:1, pb:0.2, width: '30%'}}>
-                            <Label variant="subtitle2" noWrap>{metrics.timeCalc24H} ms</Label>
+                            <Label variant="subtitle2" noWrap>{metrics.H24[3]} ms</Label>
                         </TableCell>
                     </TableRow>
                     <TableRow>
@@ -444,7 +444,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                             <Label variant="subtitle2" noWrap>Schedule</Label>
                         </TableCell>
                         <TableCell align="left" sx={{pt:0, pb:0.2}}>
-                            <Label variant="subtitle2" noWrap>{metrics.timeSchedule} ms</Label>
+                            <Label variant="subtitle2" noWrap>{metrics.H24[4]} ms</Label>
                         </TableCell>
                     </TableRow>
 
@@ -457,12 +457,6 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                 <Label variant="subtitle2" noWrap>{md5}</Label>
                                 <Label variant="subtitle2" noWrap>{imgExt.toUpperCase()}</Label>
                             </Stack>
-                        </TableCell>
-                        <TableCell align="right" sx={{pt:0.5, pb:0.2, width: '15%'}}>
-                            <Label variant="subtitle2" noWrap>Tokens</Label>
-                        </TableCell>
-                        <TableCell align="left" sx={{pt:0.5, pb:0.2, width: '30%'}}>
-                            <Label variant="subtitle2" noWrap>{metrics.timeTokens} ms</Label>
                         </TableCell>
                     </TableRow>
 
@@ -488,7 +482,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                             <Label variant="subtitle2" noWrap>API Call</Label>
                         </TableCell>
                         <TableCell align="left" sx={{pt:0, pb:0.2}}>
-                            <Label variant="subtitle2" noWrap>{metrics.countApiCall} / min</Label>
+                            <Label variant="subtitle2" noWrap>{metrics.H24[5]} / min</Label>
                         </TableCell>
                     </TableRow>
 
