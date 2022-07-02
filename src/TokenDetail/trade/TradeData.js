@@ -308,10 +308,10 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
             <Grid container spacing={0} sx={{p:0}}>
                 <Grid item xs={12} md={9.5} lg={9.5} >
                     <Grid container spacing={3} sx={{p:0}}>
-                        <Grid item xs={12} md={4.5} lg={4.5} sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
+                        <Grid item xs={12} md={4} lg={4} sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
                             <History pair={pair} tradeExchs={tradeExchs}/>
                         </Grid>
-                        <Grid item xs={12} md={7.5} lg={7.5}>
+                        <Grid item xs={12} md={8} lg={8}>
                             <OrderBook pair={pair} asks={asks} bids={bids} onBidClick={onBidClick} onAskClick={onAskClick}/>
                         </Grid>
                         <Grid item xs={12} md={12} lg={12} sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>

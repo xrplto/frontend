@@ -12,20 +12,11 @@ import { PuffLoader } from "react-spinners";
 export const AppContext = createContext({});
 
 export function ContextProvider({ children, data }) {
-    const [sidebarToggle, setSidebarToggle] = useState(false);
     const [loading, setLoading] = useState(false);
     const [darkMode, setDarkMode] = useState(true);
     const [accountProfile, _setAccountProfile] = useState(null);
 
     const store = configureRedux(data);
-
-    const toggleSidebar = () => {
-        setSidebarToggle(!sidebarToggle);
-    };
-
-    const closeSidebar = () => {
-        setSidebarToggle(false);
-    };
 
     const toggleTheme = () => {
         window.localStorage.setItem('appTheme', !darkMode);
@@ -55,7 +46,7 @@ export function ContextProvider({ children, data }) {
 
     return (
         <AppContext.Provider
-          value={{ sidebarToggle, toggleSidebar, closeSidebar, toggleTheme, darkMode, accountProfile, setAccountProfile, setLoading }}
+            value={{ toggleTheme, darkMode, accountProfile, setAccountProfile, setLoading }}
         >
             
             <Backdrop

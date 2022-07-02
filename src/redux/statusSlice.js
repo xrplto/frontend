@@ -3,21 +3,14 @@ import { configureStore } from "@reduxjs/toolkit";
 
 const initialState = {
     metrics: {
-        session:0,
+        count: 0,
+        length: 0,
         USD:100,
         EUR:100,
         JPY:100,
         CNY:100,
-        token_count:0,
-        filter_count:0,
-        transactions24H: 0,
-        tradedXRP24H: 0,
-        tradedTokens24H: 0,
-        timeCalc24H: 0,
-        timeSchedule: 0,
-        countApiCall: 0,
-        timeTokens: 0,
-        global: [0,0,0,0,0,0,0,0,0,0]
+        H24: [0, 0, 0, 0, 0, 0],
+        global: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     },
     accountData: {
         balance: {},
@@ -61,21 +54,14 @@ export function configureRedux(data) {
     if (data) {
         defaultState = {
             metrics: {
-                session: 0,
+                count: data.count,
+                length: data.length,
                 USD: data.exch.USD,
                 EUR: data.exch.EUR,
                 JPY: data.exch.JPY,
                 CNY: data.exch.CNY,
-                token_count: data.token_count,
-                filter_count: data.filter_count,
-                transactions24H: data.transactions24H,
-                tradedXRP24H: data.tradedXRP24H,
-                tradedTokens24H: data.tradedTokens24H,
-                timeCalc24H: data.timeCalc24H,
-                timeSchedule: data.timeSchedule,
-                countApiCall: data.countApiCall,
-                timeTokens: data.took,
-                global: data.metricsGlobal
+                H24: data.H24,
+                global: data.global
             },
             accountData: {
                 balance: {},

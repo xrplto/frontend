@@ -1197,13 +1197,13 @@ export const XrplToDarkTheme = createTheme({
           h1: 'h1',
           h2: 'h2',
           h3: 'h3',
-          h4: 'span',
-          h5: 'span',
-          h6: 'span',
-          subtitle1: 'span',
-          subtitle2: 'span',
-          body1: 'span',
-          body2: 'span'
+          h4: 'div',
+          h5: 'div',
+          h6: 'div',
+          subtitle1: 'div',
+          subtitle2: 'div',
+          body1: 'div',
+          body2: 'div'
         }
       },
       styleOverrides: {
@@ -1306,7 +1306,7 @@ export const XrplToDarkTheme = createTheme({
     subtitle2: {
       fontWeight: 400,
       fontSize: 15,
-      color: colors.alpha.black[50]
+      // color: colors.alpha.black[50]
     },
     overline: {
       fontSize: 13,

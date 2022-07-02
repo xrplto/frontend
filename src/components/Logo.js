@@ -16,7 +16,7 @@ function Logo() {
     const img_white = "/xrpl-to-logo-white.png";
     
     const img = darkMode?img_white:img_black;
-
+    
     return (
         <Link
             href="/"

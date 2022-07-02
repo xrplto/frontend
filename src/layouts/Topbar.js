@@ -1,5 +1,4 @@
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { useEffect } from 'react';
 
 // Material
 import { alpha } from '@mui/material/styles';
@@ -8,13 +7,16 @@ import {
     Container,
     styled,
     Stack,
+    Toolbar,
     Tooltip,
     Typography
 } from '@mui/material';
 
 // Redux
-import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { selectMetrics, update_metrics } from "src/redux/statusSlice";
+import useWebSocket/*, { ReadyState }*/ from 'react-use-websocket';
+// ----------------------------------------------------------------------
 
 // Iconify Icons
 import { Icon } from '@iconify/react';
@@ -67,16 +69,65 @@ function Rate(num) {
     return fCurrency3(1 / num);
 }
 
-function Overview() {
-    const { toggleTheme, darkMode } = useContext(AppContext);
+function Topbar({md5}) {
+    const dispatch = useDispatch();
     const metrics = useSelector(selectMetrics);
+
+    const {
+        sendMessage,
+        lastMessage,
+        readyState,
+    } = useWebSocket(`wss://api.xrpl.to/ws/detail/${md5}`);
+
+    /*const connectionStatus = {
+        [ReadyState.CONNECTING]: 'Connecting',
+        [ReadyState.OPEN]: 'Open',
+        [ReadyState.CLOSING]: 'Closing',
+        [ReadyState.CLOSED]: 'Closed',
+        [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
+    } [readyState];*/
+
+    useEffect(() => {
+        try {
+            // [transactions24H, tradedXRP24H, tradedTokens24H, timeCalc24H, timeSchedule, CountApiCall];
+            const res = lastMessage.data;
+            const json = JSON.parse(res);
+            const metrics = {
+                count: json.count,
+                USD: json.exch.USD,
+                EUR: json.exch.EUR,
+                JPY: json.exch.JPY,
+                CNY: json.exch.CNY,
+                H24: json.H24,
+                global: json.global
+            };
+            dispatch(update_metrics(metrics));
+        } catch(err) {}
+    }, [lastMessage, dispatch]);
+
+    useEffect(() => {
+        function getStatus() {
+            //if (connectionStatus === 'open')
+            if (md5)
+                sendMessage(md5);
+            else
+                sendMessage('Hello');
+        }
+        
+        const timer = setInterval(() => getStatus(), 10000)
+
+        return () => {
+            clearInterval(timer);
+        }
+    }, [readyState, sendMessage, md5]);
+    
     return (
         <TopWrapper>
             <Container maxWidth="xl">
                 <Box display="flex" alignItems="center" justifyContent="space-between" flex={1} sx={{pl:2.5, pr:3}}>
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Typography variant="small">Tokens: </Typography>
-                        <Typography variant="small">{fIntNumber(metrics.token_count)}</Typography>
+                        <Typography variant="small">{fIntNumber(metrics.count)}</Typography>
                         <H24Style>
                             <Tooltip title="Metrics on 24 hours">
                                 <Stack spacing={0} alignItems='center'>
@@ -87,20 +138,20 @@ function Overview() {
                             </Tooltip>
                         </H24Style>
                         <Typography variant="small">Tx:</Typography>
-                        <Typography align="center" color="#74CAFF" variant="small">{fIntNumber(metrics.transactions24H)}</Typography>
+                        <Typography align="center" color="#74CAFF" variant="small">{fIntNumber(metrics.H24[0])}</Typography>
                         {/* <Typography variant="small">|</Typography> */}
                         <Typography variant="small">Vol:</Typography>
                         <Typography align="center" color="#FF6C40" variant="small">
                             <Stack direction="row" spacing={0.5} alignItems='center'>
                                 <Icon icon={rippleSolid} color="#54D62C"/>
                                 <Typography align="center" color="#54D62C" variant="small">
-                                    {fNumber(metrics.tradedXRP24H)}
+                                    {fNumber(metrics.H24[1])}
                                 </Typography>
                             </Stack>
                         </Typography>
                         {/* <Typography variant="small">|</Typography> */}
                         <Typography variant="small">Tokens Traded:</Typography>
-                        <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.tradedTokens24H)}</Typography>
+                        <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24[2])}</Typography>
                     </Stack>
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Stack direction="row" spacing={0.5} alignItems='center'>
@@ -116,9 +167,11 @@ function Overview() {
                     </Stack>
                 </Box>
             </Container>
+
+            <Toolbar id="back-to-top-anchor" />
         </TopWrapper>
     );
 }
 
-export default Overview;
+export default Topbar;
 

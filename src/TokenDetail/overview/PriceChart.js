@@ -1,9 +1,7 @@
-import { merge } from 'lodash';
 // Material
 import { /*alpha, styled,*/ useTheme } from '@mui/material/styles';
 import {
     Box,
-    CardHeader,
     Stack,
     ToggleButton,
     ToggleButtonGroup,
@@ -51,7 +49,9 @@ export default function PriceChart({ history, token, range, setRange }) {
         }
     ];
 
-    const options1 = merge(ChartOptions(), {
+    let options1 = ChartOptions();
+
+    Object.assign(options1, {
         chart: {
             id: 'chart2',
             animations: { enabled: false },

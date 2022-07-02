@@ -1,4 +1,3 @@
-import { replace } from 'lodash';
 import numeral from 'numeral';
 
 // ----------------------------------------------------------------------
@@ -98,10 +97,6 @@ export function fPercent(number) {
         if (res === 'NaN') return 0;
         return res;
     }
-}
-
-export function fShortenNumber(number) {
-    return replace(numeral(number).format('0.00a'), '.00', '');
 }
 
 export function fData(number) {

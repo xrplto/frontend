@@ -37,7 +37,7 @@ export default function PriceDesc({token}) {
     return (
         <Stack>
             <Stack direction="row" spacing={2}>
-                <Typography variant="h1" color='#FF1943' fontSize='1.2rem'>{user} Price ({name})</Typography>
+                <Typography variant="h1" color='#33C2FF' fontSize='1.2rem'>{user} Price ({name})</Typography>
                 <Chip size="small" variant={"outlined"} icon={<Avatar sx={{ width: 24, height: 24 }} alt="xumm" src="/static/sponsor.png"/>} label='Sponsored' />
             </Stack>
             <Stack direction="row" spacing={2} sx={{mt:0}} alignItems='center'>

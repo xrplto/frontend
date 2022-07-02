@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@mui/styles';
 import {
     Stack,
+    styled,
     Typography
 } from '@mui/material';
 //import {styled, alpha, useTheme } from '@mui/material/styles';
@@ -18,17 +19,19 @@ import caretUp from '@iconify/icons-bx/caret-up';
 
 // ----------------------------------------------------------------------
 
-const BearishTypography = withStyles({
-    root: {
-        color: "#FF6C40"
-    }
-})(Typography);
+const Bearish = styled('span') (
+    () => `
+        color: #FF6C40;
+        font-size: 14px;
+    `
+);
 
-const BullishTypography = withStyles({
-    root: {
-        color: "#54D62C"
-    }
-})(Typography);
+const Bullish = styled('span') (
+    () => `
+        color: #54D62C;
+        font-size: 14px;
+    `
+);
 
 BearBull.propTypes = {
     value: PropTypes.number
@@ -49,12 +52,12 @@ export default function BearBull({value}) {
             {pro < 0 ? (
                 <span>
                     <Icon icon={caretDown} color="#FF6C40"/>
-                    <BearishTypography variant='subtitle1' noWrap>{strPro}</BearishTypography>
+                    <Bearish>{strPro}</Bearish>
                 </span>
             ) : (
                 <span>
                     <Icon icon={caretUp} color="#54D62C"/>
-                    <BullishTypography variant='subtitle1' noWrap>{strPro}</BullishTypography>
+                    <Bullish>{strPro}</Bullish>
                 </span>
             )}
         </>

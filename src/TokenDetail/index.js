@@ -16,7 +16,6 @@ import {
 } from '@mui/material';
 
 // Components
-import TopMark from 'src/layouts/TopMark';
 import ScrollToTop from 'src/layouts/ScrollToTop';
 import {UserDesc, PriceDesc, ExtraDesc} from "./common"
 import {PriceChart, PriceStatistics, Description} from './overview';
@@ -336,29 +335,8 @@ export default function TokenDetail({data}) {
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
-                        const metrics = {
-                            count: ret.count,
-                            length: ret.length,
-                            USD: ret.exch.USD,
-                            EUR: ret.exch.EUR,
-                            JPY: ret.exch.JPY,
-                            CNY: ret.exch.CNY,
-                            H24: ret.H24,
-                            global: ret.global
-                        };
-                        dispatch(update_metrics(metrics));
                         const items = ret.history;
-                        let vals = [];
-                        items.forEach((item, i) => {
-                            let obj = null;
-                            try {
-                                obj = JSON.parse(item);
-                                if (obj) {
-                                    vals.push(obj);
-                                }
-                            } catch(err) {}
-                        })
-                        setHistory(vals);
+                        setHistory(items);
                     }
                 }).catch(err => {
                     console.log("Error on getting graph data.", err);
@@ -377,7 +355,6 @@ export default function TokenDetail({data}) {
 
     return (
         <>
-            <TopMark md5={md5}/>
             <Container maxWidth="xl">
                 <Grid container direction="row" justify="center" alignItems="stretch">
                     <Grid item xs={12} md={6} lg={5} sx={{ mt: 3 }}>

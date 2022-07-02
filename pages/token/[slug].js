@@ -56,30 +56,7 @@ function Detail(props) {
 
     return (
         <OverviewWrapper>
-            <Head>
-            {/* <!-- HTML Meta Tags --> */}
-            {/* <title>{title}</title> */}
-            {/* <meta name="description" content={desc}/> */}
-
-            {/* <!-- Facebook Meta Tags --> */}
-            {/* <meta property="og:url" content={url}/> */}
-            {/* <meta property="og:type" content="website"/> */}
-            {/* <meta property="og:title" content={`${title} | XRPL.TO`}/> */}
-            {/* <meta property="og:description" content={desc}/> */}
-            {/* <meta property="og:image" content={imgUrl}/> */}
-            {/* <!-- Twitter Meta Tags --> */}
-            {/* <meta name="twitter:card" content="summary_large_image"/> */}
-            {/* <meta property="twitter:domain" content="xrpl.to"/> */}
-            {/* <meta property="twitter:url" content={url}/> */}
-            {/* <meta name="twitter:title" content={`${title} | XRPL.TO`}/> */}
-            {/* <meta name="twitter:description" content={desc}/> */}
-            {/* <!-- <meta name="twitter:image" content="/static/ogp.png"/> --> */}
-            {/* <meta name="twitter:image" content={`http://xrpl.to/static/tokens/${md5}.${imgExt}`}/> */}
-            {/* <meta name="twitter:image:src" content={`http://xrpl.to/static/tokens/${md5}.${imgExt}`}/> */}
-            {/* <!-- Meta Tags Generated via https://www.opengraph.xyz --> */}
-
-            </Head>
-            <Topbar/>
+            <Topbar md5={token.md5}/>
             <HeaderWrapper>
                 <Container maxWidth="xl">
                     <Box display="flex" alignItems="center" justifyContent="space-between" flex={2} sx={{pl:2, pr:2}}>
@@ -121,8 +98,8 @@ export async function getServerSideProps(ctx) {
         const slug = ctx.params.slug;
         var t1 = performance.now();
 
-        // https://api.xrpl.to/api/detail/bitstamp-usd?range=1D
-        const res = await axios.get(`${BASE_URL}/detail/${slug}?range=1D`);
+        // https://api.xrpl.to/api/detail/bitstamp-usd
+        const res = await axios.get(`${BASE_URL}/token/${slug}`);
 
         data = res.data;
 
@@ -149,7 +126,6 @@ export async function getServerSideProps(ctx) {
 
         ogp.canonical = `https://xrpl.to/token/${urlSlug}`;
         ogp.title = `${user} price today, ${name} to USD live, volume, trading history, markets and chart`;
-        ogp.ogTitle = `${user} price today, ${name} to USD live, volume, trading history, markets and chart | XRPL.TO`;
         ogp.url = `https://xrpl.to/token/${urlSlug}`;
         ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${imgExt}`;
         ogp.desc = `Get the latest ${user} price, ${name} market cap, trading pairs, charts and data today from the world's number one XRP Ledger token price-tracking website`;

@@ -187,7 +187,7 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                             <Stack>
                                 <Stack direction="row">
                                     <Typography variant='body2'>Avg Price:</Typography>
-                                    <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{avgPrice}</Typography>
+                                    <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>≈  {avgPrice}</Typography>
                                 </Stack>
                                 <Stack direction="row">
                                     <Typography variant='body2'>Sum {currName1}:</Typography>
@@ -217,7 +217,7 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                             onClick={e=>onBidClick(e, idx)}
                         >
                             <TableCell sx={{ p:0 }} align="right">{sumAmount}</TableCell>
-                            <TableCell sx={{ p:0 }} align="right">{value}</TableCell>
+                            {/* <TableCell sx={{ p:0 }} align="right">{value}</TableCell> */}
                             <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
                             {/* <TableCell sx={{ p:0, pr:1 }} align="right">{price}</TableCell> */}
                             <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selected[0] > idx?'':'#118860'}`}}>{price}</TableCell>
@@ -240,7 +240,7 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                             {/* <TableCell sx={{ p:0, pl:1 }}>{price}</TableCell> */}
                             <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selected[1] > idx?'':'#bb3336'}`}}>{price}</TableCell>
                             <TableCell sx={{ p:0 }}>{amount}</TableCell>
-                            <TableCell sx={{ p:0 }}>{value}</TableCell>
+                            {/* <TableCell sx={{ p:0 }}>{value}</TableCell> */}
                             <TableCell sx={{ p:0 }}>{sumAmount}</TableCell>
                         </TableRow>
                     }
@@ -281,9 +281,9 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                                 }}
                             >
                                 <TableCell align="right" sx={{ p:0 }}>Sum</TableCell>
-                                <TableCell align="right" sx={{ p:0 }}>Value</TableCell>
-                                <TableCell align="right" sx={{ p:0 }}>Amount</TableCell>
-                                <TableCell align="right" sx={{ p:0, pr: 1 }}>Bid</TableCell>
+                                {/* <TableCell align="right" sx={{ p:0 }}>Value</TableCell> */}
+                                <TableCell align="right" sx={{ p:0 }}>Amount ({pair.curr1.name})</TableCell>
+                                <TableCell align="right" sx={{ p:0, pr: 1 }}>Bid ({pair.curr2.name})</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -313,9 +313,9 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                                     }
                                 }}
                             >
-                                <TableCell align="left" sx={{ p:0, pl: 1 }}>Ask</TableCell>
-                                <TableCell align="left" sx={{ p:0 }}>Amount</TableCell>
-                                <TableCell align="left" sx={{ p:0 }}>Value</TableCell>
+                                <TableCell align="left" sx={{ p:0, pl: 1 }}>Ask ({pair.curr2.name})</TableCell>
+                                <TableCell align="left" sx={{ p:0 }}>Amount ({pair.curr1.name})</TableCell>
+                                {/* <TableCell align="left" sx={{ p:0 }}>Value</TableCell> */}
                                 <TableCell align="left" sx={{ p:0 }}>Sum</TableCell>
                             </TableRow>
                         </TableHead>
