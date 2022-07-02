@@ -13,9 +13,9 @@ export default class MyDocument extends Document {
                         href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400&display=swap"
                     />
 
-                    {/* <script async src="https://www.googletagmanager.com/gtag/js?id=G-PHYSGW6VJ9"/> */}
+                    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PHYSGW6VJ9"/>
 
-                    {/* <script
+                    <script
                         dangerouslySetInnerHTML={{
                             __html: `
                             window.dataLayer = window.dataLayer || [];
@@ -26,7 +26,7 @@ export default class MyDocument extends Document {
                             // gtag('config', 'G-PHYSGW6VJ9', { 'send_page_view': false });
                             `,
                         }}
-                    /> */}
+                    />
                 </Head>
                 <body>
                     <Main />

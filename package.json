@@ -59,6 +59,7 @@
     "build": "next build",
     "builds": "next build && next export",
     "start": "next start",
+    "analyze": "set \"ANALYZE=true\" && next build",
     "production": "next start -p 80",
     "export": "next export",
     "lint": "next lint",
