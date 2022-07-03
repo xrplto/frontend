@@ -161,21 +161,15 @@ export default function TokenList({data}) {
     };
 
     const addMoreData = () => {
-        console.log(`add more data 1 ${new Date().toISOString()}`);
         setTokens(allTokens.slice(0, rows));
         setHasMore(false);
-        console.log(`add more data 2 ${new Date().toISOString()}`);
-    };
-
-    const refreshFunction = () => {
-        console.log(`refreshFunction ${new Date().toISOString()}`);
     };
 
     return (
         <>
             {isAdmin && <WidgetNew showNew={showNew} setShowNew={updateShowNew}/>}
             {isAdmin && <WidgetSlug showSlug={showSlug} setShowSlug={updateShowSlug}/>}
-            <EditToken token={editToken} setToken={setEditToken}/>
+            {isAdmin && <EditToken token={editToken} setToken={setEditToken}/>}
 
             <SearchToolbar
                 filterName={filterName}
@@ -187,7 +181,6 @@ export default function TokenList({data}) {
                 style={{overflow: "inherit"}}
                 dataLength={allTokens.length}
                 next={addMoreData}
-                refreshFunction={refreshFunction}
                 hasMore={hasMore}
                 loader={
                     <div style={{display: "flex",justifyContent:"center",paddingTop:"10px"}}>
