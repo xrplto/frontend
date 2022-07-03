@@ -52,7 +52,8 @@
     "react-lazy-load-image-component": "^1.5.4",
     "react-redux": "^8.0.2",
     "react-spinners": "^0.13.2",
-    "react-use-websocket": "^3.0.0"
+    "react-use-websocket": "^3.0.0",
+    "react-infinite-scroll-component": "6.1.0"
   },
   "scripts": {
     "dev": "next",

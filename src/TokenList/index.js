@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react';
-
+import { BeatLoader } from "react-spinners";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 // Material
 import { styled, useTheme } from '@mui/material/styles';
@@ -67,9 +68,11 @@ export default function TokenList({data}) {
     const [rows, setRows] = useState(100);
     const [showNew, setShowNew] = useState(false);
     const [showSlug, setShowSlug] = useState(false);
-    const [tokens, setTokens] = useState(data?data.tokens:[]);
+    const [tokens, setTokens] = useState(data?data.tokens.slice(0, 20):[]);
+    const [allTokens, setAllTokens] = useState(data?data.tokens:[]);
     const [load, setLoad] = useState(false);
     const [editToken, setEditToken] = useState(null);
+    const [hasMore, setHasMore] = useState(true);
 
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
@@ -157,6 +160,17 @@ export default function TokenList({data}) {
         setLoad(true);
     };
 
+    const addMoreData = () => {
+        console.log(`add more data 1 ${new Date().toISOString()}`);
+        setTokens(allTokens.slice(0, rows));
+        setHasMore(false);
+        console.log(`add more data 2 ${new Date().toISOString()}`);
+    };
+
+    const refreshFunction = () => {
+        console.log(`refreshFunction ${new Date().toISOString()}`);
+    };
+
     return (
         <>
             {isAdmin && <WidgetNew showNew={showNew} setShowNew={updateShowNew}/>}
@@ -169,38 +183,50 @@ export default function TokenList({data}) {
                 rows={rows}
                 setRows={updateRows}
             />
-            <Table stickyHeader sx={{pl:2.3, pr:2.3}}>
-                <TokenListHead
-                    order={order}
-                    orderBy={orderBy}
-                    headLabel={TABLE_HEAD}
-                    onRequestSort={handleRequestSort}
-                />
-                <TableBody>
-                    {
-                    //filteredTokens.slice(page * rows, page * rows + rows)
-                    tokens.slice(0, rows)
-                        .map((row, idx) => {
-                            return (
-                                <TokenRow key={idx} token={row} setEditToken={setEditToken}/>
-                            );
-                        })}
-                    {/* {emptyRows > 0 && (
-                            <TableRow style={{ height: 53 * emptyRows }}>
-                                <TableCell colSpan={6} />
-                            </TableRow>
-                        )} */}
-                </TableBody>
-                {/*isTokenNotFound && (
+            <InfiniteScroll
+                style={{overflow: "inherit"}}
+                dataLength={allTokens.length}
+                next={addMoreData}
+                refreshFunction={refreshFunction}
+                hasMore={hasMore}
+                loader={
+                    <div style={{display: "flex",justifyContent:"center",paddingTop:"10px"}}>
+                        <BeatLoader color={"#00AB55"} size={10} />
+                    </div>
+                }
+            >
+                <Table stickyHeader sx={{pl:2.3, pr:2.3}}>
+                    <TokenListHead
+                        order={order}
+                        orderBy={orderBy}
+                        headLabel={TABLE_HEAD}
+                        onRequestSort={handleRequestSort}
+                    />
                     <TableBody>
-                        <TableRow>
-                            <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                                    <SearchNotFound searchQuery={filterName} />
-                            </TableCell>
-                        </TableRow>
+                        {
+                        //filteredTokens.slice(page * rows, page * rows + rows)
+                        tokens.map((row, idx) => {
+                                return (
+                                    <TokenRow key={idx} token={row} setEditToken={setEditToken}/>
+                                );
+                            })}
+                        {/* {emptyRows > 0 && (
+                                <TableRow style={{ height: 53 * emptyRows }}>
+                                    <TableCell colSpan={6} />
+                                </TableRow>
+                            )} */}
                     </TableBody>
-                )*/}
-            </Table>
+                    {/*isTokenNotFound && (
+                        <TableBody>
+                            <TableRow>
+                                <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
+                                        <SearchNotFound searchQuery={filterName} />
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    )*/}
+                </Table>
+            </InfiniteScroll>
             <TokenListToolbar
                 rows={rows}
                 setRows={updateRows}

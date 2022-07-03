@@ -1,8 +1,6 @@
-// const withImages = require('next-images')
-// module.exports = withImages()
-const isProd = process.env.RUN_ENV === 'production'
+const withImages = require('next-images')
+module.exports = withImages()
 
-console.log(`Production: ${isProd}`)
 
 // const withBundleAnalyzer = require('@next/bundle-analyzer')({
 //     enabled: process.env.ANALYZE === 'true',
@@ -10,7 +8,8 @@ console.log(`Production: ${isProd}`)
   
 // module.exports = withBundleAnalyzer({ })
 
-module.exports = {
-    poweredByHeader: false,
-    assetPrefix: isProd ? 'https://xrpl.to' : '',
-}
+// const isProd = process.env.RUN_ENV === 'production'
+// module.exports = {
+//     poweredByHeader: false,
+//     assetPrefix: isProd ? 'https://xrpl.to' : '',
+// }
