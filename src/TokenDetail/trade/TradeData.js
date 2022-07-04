@@ -8,11 +8,15 @@ import {
     Avatar,
     Box,
     FormControl,
+    FormControlLabel,
+    FormLabel,
     Grid,
     IconButton,
     InputLabel,
     Link,
     MenuItem,
+    Radio,
+    RadioGroup,
     Select,
     Stack,
     TextField,
@@ -45,6 +49,7 @@ import PlaceOrder from './PlaceOrder';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
+import Decimal from 'decimal.js';
 
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
@@ -129,6 +134,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
     const [amount, setAmount] = useState('');
     const [price, setPrice] = useState('');
     const [value, setValue] = useState('');
+    const [marketLimit, setMarketLimit] = useState('market');
 
     const CHART_DATA = [
         {
@@ -163,6 +169,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
 
     const onBidClick = (e, idx) => {
         setBuySell('SELL');
+        setMarketLimit('limit');
         const bid = bids[idx];
         const sumAmount = bid.sumAmount.toFixed(2);
         const sumValue = bid.sumValue.toFixed(5);
@@ -174,6 +181,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
 
     const onAskClick = (e, idx) => {
         setBuySell('BUY');
+        setMarketLimit('limit');
         const ask = asks[idx];
         const sumAmount = ask.sumAmount.toFixed(2);
         const sumValue = ask.sumValue.toFixed(5);
@@ -183,10 +191,43 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
         setValue(sumValue);
     }
 
+    const calcValue = (amount) => {
+        let val = 0;
+        let amt;
+
+        try {
+            amt = new Decimal(amount).toNumber();
+            if (amt === 0) return 0;
+            if (buySell === 'BUY') {
+                for (var ask of asks) {
+                    if (ask.sumAmount >= amt) {
+                        val = ask.sumValue * amt / ask.sumAmount;
+                        break;
+                    }
+                }
+            } else {
+                for (var bid of bids) {
+                    if (bid.sumAmount >= amt) {
+                        val = bid.sumValue * amt / bid.sumAmount;
+                        break;
+                    }
+                }
+            }
+            return new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
+        } catch (e) {}
+        
+        return 0;
+    }
+
     const handleChangeAmount = (e) => {
         const amt = e.target.value;
         setAmount(amt);
-        const val = (amt * price).toFixed(6);
+        let val;
+        if (marketLimit === 'market') {
+            val = calcValue(amt);
+        } else {
+            val = (amt * price).toFixed(6);
+        }
         setValue(val);
     }
 
@@ -195,6 +236,10 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
         setPrice(newPrice);
         const val = (amount * newPrice).toFixed(6);
         setValue(val);
+    }
+
+    const handleChangeMarketLimit = (e) => {
+        setMarketLimit(e.target.value);
     }
 
     let soloDexURL = '';
@@ -360,24 +405,40 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
 
                         </Stack>
 
+                        <Stack alignItems="center" sx={{mt: 1}}>
+                            <RadioGroup
+                                row
+                                aria-labelledby="demo-row-radio-buttons-group-label"
+                                name="row-radio-buttons-group"
+                                value={marketLimit}
+                                onChange={handleChangeMarketLimit}
+                            >
+                                <FormControlLabel value="market" control={<Radio size="small"/>} label="MARKET" />
+                                <FormControlLabel value="limit" control={<Radio size="small"/>} label="LIMIT" />
+                            </RadioGroup>
+                        </Stack>
+
                         <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
                             <TokenIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
                             <TextField id="input-with-sx1" label="Amount" value={amount} onChange={handleChangeAmount} variant="standard"/>
                             <Typography variant="caption" color='#FF4842'>{curr1.name}</Typography>
                         </Box>
 
-                        <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                            <PriceChangeIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                            <TextField id="input-with-sx2" label="Price" value={price} onChange={handleChangePrice} variant="standard"/>
-                            <Typography variant="caption" color='#00AB5588'>{curr2.name}</Typography>
-                        </Box>
+                        {marketLimit === 'limit' && (
+                            <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                                <PriceChangeIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
+                                <TextField id="input-with-sx2" label="Price" value={price} onChange={handleChangePrice} variant="standard"/>
+                                <Typography variant="caption" color='#00AB5588'>{curr2.name}</Typography>
+                            </Box>
+                        )}
 
                         <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                            <SwapVerticalCircleIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                            <Typography>Total ≈</Typography>
-                            <Box sx={{ flexGrow: 1 }} />
-                            <Typography alignItems='right'>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
-                        </Box>
+                                <SwapVerticalCircleIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
+                                <Typography>Total ≈</Typography>
+                                <Box sx={{ flexGrow: 1 }} />
+                                <Typography alignItems='right'>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
+                            </Box>
+
                         <PlaceOrder buySell={buySell} pair={pair} amount={amount} value={value}/>
                     </StackDexStyle>
 
