@@ -165,6 +165,11 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
     const handleChangeBuySell = (event, newValue) => {
         if (newValue)
             setBuySell(newValue);
+
+        if (marketLimit === 'market') {
+            const val = calcValue(amount, newValue);
+            setValue(val);
+        }
     };
 
     const onBidClick = (e, idx) => {
@@ -191,14 +196,14 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
         setValue(sumValue);
     }
 
-    const calcValue = (amount) => {
+    const calcValue = (amount, buyorsell) => {
         let val = 0;
         let amt;
 
         try {
             amt = new Decimal(amount).toNumber();
             if (amt === 0) return 0;
-            if (buySell === 'BUY') {
+            if (buyorsell === 'BUY') {
                 for (var ask of asks) {
                     if (ask.sumAmount >= amt) {
                         val = ask.sumValue * amt / ask.sumAmount;
@@ -215,7 +220,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
             }
             return new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
         } catch (e) {}
-        
+
         return 0;
     }
 
@@ -224,7 +229,7 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
         setAmount(amt);
         let val;
         if (marketLimit === 'market') {
-            val = calcValue(amt);
+            val = calcValue(amt, buySell);
         } else {
             val = (amt * price).toFixed(6);
         }

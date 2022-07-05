@@ -6,15 +6,8 @@ import InfiniteScroll from "react-infinite-scroll-component";
 // Material
 import { styled, useTheme } from '@mui/material/styles';
 import {
-    Avatar,
-    Box,
-    Link,
-    Stack,
     Table,
     TableBody,
-    TableCell,
-    TableRow,
-    Typography
 } from '@mui/material';
 
 // Components
@@ -25,6 +18,7 @@ import SearchToolbar from './SearchToolbar';
 import WidgetNew from './WidgetNew';
 import WidgetSlug from './WidgetSlug';
 import TokenRow from './TokenRow';
+import TrustSet from './TrustSet';
 
 // Context
 import { useContext } from 'react';
@@ -72,6 +66,7 @@ export default function TokenList({data}) {
     const [allTokens, setAllTokens] = useState(data?data.tokens:[]);
     const [load, setLoad] = useState(false);
     const [editToken, setEditToken] = useState(null);
+    const [trustToken, setTrustToken] = useState(null);
     const [hasMore, setHasMore] = useState(true);
 
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
@@ -171,6 +166,8 @@ export default function TokenList({data}) {
             {isAdmin && <WidgetSlug showSlug={showSlug} setShowSlug={updateShowSlug}/>}
             {isAdmin && <EditToken token={editToken} setToken={setEditToken}/>}
 
+            <TrustSet token={trustToken} setToken={setTrustToken}/>
+
             <SearchToolbar
                 filterName={filterName}
                 onFilterName={handleFilterByName}
@@ -200,7 +197,7 @@ export default function TokenList({data}) {
                         //filteredTokens.slice(page * rows, page * rows + rows)
                         tokens.map((row, idx) => {
                                 return (
-                                    <TokenRow key={idx} token={row} setEditToken={setEditToken}/>
+                                    <TokenRow key={idx} token={row} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
                                 );
                             })}
                         {/* {emptyRows > 0 && (

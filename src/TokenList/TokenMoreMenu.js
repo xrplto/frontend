@@ -3,7 +3,9 @@ import { AppContext } from 'src/AppContext';
 import { Icon } from '@iconify/react';
 import { useRef, useState } from 'react';
 import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
+
 import EditIcon from '@mui/icons-material/Edit';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 
 // Material
 import {
@@ -16,7 +18,7 @@ import {
 } from '@mui/material';
 // ----------------------------------------------------------------------
 
-export default function TokenMoreMenu({token, setEditToken}) {
+export default function TokenMoreMenu({token, setEditToken, setTrustToken}) {
     const ref = useRef(null);
     const {
         issuer,
@@ -26,6 +28,8 @@ export default function TokenMoreMenu({token, setEditToken}) {
     const [isOpen, setIsOpen] = useState(false);
     
     const { accountProfile } = useContext(AppContext);
+
+    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     return (
         <>
@@ -43,12 +47,17 @@ export default function TokenMoreMenu({token, setEditToken}) {
                 anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-                {accountProfile && accountProfile.account && accountProfile.admin && (
+                {isAdmin && (
                     <MenuItem onClick={() => {setIsOpen(false);setEditToken(token);}} disableRipple sx={{ color: 'text.secondary' }}>
                         <EditIcon color='error' sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Edit Token" primaryTypographyProps={{ variant: 'subtitle2', color:'error' }} />
                     </MenuItem>
                 )}
+
+                <MenuItem onClick={() => {setIsOpen(false);setTrustToken(token);}} disableRipple sx={{ color: 'text.secondary' }}>
+                    <SwapHorizIcon sx={{ mr:1, width: 24, height: 24 }} />
+                    <ListItemText primary="Trust Set" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                </MenuItem>
 
                 <Link
                     underline="none"

@@ -41,7 +41,7 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
     },
 }));
 
-export default function TokenRow({token, setEditToken}) {
+export default function TokenRow({token, setEditToken, setTrustToken}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const metrics = useSelector(selectMetrics);
     const { accountProfile } = useContext(AppContext);
@@ -218,7 +218,7 @@ export default function TokenRow({token, setEditToken}) {
             </TableCell> */}
 
             <TableCell align="right">
-                <TokenMoreMenu token={token} setEditToken={setEditToken} />
+                <TokenMoreMenu token={token} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
             </TableCell>
         </TableRow>
     );
