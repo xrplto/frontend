@@ -425,24 +425,25 @@ export default function TradeData({pairs, pair, setPair, asks, bids, tradeExchs}
 
                         <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
                             <TokenIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                            <TextField id="input-with-sx1" label="Amount" value={amount} onChange={handleChangeAmount} variant="standard"/>
+                            <TextField fullWidth id="input-with-sx1" label="Amount" value={amount} onChange={handleChangeAmount} variant="standard"/>
                             <Typography variant="caption" color='#FF4842'>{curr1.name}</Typography>
                         </Box>
 
                         {marketLimit === 'limit' && (
                             <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
                                 <PriceChangeIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                                <TextField id="input-with-sx2" label="Price" value={price} onChange={handleChangePrice} variant="standard"/>
+                                <TextField fullWidth id="input-with-sx2" label="Price" value={price} onChange={handleChangePrice} variant="standard"/>
                                 <Typography variant="caption" color='#00AB5588'>{curr2.name}</Typography>
                             </Box>
                         )}
 
                         <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                                <SwapVerticalCircleIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
-                                <Typography>Total ≈</Typography>
-                                <Box sx={{ flexGrow: 1 }} />
-                                <Typography alignItems='right'>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
-                            </Box>
+                            <SwapVerticalCircleIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
+                            <Typography>Total</Typography>
+                            <Box sx={{ flexGrow: 1 }} />
+                            <Typography sx={{mr:1}}>≈</Typography>
+                            <Typography alignItems='right' sx={{mr:2}}>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
+                        </Box>
 
                         <PlaceOrder buySell={buySell} pair={pair} amount={amount} value={value}/>
                     </StackDexStyle>

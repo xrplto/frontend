@@ -3,6 +3,7 @@ import { useState } from 'react';
 // Material
 import {
     Avatar,
+    Button,
     Chip,
     Grid,
     Link,
@@ -13,7 +14,8 @@ import {
 } from '@mui/material';
 
 import {
-    Token as TokenIcon
+    Token as TokenIcon,
+    SyncAlt as SyncAltIcon
 } from '@mui/icons-material';
 
 // Iconify
@@ -26,10 +28,12 @@ import paperIcon from '@iconify/icons-akar-icons/paper';
 import ExplorersMenu from './ExplorersMenu';
 import CommunityMenu from './CommunityMenu';
 import ChatMenu from './ChatMenu';
+import TrustSet from './TrustSet';
 
 // ----------------------------------------------------------------------
 export default function UserDesc({token}) {
     const [rating, setRating] = useState(2);
+    const [trustToken, setTrustToken] = useState(null);
 
     const {
         id,
@@ -40,6 +44,7 @@ export default function UserDesc({token}) {
         kyc,
         holders,
         offers,
+        trustlines,
         imgExt,
         md5,
         tags,
@@ -57,6 +62,10 @@ export default function UserDesc({token}) {
 
     const handleDelete = () => {
     }
+
+    const handleSetTrust = (e) => {
+        setTrustToken(token);
+    }
   
     return (
         <Stack>
@@ -68,15 +77,25 @@ export default function UserDesc({token}) {
                 />
                 <Stack spacing={0.2}>
                     <Typography variant="h2" color='#22B14C' fontSize='1.1rem'>{user}</Typography>
-                    <Rating
-                        name="simple-controlled"
-                        value={rating}
-                        onChange={(event, newValue) => {
-                            setRating(newValue);
-                        }}
-                    />
+                    <Stack direction='row' alignItems='center' spacing={1}>
+                        <Rating
+                            name="simple-controlled"
+                            value={rating}
+                            onChange={(event, newValue) => {
+                                setRating(newValue);
+                            }}
+                        />
+                        <Stack>
+                            {kyc && (<Typography variant='kyc2'>KYC</Typography>)}
+                        </Stack>
+                    </Stack>
                 </Stack>
                 <Chip variant={"outlined"} icon={<TokenIcon />} label={name} />
+                <Button variant="outlined" startIcon={<SyncAltIcon />} size="small" onClick={handleSetTrust}>
+                    Trust Set
+                </Button>
+
+                <TrustSet token={trustToken} setToken={setTrustToken}/>
             </Stack>
             <Stack direction="row" spacing={1} sx={{mt:2}}>
                 <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Rank by Volume(24h)</Typography>}>
@@ -84,9 +103,7 @@ export default function UserDesc({token}) {
                 </Tooltip>
                 <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
                 <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
-                {kyc && (
-                    <Chip label={'KYC'} color="success" variant="outlined" size="small"/>
-                )}
+                <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
             </Stack>
             <Grid container spacing={1} alignItems='center' sx={{mt:2}}>
                 {tags && tags.map((tag, idx) => {

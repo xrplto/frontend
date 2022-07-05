@@ -1223,6 +1223,14 @@ export const XrplToLightTheme = createTheme({
       paddingLeft: '2px',
       paddingRight: '2px',
     },
+    kyc2: {
+      fontSize: 11,
+      color: "#34B60C",
+      borderRadius: '8px',
+      border: '0.05em solid #34B60C',
+      paddingLeft: '2px',
+      paddingRight: '2px',
+    },
     nokyc: {
       fontSize: 10,
       color: "#454F5B",

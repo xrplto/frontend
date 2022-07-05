@@ -167,7 +167,7 @@ export default function TokenList({data}) {
             {isAdmin && <EditToken token={editToken} setToken={setEditToken}/>}
 
             <TrustSet token={trustToken} setToken={setTrustToken}/>
-
+            
             <SearchToolbar
                 filterName={filterName}
                 onFilterName={handleFilterByName}

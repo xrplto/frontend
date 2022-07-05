@@ -28,7 +28,6 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import QROfferDialog from './QROfferDialog';
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 
 // Context
@@ -333,8 +332,8 @@ export default function AccountOrdersHistory({pair}) {
                                     let exch = quality;
                                     const _id = seq;
 
-                                    const gets = taker_gets.value || taker_gets / 1000000;
-                                    const pays = taker_pays.value || taker_pays / 1000000;
+                                    const gets = taker_gets.value || new Decimal(taker_gets).div(1000000).toNumber();
+                                    const pays = taker_pays.value || new Decimal(taker_pays).div(1000000).toNumber();
 
                                     let name_pays;
                                     let name_gets;
@@ -354,11 +353,11 @@ export default function AccountOrdersHistory({pair}) {
                                     if (taker_pays.issuer === curr1.issuer && taker_pays.currency === curr1.currency) {
                                         // BUY
                                         buy = true;
-                                        exch = gets / pays;
+                                        exch = new Decimal(gets).div(pays).toNumber();
                                     } else {
                                         // SELL
                                         buy = false;
-                                        exch = pays / gets;
+                                        exch = new Decimal(pays).div(gets).toNumber();
                                     }
 
                                     return (
@@ -385,13 +384,13 @@ export default function AccountOrdersHistory({pair}) {
                                                     )
                                                 }
                                             </TableCell>
-                                            <TableCell align="left">{fNumber(exch)}</TableCell>
+                                            <TableCell align="left">{exch}</TableCell>
                                             <TableCell align="left">
-                                                {fNumber(gets)} <Typography variant="caption">{name_gets}</Typography>
+                                                {gets} <Typography variant="caption">{name_gets}</Typography>
                                             </TableCell>
 
                                             <TableCell align="left">
-                                                {fNumber(pays)} <Typography variant="caption">{name_pays}</Typography>
+                                                {pays} <Typography variant="caption">{name_pays}</Typography>
                                             </TableCell>
 
                                             <TableCell align="left">
@@ -482,9 +481,9 @@ export default function AccountOrdersHistory({pair}) {
                                 let exch;
                                 let buy = false;
                                 if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency) {
-                                    exch = vGot / vPaid;
+                                    exch = new Decimal(vGot).div(vPaid).toNumber();
                                 } else {
-                                    exch = vPaid / vGot;
+                                    exch = new Decimal(vPaid).div(vGot).toNumber();
                                 }
 
                                 if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency && maker === accountAddress) {
@@ -493,7 +492,7 @@ export default function AccountOrdersHistory({pair}) {
                                     buy = true;
                                 }
 
-                                const nDate = new Date((date + EPOCH_OFFSET) * 1000); 
+                                const nDate = new Date((date + EPOCH_OFFSET) * 1000);
                                 const year = nDate.getFullYear();
                                 const month = (nDate.getMonth() + 1).toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
                                 const day = nDate.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
@@ -534,14 +533,14 @@ export default function AccountOrdersHistory({pair}) {
                                                 )
                                             }
                                         </TableCell>
-                                        <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
+                                        <TableCell align="left"><Typography variant="subtitle2">{exch}</Typography></TableCell>
                                         
                                         <TableCell align="left">
-                                            {new Decimal(vPaid).toFixed(6, Decimal.ROUND_DOWN)} <Typography variant="caption">{namePaid}</Typography>
+                                            {vPaid} <Typography variant="caption">{namePaid}</Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
-                                            {new Decimal(vGot).toFixed(6, Decimal.ROUND_DOWN)} <Typography variant="caption">{nameGot}</Typography>
+                                            {vGot} <Typography variant="caption">{nameGot}</Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
