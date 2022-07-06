@@ -11,8 +11,10 @@ import {
     Container,
     Grid,
     IconButton,
+    Link,
     styled,
-    Stack
+    Stack,
+    Typography
 } from '@mui/material';
 
 // Iconify Icons
@@ -30,6 +32,8 @@ import Account from 'src/components/Account';
 import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/layouts/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
+
+import Footer from 'src/components/Footer';
 
 const DynamicTokenList = dynamic(() => import('src/TokenList'));
 
@@ -59,6 +63,7 @@ function Overview(props) {
     const data = props.data;
 
     return (
+        <>
         <OverviewWrapper>
             <Topbar md5={'NONE'}/>
             <HeaderWrapper>
@@ -99,12 +104,21 @@ function Overview(props) {
 
             <ScrollToTop />
 
-            {/* <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 2, mb: 8 }}>
-                <Typography textAlign="left" variant="subtitle1">
-                    &copy; 2022 XRPL.TO
+            <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 4, mb: 8 }}>
+                <Typography textAlign="center" variant="subtitle1">
+                    &copy; 2022 
+                    <Link
+                        href="https://nftlabs.to"
+                        target="_blank"
+                        rel="noopener noreferrer nofollow"
+                        sx={{ml:1}}
+                    >
+                        NFT Labs
+                    </Link>
                 </Typography>
-            </Container> */}
+            </Container>
         </OverviewWrapper>
+        </>
     );
 }
 

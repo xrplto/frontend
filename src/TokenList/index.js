@@ -62,12 +62,12 @@ export default function TokenList({data}) {
     const [rows, setRows] = useState(100);
     const [showNew, setShowNew] = useState(false);
     const [showSlug, setShowSlug] = useState(false);
-    const [tokens, setTokens] = useState(data?data.tokens.slice(0, 20):[]);
-    const [allTokens, setAllTokens] = useState(data?data.tokens:[]);
+    const [tokens, setTokens] = useState(data?data.tokens:[]); // useState(data?data.tokens.slice(0, 20):[]);
+    // const [allTokens, setAllTokens] = useState(data?data.tokens:[]);
     const [load, setLoad] = useState(false);
     const [editToken, setEditToken] = useState(null);
     const [trustToken, setTrustToken] = useState(null);
-    const [hasMore, setHasMore] = useState(true);
+    // const [hasMore, setHasMore] = useState(true);
 
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
@@ -133,8 +133,8 @@ export default function TokenList({data}) {
     const updateRows = (newRows) => {
         if (newRows === rows) return;
         setRows(newRows);
-        if (tokens.length < newRows)
-            setHasMore(true);
+        // if (tokens.length < newRows)
+        //     setHasMore(true);
     }
 
     const updateShowNew = (val) => {
@@ -155,10 +155,10 @@ export default function TokenList({data}) {
         setLoad(true);
     };
 
-    const addMoreData = () => {
-        setTokens(allTokens.slice(0, rows));
-        setHasMore(false);
-    };
+    // const addMoreData = () => {
+    //     setTokens(allTokens.slice(0, rows));
+    //     setHasMore(false);
+    // };
 
     return (
         <>
@@ -174,7 +174,7 @@ export default function TokenList({data}) {
                 rows={rows}
                 setRows={updateRows}
             />
-            <InfiniteScroll
+            {/* <InfiniteScroll
                 style={{overflow: "inherit"}}
                 dataLength={allTokens.length}
                 next={addMoreData}
@@ -184,7 +184,7 @@ export default function TokenList({data}) {
                         <BeatLoader color={"#00AB55"} size={10} />
                     </div>
                 }
-            >
+            > */}
                 <Table stickyHeader sx={{pl:2.3, pr:2.3}}>
                     <TokenListHead
                         order={order}
@@ -216,7 +216,7 @@ export default function TokenList({data}) {
                         </TableBody>
                     )*/}
                 </Table>
-            </InfiniteScroll>
+            {/* </InfiniteScroll> */}
             <TokenListToolbar
                 rows={rows}
                 setRows={updateRows}
