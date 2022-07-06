@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import {CopyToClipboard} from 'react-copy-to-clipboard';
 
 // Material
 import { withStyles } from '@mui/styles';
@@ -60,11 +61,12 @@ const Label = withStyles({
 })(Typography);
 
 const ERR_NONE = 0;
-const ERR_INVALID_VALUE = 1;
-const ERR_NETWORK = 2;
-const ERR_TIMEOUT = 3;
-const ERR_REJECTED = 4;
-const MSG_SUCCESSFUL = 5;
+const MSG_COPIED = 1;
+const ERR_INVALID_VALUE = 2;
+const ERR_NETWORK = 3;
+const ERR_TIMEOUT = 4;
+const ERR_REJECTED = 5;
+const MSG_SUCCESSFUL = 6;
 
 export default function TrustSetDialog({showAlert, token, setToken}) {
     const theme = useTheme();
@@ -85,7 +87,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
         currency,
         md5,
         imgExt,
-        dateon
+        urlSlug
     } = token;
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
@@ -132,7 +134,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                 clearInterval(timer)
             }
         };
-    }, [dispatch, openScanQR, uuid]);
+    }, [openScanQR, uuid]);
 
     const onTrustSetXumm = async (value) => {
         /*{
@@ -296,14 +298,26 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                         </TableBody>
                     </Table>
 
-                    <Button
-                        variant="outlined"
-                        sx={{ mt: 1.5 }}
-                        onClick={handleSetTrust}
-                        color='primary'
-                    >
-                        Set Trustline
-                    </Button>
+                    <Stack direction='row' spacing={2} sx={{mt:1.5}}>
+
+                        <Button
+                            variant="outlined"
+                            onClick={handleSetTrust}
+                            color='primary'
+                        >
+                            Set Trustline
+                        </Button>
+
+                        <CopyToClipboard text={`https://xrpl.to/trustline/${urlSlug}`} onCopy={()=>showAlert(MSG_COPIED)}>
+                            <Button
+                                variant="outlined"
+                                color='primary'
+                            >
+                                Copy Link
+                            </Button>
+                        </CopyToClipboard>
+
+                    </Stack>
 
                 </Stack>
                 

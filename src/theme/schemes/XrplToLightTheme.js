@@ -1176,6 +1176,10 @@ export const XrplToLightTheme = createTheme({
       fontWeight: 700,
       fontSize: '1.2rem'// 35
     },
+    h1_trustline: {
+      fontWeight: 700,
+      fontSize: '1.2rem'// 35
+    },
     h2: {
       fontWeight: 700,
       fontSize: '1rem' // 30

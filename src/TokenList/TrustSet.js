@@ -16,11 +16,12 @@ function TransitionLeft(props) {
 }
 
 const ERR_NONE = 0;
-const ERR_INVALID_VALUE = 1;
-const ERR_NETWORK = 2;
-const ERR_TIMEOUT = 3;
-const ERR_REJECTED = 4;
-const MSG_SUCCESSFUL = 5;
+const MSG_COPIED = 1;
+const ERR_INVALID_VALUE = 2;
+const ERR_NETWORK = 3;
+const ERR_TIMEOUT = 4;
+const ERR_REJECTED = 5;
+const MSG_SUCCESSFUL = 6;
 
 export default function TrustSet({token, setToken}) {
 
@@ -49,12 +50,13 @@ export default function TrustSet({token, setToken}) {
                 TransitionComponent={TransitionLeft}
                 key={'TransitionLeft'}
             >
-                <Alert variant="filled" severity={message === MSG_SUCCESSFUL?"success":"error"} sx={{ m: 2, mt:0 }}>
+                <Alert variant="filled" severity={message === MSG_SUCCESSFUL || message === MSG_COPIED?"success":"error"} sx={{ m: 2, mt:0 }}>
                     {message === ERR_REJECTED && 'Operation rejected!'}
                     {message === MSG_SUCCESSFUL && 'Successfully set trustline!'}
                     {message === ERR_INVALID_VALUE && 'Invalid value!'}
                     {message === ERR_NETWORK && 'Network error!'}
                     {message === ERR_TIMEOUT && 'Timeout!'}
+                    {message === MSG_COPIED && 'Copied!'}
                 </Alert>
             </Snackbar>
 

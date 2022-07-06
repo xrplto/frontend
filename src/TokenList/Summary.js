@@ -71,7 +71,7 @@ export default function Summary() {
                     flexDirection: "column",
                 }}
             >
-                <ContentTypography variant='subtitle1'>The total XRPL Dex volume over the last 24 hours is <strong>${fNumber(gDexVolume)}</strong>, which makes a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. The total volume in Scams is currently <strong>${fNumber(gScamVolume)}</strong>, <strong>{gScamVolumePro}%</strong> of the total crypto market 24-hour volume. The volume of all stable coins is now <strong>${fNumber(gStableVolume)}</strong>, which is <strong>{gStableVolumePro}%</strong> of the total token market 24-hour volume.</ContentTypography>
+                <ContentTypography variant='subtitle1'>The total XRPL Dex volume over the last 24 hours is <strong>${fNumber(gDexVolume)}</strong>, which makes a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. The total volume in Scams is currently <strong>${fNumber(gScamVolume)}</strong>, <strong>{gScamVolumePro}%</strong> of the total XRPL token market 24-hour volume. The volume of all stable currencies is now <strong>${fNumber(gStableVolume)}</strong>, which is <strong>{gStableVolumePro}%</strong> of the total token market 24-hour volume.</ContentTypography>
                 <ContentTypography variant='subtitle1'>XRP price is currently <strong>${Rate(1, metrics.USD)}</strong>.</ContentTypography>
                 <ContentTypography variant='subtitle1'>XRP dominance is currently ---%, a decrease of -% over the day.</ContentTypography>
             </div>

@@ -137,7 +137,7 @@ function Topbar({md5}) {
                                 </Stack>
                             </Tooltip>
                         </H24Style>
-                        <Typography variant="small">Tx:</Typography>
+                        <Typography variant="small">Trades:</Typography>
                         <Typography align="center" color="#74CAFF" variant="small">{fIntNumber(metrics.H24[0])}</Typography>
                         {/* <Typography variant="small">|</Typography> */}
                         <Typography variant="small">Vol:</Typography>

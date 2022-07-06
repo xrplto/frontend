@@ -23,6 +23,7 @@ import { Icon } from '@iconify/react';
 import link45deg from '@iconify/icons-bi/link-45deg';
 import linkExternal from '@iconify/icons-charm/link-external';
 import paperIcon from '@iconify/icons-akar-icons/paper';
+import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 
 // Components
 import ExplorersMenu from './ExplorersMenu';
@@ -69,6 +70,7 @@ export default function UserDesc({token}) {
   
     return (
         <Stack>
+            <TrustSet token={trustToken} setToken={setTrustToken}/>
             <Stack direction="row" spacing={1} alignItems='center'>
                 <Avatar
                     alt={user}
@@ -91,11 +93,6 @@ export default function UserDesc({token}) {
                     </Stack>
                 </Stack>
                 <Chip variant={"outlined"} icon={<TokenIcon />} label={name} />
-                <Button variant="outlined" startIcon={<SyncAltIcon />} size="small" onClick={handleSetTrust}>
-                    Trust Set
-                </Button>
-
-                <TrustSet token={trustToken} setToken={setTrustToken}/>
             </Stack>
             <Stack direction="row" spacing={1} sx={{mt:2}}>
                 <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Rank by Volume(24h)</Typography>}>
@@ -169,6 +166,13 @@ export default function UserDesc({token}) {
                         </Link>
                     </Grid>
                 )}
+
+                <Grid item sx={{pb:1}}>
+                    <Chip label={'Trust Set'} sx={{pl:0.5,pr:0.5}}
+                        deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
+                        onDelete={handleDelete} onClick={handleSetTrust}
+                        icon={<Icon icon={arrowsExchange} width="18" height="18"/>} />
+                </Grid>
             </Grid>
         </Stack>
     );
