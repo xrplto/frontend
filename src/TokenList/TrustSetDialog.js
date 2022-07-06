@@ -43,14 +43,6 @@ import { PulseLoader } from "react-spinners";
 import { fNumber } from 'src/utils/formatNumber';
 import Decimal from 'decimal.js';
 // ----------------------------------------------------------------------
-const DisabledButton = withStyles({
-    root: {
-        "&.Mui-disabled": {
-            pointerEvents: "unset", // allow :hover styles to be triggered
-            cursor: "not-allowed", // and custom cursor can be defined without :hover state
-        }
-    }
-})(Button);
 
 const AdminDialog = styled(Dialog)(({ theme }) => ({
     // boxShadow: theme.customShadows.z0,
@@ -163,7 +155,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                 issuer,
                 currency,
             } = token;
-            const user_token = accountProfile.token;
+            const user_token = accountProfile?.token;
 
             let LimitAmount = {};
             LimitAmount.issuer = issuer;

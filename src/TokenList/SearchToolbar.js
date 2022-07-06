@@ -7,8 +7,7 @@ import {
     MenuItem,
     OutlinedInput,
     Select,
-    Stack,
-    Toolbar
+    Stack
 } from '@mui/material';
 
 // Iconify

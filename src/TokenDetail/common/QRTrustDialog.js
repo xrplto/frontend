@@ -37,7 +37,7 @@ export default function QRTrustDialog(props) {
     };
 
     return (
-        <QRDialog onClose={onClose} open={open}>
+        <QRDialog onClose={onClose} open={open} sx={{ zIndex: 1303 }}>
             <DialogTitle textAlign="center">Sign Transaction</DialogTitle>
             <Divider />
             <Stack alignItems='center' spacing={2} pb={7} pl={10} pr={10} pt={5}>

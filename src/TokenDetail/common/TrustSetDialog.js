@@ -43,15 +43,6 @@ import { PulseLoader } from "react-spinners";
 import { fNumber } from 'src/utils/formatNumber';
 import Decimal from 'decimal.js';
 // ----------------------------------------------------------------------
-const DisabledButton = withStyles({
-    root: {
-        "&.Mui-disabled": {
-            pointerEvents: "unset", // allow :hover styles to be triggered
-            cursor: "not-allowed", // and custom cursor can be defined without :hover state
-        }
-    }
-})(Button);
-
 const AdminDialog = styled(Dialog)(({ theme }) => ({
     // boxShadow: theme.customShadows.z0,
     backdropFilter: 'blur(1px)',
@@ -163,7 +154,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                 issuer,
                 currency,
             } = token;
-            const user_token = accountProfile.token;
+            const user_token = accountProfile?.token;
 
             let LimitAmount = {};
             LimitAmount.issuer = issuer;
@@ -239,13 +230,13 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
     return (
         <>
             <Backdrop
-                sx={{ color: "#000", zIndex: (theme) => theme.zIndex.modal + 1 }}
+                sx={{ color: "#000", zIndex: 1303 }}
                 open={loading}
             >
                 <PulseLoader color={"#FF4842"} size={10} />
             </Backdrop>
 
-            <AdminDialog onClose={handleCancel} open={true} sx={{p:5}} hideBackdrop={true}>
+            <AdminDialog onClose={handleCancel} open={true} sx={{p:5, zIndex: 1302}} hideBackdrop={true}>
                 <DialogTitle sx={{pl:2,pr:4,pt:1,pb:1}}>
                     <Stack direction='row' alignItems='center'>
                         <Avatar alt={name} src={imgUrl} sx={{ mr: 1 }} />
