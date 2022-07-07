@@ -105,16 +105,16 @@ function Overview(props) {
             <ScrollToTop />
 
             <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 4, mb: 8 }}>
-                <Typography textAlign="center" variant="subtitle1">
-                    &copy; 2022 
-                    <Link
+                <Typography textAlign="left" variant="subtitle1">
+                    &copy; 2022 XRPL.to. All rights reserved
+                    {/* <Link
                         href="https://nftlabs.to"
                         target="_blank"
                         rel="noopener noreferrer nofollow"
                         sx={{ml:1}}
                     >
                         NFT Labs
-                    </Link>
+                    </Link> */}
                 </Typography>
             </Container>
         </OverviewWrapper>

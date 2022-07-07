@@ -8,7 +8,9 @@ import { useState, useEffect } from 'react';
 // Material
 import { alpha } from '@mui/material/styles';
 import {
+    Alert,
     Avatar,
+    Backdrop,
     Box,
     Button,
     Card,
@@ -18,11 +20,15 @@ import {
     IconButton,
     Link,
     Rating,
-    styled,
+    Slide,
+    Snackbar,
     Stack,
+    styled,
     Tooltip,
     Typography
 } from '@mui/material';
+
+import LoadingButton from '@mui/lab/LoadingButton';
 
 import {
     Token as TokenIcon,
@@ -43,6 +49,9 @@ import CommunityMenu from 'src/TokenDetail/common/CommunityMenu';
 import ChatMenu from 'src/TokenDetail/common/ChatMenu';
 import LogoTrustline from 'src/components/LogoTrustline';
 
+// Loader
+import { PulseLoader } from "react-spinners";
+
 const OverviewWrapper = styled(Box) (
   ({ theme }) => `
     align-items: center;
@@ -54,16 +63,44 @@ const OverviewWrapper = styled(Box) (
 `
 );
 
+function TransitionLeft(props) {
+    return <Slide {...props} direction="left" />;
+}
+
+const ERR_NONE = 0;
+const MSG_COPIED = 1;
+const ERR_INVALID_VALUE = 2;
+const ERR_NETWORK = 3;
+const ERR_TIMEOUT = 4;
+const ERR_REJECTED = 5;
+const MSG_SUCCESSFUL = 6;
+
 function TrustLine(props) {
+    const QR_BLUR = '/static/blurqr.png';
     let data = {};
     if (props && props.data) data = props.data;
     const token = data.token;
 
-    const [qrUrl, setQrUrl] = useState('/static/blurqr.png');
+    const [state, setState] = useState({
+        openSnack: false,
+        message: ERR_NONE
+    });
+
+    const { message, openSnack } = state;
+
+    const [qrUrl, setQrUrl] = useState(QR_BLUR);
+    const [uuid, setUuid] = useState(null);
+    const [nextUrl, setNextUrl] = useState(null);
+
+    const [loading, setLoading] = useState(false);
+
+    const [counter, setCounter] = useState(150);
 
     const {
         id,
         issuer,
+        currency,
+        amount,
         name,
         domain,
         whitepaper,
@@ -80,17 +117,148 @@ function TrustLine(props) {
     let user = token.user;
     if (!user) user = name;
 
-    const isCommunity = true; /*social && (social.twitter || social.facebook || social.linkedin 
-        || social.instagram || social.youtube || social.medium || social.twitch || social.tiktok || social.reddit);*/
-    const isChat = social && (social.telegram || social.discord);
-
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+
+    useEffect(() => {
+        var timer = null;
+        var isRunning = false;
+        var count = counter;
+        async function getPayload() {
+            console.log(count + " " + isRunning, uuid);
+            if (isRunning) return;
+            isRunning = true;
+            try {
+                const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+                const res = ret.data.data.response;
+                // const account = res.account;
+                const resolved_at = res.resolved_at;
+                const dispatched_result = res.dispatched_result;
+                if (resolved_at) {
+                    setQrUrl(QR_BLUR); setUuid(null);
+                    if (dispatched_result && dispatched_result === 'tesSUCCESS') {
+                        showAlert(MSG_SUCCESSFUL);
+                    }
+                    else
+                        showAlert(ERR_REJECTED);
+
+                    return;
+                }
+            } catch (err) {
+            }
+            isRunning = false;
+            count--;
+            setCounter(count);
+            if (count <= 0) {
+                showAlert(ERR_TIMEOUT);
+                handleScanQRClose();
+            }
+        }
+        if (uuid) {
+            timer = setInterval(getPayload, 2000);
+        }
+        return () => {
+            if (timer) {
+                clearInterval(timer)
+            }
+        };
+    }, [uuid]);
+
+    const onTrustSetXumm = async () => {
+        /*{
+            "TransactionType": "TrustSet",
+            "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
+            "Fee": "12",
+            "Flags": 262144,
+            "LastLedgerSequence": 8007750,
+            "LimitAmount": {
+              "currency": "USD",
+              "issuer": "rsP3mgGb2tcYUrxiLFiHJiQXhsziegtwBc",
+              "value": "100"
+            },
+            "Sequence": 12
+        }*/
+        setCounter(150);
+        setLoading(true);
+        try {
+            let LimitAmount = {};
+            LimitAmount.issuer = issuer;
+            LimitAmount.currency = currency;
+            LimitAmount.value = amount;
+            
+            const body={ LimitAmount };
+
+            const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
+
+            if (res.status === 200) {
+                const uuid = res.data.data.uuid;
+                const qrlink = res.data.data.qrUrl;
+                const nextlink = res.data.data.next;
+
+                setUuid(uuid);
+                setQrUrl(qrlink);
+                setNextUrl(nextlink);
+            }
+        } catch (err) {
+            showAlert(ERR_NETWORK);
+        }
+        setLoading(false);
+    };
+
+    const onDisconnectXumm = async (uuid) => {
+        setLoading(true);
+        try {
+            const res = await axios.delete(`${BASE_URL}/xumm/logout/${uuid}`);
+            if (res.status === 200) {
+                setUuid(null);
+            }
+        } catch(err) {
+        }
+        setQrUrl(QR_BLUR); setUuid(null);
+        setLoading(false);
+    };
+
+    const handleScanQRClose = () => {
+        onDisconnectXumm(uuid);
+    };
 
     const handleDelete = () => {
     }
 
+    const handleTrustSet = () => {
+        if (uuid)
+            onDisconnectXumm(uuid);
+        else
+            onTrustSetXumm();
+    }
+
+    const handleCloseSnack = () => {
+        setState({ openSnack: false, message: message });
+    };
+
+    const showAlert = (msg) => {
+        setState({ openSnack: true, message: msg });
+    }
+
     return (
         <OverviewWrapper>
+            <Snackbar
+                autoHideDuration={2000}
+                anchorOrigin={{ vertical:'top', horizontal:'right' }}
+                open={openSnack}
+                onClose={handleCloseSnack}
+                TransitionComponent={TransitionLeft}
+                key={'TransitionLeft'}
+            >
+                <Alert variant="filled" severity={message === MSG_SUCCESSFUL || message === MSG_COPIED?"success":"error"} sx={{ m: 2, mt:0 }}>
+                    {message === ERR_REJECTED && 'Operation rejected!'}
+                    {message === MSG_SUCCESSFUL && 'Successfully set trustline!'}
+                    {message === ERR_INVALID_VALUE && 'Invalid value!'}
+                    {message === ERR_NETWORK && 'Network error!'}
+                    {message === ERR_TIMEOUT && 'Timeout!'}
+                    {message === MSG_COPIED && 'Copied!'}
+                </Alert>
+            </Snackbar>
+
             <Container maxWidth="sm" sx={{ ml:5, mr: 3, mt: 0, mb: 10 }}>
             <Stack
                 direction="row"
@@ -276,13 +444,30 @@ function TrustLine(props) {
                         )}
                     </Stack>
 
-                    <Stack direction="row" spacing={1} sx={{mt:5, mb:7}}>
+                    <Stack direction="row" spacing={1} sx={{mt:5}}>
                         <Box
                             component="img"
                             alt="QR"
                             src={qrUrl}
                             sx={{width:200,height:200}}
                         />
+                        
+                    </Stack>
+
+                    <Stack direction="row" spacing={1} sx={{mt:2, mb:7}}>
+
+                        <LoadingButton
+                            size="small"
+                            onClick={handleTrustSet}
+                            loading={loading}
+                            variant="outlined"
+                            color={uuid?"error":"success"}
+                        >
+                            {uuid ? `Cancel (${counter})`:`Generate QR`}
+                            
+                        </LoadingButton>
+
+                        
                     </Stack>
                     
                 </Stack>

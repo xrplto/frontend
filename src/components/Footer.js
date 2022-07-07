@@ -24,11 +24,11 @@ function Footer() {
             >
                 <Box>
                     <Typography variant="subtitle1">
-                        &copy; 2022 XRPL.TO. All rights reserved
+                        &copy; 2022 XRPL.to. All rights reserved
                     </Typography>
                 </Box>
                 {/* <Typography sx={{ pt: { xs: 2, md: 0 } }} variant="subtitle1">
-                        &copy; 2022
+                        &copy; 2022 XRPL.to. All rights reserved
                         <Link
                             href="https://nftlabs.to"
                             target="_blank"
