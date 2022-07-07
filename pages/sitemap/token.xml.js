@@ -25,20 +25,39 @@ export const getServerSideProps = async ({ res }) => {
     } catch (e) {
         console.log(e);
     }
+
+    /* =============================
+        // Change freq
+            always = describe documents that change each time they are accessed
+            hourly
+            daily
+            weekly
+            monthly
+            yearly
+            never = describe archived URLs
+    =============================*/
     
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://xrpl.to/</loc>
         <lastmod>${time}</lastmod>
-        <changefreq>hourly</changefreq>
+        <changefreq>always</changefreq>
     </url>
     ${slugs.map((slug) => {
     return `
     <url>
         <loc>https://xrpl.to/token/${slug}</loc>
         <lastmod>${time}</lastmod>
-        <changefreq>hourly</changefreq>
+        <changefreq>always</changefreq>
+    </url>`}).join('')
+    }
+    ${slugs.map((slug) => {
+    return `
+    <url>
+        <loc>https://xrpl.to/trustline/${slug}</loc>
+        <lastmod>${time}</lastmod>
+        <changefreq>always</changefreq>
     </url>`}).join('')
     }
 </urlset>

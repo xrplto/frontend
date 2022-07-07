@@ -6,7 +6,6 @@ import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { withStyles } from '@mui/styles';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import {
-    Alert,
     Avatar,
     Backdrop,
     Button,
@@ -15,12 +14,12 @@ import {
     Divider,
     IconButton,
     Link,
-    Slide,
     Stack,
     Table,
     TableBody,
     TableRow,
     TableCell,
+    Tooltip,
     Typography,
     TextField
 } from '@mui/material';
@@ -43,6 +42,10 @@ import { PulseLoader } from "react-spinners";
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
 import Decimal from 'decimal.js';
+
+// Iconify
+import { Icon } from '@iconify/react';
+import copyIcon from '@iconify/icons-fad/copy';
 // ----------------------------------------------------------------------
 const AdminDialog = styled(Dialog)(({ theme }) => ({
     // boxShadow: theme.customShadows.z0,
@@ -293,6 +296,29 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                                 </TableCell>
                                 <TableCell align="left" sx={{pt:1, pb:0.2}}>
                                     <TextField id="input-with-sx1" label="" value={amount} onChange={handleChangeAmount} variant="standard"/>
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell align="right" sx={{pt:1.5, pb:0.2}}>
+                                    <Label variant="subtitle2" noWrap>Link</Label>
+                                </TableCell>
+                                <TableCell align="left" sx={{pt:1, pb:0.2}}>
+                                    <Link
+                                        underline="none"
+                                        color="inherit"
+                                        target="_blank"
+                                        href={`https://xrpl.to/trustline/${urlSlug}`}
+                                        rel="noreferrer noopener nofollow"
+                                    >
+                                        https://xrpl.to/trustline/{urlSlug}
+                                    </Link>
+                                    <CopyToClipboard text={`https://xrpl.to/trustline/${urlSlug}`} onCopy={()=>showAlert(MSG_COPIED)}>
+                                        <Tooltip title={'Click to copy'}>
+                                            <IconButton>
+                                                <Icon icon={copyIcon} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </CopyToClipboard>
                                 </TableCell>
                             </TableRow>
                         </TableBody>

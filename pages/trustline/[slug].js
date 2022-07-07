@@ -1,38 +1,30 @@
 import axios from 'axios';
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
-import Head from 'next/head';
 import { performance } from 'perf_hooks';
 import { useState, useEffect } from 'react';
+import { withStyles } from '@mui/styles';
 
 // Material
 import { alpha } from '@mui/material/styles';
 import {
     Alert,
     Avatar,
-    Backdrop,
     Box,
-    Button,
     Card,
     Chip,
     Container,
     Grid,
-    IconButton,
     Link,
-    Rating,
     Slide,
     Snackbar,
     Stack,
     styled,
-    Tooltip,
     Typography
 } from '@mui/material';
 
 import LoadingButton from '@mui/lab/LoadingButton';
 
 import {
-    Token as TokenIcon,
-    SyncAlt as SyncAltIcon
+    Token as TokenIcon
 } from '@mui/icons-material';
 
 // Iconify
@@ -42,15 +34,14 @@ import linkExternal from '@iconify/icons-charm/link-external';
 import paperIcon from '@iconify/icons-akar-icons/paper';
 
 // Utils
+import { fNumber } from 'src/utils/formatNumber';
 
 // Components
-import ExplorersMenu from 'src/TokenDetail/common/ExplorersMenu';
-import CommunityMenu from 'src/TokenDetail/common/CommunityMenu';
-import ChatMenu from 'src/TokenDetail/common/ChatMenu';
 import LogoTrustline from 'src/components/LogoTrustline';
 
-// Loader
-import { PulseLoader } from "react-spinners";
+// Redux
+import { useSelector, useDispatch } from "react-redux";
+import { selectMetrics, update_metrics } from "src/redux/statusSlice";
 
 const OverviewWrapper = styled(Box) (
   ({ theme }) => `
@@ -62,6 +53,12 @@ const OverviewWrapper = styled(Box) (
     overflow-x: hidden;
 `
 );
+
+const Label = withStyles({
+    root: {
+        color: alpha('#637381', 0.99)
+    }
+})(Typography);
 
 function TransitionLeft(props) {
     return <Slide {...props} direction="left" />;
@@ -76,10 +73,14 @@ const ERR_REJECTED = 5;
 const MSG_SUCCESSFUL = 6;
 
 function TrustLine(props) {
+    const BASE_URL = 'https://api.xrpl.to/api';
     const QR_BLUR = '/static/blurqr.png';
+
     let data = {};
     if (props && props.data) data = props.data;
     const token = data.token;
+
+    const metrics = useSelector(selectMetrics);
 
     const [state, setState] = useState({
         openSnack: false,
@@ -101,6 +102,8 @@ function TrustLine(props) {
         issuer,
         currency,
         amount,
+        date,
+        exch,
         name,
         domain,
         whitepaper,
@@ -119,12 +122,21 @@ function TrustLine(props) {
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
 
+    const marketcap = amount * exch / metrics.USD;
+
+    let date_fixed = '';
+    try {
+        if (date) {
+            date_fixed = date.split('T')[0];
+        }
+    } catch (e) { }
+
     useEffect(() => {
         var timer = null;
         var isRunning = false;
         var count = counter;
         async function getPayload() {
-            console.log(count + " " + isRunning, uuid);
+            // console.log(count + " " + isRunning, uuid);
             if (isRunning) return;
             isRunning = true;
             try {
@@ -199,6 +211,8 @@ function TrustLine(props) {
                 setNextUrl(nextlink);
             }
         } catch (err) {
+            console.log(err);
+            console.log(BASE_URL);
             showAlert(ERR_NETWORK);
         }
         setLoading(false);
@@ -269,7 +283,7 @@ function TrustLine(props) {
                 <LogoTrustline />
                 <Typography variant='h1_trustline' sx={{pt:2}}>Set {name} TrustLine</Typography>
             </Stack>
-            <Card sx={{ textAlign: 'center', mt: 1, p: 1, pt:2 }}>
+            <Card sx={{ mt: 1, p: 1, pt:2 }}>
                 <Stack alignItems='center'>
                     <Stack direction="row" spacing={1} alignItems='center'>
                         <Avatar
@@ -283,42 +297,45 @@ function TrustLine(props) {
                                 <Chip variant={"outlined"} icon={<TokenIcon />} label={name} size='small'/>
                             </Stack>
                         </Stack>
-                        <Stack direction="row" spacing={1} sx={{mt:2}}>
-                            {domain && (
-                                <Link
-                                    underline="none"
-                                    color="inherit"
-                                    target="_blank"
-                                    href={`https://${domain}`}
-                                    rel="noreferrer noopener nofollow"
-                                >
-                                    <Chip label={domain} sx={{pl:0.5, pr:0.5}} size='small'
-                                        deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
-                                        onDelete={handleDelete} onClick={handleDelete}
-                                        icon={<Icon icon={link45deg} width="16" height="16" />} />
-                                </Link>
-                            )}
-                            
-                            {whitepaper && (
-                                <Link
-                                    underline="none"
-                                    color="inherit"
-                                    target="_blank"
-                                    href={`${whitepaper}`}
-                                    rel="noreferrer noopener nofollow"
-                                >
-                                    <Chip label={'Whitepaper'} sx={{pl:0.5,pr:0.5}} size='small'
-                                        deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
-                                        onDelete={handleDelete} onClick={handleDelete}
-                                        icon={<Icon icon={paperIcon} width="16" height="16" />} />
-                                </Link>
-                            )}
-                        </Stack>
+                    </Stack>
+                    <Stack direction="row" spacing={1} sx={{mt:2}}>
+                        {domain && (
+                            <Link
+                                underline="none"
+                                color="inherit"
+                                target="_blank"
+                                href={`https://${domain}`}
+                                rel="noreferrer noopener nofollow"
+                            >
+                                <Chip label={domain} sx={{pl:0.5, pr:0.5}}
+                                    size='small'
+                                    deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
+                                    onDelete={handleDelete} onClick={handleDelete}
+                                    icon={<Icon icon={link45deg} width="16" height="16" />} />
+                            </Link>
+                        )}
+                        
+                        {whitepaper && (
+                            <Link
+                                underline="none"
+                                color="inherit"
+                                target="_blank"
+                                href={`${whitepaper}`}
+                                rel="noreferrer noopener nofollow"
+                            >
+                                <Chip label={'Whitepaper'} sx={{pl:0.5,pr:0.5}}
+                                    size='small'
+                                    deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
+                                    onDelete={handleDelete} onClick={handleDelete}
+                                    icon={<Icon icon={paperIcon} width="16" height="16" />} />
+                            </Link>
+                        )}
                     </Stack>
                     <Stack direction="row" spacing={1} sx={{mt:2}}>
                         <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
                         <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
                         <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
+                        {kyc && <Chip label={'KYC'} color="primary" variant="outlined" size="small"/>}
                     </Stack>
                     <Stack direction="row" spacing={1} sx={{mt:2}}>
                         {social && social.telegram && (
@@ -444,31 +461,45 @@ function TrustLine(props) {
                         )}
                     </Stack>
 
-                    <Stack direction="row" spacing={1} sx={{mt:5}}>
-                        <Box
-                            component="img"
-                            alt="QR"
-                            src={qrUrl}
-                            sx={{width:200,height:200}}
-                        />
+                    <Grid container direction="row" justifyContent="flex-start" alignItems="flex-start" sx={{mt:3, mb:3}}>
+                        <Grid item sm={6} sx={{pl:5, pt:2}}>
+                            <Stack>
+                                <Label>CREATED ON</Label>
+                                <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
+                                    {date_fixed}
+                                </Typography>
+                                <Label>TOTAL SUPPLY</Label>
+                                <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
+                                    {fNumber(amount)}
+                                </Typography>
+                                <Label>MARKET CAP</Label>
+                                <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
+                                    ${fNumber(marketcap)}
+                                </Typography>
+                            </Stack>
+                        </Grid>
                         
-                    </Stack>
-
-                    <Stack direction="row" spacing={1} sx={{mt:2, mb:7}}>
-
-                        <LoadingButton
-                            size="small"
-                            onClick={handleTrustSet}
-                            loading={loading}
-                            variant="outlined"
-                            color={uuid?"error":"success"}
-                        >
-                            {uuid ? `Cancel (${counter})`:`Generate QR`}
-                            
-                        </LoadingButton>
-
-                        
-                    </Stack>
+                        <Grid item sm={6}>
+                            <Stack alignItems='center'>
+                                <Box
+                                    component="img"
+                                    alt="QR"
+                                    src={qrUrl}
+                                    sx={{width:200,height:200}}
+                                />
+                                <LoadingButton
+                                    size="small"
+                                    onClick={handleTrustSet}
+                                    loading={loading}
+                                    variant="outlined"
+                                    color={uuid?"error":"success"}
+                                    sx={{mt:1}}
+                                >
+                                    {uuid ? `Cancel (${counter})`:`Generate QR`}
+                                </LoadingButton>
+                            </Stack>
+                        </Grid>
+                    </Grid>
                     
                 </Stack>
                 </Card>
@@ -485,9 +516,9 @@ function TrustLine(props) {
 
 export default TrustLine;
 
-const BASE_URL = 'http://135.181.118.217/api';
-
 export async function getServerSideProps(ctx) {
+    const BASE_URL = 'http://135.181.118.217/api';
+
     let data = null;
     try {
         const slug = ctx.params.slug;
@@ -501,7 +532,7 @@ export async function getServerSideProps(ctx) {
         var t2 = performance.now();
         var dt = (t2 - t1).toFixed(2);
 
-        console.log(`2. getServerSideProps slug: ${slug} took: ${dt}ms`);
+        console.log(`3. getServerSideProps slug: ${slug} took: ${dt}ms`);
     } catch (e) {
         console.log(e);
     }
@@ -519,11 +550,11 @@ export async function getServerSideProps(ctx) {
         let user = token.user;
         if (!user) user = name;
 
-        ogp.canonical = `https://xrpl.to/token/${urlSlug}`;
-        ogp.title = `${user} price today, ${name} to USD live, volume, trading history, markets and chart`;
-        ogp.url = `https://xrpl.to/token/${urlSlug}`;
+        ogp.canonical = `https://xrpl.to/trustline/${urlSlug}`;
+        ogp.title = `${name} Trustline On The XRP Ledger`;
+        ogp.url = `https://xrpl.to/trustline/${urlSlug}`;
         ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${imgExt}`;
-        ogp.desc = `Get the latest ${user} price, ${name} market cap, trading pairs, charts and data today from the world's number one XRP Ledger token price-tracking website`;
+        ogp.desc = `Setup ${name} Trustline On The XRPL.`;
 
         ret = {data, ogp};
     }
