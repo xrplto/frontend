@@ -24,6 +24,8 @@ export default function Description({token}) {
         issuer,
         currency,
         vol24h,
+        vol24hxrp,
+        vol24hx,
         /*
         date,
         md5,
@@ -39,7 +41,7 @@ export default function Description({token}) {
     const price = fNumber(exch / metrics.USD);
     const marketcap = fNumber(amount * exch / metrics.USD);
     const supply = fNumber(amount);
-    const volume24h = fNumber(vol24h);
+    const volume24h = fNumber(vol24hxrp / metrics.USD);
 
     //const vpro7d = fPercent(pro7d);
     const vpro24h = fPercent(pro24h);

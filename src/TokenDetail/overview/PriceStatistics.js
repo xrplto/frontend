@@ -65,6 +65,8 @@ export default function PriceStatistics({token}) {
         pro24h,
         p24h,
         vol24h,
+        vol24hxrp,
+        vol24hx,
         /*
         pro7d,
         p7d,
@@ -82,7 +84,7 @@ export default function PriceStatistics({token}) {
     const marketcap = amount * exch / metrics.USD;
     let voldivmarket = 0;
     if (marketcap > 0)
-        voldivmarket = fNumber(vol24h / marketcap);
+        voldivmarket = fNumber(vol24hx / (amount * exch));
    
     let strPc24h;
     if (p24h < 0) {
@@ -127,7 +129,7 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                     <TableRow>
                         <TableCell align="left"><Label variant="subtitle1" noWrap >Trading Volume<span style={badge24hStyle}>24h</span></Label></TableCell>
-                        <TableCell align="left">${fNumber(vol24h)}</TableCell>
+                        <TableCell align="left">${fNumber(vol24hxrp / metrics.USD)}</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left"><Label variant="subtitle1" noWrap >Volume / Market Cap</Label></TableCell>
