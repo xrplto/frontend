@@ -28,7 +28,7 @@ import { useSelector } from "react-redux";
 import { selectMetrics } from "src/redux/statusSlice";
 
 // Components
-import HistoryToolbar from './HistoryToolbar';
+import RichListToolbar from './RichListToolbar';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -125,7 +125,7 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
 };
 
-export default function RichList({data}) {
+export default function RichListData({token}) {
     const metrics = useSelector(selectMetrics);
     const BASE_URL = 'https://api.xrpl.to/api';
     const [page, setPage] = useState(0);
@@ -140,7 +140,7 @@ export default function RichList({data}) {
         name,
         exch,
         urlSlug
-    } = data.token;
+    } = token;
 
     useEffect(() => {
         function getRichList() {
@@ -282,7 +282,7 @@ export default function RichList({data}) {
                         })}
                 </TableBody>
             </Table>
-            <HistoryToolbar
+            <RichListToolbar
                 count={count}
                 rows={rows}
                 setRows={setRows}

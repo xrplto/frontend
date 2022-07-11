@@ -60,6 +60,14 @@ export const getServerSideProps = async ({ res }) => {
         <changefreq>always</changefreq>
     </url>`}).join('')
     }
+    ${slugs.map((slug) => {
+    return `
+    <url>
+        <loc>https://xrpl.to/richlist/${slug}</loc>
+        <lastmod>${time}</lastmod>
+        <changefreq>always</changefreq>
+    </url>`}).join('')
+    }
 </urlset>
     `;
 

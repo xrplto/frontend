@@ -110,7 +110,7 @@ export default function UserDesc({token}) {
 
             <Stack direction="row" spacing={2} sx={{mt:2, ml:1}} alignItems='center'>
                 <Stack direction="row" spacing={1} alignItems='center'>
-                    <Typography variant="price" noWrap>
+                    <Typography variant="h2" noWrap>
                         $ {fNumber(exch / metrics.USD)}
                     </Typography>
                     <Typography variant="subtitle1" style={{marginTop:8}}>
@@ -139,7 +139,7 @@ export default function UserDesc({token}) {
                 <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
                 <Chip label='Sponsored' icon={<Avatar sx={{ width: 24, height: 24 }} alt="xumm" src="/static/sponsor.png"/>} variant={"outlined"} size="small"/>
             </Stack>
-            
+
             <Grid container spacing={1} alignItems='center' sx={{mt:2}}>
                 {tags && tags.map((tag, idx) => {
                     return (

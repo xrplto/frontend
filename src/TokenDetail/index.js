@@ -20,6 +20,7 @@ import {
 import ScrollToTop from 'src/layouts/ScrollToTop';
 import {UserDesc, PriceDesc, ExtraDesc} from "./common"
 import {PriceChart, PriceStatistics, Description} from './overview';
+import {RichListData} from './richlist';
 import {HistoryData} from './history';
 import {MarketData} from './market';
 import {TradeData} from './trade';
@@ -381,6 +382,7 @@ export default function TokenDetail({data}) {
                     <Tab label="Market" {...a11yProps(1)} />
                     <Tab label="Trade" {...a11yProps(2)} />
                     <Tab label="Historical Data" {...a11yProps(3)} />
+                    <Tab label="Rich List" {...a11yProps(4)} />
                 </Tabs>
                 <TabPanel value={value} index={0}>
                     <Grid container spacing={3} sx={{p:0}}>
@@ -408,6 +410,9 @@ export default function TokenDetail({data}) {
                 </TabPanel>
                 <TabPanel value={value} index={3}>
                     <HistoryData token={token} pairs={pairs} pair={pair} setPair={setPair}/>
+                </TabPanel>
+                <TabPanel value={value} index={4}>
+                    <RichListData token={token}/>
                 </TabPanel>
             </Container>
             <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 4, mb: 8 }}>
