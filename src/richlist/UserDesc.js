@@ -3,6 +3,7 @@ import { useState } from 'react';
 // Material
 import {
     Avatar,
+    Box,
     Button,
     Chip,
     Grid,
@@ -30,17 +31,31 @@ import listCheck from '@iconify/icons-ci/list-check';
 import ExplorersMenu from './ExplorersMenu';
 import CommunityMenu from './CommunityMenu';
 import ChatMenu from './ChatMenu';
-import TrustSet from './TrustSet';
+import BearBullChip from './BearBullChip';
+import LowHighBar24H from './LowHighBar24H';
+
+// Redux
+import { useSelector } from "react-redux";
+import { selectMetrics } from "src/redux/statusSlice";
+
+// Utils
+import { fNumber } from 'src/utils/formatNumber';
 
 // ----------------------------------------------------------------------
 export default function UserDesc({token}) {
+    const BASE_URL = 'https://api.xrpl.to/api';
     const [rating, setRating] = useState(2);
     const [trustToken, setTrustToken] = useState(null);
+
+    const metrics = useSelector(selectMetrics);
 
     const {
         id,
         issuer,
         name,
+        exch,
+        pro7d,
+        pro24h,
         domain,
         whitepaper,
         kyc,
@@ -66,14 +81,9 @@ export default function UserDesc({token}) {
 
     const handleDelete = () => {
     }
-
-    const handleSetTrust = (e) => {
-        setTrustToken(token);
-    }
   
     return (
         <Stack>
-            <TrustSet token={trustToken} setToken={setTrustToken}/>
             <Stack direction="row" spacing={1} alignItems='center'>
                 <Avatar
                     alt={user}
@@ -97,14 +107,39 @@ export default function UserDesc({token}) {
                 </Stack>
                 <Chip variant={"outlined"} icon={<TokenIcon />} label={name} />
             </Stack>
+
+            <Stack direction="row" spacing={2} sx={{mt:2, ml:1}} alignItems='center'>
+                <Stack direction="row" spacing={1} alignItems='center'>
+                    <Typography variant="price" noWrap>
+                        $ {fNumber(exch / metrics.USD)}
+                    </Typography>
+                    <Typography variant="subtitle1" style={{marginTop:8}}>
+                        {fNumber(exch)} XRP
+                    </Typography>
+                </Stack>
+                <BearBullChip value={pro24h} tooltip='24h(%)'/>
+                <BearBullChip value={pro7d} tooltip={
+                    <Stack alignItems='center'>
+                        7d (%)
+                        <Box
+                            component="img"
+                            alt=""
+                            sx={{ width: 135, height: 50, mt: 2 }}
+                            src={`${BASE_URL}/sparkline/${md5}`}
+                        />
+                    </Stack>
+                }/>
+            </Stack>
+
+            <LowHighBar24H token={token}/>
+
             <Stack direction="row" spacing={1} sx={{mt:2}}>
-                <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Rank by Volume(24h)</Typography>}>
-                    <Chip label={'Rank #' + id} color="primary" variant="outlined" size="small"/>
-                </Tooltip>
                 <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
                 <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
                 <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
+                <Chip label='Sponsored' icon={<Avatar sx={{ width: 24, height: 24 }} alt="xumm" src="/static/sponsor.png"/>} variant={"outlined"} size="small"/>
             </Stack>
+            
             <Grid container spacing={1} alignItems='center' sx={{mt:2}}>
                 {tags && tags.map((tag, idx) => {
                     return (
@@ -152,41 +187,15 @@ export default function UserDesc({token}) {
                 )}
 
                 <Grid item sx={{pb:1}}>
-                    <Chip label={'Trust Set'} sx={{pl:0.5,pr:0.5}}
-                        deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
-                        onDelete={handleDelete} onClick={handleSetTrust}
-                        icon={<Icon icon={arrowsExchange} width="18" height="18"/>} />
-                </Grid>
-
-                <Grid item sx={{pb:1}}>
-                    <Link
-                        underline="none"
-                        color="inherit"
-                        target="_blank"
-                        href={`/richlist/${urlSlug}`}
-                        rel="noreferrer noopener nofollow"
-                    >
-                        <Chip label={`RichList (${richlist})`} sx={{pl:0.5,pr:0.5}}
-                            deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
-                            onDelete={handleDelete} onClick={handleDelete}
-                            icon={<Icon icon={listCheck} width="18" height="18"/>} />
-                    </Link>
-                </Grid>
-
-                <Grid item sx={{pb:1}}>
                     <ExplorersMenu issuer={issuer}/>
                 </Grid>
+
                 {isChat && (
                     <Grid item sx={{pb:1}}>
                         <ChatMenu token={token}/>
                     </Grid>
                 )}
-                {/* <Grid item sx={{pb:1}}>
-                    <Chip label="Source code" sx={{pl:0.5,pr:0.5}}
-                        deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
-                        onDelete={handleDelete} onClick={handleDelete}
-                        icon={<Icon icon={codeIcon} width="16" height="16" />} />
-                </Grid> */}
+
                 {isCommunity && (
                     <Grid item sx={{pb:1}}>
                         <CommunityMenu token={token}/>

@@ -532,7 +532,7 @@ export async function getServerSideProps(ctx) {
         var t2 = performance.now();
         var dt = (t2 - t1).toFixed(2);
 
-        console.log(`3. getServerSideProps slug: ${slug} took: ${dt}ms`);
+        console.log(`3. getServerSideProps(trustline) slug: ${slug} took: ${dt}ms`);
     } catch (e) {
         console.log(e);
     }
