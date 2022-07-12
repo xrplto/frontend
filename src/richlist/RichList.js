@@ -129,7 +129,7 @@ export default function RichList({data}) {
     const metrics = useSelector(selectMetrics);
     const BASE_URL = 'https://api.xrpl.to/api';
     const [page, setPage] = useState(0);
-    const [rows, setRows] = useState(20);
+    const [rows, setRows] = useState(10);
     const [frozen, setFrozen] = useState(false);
     const [count, setCount] = useState(0);
     const [richList, setRichList] = useState([]);
@@ -260,7 +260,7 @@ export default function RichList({data}) {
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="bithomp">
-                                                    <Avatar alt="livenetxrplorg" src="/static/bithomp.ico" sx={{ width: 20, height: 20 }} />
+                                                    <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 20, height: 20 }} />
                                                 </IconButton>
                                             </Link>
 

@@ -415,20 +415,7 @@ export default function TokenDetail({data}) {
                     <RichListData token={token}/>
                 </TabPanel>
             </Container>
-            <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 4, mb: 8 }}>
-                <Typography textAlign="left" variant="subtitle1">
-                    &copy; 2022 XRPL.to. All rights reserved
-                    {/* <Link
-                        href="https://nftlabs.to"
-                        target="_blank"
-                        rel="noopener noreferrer nofollow"
-                        sx={{ml:1}}
-                    >
-                        NFT Labs
-                    </Link> */}
-                </Typography>
-            </Container>
-            <FooterContainer/>
+            
             <ScrollToTop />
         </>
     );

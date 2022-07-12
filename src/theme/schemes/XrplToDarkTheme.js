@@ -722,21 +722,21 @@ export const XrplToDarkTheme = createTheme({
     //     }
     //   }
     // },
-    MuiIconButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          padding: 8,
+    // MuiIconButton: {
+    //   styleOverrides: {
+    //     root: {
+    //       borderRadius: 8,
+    //       padding: 8,
 
-          '& .MuiTouchRipple-root': {
-            borderRadius: 8
-          }
-        },
-        sizeSmall: {
-          padding: 4
-        }
-      }
-    },
+    //       '& .MuiTouchRipple-root': {
+    //         borderRadius: 8
+    //       }
+    //     },
+    //     sizeSmall: {
+    //       padding: 4
+    //     }
+    //   }
+    // },
     MuiListItemText: {
       styleOverrides: {
         root: {
@@ -1120,12 +1120,13 @@ export const XrplToDarkTheme = createTheme({
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
-          backgroundColor: alpha(colors.alpha.black['100'], 0.95),
+          color: colors.alpha.black[100],
+          background: alpha('#1A3444', 0.99),
           padding: '8px 16px',
           fontSize: 13
         },
         arrow: {
-          color: alpha(colors.alpha.black['100'], 0.95)
+          color: alpha('#1A3444', 0.99)
         }
       }
     },
@@ -1269,6 +1270,11 @@ export const XrplToDarkTheme = createTheme({
       fontSize: 13,
       // textTransform: 'uppercase',
       // color: colors.alpha.black[50]
+    },
+    link: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#A0A0A0'
     },
     kyc: {
       fontSize: 10,

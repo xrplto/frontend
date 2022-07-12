@@ -85,7 +85,7 @@ function Richlist(props) {
             <Container maxWidth="xl">
                 <Grid container direction="row" justify="center" alignItems="stretch">
                     <Grid item xs={12} md={4} lg={4} sx={{ mt: 3 }}>
-                        <UserDesc token={token} />
+                        <UserDesc data={data} />
                         {/* <Divider orientation="horizontal" sx={{mt:2,mb:2}} variant="middle" flexItem /> */}
                     </Grid>
                     
@@ -110,11 +110,11 @@ export async function getServerSideProps(ctx) {
         const slug = ctx.params.slug;
         var t1 = performance.now();
 
-        // https://api.xrpl.to/api/richlist/xrdoge-classic-xrdc?start=0&limit=100&freeze=false
-        // const res = await axios.get(`${BASE_URL}/richlist/${slug}?start=0&limit=20&freeze=false`);
+        // https://api.xrpl.to/api/richlist/xrdoge-classic-xrdc?start=0&limit=10&freeze=false
+        const res = await axios.get(`${BASE_URL}/richlist/${slug}?start=0&limit=10&freeze=false`);
 
         // https://api.xrpl.to/api/detail/bitstamp-usd
-        const res = await axios.get(`${BASE_URL}/token/${slug}`);
+        // const res = await axios.get(`${BASE_URL}/token/${slug}`);
 
         data = res.data;
 
