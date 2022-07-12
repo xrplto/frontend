@@ -3,13 +3,10 @@ import { AppContext } from 'src/AppContext';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import {
     Box,
-    Link,
-    useTheme
+    Link
 } from '@mui/material';
 
 function Logo() {
-    const theme = useTheme();
-
     const { darkMode } = useContext(AppContext);
 
     const img_black = "/xrpl-to-logo-black.png";

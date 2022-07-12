@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import {
   Box,
-  Typography,
+  Button,
   Container,
   Divider,
-  OutlinedInput,
-  IconButton,
-  Tooltip,
   FormControl,
+  FormHelperText,
+  IconButton,
   InputAdornment,
-  Button,
+  Link,
+  OutlinedInput,
   styled,
-  FormHelperText
+  Tooltip,
+  Typography,
+  
 } from '@mui/material';
 
 import BaseLayout from 'src/layouts/BaseLayout';
@@ -20,6 +22,7 @@ import Head from 'next/head';
 import Logo from 'src/components/Logo';
 
 import FacebookIcon from '@mui/icons-material/Facebook';
+import TelegramIcon from '@mui/icons-material/Telegram';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import MailTwoToneIcon from '@mui/icons-material/MailTwoTone';
@@ -70,7 +73,8 @@ const ButtonNotify = styled(Button)(
 
 function StatusComingSoon() {
   const calculateTimeLeft = () => {
-    const difference = +new Date(`2023`) - +new Date();
+    // const difference = +new Date(`2023`) - +new Date();
+    const difference = +new Date(`2023`) - 1000 * 60 * 60 * 24 * 30 * 5 - +new Date();
     let timeLeft = {};
 
     if (difference > 0) {
@@ -168,21 +172,53 @@ function StatusComingSoon() {
                 </FormControl>
                 <Divider sx={{ my: 4 }} />
                 <Box sx={{ textAlign: 'center' }}>
-                  <Tooltip arrow placement="top" title="Facebook">
+                  <Link
+                    href="https://www.facebook.com/xrpl.to/"
+                    sx={{ mt: 2, display: 'inline-flex' }}
+                    underline="none"
+                    target="_blank"
+                    rel="noreferrer noopener nofollow"
+                  >
                     <IconButton color="primary">
                       <FacebookIcon />
                     </IconButton>
-                  </Tooltip>
-                  <Tooltip arrow placement="top" title="Twitter">
+                  </Link>
+                  
+                  <Link
+                    href="https://www.twitter.com/xrplto/"
+                    sx={{ mt: 2, display: 'inline-flex' }}
+                    underline="none"
+                    target="_blank"
+                    rel="noreferrer noopener nofollow"
+                  >
                     <IconButton color="primary">
                       <TwitterIcon />
                     </IconButton>
-                  </Tooltip>
-                  <Tooltip arrow placement="top" title="Instagram">
+                  </Link>
+
+                  <Link
+                    href="https://t.me/xrplto"
+                    sx={{ mt: 2, display: 'inline-flex' }}
+                    underline="none"
+                    target="_blank"
+                    rel="noreferrer noopener nofollow"
+                  >
+                    <IconButton color="primary">
+                      <TelegramIcon />
+                    </IconButton>
+                  </Link>
+
+                  <Link
+                    href="https://www.instagram.com/xrpl.to/"
+                    sx={{ mt: 2, display: 'inline-flex' }}
+                    underline="none"
+                    target="_blank"
+                    rel="noreferrer noopener nofollow"
+                  >
                     <IconButton color="primary">
                       <InstagramIcon />
                     </IconButton>
-                  </Tooltip>
+                  </Link>
                 </Box>
               </Box>
             </Container>

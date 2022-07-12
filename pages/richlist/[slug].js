@@ -29,8 +29,8 @@ import Topbar from 'src/layouts/Topbar';
 import Logo from 'src/components/Logo';
 import Account from 'src/components/Account';
 import UserDesc from "src/richlist/UserDesc";
-import ExtraDesc from "src/richlist/ExtraDesc";
 import RichList from "src/richlist/RichList";
+import Footer from 'src/layouts/Footer';
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -87,7 +87,6 @@ function Richlist(props) {
                     <Grid item xs={12} md={4} lg={4} sx={{ mt: 3 }}>
                         <UserDesc token={token} />
                         {/* <Divider orientation="horizontal" sx={{mt:2,mb:2}} variant="middle" flexItem /> */}
-                        <ExtraDesc token={token} />
                     </Grid>
                     
                     <Grid item xs={12} md={8} lg={8} sx={{ mt: 3 }}>
@@ -96,11 +95,7 @@ function Richlist(props) {
                 </Grid>
             </Container>
 
-            <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 4, mb: 8 }}>
-                <Typography textAlign="left" variant="subtitle1">
-                    &copy; 2022 XRPL.to. All rights reserved
-                </Typography>
-            </Container>
+            <Footer/>
         </OverviewWrapper>
     );
 }

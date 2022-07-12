@@ -26,6 +26,7 @@ import Topbar from 'src/layouts/Topbar';
 import Logo from 'src/components/Logo';
 import Account from 'src/components/Account';
 import TokenDetail from 'src/TokenDetail';
+import Footer from 'src/layouts/Footer';
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -79,11 +80,7 @@ function Detail(props) {
             
             <TokenDetail data={data}/>
 
-            {/* <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 2, mb: 8 }}>
-                <Typography textAlign="left" variant="subtitle1">
-                    &copy; 2022 XRPL.TO
-                </Typography>
-            </Container> */}
+            <Footer />
         </OverviewWrapper>
     );
 }
