@@ -28,10 +28,12 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 
 export default function TokenListToolbar({ rows, setRows, page, setPage}) {
     const metrics = useSelector(selectMetrics);
-
     const length = metrics.length;
-    const page_count = Math.floor(length / rows) + 1;
 
+    const num = length / rows;
+    let page_count = Math.floor(num)
+    if (num % 1 != 0) page_count++;
+    
     const start = page * rows + 1;
     let end = start + rows - 1;
     if (end > length) end = length;

@@ -423,12 +423,6 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                 </Link>
                             </Stack>
                         </TableCell>
-                        <TableCell align="right" sx={{pt:1, pb:0.2, width: '15%'}}>
-                            <Label variant="subtitle2" noWrap>Calc24H</Label>
-                        </TableCell>
-                        <TableCell align="left" sx={{pt:1, pb:0.2, width: '30%'}}>
-                            <Label variant="subtitle2" noWrap>{metrics.H24[3]} ms</Label>
-                        </TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="right" sx={{pt:0, pb:0.2}}>
@@ -439,12 +433,6 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                 <Label variant="subtitle2" noWrap>{name}</Label>
                                 <Label variant="caption" noWrap>({currency})</Label>
                             </Stack>
-                        </TableCell>
-                        <TableCell align="right" sx={{pt:0, pb:0.2}}>
-                            <Label variant="subtitle2" noWrap>Schedule</Label>
-                        </TableCell>
-                        <TableCell align="left" sx={{pt:0, pb:0.2}}>
-                            <Label variant="subtitle2" noWrap>{metrics.H24[4]} ms</Label>
                         </TableCell>
                     </TableRow>
 
@@ -477,12 +465,6 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                                 </Link>
                                 <EditDialog label='Domain' value={domain} setValue={setDomain}/>
                             </Stack>
-                        </TableCell>
-                        <TableCell align="right" sx={{pt:0, pb:0.2}}>
-                            <Label variant="subtitle2" noWrap>API Call</Label>
-                        </TableCell>
-                        <TableCell align="left" sx={{pt:0, pb:0.2}}>
-                            <Label variant="subtitle2" noWrap>{metrics.H24[5]} / min</Label>
                         </TableCell>
                     </TableRow>
 

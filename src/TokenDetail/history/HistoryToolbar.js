@@ -26,7 +26,9 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 }));
 
 export default function HistoryToolbar({ count, rows, setRows, page, setPage}) {
-    const page_count = Math.floor(count / rows) + 1;
+    const num = count / rows;
+    let page_count = Math.floor(num)
+    if (num % 1 != 0) page_count++;
 
     const start = page * rows + 1;
     let end = start + rows - 1;
