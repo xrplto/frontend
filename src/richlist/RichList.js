@@ -146,7 +146,7 @@ export default function RichList({data}) {
         function getRichList() {
             console.log('getRichList');
             // https://api.xrpl.to/api/richlist/xrdoge-classic-xrdc?start=0&limit=100&freeze=false
-            axios.get(`${BASE_URL}/richlist/${urlSlug}?start=${page*rows}&limit=${rows}&freeze=${frozen}`)
+            axios.get(`${BASE_URL}/richlist/${urlSlug}?start=${page * rows}&limit=${rows}&freeze=${frozen}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {

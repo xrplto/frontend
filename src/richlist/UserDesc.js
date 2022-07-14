@@ -86,7 +86,6 @@ export default function UserDesc({data}) {
         md5,
         tags,
         social,
-        richlist,
         urlSlug,
         amount,
         vol24h
@@ -171,7 +170,7 @@ export default function UserDesc({data}) {
             <Stack direction="row" spacing={1} sx={{mt:2}}>
                 <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
                 <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
-                <Chip label={richlist + " TrustLines"} color="info" variant="outlined" size="small"/>
+                <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
                 <Chip label='Sponsored' icon={<Avatar sx={{ width: 24, height: 24 }} alt="xumm" src="/static/sponsor.png"/>} variant={"outlined"} size="small"/>
             </Stack>
 

@@ -95,8 +95,11 @@ export async function getServerSideProps(ctx) {
         const slug = ctx.params.slug;
         var t1 = performance.now();
 
+        // https://api.xrpl.to/api/richlist/xrdoge-classic-xrdc?start=0&limit=10&freeze=false
+        const res = await axios.get(`${BASE_URL}/richlist/${slug}?start=0&limit=10&freeze=false`);
+
         // https://api.xrpl.to/api/detail/bitstamp-usd
-        const res = await axios.get(`${BASE_URL}/token/${slug}`);
+        // const res = await axios.get(`${BASE_URL}/token/${slug}`);
 
         data = res.data;
 

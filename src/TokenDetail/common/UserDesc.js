@@ -51,7 +51,6 @@ export default function UserDesc({token}) {
         md5,
         tags,
         social,
-        richlist,
         urlSlug
     } = token;
 
@@ -166,7 +165,7 @@ export default function UserDesc({token}) {
                         href={`/richlist/${urlSlug}`}
                         rel="noreferrer noopener nofollow"
                     >
-                        <Chip label={`RichList (${richlist})`} sx={{pl:0.5,pr:0.5}}
+                        <Chip label={`RichList (${trustlines})`} sx={{pl:0.5,pr:0.5}}
                             deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
                             onDelete={handleDelete} onClick={handleDelete}
                             icon={<Icon icon={listCheck} width="18" height="18"/>} />

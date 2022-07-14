@@ -412,7 +412,7 @@ export default function TokenDetail({data}) {
                     <HistoryData token={token} pairs={pairs} pair={pair} setPair={setPair}/>
                 </TabPanel>
                 <TabPanel value={value} index={4}>
-                    <RichListData token={token}/>
+                    <RichListData data={data}/>
                 </TabPanel>
             </Container>
             

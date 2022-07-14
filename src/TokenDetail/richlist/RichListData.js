@@ -7,6 +7,7 @@ import { withStyles } from '@mui/styles';
 import {
     Avatar,
     FormControl,
+    Grid,
     IconButton,
     InputLabel,
     Link,
@@ -29,6 +30,8 @@ import { selectMetrics } from "src/redux/statusSlice";
 
 // Components
 import RichListToolbar from './RichListToolbar';
+import RichListChart from './RichListChart';
+import RichStatistics from './RichStatistics';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -39,6 +42,9 @@ import checkIcon from '@iconify/icons-akar-icons/check';
 // Utils
 import { fNumber, fPercent } from 'src/utils/formatNumber';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
+
+// Chart
+import { Chart } from 'src/components/Chart';
 
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
@@ -125,7 +131,7 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
 };
 
-export default function RichListData({token}) {
+export default function RichListData({data}) {
     const metrics = useSelector(selectMetrics);
     const BASE_URL = 'https://api.xrpl.to/api';
     const [page, setPage] = useState(0);
@@ -133,14 +139,17 @@ export default function RichListData({token}) {
     const [frozen, setFrozen] = useState(false);
     const [count, setCount] = useState(0);
     const [richList, setRichList] = useState([]);
+    const [range, setRange] = useState('7D');
+    const [history, setHistory] = useState([]);
     const theme = useTheme();
     const {
         issuer,
         currency,
+        md5,
         name,
         exch,
         urlSlug
-    } = token;
+    } = data.token;
 
     useEffect(() => {
         function getRichList() {
@@ -162,12 +171,52 @@ export default function RichListData({token}) {
         getRichList();
     }, [page, rows, frozen]);
 
+    useEffect(() => {
+        function getGraph () {
+            // https://api.xrpl.to/api/graphrich/0527842b8550fce65ff44e913a720037?range=7D
+            axios.get(`${BASE_URL}/graphrich/${md5}?range=${range}`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        const items = ret.history;
+                        setHistory(items);
+                    }
+                }).catch(err => {
+                    console.log("Error on getting graph data.", err);
+                }).then(function () {
+                    // always executed
+                });
+        }
+
+        getGraph();
+
+    }, [range]);
+
+    const updateRange = (val) => {
+        setRange(val);
+    }
+
     const onChangeFrozen = (e) => {
         setFrozen(!frozen);
     }
 
     return (
         <StackStyle>
+            <Grid container spacing={3} sx={{p:0}}>
+                <Grid item xs={12} md={12} lg={8}>
+                    <RichListChart history={history} token={data.token} range={range} setRange={updateRange} />
+                </Grid>
+
+                <Grid item xs={12} md={12} lg={4}>
+                    <RichStatistics data={data} />
+                </Grid>
+
+                <Grid item xs={12} md={6} lg={8}>
+                </Grid>
+
+                <Grid item xs={12} md={6} lg={4}>
+                </Grid>
+            </Grid>
             <Table stickyHeader sx={{
                 [`& .${tableCellClasses.root}`]: {
                     borderBottom: "1px solid",

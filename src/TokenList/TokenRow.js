@@ -6,14 +6,11 @@ import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 
 // Material
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import {
     Avatar,
-    Box,
     Link,
     Stack,
-    Table,
-    TableBody,
     TableCell,
     TableRow,
     Typography
@@ -24,8 +21,8 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Redux
-import { useSelector, useDispatch } from "react-redux";
-import { selectMetrics, update_metrics } from "src/redux/statusSlice";
+import { useSelector } from "react-redux";
+import { selectMetrics } from "src/redux/statusSlice";
 
 // Components
 import TokenMoreMenu from './TokenMoreMenu';
