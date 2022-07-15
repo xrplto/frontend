@@ -2,192 +2,170 @@
 import { /*alpha,*/ useTheme } from '@mui/material/styles';
 
 // Utils
-import { fCurrency5/*, fNumber*/ } from 'src/utils/formatNumber';
+import { fCurrency5, fNumber, fIntNumber } from 'src/utils/formatNumber';
 
 // ----------------------------------------------------------------------
+export default function ChartOptions(data) {
+    const theme = useTheme();
 
-export default function ChartOptions() {
-  const theme = useTheme();
-
-  const LABEL_TOTAL = {
-    show: true,
-    label: 'Total',
-    color: theme.palette.text.secondary,
-    ...theme.typography.subtitle2
-  };
-
-  const LABEL_VALUE = {
-    offsetY: 8,
-    color: theme.palette.text.primary,
-    ...theme.typography.h3
-  };
-
-  const CHART_COLORS = {
-    violet: ['#826AF9', '#9E86FF', '#D0AEFF', '#F7D2FF'],
-    blue: ['#2D99FF', '#83CFFF', '#A5F3FF', '#CCFAFF'],
-    green: ['#2CD9C5', '#60F1C8', '#A4F7CC', '#C0F2DC'],
-    yellow: ['#FFE700', '#FFEF5A', '#FFF7AE', '#FFF3D6'],
-    red: ['#FF6C40', '#FF8F6D', '#FFBD98', '#FFF2D4']
-  };
-
-  const PRIMARY = {
-    lighter: '#C8FACD',
-    light: '#5BE584',
-    main: '#00AB55',
-    dark: '#007B55',
-    darker: '#005249',
-    contrastText: '#fff'
-};
-
-  return {
-    // Colors
-    colors: [
-      PRIMARY.primary,
-      CHART_COLORS.yellow[0],
-      CHART_COLORS.blue[0],
-      CHART_COLORS.violet[0],
-      CHART_COLORS.green[0],
-      CHART_COLORS.red[0]
-    ],
-
-    // States
-    states: {
-      hover: {
-        filter: {
-          type: 'lighten',
-          value: 0.04
-        }
-      },
-      active: {
-        filter: {
-          type: 'darken',
-          value: 0.88
-        }
-      }
-    },
-
-    // Datalabels
-    dataLabels: { enabled: false },
-
-    // Stroke
-    stroke: {
-      width: 2,
-      curve: 'smooth',
-      lineCap: 'round'
-    },
-
-    // Markers
-    markers: {
-      size: 0,
-      strokeColors: theme.palette.background.paper
-    },
-
-    // Tooltip
-    tooltip: {
-      shared: true,
-      intersect: false,
-      theme: 'dark',
-      x: {
-        show: false,
-        format: 'MM/dd/yyyy, h:mm:ss TT',
-      },
-      y: {
-        formatter: (y) => {
-          if (typeof y !== 'undefined') {
-            return `Price: $${fCurrency5(y)}`;
-          }
-          return y;
+    return {
+        chart: {
+            id: 'chart2',
+            animations: { enabled: true },
+            redrawOnParentResize: true,
+            toolbar: {
+                autoSelected: 'pan',
+                show: false
+            },
+            zoom: {
+                type: 'y',
+                enabled: true,
+                autoScaleYaxis: true
+            }
         },
-        title: {
-          formatter: (seriesName) => {
-            return seriesName;
-          }
-        }
-      },
-      marker: {
-        show: true,
-      },
-    },
+        series: [
+            {
+                name: '',
+                type: 'area',
+                data: data
+            }
+        ],
+        // Grid
+        grid: {
+            strokeDashArray: 3,
+            borderColor: theme.palette.divider
+        },
+        // Colors
+        colors: ['#00AB55'],
+        // colors: [
+        //     '#00AB55',
+        //     '#FFE700',
+        //     '#2D99FF',
+        //     '#826AF9',
+        //     '#2CD9C5',
+        //     '#FF6C40',
+        //     '#B72136'
+        // ],
 
-    // Legend
-    legend: {
-      show: true,
-      fontSize: 13,
-      position: 'top',
-      horizontalAlign: 'right',
-      markers: {
-        radius: 12
-      },
-      fontWeight: 500,
-      itemMargin: { horizontal: 12 },
-      labels: {
-        colors: theme.palette.text.primary
-      }
-    },
+        // Fill
+        fill: {
+            type: 'gradient',
+            opacity: 1,
+            gradient: {
+                type: 'vertical',
+                shadeIntensity: 0,
+                opacityFrom: 0.4,
+                opacityTo: 0,
+                stops: [0, 100]
+            },
+        },
+        // States
+        states: {
+            hover: {
+                filter: {
+                    type: 'lighten',
+                    value: 0.04
+                }
+            },
+            active: {
+                filter: {
+                    type: 'darken',
+                    value: 0.88
+                }
+            }
+        },
 
-    // plotOptions
-    plotOptions: {
-      // Bar
-      bar: {
-        columnWidth: '11%',
-        borderRadius: 4
-      },
-      // Pie + Donut
-      pie: {
-        donut: {
-          labels: {
+        // Datalabels
+        dataLabels: { enabled: false },
+
+        // Stroke
+        stroke: {
+            width: 2,
+            curve: 'smooth',
+            lineCap: 'round'
+        },
+
+        // Markers
+        markers: {
+            size: 0,
+            strokeColors: theme.palette.background.paper
+        },
+
+        // X Axis
+        xaxis: {
+            type: 'datetime',
+            axisBorder: { show: true },
+            axisTicks: { show: false }
+        },
+        // Y Axis
+        yaxis: {
             show: true,
-            value: LABEL_VALUE,
-            total: LABEL_TOTAL
-          }
-        }
-      },
-      // Radialbar
-      radialBar: {
-        track: {
-          strokeWidth: '100%',
-          background: theme.palette.grey[500_16]
+            tickAmount: 6,
+            labels: {
+                /**
+                * Allows users to apply a custom formatter function to yaxis labels.
+                *
+                * @param { String } value - The generated value of the y-axis tick
+                * @param { index } index of the tick / currently executing iteration in yaxis labels array
+                */
+                formatter: function(val, index) {
+                    return fNumber(val);
+                }
+            }
         },
-        dataLabels: {
-          value: LABEL_VALUE,
-          total: LABEL_TOTAL
-        }
-      },
-      // Radar
-      radar: {
-        polygons: {
-          fill: { colors: ['transparent'] },
-          strokeColors: theme.palette.divider,
-          connectorColors: theme.palette.divider
-        }
-      },
-      // polarArea
-      polarArea: {
-        rings: {
-          strokeColor: theme.palette.divider
-        },
-        spokes: {
-          connectorColors: theme.palette.divider
-        }
-      }
-    },
 
-    // Responsive
-    responsive: [
-      {
-        // sm
-        breakpoint: theme.breakpoints.values.sm,
-        options: {
-          plotOptions: { bar: { columnWidth: '40%' } }
-        }
-      },
-      {
-        // md
-        breakpoint: theme.breakpoints.values.md,
-        options: {
-          plotOptions: { bar: { columnWidth: '32%' } }
-        }
-      }
-    ]
-  };
+        // Tooltip
+        tooltip: {
+            shared: true,
+            intersect: false,
+            theme: 'dark',
+            x: {
+                show: false,
+                format: 'MM/dd/yyyy, h:mm:ss TT',
+            },
+            y: {
+                formatter: (y) => {
+                    if (typeof y !== 'undefined') {
+                        return `Holding Addresses: ${fIntNumber(y)}`;
+                    }
+                    return y;
+                },
+                title: {
+                    formatter: (seriesName) => {
+                      return seriesName;
+                    }
+                }
+            },
+            marker: {
+                show: true,
+            },
+        },
+
+        // plotOptions
+        plotOptions: {
+            // Bar
+            bar: {
+                columnWidth: '50%',
+                borderRadius: 0
+            },
+        },
+
+        // Responsive
+        responsive: [
+            {
+                // sm
+                breakpoint: theme.breakpoints.values.sm,
+                options: {
+                    plotOptions: { bar: { columnWidth: '40%' } }
+                }
+            },
+            {
+                // md
+                breakpoint: theme.breakpoints.values.md,
+                options: {
+                    plotOptions: { bar: { columnWidth: '32%' } }
+                }
+            }
+        ]
+    };
 }

@@ -9,7 +9,7 @@ const initialState = {
         EUR:100,
         JPY:100,
         CNY:100,
-        H24: [0, 0, 0],
+        H24: [0, 0, 0, 0],
         global: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     },
     accountData: {

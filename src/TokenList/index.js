@@ -40,7 +40,7 @@ const TABLE_HEAD = [
     { no: 3, id: 'pro24h', label: '24h (%)', align: 'left', order: true },
     { no: 4, id: 'pro7d', label: '7d (%)', align: 'left', order: true },
     { no: 5, id: 'vol24hxrp', label: 'Volume(24h)', align: 'left', order: true },
-    { no: 6, id: 'vol24htx', label: 'Tx(24h)', align: 'left', order: true },
+    { no: 6, id: 'vol24htx', label: 'Trades', align: 'left', order: true },
     { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
     { no: 8, id: 'trustlines', label: 'TrustLines', align: 'left', order: true },
     { no: 9, id: 'amount', label: 'Total Supply', align: 'left', order: true },

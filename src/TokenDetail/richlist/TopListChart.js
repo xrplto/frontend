@@ -15,20 +15,26 @@ import {
 import { Chart } from 'src/components/Chart';
 
 // Components
-import ChartOptions from './ChartOptions';
+import ChartOptions2 from './ChartOptions2';
 
 // Utils
 import { fCurrency5, fNumber } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
 function extractGraphData(items) {
-    const res = [];
+    const res1 = [];
+    const res2 = [];
+    const res3 = [];
+    const res4 = [];
     for (var item of items) {
-        res.push([item.time, item.length]);
+        res1.push([item.time, item.top100]);
+        res2.push([item.time, item.top50]);
+        res3.push([item.time, item.top20]);
+        res4.push([item.time, item.top10]);
     }
-    return res;
+    return [res1, res2, res3, res4];
 }
 
-export default function RichListChart({ data }) {
+export default function TopListChart({ data }) {
     const BASE_URL = 'https://api.xrpl.to/api';
 
     const theme = useTheme();
@@ -36,7 +42,10 @@ export default function RichListChart({ data }) {
     const token = data.token;
 
     const [range, setRange] = useState('7D');
-    const [graphData, setGraphData] = useState([]);
+    const [graphData1, setGraphData1] = useState([]); // Top 100
+    const [graphData2, setGraphData2] = useState([]); // Top 50
+    const [graphData3, setGraphData3] = useState([]); // Top 20
+    const [graphData4, setGraphData4] = useState([]); // Top 10
 
     useEffect(() => {
         function getGraph () {
@@ -48,7 +57,11 @@ export default function RichListChart({ data }) {
                         const items = ret.history;
                         if (items && items.length > 0) {
                             const len = items.length;
-                            setGraphData(extractGraphData(items));
+                            const data = extractGraphData(items);
+                            setGraphData1(data[0]);
+                            setGraphData2(data[1]);
+                            setGraphData3(data[2]);
+                            setGraphData4(data[3]);
                         }
                     }
                 }).catch(err => {
@@ -67,20 +80,35 @@ export default function RichListChart({ data }) {
             setRange(newRange);
     };
 
-    const CHART_DATA1 = [
+    const CHART_DATA = [
         {
-            name: '',
+            name: 'Top 100 Holders',
             type: 'area',
-            data: graphData
-        }
+            data: graphData1
+        },
+        {
+            name: 'Top 50 Holders',
+            type: 'area',
+            data: graphData2
+        },
+        {
+            name: 'Top 20 Holders',
+            type: 'area',
+            data: graphData3
+        },
+        {
+            name: 'Top 10 Holders',
+            type: 'area',
+            data: graphData4
+        },
     ];
 
-    let options1 = ChartOptions(graphData);
+    let options = ChartOptions2(CHART_DATA);
 
     return (
         <>
             <Stack direction="row" spacing={2} sx={{mt:0}} alignItems="center">
-                <Typography variant="h3" sx={{ml:2, mt:0}}>{`Total Addresses`}</Typography>
+                <Typography variant="h3" sx={{ml:2, mt:0}}>{`Top ${token.name} addresses by balance`}</Typography>
                 <Box sx={{ flexGrow: 1 }} />
                 <ToggleButtonGroup
                     color="primary"
@@ -95,7 +123,7 @@ export default function RichListChart({ data }) {
                 </ToggleButtonGroup>
             </Stack>
             <Box sx={{ p: 0, pb: 0 }} dir="ltr">
-                <Chart series={CHART_DATA1} options={options1} height={364} />
+                <Chart series={CHART_DATA} options={options} height={364} />
             </Box>
         </>
     );

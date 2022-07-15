@@ -1,4 +1,4 @@
-import axios from 'axios'
+import axios from 'axios';
 import { useState, useEffect } from 'react';
 
 // Material
@@ -31,7 +31,9 @@ import { selectMetrics } from "src/redux/statusSlice";
 // Components
 import RichListToolbar from './RichListToolbar';
 import RichListChart from './RichListChart';
+import TopListChart from './TopListChart';
 import RichStatistics from './RichStatistics';
+import Donut from './Donut';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -139,8 +141,6 @@ export default function RichListData({data}) {
     const [frozen, setFrozen] = useState(false);
     const [count, setCount] = useState(0);
     const [richList, setRichList] = useState([]);
-    const [range, setRange] = useState('7D');
-    const [history, setHistory] = useState([]);
     const theme = useTheme();
     const {
         issuer,
@@ -153,7 +153,6 @@ export default function RichListData({data}) {
 
     useEffect(() => {
         function getRichList() {
-            console.log('getRichList');
             // https://api.xrpl.to/api/richlist/xrdoge-classic-xrdc?start=0&limit=100&freeze=false
             axios.get(`${BASE_URL}/richlist/${urlSlug}?start=${page*rows}&limit=${rows}&freeze=${frozen}`)
                 .then(res => {
@@ -171,31 +170,6 @@ export default function RichListData({data}) {
         getRichList();
     }, [page, rows, frozen]);
 
-    useEffect(() => {
-        function getGraph () {
-            // https://api.xrpl.to/api/graphrich/0527842b8550fce65ff44e913a720037?range=7D
-            axios.get(`${BASE_URL}/graphrich/${md5}?range=${range}`)
-                .then(res => {
-                    let ret = res.status === 200 ? res.data : undefined;
-                    if (ret) {
-                        const items = ret.history;
-                        setHistory(items);
-                    }
-                }).catch(err => {
-                    console.log("Error on getting graph data.", err);
-                }).then(function () {
-                    // always executed
-                });
-        }
-
-        getGraph();
-
-    }, [range]);
-
-    const updateRange = (val) => {
-        setRange(val);
-    }
-
     const onChangeFrozen = (e) => {
         setFrozen(!frozen);
     }
@@ -204,17 +178,19 @@ export default function RichListData({data}) {
         <StackStyle>
             <Grid container spacing={3} sx={{p:0}}>
                 <Grid item xs={12} md={12} lg={8}>
-                    <RichListChart history={history} token={data.token} range={range} setRange={updateRange} />
+                    <RichListChart data={data} />
                 </Grid>
 
                 <Grid item xs={12} md={12} lg={4}>
                     <RichStatistics data={data} />
                 </Grid>
 
-                <Grid item xs={12} md={6} lg={8}>
+                <Grid item xs={12} md={12} lg={8}>
+                    <TopListChart data={data} />
                 </Grid>
 
-                <Grid item xs={12} md={6} lg={4}>
+                <Grid item xs={12} md={12} lg={4}>
+                    <Donut richList={data.richList}/>
                 </Grid>
             </Grid>
             <Table stickyHeader sx={{
@@ -252,7 +228,7 @@ export default function RichListData({data}) {
                                 id,
                                 account,
                                 freeze,
-                                Balance,
+                                balance,
                                 holding,
                             } = row;
                             
@@ -285,17 +261,17 @@ export default function RichListData({data}) {
                                         {freeze && <Icon icon={checkIcon}/>}
                                     </TableCell>
                                     <TableCell align="left">
-                                        <Typography variant="subtitle1">{fNumber(Balance)}</Typography>
+                                        <Typography variant="subtitle1">{fNumber(balance)}</Typography>
                                     </TableCell>
                                     <TableCell align="left">
                                         <Typography variant="subtitle1">{fPercent(holding)} %</Typography>
                                     </TableCell>
                                     <TableCell align="left">
                                         <Stack>
-                                        <Typography variant="h4" noWrap>$ {fNumber(exch * Balance / metrics.USD)}</Typography>
+                                        <Typography variant="h4" noWrap>$ {fNumber(exch * balance / metrics.USD)}</Typography>
                                         <Stack direction="row" spacing={0.5} alignItems='center'>
                                             <Icon icon={rippleSolid} width='12' height='12'/>
-                                            <Typography variant="subtitle1" noWrap>{fNumber(exch * Balance)}</Typography>
+                                            <Typography variant="subtitle1" noWrap>{fNumber(exch * balance)}</Typography>
                                         </Stack>
                                         </Stack>
                                     </TableCell>

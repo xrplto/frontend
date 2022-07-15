@@ -152,6 +152,8 @@ function Topbar({md5}) {
                         {/* <Typography variant="small">|</Typography> */}
                         <Typography variant="small">Tokens Traded:</Typography>
                         <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24[2])}</Typography>
+                        <Typography variant="small">Active Addresses:</Typography>
+                        <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24[3])}</Typography>
                     </Stack>
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Stack direction="row" spacing={0.5} alignItems='center'>

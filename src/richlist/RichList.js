@@ -203,7 +203,7 @@ export default function RichList({data}) {
                                 id,
                                 account,
                                 freeze,
-                                Balance,
+                                balance,
                                 holding,
                             } = row;
                             
@@ -236,17 +236,17 @@ export default function RichList({data}) {
                                         {freeze && <Icon icon={checkIcon}/>}
                                     </TableCell>
                                     <TableCell align="left">
-                                        <Typography variant="subtitle1">{fNumber(Balance)}</Typography>
+                                        <Typography variant="subtitle1">{fNumber(balance)}</Typography>
                                     </TableCell>
                                     <TableCell align="left">
                                         <Typography variant="subtitle1">{fPercent(holding)} %</Typography>
                                     </TableCell>
                                     <TableCell align="left">
                                         <Stack>
-                                        <Typography variant="h4" noWrap>$ {fNumber(exch * Balance / metrics.USD)}</Typography>
+                                        <Typography variant="h4" noWrap>$ {fNumber(exch * balance / metrics.USD)}</Typography>
                                         <Stack direction="row" spacing={0.5} alignItems='center'>
                                             <Icon icon={rippleSolid} width='12' height='12'/>
-                                            <Typography variant="subtitle1" noWrap>{fNumber(exch * Balance)}</Typography>
+                                            <Typography variant="subtitle1" noWrap>{fNumber(exch * balance)}</Typography>
                                         </Stack>
                                         </Stack>
                                     </TableCell>
