@@ -55,7 +55,7 @@ export const getServerSideProps = async ({ res }) => {
     ${slugs.map((slug) => {
     return `
     <url>
-        <loc>https://xrpl.to/trustline/${slug}</loc>
+        <loc>https://xrpl.to/trustset/${slug}</loc>
         <lastmod>${time}</lastmod>
         <changefreq>always</changefreq>
     </url>`}).join('')

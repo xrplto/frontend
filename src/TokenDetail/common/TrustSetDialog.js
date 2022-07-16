@@ -307,12 +307,12 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                                         underline="none"
                                         color="inherit"
                                         target="_blank"
-                                        href={`https://xrpl.to/trustline/${urlSlug}`}
+                                        href={`https://xrpl.to/trustset/${urlSlug}`}
                                         rel="noreferrer noopener nofollow"
                                     >
-                                        https://xrpl.to/trustline/{urlSlug}
+                                        https://xrpl.to/trustset/{urlSlug}
                                     </Link>
-                                    <CopyToClipboard text={`https://xrpl.to/trustline/${urlSlug}`} onCopy={()=>showAlert(MSG_COPIED)}>
+                                    <CopyToClipboard text={`https://xrpl.to/trustset/${urlSlug}`} onCopy={()=>showAlert(MSG_COPIED)}>
                                         <Tooltip title={'Click to copy'}>
                                             <IconButton>
                                                 <Icon icon={copyIcon} />
@@ -334,7 +334,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                             Set Trustline
                         </Button>
 
-                        <CopyToClipboard text={`https://xrpl.to/trustline/${urlSlug}`} onCopy={()=>showAlert(MSG_COPIED)}>
+                        <CopyToClipboard text={`https://xrpl.to/trustset/${urlSlug}`} onCopy={()=>showAlert(MSG_COPIED)}>
                             <Button
                                 variant="outlined"
                                 color='primary'

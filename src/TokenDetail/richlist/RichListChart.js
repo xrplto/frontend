@@ -28,12 +28,8 @@ function extractGraphData(items) {
     return res;
 }
 
-export default function RichListChart({ data }) {
+export default function RichListChart({ token }) {
     const BASE_URL = 'https://api.xrpl.to/api';
-
-    const theme = useTheme();
-
-    const token = data.token;
 
     const [range, setRange] = useState('7D');
     const [graphData, setGraphData] = useState([]);

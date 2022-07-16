@@ -151,25 +151,10 @@ export default function UserDesc({token}) {
                 )}
 
                 <Grid item sx={{pb:1}}>
-                    <Chip label={'Trust Set'} sx={{pl:0.5,pr:0.5}}
+                    <Chip label={'TrustSet'} sx={{pl:0.5,pr:0.5}}
                         deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
                         onDelete={handleDelete} onClick={handleSetTrust}
                         icon={<Icon icon={arrowsExchange} width="18" height="18"/>} />
-                </Grid>
-
-                <Grid item sx={{pb:1}}>
-                    <Link
-                        underline="none"
-                        color="inherit"
-                        target="_blank"
-                        href={`/richlist/${urlSlug}`}
-                        rel="noreferrer noopener nofollow"
-                    >
-                        <Chip label={`RichList (${trustlines})`} sx={{pl:0.5,pr:0.5}}
-                            deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
-                            onDelete={handleDelete} onClick={handleDelete}
-                            icon={<Icon icon={listCheck} width="18" height="18"/>} />
-                    </Link>
                 </Grid>
 
                 <Grid item sx={{pb:1}}>

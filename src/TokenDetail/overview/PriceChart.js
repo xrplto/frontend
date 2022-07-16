@@ -1,3 +1,5 @@
+import axios from 'axios';
+import { useState, useEffect } from 'react';
 // Material
 import { /*alpha, styled,*/ useTheme } from '@mui/material/styles';
 import {
@@ -19,24 +21,39 @@ import ChartOptions from './ChartOptions';
 import { fCurrency5, fNumber } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
 
-export default function PriceChart({ history, token, range, setRange }) {
+export default function PriceChart({ token }) {
+    const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
-    const data = history;
+    const [data, setData] = useState([]);
+    const [range, setRange] = useState('1D');
 
-    //let openPrice = 0;
-    let minTime = 0;
-    let maxTime = 0;
+    const [minTime, setMinTime] = useState(0);
+    const [maxTime, setMaxTime] = useState(0);
 
-    if (data && data.length > 0) {
-        //openPrice = data[0][1];
-        minTime = data[0][0];
-        maxTime = data[data.length - 1][0];
-    }
+    useEffect(() => {
+        function getGraph () {
+            // https://api.xrpl.to/api/graph/0527842b8550fce65ff44e913a720037?range=1D
+            axios.get(`${BASE_URL}/graph/${token.md5}?range=${range}`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        const items = ret.history;
+                        setData(items);
+                        if (items && items.length > 0) {
+                            setMinTime(items[0][0]);
+                            setMaxTime(items[items.length - 1][0]);
+                        }
+                    }
+                }).catch(err => {
+                    console.log("Error on getting graph data.", err);
+                }).then(function () {
+                    // always executed
+                });
+        }
 
-    // if (data && data.length > 60) {
-    //     minTime = data[30][0];
-    //     maxTime = data[data.length - 30][0];
-    // }
+        getGraph();
+
+    }, [range]);    
 
     let user = token.user;
     if (!user) user = token.name;

@@ -550,9 +550,9 @@ export async function getServerSideProps(ctx) {
         let user = token.user;
         if (!user) user = name;
 
-        ogp.canonical = `https://xrpl.to/trustline/${urlSlug}`;
+        ogp.canonical = `https://xrpl.to/trustset/${urlSlug}`;
         ogp.title = `${name} Trustline On The XRP Ledger`;
-        ogp.url = `https://xrpl.to/trustline/${urlSlug}`;
+        ogp.url = `https://xrpl.to/trustset/${urlSlug}`;
         ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${imgExt}`;
         ogp.desc = `Setup ${name} Trustline On The XRPL.`;
 
