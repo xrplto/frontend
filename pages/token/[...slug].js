@@ -9,12 +9,9 @@ import { alpha } from '@mui/material/styles';
 import {
     Box,
     Container,
-    Divider,
-    Grid,
     IconButton,
     styled,
     Stack,
-    Typography
 } from '@mui/material';
 
 // Iconify Icons
@@ -28,8 +25,7 @@ import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 import Topbar from 'src/layouts/Topbar';
 import Logo from 'src/components/Logo';
 import Account from 'src/components/Account';
-import UserDesc from "src/richlist/UserDesc";
-import RichList from "src/richlist/RichList";
+import TokenDetail from 'src/TokenDetail';
 import Footer from 'src/layouts/Footer';
 
 const HeaderWrapper = styled(Box)(
@@ -53,7 +49,7 @@ const OverviewWrapper = styled(Box)(
 `
 );
 
-function Richlist(props) {
+function Detail(props) {
     const { toggleTheme, darkMode } = useContext(AppContext);
     let data = {};
     if (props && props.data) data = props.data;
@@ -82,32 +78,26 @@ function Richlist(props) {
                 </Container>
             </HeaderWrapper>
             
-            <Container maxWidth="xl">
-                <Grid container direction="row" justify="center" alignItems="stretch">
-                    <Grid item xs={12} md={4} lg={4} sx={{ mt: 3 }}>
-                        <UserDesc data={data} />
-                        {/* <Divider orientation="horizontal" sx={{mt:2,mb:2}} variant="middle" flexItem /> */}
-                    </Grid>
-                    
-                    <Grid item xs={12} md={8} lg={8} sx={{ mt: 3 }}>
-                        <RichList data={data} />
-                    </Grid>
-                </Grid>
-            </Container>
+            <TokenDetail data={data}/>
 
-            <Footer/>
+            <Footer />
         </OverviewWrapper>
     );
 }
 
-export default Richlist;
+export default Detail;
 
 const BASE_URL = 'http://135.181.118.217/api';
 
 export async function getServerSideProps(ctx) {
     let data = null;
     try {
-        const slug = ctx.params.slug;
+
+        const params = ctx.params.slug;
+
+        const slug = params[0];
+        const tab = params[1];
+
         var t1 = performance.now();
 
         // https://api.xrpl.to/api/richlist/xrdoge-classic-xrdc?start=0&limit=10&freeze=false
@@ -117,11 +107,13 @@ export async function getServerSideProps(ctx) {
         // const res = await axios.get(`${BASE_URL}/token/${slug}`);
 
         data = res.data;
+        if (tab)
+            data.tab = tab;
 
         var t2 = performance.now();
         var dt = (t2 - t1).toFixed(2);
 
-        console.log(`4. getServerSideProps(richlist) slug: ${slug} took: ${dt}ms`);
+        console.log(`2. getServerSideProps slug: ${slug}/${tab} took: ${dt}ms`);
     } catch (e) {
         console.log(e);
     }
@@ -139,14 +131,11 @@ export async function getServerSideProps(ctx) {
         let user = token.user;
         if (!user) user = name;
 
-        // Title: SOLO Richlist On The XRP Ledger
-        // Description: View SOLO richlist, Trustlines statistics  and holders activity.
-
-        ogp.canonical = `https://xrpl.to/richlist/${urlSlug}`;
-        ogp.title = `${name} Richlist On The XRP Ledger`;
-        ogp.url = `https://xrpl.to/richlist/${urlSlug}`;
+        ogp.canonical = `https://xrpl.to/token/${urlSlug}`;
+        ogp.title = `${user} price today, ${name} to USD live, volume, trading history, markets and chart`;
+        ogp.url = `https://xrpl.to/token/${urlSlug}`;
         ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${imgExt}`;
-        ogp.desc = `View ${name} Richlist, Trustlines statistics and holders activity`;
+        ogp.desc = `Get the latest ${user} price, ${name} market cap, trading pairs, charts and data today from the world's number one XRP Ledger token price-tracking website`;
 
         ret = {data, ogp};
     }
