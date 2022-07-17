@@ -123,7 +123,7 @@ function truncate(str, n) {
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
 };
 
-export default function AccountOrdersHistory({pair}) {
+export default function AccountHistory({pair}) {
     const theme = useTheme();
     const dispatch = useDispatch();
     const EPOCH_OFFSET = 946684800;

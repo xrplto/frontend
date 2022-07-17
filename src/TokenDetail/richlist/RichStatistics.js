@@ -52,9 +52,7 @@ const badge24hStyle = {
 };
 // ----------------------------------------------------------------------
 
-export default function RichStatistics({data}) {
-    const token = data.token;
-    const richInfo = data.richInfo;
+export default function RichStatistics({token, richInfo}) {
     const theme = useTheme();
     const metrics = useSelector(selectMetrics);
 

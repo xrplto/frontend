@@ -34,12 +34,8 @@ function extractGraphData(items) {
     return [res1, res2, res3, res4];
 }
 
-export default function TopListChart({ data }) {
+export default function TopListChart({ token }) {
     const BASE_URL = 'https://api.xrpl.to/api';
-
-    const theme = useTheme();
-
-    const token = data.token;
 
     const [range, setRange] = useState('7D');
     const [graphData1, setGraphData1] = useState([]); // Top 100

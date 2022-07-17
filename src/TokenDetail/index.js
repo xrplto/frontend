@@ -30,17 +30,17 @@ import RichList from './richlist';
 // ---------------------------------------------------
 
 function TabPanel(props) {
-    const { children, value, index, ...other } = props;
+    const { children, value, id, ...other } = props;
  
     return (
         <div
             role="tabpanel"
-            hidden={value !== index}
-            id={`simple-tabpanel-${index}`}
-            aria-labelledby={`simple-tab-${index}`}
+            hidden={value !== id}
+            id={`simple-tabpanel-${id}`}
+            aria-labelledby={`simple-tab-${id}`}
             {...other}
         >
-            {value === index && (
+            {value === id && (
             <Box sx={{ p: 3 }}>
                 {children}
             </Box>
@@ -51,8 +51,8 @@ function TabPanel(props) {
   
 TabPanel.propTypes = {
     children: PropTypes.node,
-    index: PropTypes.number.isRequired,
-    value: PropTypes.number.isRequired,
+    id: PropTypes.string.isRequired,
+    value: PropTypes.string.isRequired,
 };
 
 function a11yProps(index) {
@@ -62,16 +62,12 @@ function a11yProps(index) {
     };
 }
 
-function getTabId(tab) {
-    if (tab === 'markets')
-        return 1;
-    else if (tab === 'trade')
-        return 2;
-    else if (tab === 'historical-data')
-        return 3;
-    else if (tab === 'trustlines')
-        return 4;
-    return 0;
+const tabValues = ['overview', 'markets', 'trade', 'historical-data', 'trustlines'];
+
+function getTabValue(tab) {
+    if (!tab) return tabValues[0];
+    if (tabValues.includes(tab)) return tab;
+    return tabValues[0];
 }
 
 export default function TokenDetail({data}) {
@@ -80,7 +76,7 @@ export default function TokenDetail({data}) {
 
     const token = data.token;
 
-    const [tabValue, setTabValue] = useState(getTabId(data.tab));
+    const [tabValue, setTabValue] = useState(getTabValue(data.tab));
 
     const gotoTabView = (event) => {
         const anchor = (event.target.ownerDocument || document).querySelector(
@@ -96,6 +92,7 @@ export default function TokenDetail({data}) {
     };
 
     const handleChangeTab = (event, newValue) => {
+        window.history.pushState({}, null, `/token/${token.urlSlug}/${newValue}`);
         setTabValue(newValue);
         gotoTabView(event);
     };
@@ -123,32 +120,25 @@ export default function TokenDetail({data}) {
                 <Divider orientation="horizontal" sx={{mt:2,mb:2}} variant="middle" flexItem />
                 <div id="back-to-top-tab-anchor" />
                 <Tabs value={tabValue} onChange={handleChangeTab} aria-label="token-tabs">
-                    <Link
-                        underline="none"
-                        color="inherit"
-                        href={`/token/${token.urlSlug}/overview`}
-                        rel="noreferrer noopener nofollow"
-                    >
-                        <Tab label="Overview" {...a11yProps(0)} />
-                    </Link>
-                    <Tab label="Markets" {...a11yProps(1)} />
-                    <Tab label="Trade" {...a11yProps(2)} />
-                    <Tab label="Historical Data" {...a11yProps(3)} />
-                    <Tab label="Trustlines" {...a11yProps(4)} />
+                    <Tab value={tabValues[0]} label="Overview" {...a11yProps(0)} />
+                    <Tab value={tabValues[1]} label="Markets" {...a11yProps(1)} />
+                    <Tab value={tabValues[2]} label="Trade" {...a11yProps(2)} />
+                    <Tab value={tabValues[3]} label="Historical Data" {...a11yProps(3)} />
+                    <Tab value={tabValues[4]} label="Trustlines" {...a11yProps(4)} />
                 </Tabs>
-                <TabPanel value={tabValue} index={0}>
+                <TabPanel value={tabValue} id={tabValues[0]}>
                     <Overview token={token} />
                 </TabPanel>
-                <TabPanel value={tabValue} index={1}>
+                <TabPanel value={tabValue} id={tabValues[1]}>
                     <Market token={token}/>
                 </TabPanel>
-                <TabPanel value={tabValue} index={2}>
+                <TabPanel value={tabValue} id={tabValues[2]}>
                     <Trade token={token} />
                 </TabPanel>
-                <TabPanel value={tabValue} index={3}>
+                <TabPanel value={tabValue} id={tabValues[3]}>
                     <History token={token} />
                 </TabPanel>
-                <TabPanel value={tabValue} index={4}>
+                <TabPanel value={tabValue} id={tabValues[4]}>
                     <RichList data={data}/>
                 </TabPanel>
             </Container>
