@@ -1,4 +1,6 @@
+import axios from 'axios';
 import Decimal from 'decimal.js';
+import { useState, useEffect } from 'react';
 
 // Material
 import { /*alpha, styled,*/ useTheme } from '@mui/material/styles';
@@ -22,9 +24,40 @@ import infoFilled from '@iconify/icons-ep/info-filled';
 import { fNumber } from 'src/utils/formatNumber';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 // ----------------------------------------------------------------------
-export default function HistoryData({pair, tradeExchs}) {
+export default function ExchHistory({pair}) {
+    const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
     const EPOCH_OFFSET = 946684800;
+
+    const [tradeExchs, setTradeExchs] = useState([]);
+
+    useEffect(() => {
+        function getTradeExchanges() {
+            if (!pair) return;
+            const page = 0;
+            const rows = 30;
+            // SOLO
+            // https://api.xrpl.to/api/exchs?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
+            axios.get(`${BASE_URL}/exchs?pair=${pair.pair}&page=${page}&limit=${rows}`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        setTradeExchs(ret.exchs);
+                    }
+                }).catch(err => {
+                    console.log("Error on getting exchanges!!!", err);
+                }).then(function () {
+                    // always executed
+                });
+        }
+        getTradeExchanges();
+
+        const timer = setInterval(getTradeExchanges, 10000);
+
+        return () => {
+            clearInterval(timer);
+        }
+    }, [pair]);
 
     // {
     //     "pair": "fa99aff608a10186d3b1ff33b5cd665f",
