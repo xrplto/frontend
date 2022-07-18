@@ -18,7 +18,7 @@ const RootStyle = styled('div')(({ theme }) => ({
     cursor: 'pointer',
     position: 'fixed',
     alignItems: 'center',
-    top: theme.spacing(20),
+    top: theme.spacing(18),
     paddingLeft: theme.spacing(1.5),
     paddingRight: theme.spacing(1),
     paddingTop: theme.spacing(0.7),
@@ -34,7 +34,7 @@ const RootStyle = styled('div')(({ theme }) => ({
 }));
 
 // ----------------------------------------------------------------------
-export default function NFTWidget({showSlug, setShowSlug}) {
+export default function WidgetSlug({showSlug, setShowSlug}) {
     return (
         <Link
             component="button"

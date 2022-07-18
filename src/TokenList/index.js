@@ -17,6 +17,7 @@ import TokenListToolbar from './TokenListToolbar';
 import SearchToolbar from './SearchToolbar';
 import WidgetNew from './WidgetNew';
 import WidgetSlug from './WidgetSlug';
+import WidgetDate from './WidgetDate';
 import TokenRow from './TokenRow';
 import TrustSet from './TrustSet';
 
@@ -62,6 +63,7 @@ export default function TokenList({data}) {
     const [rows, setRows] = useState(100);
     const [showNew, setShowNew] = useState(false);
     const [showSlug, setShowSlug] = useState(false);
+    const [showDate, setShowDate] = useState(false);
     const [tokens, setTokens] = useState(data?data.tokens:[]); // useState(data?data.tokens.slice(0, 20):[]);
     // const [allTokens, setAllTokens] = useState(data?data.tokens:[]);
     const [load, setLoad] = useState(false);
@@ -78,7 +80,7 @@ export default function TokenList({data}) {
             // https://github.com/WietseWind/fetch-xrpl-transactions
             // https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc
             const start = page * rows;
-            axios.get(`${BASE_URL}/tokens?start=${start}&limit=${rows}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}`)
+            axios.get(`${BASE_URL}/tokens?start=${start}&limit=${rows}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}`)
             .then(res => {
                 try {
                     if (res.status === 200 && res.data) {
@@ -149,6 +151,12 @@ export default function TokenList({data}) {
         setLoad(true);
     }
 
+    const updateShowDate = (val) => {
+        setShowDate(val);
+        setPage(0);
+        setLoad(true);
+    }
+
     const handleFilterByName = (event) => {
         setFilterName(event.target.value);
         setPage(0);
@@ -164,6 +172,7 @@ export default function TokenList({data}) {
         <>
             {isAdmin && <WidgetNew showNew={showNew} setShowNew={updateShowNew}/>}
             {isAdmin && <WidgetSlug showSlug={showSlug} setShowSlug={updateShowSlug}/>}
+            {isAdmin && <WidgetDate showDate={showDate} setShowDate={updateShowDate}/>}
             {isAdmin && <EditToken token={editToken} setToken={setEditToken}/>}
 
             <TrustSet token={trustToken} setToken={setTrustToken}/>

@@ -5,26 +5,6 @@ import { useRef, useState } from 'react';
 import { withStyles } from '@mui/styles';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import {
-    Check as CheckIcon,
-    Close as CloseIcon
-} from '@mui/icons-material';
-
-// Iconify
-import { Icon } from '@iconify/react';
-import infoFilled from '@iconify/icons-ep/info-filled';
-
-// Loader
-import { PulseLoader } from "react-spinners";
-
-// Context
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
-
-// Redux
-import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
-
-import {
     Avatar,
     Backdrop,
     Chip,
@@ -44,6 +24,29 @@ import {
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
 
+import {
+    Check as CheckIcon,
+    Close as CloseIcon
+} from '@mui/icons-material';
+
+// Iconify
+import { Icon } from '@iconify/react';
+import infoFilled from '@iconify/icons-ep/info-filled';
+import baselineGetApp from '@iconify/icons-ic/baseline-get-app';
+
+// Loader
+import { PulseLoader } from "react-spinners";
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+
+// Redux
+import { useSelector } from "react-redux";
+import { selectMetrics } from "src/redux/statusSlice";
+
+
+// Components
 //import { ImageSelect } from './ImageSelect';
 import EditDialog from './EditDialog';
 import AddDialog from './AddDialog';
@@ -117,8 +120,9 @@ const ERR_TRANSFER = 1;
 const ERR_NOT_VALID = 2;
 const ERR_URL_SLUG_DUPLICATED  = 3;
 const ERR_INVALID_URL_SLUG  = 4;
-const ERR_INTERNAL  = 5;
-const MSG_SUCCESSFUL = 6;
+const ERR_DATE_UNKNOWN  = 5;
+const ERR_INTERNAL  = 6;
+const MSG_SUCCESSFUL = 7;
 
 export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
     const metrics = useSelector(selectMetrics);
@@ -152,7 +156,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
 
     const [domain, setDomain] = useState(token.domain);
 
-    const [date, setDate] = useState(getDate(token.date));
+    const [date, setDate] = useState(token.date);
 
     const [urlSlug, setUrlSlug] = useState(token.urlSlug);
 
@@ -339,6 +343,24 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
         }
     }
 
+    const handleGetDate = () => {
+        setLoading(true);
+        // https://api.xrplorer.com/custom/getTokenBirth?issuer=rPdNJ8vZtneXFnmpxfe6bN3pSiwdXKsz6t&currency=5842656172647300000000000000000000000000
+        axios.get(`https://api.xrplorer.com/custom/getTokenBirth?issuer=${issuer}&currency=${currency}`)
+            .then(res => {
+                let ret = res.status === 200 ? res.data : undefined;
+                if (ret && ret.date) {
+                    setDate(ret.date);
+                }
+            }).catch(err => {
+                // console.log("Error on getting created date!!!", err);
+                showAlert(ERR_DATE_UNKNOWN);
+            }).then(function () {
+                // always executed
+                setLoading(false);
+            });
+    }
+
     /*
         React js Resize Image Before Upload
         https://www.tutsmake.com/react-js-resize-image-before-upload/
@@ -501,8 +523,15 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                         </TableCell>
                         <TableCell align="left" sx={{pt:0, pb:0.2}}>
                             <Stack direction='row' alignItems='center' spacing={1}>
-                                <Typography variant="subtitle2" color='primary'>{date}</Typography>
+                                <Typography variant="subtitle2" color='primary'>{getDate(date)}</Typography>
+                                <Tooltip title={'Get date from online'}>
+                                    <IconButton onClick={handleGetDate} size="small" edge="end" aria-label="getdate">
+                                        <Icon icon={baselineGetApp} />
+                                    </IconButton>
+                                </Tooltip>
+
                                 <EditDialog label='Date' value={date} setValue={setDate}/>
+
                                 <Label variant="caption" noWrap>{new Date(dateon).toISOString().split('.')[0].replace('T', ' ')}</Label>
                                 <Tooltip title={'Token discovered date by the Ledger Scanner.'}>
                                     <Icon icon={infoFilled} />

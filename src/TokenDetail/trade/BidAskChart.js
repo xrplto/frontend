@@ -17,7 +17,6 @@ function getChartData(offers) {
     for (var o of offers.slice(0, 30)) {
         data.push([o.price, o.sumAmount]);
     }
-    
     return data;
 }
 
@@ -35,7 +34,7 @@ export default function BidAskChart({asks, bids}) {
         },
     ];
 
-    const CHART_OPTION = ChartOptions();
+    const CHART_OPTION = ChartOptions(CHART_DATA);
     
     return (
         <Chart series={CHART_DATA} options={CHART_OPTION} height={256} />

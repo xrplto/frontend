@@ -1204,7 +1204,12 @@ export const XrplToDarkTheme = createTheme({
           subtitle1: 'div',
           subtitle2: 'div',
           body1: 'div',
-          body2: 'div'
+          body2: 'div',
+          wallet_h3: 'h3',
+          wallet_h2: 'h2',
+          para_content: 'p',
+          wallet_name: 'p',
+          link_cascade: 'span'
         }
       },
       styleOverrides: {
@@ -1224,6 +1229,36 @@ export const XrplToDarkTheme = createTheme({
   typography: {
     fontFamily:
       '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+    wallet_h3: {
+      fontWeight: 'bold',
+      fontSize: 24,
+      color: colors.alpha.black[100]
+    },
+    wallet_h2: {
+      fontWeight: 600,
+      fontSize: 14,
+      lineHeight: 1.4,
+      marginTop: 14,
+      marginBottom: 10
+    },
+    para_content: {
+      fontSize: 12,
+      lineHeight: '18px',
+      color: '#58667E',
+      paddingBottom: 15
+    },
+    wallet_name: {
+      fontWeight: 600,
+      fontSize: 16,
+      color: colors.alpha.black[100],
+      margin: 0
+    },
+    link_cascade: {
+      fontWeight: 500,
+      fontSize: 12,
+      lineHeight: '18px',
+      color: colors.alpha.black[100]
+    },
     h1: {
       fontWeight: 700,
       fontSize: '1.2rem'// 35
@@ -1240,12 +1275,6 @@ export const XrplToDarkTheme = createTheme({
       fontWeight: 700,
       fontSize: '0.9rem' // 30
     },
-    // h3: {
-    //   fontWeight: 700,
-    //   fontSize: 25,
-    //   lineHeight: 1.4,
-    //   color: colors.alpha.black[100]
-    // },
     h4: {
       // fontWeight: 700,
       fontSize: 16

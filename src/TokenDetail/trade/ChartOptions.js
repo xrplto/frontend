@@ -9,7 +9,7 @@ function expo(x, f) {
     return Number.parseFloat(x).toExponential(f);
 }
 
-export default function ChartOptions() {
+export default function ChartOptions(series) {
     const theme = useTheme();
 
     const LABEL_TOTAL = {
@@ -38,10 +38,12 @@ export default function ChartOptions() {
             },
             zoom: {
                 type: 'y',
-                enabled: true,
-                autoScaleYaxis: true
+                enabled: false,
+                autoScaleYaxis: false
             }
         },
+
+        series: series,
 
         // Grid
         grid: {

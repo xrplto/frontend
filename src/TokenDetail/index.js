@@ -5,27 +5,31 @@ import { useState, useEffect } from 'react';
 
 
 // Material
-import { styled } from '@mui/material/styles';
 import {
     Box,
     Container,
     Divider,
     Grid,
     Link,
+    Stack,
     Tab,
     Tabs,
     Typography
 } from '@mui/material';
 
+// Iconify icons
+import { Icon } from '@iconify/react';
+import twotoneGreaterThan from '@iconify/icons-ic/twotone-greater-than';
+
 // Components
 import ScrollToTop from 'src/layouts/ScrollToTop';
 import {UserDesc, PriceDesc, ExtraDesc} from "./common"
-
 import Overview from './overview';
 import Market from './market';
 import Trade from './trade';
 import History from './history';
 import RichList from './richlist';
+import Wallet from './wallet';
 
 // ---------------------------------------------------
 
@@ -51,8 +55,8 @@ function TabPanel(props) {
   
 TabPanel.propTypes = {
     children: PropTypes.node,
-    id: PropTypes.string.isRequired,
-    value: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired,
 };
 
 function a11yProps(index) {
@@ -62,12 +66,15 @@ function a11yProps(index) {
     };
 }
 
-const tabValues = ['overview', 'markets', 'trade', 'historical-data', 'trustlines'];
+const tabValues = ['', 'markets', 'trade', 'historical-data', 'trustlines', 'wallets'];
+const tabLabels = ['Overview', 'Markets', 'Trade', 'Historical Data', 'Trustlines', 'Wallets'];
 
-function getTabValue(tab) {
-    if (!tab) return tabValues[0];
-    if (tabValues.includes(tab)) return tab;
-    return tabValues[0];
+function getTabID(tab) {
+    if (!tab) return 0;
+    const idx = tabValues.indexOf(tab);
+    if (idx < 0)
+        return 0;
+    return idx;
 }
 
 export default function TokenDetail({data}) {
@@ -76,7 +83,7 @@ export default function TokenDetail({data}) {
 
     const token = data.token;
 
-    const [tabValue, setTabValue] = useState(getTabValue(data.tab));
+    const [tabID, setTabID] = useState(getTabID(data.tab));
 
     const gotoTabView = (event) => {
         const anchor = (event.target.ownerDocument || document).querySelector(
@@ -91,15 +98,45 @@ export default function TokenDetail({data}) {
         }
     };
 
-    const handleChangeTab = (event, newValue) => {
-        window.history.pushState({}, null, `/token/${token.urlSlug}/${newValue}`);
-        setTabValue(newValue);
+    const handleChangeTab = (event, newID) => {
+        let url = '';
+        if (newID > 0)
+            url = `/token/${token.urlSlug}/${tabValues[newID]}`;
+        else
+            url = `/token/${token.urlSlug}/`;
+        window.history.pushState({}, null, url);
+        setTabID(newID);
         gotoTabView(event);
     };
 
     return (
         <>
             <Container maxWidth="xl">
+                <Stack direction='row' spacing={1} sx={{mt:2}} alignItems='center' color={'text.secondary'}>
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        href={`/`}
+                        rel="noreferrer noopener nofollow"
+                    >
+                        <Typography variant='link_cascade' color='primary'>Tokens</Typography>
+                    </Link>
+                    <Icon icon={twotoneGreaterThan} width='12' height='12' style={{marginTop:'3'}}/>
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        href={`/token/${token.urlSlug}`}
+                        rel="noreferrer noopener nofollow"
+                    >
+                        <Typography variant='link_cascade' color={tabID > 0?'primary':''}>{token.name}</Typography>
+                    </Link>
+                    {tabID > 0 && (
+                        <>
+                            <Icon icon={twotoneGreaterThan} width='12' height='12' style={{marginTop:'3'}}/>
+                            <Typography variant='link_cascade'>{tabLabels[tabID]}</Typography>
+                        </>
+                    )}
+                </Stack>
                 <Grid container direction="row" justify="center" alignItems="stretch">
                     <Grid item xs={12} md={6} lg={5} sx={{ mt: 3 }}>
                         <UserDesc token={token} />
@@ -119,27 +156,31 @@ export default function TokenDetail({data}) {
 
                 <Divider orientation="horizontal" sx={{mt:2,mb:2}} variant="middle" flexItem />
                 <div id="back-to-top-tab-anchor" />
-                <Tabs value={tabValue} onChange={handleChangeTab} aria-label="token-tabs">
-                    <Tab value={tabValues[0]} label="Overview" {...a11yProps(0)} />
-                    <Tab value={tabValues[1]} label="Markets" {...a11yProps(1)} />
-                    <Tab value={tabValues[2]} label="Trade" {...a11yProps(2)} />
-                    <Tab value={tabValues[3]} label="Historical Data" {...a11yProps(3)} />
-                    <Tab value={tabValues[4]} label="Trustlines" {...a11yProps(4)} />
+                <Tabs value={tabID} onChange={handleChangeTab} aria-label="token-tabs">
+                    <Tab value={0} label={tabLabels[0]} {...a11yProps(0)} />
+                    <Tab value={1} label={tabLabels[1]} {...a11yProps(1)} />
+                    <Tab value={2} label={tabLabels[2]} {...a11yProps(2)} />
+                    <Tab value={3} label={tabLabels[3]} {...a11yProps(3)} />
+                    <Tab value={4} label={tabLabels[4]} {...a11yProps(4)} />
+                    <Tab value={5} label={tabLabels[5]} {...a11yProps(5)} />
                 </Tabs>
-                <TabPanel value={tabValue} id={tabValues[0]}>
+                <TabPanel value={tabID} id={0}>
                     <Overview token={token} />
                 </TabPanel>
-                <TabPanel value={tabValue} id={tabValues[1]}>
+                <TabPanel value={tabID} id={1}>
                     <Market token={token}/>
                 </TabPanel>
-                <TabPanel value={tabValue} id={tabValues[2]}>
+                <TabPanel value={tabID} id={2}>
                     <Trade token={token} />
                 </TabPanel>
-                <TabPanel value={tabValue} id={tabValues[3]}>
+                <TabPanel value={tabID} id={3}>
                     <History token={token} />
                 </TabPanel>
-                <TabPanel value={tabValue} id={tabValues[4]}>
+                <TabPanel value={tabID} id={4}>
                     <RichList data={data}/>
+                </TabPanel>
+                <TabPanel value={tabID} id={5}>
+                    <Wallet data={data}/>
                 </TabPanel>
             </Container>
             
