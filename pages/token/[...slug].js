@@ -42,10 +42,9 @@ const HeaderWrapper = styled(Box)(
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
-    overflow: auto;
+    overflow: hidden;
     background: ${theme.palette.common.white};
     flex: 1;
-    overflow-x: hidden;
 `
 );
 

@@ -3,16 +3,26 @@ import { useState, useEffect } from 'react';
 import { alpha, styled, useTheme } from '@mui/material/styles';
 import {
     Box,
+    IconButton,
     InputAdornment,
+    Link,
     MenuItem,
     OutlinedInput,
     Select,
     Stack
 } from '@mui/material';
 
+import FiberNewIcon from '@mui/icons-material/FiberNew';
+import DoNotTouchIcon from '@mui/icons-material/DoNotTouch';
+import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
+
 // Iconify
 import { Icon } from '@iconify/react';
 import searchFill from '@iconify/icons-eva/search-fill';
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
 // ----------------------------------------------------------------------
 const RootStyle = styled(Box)(({ theme }) => ({
@@ -36,13 +46,28 @@ const SearchBox = styled(OutlinedInput)(({ theme }) => ({
 }));
 
 // ----------------------------------------------------------------------
-export default function SearchToolbar({ filterName, onFilterName, rows, setRows }) {
+export default function SearchToolbar({
+    filterName,
+    onFilterName,
+    rows,
+    setRows,
+    showNew,
+    setShowNew,
+    showSlug,
+    setShowSlug,
+    showDate,
+    setShowDate
+}) {
+    const { accountProfile } = useContext(AppContext);
+
     const handleChangeRows = (e) => {
         setRows(parseInt(e.target.value, 10));
     };
 
+    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
+
     return (
-        <RootStyle sx={{ml:2.5, mr:3}}>
+        <RootStyle sx={{pl:1, pr:1}}>
             <SearchBox
                 value={filterName}
                 onChange={onFilterName}
@@ -57,6 +82,22 @@ export default function SearchToolbar({ filterName, onFilterName, rows, setRows 
             />
 
             <Stack direction='row' alignItems="center" sx={{ml: 2}}>
+                {isAdmin &&
+                    <Stack direction='row' alignItems="center" sx={{mr: 2, mt: 0.5, display: { xs: 'none', sm: 'none', md: 'none', lg: 'block' }}}>
+                        <IconButton onClick={() => { setShowNew(!showNew); }} >
+                            <FiberNewIcon color={showNew?'error':'inherit'}/>
+                        </IconButton>
+
+                        <IconButton onClick={() => { setShowSlug(!showSlug);; }} >
+                            <DoNotTouchIcon color={showSlug?'error':'inherit'}/>
+                        </IconButton>
+
+                        <IconButton onClick={() => { setShowDate(!showDate); }} >
+                            <UpdateDisabledIcon color={showDate?'error':'inherit'}/>
+                        </IconButton>
+                    </Stack>
+                }
+
                 Rows
                 <Select
                     value={rows}

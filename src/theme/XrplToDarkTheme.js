@@ -1008,7 +1008,7 @@ export const XrplToDarkTheme = createTheme({
       styleOverrides: {
         toolbar: {
           '& .MuiIconButton-root': {
-            padding: 8
+            padding: 0
           }
         },
         select: {
@@ -1028,9 +1028,9 @@ export const XrplToDarkTheme = createTheme({
     },
     MuiTableRow: {
       styleOverrides: {
-        // head: {
-        //   background: colors.alpha.black[5]
-        // },
+        head: {
+          // background: colors.alpha.black[5]
+        },
         root: {
           transition: 'background-color .2s',
 
@@ -1049,9 +1049,10 @@ export const XrplToDarkTheme = createTheme({
         head: {
           // textTransform: 'uppercase',
           fontSize: 13,
-          fontWeight: 'bold',
+          // fontWeight: 'bold',
           // color: colors.alpha.black[70],
-          background: 'inherit'
+          // background: 'inherit'
+          background: colors.alpha.white[100]
         }
       }
     },

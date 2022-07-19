@@ -2,6 +2,7 @@
 import { alpha, styled } from '@mui/material/styles';
 import {
     Box,
+    Grid,
     Stack,
     Pagination,
     Select,
@@ -60,22 +61,80 @@ export default function TokenListToolbar({ rows, setRows, page, setPage}) {
         }
     };
 
-    return (
-        <RootStyle sx={{ml:2.5, mr:3}}>
-            Showing {start} - {end} out of {length}
-            <Pagination page={page+1} onChange={handleChangePage} count={page_count} variant="outlined" shape="rounded" />
+    // return (
+    //     <Grid
+    //         container
+    //         spacing={0}
+    //         sx={{mt:0}}
+    //         alignItems="center"
+    //     >
+    //         <Grid container item xs={12} md={12} lg={12} sx={{ display: { xs: 'block', sm: 'block', md: 'none' } }}>
+    //             <Stack alignItems='center' sx={{mt:2, mb:2}}>
+    //                 <Pagination page={page+1} onChange={handleChangePage} count={page_count} shape="rounded" size="small" />
+    //             </Stack>
+    //         </Grid>
 
-            <Stack direction="row" alignItems="center">
-                Show Rows
-                <CustomSelect
-                    value={rows}
-                    onChange={handleChangeRows}
-                >
-                    <MenuItem value={100}>100</MenuItem>
-                    <MenuItem value={50}>50</MenuItem>
-                    <MenuItem value={20}>20</MenuItem>
-                </CustomSelect>
+    //         <Grid container item xs={6} md={4} lg={4}>
+    //             <Stack alignItems='center'>
+    //                 Showing {start} - {end} out of {length}
+    //             </Stack>
+    //         </Grid>
+
+    //         <Grid container item xs={12} md={4} lg={4} sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
+    //             <Stack alignItems='center'>
+    //                 <Pagination page={page+1} onChange={handleChangePage} count={page_count} shape="rounded"/>
+    //             </Stack>
+    //         </Grid>
+
+    //         <Grid container item justifyContent="flex-end" xs={6} md={4} lg={4} >
+    //             <Stack direction='row' alignItems='center'>
+    //                 Show Rows
+    //                 <CustomSelect
+    //                     value={rows}
+    //                     onChange={handleChangeRows}
+    //                 >
+    //                     <MenuItem value={100}>100</MenuItem>
+    //                     <MenuItem value={50}>50</MenuItem>
+    //                     <MenuItem value={20}>20</MenuItem>
+    //                 </CustomSelect>
+    //             </Stack>
+    //         </Grid>
+    //     </Grid>
+    // );
+
+    return (
+        <>
+            <Stack sx={{ mt:2, mb:2, display: { xs: 'block', sm: 'block', md: 'none' } }}>
+                <Stack alignItems="center">
+                    <Pagination page={page+1} onChange={handleChangePage} count={page_count} shape="rounded" size="small" />
+                </Stack>
             </Stack>
-        </RootStyle>        
+            <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                spacing={0}
+            >
+                <Stack>
+                    Showing {start} - {end} out of {length}
+                </Stack>
+
+                <Stack sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
+                    <Pagination page={page+1} onChange={handleChangePage} count={page_count} shape="rounded"/>
+                </Stack>
+
+                <Stack direction='row' alignItems='center'>
+                    Show Rows
+                    <CustomSelect
+                        value={rows}
+                        onChange={handleChangeRows}
+                    >
+                        <MenuItem value={100}>100</MenuItem>
+                        <MenuItem value={50}>50</MenuItem>
+                        <MenuItem value={20}>20</MenuItem>
+                    </CustomSelect>
+                </Stack>
+            </Stack>
+        </>
     );
 }

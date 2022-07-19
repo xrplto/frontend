@@ -29,7 +29,7 @@ import Topbar from 'src/layouts/Topbar';
 import Logo from 'src/components/Logo';
 import Account from 'src/components/Account';
 
-import TokenList from 'src/TokenList';
+// import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/layouts/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 import Footer from 'src/layouts/Footer';
@@ -48,12 +48,14 @@ const HeaderWrapper = styled(Box)(
 `
 );
 
+// overflow: scroll;
+// overflow: auto;
+// overflow: hidden;
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
-    overflow: auto;
+    overflow: hidden;
     background: ${theme.palette.common.white};
     flex: 1;
-    overflow-x: hidden;
 `
 );
 
@@ -62,7 +64,6 @@ function Overview(props) {
     const data = props.data;
 
     return (
-        <>
         <OverviewWrapper>
             <Topbar md5={'NONE'}/>
             <HeaderWrapper>
@@ -96,9 +97,11 @@ function Overview(props) {
                     <Grid item xs={12} md={12} lg={8} >
                         <Summary />
                     </Grid>
+                    <Grid item xs={12} md={12} lg={12} >
+                        <DynamicTokenList data={data}/>
+                        {/* <TokenList data={data}/> */}
+                    </Grid>
                 </Grid>
-                <DynamicTokenList data={data}/>
-                {/* <TokenList data={data}/> */}
             </Container>
 
             <ScrollToTop />
@@ -106,7 +109,6 @@ function Overview(props) {
             <Footer />
 
         </OverviewWrapper>
-        </>
     );
 }
 

@@ -48,12 +48,12 @@ export default function BearBullLabel({value, variant}) {
     return (
         <>
             {pro < 0 ? (
-                <Stack direction="row" spacing={0.1} alignItems='center'>
+                <Stack direction="row" spacing={0.1} justifyContent="flex-end" alignItems='center'>
                     <Icon icon={caretDown} color="#FF6C40"/>
                     <BearishTypography variant={variant} noWrap>{strPro}</BearishTypography>
                 </Stack>
             ) : (
-                <Stack direction="row" spacing={0.1} alignItems='center'>
+                <Stack direction="row" spacing={0.1} justifyContent="flex-end" alignItems='center'>
                     <Icon icon={caretUp} color="#54D62C"/>
                     <BullishTypography variant={variant} noWrap>{strPro}</BullishTypography>
                 </Stack>

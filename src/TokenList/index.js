@@ -1,13 +1,15 @@
 import axios from 'axios'
-import { useState, useEffect } from 'react';
-import { BeatLoader } from "react-spinners";
-import InfiniteScroll from "react-infinite-scroll-component";
+import { useState, useEffect, useRef } from 'react';
+// import { BeatLoader } from "react-spinners";
+// import InfiniteScroll from "react-infinite-scroll-component";
 
 // Material
-import { styled, useTheme } from '@mui/material/styles';
+import { withStyles } from '@mui/styles';
 import {
+    styled,
     Table,
     TableBody,
+    TableContainer
 } from '@mui/material';
 
 // Components
@@ -15,15 +17,11 @@ import EditToken from './EditToken';
 import TokenListHead from './TokenListHead';
 import TokenListToolbar from './TokenListToolbar';
 import SearchToolbar from './SearchToolbar';
-import WidgetNew from './WidgetNew';
-import WidgetSlug from './WidgetSlug';
-import WidgetDate from './WidgetDate';
 import TokenRow from './TokenRow';
 import TrustSet from './TrustSet';
-
-// Context
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+// import WidgetNew from './WidgetNew';
+// import WidgetSlug from './WidgetSlug';
+// import WidgetDate from './WidgetDate';
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
@@ -31,27 +29,18 @@ import { selectMetrics, update_metrics } from "src/redux/statusSlice";
 
 // ----------------------------------------------------------------------
 
-//    { id: 'holders', label: 'Holders', align: 'left', order: true },
-//    { id: 'offers', label: 'Offers', align: 'left', order: true },
+// overflow-x: auto;
+const OverviewWrapper = styled('div')(
+    ({ theme }) => `
+        overflow-x: auto;     
+        flex: 1;
+    `
+);
 
-const TABLE_HEAD = [
-    { no: 0, id: 'id', label: '#', align: 'left', order: false },
-    { no: 1, id: 'name', label: 'Name', align: 'left', order: true },
-    { no: 2, id: 'exch', label: 'Price', align: 'left', order: true },
-    { no: 3, id: 'pro24h', label: '24h (%)', align: 'left', order: true },
-    { no: 4, id: 'pro7d', label: '7d (%)', align: 'left', order: true },
-    { no: 5, id: 'vol24hxrp', label: 'Volume(24h)', align: 'left', order: true },
-    { no: 6, id: 'vol24htx', label: 'Trades', align: 'left', order: true },
-    { no: 7, id: 'marketcap', label: 'Market Cap', align: 'left', order: true },
-    { no: 8, id: 'trustlines', label: 'TrustLines', align: 'left', order: true },
-    { no: 9, id: 'amount', label: 'Total Supply', align: 'left', order: true },
-    { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'left', order: false },
-    { id: '' }
-];
+// max-height: 440px;
 
 export default function TokenList({data}) {
     const BASE_URL = 'https://api.xrpl.to/api';
-    const { accountProfile } = useContext(AppContext);
     const dispatch = useDispatch();
     const [filterName, setFilterName] = useState('');
     const [search, setSearch] = useState('');
@@ -70,8 +59,6 @@ export default function TokenList({data}) {
     const [editToken, setEditToken] = useState(null);
     const [trustToken, setTrustToken] = useState(null);
     // const [hasMore, setHasMore] = useState(true);
-
-    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     useEffect(() => {
         const loadTokens=() => {
@@ -135,8 +122,8 @@ export default function TokenList({data}) {
     const updateRows = (newRows) => {
         if (newRows === rows) return;
         setRows(newRows);
-        // if (tokens.length < newRows)
-        //     setHasMore(true);
+        if (tokens.length < newRows)
+            setLoad(true);
     }
 
     const updateShowNew = (val) => {
@@ -170,10 +157,17 @@ export default function TokenList({data}) {
 
     return (
         <>
-            {isAdmin && <WidgetNew showNew={showNew} setShowNew={updateShowNew}/>}
-            {isAdmin && <WidgetSlug showSlug={showSlug} setShowSlug={updateShowSlug}/>}
-            {isAdmin && <WidgetDate showDate={showDate} setShowDate={updateShowDate}/>}
-            {isAdmin && <EditToken token={editToken} setToken={setEditToken}/>}
+
+            {/* {isAdmin &&
+                <Stack sx={{ mt:2, mb:2, display: { xs: 'none', sm: 'none', md: 'none', lg: 'block' } }}>
+                    <WidgetNew showNew={showNew} setShowNew={updateShowNew}/>
+                    <WidgetSlug showSlug={showSlug} setShowSlug={updateShowSlug}/>
+                    <WidgetDate showDate={showDate} setShowDate={updateShowDate}/>
+                    <EditToken token={editToken} setToken={setEditToken}/>
+                </Stack>
+            } */}
+
+            <EditToken token={editToken} setToken={setEditToken}/>
 
             <TrustSet token={trustToken} setToken={setTrustToken}/>
             
@@ -182,6 +176,9 @@ export default function TokenList({data}) {
                 onFilterName={handleFilterByName}
                 rows={rows}
                 setRows={updateRows}
+                showNew={showNew} setShowNew={updateShowNew}
+                showSlug={showSlug} setShowSlug={updateShowSlug}
+                showDate={showDate} setShowDate={updateShowDate}
             />
             {/* <InfiniteScroll
                 style={{overflow: "inherit"}}
@@ -194,17 +191,17 @@ export default function TokenList({data}) {
                     </div>
                 }
             > */}
-                <Table stickyHeader sx={{pl:2.3, pr:2.3}}>
+            <OverviewWrapper>
+                <Table>
                     <TokenListHead
                         order={order}
                         orderBy={orderBy}
-                        headLabel={TABLE_HEAD}
                         onRequestSort={handleRequestSort}
                     />
                     <TableBody>
                         {
                         //filteredTokens.slice(page * rows, page * rows + rows)
-                        tokens.map((row, idx) => {
+                        tokens.slice(0, rows).map((row, idx) => {
                                 return (
                                     <TokenRow key={idx} token={row} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
                                 );
@@ -225,6 +222,7 @@ export default function TokenList({data}) {
                         </TableBody>
                     )*/}
                 </Table>
+            </OverviewWrapper>
             {/* </InfiniteScroll> */}
             <TokenListToolbar
                 rows={rows}

@@ -74,7 +74,7 @@ export default function WalletCard({name, link, imgUrl}) {
                     <img
                         alt={'wallet'}
                         src={imgUrl}
-                        style={{ width: 56, height: 56 }}
+                        style={{ height: 56 }}
                     />
                     <Typography variant="wallet_name">{name}</Typography>
                     <Link

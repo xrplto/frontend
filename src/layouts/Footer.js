@@ -72,7 +72,7 @@ function Footer() {
                     
                     <Grid item xs={12} md={7} lg={7} sx={{ mt: 3 }}>
                         <Grid container>
-                            <Grid item xs={12} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
+                            <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
                                 <Stack>
                                     <Typography variant='h6'>Products</Typography>
                                     <Link
@@ -113,7 +113,7 @@ function Footer() {
                                     </Link>
                                 </Stack>
                             </Grid>
-                            <Grid item xs={12} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
+                            <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
                                 <Stack>
                                     <Typography variant='h6'>Company</Typography>
                                     <Link
@@ -181,7 +181,7 @@ function Footer() {
                                     </Link>
                                 </Stack>
                             </Grid>
-                            <Grid item xs={12} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
+                            <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
                                 <Stack>
                                     <Typography variant='h6'>Support</Typography>
                                     <Link
@@ -222,7 +222,7 @@ function Footer() {
                                     </Link>
                                 </Stack>
                             </Grid>
-                            <Grid item xs={12} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
+                            <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
                                 <Stack>
                                     <Typography variant='h6'>Socials</Typography>
                                     <Link

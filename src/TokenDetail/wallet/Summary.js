@@ -109,6 +109,15 @@ export default function Summary({data}) {
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
                     <WalletCard name='Bithomp Paper' link='https://bithomp.com/paperwallet/' imgUrl='/static/bithomp.png'/>
                 </Grid>
+                <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
+                    <WalletCard name='LEDGER' link='https://www.ledger.com/' imgUrl='/static/ledger.svg'/>
+                </Grid>
+                <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
+                    <WalletCard name="D'CENT" link='https://dcentwallet.com/' imgUrl='/static/dcent.jpg'/>
+                </Grid>
+                <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
+                    <WalletCard name="COBO" link='https://cobo.com/' imgUrl='/static/cobo.png'/>
+                </Grid>
             </Grid>
         </Stack>
     )

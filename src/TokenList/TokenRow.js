@@ -7,6 +7,7 @@ import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 
 // Material
 import { styled } from '@mui/material/styles';
+import { withStyles } from '@mui/styles';
 import {
     Avatar,
     Link,
@@ -31,12 +32,32 @@ import BearBullLabel from 'src/layouts/BearBullLabel';
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
 
+const StickyTableCell = withStyles((theme) => ({
+    head: {
+        position: "sticky",
+        zIndex: 100,
+        top: 0,
+        left: 24
+    },
+    body: {
+        position: "sticky",
+        zIndex: 100,
+        left: 24
+    }
+})) (TableCell);
+
 const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
     '&:hover': {
         cursor: 'pointer',
         opacity: 0.6
     },
 }));
+
+function truncate(str, n){
+    if (!str) return '';
+    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
+    return (str.length > n) ? str.substr(0, n-1) + '...' : str;
+};
 
 export default function TokenRow({token, setEditToken, setTrustToken}) {
     const BASE_URL = 'https://api.xrpl.to/api';
@@ -87,7 +108,7 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
             role="checkbox"
         >
             <TableCell align="left">{id}</TableCell>
-            <TableCell component="th" scope="row" padding="none">
+            <TableCell align="left" sx={{p:0}}>
                 <Stack direction="row" alignItems="center" spacing={2}>
                     <Avatar sx={{ width: 56, height: 56 }}>
                     {isAdmin ? (
@@ -116,14 +137,14 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
                     >
                     <Stack>
                         {isAdmin && urlSlug === md5 ? (
-                            <Typography variant="token" color='#B72136' noWrap>{name}</Typography>
+                            <Typography variant="token" color='#B72136' noWrap>{truncate(name, 8)}</Typography>
                         ):(
-                            <Typography variant="token" noWrap>{name}</Typography>
+                            <Typography variant="token" noWrap>{truncate(name, 8)}</Typography>
                         )
                         }
                         <Stack direction="row" alignItems="center" spacing={0.1}>
                             <Typography variant="caption">
-                                {user}
+                                {truncate(user, 8)}
                                 {kyc && (<Typography variant='kyc'>KYC</Typography>)}
                             </Typography>
                         </Stack>
@@ -134,54 +155,39 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
                     </Link>
                 </Stack>
             </TableCell>
-            <TableCell align="left">
-                <Stack>
-                    <Typography variant="h4" noWrap>
-                        $ {fNumber(exch / metrics.USD)}
-                    </Typography>
-                    <Stack direction="row" spacing={0.5} alignItems='center'>
-                        <Icon icon={rippleSolid} width={12} height={12}/>
-                        <Typography variant="h6" noWrap>{fNumber(exch)}</Typography>
-                    </Stack>
+            <TableCell align="right" sx={{pl:0}}>
+                <Typography variant="h4" noWrap>
+                    $ {fNumber(exch / metrics.USD)}
+                </Typography>
+                <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems='center'>
+                    <Icon icon={rippleSolid} width={12} height={12}/>
+                    <Typography variant="h6" noWrap>{fNumber(exch)}</Typography>
                 </Stack>
             </TableCell>
-            <TableCell align="left">
+            <TableCell align="right">
                 <BearBullLabel value={pro24h} variant="h4" />
             </TableCell>
-            <TableCell align="left">
+            <TableCell align="right">
                 <BearBullLabel value={pro7d} variant="h4" />
             </TableCell>
-            <TableCell align="left">
-                <Stack>
-                    <Stack direction="row" spacing={0.5} alignItems='center'>
+            <TableCell align="right">
+                    <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems='center'>
                         <Icon icon={rippleSolid} />
                         <Typography variant="h4" noWrap>{fNumber(vol24hxrp)}</Typography>
                     </Stack>
-                    <Stack direction="row" spacing={0.5} alignItems='center'>
+                    <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems='center'>
                         {/* <Icon icon={outlineToken} color="#0C53B7"/> */}
                         <Icon icon={arrowsExchange} color="#0C53B7" width="16" height="16"/>
                         <Typography variant="h5" color="#0C53B7">{fNumber(vol24hx)}</Typography>
                     </Stack>
-                    
-                    {/* <Typography variant="caption">
-                        <Stack direction="row" alignItems='center'>
-                            {name}
-                            <Icon icon={arrowsExchange} width="16" height="16"/>
-                            XRP
-                        </Stack>
-                    </Typography> */}
-                    {/* <Typography variant="caption">
-                        {fNumber(vol24htx)} tx
-                    </Typography> */}
-                </Stack>
             </TableCell>
-            <TableCell align="left">{fNumber(vol24htx)}</TableCell>
-            <TableCell align="left">$ {fNumber(marketcap)}</TableCell>
+            <TableCell align="right">{fNumber(vol24htx)}</TableCell>
+            <TableCell align="right">${fNumber(marketcap)}</TableCell>
             {/* <TableCell align="left">{holders}</TableCell>
             <TableCell align="left">{offers}</TableCell> */}
-            <TableCell align="left">{trustlines}</TableCell>
-            <TableCell align="left">{fNumber(amount)} <Typography variant="small" noWrap>{name}</Typography></TableCell>
-            <TableCell align="left">
+            <TableCell align="right">{trustlines}</TableCell>
+            <TableCell align="right">{fNumber(amount)} <Typography variant="small" noWrap>{name}</Typography></TableCell>
+            <TableCell align="right">
                 {/* {Str(issuer).limit(10, '...').get()} */}
                 {/* <Box
                     component="img"

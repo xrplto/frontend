@@ -957,7 +957,7 @@ export const XrplToLightTheme = createTheme({
       styleOverrides: {
         toolbar: {
           '& .MuiIconButton-root': {
-            padding: 8
+            padding: 0
           }
         },
         select: {
@@ -998,9 +998,10 @@ export const XrplToLightTheme = createTheme({
         head: {
           // textTransform: 'uppercase',
           fontSize: 13,
-          fontWeight: 'bold',
+          // fontWeight: 'bold',
           // color: colors.alpha.black[70],
-          background: 'inherit'
+          // background: 'inherit'
+          background: colors.alpha.white[100]
         }
       }
     },
