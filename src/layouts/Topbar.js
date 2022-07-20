@@ -7,7 +7,6 @@ import {
     Container,
     styled,
     Stack,
-    Toolbar,
     Tooltip,
     Typography
 } from '@mui/material';
@@ -35,6 +34,14 @@ const TopWrapper = styled(Box)(({ theme }) => `
     height: ${theme.spacing(3)};
     border-radius: 0px;
     border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
+`);
+
+const ContentWrapper = styled(Box)(({ theme }) => `
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    overflow-x: auto;
 `);
 
 const H24Style = styled('div')(({ theme }) => ({
@@ -124,7 +131,7 @@ function Topbar({md5}) {
     return (
         <TopWrapper>
             <Container maxWidth="xl">
-                <Box display="flex" alignItems="center" justifyContent="space-between" flex={1} sx={{pl:2.5, pr:3}}>
+                <ContentWrapper  sx={{pl:2.5, pr:3}}>
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Typography variant="small">Tokens: </Typography>
                         <Typography variant="small">{fIntNumber(metrics.count)}</Typography>
@@ -150,27 +157,25 @@ function Topbar({md5}) {
                             </Stack>
                         </Typography>
                         {/* <Typography variant="small">|</Typography> */}
-                        <Typography variant="small">Tokens Traded:</Typography>
+                        <Typography variant="small" noWrap>Tokens Traded:</Typography>
                         <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24[2])}</Typography>
-                        <Typography variant="small">Active Addresses:</Typography>
+                        <Typography variant="small" noWrap>Active Addresses:</Typography>
                         <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24[3])}</Typography>
                     </Stack>
-                    <Stack direction="row" spacing={2} alignItems="center">
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ml:5}}>
                         <Stack direction="row" spacing={0.5} alignItems='center'>
                             <Icon icon={rippleSolid} width='12' height='12'/>
                             <Typography variant="small">1</Typography>
                         </Stack>
                         <Separator>|</Separator>
-                        <Typography variant="small">$ {Rate(metrics.USD)}</Typography>
+                        <Typography variant="small" noWrap>$ {Rate(metrics.USD)}</Typography>
                         <Separator>|</Separator>
-                        <Typography variant="small">€ {Rate(metrics.EUR)}</Typography>
+                        <Typography variant="small" noWrap>€ {Rate(metrics.EUR)}</Typography>
                         <Separator>|</Separator>
-                        <Typography variant="small">¥ {Rate(metrics.JPY)}</Typography>
+                        <Typography variant="small" noWrap>¥ {Rate(metrics.JPY)}</Typography>
                     </Stack>
-                </Box>
+                </ContentWrapper>
             </Container>
-
-            <Toolbar id="back-to-top-anchor" />
         </TopWrapper>
     );
 }

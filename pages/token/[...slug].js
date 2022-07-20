@@ -1,85 +1,49 @@
 import axios from 'axios';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import Head from 'next/head';
 import { performance } from 'perf_hooks';
 
 // Material
-import { alpha } from '@mui/material/styles';
 import {
     Box,
     Container,
-    IconButton,
     styled,
-    Stack,
+    Toolbar
 } from '@mui/material';
-
-// Iconify Icons
-import { Icon } from '@iconify/react';
-import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
-import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
-
-// Utils
 
 // Components
 import Topbar from 'src/layouts/Topbar';
-import Logo from 'src/components/Logo';
-import Account from 'src/components/Account';
+import Header from 'src/TokenDetail/Header'
+import ScrollToTop from 'src/layouts/ScrollToTop';
 import TokenDetail from 'src/TokenDetail';
 import Footer from 'src/layouts/Footer';
 
-const HeaderWrapper = styled(Box)(
-  ({ theme }) => `
-  width: 100%;
-  display: flex;
-  align-items: center;
-  height: ${theme.spacing(10)};
-  margin-bottom: ${theme.spacing(0)};
-  border-radius: 0px;
-  border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
-`
-);
-
+// overflow: hidden;
 const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
+    ({ theme }) => `
     overflow: hidden;
     background: ${theme.palette.common.white};
     flex: 1;
 `
 );
 
-function Detail(props) {
-    const { toggleTheme, darkMode } = useContext(AppContext);
-    let data = {};
-    if (props && props.data) data = props.data;
+function Detail({data}) {
     const token = data.token;
 
     return (
         <OverviewWrapper>
+            <Toolbar id="back-to-top-anchor" />
             <Topbar md5={token.md5}/>
-            <HeaderWrapper>
-                <Container maxWidth="xl">
-                    <Box display="flex" alignItems="center" justifyContent="space-between" flex={2} sx={{pl:2, pr:2}}>
-                        <Box>
-                            <Logo />
-                        </Box>
-                        <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1.5 }}>
-                            <Account />
-                            <IconButton onClick={() => { toggleTheme() }} >
-                                {darkMode ? (
-                                    <Icon icon={baselineBrightnessHigh} />
-                                ) : (
-                                    <Icon icon={baselineBrightness4} />
-                                )}
-                            </IconButton>
-                        </Stack>
-                    </Box>
-                </Container>
-            </HeaderWrapper>
-            
-            <TokenDetail data={data}/>
+            <Header />
+
+            <Container maxWidth="xl">
+                <TokenDetail data={data}/>
+            </Container>
+
+            <ScrollToTop />
 
             <Footer />
+
         </OverviewWrapper>
     );
 }

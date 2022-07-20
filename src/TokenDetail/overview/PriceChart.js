@@ -262,8 +262,8 @@ export default function PriceChart({ token }) {
 
     return (
         <>
-            <Stack direction="row" spacing={2} sx={{mt:0}} alignItems="center">
-                <Typography variant="h3" sx={{ml:2, mt:0}}>{`${user} to USD Chart`}</Typography>
+            <Stack direction="row" spacing={2} alignItems="center">
+                <Typography variant="h3" sx={{ml:2}}>{`${user} to USD Chart`}</Typography>
                 {/* <CardHeader title={`${user} to USD Chart`} subheader='' /> */}
                 <Box sx={{ flexGrow: 1 }} />
                 <ToggleButtonGroup

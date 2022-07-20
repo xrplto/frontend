@@ -3,12 +3,14 @@ import { useState } from 'react';
 // Material
 import {
     Avatar,
+    Box,
     Button,
     Chip,
     Grid,
     Link,
     Rating,
     Stack,
+    styled,
     Tooltip,
     Typography
 } from '@mui/material';
@@ -31,6 +33,13 @@ import ExplorersMenu from './ExplorersMenu';
 import CommunityMenu from './CommunityMenu';
 import ChatMenu from './ChatMenu';
 import TrustSet from './TrustSet';
+
+const ScrollWrapper = styled(Box)(({ theme }) => `
+    display: flex;
+    align-items: center;
+    flex: 1;
+    overflow-x: auto;
+`);
 
 // ----------------------------------------------------------------------
 export default function UserDesc({token}) {
@@ -96,14 +105,17 @@ export default function UserDesc({token}) {
                 </Stack>
                 <Chip variant={"outlined"} icon={<TokenIcon />} label={name} />
             </Stack>
-            <Stack direction="row" spacing={1} sx={{mt:2}}>
-                <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Rank by Volume(24h)</Typography>}>
-                    <Chip label={'Rank #' + id} color="primary" variant="outlined" size="small"/>
-                </Tooltip>
-                <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
-                <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
-                <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
-            </Stack>
+            <ScrollWrapper>
+                <Stack direction="row" spacing={1} sx={{mt:2}}>
+                    <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Rank by Volume(24h)</Typography>}>
+                        <Chip label={'Rank #' + id} color="primary" variant="outlined" size="small"/>
+                    </Tooltip>
+                    <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
+                    <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
+                    <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
+                    <Chip label='Sponsored' color="primary" variant={"outlined"} size="small" icon={<Avatar sx={{ width: 16, height: 16 }} src="/static/sponsor.png"/>}  />
+                </Stack>
+            </ScrollWrapper>
             <Grid container spacing={1} alignItems='center' sx={{mt:2}}>
                 {tags && tags.map((tag, idx) => {
                     return (
@@ -116,6 +128,7 @@ export default function UserDesc({token}) {
                     );
                 })}
             </Grid>
+
             <Grid container spacing={1} sx={{p:0,mt:2}} >
                 {domain && (
                     <Grid item sx={{pb:1}}>

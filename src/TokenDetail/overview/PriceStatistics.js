@@ -13,7 +13,7 @@ import {
 import { tableCellClasses } from "@mui/material/TableCell";
 
 // Components
-import BearBullLabel from 'src/layouts/BearBullLabel';
+import BearBullLabel from './BearBullLabel';
 
 // Redux
 import { useSelector/*, useDispatch*/ } from "react-redux";
@@ -32,12 +32,6 @@ const StackStyle = styled(Stack)(({ theme }) => ({
     padding: '0em 0.5em 1.5em 0.5em',
     backgroundColor: alpha("#919EAB", 0.03),
 }));
-
-const Label = withStyles({
-    root: {
-        color: alpha('#637381', 0.99)
-    }
-})(Typography);
 
 const badge24hStyle = {
     display: 'inline-block',
@@ -96,7 +90,7 @@ export default function PriceStatistics({token}) {
 
     return (
         <StackStyle>
-            <CardHeader title={`${name} Price Statistics`}  subheader='' sx={{p:2}}/>
+            <CardHeader title={`${name} Price Statistics`} subheader='' sx={{p:2}}/>
             <Table sx={{
                 [`& .${tableCellClasses.root}`]: {
                     borderBottom: "1px solid",
@@ -105,15 +99,15 @@ export default function PriceStatistics({token}) {
             }}>
                 <TableBody>
                     <TableRow>
-                        <TableCell align="left"><Label variant="subtitle2" noWrap >{user} Price Today</Label></TableCell>
+                        <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >{user} Price Today</Typography></TableCell>
                         <TableCell align="left"></TableCell>
                     </TableRow>
                     <TableRow>
-                    <TableCell align="left"><Label variant="subtitle1" noWrap >{user} Price</Label></TableCell>
+                        <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >{user} Price</Typography></TableCell>
                         <TableCell align="left">${fNumber(exch / metrics.USD)}</TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell align="left"><Label variant="subtitle1" noWrap >Price Change<span style={badge24hStyle}>24h</span></Label></TableCell>
+                        <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Price Change<span style={badge24hStyle}>24h</span></Typography></TableCell>
                         <TableCell align="left">
                             <Stack>
                             {strPc24h}
@@ -122,29 +116,29 @@ export default function PriceStatistics({token}) {
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell align="left"><Label variant="subtitle1" noWrap >24h Low / 24h High</Label></TableCell>
+                        <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >24h Low / 24h High</Typography></TableCell>
                         <TableCell align="left">
-                            <Typography variant="subtitle2">${fNumber(maxMin24h[1])} / ${fNumber(maxMin24h[0])}</Typography>
+                            ${fNumber(maxMin24h[1])} / ${fNumber(maxMin24h[0])}
                         </TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell align="left"><Label variant="subtitle1" noWrap >Trading Volume<span style={badge24hStyle}>24h</span></Label></TableCell>
+                        <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Trading Volume<span style={badge24hStyle}>24h</span></Typography></TableCell>
                         <TableCell align="left">${fNumber(vol24hxrp / metrics.USD)}</TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell align="left"><Label variant="subtitle1" noWrap >Volume / Market Cap</Label></TableCell>
+                        <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Volume / Market Cap</Typography></TableCell>
                         <TableCell align="left">{voldivmarket}</TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell align="left"><Label variant="subtitle1" noWrap >Market Dominance</Label></TableCell>
+                        <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Market Dominance</Typography></TableCell>
                         <TableCell align="left">No Data</TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell align="left"><Label variant="subtitle1" noWrap >Market Rank</Label></TableCell>
+                        <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Market Rank</Typography></TableCell>
                         <TableCell align="left">{'#' + id}</TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell align="left"><Label variant="subtitle1" noWrap >Market Cap</Label></TableCell>
+                        <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Market Cap</Typography></TableCell>
                         <TableCell align="left">$ {fNumber(marketcap)}</TableCell>
                     </TableRow>
                 </TableBody>

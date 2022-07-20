@@ -1,33 +1,19 @@
 import axios from 'axios'
 import dynamic from 'next/dynamic';
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
 import { performance } from 'perf_hooks';
 
 // Material
-import { alpha } from '@mui/material/styles';
 import {
     Box,
     Container,
     Grid,
-    IconButton,
-    Link,
     styled,
-    Stack,
-    Typography
+    Toolbar
 } from '@mui/material';
-
-// Iconify Icons
-import { Icon } from '@iconify/react';
-import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
-import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
-
-// Utils
 
 // Components
 import Topbar from 'src/layouts/Topbar';
-import Logo from 'src/components/Logo';
-import Account from 'src/components/Account';
+import Header from 'src/TokenList/Header';
 
 // import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/layouts/ScrollToTop';
@@ -35,18 +21,6 @@ import Summary from 'src/TokenList/Summary';
 import Footer from 'src/layouts/Footer';
 
 const DynamicTokenList = dynamic(() => import('src/TokenList'));
-
-const HeaderWrapper = styled(Box)(
-    ({ theme }) => `
-    width: 100%;
-    display: flex;
-    align-items: center;
-    height: ${theme.spacing(10)};
-    margin-bottom: ${theme.spacing(0)};
-    border-radius: 0px;
-    border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
-`
-);
 
 // overflow: scroll;
 // overflow: auto;
@@ -59,32 +33,12 @@ const OverviewWrapper = styled(Box)(
 `
 );
 
-function Overview(props) {
-    const { toggleTheme, darkMode } = useContext(AppContext);
-    const data = props.data;
-
+function Overview({data}) {
     return (
         <OverviewWrapper>
+            <Toolbar id="back-to-top-anchor" />
             <Topbar md5={'NONE'}/>
-            <HeaderWrapper>
-                <Container maxWidth="xl">
-                    <Box display="flex" alignItems="center" justifyContent="space-between" flex={2} sx={{pl:2, pr:2}}>
-                        <Box>
-                            <Logo />
-                        </Box>
-                        <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1.5 }}>
-                            <Account />
-                            <IconButton onClick={() => { toggleTheme() }} >
-                                {darkMode ? (
-                                    <Icon icon={baselineBrightnessHigh} />
-                                ) : (
-                                    <Icon icon={baselineBrightness4} />
-                                )}
-                            </IconButton>
-                        </Stack>
-                    </Box>
-                </Container>
-            </HeaderWrapper>
+            <Header />
             
             <Container maxWidth="xl">
                 <Grid

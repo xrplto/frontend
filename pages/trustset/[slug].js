@@ -2,6 +2,7 @@ import axios from 'axios';
 import { performance } from 'perf_hooks';
 import { useState, useEffect } from 'react';
 import { withStyles } from '@mui/styles';
+import Decimal from 'decimal.js';
 
 // Material
 import { alpha } from '@mui/material/styles';
@@ -9,6 +10,7 @@ import {
     Alert,
     Avatar,
     Box,
+    Button,
     Card,
     Chip,
     Container,
@@ -146,7 +148,7 @@ function TrustLine(props) {
                 const resolved_at = res.resolved_at;
                 const dispatched_result = res.dispatched_result;
                 if (resolved_at) {
-                    setQrUrl(QR_BLUR); setUuid(null);
+                    setQrUrl(QR_BLUR); setUuid(null); setNextUrl(null);
                     if (dispatched_result && dispatched_result === 'tesSUCCESS') {
                         showAlert(MSG_SUCCESSFUL);
                     }
@@ -192,10 +194,11 @@ function TrustLine(props) {
         setCounter(150);
         setLoading(true);
         try {
+            // message: "Error: Payload encoding error: Decimal precision out of range"
             let LimitAmount = {};
             LimitAmount.issuer = issuer;
             LimitAmount.currency = currency;
-            LimitAmount.value = amount;
+            LimitAmount.value = new Decimal(amount).toDP(0, Decimal.ROUND_DOWN).toNumber();
             
             const body={ LimitAmount };
 
@@ -212,7 +215,6 @@ function TrustLine(props) {
             }
         } catch (err) {
             console.log(err);
-            console.log(BASE_URL);
             showAlert(ERR_NETWORK);
         }
         setLoading(false);
@@ -227,7 +229,7 @@ function TrustLine(props) {
             }
         } catch(err) {
         }
-        setQrUrl(QR_BLUR); setUuid(null);
+        setQrUrl(QR_BLUR); setUuid(null); setNextUrl(null);
         setLoading(false);
     };
 
@@ -487,6 +489,7 @@ function TrustLine(props) {
                                     src={qrUrl}
                                     sx={{width:200,height:200}}
                                 />
+                                <Stack direction='row' spacing={1} alignItems='center'>
                                 <LoadingButton
                                     size="small"
                                     onClick={handleTrustSet}
@@ -497,6 +500,23 @@ function TrustLine(props) {
                                 >
                                     {uuid ? `Cancel (${counter})`:`Generate QR`}
                                 </LoadingButton>
+
+                                {nextUrl && 
+                                    <Link
+                                        underline="none"
+                                        color="inherit"
+                                        target="_blank"
+                                        href={nextUrl}
+                                        rel="noreferrer noopener nofollow"
+                                    >
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            sx={{mt:1}}
+                                        >Open in XUMM</Button>
+                                    </Link>
+                                }
+                                </Stack>
                             </Stack>
                         </Grid>
                     </Grid>

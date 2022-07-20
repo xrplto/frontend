@@ -825,7 +825,8 @@ export const XrplToLightTheme = createTheme({
         root: {
           height: 38,
           minHeight: 38,
-          overflow: 'visible'
+          overflow: 'hidden',
+          maxWidth: { xs: 320, sm: 480 }
         },
         // indicator: {
         //   height: 38,
@@ -835,7 +836,7 @@ export const XrplToLightTheme = createTheme({
         //   boxShadow: '0px 2px 10px ' + colors.primary.light
         // },
         scrollableX: {
-          overflow: 'visible !important'
+          overflow: 'auto !important'
         }
       }
     },
@@ -1161,7 +1162,8 @@ export const XrplToLightTheme = createTheme({
           wallet_h2: 'h2',
           para_content: 'p',
           wallet_name: 'p',
-          link_cascade: 'span'
+          link_cascade: 'span',
+          label1: 'span'
         }
       },
       styleOverrides: {
@@ -1210,6 +1212,12 @@ export const XrplToLightTheme = createTheme({
       fontSize: 12,
       lineHeight: '18px',
       color: colors.alpha.black[100]
+    },
+    label1: {
+      fontWeight: 500,
+      fontSize: 14,
+      lineHeight: '21px',
+      color: colors.alpha.black[50]
     },
     h1: {
       fontWeight: 700,
