@@ -1,13 +1,11 @@
 import PropTypes from 'prop-types';
 
 // Material
-import { withStyles } from '@mui/styles';
 import {
     Stack,
     styled,
     Typography
 } from '@mui/material';
-//import {styled, alpha, useTheme } from '@mui/material/styles';
 
 // Utils
 import { fPercent } from 'src/utils/formatNumber';

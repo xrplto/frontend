@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { alpha, styled } from '@mui/material/styles';
 import {
+    alpha,
+    styled,
     Box,
     Fab,
     useScrollTrigger,

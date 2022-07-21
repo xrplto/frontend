@@ -18,6 +18,7 @@ import Header from 'src/TokenList/Header';
 // import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/layouts/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
+import HowWeWork from 'src/TokenList/HowWeWork';
 import Footer from 'src/layouts/Footer';
 
 const DynamicTokenList = dynamic(() => import('src/TokenList'));
@@ -54,6 +55,9 @@ function Overview({data}) {
                     <Grid item xs={12} md={12} lg={12} >
                         <DynamicTokenList data={data}/>
                         {/* <TokenList data={data}/> */}
+                    </Grid>
+                    <Grid item xs={12} md={12} lg={12} >
+                        <HowWeWork />
                     </Grid>
                 </Grid>
             </Container>

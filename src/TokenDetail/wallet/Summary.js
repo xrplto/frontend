@@ -2,8 +2,8 @@ import Decimal from 'decimal.js';
 import { useState } from 'react';
 // Material
 import { withStyles } from '@mui/styles';
-import { alpha } from '@mui/material/styles';
 import {
+    alpha,
     Grid,
     Link,
     Stack,
@@ -60,9 +60,9 @@ export default function Summary({data}) {
                 }}
             >
                 <Typography variant='wallet_h2'>What Are XRP Ledger Wallets?</Typography>
-                <Typography variant='para_content'>XRPL <Link href="https://xrpl.to/status/coming-soon">wallets</Link> are software programs that store private and public keys and interface with the XRP Ledger to enable users to send and receive XRPL currencies and monitor their balance. It is the equivalent of a bank account where you can view, deposit and withdraw funds.</Typography>
+                <Typography variant='para_content'>XRPL <Link href="/status/coming-soon">wallets</Link> are software programs that store private and public keys and interface with the XRP Ledger to enable users to send and receive XRPL currencies and monitor their balance. It is the equivalent of a bank account where you can view, deposit and withdraw funds.</Typography>
                 <Typography variant='para_content'>XRPL wallets store private and public keys and facilitate the sending and receiving of digital currency and monitor all transactions to protect from identity theft. The private key is used to authorize payments, while the public key is used to access received funds.</Typography>
-                <Typography variant='para_content'>XRPL wallets can be hot, meaning that they are connected to the internet, or cold, meaning that they have no internet connection. When deciding whether to use a <Link href="https://xrpl.to/status/coming-soon">hot wallet vs a cold wallet</Link>, you need to consider several factors: while hot wallets are often more user friendly, they also carry a higher risk of loss of funds due to their internet connection.</Typography>
+                <Typography variant='para_content'>XRPL wallets can be hot, meaning that they are connected to the internet, or cold, meaning that they have no internet connection. When deciding whether to use a <Link href="/status/coming-soon">hot wallet vs a cold wallet</Link>, you need to consider several factors: while hot wallets are often more user friendly, they also carry a higher risk of loss of funds due to their internet connection.</Typography>
 
                 <Typography variant='wallet_h2'>What Are the Main Types of XRPL Wallets?</Typography>
 

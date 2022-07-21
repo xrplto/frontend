@@ -1,5 +1,13 @@
 // Material
-import { /*alpha,*/ useTheme } from '@mui/material/styles';
+import {
+    /*alpha,*/
+    useTheme,
+    Typography
+} from '@mui/material';
+
+// Iconify Icons
+import { Icon } from '@iconify/react';
+import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 
 // Utils
 import { fCurrency5/*, fNumber*/ } from 'src/utils/formatNumber';
@@ -86,6 +94,19 @@ export default function ChartOptions() {
             shared: true,
             intersect: false,
             theme: 'dark',
+            style: {
+                fontSize: '16px',
+                fontFamily: undefined
+            },
+            // custom: function({series, seriesIndex, dataPointIndex, w}) {
+            //     var data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
+                
+            //     return '<ul>' +
+            //     '<li><b>Price</b>: ' + data[0] + '</li>' +
+            //     '<li><b>Number</b>: ' + data[1] + '</li>' +
+            //     '<li><b>Number</b>: ' + data[2] + '</li>' +
+            //     '</ul>';
+            // },
             x: {
                 show: false,
                 format: 'MM/dd/yyyy, h:mm:ss TT',
@@ -93,15 +114,27 @@ export default function ChartOptions() {
             y: {
                 formatter: (y) => {
                     if (typeof y !== 'undefined') {
-                        return `Price: $${fCurrency5(y)}`;
+                        
+                        // return <Typography align="center" color="#54D62C" variant="small"> <Icon icon={rippleSolid} color="#54D62C"/> {fCurrency5(y)}</Typography>;
+                        return `${fCurrency5(y)} XRP`;
                     }
                     return y;
                 },
                 title: {
                     formatter: (seriesName) => {
-                        return seriesName;
+                        // return seriesName;
+                        return '';
                     }
                 }
+            },
+            z: {
+                formatter: (z) => {
+                    if (typeof z !== 'undefined') {
+                        return `$ ${fCurrency5(z)}`;
+                    }
+                    return z;
+                },
+                title: ''
             },
             marker: {
                 show: true,
@@ -111,7 +144,7 @@ export default function ChartOptions() {
         // Legend
         legend: {
             show: true,
-            fontSize: 13,
+            fontSize: 14,
             position: 'top',
             horizontalAlign: 'right',
             markers: {

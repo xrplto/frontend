@@ -34,12 +34,17 @@ import CommunityMenu from './CommunityMenu';
 import ChatMenu from './ChatMenu';
 import TrustSet from './TrustSet';
 
-const ScrollWrapper = styled(Box)(({ theme }) => `
-    display: flex;
-    align-items: center;
-    flex: 1;
-    overflow-x: auto;
-`);
+const ContentWrapper = styled(Box)(({ theme }) => ({
+    display: "flex",
+    gap: '0.3em',
+    py: 1.5,
+    overflow: "auto",
+    width: "100%",
+    "& > *": {
+        scrollSnapAlign: "center",
+    },
+    "::-webkit-scrollbar": { display: "none" },
+}));
 
 // ----------------------------------------------------------------------
 export default function UserDesc({token}) {
@@ -105,18 +110,52 @@ export default function UserDesc({token}) {
                 </Stack>
                 <Chip variant={"outlined"} icon={<TokenIcon />} label={name} />
             </Stack>
-            <ScrollWrapper>
-                <Stack direction="row" spacing={1} sx={{mt:2}}>
-                    <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Rank by Volume(24h)</Typography>}>
-                        <Chip label={'Rank #' + id} color="primary" variant="outlined" size="small"/>
-                    </Tooltip>
-                    <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
-                    <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
-                    <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
-                    <Chip label='Sponsored' color="primary" variant={"outlined"} size="small" icon={<Avatar sx={{ width: 16, height: 16 }} src="/static/sponsor.png"/>}  />
-                </Stack>
-            </ScrollWrapper>
-            <Grid container spacing={1} alignItems='center' sx={{mt:2}}>
+            <Box
+                sx={{
+                    display: "flex",
+                    gap: 1,
+                    py: 1,
+                    overflow: "auto",
+                    width: "100%",
+                    "& > *": {
+                        scrollSnapAlign: "center",
+                    },
+                    "::-webkit-scrollbar": { display: "none" },
+                }}
+            >
+                <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Rank by Volume(24h)</Typography>}>
+                    <Chip label={'Rank #' + id} color="primary" variant="outlined" size="small"/>
+                </Tooltip>
+                <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
+                <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
+                <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
+                <Chip label='Sponsored' color="primary" variant={"outlined"} size="small" icon={<Avatar sx={{ width: 16, height: 16 }} src="/static/sponsor.png"/>}  />
+            </Box>
+
+            {/* <Box
+                sx={{
+                    display: "flex",
+                    gap: 1,
+                    py: 1,
+                    overflow: "auto",
+                    width: "100%",
+                    "& > *": {
+                        scrollSnapAlign: "center",
+                    },
+                    "::-webkit-scrollbar": { display: "none" },
+                }}
+            >
+                {tags && tags.map((tag, idx) => {
+                    return (
+                        <Chip
+                            size="small"
+                            label={tag}
+                        />
+                    );
+                })}
+            </Box> */}
+
+            <Grid container spacing={1} alignItems='center' sx={{mt:1}}>
                 {tags && tags.map((tag, idx) => {
                     return (
                         <Grid item key={md5 + idx + tag}>
@@ -129,7 +168,7 @@ export default function UserDesc({token}) {
                 })}
             </Grid>
 
-            <Grid container spacing={1} sx={{p:0,mt:2}} >
+            <Grid container spacing={1} sx={{p:0,mt:1}} >
                 {domain && (
                     <Grid item sx={{pb:1}}>
                         <Link

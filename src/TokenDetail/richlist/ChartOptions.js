@@ -1,11 +1,14 @@
 // Material
-import { /*alpha,*/ useTheme } from '@mui/material/styles';
+import {
+    /*alpha,*/
+    useTheme
+} from '@mui/material';
 
 // Utils
 import { fCurrency5, fNumber, fIntNumber } from 'src/utils/formatNumber';
 
 // ----------------------------------------------------------------------
-export default function ChartOptions(data) {
+export default function ChartOptions(series) {
     const theme = useTheme();
 
     return {
@@ -23,13 +26,7 @@ export default function ChartOptions(data) {
                 autoScaleYaxis: true
             }
         },
-        series: [
-            {
-                name: '',
-                type: 'area',
-                data: data
-            }
-        ],
+        series: series,
         // Grid
         grid: {
             strokeDashArray: 3,

@@ -2,8 +2,8 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 
 // Material
-import { /*alpha, styled,*/ useTheme } from '@mui/material/styles';
 import {
+    useTheme,
     Box,
     Stack,
     ToggleButton,
@@ -71,7 +71,7 @@ export default function RichListChart({ token }) {
         }
     ];
 
-    let options1 = ChartOptions(graphData);
+    let options1 = ChartOptions(CHART_DATA1);
 
     return (
         <>

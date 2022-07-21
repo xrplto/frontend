@@ -6,9 +6,9 @@ import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 
 // Material
-import { styled } from '@mui/material/styles';
 import { withStyles } from '@mui/styles';
 import {
+    styled,
     Avatar,
     Link,
     Stack,
@@ -56,7 +56,7 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
 function truncate(str, n){
     if (!str) return '';
     //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
-    return (str.length > n) ? str.substr(0, n-1) + '...' : str;
+    return (str.length > n) ? str.substr(0, n-1) + '... ' : str;
 };
 
 export default function TokenRow({token, setEditToken, setTrustToken}) {
@@ -109,7 +109,7 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
         >
             <TableCell align="left">{id}</TableCell>
             <TableCell align="left" sx={{p:0}}>
-                <Stack direction="row" alignItems="center" spacing={2}>
+                <Stack direction="row" alignItems="center" spacing={2} sx={{p:0}}>
                     <Avatar sx={{ width: 56, height: 56 }}>
                     {isAdmin ? (
                         <TokenImage
@@ -125,7 +125,7 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
                             width={56}
                             height={56}
                             onError={(event) => event.target.src = '/static/alt.png'}
-                        />                                                
+                        />
                     )}
                     </Avatar>
                     
@@ -135,27 +135,25 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
                         href={`token/${urlSlug}`}
                         rel="noreferrer noopener nofollow"
                     >
-                    <Stack>
-                        {isAdmin && urlSlug === md5 ? (
-                            <Typography variant="token" color='#B72136' noWrap>{truncate(name, 8)}</Typography>
-                        ):(
-                            <Typography variant="token" noWrap>{truncate(name, 8)}</Typography>
-                        )
-                        }
-                        <Stack direction="row" alignItems="center" spacing={0.1}>
-                            <Typography variant="caption">
+                        <Stack>
+                            {isAdmin && urlSlug === md5 ? (
+                                <Typography variant="token" color='#B72136' noWrap>{truncate(name, 8)}</Typography>
+                            ):(
+                                <Typography variant="token" noWrap>{truncate(name, 8)}</Typography>
+                            )
+                            }
+                            <Typography variant="caption" noWrap>
                                 {truncate(user, 8)}
                                 {kyc && (<Typography variant='kyc'>KYC</Typography>)}
                             </Typography>
+                            <Typography variant="small">
+                                {date_fixed}
+                            </Typography>
                         </Stack>
-                        <Typography variant="small">
-                            {date_fixed}
-                        </Typography>
-                    </Stack>
                     </Link>
                 </Stack>
             </TableCell>
-            <TableCell align="right" sx={{pl:0}}>
+            <TableCell align="right" sx={{pl:0, pr:0}}>
                 <Typography variant="h4" noWrap>
                     $ {fNumber(exch / metrics.USD)}
                 </Typography>
@@ -164,13 +162,13 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
                     <Typography variant="h6" noWrap>{fNumber(exch)}</Typography>
                 </Stack>
             </TableCell>
-            <TableCell align="right">
+            <TableCell align="right" sx={{pl:0, pr:0}}>
                 <BearBullLabel value={pro24h} variant="h4" />
             </TableCell>
-            <TableCell align="right">
+            <TableCell align="right" sx={{pl:0, pr:0}}>
                 <BearBullLabel value={pro7d} variant="h4" />
             </TableCell>
-            <TableCell align="right">
+            <TableCell align="right" sx={{pl:0, pr:0}}>
                     <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems='center'>
                         <Icon icon={rippleSolid} />
                         <Typography variant="h4" noWrap>{fNumber(vol24hxrp)}</Typography>
@@ -181,12 +179,12 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
                         <Typography variant="h5" color="#0C53B7">{fNumber(vol24hx)}</Typography>
                     </Stack>
             </TableCell>
-            <TableCell align="right">{fNumber(vol24htx)}</TableCell>
-            <TableCell align="right">${fNumber(marketcap)}</TableCell>
+            <TableCell align="right" sx={{pl:0, pr:0}}>{fNumber(vol24htx)}</TableCell>
+            <TableCell align="right" sx={{pl:0, pr:0}}>${fNumber(marketcap)}</TableCell>
             {/* <TableCell align="left">{holders}</TableCell>
             <TableCell align="left">{offers}</TableCell> */}
-            <TableCell align="right">{trustlines}</TableCell>
-            <TableCell align="right">{fNumber(amount)} <Typography variant="small" noWrap>{name}</Typography></TableCell>
+            <TableCell align="right" sx={{pl:0, pr:0}}>{trustlines}</TableCell>
+            <TableCell align="right" sx={{pl:0, pr:0}}>{fNumber(amount)} <Typography variant="small" noWrap>{name}</Typography></TableCell>
             <TableCell align="right">
                 {/* {Str(issuer).limit(10, '...').get()} */}
                 {/* <Box

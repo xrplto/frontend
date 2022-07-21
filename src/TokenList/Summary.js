@@ -2,8 +2,8 @@ import Decimal from 'decimal.js';
 import { useState } from 'react';
 // Material
 import { withStyles } from '@mui/styles';
-import { alpha } from '@mui/material/styles';
 import {
+    alpha,
     Link,
     Stack,
     Typography
@@ -48,30 +48,31 @@ export default function Summary() {
     const gXRPdominancePro = new Decimal(metrics.global[9]).toNumber();
 
     return (
-        <Stack sx={{pt:2, pl:2.5}}>
+        <Stack sx={{mt:2}}>
             <Typography variant='h1'>Today's XRPL Token Prices by Volume</Typography>
-            <Stack direction="row" sx={{mt:2}}>
-                <ContentTypography variant='subtitle1'>The global token market cap is <strong>${fNumber(gMarketcap)}B</strong>, a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last day.</ContentTypography>
-                <Link
-                    component="button"
-                    underline="always"
-                    variant="body2"
-                    color="#637381"
-                    onClick={() => {
-                        setShowContent(!showContent);
-                    }}
-                >
-                    <ContentTypography variant='subtitle1' sx={{ml:1}}>{showContent?'Read Less':'Read More'}</ContentTypography>
-                </Link>
-            </Stack>
+
+            <ContentTypography variant='subtitle1' sx={{mt:2}}>The global token market cap is <strong>${fNumber(gMarketcap)}B</strong>, a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last day.
+            <Link
+                component="button"
+                underline="always"
+                variant="body2"
+                color="#637381"
+                onClick={() => {
+                    setShowContent(!showContent);
+                }}
+            >
+                <ContentTypography variant='subtitle1' sx={{ml:1}}>{showContent?'Read Less':'Read More'}</ContentTypography>
+            </Link>
+            </ContentTypography>
 
             <div
                 style={{
                     display: showContent?"flex":"none",
                     flexDirection: "column",
                 }}
+                
             >
-                <ContentTypography variant='subtitle1'>The total XRPL Dex volume over the last 24 hours is <strong>${fNumber(gDexVolume)}</strong>, which makes a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. The total volume in Scams is currently <strong>${fNumber(gScamVolume)}</strong>, <strong>{gScamVolumePro}%</strong> of the total XRPL token market 24-hour volume. The volume of all stable currencies is now <strong>${fNumber(gStableVolume)}</strong>, which is <strong>{gStableVolumePro}%</strong> of the total token market 24-hour volume.</ContentTypography>
+                <ContentTypography variant='subtitle1'sx={{mt:2}}>The total XRPL Dex volume over the last 24 hours is <strong>${fNumber(gDexVolume)}</strong>, which makes a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. The total volume in Scams is currently <strong>${fNumber(gScamVolume)}</strong>, <strong>{gScamVolumePro}%</strong> of the total XRPL token market 24-hour volume. The volume of all stable currencies is now <strong>${fNumber(gStableVolume)}</strong>, which is <strong>{gStableVolumePro}%</strong> of the total token market 24-hour volume.</ContentTypography>
                 <ContentTypography variant='subtitle1'>XRP price is currently <strong>${Rate(1, metrics.USD)}</strong>.</ContentTypography>
                 <ContentTypography variant='subtitle1'>XRP dominance is currently ---%, a decrease of -% over the day.</ContentTypography>
             </div>

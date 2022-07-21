@@ -1,6 +1,6 @@
 // Material
-import { styled } from '@mui/material/styles';
 import {
+    styled,
     Stack,
     Toolbar,
     Pagination,

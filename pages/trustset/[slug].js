@@ -5,8 +5,8 @@ import { withStyles } from '@mui/styles';
 import Decimal from 'decimal.js';
 
 // Material
-import { alpha } from '@mui/material/styles';
 import {
+    alpha,
     Alert,
     Avatar,
     Box,

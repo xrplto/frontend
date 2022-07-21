@@ -1,5 +1,7 @@
 // Material
-import { useTheme } from '@mui/material/styles';
+import {
+    useTheme
+} from '@mui/material';
 
 // Utils
 import { fCurrency5, fNumber } from 'src/utils/formatNumber';

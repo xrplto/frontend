@@ -1,8 +1,11 @@
 import { Icon } from '@iconify/react';
 import postageStamp from '@iconify/icons-mdi/postage-stamp';
 // Material
-import { styled } from '@mui/material/styles';
-import { Typography, Stack } from '@mui/material';
+import {
+    styled,
+    Stack,
+    Typography,
+} from '@mui/material';
 
 // ----------------------------------------------------------------------
 

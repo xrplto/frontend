@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 // Material
-import { /*alpha, styled,*/ useTheme } from '@mui/material/styles';
 import {
+    useTheme,
     Box,
     Stack,
     ToggleButton,
@@ -15,7 +15,6 @@ import { Chart } from 'src/components/Chart';
 
 // Components
 import ChartOptions from './ChartOptions';
-
 
 // Utils
 import { fCurrency5, fNumber } from 'src/utils/formatNumber';
@@ -86,13 +85,7 @@ export default function PriceChart({ token }) {
             }
         },
 
-        series:[
-            {
-                name: '',
-                type: 'area',
-                data: data
-            }
-        ],
+        series: CHART_DATA1,
 
         // Grid
         grid: {
@@ -263,8 +256,8 @@ export default function PriceChart({ token }) {
     return (
         <>
             <Stack direction="row" spacing={2} alignItems="center">
-                <Typography variant="h3" sx={{ml:2}}>{`${user} to USD Chart`}</Typography>
-                {/* <CardHeader title={`${user} to USD Chart`} subheader='' /> */}
+                <Typography variant="h3" sx={{ml:2}}>{`${user} to XRP Chart`}</Typography>
+                {/* <CardHeader title={`${user} to XRP Chart`} subheader='' /> */}
                 <Box sx={{ flexGrow: 1 }} />
                 <ToggleButtonGroup
                     color="primary"

@@ -4,8 +4,10 @@ import {CopyToClipboard} from 'react-copy-to-clipboard';
 
 // Material
 import { withStyles } from '@mui/styles';
-import { alpha, styled, useTheme } from '@mui/material/styles';
 import {
+    alpha,
+    styled,
+    useTheme,
     Alert,
     Avatar,
     Backdrop,

@@ -1,7 +1,11 @@
 import PropTypes from 'prop-types';
-// material
+
+// Material
 import { Popover } from '@mui/material';
-import { alpha, styled } from '@mui/material/styles';
+import {
+    alpha,
+    styled
+} from '@mui/material';
 
 // ----------------------------------------------------------------------
 MenuPopover.propTypes = {

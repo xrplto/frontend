@@ -2,8 +2,8 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Material
-import { alpha } from '@mui/material/styles';
 import {
+    alpha,
     Box,
     Container,
     IconButton,

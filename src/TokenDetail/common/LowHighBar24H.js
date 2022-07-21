@@ -1,8 +1,8 @@
 import * as React from 'react';
 
 // Material
-import { styled/*, useTheme*/ } from '@mui/material/styles';
 import {
+    styled,
     Box,
     Slider,
     Stack,

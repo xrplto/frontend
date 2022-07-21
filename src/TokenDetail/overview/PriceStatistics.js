@@ -1,7 +1,7 @@
 // Material
 import { withStyles } from '@mui/styles';
-import { alpha, styled, useTheme } from '@mui/material/styles';
 import {
+    alpha, styled, useTheme,
     CardHeader,
     Stack,
     Typography,

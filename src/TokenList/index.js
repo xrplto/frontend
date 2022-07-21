@@ -4,12 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 // import InfiniteScroll from "react-infinite-scroll-component";
 
 // Material
-import { withStyles } from '@mui/styles';
 import {
     styled,
+    Box,
     Table,
-    TableBody,
-    TableContainer
+    TableBody
 } from '@mui/material';
 
 // Components
@@ -29,13 +28,17 @@ import { selectMetrics, update_metrics } from "src/redux/statusSlice";
 
 // ----------------------------------------------------------------------
 
-// overflow-x: auto;
-const OverviewWrapper = styled('div')(
-    ({ theme }) => `
-        overflow-x: auto;     
-        flex: 1;
-    `
-);
+const ContentWrapper = styled(Box)(({ theme }) => ({
+    display: "flex",
+    gap: 1,
+    py: 1,
+    overflow: "auto",
+    width: "100%",
+    "& > *": {
+        scrollSnapAlign: "center",
+    },
+    "::-webkit-scrollbar": { display: "none" },
+}));
 
 // max-height: 440px;
 
@@ -191,7 +194,7 @@ export default function TokenList({data}) {
                     </div>
                 }
             > */}
-            <OverviewWrapper>
+            <ContentWrapper>
                 <Table>
                     <TokenListHead
                         order={order}
@@ -222,7 +225,7 @@ export default function TokenList({data}) {
                         </TableBody>
                     )*/}
                 </Table>
-            </OverviewWrapper>
+            </ContentWrapper>
             {/* </InfiniteScroll> */}
             <TokenListToolbar
                 rows={rows}

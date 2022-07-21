@@ -3,8 +3,11 @@ import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
 // Material
-import { styled, useTheme } from '@mui/material/styles';
 import { withStyles } from '@mui/styles';
+import {
+    styled,
+    useTheme
+} from '@mui/material';
 
 import {
     Avatar,

@@ -1,8 +1,8 @@
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Material
-import { alpha } from '@mui/material/styles';
 import {
+    alpha,
     Box,
     Container,
     Grid,

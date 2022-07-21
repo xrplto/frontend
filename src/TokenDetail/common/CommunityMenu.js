@@ -1,7 +1,7 @@
 
 // Material
-import { styled } from '@mui/material/styles';
 import {
+    styled,
     Chip,
     Link,
     Menu,

@@ -1232,6 +1232,7 @@ export const XrplToDarkTheme = createTheme({
   typography: {
     fontFamily:
       '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+      
     wallet_h3: {
       fontWeight: 'bold',
       fontSize: 24,

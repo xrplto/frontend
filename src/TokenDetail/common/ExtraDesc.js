@@ -1,7 +1,7 @@
 // Material
 import { withStyles } from '@mui/styles';
-import { useTheme } from '@mui/material/styles';
 import {
+    useTheme,
     Divider,
     Grid,
     Stack,

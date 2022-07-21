@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 
 // Material
-import { alpha } from '@mui/material/styles';
 import {
+    alpha,
+    styled,
     Box,
     Container,
-    styled,
     Stack,
     Tooltip,
     Typography
@@ -36,13 +36,27 @@ const TopWrapper = styled(Box)(({ theme }) => `
     border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
 `);
 
-const ContentWrapper = styled(Box)(({ theme }) => `
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex: 1;
-    overflow-x: auto;
-`);
+// const ContentWrapper = styled(Box)(({ theme }) => `
+//     display: flex;
+//     align-items: center;
+//     justify-content: space-between;
+//     flex: 1;
+//     overflow-x: auto;
+//     "::-webkit-scrollbar": { display: "none" }
+// `);
+
+const ContentWrapper = styled(Box)(({ theme }) => ({
+    display: "flex",
+    gap: 1,
+    py: 1,
+    overflow: "auto",
+    width: "100%",
+    justifyContent: 'space-between',
+    "& > *": {
+        scrollSnapAlign: "center",
+    },
+    "::-webkit-scrollbar": { display: "none" },
+}));
 
 const H24Style = styled('div')(({ theme }) => ({
     cursor: 'pointer',
@@ -131,7 +145,7 @@ function Topbar({md5}) {
     return (
         <TopWrapper>
             <Container maxWidth="xl">
-                <ContentWrapper  sx={{pl:2.5, pr:3}}>
+                <ContentWrapper>
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Typography variant="small">Tokens: </Typography>
                         <Typography variant="small">{fIntNumber(metrics.count)}</Typography>
@@ -162,7 +176,7 @@ function Topbar({md5}) {
                         <Typography variant="small" noWrap>Active Addresses:</Typography>
                         <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24[3])}</Typography>
                     </Stack>
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{ml:5}}>
+                    <Stack direction="row" spacing={2} alignItems="center" sx={{ml:5, mr:2}}>
                         <Stack direction="row" spacing={0.5} alignItems='center'>
                             <Icon icon={rippleSolid} width='12' height='12'/>
                             <Typography variant="small">1</Typography>

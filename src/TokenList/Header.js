@@ -2,8 +2,8 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Material
-import { alpha } from '@mui/material/styles';
 import {
+    alpha,
     Box,
     Container,
     IconButton,
@@ -41,7 +41,7 @@ export default function Header(props) {
     return (
         <HeaderWrapper>
             <Container maxWidth="xl">
-                <Box display="flex" alignItems="center" justifyContent="space-between" flex={2} sx={{pl:2, pr:2}}>
+                <Box display="flex" alignItems="center" justifyContent="space-between" flex={2} sx={{pl:0, pr:0}}>
                     <Box>
                         <Logo />
                     </Box>

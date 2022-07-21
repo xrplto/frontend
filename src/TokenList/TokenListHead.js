@@ -23,17 +23,17 @@ const StickyTableCell = withStyles((theme) => ({
 //    { id: 'offers', label: 'Offers', align: 'left', order: true },
 
 const TABLE_HEAD = [
-    { no: 0, id: 'id', label: '#', align: 'left', order: false },
-    { no: 1, id: 'name', label: 'Name', align: 'left', order: true },
-    { no: 2, id: 'exch', label: 'Price', align: 'right', order: true },
-    { no: 3, id: 'pro24h', label: '24h (%)', align: 'right', order: true },
-    { no: 4, id: 'pro7d', label: '7d (%)', align: 'right', order: true },
-    { no: 5, id: 'vol24hxrp', label: 'Volume(24h)', align: 'right', order: true },
-    { no: 6, id: 'vol24htx', label: 'Trades', align: 'right', order: true },
-    { no: 7, id: 'marketcap', label: 'Market Cap', align: 'right', order: true },
-    { no: 8, id: 'trustlines', label: 'TrustLines', align: 'right', order: true },
-    { no: 9, id: 'amount', label: 'Total Supply', align: 'right', order: true },
-    { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'right', order: false },
+    { no: 0, id: 'id', label: '#', align: 'left', width: '', order: false },
+    { no: 1, id: 'name', label: 'Name', align: 'left', width: '10%', order: true },
+    { no: 2, id: 'exch', label: 'Price', align: 'right', width: '8%', order: true },
+    { no: 3, id: 'pro24h', label: '24h (%)', align: 'right', width: '6%', order: true },
+    { no: 4, id: 'pro7d', label: '7d (%)', align: 'right', width: '6%', order: true },
+    { no: 5, id: 'vol24hxrp', label: 'Volume(24h)', align: 'right', width: '10%', order: true },
+    { no: 6, id: 'vol24htx', label: 'Trades', align: 'right', width: '6%', order: true },
+    { no: 7, id: 'marketcap', label: 'Market Cap', align: 'right', width: '10%', order: true },
+    { no: 8, id: 'trustlines', label: 'TrustLines', align: 'right', width: '10%', order: true },
+    { no: 9, id: 'amount', label: 'Total Supply', align: 'right', width: '15%', order: true },
+    { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'right', width: '15%', order: false },
     { id: '' }
 ];
 
@@ -54,6 +54,13 @@ export default function TokenListHead({
                         key={headCell.id}
                         align={headCell.align}
                         sortDirection={orderBy === headCell.id ? order : false}
+                        width={headCell.width}
+                        sx={{
+                            ...(headCell.id > 0 && {
+                                pl:0,
+                                pr:0,
+                            })
+                        }}
                     >
                         <TableSortLabel
                             hideSortIcon

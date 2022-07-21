@@ -1,6 +1,7 @@
 // Material
-import { alpha, styled } from '@mui/material/styles';
 import {
+    alpha,
+    styled,
     Box,
     Grid,
     Stack,
