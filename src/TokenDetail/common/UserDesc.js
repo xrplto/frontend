@@ -17,7 +17,8 @@ import {
 
 import {
     Token as TokenIcon,
-    SyncAlt as SyncAltIcon
+    SyncAlt as SyncAltIcon,
+    Share as ShareIcon
 } from '@mui/icons-material';
 
 // Iconify
@@ -25,14 +26,14 @@ import { Icon } from '@iconify/react';
 import link45deg from '@iconify/icons-bi/link-45deg';
 import linkExternal from '@iconify/icons-charm/link-external';
 import paperIcon from '@iconify/icons-akar-icons/paper';
-import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
-import listCheck from '@iconify/icons-ci/list-check';
+// import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
+// import listCheck from '@iconify/icons-ci/list-check';
 
 // Components
 import ExplorersMenu from './ExplorersMenu';
 import CommunityMenu from './CommunityMenu';
 import ChatMenu from './ChatMenu';
-import TrustSet from './TrustSet';
+// import TrustSet from './TrustSet';
 
 const ContentWrapper = styled(Box)(({ theme }) => ({
     display: "flex",
@@ -49,7 +50,7 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
 // ----------------------------------------------------------------------
 export default function UserDesc({token}) {
     const [rating, setRating] = useState(2);
-    const [trustToken, setTrustToken] = useState(null);
+    // const [trustToken, setTrustToken] = useState(null);
 
     const {
         id,
@@ -80,13 +81,16 @@ export default function UserDesc({token}) {
     const handleDelete = () => {
     }
 
-    const handleSetTrust = (e) => {
-        setTrustToken(token);
+    // const handleSetTrust = (e) => {
+    //     setTrustToken(token);
+    // }
+
+    const handleShare = (e) => {
     }
   
     return (
         <Stack>
-            <TrustSet token={trustToken} setToken={setTrustToken}/>
+            
             <Stack direction="row" spacing={1} alignItems='center'>
                 <Avatar
                     alt={user}
@@ -108,7 +112,14 @@ export default function UserDesc({token}) {
                         </Stack>
                     </Stack>
                 </Stack>
-                <Chip variant={"outlined"} icon={<TokenIcon />} label={name} />
+                <Grid container direction="row" spacing={1} sx={{mt: 2}}>
+                    <Grid item>
+                        <Chip variant={"outlined"} icon={<TokenIcon />} label={name} />
+                    </Grid>
+                    <Grid item>
+                        <Chip variant={"outlined"} icon={<ShareIcon fontSize="small" />} label={'Share'} onClick={handleShare} />
+                    </Grid>
+                </Grid>
             </Stack>
             <Box
                 sx={{
@@ -129,7 +140,7 @@ export default function UserDesc({token}) {
                 <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
                 <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
                 <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
-                <Chip label='Sponsored' color="primary" variant={"outlined"} size="small" icon={<Avatar sx={{ width: 16, height: 16 }} src="/static/sponsor.png"/>}  />
+                {/* <Chip label='Sponsored' color="primary" variant={"outlined"} size="small" icon={<Avatar sx={{ width: 16, height: 16 }} src="/static/sponsor.png"/>}  /> */}
             </Box>
 
             {/* <Box
@@ -202,12 +213,12 @@ export default function UserDesc({token}) {
                     </Grid>
                 )}
 
-                <Grid item sx={{pb:1}}>
+                {/* <Grid item sx={{pb:1}}>
                     <Chip label={'TrustSet'} sx={{pl:0.5,pr:0.5}}
                         deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
                         onDelete={handleDelete} onClick={handleSetTrust}
                         icon={<Icon icon={arrowsExchange} width="18" height="18"/>} />
-                </Grid>
+                </Grid> */}
 
                 <Grid item sx={{pb:1}}>
                     <ExplorersMenu issuer={issuer}/>

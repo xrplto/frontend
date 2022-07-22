@@ -1163,7 +1163,8 @@ export const XrplToLightTheme = createTheme({
           para_content: 'p',
           wallet_name: 'p',
           link_cascade: 'span',
-          label1: 'span'
+          label1: 'span',
+          sponsored: 'span'
         }
       },
       styleOverrides: {
@@ -1216,6 +1217,12 @@ export const XrplToLightTheme = createTheme({
     label1: {
       fontWeight: 500,
       fontSize: 14,
+      lineHeight: '21px',
+      color: colors.alpha.black[50]
+    },
+    sponsored: {
+      fontWeight: 500,
+      fontSize: 13,
       lineHeight: '21px',
       color: colors.alpha.black[50]
     },

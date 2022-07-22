@@ -1,11 +1,12 @@
 // Material
 import {
     styled,
-    Stack,
-    Toolbar,
+    Grid,
+    MenuItem,
     Pagination,
     Select,
-    MenuItem
+    Stack,
+    Toolbar
 } from '@mui/material';
 
 // ----------------------------------------------------------------------
@@ -57,21 +58,36 @@ export default function HistoryToolbar({ count, rows, setRows, page, setPage}) {
     };
 
     return (
-        <RootStyle>
-            Showing {start} - {end} out of {count}
-            <Pagination page={page+1} onChange={handleChangePage} count={page_count} variant="outlined" shape="rounded" />
+        <Grid container rowSpacing={2} alignItems="center" sx={{mt: 0}}>
+            <Grid container item xs={12} sx={{ display: { xs: 'block', md: 'none' } }}>
+                <Stack alignItems='center'>
+                    <Pagination page={page+1} onChange={handleChangePage} count={page_count} size="small"/>
+                </Stack>
+            </Grid>
 
-            <Stack direction="row" alignItems="center">
-                Show Rows
-                <CustomSelect
-                    value={rows}
-                    onChange={handleChangeRows}
-                >
-                    <MenuItem value={50}>50</MenuItem>
-                    <MenuItem value={20}>20</MenuItem>
-                    <MenuItem value={10}>10</MenuItem>
-                </CustomSelect>
-            </Stack>
-        </RootStyle>        
+            <Grid container item xs={6} md={4} lg={4}>
+                Showing {start} - {end} out of {count}
+            </Grid>
+
+            <Grid container item xs={0} md={4} lg={4} sx={{ display: { xs: 'none', md: 'block' } }}>
+                <Stack alignItems='center'>
+                    <Pagination page={page+1} onChange={handleChangePage} count={page_count}/>
+                </Stack>
+            </Grid>
+
+            <Grid container item xs={6} md={4} lg={4} justifyContent="flex-end">
+                <Stack direction='row' alignItems='center'>
+                    Show Rows
+                    <CustomSelect
+                        value={rows}
+                        onChange={handleChangeRows}
+                    >
+                        <MenuItem value={50}>50</MenuItem>
+                        <MenuItem value={20}>20</MenuItem>
+                        <MenuItem value={10}>10</MenuItem>
+                    </CustomSelect>
+                </Stack>
+            </Grid>
+        </Grid>
     );
 }

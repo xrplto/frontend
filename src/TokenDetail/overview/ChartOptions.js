@@ -112,13 +112,8 @@ export default function ChartOptions() {
                 format: 'MM/dd/yyyy, h:mm:ss TT',
             },
             y: {
-                formatter: (y) => {
-                    if (typeof y !== 'undefined') {
-                        
-                        // return <Typography align="center" color="#54D62C" variant="small"> <Icon icon={rippleSolid} color="#54D62C"/> {fCurrency5(y)}</Typography>;
-                        return `${fCurrency5(y)} XRP`;
-                    }
-                    return y;
+                formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+                    return `${fCurrency5(value)} XRP`;
                 },
                 title: {
                     formatter: (seriesName) => {

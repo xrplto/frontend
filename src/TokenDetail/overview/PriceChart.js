@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import {
     useTheme,
     Box,
+    Grid,
     Stack,
     ToggleButton,
     ToggleButtonGroup,
@@ -19,7 +20,6 @@ import ChartOptions from './ChartOptions';
 // Utils
 import { fCurrency5, fNumber } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
-
 export default function PriceChart({ token }) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
@@ -59,7 +59,7 @@ export default function PriceChart({ token }) {
 
     const CHART_DATA1 = [
         {
-            name: '',
+            name: 'XRP',
             type: 'area',
             data: data
         }
@@ -92,7 +92,7 @@ export default function PriceChart({ token }) {
             strokeDashArray: 3,
             borderColor: theme.palette.divider
         },
-        colors: ['#B72136'],
+        colors: ['#B72136', '#007B55'],
 
         // Fill
         fill: {
@@ -255,24 +255,27 @@ export default function PriceChart({ token }) {
 
     return (
         <>
-            <Stack direction="row" spacing={2} alignItems="center">
-                <Typography variant="h3" sx={{ml:2}}>{`${user} to XRP Chart`}</Typography>
+            <Grid container rowSpacing={2} alignItems="center" sx={{mt: 0}}>
+                <Grid container item xs={12} md={6}>
+                    <Typography variant="h3">{`${user} to XRP Chart`}</Typography>
+                </Grid>
                 {/* <CardHeader title={`${user} to XRP Chart`} subheader='' /> */}
-                <Box sx={{ flexGrow: 1 }} />
-                <ToggleButtonGroup
-                    color="primary"
-                    value={range}
-                    exclusive
-                    onChange={handleChange}
-                    sx={{pt:2.5,mb:0}}
-                >
-                    <ToggleButton sx={{pt:0,pb:0}} value="1D">1D</ToggleButton>
-                    <ToggleButton sx={{pt:0,pb:0}} value="7D">7D</ToggleButton>
-                    <ToggleButton sx={{pt:0,pb:0}} value="1M">1M</ToggleButton>
-                    <ToggleButton sx={{pt:0,pb:0}} value="3M">3M</ToggleButton>
-                    <ToggleButton sx={{pt:0,pb:0}} value="1Y">1Y</ToggleButton>
-                </ToggleButtonGroup>
-            </Stack>
+
+                <Grid container item xs={12} md={6} justifyContent="flex-end" >
+                    <ToggleButtonGroup
+                        color="primary"
+                        value={range}
+                        exclusive
+                        onChange={handleChange}
+                    >
+                        <ToggleButton sx={{pt:0,pb:0}} value="1D">1D</ToggleButton>
+                        <ToggleButton sx={{pt:0,pb:0}} value="7D">7D</ToggleButton>
+                        <ToggleButton sx={{pt:0,pb:0}} value="1M">1M</ToggleButton>
+                        <ToggleButton sx={{pt:0,pb:0}} value="3M">3M</ToggleButton>
+                        <ToggleButton sx={{pt:0,pb:0}} value="1Y">1Y</ToggleButton>
+                    </ToggleButtonGroup>
+                </Grid>
+            </Grid>
             <Box sx={{ p: 0, pb: 0 }} dir="ltr">
                 <Chart series={CHART_DATA1} options={options1} height={364} />
             </Box>

@@ -82,214 +82,228 @@ export default function PairsList({token, pairs}) {
     return (
         <StackStyle>
             <Typography variant="h5" sx={{ pl: 2, pt: 2 }}>Pairs<span style={badge24hStyle}>24h</span></Typography>
-            <Table stickyHeader sx={{
-                [`& .${tableCellClasses.root}`]: {
-                    borderBottom: "0px solid",
-                    borderBottomColor: theme.palette.divider
-                }
-            }}>
-                <TableHead>
-                    <TableRow>
-                        <TableCell align="left">#</TableCell>
-                        <TableCell align="left">Pair</TableCell>
-                        <TableCell align="left">Domain</TableCell>
-                        <TableCell align="left">Last 7 Days</TableCell>
-                        <TableCell align="left">Volume<span style={badge24hStyle}>24h</span></TableCell>
-                        <TableCell align="left">Trades</TableCell>
-                        <TableCell align="left">Issuer</TableCell>
-                        <TableCell align="left"><span style={badgeDEXStyle}>DEX</span></TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                {
-                    // exchs.slice(page * rows, page * rows + rows)
-                    pairs.map((row) => {
-                        const {
-                            id,
-                            pair,
-                            curr1,
-                            curr2,
-                            count
-                        } = row;
-                        const name1 = curr1.name;
-                        const name2 = curr2.name;
+            <Box
+                sx={{
+                    display: "flex",
+                    gap: 1,
+                    py: 1,
+                    overflow: "auto",
+                    width: "100%",
+                    "& > *": {
+                        scrollSnapAlign: "center",
+                    },
+                    "::-webkit-scrollbar": { display: "none" },
+                }}
+            >
+                <Table stickyHeader sx={{
+                    [`& .${tableCellClasses.root}`]: {
+                        borderBottom: "0px solid",
+                        borderBottomColor: theme.palette.divider
+                    }
+                }}>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell align="left">#</TableCell>
+                            <TableCell align="left">Pair</TableCell>
+                            <TableCell align="left">Domain</TableCell>
+                            <TableCell align="left">Last 7 Days</TableCell>
+                            <TableCell align="left">Volume<span style={badge24hStyle}>24h</span></TableCell>
+                            <TableCell align="left">Trades</TableCell>
+                            <TableCell align="left">Issuer</TableCell>
+                            <TableCell align="left"><span style={badgeDEXStyle}>DEX</span></TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                    {
+                        // exchs.slice(page * rows, page * rows + rows)
+                        pairs.map((row) => {
+                            const {
+                                id,
+                                pair,
+                                curr1,
+                                curr2,
+                                count
+                            } = row;
+                            const name1 = curr1.name;
+                            const name2 = curr2.name;
 
-                        let user1 = curr1.user;
-                        let user2 = curr2.user;
-                        
-                        if (!user1) user1 = curr1.issuer;
-                        if (!user2) user2 = curr2.issuer;
-
-                        user1 = truncate(user1, 12);
-                        user2 = truncate(user2, 12);
-
-                        // market=434F524500000000000000000000000000000000%2BrcoreNywaoz2ZCQ8Lg2EbSLnGuRBmun6D%2F534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz
-                        let soloDexURL = '';
-                        if (curr2.issuer)
-                            soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}%2B${curr2.issuer}`;
-                        else
-                            soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}`;
-
-                        let gatehubDexURL = '';
-                        if (curr2.issuer)
-                            gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}+${curr2.issuer}`;
-                        else
-                            gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}`;
+                            let user1 = curr1.user;
+                            let user2 = curr2.user;
                             
+                            if (!user1) user1 = curr1.issuer;
+                            if (!user2) user2 = curr2.issuer;
 
-                        let xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
+                            user1 = truncate(user1, 12);
+                            user2 = truncate(user2, 12);
 
-                        let sparkline = '';
-                        if (id === 1)
-                            sparkline = curr1.md5;
-                        else if (curr2.issuer)
-                            sparkline = curr2.md5;
-                        
-                        return (
-                            <TableRow
-                                hover
-                                key={pair}
-                                tabIndex={-1}
-                            >
-                                <TableCell align="left" sx={{pt:0.5, pb:0.5}}>
-                                    {fNumber(id)}
-                                </TableCell>
-                                <TableCell align="left" sx={{pt:0.5, pb:0.5}}>
-                                    <Stack direction="row" alignItems='center'>
-                                        <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
-                                        <Icon icon={arrowsExchange} width="16" height="16"/>
-                                        <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{name2}</Typography>
-                                    </Stack>
-                                </TableCell>
-                                <TableCell align="left" sx={{p:0.5, pb:0.5}}>
-                                    <Stack>
-                                        {id === 1 && curr1.domain && (
-                                            <Link
-                                                underline="none"
-                                                color="inherit"
-                                                target="_blank"
-                                                href={`https://${curr1.domain}`}
-                                                rel="noreferrer noopener nofollow"
-                                            >
-                                                <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{curr1.domain}</Typography>
-                                            </Link>
-                                        )}
-                                        {curr2.domain && (
-                                            <Link
-                                                underline="none"
-                                                color="inherit"
-                                                target="_blank"
-                                                href={`https://${curr2.domain}`}
-                                                rel="noreferrer noopener nofollow"
-                                            >
-                                                <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.domain}</Typography>
-                                            </Link>
-                                        )}
-                                    </Stack>
-                                </TableCell>
-                                <TableCell align="left" sx={{p:0.5, pb:0.5}}>
-                                    {sparkline && (
-                                        <Box
-                                            component="img"
-                                            alt=""
-                                            sx={{ maxWidth: 'none' }}
-                                            src={`${BASE_URL}/sparkline/${sparkline}`}
-                                        />
-                                    )}
-                                </TableCell>
-                                <TableCell align="left" sx={{p:0.5, pb:0.5}}>
-                                    <Stack>
-                                        <Stack direction="row" spacing={1} alignItems='center'>
-                                            <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{fNumber(curr1.value)}</Typography>
-                                            <Typography variant="caption" sx={{ color: '#B72136' }}>{name1}</Typography>
+                            // market=434F524500000000000000000000000000000000%2BrcoreNywaoz2ZCQ8Lg2EbSLnGuRBmun6D%2F534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz
+                            let soloDexURL = '';
+                            if (curr2.issuer)
+                                soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}%2B${curr2.issuer}`;
+                            else
+                                soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}`;
+
+                            let gatehubDexURL = '';
+                            if (curr2.issuer)
+                                gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}+${curr2.issuer}`;
+                            else
+                                gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}`;
+                                
+
+                            let xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
+
+                            let sparkline = '';
+                            if (id === 1)
+                                sparkline = curr1.md5;
+                            else if (curr2.issuer)
+                                sparkline = curr2.md5;
+                            
+                            return (
+                                <TableRow
+                                    hover
+                                    key={pair}
+                                    tabIndex={-1}
+                                >
+                                    <TableCell align="left" sx={{pt:0.5, pb:0.5}}>
+                                        {fNumber(id)}
+                                    </TableCell>
+                                    <TableCell align="left" sx={{pt:0.5, pb:0.5}}>
+                                        <Stack direction="row" alignItems='center'>
+                                            <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
+                                            <Icon icon={arrowsExchange} width="16" height="16"/>
+                                            <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{name2}</Typography>
                                         </Stack>
-                                        <Stack direction="row" spacing={1} alignItems='center'>
-                                            <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{fNumber(curr2.value)}</Typography>
-                                            <Typography variant="caption" sx={{ color: '#007B55' }}>{name2}</Typography>
-                                        </Stack>
-                                    </Stack>
-                                </TableCell>
-                                <TableCell align="left" sx={{pt:0.5, pb:0.5}}>
-                                    {fNumber(count)}
-                                </TableCell>
-                                <TableCell align="left" sx={{p:0.5, pb:0.5}}>
-                                    <Stack>
-                                        {id === 1 && (
-                                            <Stack direction="row" alignItems='center'>
-                                                <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{user1}</Typography>
+                                    </TableCell>
+                                    <TableCell align="left" sx={{p:0.5, pb:0.5}}>
+                                        <Stack>
+                                            {id === 1 && curr1.domain && (
                                                 <Link
                                                     underline="none"
                                                     color="inherit"
                                                     target="_blank"
-                                                    href={`https://bithomp.com/explorer/${curr1.issuer}`}
+                                                    href={`https://${curr1.domain}`}
                                                     rel="noreferrer noopener nofollow"
                                                 >
-                                                    <IconButton edge="end" aria-label="bithomp">
-                                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
-                                                    </IconButton>
+                                                    <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{curr1.domain}</Typography>
                                                 </Link>
-                                            </Stack>
-                                        )}
-                                        {curr2.issuer && (
-                                            <Stack direction="row" alignItems='center'>
-                                                <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{user2}</Typography>
+                                            )}
+                                            {curr2.domain && (
                                                 <Link
                                                     underline="none"
                                                     color="inherit"
                                                     target="_blank"
-                                                    href={`https://bithomp.com/explorer/${curr2.issuer}`}
+                                                    href={`https://${curr2.domain}`}
                                                     rel="noreferrer noopener nofollow"
                                                 >
-                                                    <IconButton edge="end" aria-label="bithomp">
-                                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
-                                                    </IconButton>
+                                                    <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.domain}</Typography>
                                                 </Link>
-                                            </Stack>
+                                            )}
+                                        </Stack>
+                                    </TableCell>
+                                    <TableCell align="left" sx={{p:0.5, pb:0.5}}>
+                                        {sparkline && (
+                                            <Box
+                                                component="img"
+                                                alt=""
+                                                sx={{ maxWidth: 'none' }}
+                                                src={`${BASE_URL}/sparkline/${sparkline}`}
+                                            />
                                         )}
-                                    </Stack>
-                                </TableCell>
-                                <TableCell align="left" sx={{ pt:0.5, pb:0.5 }}>
-                                    <Stack direction="row" spacing={1}>
-                                        <Link
-                                            underline="none"
-                                            color="inherit"
-                                            target="_blank"
-                                            href={soloDexURL}
-                                            rel="noreferrer noopener nofollow"
-                                        >
-                                            <IconButton edge="end" aria-label="solo">
-                                                <Avatar alt="sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
-                                            </IconButton>
-                                        </Link>
-                                        <Link
-                                            underline="none"
-                                            color="inherit"
-                                            target="_blank"
-                                            href={gatehubDexURL}
-                                            rel="noreferrer noopener nofollow"
-                                        >
-                                            <IconButton edge="end" aria-label="solo">
-                                                <Avatar alt="gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
-                                            </IconButton>
-                                        </Link>
-                                        <Link
-                                            underline="none"
-                                            color="inherit"
-                                            target="_blank"
-                                            href={xummDexURL}
-                                            rel="noreferrer noopener nofollow"
-                                        >
-                                            <IconButton edge="end" aria-label="solo">
-                                                <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
-                                            </IconButton>
-                                        </Link>
-                                    </Stack>
-                                </TableCell>
-                            </TableRow>
-                        );
-                    })}
-                </TableBody>
-            </Table>
+                                    </TableCell>
+                                    <TableCell align="left" sx={{p:0.5, pb:0.5}}>
+                                        <Stack>
+                                            <Stack direction="row" spacing={1} alignItems='center'>
+                                                <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{fNumber(curr1.value)}</Typography>
+                                                <Typography variant="caption" sx={{ color: '#B72136' }}>{name1}</Typography>
+                                            </Stack>
+                                            <Stack direction="row" spacing={1} alignItems='center'>
+                                                <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{fNumber(curr2.value)}</Typography>
+                                                <Typography variant="caption" sx={{ color: '#007B55' }}>{name2}</Typography>
+                                            </Stack>
+                                        </Stack>
+                                    </TableCell>
+                                    <TableCell align="left" sx={{pt:0.5, pb:0.5}}>
+                                        {fNumber(count)}
+                                    </TableCell>
+                                    <TableCell align="left" sx={{p:0.5, pb:0.5}}>
+                                        <Stack>
+                                            {id === 1 && (
+                                                <Stack direction="row" alignItems='center'>
+                                                    <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{user1}</Typography>
+                                                    <Link
+                                                        underline="none"
+                                                        color="inherit"
+                                                        target="_blank"
+                                                        href={`https://bithomp.com/explorer/${curr1.issuer}`}
+                                                        rel="noreferrer noopener nofollow"
+                                                    >
+                                                        <IconButton edge="end" aria-label="bithomp">
+                                                            <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                        </IconButton>
+                                                    </Link>
+                                                </Stack>
+                                            )}
+                                            {curr2.issuer && (
+                                                <Stack direction="row" alignItems='center'>
+                                                    <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{user2}</Typography>
+                                                    <Link
+                                                        underline="none"
+                                                        color="inherit"
+                                                        target="_blank"
+                                                        href={`https://bithomp.com/explorer/${curr2.issuer}`}
+                                                        rel="noreferrer noopener nofollow"
+                                                    >
+                                                        <IconButton edge="end" aria-label="bithomp">
+                                                            <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                        </IconButton>
+                                                    </Link>
+                                                </Stack>
+                                            )}
+                                        </Stack>
+                                    </TableCell>
+                                    <TableCell align="left" sx={{ pt:0.5, pb:0.5 }}>
+                                        <Stack direction="row" spacing={1}>
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={soloDexURL}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                <IconButton edge="end" aria-label="solo">
+                                                    <Avatar alt="sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
+                                                </IconButton>
+                                            </Link>
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={gatehubDexURL}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                <IconButton edge="end" aria-label="solo">
+                                                    <Avatar alt="gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
+                                                </IconButton>
+                                            </Link>
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={xummDexURL}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                <IconButton edge="end" aria-label="solo">
+                                                    <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
+                                                </IconButton>
+                                            </Link>
+                                        </Stack>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </Box>
         </StackStyle>
     );
 }

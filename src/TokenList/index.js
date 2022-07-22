@@ -23,8 +23,8 @@ import TrustSet from './TrustSet';
 // import WidgetDate from './WidgetDate';
 
 // Redux
-import { useSelector, useDispatch } from "react-redux";
-import { selectMetrics, update_metrics } from "src/redux/statusSlice";
+import { useDispatch } from "react-redux";
+import { update_metrics } from "src/redux/statusSlice";
 
 // ----------------------------------------------------------------------
 
@@ -194,7 +194,19 @@ export default function TokenList({data}) {
                     </div>
                 }
             > */}
-            <ContentWrapper>
+            <Box
+                sx={{
+                    display: "flex",
+                    gap: 1,
+                    py: 1,
+                    overflow: "auto",
+                    width: "100%",
+                    "& > *": {
+                        scrollSnapAlign: "center",
+                    },
+                    "::-webkit-scrollbar": { display: "none" },
+                }}
+            >
                 <Table>
                     <TokenListHead
                         order={order}
@@ -225,7 +237,7 @@ export default function TokenList({data}) {
                         </TableBody>
                     )*/}
                 </Table>
-            </ContentWrapper>
+            </Box>
             {/* </InfiniteScroll> */}
             <TokenListToolbar
                 rows={rows}

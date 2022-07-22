@@ -116,6 +116,10 @@ export default function ChartOptions(series) {
             shared: true,
             intersect: false,
             theme: 'dark',
+            style: {
+                fontSize: '14px',
+                fontFamily: undefined
+            },
             x: {
                 show: false,
                 format: 'MM/dd/yyyy, h:mm:ss TT',
@@ -132,6 +136,15 @@ export default function ChartOptions(series) {
                       return seriesName;
                     }
                 }
+            },
+            z: {
+                formatter: (z) => {
+                    if (typeof z !== 'undefined') {
+                        return `Active Addresses: ${fIntNumber(z)}`;
+                    }
+                    return z;
+                },
+                title: ''
             },
             marker: {
                 show: true,

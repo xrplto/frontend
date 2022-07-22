@@ -36,15 +36,6 @@ const TopWrapper = styled(Box)(({ theme }) => `
     border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
 `);
 
-// const ContentWrapper = styled(Box)(({ theme }) => `
-//     display: flex;
-//     align-items: center;
-//     justify-content: space-between;
-//     flex: 1;
-//     overflow-x: auto;
-//     "::-webkit-scrollbar": { display: "none" }
-// `);
-
 const ContentWrapper = styled(Box)(({ theme }) => ({
     display: "flex",
     gap: 1,

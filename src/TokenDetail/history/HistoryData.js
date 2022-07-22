@@ -6,6 +6,7 @@ import { withStyles } from '@mui/styles';
 import {
     styled, useTheme,
     Avatar,
+    Box,
     IconButton,
     Link,
     Stack,
@@ -131,199 +132,213 @@ export default function HistoryData({token, pair}) {
 
     return (
         <>
-            <Table stickyHeader sx={{
-                [`& .${tableCellClasses.root}`]: {
-                    borderBottom: "1px solid",
-                    borderBottomColor: theme.palette.divider
-                }
-            }}>
-                <TableHead>
-                    <TableRow>
-                        <TableCell align="left">#</TableCell>
-                        <TableCell align="left">Price</TableCell>
-                        <TableCell align="left">Volume</TableCell>
-                        <TableCell align="left">Flag</TableCell>
-                        <TableCell align="left">Taker Paid</TableCell>
-                        <TableCell align="left">Taker Got</TableCell>
-                        <TableCell align="left">Time</TableCell>
-                        <TableCell align="left">Ledger</TableCell>
-                        <TableCell align="left">Sequence</TableCell>
-                        <TableCell align="left">Maker</TableCell>
-                        <TableCell align="left">Taker</TableCell>
-                        <TableCell align="left">Hash</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                {
-                    // exchs.slice(page * rows, page * rows + rows)
-                    exchs.map((row) => {
-                            const {
-                                id,
-                                _id,
-                                dir,
-                                hash,
-                                maker,
-                                taker,
-                                ledger,
-                                seq,
-                                takerPaid,
-                                takerGot,
-                                date,
-                                cancel,
-                                // pair,
-                                // xUSD
-                                } = row;
-                            let value;
-                            let exch;
-                            // let buy;
-                            if (takerPaid.issuer === issuer && takerPaid.currency === currency) {
-                                // SELL, Red
-                                const t = parseFloat(takerGot.value);
-                                value = parseFloat(takerPaid.value);
-                                exch = t / value;
-                                // buy = false;
-                            } else {
-                                // BUY, Green
-                                const t = parseFloat(takerPaid.value);
-                                value = parseFloat(takerGot.value);
-                                exch = t / value;
-                                // buy = true;
-                            }
-                            const nDate = new Date((date + EPOCH_OFFSET) * 1000);
-                            const year = nDate.getFullYear();
-                            const month = nDate.getMonth() + 1;
-                            const day = nDate.getDate();
-                            const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                            const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                            const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+            <Box
+                sx={{
+                    display: "flex",
+                    gap: 1,
+                    py: 1,
+                    overflow: "auto",
+                    width: "100%",
+                    "& > *": {
+                        scrollSnapAlign: "center",
+                    },
+                    "::-webkit-scrollbar": { display: "none" },
+                }}
+            >
+                <Table stickyHeader sx={{
+                    [`& .${tableCellClasses.root}`]: {
+                        borderBottom: "1px solid",
+                        borderBottomColor: theme.palette.divider
+                    }
+                }}>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell align="left">#</TableCell>
+                            <TableCell align="left">Price</TableCell>
+                            <TableCell align="left">Volume</TableCell>
+                            <TableCell align="left">Flag</TableCell>
+                            <TableCell align="left">Taker Paid</TableCell>
+                            <TableCell align="left">Taker Got</TableCell>
+                            <TableCell align="left">Time</TableCell>
+                            <TableCell align="left">Ledger</TableCell>
+                            <TableCell align="left">Sequence</TableCell>
+                            <TableCell align="left">Maker</TableCell>
+                            <TableCell align="left">Taker</TableCell>
+                            <TableCell align="left">Hash</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                    {
+                        // exchs.slice(page * rows, page * rows + rows)
+                        exchs.map((row) => {
+                                const {
+                                    id,
+                                    _id,
+                                    dir,
+                                    hash,
+                                    maker,
+                                    taker,
+                                    ledger,
+                                    seq,
+                                    takerPaid,
+                                    takerGot,
+                                    date,
+                                    cancel,
+                                    // pair,
+                                    // xUSD
+                                    } = row;
+                                let value;
+                                let exch;
+                                // let buy;
+                                if (takerPaid.issuer === issuer && takerPaid.currency === currency) {
+                                    // SELL, Red
+                                    const t = parseFloat(takerGot.value);
+                                    value = parseFloat(takerPaid.value);
+                                    exch = t / value;
+                                    // buy = false;
+                                } else {
+                                    // BUY, Green
+                                    const t = parseFloat(takerPaid.value);
+                                    value = parseFloat(takerGot.value);
+                                    exch = t / value;
+                                    // buy = true;
+                                }
+                                const nDate = new Date((date + EPOCH_OFFSET) * 1000);
+                                const year = nDate.getFullYear();
+                                const month = nDate.getMonth() + 1;
+                                const day = nDate.getDate();
+                                const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
 
-                            //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
-                            //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
-                            const strDate = `${year}-${month}-${day}`;
-                            const strTime = `${hour}:${min}:${sec}`;
+                                //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
+                                //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
+                                const strDate = `${year}-${month}-${day}`;
+                                const strTime = `${hour}:${min}:${sec}`;
 
-                            const tMaker = truncate(maker, 12);
-                            const tTaker = truncate(taker, 12);
-                            const tHash = truncate(hash, 16);
+                                const tMaker = truncate(maker, 12);
+                                const tTaker = truncate(taker, 12);
+                                const tHash = truncate(hash, 16);
 
-                            const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
-                            const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
+                                const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
+                                const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
 
-                            return (
-                                <TableRow
-                                    hover
-                                    key={_id}
-                                    tabIndex={-1}
-                                    sx={{
-                                        [`& .${tableCellClasses.root}`]: {
-                                            color: (/*buy*/dir === 'sell' ? '#007B55' : '#B72136')
-                                        }
-                                    }}
-                                >
-                                    <TableCell align="left"><Typography variant="subtitle2">{id}</Typography></TableCell>
-                                    <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
-                                    <TableCell align="left"><Typography variant="subtitle2">{fNumber(value)}</Typography></TableCell>
-                                    <TableCell align="left">
-                                        <Stack spacing={1}>
-                                            {dir==='sell' && (
-                                                <Stack direction="row">
-                                                    <BuyTypography variant="caption">
-                                                    buy
-                                                    </BuyTypography>
-                                                </Stack>
-                                            )}
+                                return (
+                                    <TableRow
+                                        hover
+                                        key={_id}
+                                        tabIndex={-1}
+                                        sx={{
+                                            [`& .${tableCellClasses.root}`]: {
+                                                color: (/*buy*/dir === 'sell' ? '#007B55' : '#B72136')
+                                            }
+                                        }}
+                                    >
+                                        <TableCell align="left"><Typography variant="subtitle2">{id}</Typography></TableCell>
+                                        <TableCell align="left"><Typography variant="subtitle2">{fNumber(exch)}</Typography></TableCell>
+                                        <TableCell align="left"><Typography variant="subtitle2">{fNumber(value)}</Typography></TableCell>
+                                        <TableCell align="left">
+                                            <Stack spacing={1}>
+                                                {dir==='sell' && (
+                                                    <Stack direction="row">
+                                                        <BuyTypography variant="caption">
+                                                        buy
+                                                        </BuyTypography>
+                                                    </Stack>
+                                                )}
+                                                
+                                                {dir==='buy' && (
+                                                    <Stack direction="row">
+                                                        <SellTypography variant="caption">
+                                                        sell
+                                                        </SellTypography>
+                                                    </Stack>
+                                                )}
+                                                {cancel && (
+                                                    <Stack direction="row">
+                                                        <CancelTypography variant="caption">
+                                                        cancel
+                                                        </CancelTypography>
+                                                    </Stack>
+                                                )}
+                                            </Stack>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            {fNumber(takerPaid.value)} <Typography variant="caption">{namePaid}</Typography>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            {fNumber(takerGot.value)} <Typography variant="caption">{nameGot}</Typography>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            <Stack>
+                                                <Typography variant="subtitle2">{strTime}</Typography>
+                                                <Typography variant="caption">{strDate}</Typography>
+                                            </Stack>
                                             
-                                            {dir==='buy' && (
-                                                <Stack direction="row">
-                                                    <SellTypography variant="caption">
-                                                    sell
-                                                    </SellTypography>
-                                                </Stack>
-                                            )}
-                                            {cancel && (
-                                                <Stack direction="row">
-                                                    <CancelTypography variant="caption">
-                                                    cancel
-                                                    </CancelTypography>
-                                                </Stack>
-                                            )}
-                                        </Stack>
-                                    </TableCell>
-
-                                    <TableCell align="left">
-                                        {fNumber(takerPaid.value)} <Typography variant="caption">{namePaid}</Typography>
-                                    </TableCell>
-
-                                    <TableCell align="left">
-                                        {fNumber(takerGot.value)} <Typography variant="caption">{nameGot}</Typography>
-                                    </TableCell>
-
-                                    <TableCell align="left">
-                                        <Stack>
-                                            <Typography variant="subtitle2">{strTime}</Typography>
-                                            <Typography variant="caption">{strDate}</Typography>
-                                        </Stack>
-                                        
-                                    </TableCell>
-                                    <TableCell align="left">{ledger}</TableCell>
-                                    <TableCell align="left">{seq}</TableCell>
-                                    <TableCell align="left">
-                                        <Link
-                                            underline="none"
-                                            color="inherit"
-                                            target="_blank"
-                                            href={`https://bithomp.com/explorer/${maker}`}
-                                            rel="noreferrer noopener nofollow"
-                                        >
-                                            {tMaker}
-                                        </Link>
-                                    </TableCell>
-                                    <TableCell align="left">
-                                        <Link
-                                            underline="none"
-                                            color="inherit"
-                                            target="_blank"
-                                            href={`https://bithomp.com/explorer/${taker}`}
-                                            rel="noreferrer noopener nofollow"
-                                        >
-                                            {tTaker}
-                                        </Link>
-                                    </TableCell>
-                                    <TableCell align="left">
-                                        <Stack direction="row" alignItems='center'>
+                                        </TableCell>
+                                        <TableCell align="left">{ledger}</TableCell>
+                                        <TableCell align="left">{seq}</TableCell>
+                                        <TableCell align="left">
                                             <Link
                                                 underline="none"
                                                 color="inherit"
                                                 target="_blank"
-                                                href={`https://bithomp.com/explorer/${hash}`}
+                                                href={`https://bithomp.com/explorer/${maker}`}
                                                 rel="noreferrer noopener nofollow"
                                             >
-                                                <Stack direction="row" alignItems='center'>
-                                                    {tHash}
+                                                {tMaker}
+                                            </Link>
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={`https://bithomp.com/explorer/${taker}`}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                {tTaker}
+                                            </Link>
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            <Stack direction="row" alignItems='center'>
+                                                <Link
+                                                    underline="none"
+                                                    color="inherit"
+                                                    target="_blank"
+                                                    href={`https://bithomp.com/explorer/${hash}`}
+                                                    rel="noreferrer noopener nofollow"
+                                                >
+                                                    <Stack direction="row" alignItems='center'>
+                                                        {tHash}
+                                                        <IconButton edge="end" aria-label="bithomp">
+                                                            <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                        </IconButton>
+                                                    </Stack>
+                                                </Link>
+
+                                                <Link
+                                                    underline="none"
+                                                    color="inherit"
+                                                    target="_blank"
+                                                    href={`https://livenet.xrpl.org/transactions/${hash}`}
+                                                    rel="noreferrer noopener nofollow"
+                                                >
                                                     <IconButton edge="end" aria-label="bithomp">
-                                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                        <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
                                                     </IconButton>
-                                                </Stack>
-                                            </Link>
-
-                                            <Link
-                                                underline="none"
-                                                color="inherit"
-                                                target="_blank"
-                                                href={`https://livenet.xrpl.org/transactions/${hash}`}
-                                                rel="noreferrer noopener nofollow"
-                                            >
-                                                <IconButton edge="end" aria-label="bithomp">
-                                                    <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
-                                                </IconButton>
-                                            </Link>
-                                        </Stack>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                </TableBody>
-            </Table>
+                                                </Link>
+                                            </Stack>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                    </TableBody>
+                </Table>
+            </Box>
             <HistoryToolbar
                 count={count}
                 rows={rows}
