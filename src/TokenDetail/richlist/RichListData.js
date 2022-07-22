@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import {
     useTheme,
     Avatar,
+    Box,
     IconButton,
     Link,
     Stack,
@@ -79,90 +80,73 @@ export default function RichListData({token}) {
 
     return (
         <>
-            <Table stickyHeader sx={{
-                [`& .${tableCellClasses.root}`]: {
-                    borderBottom: "1px solid",
-                    borderBottomColor: theme.palette.divider
-                }
-            }}>
-                <TableHead>
-                    <TableRow>
-                        <TableCell align="left">#</TableCell>
-                        <TableCell align="left">Address</TableCell>
-                        <TableCell align="left">
-                            <Link
-                                component="button"
-                                underline="hover"
-                                variant="body2"
-                                color="inherit"
-                                onClick={onChangeFrozen}
-                            >
-                                Frozen ({frozen?'YES':'ALL'})
-                            </Link>
-                        </TableCell>
-                        <TableCell align="left">Balance({name})</TableCell>
-                        <TableCell align="left">Holding</TableCell>
-                        <TableCell align="left">Value</TableCell>
-                        <TableCell align="left"></TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                {
-                    // exchs.slice(page * rows, page * rows + rows)
-                    richList.map((row) => {
-                            const {
-                                id,
-                                account,
-                                freeze,
-                                balance,
-                                holding,
-                            } = row;
-                            
-                            return (
-                                <TableRow
-                                    hover
-                                    key={id}
-                                    tabIndex={-1}
-                                    // sx={{
-                                    //     [`& .${tableCellClasses.root}`]: {
-                                    //         color: (/*buy*/dir === 'sell' ? '#007B55' : '#B72136')
-                                    //     }
-                                    // }}
+            <Box
+                sx={{
+                    display: "flex",
+                    gap: 1,
+                    py: 1,
+                    overflow: "auto",
+                    width: "100%",
+                    "& > *": {
+                        scrollSnapAlign: "center",
+                    },
+                    "::-webkit-scrollbar": { display: "none" },
+                }}
+            >
+                <Table stickyHeader sx={{
+                    [`& .${tableCellClasses.root}`]: {
+                        borderBottom: "1px solid",
+                        borderBottomColor: theme.palette.divider
+                    }
+                }}>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell align="left">#</TableCell>
+                            <TableCell align="left">Address</TableCell>
+                            <TableCell align="left">
+                                <Link
+                                    component="button"
+                                    underline="hover"
+                                    variant="body2"
+                                    color="inherit"
+                                    onClick={onChangeFrozen}
                                 >
-                                    <TableCell align="left">
-                                        <Typography variant="subtitle1">{id}</Typography>
-                                    </TableCell>
-                                    <TableCell align="left">
-                                        <Link
-                                            underline="none"
-                                            color="inherit"
-                                            target="_blank"
-                                            href={`https://bithomp.com/explorer/${account}`}
-                                            rel="noreferrer noopener nofollow"
-                                        >
-                                            <Typography variant="subtitle1">{truncate(account, 20)}</Typography>
-                                        </Link>
-                                    </TableCell>
-                                    <TableCell align="left">
-                                        {freeze && <Icon icon={checkIcon}/>}
-                                    </TableCell>
-                                    <TableCell align="left">
-                                        <Typography variant="subtitle1">{fNumber(balance)}</Typography>
-                                    </TableCell>
-                                    <TableCell align="left">
-                                        <Typography variant="subtitle1">{fPercent(holding)} %</Typography>
-                                    </TableCell>
-                                    <TableCell align="left">
-                                        <Stack>
-                                        <Typography variant="h4" noWrap>$ {fNumber(exch * balance / metrics.USD)}</Typography>
-                                        <Stack direction="row" spacing={0.5} alignItems='center'>
-                                            <Icon icon={rippleSolid} width='12' height='12'/>
-                                            <Typography variant="subtitle1" noWrap>{fNumber(exch * balance)}</Typography>
-                                        </Stack>
-                                        </Stack>
-                                    </TableCell>
-                                    <TableCell align="left">
-                                        <Stack direction="row" alignItems='center' spacing={2}>
+                                    Frozen ({frozen?'YES':'ALL'})
+                                </Link>
+                            </TableCell>
+                            <TableCell align="left">Balance({name})</TableCell>
+                            <TableCell align="left">Holding</TableCell>
+                            <TableCell align="left">Value</TableCell>
+                            <TableCell align="left"></TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                    {
+                        // exchs.slice(page * rows, page * rows + rows)
+                        richList.map((row) => {
+                                const {
+                                    id,
+                                    account,
+                                    freeze,
+                                    balance,
+                                    holding,
+                                } = row;
+                                
+                                return (
+                                    <TableRow
+                                        hover
+                                        key={id}
+                                        tabIndex={-1}
+                                        // sx={{
+                                        //     [`& .${tableCellClasses.root}`]: {
+                                        //         color: (/*buy*/dir === 'sell' ? '#007B55' : '#B72136')
+                                        //     }
+                                        // }}
+                                    >
+                                        <TableCell align="left">
+                                            <Typography variant="subtitle1">{id}</Typography>
+                                        </TableCell>
+                                        <TableCell align="left">
                                             <Link
                                                 underline="none"
                                                 color="inherit"
@@ -170,29 +154,60 @@ export default function RichListData({token}) {
                                                 href={`https://bithomp.com/explorer/${account}`}
                                                 rel="noreferrer noopener nofollow"
                                             >
-                                                <IconButton edge="end" aria-label="bithomp">
-                                                    <Avatar alt="livenetxrplorg" src="/static/bithomp.ico" sx={{ width: 20, height: 20 }} />
-                                                </IconButton>
+                                                <Typography variant="subtitle1">{truncate(account, 20)}</Typography>
                                             </Link>
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            {freeze && <Icon icon={checkIcon}/>}
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            <Typography variant="subtitle1">{fNumber(balance)}</Typography>
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            <Typography variant="subtitle1">{fPercent(holding)} %</Typography>
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            <Stack>
+                                            <Typography variant="h4" noWrap>$ {fNumber(exch * balance / metrics.USD)}</Typography>
+                                            <Stack direction="row" spacing={0.5} alignItems='center'>
+                                                <Icon icon={rippleSolid} width='12' height='12'/>
+                                                <Typography variant="subtitle1" noWrap>{fNumber(exch * balance)}</Typography>
+                                            </Stack>
+                                            </Stack>
+                                        </TableCell>
+                                        <TableCell align="left">
+                                            <Stack direction="row" alignItems='center' spacing={2}>
+                                                <Link
+                                                    underline="none"
+                                                    color="inherit"
+                                                    target="_blank"
+                                                    href={`https://bithomp.com/explorer/${account}`}
+                                                    rel="noreferrer noopener nofollow"
+                                                >
+                                                    <IconButton edge="end" aria-label="bithomp">
+                                                        <Avatar alt="livenetxrplorg" src="/static/bithomp.ico" sx={{ width: 20, height: 20 }} />
+                                                    </IconButton>
+                                                </Link>
 
-                                            <Link
-                                                underline="none"
-                                                color="inherit"
-                                                target="_blank"
-                                                href={`https://livenet.xrpl.org/accounts/${account}`}
-                                                rel="noreferrer noopener nofollow"
-                                            >
-                                                <IconButton edge="end" aria-label="livenetxrplorg">
-                                                    <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 20, height: 20 }} />
-                                                </IconButton>
-                                            </Link>
-                                        </Stack>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                </TableBody>
-            </Table>
+                                                <Link
+                                                    underline="none"
+                                                    color="inherit"
+                                                    target="_blank"
+                                                    href={`https://livenet.xrpl.org/accounts/${account}`}
+                                                    rel="noreferrer noopener nofollow"
+                                                >
+                                                    <IconButton edge="end" aria-label="livenetxrplorg">
+                                                        <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 20, height: 20 }} />
+                                                    </IconButton>
+                                                </Link>
+                                            </Stack>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                    </TableBody>
+                </Table>
+            </Box>
             <RichListToolbar
                 count={count}
                 rows={rows}

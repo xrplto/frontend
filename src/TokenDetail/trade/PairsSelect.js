@@ -7,6 +7,7 @@ import {
     styled,
     Avatar,
     FormControl,
+    Grid,
     IconButton,
     InputLabel,
     Link,
@@ -158,8 +159,8 @@ export default function PairsSelect({ token, pair, setPair}) {
     xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
 
     return (
-        <Stack direction="row">
-            <Stack direction='row' alignItems="left">
+        <Grid container spacing={0} sx={{p:0}}>
+            <Grid item>
                 <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
                     <InputLabel id="demo-select-small">Pairs</InputLabel>
                         <CustomSelect
@@ -196,6 +197,8 @@ export default function PairsSelect({ token, pair, setPair}) {
                             }
                         </CustomSelect>
                 </FormControl>
+            </Grid>
+            <Grid item>
                 <Stack direction="row">
                     <StackDexStyle direction="row" sx={{ m: 1, minWidth: 120 }} spacing={2} alignItems="center">
                         DEX
@@ -240,11 +243,7 @@ export default function PairsSelect({ token, pair, setPair}) {
                         </Tooltip>
                     </StackDexStyle>
                 </Stack>
-                {/* <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography variant="caption">24H Volume:</Typography>
-                    <Typography variant="h5" sx={{ color: '#B72136' }}>{fNumber(vol)}</Typography>
-                </Stack> */}
-            </Stack>
-        </Stack>
+            </Grid>
+        </Grid>
     );
 }

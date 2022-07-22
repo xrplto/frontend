@@ -296,80 +296,242 @@ export default function AccountHistory({pair}) {
                 <Tab label="OPEN ORDERS" {...a11yProps(0)} />
                 <Tab label="TRADE HISTORY" {...a11yProps(1)} />
             </Tabs>
-            {tabValue === 0 ?
-                (
-                    <Table stickyHeader size={'small'}
-                        sx={{
-                            [`& .${tableCellClasses.root}`]: {
-                                borderBottom: "0px solid",
-                                borderBottomColor: theme.palette.divider
-                            }
-                        }}
-                    >
-                        <TableHead>
-                            <TableRow
-                                sx={{
-                                    [`& .${tableCellClasses.root}`]: {
-                                        borderBottom: "1px solid",
-                                        borderBottomColor: theme.palette.divider
+            <Box
+                sx={{
+                    display: "flex",
+                    gap: 1,
+                    py: 1,
+                    overflow: "auto",
+                    width: "100%",
+                    "& > *": {
+                        scrollSnapAlign: "center",
+                    },
+                    "::-webkit-scrollbar": { display: "none" },
+                }}
+            >
+                {tabValue === 0 ?
+                    (
+                        <Table stickyHeader size={'small'}
+                            sx={{
+                                [`& .${tableCellClasses.root}`]: {
+                                    borderBottom: "0px solid",
+                                    borderBottomColor: theme.palette.divider
+                                }
+                            }}
+                        >
+                            <TableHead>
+                                <TableRow
+                                    sx={{
+                                        [`& .${tableCellClasses.root}`]: {
+                                            borderBottom: "1px solid",
+                                            borderBottomColor: theme.palette.divider
+                                        }
+                                    }}
+                                >
+                                    <TableCell align="left">Side</TableCell>
+                                    <TableCell align="left">Price</TableCell>
+                                    <TableCell align="left">Taker Gets</TableCell>
+                                    <TableCell align="left">Taker Pays</TableCell>
+                                    <TableCell align="left">Cancel</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                            {
+                                accountAddress && accountData?.offers?.map((row) => {
+                                        const {
+                                            // flags,
+                                            quality,
+                                            seq,
+                                            taker_gets,
+                                            taker_pays
+                                        } = row;
+                                        let exch = quality;
+                                        const _id = seq;
+
+                                        const gets = taker_gets.value || new Decimal(taker_gets).div(1000000).toNumber();
+                                        const pays = taker_pays.value || new Decimal(taker_pays).div(1000000).toNumber();
+
+                                        let name_pays;
+                                        let name_gets;
+
+                                        if (!taker_pays.value) {
+                                            name_pays = 'XRP';
+                                        } else
+                                            name_pays = normalizeCurrencyCodeXummImpl(taker_pays.currency);
+
+                                        
+                                        if (!taker_gets.value)
+                                            name_gets = 'XRP';
+                                        else
+                                            name_gets = normalizeCurrencyCodeXummImpl(taker_gets.currency);
+
+                                        let buy;
+                                        if (taker_pays.issuer === curr1.issuer && taker_pays.currency === curr1.currency) {
+                                            // BUY
+                                            buy = true;
+                                            exch = new Decimal(gets).div(pays).toNumber();
+                                        } else {
+                                            // SELL
+                                            buy = false;
+                                            exch = new Decimal(pays).div(gets).toNumber();
+                                        }
+
+                                        return (
+                                            <TableRow
+                                                hover
+                                                key={_id}
+                                                tabIndex={-1}
+                                                sx={{
+                                                    [`& .${tableCellClasses.root}`]: {
+                                                        color: (buy ? '#007B55' : '#B72136')
+                                                    }
+                                                }}
+                                            >
+                                                <TableCell align="left">
+                                                    {
+                                                        buy ? (
+                                                            <BuyTypography variant="caption">
+                                                                BUY
+                                                            </BuyTypography>
+                                                        ):(
+                                                            <SellTypography variant="caption">
+                                                                SELL
+                                                            </SellTypography>
+                                                        )
+                                                    }
+                                                </TableCell>
+                                                <TableCell align="left">{exch}</TableCell>
+                                                <TableCell align="left">
+                                                    <Typography variant="h6" noWrap>{gets} <Typography variant="small">{name_gets}</Typography></Typography>
+                                                </TableCell>
+
+                                                <TableCell align="left">
+                                                    <Typography variant="h6" noWrap>{pays} <Typography variant="small">{name_pays}</Typography></Typography>
+                                                </TableCell>
+
+                                                <TableCell align="left">
+                                                    <IconButton color='error' onClick={e=>handleCancel(e, seq)} aria-label="cancel">
+                                                        <CancelIcon fontSize='small'/>
+                                                    </IconButton>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                            </TableBody>
+                        </Table>
+                    ):(
+                        <Table stickyHeader size={'small'}
+                            sx={{
+                                [`& .${tableCellClasses.root}`]: {
+                                    borderBottom: "0px solid",
+                                    borderBottomColor: theme.palette.divider
+                                }
+                            }}
+                        >
+                            <TableHead>
+                                <TableRow
+                                    sx={{
+                                        [`& .${tableCellClasses.root}`]: {
+                                            borderBottom: "1px solid",
+                                            borderBottomColor: theme.palette.divider
+                                        }
+                                    }}
+                                >
+                                    <TableCell align="left">Side</TableCell>
+                                    <TableCell align="left">Price</TableCell>
+                                    <TableCell align="left">Taker Paid</TableCell>
+                                    <TableCell align="left">Taker Got</TableCell>
+                                    <TableCell align="left">Time</TableCell>
+                                    <TableCell align="left">Maker</TableCell>
+                                    <TableCell align="left">Taker</TableCell>
+                                    <TableCell align="left">Hash</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {accountAddress && exchs.map((row) => {
+                                    /*
+                                    {
+                                        "dir": "buy",
+                                        "flags": 0,
+                                        "ledger": 71729458,
+                                        "ledger_index": 71729458,
+                                        "hash": "0F2CC103A3CD21BCAEF33ED7CEEC4AEB70660FE92A3140ED9506B80BFFFE710E",
+                                        "maker": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm",
+                                        "taker": "rMXN4AK1uKyFazVzTBTCTwcv17o9Az4rs2",
+                                        "seq": 71158461,
+                                        "date": 706175182,
+                                        "takerPaid": {
+                                            "currency": "534F4C4F00000000000000000000000000000000",
+                                            "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+                                            "value": "0.01"
+                                        },
+                                        "takerGot": {
+                                            "currency": "XRP",
+                                            "value": "0.0061"
+                                        },
+                                        "pair": "fa99aff608a10186d3b1ff33b5cd665f"
                                     }
-                                }}
-                            >
-                                <TableCell align="left">Side</TableCell>
-                                <TableCell align="left">Price</TableCell>
-                                <TableCell align="left">Taker Gets</TableCell>
-                                <TableCell align="left">Taker Pays</TableCell>
-                                <TableCell align="left">Cancel</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                        {
-                            accountAddress && accountData?.offers?.map((row) => {
+                                    */
                                     const {
-                                        // flags,
-                                        quality,
+                                        // dir,
+                                        hash,
+                                        maker,
+                                        taker,
+                                        //ledger,
                                         seq,
-                                        taker_gets,
-                                        taker_pays
+                                        takerPaid,
+                                        takerGot,
+                                        date,
+                                        // cancel,
+                                        // pair,
+                                        // xUSD
                                     } = row;
-                                    let exch = quality;
-                                    const _id = seq;
 
-                                    const gets = taker_gets.value || new Decimal(taker_gets).div(1000000).toNumber();
-                                    const pays = taker_pays.value || new Decimal(taker_pays).div(1000000).toNumber();
+                                    const tMaker = truncate(maker, 12);
+                                    const tTaker = truncate(taker, 12);
+                                    const tHash = truncate(hash, 8);
 
-                                    let name_pays;
-                                    let name_gets;
-
-                                    if (!taker_pays.value) {
-                                        name_pays = 'XRP';
-                                    } else
-                                        name_pays = normalizeCurrencyCodeXummImpl(taker_pays.currency);
-
-                                    
-                                    if (!taker_gets.value)
-                                        name_gets = 'XRP';
-                                    else
-                                        name_gets = normalizeCurrencyCodeXummImpl(taker_gets.currency);
-
-                                    let buy;
-                                    if (taker_pays.issuer === curr1.issuer && taker_pays.currency === curr1.currency) {
-                                        // BUY
-                                        buy = true;
-                                        exch = new Decimal(gets).div(pays).toNumber();
+                                    const vPaid = takerPaid.value;
+                                    const vGot = takerGot.value;
+        
+                                    let exch;
+                                    let buy = false;
+                                    if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency) {
+                                        exch = new Decimal(vGot).div(vPaid).toNumber();
                                     } else {
-                                        // SELL
-                                        buy = false;
-                                        exch = new Decimal(pays).div(gets).toNumber();
+                                        exch = new Decimal(vPaid).div(vGot).toNumber();
                                     }
+
+                                    if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency && maker === accountAddress) {
+                                        buy = true;
+                                    } else if (takerGot.issuer === curr1.issuer && takerGot.currency === curr1.currency && taker === accountAddress) {
+                                        buy = true;
+                                    }
+
+                                    const nDate = new Date((date + EPOCH_OFFSET) * 1000);
+                                    const year = nDate.getFullYear();
+                                    const month = (nDate.getMonth() + 1).toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                    const day = nDate.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                    const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                    const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+                                    const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
+
+                                    //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
+                                    //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
+                                    const strDate = `${year}-${month}-${day}`;
+                                    const strTime = `${hour}:${min}:${sec}`;
+
+                                    const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
+                                    const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
 
                                     return (
                                         <TableRow
                                             hover
-                                            key={_id}
+                                            key={seq}
                                             tabIndex={-1}
                                             sx={{
                                                 [`& .${tableCellClasses.root}`]: {
+                                                    // color: (cancel ? '#FFC107': (dir === 'buy' ? '#007B55' : '#B72136'))
                                                     color: (buy ? '#007B55' : '#B72136')
                                                 }
                                             }}
@@ -387,237 +549,89 @@ export default function AccountHistory({pair}) {
                                                     )
                                                 }
                                             </TableCell>
-                                            <TableCell align="left">{exch}</TableCell>
+                                            <TableCell align="left"><Typography variant="h6">{exch}</Typography></TableCell>
+                                            
                                             <TableCell align="left">
-                                                {gets} <Typography variant="caption">{name_gets}</Typography>
+                                                <Typography variant="h6" noWrap>{vPaid} <Typography variant="small">{namePaid}</Typography></Typography>
                                             </TableCell>
 
                                             <TableCell align="left">
-                                                {pays} <Typography variant="caption">{name_pays}</Typography>
+                                                <Typography variant="h6" noWrap>{vGot} <Typography variant="small">{nameGot}</Typography></Typography>
                                             </TableCell>
 
                                             <TableCell align="left">
-                                                <IconButton color='error' onClick={e=>handleCancel(e, seq)} aria-label="cancel">
-                                                    <CancelIcon fontSize='small'/>
-                                                </IconButton>
+                                                <Stack>
+                                                    <Typography variant="h6" noWrap>{strDate} {strTime}</Typography>
+                                                    {/* <Typography variant="caption">{strDate}</Typography> */}
+                                                </Stack>
                                             </TableCell>
+                                            
+                                            <TableCell align="left">
+                                                <Link
+                                                    underline="none"
+                                                    color="inherit"
+                                                    target="_blank"
+                                                    href={`https://bithomp.com/explorer/${maker}`}
+                                                    rel="noreferrer noopener nofollow"
+                                                >
+                                                    {tMaker}
+                                                </Link>
+                                            </TableCell>
+                                            <TableCell align="left">
+                                                <Link
+                                                    underline="none"
+                                                    color="inherit"
+                                                    target="_blank"
+                                                    href={`https://bithomp.com/explorer/${taker}`}
+                                                    rel="noreferrer noopener nofollow"
+                                                >
+                                                    {tTaker}
+                                                </Link>
+                                            </TableCell>
+                                            <TableCell align="left">
+                                                <Stack direction="row" alignItems='center'>
+                                                    <Link
+                                                        underline="none"
+                                                        color="inherit"
+                                                        target="_blank"
+                                                        href={`https://bithomp.com/explorer/${hash}`}
+                                                        rel="noreferrer noopener nofollow"
+                                                    >
+                                                        <Stack direction="row" alignItems='center'>
+                                                            {tHash}
+                                                            <IconButton edge="end" aria-label="bithomp">
+                                                                <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                            </IconButton>
+                                                        </Stack>
+                                                    </Link>
+
+                                                    <Link
+                                                        underline="none"
+                                                        color="inherit"
+                                                        target="_blank"
+                                                        href={`https://livenet.xrpl.org/transactions/${hash}`}
+                                                        rel="noreferrer noopener nofollow"
+                                                    >
+                                                        <IconButton edge="end" aria-label="bithomp">
+                                                            <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
+                                                        </IconButton>
+                                                    </Link>
+                                                </Stack>
+                                            </TableCell>
+                                            
                                         </TableRow>
                                     );
                                 })}
-                        </TableBody>
-                    </Table>
-                ):(
-                    <Table stickyHeader size={'small'}
-                        sx={{
-                            [`& .${tableCellClasses.root}`]: {
-                                borderBottom: "0px solid",
-                                borderBottomColor: theme.palette.divider
-                            }
-                        }}
-                    >
-                        <TableHead>
-                            <TableRow
-                                sx={{
-                                    [`& .${tableCellClasses.root}`]: {
-                                        borderBottom: "1px solid",
-                                        borderBottomColor: theme.palette.divider
-                                    }
-                                }}
-                            >
-                                <TableCell align="left">Side</TableCell>
-                                <TableCell align="left">Price</TableCell>
-                                <TableCell align="left">Taker Paid</TableCell>
-                                <TableCell align="left">Taker Got</TableCell>
-                                <TableCell align="left">Time</TableCell>
-                                <TableCell align="left">Maker</TableCell>
-                                <TableCell align="left">Taker</TableCell>
-                                <TableCell align="left">Hash</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {accountAddress && exchs.map((row) => {
-                                /*
-                                {
-                                    "dir": "buy",
-                                    "flags": 0,
-                                    "ledger": 71729458,
-                                    "ledger_index": 71729458,
-                                    "hash": "0F2CC103A3CD21BCAEF33ED7CEEC4AEB70660FE92A3140ED9506B80BFFFE710E",
-                                    "maker": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm",
-                                    "taker": "rMXN4AK1uKyFazVzTBTCTwcv17o9Az4rs2",
-                                    "seq": 71158461,
-                                    "date": 706175182,
-                                    "takerPaid": {
-                                        "currency": "534F4C4F00000000000000000000000000000000",
-                                        "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-                                        "value": "0.01"
-                                    },
-                                    "takerGot": {
-                                        "currency": "XRP",
-                                        "value": "0.0061"
-                                    },
-                                    "pair": "fa99aff608a10186d3b1ff33b5cd665f"
-                                }
-                                */
-                                const {
-                                    // dir,
-                                    hash,
-                                    maker,
-                                    taker,
-                                    //ledger,
-                                    seq,
-                                    takerPaid,
-                                    takerGot,
-                                    date,
-                                    // cancel,
-                                    // pair,
-                                    // xUSD
-                                } = row;
-
-                                const tMaker = truncate(maker, 12);
-                                const tTaker = truncate(taker, 12);
-                                const tHash = truncate(hash, 8);
-
-                                const vPaid = takerPaid.value;
-                                const vGot = takerGot.value;
-    
-                                let exch;
-                                let buy = false;
-                                if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency) {
-                                    exch = new Decimal(vGot).div(vPaid).toNumber();
-                                } else {
-                                    exch = new Decimal(vPaid).div(vGot).toNumber();
-                                }
-
-                                if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency && maker === accountAddress) {
-                                    buy = true;
-                                } else if (takerGot.issuer === curr1.issuer && takerGot.currency === curr1.currency && taker === accountAddress) {
-                                    buy = true;
-                                }
-
-                                const nDate = new Date((date + EPOCH_OFFSET) * 1000);
-                                const year = nDate.getFullYear();
-                                const month = (nDate.getMonth() + 1).toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                                const day = nDate.getDate().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                                const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                                const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                                const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-
-                                //const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
-                                //const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
-                                const strDate = `${year}-${month}-${day}`;
-                                const strTime = `${hour}:${min}:${sec}`;
-
-                                const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
-                                const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
-
-                                return (
-                                    <TableRow
-                                        hover
-                                        key={seq}
-                                        tabIndex={-1}
-                                        sx={{
-                                            [`& .${tableCellClasses.root}`]: {
-                                                // color: (cancel ? '#FFC107': (dir === 'buy' ? '#007B55' : '#B72136'))
-                                                color: (buy ? '#007B55' : '#B72136')
-                                            }
-                                        }}
-                                    >
-                                        <TableCell align="left">
-                                            {
-                                                buy ? (
-                                                    <BuyTypography variant="caption">
-                                                        BUY
-                                                    </BuyTypography>
-                                                ):(
-                                                    <SellTypography variant="caption">
-                                                        SELL
-                                                    </SellTypography>
-                                                )
-                                            }
-                                        </TableCell>
-                                        <TableCell align="left"><Typography variant="subtitle2">{exch}</Typography></TableCell>
-                                        
-                                        <TableCell align="left">
-                                            {vPaid} <Typography variant="caption">{namePaid}</Typography>
-                                        </TableCell>
-
-                                        <TableCell align="left">
-                                            {vGot} <Typography variant="caption">{nameGot}</Typography>
-                                        </TableCell>
-
-                                        <TableCell align="left">
-                                            <Stack>
-                                                <Typography variant="subtitle2">{strDate} {strTime}</Typography>
-                                                {/* <Typography variant="caption">{strDate}</Typography> */}
-                                            </Stack>
-                                        </TableCell>
-                                        
-                                        <TableCell align="left">
-                                            <Link
-                                                underline="none"
-                                                color="inherit"
-                                                target="_blank"
-                                                href={`https://bithomp.com/explorer/${maker}`}
-                                                rel="noreferrer noopener nofollow"
-                                            >
-                                                {tMaker}
-                                            </Link>
-                                        </TableCell>
-                                        <TableCell align="left">
-                                            <Link
-                                                underline="none"
-                                                color="inherit"
-                                                target="_blank"
-                                                href={`https://bithomp.com/explorer/${taker}`}
-                                                rel="noreferrer noopener nofollow"
-                                            >
-                                                {tTaker}
-                                            </Link>
-                                        </TableCell>
-                                        <TableCell align="left">
-                                            <Stack direction="row" alignItems='center'>
-                                                <Link
-                                                    underline="none"
-                                                    color="inherit"
-                                                    target="_blank"
-                                                    href={`https://bithomp.com/explorer/${hash}`}
-                                                    rel="noreferrer noopener nofollow"
-                                                >
-                                                    <Stack direction="row" alignItems='center'>
-                                                        {tHash}
-                                                        <IconButton edge="end" aria-label="bithomp">
-                                                            <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
-                                                        </IconButton>
-                                                    </Stack>
-                                                </Link>
-
-                                                <Link
-                                                    underline="none"
-                                                    color="inherit"
-                                                    target="_blank"
-                                                    href={`https://livenet.xrpl.org/transactions/${hash}`}
-                                                    rel="noreferrer noopener nofollow"
-                                                >
-                                                    <IconButton edge="end" aria-label="bithomp">
-                                                        <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
-                                                    </IconButton>
-                                                </Link>
-                                            </Stack>
-                                        </TableCell>
-                                        
-                                    </TableRow>
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                )
-            }
-            {!accountAddress && (
-                <ConnectWalletContainer>
-                    <Typography variant='subtitle2' color='error'>Connect your wallet to access data</Typography>
-                </ConnectWalletContainer>
-            )}
+                            </TableBody>
+                        </Table>
+                    )
+                }
+                {!accountAddress && (
+                    <ConnectWalletContainer>
+                        <Typography variant='subtitle2' color='error'>Connect your wallet to access data</Typography>
+                    </ConnectWalletContainer>
+                )}
+            </Box>
         </StackStyle>
     );
 }

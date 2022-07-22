@@ -62,68 +62,27 @@ export default function TokenListToolbar({ rows, setRows, page, setPage}) {
         }
     };
 
-    // return (
-    //     <Grid
-    //         container
-    //         spacing={0}
-    //         sx={{mt:0}}
-    //         alignItems="center"
-    //     >
-    //         <Grid container item xs={12} md={12} lg={12} sx={{ display: { xs: 'block', sm: 'block', md: 'none' } }}>
-    //             <Stack alignItems='center' sx={{mt:2, mb:2}}>
-    //                 <Pagination page={page+1} onChange={handleChangePage} count={page_count} shape="rounded" size="small" />
-    //             </Stack>
-    //         </Grid>
-
-    //         <Grid container item xs={6} md={4} lg={4}>
-    //             <Stack alignItems='center'>
-    //                 Showing {start} - {end} out of {length}
-    //             </Stack>
-    //         </Grid>
-
-    //         <Grid container item xs={12} md={4} lg={4} sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
-    //             <Stack alignItems='center'>
-    //                 <Pagination page={page+1} onChange={handleChangePage} count={page_count} shape="rounded"/>
-    //             </Stack>
-    //         </Grid>
-
-    //         <Grid container item justifyContent="flex-end" xs={6} md={4} lg={4} >
-    //             <Stack direction='row' alignItems='center'>
-    //                 Show Rows
-    //                 <CustomSelect
-    //                     value={rows}
-    //                     onChange={handleChangeRows}
-    //                 >
-    //                     <MenuItem value={100}>100</MenuItem>
-    //                     <MenuItem value={50}>50</MenuItem>
-    //                     <MenuItem value={20}>20</MenuItem>
-    //                 </CustomSelect>
-    //             </Stack>
-    //         </Grid>
-    //     </Grid>
-    // );
+    // sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}
 
     return (
-        <>
-            <Stack sx={{ mt:2, mb:2, display: { xs: 'block', sm: 'block', md: 'none' } }}>
-                <Stack alignItems="center">
-                    <Pagination page={page+1} onChange={handleChangePage} count={page_count} shape="rounded" size="small" />
+        <Grid container rowSpacing={2} alignItems="center" sx={{mt: 0}}>
+            <Grid container item xs={12} sx={{ display: { xs: 'block', md: 'none' } }}>
+                <Stack alignItems='center'>
+                    <Pagination page={page+1} onChange={handleChangePage} count={page_count} size="small"/>
                 </Stack>
-            </Stack>
-            <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                spacing={0}
-            >
-                <Stack>
-                    Showing {start} - {end} out of {length}
-                </Stack>
+            </Grid>
 
-                <Stack sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
-                    <Pagination page={page+1} onChange={handleChangePage} count={page_count} shape="rounded"/>
-                </Stack>
+            <Grid container item xs={6} md={4} lg={4}>
+                Showing {start} - {end} out of {length}
+            </Grid>
 
+            <Grid container item xs={0} md={4} lg={4} sx={{ display: { xs: 'none', md: 'block' } }}>
+                <Stack alignItems='center'>
+                    <Pagination page={page+1} onChange={handleChangePage} count={page_count}/>
+                </Stack>
+            </Grid>
+
+            <Grid container item xs={6} md={4} lg={4} justifyContent="flex-end">
                 <Stack direction='row' alignItems='center'>
                     Show Rows
                     <CustomSelect
@@ -135,7 +94,7 @@ export default function TokenListToolbar({ rows, setRows, page, setPage}) {
                         <MenuItem value={20}>20</MenuItem>
                     </CustomSelect>
                 </Stack>
-            </Stack>
-        </>
+            </Grid>
+        </Grid>
     );
 }

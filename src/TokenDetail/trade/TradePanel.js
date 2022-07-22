@@ -34,8 +34,6 @@ import Decimal from 'decimal.js';
 const StackDexStyle = styled(Stack)(({ theme }) => ({
     width: '100%',
     display: 'inline-block',
-    marginLeft: '4px',
-    marginRight: '4px',
     color: '#C4CDD5',
     fontSize: '11px',
     fontWeight: '500',
@@ -152,7 +150,7 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
             <Stack spacing={1} alignItems="center">
                 <Typography variant='subtitle1' sx={{color:'#FFC107', textAlign: 'center', ml:0, mt:2, mb:0}}>Trade Now</Typography>
             </Stack>
-            <StackDexStyle spacing={2} sx={{ m: 1, mt:4, pt:2, pb:2 }}>
+            <StackDexStyle spacing={2} sx={{ mt:4, pt:2, pb:2 }}>
                 <AccountBalance pair={pair}/>
 
                 <ToggleButtonGroup

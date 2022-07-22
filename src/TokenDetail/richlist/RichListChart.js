@@ -21,9 +21,10 @@ import ChartOptions from './ChartOptions';
 import { fCurrency5, fNumber } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
 function extractGraphData(items) {
+    // const info = {time, length, top10, top20, top50, top100, active24H};
     const res = [];
     for (var item of items) {
-        res.push([item.time, item.length]);
+        res.push([item.time, item.length, item.active24H]);
     }
     return res;
 }

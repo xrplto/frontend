@@ -25,8 +25,6 @@ import Decimal from 'decimal.js';
 const StackDexStyle = styled(Stack)(({ theme }) => ({
     width: '100%',
     display: 'inline-block',
-    marginLeft: '4px',
-    marginRight: '4px',
     color: '#C4CDD5',
     fontSize: '11px',
     fontWeight: '500',
@@ -232,7 +230,7 @@ export default function Trade({token}) {
     // https://mui.com/system/display/
 
     return (
-        <Grid container spacing={0} sx={{p:0}}>
+        <Grid container spacing={2} sx={{p:0}}>
             <Grid item xs={12} md={12} lg={12} >
                 <PairsSelect token={token} pair={pair} setPair={setPair} />
             </Grid>
@@ -245,18 +243,19 @@ export default function Trade({token}) {
                     <Grid item xs={12} md={8} lg={8}>
                         <OrderBook pair={pair} asks={asks} bids={bids} onBidClick={onBidClick} onAskClick={onAskClick}/>
                     </Grid>
-                    <Grid item xs={12} md={12} lg={12} sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
-                        <AccountHistory pair={pair}/>
-                    </Grid>
                 </Grid>
             </Grid>
             
             <Grid item xs={12} md={2.5} lg={2.5}>
                 <TradePanel pair={pair} asks={asks} bids={bids} bidId={bidId} askId={askId}/>
 
-                <StackDexStyle spacing={0} sx={{ m: 1, mt:4, pt:1, pb:0, pl:0 }}>
+                <StackDexStyle spacing={0} sx={{ mt:4, mb:3, pt:2, pb:0, pl:0 }}>
                     <BidAskChart bids={bids} asks={asks} />
                 </StackDexStyle>
+            </Grid>
+
+            <Grid item xs={12}>
+                <AccountHistory pair={pair}/>
             </Grid>
         </Grid>
     );

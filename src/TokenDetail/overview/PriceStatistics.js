@@ -1,5 +1,5 @@
+import Decimal from 'decimal.js';
 // Material
-import { withStyles } from '@mui/styles';
 import {
     alpha, styled, useTheme,
     CardHeader,
@@ -76,9 +76,7 @@ export default function PriceStatistics({token}) {
     if (!user) user = name;
 
     const marketcap = amount * exch / metrics.USD;
-    let voldivmarket = 0;
-    if (marketcap > 0)
-        voldivmarket = fNumber(vol24hx / (amount * exch));
+    const voldivmarket = Decimal.div(vol24h, amount).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
    
     let strPc24h;
     if (p24h < 0) {
@@ -127,7 +125,7 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Volume / Market Cap</Typography></TableCell>
-                        <TableCell align="left">{voldivmarket}</TableCell>
+                        <TableCell align="left">{fNumber(voldivmarket)}</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Market Dominance</Typography></TableCell>
