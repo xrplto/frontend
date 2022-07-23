@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 
 // Components
-import TrustSet from './TrustSet';
+import TrustSet from 'src/components/TrustSet';
 
 // ----------------------------------------------------------------------
 export default function ExtraButtons({token}) {

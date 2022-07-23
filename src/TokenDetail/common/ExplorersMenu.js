@@ -56,11 +56,12 @@ export default function ExplorersMenu({issuer}) {
                 aria-haspopup="true"
                 onMouseOver={handleOpen}
                 onMouseLeave={handleClose}
-                style={{ zIndex: 1301 }}
+                style={{ zIndex: open ? 1301:100 }}
                 label="Explorers" sx={{pl:0.5,pr:0.5}}
                 deleteIcon={<Icon icon={chevronDown} width="16" height="16"/>}
                 onDelete={handleClick}
-                icon={<Icon icon={zoomIcon} width="16" height="16" />} />
+                icon={<Icon icon={zoomIcon} width="16" height="16" />} 
+            />
             
             <Menu
                 id="simple-menu"

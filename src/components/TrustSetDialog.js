@@ -5,19 +5,18 @@ import {CopyToClipboard} from 'react-copy-to-clipboard';
 // Material
 import { withStyles } from '@mui/styles';
 import {
-    alpha,
+    alpha, useTheme, useMediaQuery,
     styled,
-    useTheme,
-    Alert,
     Avatar,
     Backdrop,
     Button,
     Dialog,
+    DialogActions,
+    DialogContent,
     DialogTitle,
     Divider,
     IconButton,
     Link,
-    Slide,
     Stack,
     Table,
     TableBody,
@@ -27,9 +26,10 @@ import {
     Typography,
     TextField
 } from '@mui/material';
-
 import { tableCellClasses } from "@mui/material/TableCell";
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import {
+    Close as CloseIcon
+} from '@mui/icons-material';
 
 // Context
 import { useContext } from 'react';
@@ -52,16 +52,40 @@ import Decimal from 'decimal.js';
 import { Icon } from '@iconify/react';
 import copyIcon from '@iconify/icons-fad/copy';
 // ----------------------------------------------------------------------
-
-const AdminDialog = styled(Dialog)(({ theme }) => ({
-    // boxShadow: theme.customShadows.z0,
+const TrustDialog = styled(Dialog) (({ theme }) => ({
     backdropFilter: 'blur(1px)',
     WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
-    // backgroundColor: alpha(theme.palette.background.paper, 0.0),
-    // borderRadius: '0px',
-    // padding: '0.5em'
-    // backgroundColor: alpha("#00AB88", 0.99),
+    '& .MuiDialogContent-root': {
+        padding: theme.spacing(2),
+    },
+    '& .MuiDialogActions-root': {
+        padding: theme.spacing(1),
+    },
 }));
+  
+const TrustDialogTitle = (props) => {
+    const { children, onClose, ...other } = props;
+
+    return (
+        <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
+            {children}
+            {onClose ? (
+                <IconButton
+                    aria-label="close"
+                    onClick={onClose}
+                    sx={{
+                        position: 'absolute',
+                        right: 8,
+                        top: 8,
+                        color: (theme) => theme.palette.grey[500],
+                    }}
+                >
+                    <CloseIcon />
+                </IconButton>
+            ) : null}
+        </DialogTitle>
+    );
+};
 
 const Label = withStyles({
     root: {
@@ -79,6 +103,8 @@ const MSG_SUCCESSFUL = 6;
 
 export default function TrustSetDialog({showAlert, token, setToken}) {
     const theme = useTheme();
+    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+    
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
     const { accountProfile } = useContext(AppContext);
@@ -143,7 +169,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                 clearInterval(timer)
             }
         };
-    }, [dispatch, openScanQR, uuid]);
+    }, [openScanQR, uuid]);
 
     const onTrustSetXumm = async (value) => {
         /*{
@@ -163,7 +189,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
         try {
             const {
                 issuer,
-                currency
+                currency,
             } = token;
             const user_token = accountProfile?.token;
 
@@ -209,7 +235,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
         onDisconnectXumm(uuid);
     };
 
-    const handleCancel = () => {
+    const handleClose = () => {
         setToken(null);
     }
 
@@ -241,14 +267,20 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
     return (
         <>
             <Backdrop
-                sx={{ color: "#000", zIndex: (theme) => theme.zIndex.modal + 1 }}
+                sx={{ color: "#000", zIndex: 1303 }}
                 open={loading}
             >
                 <PulseLoader color={"#FF4842"} size={10} />
             </Backdrop>
 
-            <AdminDialog onClose={handleCancel} open={true} sx={{p:5}} hideBackdrop={true}>
-                <DialogTitle sx={{pl:2,pr:4,pt:1,pb:1}}>
+            <TrustDialog
+                fullScreen={fullScreen}
+                onClose={handleClose}
+                open={true}
+                sx={{zIndex: 1302}}
+                hideBackdrop={true}
+            >
+                <TrustDialogTitle id="customized-dialog-title" onClose={handleClose}>
                     <Stack direction='row' alignItems='center'>
                         <Avatar alt={name} src={imgUrl} sx={{ mr: 1 }} />
                         <Stack>
@@ -256,106 +288,73 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                             <Typography variant="caption">{user}</Typography>
                         </Stack>
                     </Stack>
-                </DialogTitle>
-                <Divider />
+                </TrustDialogTitle>
 
-                <Stack spacing={2} alignItems='center' sx={{mb: 3}}>
-                    <Table sx={{
-                        [`& .${tableCellClasses.root}`]: {
-                            borderBottom: "0px solid",
-                            borderBottomColor: theme.palette.divider
-                        }
-                    }}>
-                        <TableBody>
-                            <TableRow>
-                                <TableCell align="right" sx={{pt:1, pb:0, width: '20%'}}>
-                                    <Label variant="subtitle2" noWrap>Issuer</Label>
-                                </TableCell>
-                                <TableCell align="left" sx={{pt:1, pb:0, width: '80%'}}>
-                                    <Stack direction="row" spacing={1} alignItems='center' sx={{mr:2}}>
-                                        <Label variant="subtitle2" noWrap>{issuer}</Label>
-                                        <Link
-                                            underline="none"
-                                            color="inherit"
-                                            target="_blank"
-                                            href={`https://bithomp.com/explorer/${issuer}`}
-                                            rel="noreferrer noopener nofollow"
-                                        >
-                                            <IconButton edge="end" aria-label="bithomp">
-                                                <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
-                                            </IconButton>
-                                        </Link>
-                                    </Stack>
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell align="right" sx={{pt:1, pb:0.2}}>
-                                    <Label variant="subtitle2" noWrap>Currency</Label>
-                                </TableCell>
-                                <TableCell align="left" sx={{pt:1, pb:0.2}}>
-                                    <Label variant="subtitle2" noWrap>{currency}</Label>
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell align="right" sx={{pt:1, pb:0.2}}>
-                                    <Label variant="subtitle2" noWrap>Amount</Label>
-                                </TableCell>
-                                <TableCell align="left" sx={{pt:1, pb:0.2}}>
-                                    <TextField id="input-with-sx1" label="" value={amount} onChange={handleChangeAmount} variant="standard"/>
-                                </TableCell>
-                            </TableRow>
+                <DialogContent>
+                    <Stack spacing={1.5} sx={{pl:1, pr:1}}>
+                        <Stack direction="row" alignItems="center">
+                            <Label variant="subtitle2" noWrap>
+                                {issuer}
+                            </Label>
+                            <Link
+                                underline="none"
+                                color="inherit"
+                                target="_blank"
+                                href={`https://bithomp.com/explorer/${issuer}`}
+                                rel="noreferrer noopener nofollow"
+                            >
+                                <IconButton edge="end" aria-label="bithomp">
+                                    <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                </IconButton>
+                            </Link>
+                        </Stack>
 
-                            <TableRow>
-                                <TableCell align="right" sx={{pt:1.5, pb:0.2}}>
-                                    <Label variant="subtitle2" noWrap>Link</Label>
-                                </TableCell>
-                                <TableCell align="left" sx={{pt:1, pb:0.2}}>
-                                    <Link
-                                        underline="none"
-                                        color="inherit"
-                                        target="_blank"
-                                        href={`https://xrpl.to/trustset/${urlSlug}`}
-                                        rel="noreferrer noopener nofollow"
-                                    >
-                                        https://xrpl.to/trustset/{urlSlug}
-                                    </Link>
-                                    
-                                    <CopyToClipboard text={`https://xrpl.to/trustset/${urlSlug}`} onCopy={()=>showAlert(MSG_COPIED)}>
-                                        <Tooltip title={'Click to copy'}>
-                                            <IconButton>
-                                                <Icon icon={copyIcon} />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </CopyToClipboard>
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
+                        <Label variant="subtitle2" noWrap>{currency}</Label>
 
-                    <Stack direction='row' spacing={2} sx={{mt:1.5}}>
+                        <TextField fullWidth id="input-with-sx1" label="Amount" value={amount} onChange={handleChangeAmount} variant="standard"/>
 
-                        <Button
-                            variant="outlined"
-                            onClick={handleSetTrust}
-                            color='primary'
-                        >
-                            Set Trustline
-                        </Button>
+                        <Stack direction="row" alignItems="center">
+                            <Link
+                                underline="none"
+                                color="inherit"
+                                target="_blank"
+                                href={`https://xrpl.to/trustset/${urlSlug}`}
+                                rel="noreferrer noopener nofollow"
+                            >
+                                https://xrpl.to/trustset/{urlSlug}
+                            </Link>
+                            <CopyToClipboard text={`https://xrpl.to/trustset/${urlSlug}`} onCopy={()=>showAlert(MSG_COPIED)}>
+                                <Tooltip title={'Click to copy'}>
+                                    <IconButton>
+                                        <Icon icon={copyIcon} />
+                                    </IconButton>
+                                </Tooltip>
+                            </CopyToClipboard>
+                        </Stack>
 
-                        <CopyToClipboard text={`https://xrpl.to/trustset/${urlSlug}`} onCopy={()=>showAlert(MSG_COPIED)}>
+                        <Stack direction='row' spacing={2} justifyContent="center" sx={{mt:2}}>
                             <Button
                                 variant="outlined"
+                                onClick={handleSetTrust}
                                 color='primary'
+                                size='small'
                             >
-                                Copy Link
+                                Set Trustline
                             </Button>
-                        </CopyToClipboard>
 
+                            <CopyToClipboard text={`https://xrpl.to/trustset/${urlSlug}`} onCopy={()=>showAlert(MSG_COPIED)}>
+                                <Button
+                                    variant="outlined"
+                                    color='primary'
+                                    size='small'
+                                >
+                                    Copy Link
+                                </Button>
+                            </CopyToClipboard>                            
+                        </Stack>
                     </Stack>
-
-                </Stack>
-                
-            </AdminDialog>
+                </DialogContent>
+            </TrustDialog>
 
             <QRTrustDialog
                 open={openScanQR}

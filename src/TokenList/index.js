@@ -17,7 +17,7 @@ import TokenListHead from './TokenListHead';
 import TokenListToolbar from './TokenListToolbar';
 import SearchToolbar from './SearchToolbar';
 import TokenRow from './TokenRow';
-import TrustSet from './TrustSet';
+import TrustSet from 'src/components/TrustSet';
 // import WidgetNew from './WidgetNew';
 // import WidgetSlug from './WidgetSlug';
 // import WidgetDate from './WidgetDate';

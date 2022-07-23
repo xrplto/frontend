@@ -33,6 +33,7 @@ import paperIcon from '@iconify/icons-akar-icons/paper';
 import ExplorersMenu from './ExplorersMenu';
 import CommunityMenu from './CommunityMenu';
 import ChatMenu from './ChatMenu';
+import Share from './Share';
 // import TrustSet from './TrustSet';
 
 const ContentWrapper = styled(Box)(({ theme }) => ({
@@ -117,7 +118,7 @@ export default function UserDesc({token}) {
                         <Chip variant={"outlined"} icon={<TokenIcon />} label={name} />
                     </Grid>
                     <Grid item>
-                        <Chip variant={"outlined"} icon={<ShareIcon fontSize="small" />} label={'Share'} onClick={handleShare} />
+                        <Share token={token}/>
                     </Grid>
                 </Grid>
             </Stack>

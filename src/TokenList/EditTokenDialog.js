@@ -317,7 +317,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
         onUpdateToken(newToken);
     }
 
-    const handleCancel = () => {
+    const handleClose = () => {
         onCloseEditToken();
     }
 
@@ -379,7 +379,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
             <PulseLoader color={"#FF4842"} size={10} />
         </Backdrop>
         
-        <AdminDialog onClose={handleCancel} open={true} sx={{p:5}} hideBackdrop={true} fullWidth={true} maxWidth={'md'}>
+        <AdminDialog onClose={handleClose} open={true} sx={{p:5}} hideBackdrop={true} fullWidth={true} maxWidth={'md'}>
             <DialogTitle sx={{pl:4,pr:4,pt:1,pb:1}}>
                 <input
                     ref={fileRef}
