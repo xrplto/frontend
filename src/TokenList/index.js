@@ -1,4 +1,5 @@
 import axios from 'axios'
+import dynamic from 'next/dynamic';
 import { useState, useEffect, useRef } from 'react';
 // import { BeatLoader } from "react-spinners";
 // import InfiniteScroll from "react-infinite-scroll-component";
@@ -18,6 +19,8 @@ import TokenListToolbar from './TokenListToolbar';
 import SearchToolbar from './SearchToolbar';
 import TokenRow from './TokenRow';
 import TrustSet from 'src/components/TrustSet';
+
+const DynamicTokenRow = dynamic(() => import('./TokenRow'));
 // import WidgetNew from './WidgetNew';
 // import WidgetSlug from './WidgetSlug';
 // import WidgetDate from './WidgetDate';
@@ -218,7 +221,7 @@ export default function TokenList({data}) {
                         //filteredTokens.slice(page * rows, page * rows + rows)
                         tokens.slice(0, rows).map((row, idx) => {
                                 return (
-                                    <TokenRow key={idx} token={row} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
+                                    <DynamicTokenRow key={idx} token={row} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
                                 );
                             })}
                         {/* {emptyRows > 0 && (

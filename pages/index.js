@@ -15,13 +15,13 @@ import {
 import Topbar from 'src/layouts/Topbar';
 import Header from 'src/TokenList/Header';
 
-// import TokenList from 'src/TokenList';
+import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/layouts/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 import HowWeWork from 'src/TokenList/HowWeWork';
 import Footer from 'src/layouts/Footer';
 
-const DynamicTokenList = dynamic(() => import('src/TokenList'));
+// const DynamicTokenList = dynamic(() => import('src/TokenList'));
 
 // overflow: scroll;
 // overflow: auto;
@@ -53,8 +53,8 @@ function Overview({data}) {
                         <Summary />
                     </Grid>
                     <Grid item xs={12} md={12} lg={12} >
-                        <DynamicTokenList data={data}/>
-                        {/* <TokenList data={data}/> */}
+                        {/* <DynamicTokenList data={data}/> */}
+                        <TokenList data={data}/>
                     </Grid>
                     <Grid item xs={12} md={12} lg={12} >
                         <HowWeWork />

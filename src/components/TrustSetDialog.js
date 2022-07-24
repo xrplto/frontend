@@ -39,7 +39,7 @@ import { AppContext } from 'src/AppContext'
 import { useDispatch } from "react-redux";
 
 // Components
-import QRTrustDialog from './QRTrustDialog';
+import QRDialog from './QRDialog';
 
 // Loader
 import { PulseLoader } from "react-spinners";
@@ -144,7 +144,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                 if (resolved_at) {
                     setOpenScanQR(false);
                     if (dispatched_result && dispatched_result === 'tesSUCCESS') {
-                        handleCancel();
+                        handleClose();
                         showAlert(MSG_SUCCESSFUL);
                     }
                     else
@@ -193,12 +193,14 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
             } = token;
             const user_token = accountProfile?.token;
 
+            const Flags = 0x00020000;
+
             let LimitAmount = {};
             LimitAmount.issuer = issuer;
             LimitAmount.currency = currency;
             LimitAmount.value = value;
             
-            const body={ LimitAmount, user_token};
+            const body={ LimitAmount, Flags, user_token};
 
             const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
 
@@ -356,9 +358,10 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                 </DialogContent>
             </TrustDialog>
 
-            <QRTrustDialog
+            <QRDialog
                 open={openScanQR}
-                handleClose={handleScanQRClose}
+                type="Trust Set"
+                onClose={handleScanQRClose}
                 qrUrl={qrUrl}
                 nextUrl={nextUrl}
             />

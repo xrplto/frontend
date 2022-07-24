@@ -199,8 +199,10 @@ function TrustLine(props) {
             LimitAmount.issuer = issuer;
             LimitAmount.currency = currency;
             LimitAmount.value = new Decimal(amount).toDP(0, Decimal.ROUND_DOWN).toNumber();
+
+            const Flags = 0x00020000;
             
-            const body={ LimitAmount };
+            const body={ LimitAmount, Flags };
 
             const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
 
@@ -255,6 +257,9 @@ function TrustLine(props) {
         setState({ openSnack: true, message: msg });
     }
 
+    // Open in XUMM
+    // https://xumm.app/detect/xapp:xumm.dex?issuer=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&currency=534F4C4F00000000000000000000000000000000
+
     return (
         <OverviewWrapper>
             <Snackbar
@@ -275,19 +280,16 @@ function TrustLine(props) {
                 </Alert>
             </Snackbar>
 
-            <Container maxWidth="sm" sx={{ ml:5, mr: 3, mt: 0, mb: 10 }}>
-            <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                spacing={2}
-            >
+            <Container maxWidth="sm">
+
+            <Stack alignItems='center' spacing={2} sx={{mt:2}}>
                 <LogoTrustline />
-                <Typography variant='h1_trustline' sx={{pt:2}}>Set {name} TrustLine</Typography>
+                <Typography variant='h1_trustline' sx={{mt:1}}>Set {name} TrustLine</Typography>
             </Stack>
-            <Card sx={{ mt: 1, p: 1, pt:2 }}>
+
+            <Card sx={{ mt: 1, mb:8 }}>
                 <Stack alignItems='center'>
-                    <Stack direction="row" spacing={1} alignItems='center'>
+                    <Stack direction="row" spacing={1} alignItems='center' sx={{mt:2}}>
                         <Avatar
                             alt={user}
                             src={imgUrl}
@@ -333,155 +335,171 @@ function TrustLine(props) {
                             </Link>
                         )}
                     </Stack>
-                    <Stack direction="row" spacing={1} sx={{mt:2}}>
-                        <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
-                        <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
-                        <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
-                        {kyc && <Chip label={'KYC'} color="primary" variant="outlined" size="small"/>}
-                    </Stack>
-                    <Stack direction="row" spacing={1} sx={{mt:2}}>
-                        {social && social.telegram && (
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://t.me/${social.telegram}`}
-                                rel="noreferrer noopener nofollow"
-                            >
-                                <Avatar alt="telegram" src="/static/telegram.png" sx={{ mr:1, width: 24, height: 24 }} />
-                            </Link>
-                        )}
-                        {social && social.discord && (
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://discord.gg/${social.discord}`}
-                                rel="noreferrer noopener nofollow"
-                            >
-                                <Avatar alt="discord" src="/static/discord.png" sx={{ mr:1, width: 24, height: 24 }} />
-                            </Link>
-                        )}
-                        {social && social.twitter && (
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://twitter.com/${social.twitter}`}
-                                rel="noreferrer noopener nofollow"
-                            >
-                                <Avatar alt="twitter" src="/static/twitter.png" sx={{ mr:1, width: 24, height: 24 }} />
-                            </Link>
-                        )}
-                        {social && social.facebook && (
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://facebook.com/${social.facebook}`}
-                                rel="noreferrer noopener nofollow"
-                            >
-                                <Avatar alt="facebook" src="/static/facebook.png" sx={{ mr:1, width: 24, height: 24 }} />
-                            </Link>
-                        )}
-                        {social && social.linkedin && (
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://linkedin.com/${social.linkedin}`}
-                                rel="noreferrer noopener nofollow"
-                            >
-                                <Avatar alt="linkedin" src="/static/linkedin.png" sx={{ mr:1, width: 24, height: 24 }} />
-                            </Link>
-                        )}
-                        {social && social.instagram && (
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://instagram.com/${social.instagram}`}
-                                rel="noreferrer noopener nofollow"
-                            >
-                                <Avatar alt="instagram" src="/static/instagram.png" sx={{ mr:1, width: 24, height: 24 }} />
-                            </Link>
-                        )}
-                        {social && social.youtube && (
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://youtube.com/${social.youtube}`}
-                                rel="noreferrer noopener nofollow"
-                            >
-                                <Avatar alt="youtube" src="/static/youtube.png" sx={{ mr:1, width: 24, height: 24 }} />
-                            </Link>
-                        )}
-                        {social && social.medium && (
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://medium.com/${social.medium}`}
-                                rel="noreferrer noopener nofollow"
-                            >
-                                <Avatar alt="medium" src="/static/medium.png" sx={{ mr:1, width: 24, height: 24 }} />
-                            </Link>
-                        )}
-                        {social && social.twitch && (
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://twitch.tv/${social.twitch}`}
-                                rel="noreferrer noopener nofollow"
-                            >
-                                <Avatar alt="twitch" src="/static/twitch.png" sx={{ mr:1, width: 24, height: 24 }} />
-                            </Link>
-                        )}
-                        {social && social.tiktok && (
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://tiktok.com/${social.tiktok}`}
-                                rel="noreferrer noopener nofollow"
-                            >
-                                <Avatar alt="tiktok" src="/static/tiktok.png" sx={{ mr:1, width: 24, height: 24 }} />
-                            </Link>
-                        )}
-                        {social && social.reddit && (
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                target="_blank"
-                                href={`https://www.reddit.com/${social.reddit}`}
-                                rel="noreferrer noopener nofollow"
-                            >
-                                <Avatar alt="reddit" src="/static/reddit.svg" sx={{ mr:1, width: 24, height: 24 }} />
-                            </Link>
-                        )}
-                    </Stack>
+
+                    <Box
+                        sx={{
+                            display: "flex",
+                            gap: 1,
+                            py: 1,
+                            overflow: "auto",
+                            width: "100%",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            "& > *": {
+                                scrollSnapAlign: "center",
+                            },
+                            "::-webkit-scrollbar": { display: "none" },
+                        }}
+                    >
+                        <Stack direction="row" spacing={1} sx={{mt:1}}>
+                            <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
+                            <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
+                            <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
+                            {kyc && <Chip label={'KYC'} color="primary" variant="outlined" size="small"/>}
+                        </Stack>
+
+                    </Box>
+
+                    <Box
+                        sx={{
+                            display: "flex",
+                            overflow: "auto",
+                            width: "100%",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            "& > *": {
+                                scrollSnapAlign: "center",
+                            },
+                            "::-webkit-scrollbar": { display: "none" },
+                        }}
+                    >
+                        <Stack direction="row" spacing={1} sx={{mt:1}}>
+                            {social && social.telegram && (
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://t.me/${social.telegram}`}
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Avatar alt="telegram" src="/static/telegram.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                </Link>
+                            )}
+                            {social && social.discord && (
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://discord.gg/${social.discord}`}
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Avatar alt="discord" src="/static/discord.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                </Link>
+                            )}
+                            {social && social.twitter && (
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://twitter.com/${social.twitter}`}
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Avatar alt="twitter" src="/static/twitter.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                </Link>
+                            )}
+                            {social && social.facebook && (
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://facebook.com/${social.facebook}`}
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Avatar alt="facebook" src="/static/facebook.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                </Link>
+                            )}
+                            {social && social.linkedin && (
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://linkedin.com/${social.linkedin}`}
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Avatar alt="linkedin" src="/static/linkedin.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                </Link>
+                            )}
+                            {social && social.instagram && (
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://instagram.com/${social.instagram}`}
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Avatar alt="instagram" src="/static/instagram.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                </Link>
+                            )}
+                            {social && social.youtube && (
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://youtube.com/${social.youtube}`}
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Avatar alt="youtube" src="/static/youtube.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                </Link>
+                            )}
+                            {social && social.medium && (
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://medium.com/${social.medium}`}
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Avatar alt="medium" src="/static/medium.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                </Link>
+                            )}
+                            {social && social.twitch && (
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://twitch.tv/${social.twitch}`}
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Avatar alt="twitch" src="/static/twitch.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                </Link>
+                            )}
+                            {social && social.tiktok && (
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://tiktok.com/${social.tiktok}`}
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Avatar alt="tiktok" src="/static/tiktok.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                </Link>
+                            )}
+                            {social && social.reddit && (
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={`https://www.reddit.com/${social.reddit}`}
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Avatar alt="reddit" src="/static/reddit.svg" sx={{ mr:1, width: 24, height: 24 }} />
+                                </Link>
+                            )}
+                        </Stack>
+                    </Box>
 
                     <Grid container direction="row" justifyContent="flex-start" alignItems="flex-start" sx={{mt:3, mb:3}}>
-                        <Grid item sm={6} sx={{pl:5, pt:2}}>
-                            <Stack>
-                                <Label>CREATED ON</Label>
-                                <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
-                                    {date_fixed}
-                                </Typography>
-                                <Label>TOTAL SUPPLY</Label>
-                                <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
-                                    {fNumber(amount)}
-                                </Typography>
-                                <Label>MARKET CAP</Label>
-                                <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
-                                    ${fNumber(marketcap)}
-                                </Typography>
-                            </Stack>
-                        </Grid>
-                        
-                        <Grid item sm={6}>
+                        <Grid item xs={12} sm={6}>
                             <Stack alignItems='center'>
                                 <Box
                                     component="img"
@@ -517,6 +535,23 @@ function TrustLine(props) {
                                     </Link>
                                 }
                                 </Stack>
+                            </Stack>
+                        </Grid>
+
+                        <Grid item xs={12} sm={6}>
+                            <Stack alignItems='center' sx={{mt:2}}>
+                                <Label>CREATED ON</Label>
+                                <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
+                                    {date_fixed}
+                                </Typography>
+                                <Label>TOTAL SUPPLY</Label>
+                                <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
+                                    {fNumber(amount)}
+                                </Typography>
+                                <Label>MARKET CAP</Label>
+                                <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
+                                    ${fNumber(marketcap)}
+                                </Typography>
                             </Stack>
                         </Grid>
                     </Grid>

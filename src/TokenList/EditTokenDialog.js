@@ -410,7 +410,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                             </IconButton>
                         </Tooltip>
                         <Tooltip title={'Cancel'}>
-                            <IconButton color='error' onClick={handleCancel} size="large" edge="end" aria-label="save">
+                            <IconButton color='error' onClick={handleClose} size="large" edge="end" aria-label="save">
                                 <CloseIcon fontSize="inherit"/>
                             </IconButton>
                         </Tooltip>

@@ -19,7 +19,7 @@ import {
     Close as CloseIcon
 } from '@mui/icons-material';
 
-const QRDialog = styled(Dialog) (({ theme }) => ({
+const ExDialog = styled(Dialog) (({ theme }) => ({
     backdropFilter: 'blur(2px)',
     WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
     backgroundColor: alpha(theme.palette.background.paper, 0.0),
@@ -31,8 +31,16 @@ const QRDialog = styled(Dialog) (({ theme }) => ({
         padding: theme.spacing(1),
     },
 }));
+
+const LinkTypography = styled(Typography)(({ theme }) => ({
+    // backgroundColor: alpha(theme.palette.background.paper, 0.0),
+    borderRadius: '2px',
+    border: '0px solid #00AB88',
+    padding: '0.5em',
+    // backgroundColor: alpha("#00AB88", 0.99),
+}));
   
-const QRDialogTitle = (props) => {
+const ExDialogTitle = (props) => {
     const { children, onClose, ...other } = props;
 
     return (
@@ -56,25 +64,18 @@ const QRDialogTitle = (props) => {
     );
 };
 
-export default function QRTrustDialog(props) {
+export default function QRDialog({open, type, qrUrl, nextUrl, onClose}) {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-    const open = props.open;
-    const qrUrl = props.qrUrl;
-    // const nextUrl = props.nextUrl;
     const [showQR, setShowQR] = useState(false);
 
     useEffect(() => {
         setShowQR(false);
     }, [open]);
 
-    const onClose = () => {
-        props.handleClose();
-    };
-
     return (
-        <QRDialog
+        <ExDialog
             fullScreen={fullScreen}
             fullWidth={true}
             maxWidth='xs'
@@ -82,13 +83,13 @@ export default function QRTrustDialog(props) {
             open={open}
             sx={{ zIndex: 1303 }}
         >
-            <QRDialogTitle textAlign="center" onClose={onClose}>
+            <ExDialogTitle textAlign="center" onClose={onClose}>
                 Sign Transaction
-            </QRDialogTitle>
+            </ExDialogTitle>
 
             <DialogContent dividers>
                 <Stack alignItems='center' spacing={2}>
-                    <Typography variant='subtitle1'>Trust Set</Typography>
+                    <Typography variant='subtitle1'>{type}</Typography>
                     <Typography variant='subtitle1'>Sign the transaction on your XUMM App</Typography>
                     <Link
                         component="button"
@@ -117,9 +118,10 @@ export default function QRTrustDialog(props) {
                         component="img"
                         alt="QR"
                         src={qrUrl}
+                        sx={{mb:2}}
                     />
                     
-                    {/* <Link
+                    <Link
                         underline="none"
                         color="inherit"
                         target="_blank"
@@ -127,9 +129,9 @@ export default function QRTrustDialog(props) {
                         rel="noreferrer noopener nofollow"
                     >
                         <LinkTypography variant="subtitle2" color='primary'>Open in XUMM</LinkTypography>
-                    </Link> */}
+                    </Link>
                 </div>
             </DialogContent>
-        </QRDialog>
+        </ExDialog>
     );
 }

@@ -999,6 +999,7 @@ export const XrplToLightTheme = createTheme({
         head: {
           // textTransform: 'uppercase',
           fontSize: 13,
+          whiteSpace: 'nowrap',
           // fontWeight: 'bold',
           // color: colors.alpha.black[70],
           // background: 'inherit'

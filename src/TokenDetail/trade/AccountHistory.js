@@ -28,7 +28,7 @@ import { tableCellClasses } from "@mui/material/TableCell";
 import CancelIcon from '@mui/icons-material/Cancel';
 
 // Components
-import QROfferDialog from './QROfferDialog';
+import QRDialog from 'src/components/QRDialog';
 
 // Utils
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
@@ -113,11 +113,11 @@ const SellTypography = withStyles({
     }
 })(Typography);
 
-const ConnectWalletContainer = styled('div')({
+const ConnectWalletContainer = styled(Box)({
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
-    height: '30vh'
+    alignItems: 'flex-end',
+    height: '10vh'
 });
 
 function truncate(str, n) {
@@ -285,12 +285,12 @@ export default function AccountHistory({pair}) {
 
     return (
         <StackStyle>
-            <QROfferDialog
+            <QRDialog
                 open={openScanQR}
-                handleClose={handleScanQRClose}
+                type="OfferCancel"
+                onClose={handleScanQRClose}
                 qrUrl={qrUrl}
                 nextUrl={nextUrl}
-                offerType='Cancel'
             />
             <Tabs value={tabValue} onChange={handleTabChange} aria-label="basic tabs example" sx={{mb: 3}}>
                 <Tab label="OPEN ORDERS" {...a11yProps(0)} />
@@ -626,12 +626,12 @@ export default function AccountHistory({pair}) {
                         </Table>
                     )
                 }
-                {!accountAddress && (
-                    <ConnectWalletContainer>
-                        <Typography variant='subtitle2' color='error'>Connect your wallet to access data</Typography>
-                    </ConnectWalletContainer>
-                )}
             </Box>
+            {!accountAddress && (
+                <ConnectWalletContainer>
+                    <Typography variant='subtitle2' color='error'>Connect your wallet to access data</Typography>
+                </ConnectWalletContainer>
+            )}
         </StackStyle>
     );
 }

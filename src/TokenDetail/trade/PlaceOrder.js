@@ -20,7 +20,7 @@ import { useDispatch } from "react-redux";
 import { refreshAccountData } from "src/redux/statusSlice";
 
 // Components
-import QROfferDialog from './QROfferDialog';
+import QRDialog from 'src/components/QRDialog';
 // ----------------------------------------------------------------------
 const DisabledButton = withStyles({
     root: {
@@ -247,12 +247,12 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 </DisabledButton>
             )}
 
-            <QROfferDialog
+            <QRDialog
                 open={openScanQR}
-                handleClose={handleScanQRClose}
+                type="OfferCreate"
+                onClose={handleScanQRClose}
                 qrUrl={qrUrl}
                 nextUrl={nextUrl}
-                offerType='Create'
             />
         </Stack>
     );

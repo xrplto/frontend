@@ -19,7 +19,7 @@ import {
 } from '@mui/icons-material';
 
 // Components
-import QRLoginDialog from './QRLoginDialog';
+import LoginDialog from 'src/components/LoginDialog';
 
 // Context
 import { useContext } from 'react'
@@ -240,7 +240,7 @@ export default function AccountBalance({pair}) {
                 </Stack>
             )}
 
-            <QRLoginDialog
+            <LoginDialog
                 open={openLogin}
                 handleClose={handleLoginClose}
                 qrUrl={qrUrl}
