@@ -1,6 +1,8 @@
 import axios from 'axios'
 import dynamic from 'next/dynamic';
+import useWebSocket from "react-use-websocket";
 import { useState, useEffect, useRef } from 'react';
+import { extractExchanges } from 'src/utils/tx';
 // import { BeatLoader } from "react-spinners";
 // import InfiniteScroll from "react-infinite-scroll-component";
 
@@ -44,8 +46,10 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
 }));
 
 // max-height: 440px;
-
+// https://codesandbox.io/s/q2xmq7?module=/src/App.tsx&file=/package.json:362-373
+// usehooks-ts npm
 export default function TokenList({data}) {
+    const WSS_URL = 'wss://ws.xrpl.to';
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
     const [filterName, setFilterName] = useState('');
@@ -66,6 +70,80 @@ export default function TokenList({data}) {
     const [trustToken, setTrustToken] = useState(null);
     // const [hasMore, setHasMore] = useState(true);
 
+    const didUnmount = useRef(false);
+    const {sendMessage, lastMessage, readyState} = useWebSocket(
+        `wss://api.xrpl.to/ws/sync`,
+        {
+            shouldReconnect: (closeEvent) => {
+                /*
+                    useWebSocket will handle unmounting for you, but this is an example of a 
+                    case in which you would not want it to automatically reconnect
+                */
+                console.log('shouldReconnect');
+                return didUnmount.current === false;
+            },
+            reconnectAttempts: 10,
+            reconnectInterval: 3000,
+        }
+    );
+
+    useEffect(() => {
+        return () => {
+          didUnmount.current = true;
+        };
+    }, []);
+
+    useEffect(() => {
+        try {
+            // [transactions24H, tradedXRP24H, tradedTokens24H, timeCalc24H, timeSchedule, CountApiCall];
+            const res = lastMessage.data;
+            const json = JSON.parse(res);
+
+            const newMetrics = {
+                count: json.count,
+                USD: json.exch.USD,
+                EUR: json.exch.EUR,
+                JPY: json.exch.JPY,
+                CNY: json.exch.CNY,
+                H24: json.H24,
+                global: json.global,
+            };
+            dispatch(update_metrics(newMetrics));
+
+            console.log(json.tokens);
+
+            var t1 = Date.now();
+
+            let cMap = new Map();
+            for (var nt of json.tokens) {
+                cMap.set(nt.md5, nt);
+            }
+
+            let newTokens = [];
+            let changed = false;
+            for (var token of tokens) {
+                const md5 = token.md5;
+                const nt = cMap.get(md5);
+                token.bearbull = 0;
+                if (nt) {
+                    if (token.exch > nt.exch)
+                        token.bearbull = -1;
+                    else
+                        token.bearbull = 1;
+                }
+                newTokens.push(token);
+            }
+            setTokens(newTokens);
+
+            var t2 = Date.now();
+            var dt = (t2 - t1).toFixed(2);
+
+            console.log(`${dt} ms`);
+
+            
+        } catch(err) {}
+    }, [lastMessage, dispatch]);
+
     useEffect(() => {
         const loadTokens=() => {
             // https://livenet.xrpl.org/api/v1/token/top
@@ -79,7 +157,7 @@ export default function TokenList({data}) {
                     if (res.status === 200 && res.data) {
                         const ret = res.data;
                         //console.log(ret);
-                        const metrics = {
+                        const newMetrics = {
                             count: ret.count,
                             length: ret.length,
                             USD: ret.exch.USD,
@@ -87,9 +165,9 @@ export default function TokenList({data}) {
                             JPY: ret.exch.JPY,
                             CNY: ret.exch.CNY,
                             H24: ret.H24,
-                            global: ret.global
+                            global: ret.global,
                         };
-                        dispatch(update_metrics(metrics));
+                        dispatch(update_metrics(newMetrics));
                         setTokens(ret.tokens);
                     }
                 } catch (error) {
@@ -110,6 +188,40 @@ export default function TokenList({data}) {
                 loadTokens();
         }
     }, [load]);
+
+    // Web socket process messages for tx
+    const processMessages = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            console.log(data);
+            // const tx = JSON.parse(event.data);
+            // const type = tx.TransactionType;
+            // console.log(type);
+            // if (['OfferCreate', 'Payment'].includes(type)) {
+            //     const exchanges = extractExchanges(tx);
+            //     if (exchanges.length === 0) return;
+            //     console.log(exchanges);
+            // }
+        } catch(err) {
+
+        }
+
+        // if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
+        //     const req = orderBook.id % 2;
+        //     //console.log(`Received id ${orderBook.id}`)
+        //     if (req === 1) {
+        //         const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS, asks);
+        //         setAsks(parsed);
+        //     }
+        //     if (req === 0) {
+        //         const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, bids);
+        //         setBids(parsed);
+        //         setTimeout(() => {
+        //             setClearNewFlag(true);
+        //         }, 2000);
+        //     }
+        // }
+    };
 
     const handleRequestSort = (event, id, no) => {
         const isDesc = orderBy === id && order === 'desc';

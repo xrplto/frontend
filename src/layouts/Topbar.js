@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 // Material
 import {
@@ -14,7 +14,7 @@ import {
 // Redux
 import { useSelector, useDispatch } from "react-redux";
 import { selectMetrics, update_metrics } from "src/redux/statusSlice";
-import useWebSocket/*, { ReadyState }*/ from 'react-use-websocket';
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 // ----------------------------------------------------------------------
 
 // Iconify Icons
@@ -82,57 +82,76 @@ function Rate(num) {
 }
 
 function Topbar({md5}) {
-    const dispatch = useDispatch();
     const metrics = useSelector(selectMetrics);
 
-    const {
-        sendMessage,
-        lastMessage,
-        readyState,
-    } = useWebSocket(`wss://api.xrpl.to/ws/detail/${md5}`);
+    // const dispatch = useDispatch();
+    // const didUnmount = useRef(false);
+    // const {sendMessage, lastMessage, readyState} = useWebSocket(
+    //     `wss://api.xrpl.to/ws/sync/${md5}`,
+    //     {
+    //         shouldReconnect: (closeEvent) => {
+    //             /*
+    //                 useWebSocket will handle unmounting for you, but this is an example of a 
+    //                 case in which you would not want it to automatically reconnect
+    //             */
+    //             console.log('shouldReconnect');
+    //             return didUnmount.current === false;
+    //         },
+    //         reconnectAttempts: 10,
+    //         reconnectInterval: 3000,
+    //     }
+    // );
 
-    /*const connectionStatus = {
-        [ReadyState.CONNECTING]: 'Connecting',
-        [ReadyState.OPEN]: 'Open',
-        [ReadyState.CLOSING]: 'Closing',
-        [ReadyState.CLOSED]: 'Closed',
-        [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-    } [readyState];*/
+    // useEffect(() => {
+    //     return () => {
+    //       didUnmount.current = true;
+    //     };
+    // }, []);
 
-    useEffect(() => {
-        try {
-            // [transactions24H, tradedXRP24H, tradedTokens24H, timeCalc24H, timeSchedule, CountApiCall];
-            const res = lastMessage.data;
-            const json = JSON.parse(res);
-            const metrics = {
-                count: json.count,
-                USD: json.exch.USD,
-                EUR: json.exch.EUR,
-                JPY: json.exch.JPY,
-                CNY: json.exch.CNY,
-                H24: json.H24,
-                global: json.global
-            };
-            dispatch(update_metrics(metrics));
-        } catch(err) {}
-    }, [lastMessage, dispatch]);
+    // // const connectionStatus = {
+    // //     [ReadyState.CONNECTING]: 'Connecting',
+    // //     [ReadyState.OPEN]: 'Open',
+    // //     [ReadyState.CLOSING]: 'Closing',
+    // //     [ReadyState.CLOSED]: 'Closed',
+    // //     [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
+    // // } [readyState];
 
-    useEffect(() => {
-        function getStatus() {
-            //if (connectionStatus === 'open')
-            if (md5)
-                sendMessage(md5);
-            else
-                sendMessage('Hello');
-        }
-        
-        const timer = setInterval(() => getStatus(), 10000)
+    // useEffect(() => {
+    //     try {
+    //         // [transactions24H, tradedXRP24H, tradedTokens24H, timeCalc24H, timeSchedule, CountApiCall];
+    //         const res = lastMessage.data;
+    //         const json = JSON.parse(res);
 
-        return () => {
-            clearInterval(timer);
-        }
-    }, [readyState, sendMessage, md5]);
-    
+    //         const newMetrics = {
+    //             count: json.count,
+    //             USD: json.exch.USD,
+    //             EUR: json.exch.EUR,
+    //             JPY: json.exch.JPY,
+    //             CNY: json.exch.CNY,
+    //             H24: json.H24,
+    //             global: json.global,
+    //         };
+    //         console.log(json.tokens);
+
+    //         dispatch(update_metrics(newMetrics));
+    //     } catch(err) {}
+    // }, [lastMessage, dispatch]);
+
+    // useEffect(() => {
+    //     function getStatus() {
+    //         if (connectionStatus === 'Open') {
+    //             const req = {md5, sync: metrics.sync};
+    //             sendMessage(JSON.stringify(req));
+    //         }
+    //     }
+
+    //     const timer = setInterval(() => getStatus(), 10000)
+
+    //     return () => {
+    //         clearInterval(timer);
+    //     }
+    // }, [connectionStatus, metrics, sendMessage, md5]);
+
     return (
         <TopWrapper>
             <Container maxWidth="xl">

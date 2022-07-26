@@ -10,7 +10,7 @@ const initialState = {
         JPY:100,
         CNY:100,
         H24: [0, 0, 0, 0],
-        global: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        global: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
     accountData: {
         balance: {},
@@ -61,7 +61,7 @@ export function configureRedux(data) {
                 JPY: data.exch.JPY,
                 CNY: data.exch.CNY,
                 H24: data.H24,
-                global: data.global
+                global: data.global,
             },
             accountData: {
                 balance: {},

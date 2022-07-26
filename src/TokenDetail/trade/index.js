@@ -91,8 +91,15 @@ export default function Trade({token}) {
     const [bidId, setBidId] = useState(-1); // Bid click Id
     const [askId, setAskId] = useState(-1); // Ask click Id
 
-    const [wsReady, setWsReady] = useState(false);
     const [clearNewFlag, setClearNewFlag] = useState(false);
+
+    const [wsReady, setWsReady] = useState(false);
+    const { sendJsonMessage/*, getWebSocket*/ } = useWebSocket(WSS_URL, {
+        onOpen: () => {setWsReady(true);},
+        onClose: () => {setWsReady(false);},
+        shouldReconnect: (closeEvent) => true,
+        onMessage: (event) => processMessages(event)
+    });
 
     useEffect(() => {
         let arr = [];
@@ -112,13 +119,6 @@ export default function Trade({token}) {
             setBids(arr);
         }
     }, [clearNewFlag, asks, bids]);
-
-    const { sendJsonMessage/*, getWebSocket*/ } = useWebSocket(WSS_URL, {
-        onOpen: () => {setWsReady(true);},
-        onClose: () => {setWsReady(false);},
-        shouldReconnect: (closeEvent) => true,
-        onMessage: (event) => processMessages(event)
-    });
 
     // Orderbook related useEffect - Start
     useEffect(() => {

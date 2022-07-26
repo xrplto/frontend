@@ -62,6 +62,7 @@ function truncate(str, n){
 export default function TokenRow({token, setEditToken, setTrustToken}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const metrics = useSelector(selectMetrics);
+    
     const { accountProfile } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
@@ -86,12 +87,21 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
         pro7d,
         pro24h,
         exch,
-        imgExt
+        imgExt,
+        bearbull
     } = token;
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
 
     const marketcap = amount * exch / metrics.USD;
+
+    let bullish = '';
+    if (bearbull) {
+        if (bearbull === -1)
+            bullish = '#B72136';
+        else if (bearbull === 1)
+            bullish = '#007B55';
+    }
 
     let date_fixed = '';
     try {
@@ -153,7 +163,13 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
                     </Link>
                 </Stack>
             </TableCell>
-            <TableCell align="right" sx={{pl:0, pr:0}}>
+            <TableCell align="right"
+                sx={{
+                    color: bullish,
+                    pl:0,
+                    pr:0,
+                }}
+            >
                 <Typography variant="h4" noWrap>
                     $ {fNumber(exch / metrics.USD)}
                 </Typography>
