@@ -22,8 +22,8 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Redux
-import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
+// import { useSelector } from "react-redux";
+// import { selectMetrics } from "src/redux/statusSlice";
 
 // Components
 import TokenMoreMenu from './TokenMoreMenu';
@@ -61,7 +61,7 @@ function truncate(str, n){
 
 export default function TokenRow({token, setEditToken, setTrustToken}) {
     const BASE_URL = 'https://api.xrpl.to/api';
-    const metrics = useSelector(selectMetrics);
+    const metrics = {USD:1}; // useSelector(selectMetrics);
     
     const { accountProfile } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;

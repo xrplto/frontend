@@ -28,7 +28,18 @@ const statusSlice = createSlice({
         // which detects changes to a "draft state" and produces a brand new
         // immutable state based off those changes
         update_metrics: (state, action) => {
-            Object.assign(state.metrics, action.payload);
+            const data = action.payload;
+            const metrics = {
+                count: data.count,
+                length: data.length,
+                USD: data.exch.USD,
+                EUR: data.exch.EUR,
+                JPY: data.exch.JPY,
+                CNY: data.exch.CNY,
+                H24: data.H24,
+                global: data.global,
+            };
+            Object.assign(state.metrics, metrics);
             // state.metrics = action.payload;
         },
         updateAccountData: (state, action) => {

@@ -1,6 +1,8 @@
 import axios from 'axios'
 import dynamic from 'next/dynamic';
 import { performance } from 'perf_hooks';
+import useWebSocket from "react-use-websocket";
+import { useState, useEffect, useRef } from 'react';
 
 // Material
 import {
@@ -10,6 +12,10 @@ import {
     styled,
     Toolbar
 } from '@mui/material';
+
+// Redux
+import { useDispatch } from "react-redux";
+import { update_metrics } from "src/redux/statusSlice";
 
 // Components
 import Topbar from 'src/layouts/Topbar';
@@ -35,6 +41,77 @@ const OverviewWrapper = styled(Box)(
 );
 
 function Overview({data}) {
+    const dispatch = useDispatch();
+    const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
+    const didUnmount = useRef(false);
+
+    useEffect(() => {
+        const websocket = new WebSocket(WSS_FEED_URL)
+        websocket.onopen = () => {
+            console.log('connected')
+        }
+
+        websocket.onmessage = (event) => {
+            processMessages(event);
+        }
+    
+        return () => {
+            websocket.close()
+        }
+      }, [])
+
+    // const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
+    //     onOpen: () => console.log('WebSocket connection opened.'),
+    //     onClose: () => console.log('WebSocket connection closed.'),
+    //     shouldReconnect: (closeEvent) => true,
+    //     onMessage: (event) =>  processMessages(event),
+    //     // reconnectAttempts: 10,
+    //     // reconnectInterval: 3000,
+    // });
+    
+    const processMessages = (event) => {
+        try {
+            // [transactions24H, tradedXRP24H, tradedTokens24H, timeCalc24H, timeSchedule, CountApiCall];
+            var t1 = Date.now();
+
+            const json = JSON.parse(event.data);
+
+            dispatch(update_metrics(json));
+
+            console.log(json.tokens);
+
+            // let cMap = new Map();
+            // for (var nt of json.tokens) {
+            //     cMap.set(nt.md5, nt);
+            // }
+
+            // let newTokens = [];
+            // let changed = false;
+            // for (var token of tokens) {
+            //     const md5 = token.md5;
+            //     const nt = cMap.get(md5);
+            //     token.bearbull = 0;
+            //     if (nt) {
+            //         if (token.exch > nt.exch)
+            //             token.bearbull = -1;
+            //         else
+            //             token.bearbull = 1;
+            //     }
+            //     newTokens.push(token);
+            // }
+            // setTokens(newTokens);
+
+            var t2 = Date.now();
+            var dt = (t2 - t1).toFixed(2);
+
+            console.log(`${dt} ms`);
+
+            
+        } catch(err) {
+            console.error(err);
+        }
+    };
+
     return (
         <OverviewWrapper>
             <Toolbar id="back-to-top-anchor" />
