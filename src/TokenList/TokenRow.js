@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+
+
 
 // Iconify
 import { Icon } from '@iconify/react';
