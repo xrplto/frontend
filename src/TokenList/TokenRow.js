@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-
-
+import VisibilitySensor from "react-visibility-sensor";
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -60,10 +59,9 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + '... ' : str;
 };
 
-export default function TokenRow({token, setEditToken, setTrustToken, admin}) {
+export default function TokenRow({isVisible , token, setEditToken, setTrustToken, admin}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const metrics = useSelector(selectMetrics);
-
     const {
         id,
         // issuer,
@@ -89,6 +87,9 @@ export default function TokenRow({token, setEditToken, setTrustToken, admin}) {
         bearbull
     } = token;
 
+    if (isVisible)
+        console.log(`${id} - ${isVisible ? 'visible' : 'hidden'}`);
+
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
 
     const marketcap = amount * exch / metrics.USD;
@@ -107,6 +108,10 @@ export default function TokenRow({token, setEditToken, setTrustToken, admin}) {
             date_fixed = date.split('T')[0];
         }
     } catch (e) { }
+
+    const onChangeVisibility = (isVisible) => {
+        // console.log(`${id} - ${isVisible ? 'visible' : 'hidden'}`);
+    }
 
     return (
         <TableRow

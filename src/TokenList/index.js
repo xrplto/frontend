@@ -1,7 +1,9 @@
 import axios from 'axios'
 // import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
+import LazyLoad from 'react-lazyload';
 import VisibilitySensor from "react-visibility-sensor";
+import TrackVisibility from 'react-on-screen';
 // import { extractExchanges } from 'src/utils/tx';
 // import { BeatLoader } from "react-spinners";
 
@@ -192,8 +194,6 @@ export default function TokenList({data}) {
                 }
             > */}
 
-            <ReactVirtualizedTable tokens={tokens}/>
-
             <Box
                 sx={{
                     display: "flex",
@@ -207,6 +207,7 @@ export default function TokenList({data}) {
                     "::-webkit-scrollbar": { display: "none" },
                 }}
             >
+                {/* <LazyLoad height={200}> */}
                 <Table>
                     <TokenListHead
                         order={order}
@@ -217,18 +218,13 @@ export default function TokenList({data}) {
                         {
                             tokens.slice(0, rows).map((row, idx) => {
                                     return (
-                                        <VisibilitySensor>
-                                        {({isVisible}) =>
-                                            <TokenRow
-                                                key={idx}
-                                                visible={isVisible}
-                                                token={row}
-                                                admin={admin}
-                                                setEditToken={setEditToken}
-                                                setTrustToken={setTrustToken}
-                                            />
-                                        }
-                                        </VisibilitySensor>
+                                        <TokenRow
+                                            key={idx}
+                                            token={row}
+                                            admin={admin}
+                                            setEditToken={setEditToken}
+                                            setTrustToken={setTrustToken}
+                                        />
                                     );
                                 })
                         }
