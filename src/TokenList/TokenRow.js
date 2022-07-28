@@ -46,6 +46,16 @@ const StickyTableCell = withStyles((theme) => ({
     }
 })) (TableCell);
 
+const TransTypo = styled(Typography)(
+    () => `
+        -webkit-transition: background-color 300ms linear, color 1s linear;
+        -moz-transition: background-color 300ms linear, color 1s linear;
+        -o-transition: background-color 300ms linear, color 1s linear;
+        -ms-transition: background-color 300ms linear, color 1s linear;
+        transition: background-color 300ms linear, color 1s linear;
+    `
+);
+
 const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
     '&:hover': {
         cursor: 'pointer',
@@ -59,7 +69,7 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + '... ' : str;
 };
 
-export default function TokenRow({isVisible , token, setEditToken, setTrustToken, admin}) {
+export default function TokenRow({token, setEditToken, setTrustToken, admin}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const metrics = useSelector(selectMetrics);
     const {
@@ -87,9 +97,6 @@ export default function TokenRow({isVisible , token, setEditToken, setTrustToken
         bearbull
     } = token;
 
-    if (isVisible)
-        console.log(`${id} - ${isVisible ? 'visible' : 'hidden'}`);
-
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
 
     const marketcap = amount * exch / metrics.USD;
@@ -97,9 +104,9 @@ export default function TokenRow({isVisible , token, setEditToken, setTrustToken
     let bullish = '';
     if (bearbull) {
         if (bearbull === -1)
-            bullish = '#B72136';
+            bullish = '#FF6C40';
         else if (bearbull === 1)
-            bullish = '#007B55';
+            bullish = '#54D62C';
     }
 
     let date_fixed = '';
@@ -108,10 +115,6 @@ export default function TokenRow({isVisible , token, setEditToken, setTrustToken
             date_fixed = date.split('T')[0];
         }
     } catch (e) { }
-
-    const onChangeVisibility = (isVisible) => {
-        // console.log(`${id} - ${isVisible ? 'visible' : 'hidden'}`);
-    }
 
     return (
         <TableRow
@@ -170,16 +173,17 @@ export default function TokenRow({isVisible , token, setEditToken, setTrustToken
                 sx={{
                     color: bullish,
                     pl:0,
-                    pr:0,
+                    pr:0
                 }}
             >
-                <Typography variant="h4" noWrap>
+                <TransTypo variant="h4" noWrap>
                     $ {fNumber(exch / metrics.USD)}
-                </Typography>
-                <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems='center'>
+                </TransTypo>
+                <TransTypo variant="h6" noWrap><Icon icon={rippleSolid} width={12} height={12}/> {fNumber(exch)}</TransTypo>
+                {/* <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems='center'>
                     <Icon icon={rippleSolid} width={12} height={12}/>
-                    <Typography variant="h6" noWrap>{fNumber(exch)}</Typography>
-                </Stack>
+                    <TransTypo variant="h6" noWrap>{fNumber(exch)}</TransTypo>
+                </Stack> */}
             </TableCell>
             <TableCell align="right" sx={{pl:0, pr:0}}>
                 <BearBullLabel value={pro24h} variant="h4" />

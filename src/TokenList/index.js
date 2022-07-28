@@ -16,6 +16,9 @@ import {
     TableBody
 } from '@mui/material';
 
+// Loader
+import { PulseLoader } from "react-spinners";
+
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -53,9 +56,12 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
 // https://codesandbox.io/s/q2xmq7?module=/src/App.tsx&file=/package.json:362-373
 // usehooks-ts npm
 export default function TokenList({data}) {
-    const WSS_URL = 'wss://ws.xrpl.to';
-    const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
+
+    const WSS_URL = 'wss://ws.xrpl.to';
+    const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
+    const BASE_URL = 'https://api.xrpl.to/api';
+    
     const [filterName, setFilterName] = useState('');
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
@@ -76,6 +82,95 @@ export default function TokenList({data}) {
 
     const { accountProfile } = useContext(AppContext);
     const admin = accountProfile && accountProfile.account && accountProfile.admin;
+
+    useEffect(() => {
+        const websocket = new WebSocket(WSS_FEED_URL)
+        websocket.onopen = () => {
+            console.log('connected')
+        }
+
+        websocket.onmessage = (event) => {
+            processMessages(event);
+        }
+    
+        return () => {
+            websocket.close()
+        }
+      }, [])
+
+    // const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
+    //     onOpen: () => console.log('WebSocket connection opened.'),
+    //     onClose: () => console.log('WebSocket connection closed.'),
+    //     shouldReconnect: (closeEvent) => true,
+    //     onMessage: (event) =>  processMessages(event),
+    //     // reconnectAttempts: 10,
+    //     // reconnectInterval: 3000,
+    // });
+    
+    const processMessages = (event) => {
+        try {
+            // [transactions24H, tradedXRP24H, tradedTokens24H, timeCalc24H, timeSchedule, CountApiCall];
+            var t1 = Date.now();
+
+            const json = JSON.parse(event.data);
+
+            dispatch(update_metrics(json));
+
+            // console.log(json.tokens);
+
+            // json.tokens = [
+            //     {
+            //         "md5": "0413ca7cfc258dfaf698c02fe304e607",
+            //         "exch": 0.023699995994735382,
+            //         "pro24h": -6.674273598810572,
+            //         "p24h": -0.000557907346761026,
+            //         "pro7d": 23.136049129452402,
+            //         "p7d": 0.0015705872139334812,
+            //         "vol24h": 3275628.9955383483,
+            //         "vol24htx": 964,
+            //         "vol24hx": 3275628.9955383483,
+            //         "vol24hxrp": 82279.51683999998
+            //     }
+            // ]
+
+            let cMap = new Map();
+            for (var nt of json.tokens) {
+                cMap.set(nt.md5, nt);
+            }
+
+            let newTokens = [];
+            let changed = false;
+            for (var token of tokens) {
+                const md5 = token.md5;
+                const nt = cMap.get(md5);
+                let original = token.bearbull;
+                let bearbull = 0;
+                if (nt) {
+                    if (token.exch > nt.exch)
+                        bearbull = -1;
+                    else
+                        bearbull = 1;
+                    Object.assign(token, nt);
+                }
+                if (bearbull !== original) {
+                    changed = true;
+                    token.bearbull = bearbull;
+                }
+                newTokens.push(token);
+            }
+            if (changed)
+                setTokens(newTokens);
+
+            var t2 = Date.now();
+            var dt = (t2 - t1).toFixed(2);
+
+            console.log(`${dt} ms`);
+
+            
+        } catch(err) {
+            console.error(err);
+        }
+    };
 
     useEffect(() => {
         const loadTokens=() => {
