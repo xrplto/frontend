@@ -4,7 +4,6 @@ import { configureStore } from "@reduxjs/toolkit";
 const initialState = {
     metrics: {
         count: 0,
-        length: 0,
         USD:100,
         EUR:100,
         JPY:100,
@@ -16,7 +15,8 @@ const initialState = {
         balance: {},
         offers:[]
     },
-    refreshAccount: 0
+    refreshAccount: 0,
+    filteredCount: 0
 }
 
 const statusSlice = createSlice({
@@ -31,7 +31,6 @@ const statusSlice = createSlice({
             const data = action.payload;
             const metrics = {
                 count: data.count,
-                length: data.length,
                 USD: data.exch.USD,
                 EUR: data.exch.EUR,
                 JPY: data.exch.JPY,
@@ -42,6 +41,10 @@ const statusSlice = createSlice({
             Object.assign(state.metrics, metrics);
             // state.metrics = action.payload;
         },
+        update_filteredCount: (state, action) => {
+            const data = action.payload;
+            state.filteredCount = data.length;
+        },
         updateAccountData: (state, action) => {
             state.accountData = action.payload;
         },
@@ -51,7 +54,7 @@ const statusSlice = createSlice({
     },
 });
 
-export const { update_metrics, updateAccountData, refreshAccountData } = statusSlice.actions;
+export const { update_metrics, update_filteredCount, updateAccountData, refreshAccountData } = statusSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
@@ -59,6 +62,7 @@ export const { update_metrics, updateAccountData, refreshAccountData } = statusS
 export const selectMetrics = (state) => state.status.metrics;
 export const selectAccountData = (state) => state.status.accountData;
 export const selectRefreshAccount = (state) => state.status.refreshAccount;
+export const selectFilteredCount = (state) => state.status.filteredCount;
 
 export function configureRedux(data) {
     let defaultState = initialState;
@@ -66,7 +70,6 @@ export function configureRedux(data) {
         defaultState = {
             metrics: {
                 count: data.count,
-                length: data.length,
                 USD: data.exch.USD,
                 EUR: data.exch.EUR,
                 JPY: data.exch.JPY,
@@ -78,7 +81,8 @@ export function configureRedux(data) {
                 balance: {},
                 offers:[]
             },
-            refreshAccount: 0
+            refreshAccount: 0,
+            filteredCount: data.length
         }
     }
 

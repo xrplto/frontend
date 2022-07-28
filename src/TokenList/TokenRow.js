@@ -17,13 +17,11 @@ import {
     Typography
 } from '@mui/material';
 
-// Context
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+
 
 // Redux
-// import { useSelector } from "react-redux";
-// import { selectMetrics } from "src/redux/statusSlice";
+import { useSelector } from "react-redux";
+import { selectMetrics } from "src/redux/statusSlice";
 
 // Components
 import TokenMoreMenu from './TokenMoreMenu';
@@ -59,12 +57,9 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + '... ' : str;
 };
 
-export default function TokenRow({token, setEditToken, setTrustToken}) {
+export default function TokenRow({token, setEditToken, setTrustToken, admin}) {
     const BASE_URL = 'https://api.xrpl.to/api';
-    const metrics = {USD:1}; // useSelector(selectMetrics);
-    
-    const { accountProfile } = useContext(AppContext);
-    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
+    const metrics = useSelector(selectMetrics);
 
     const {
         id,
@@ -121,7 +116,7 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
             <TableCell align="left" sx={{p:0}}>
                 <Stack direction="row" alignItems="center" spacing={2} sx={{p:0}}>
                     <Avatar sx={{ width: 56, height: 56 }}>
-                    {isAdmin ? (
+                    {admin ? (
                         <TokenImage
                             src={imgUrl} // use normal <img> attributes as props
                             width={56}
@@ -146,7 +141,7 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <Stack>
-                            {isAdmin && urlSlug === md5 ? (
+                            {admin && urlSlug === md5 ? (
                                 <Typography variant="token" color='#B72136' noWrap>{truncate(name, 8)}</Typography>
                             ):(
                                 <Typography variant="token" noWrap>{truncate(name, 8)}</Typography>
@@ -235,7 +230,7 @@ export default function TokenRow({token, setEditToken, setTrustToken}) {
             </TableCell> */}
 
             <TableCell align="right">
-                <TokenMoreMenu token={token} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
+                <TokenMoreMenu token={token} admin={admin} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
             </TableCell>
         </TableRow>
     );

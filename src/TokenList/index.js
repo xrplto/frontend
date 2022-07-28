@@ -1,7 +1,8 @@
 import axios from 'axios'
-import dynamic from 'next/dynamic';
-import { useState, useEffect, useRef } from 'react';
-import { extractExchanges } from 'src/utils/tx';
+// import dynamic from 'next/dynamic';
+import { useState, useEffect } from 'react';
+import { FixedSizeList as List } from 'react-window';
+// import { extractExchanges } from 'src/utils/tx';
 // import { BeatLoader } from "react-spinners";
 // import InfiniteScroll from "react-infinite-scroll-component";
 
@@ -13,6 +14,14 @@ import {
     TableBody
 } from '@mui/material';
 
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+
+// Redux
+import { useDispatch } from "react-redux";
+import { update_metrics, update_filteredCount } from "src/redux/statusSlice";
+
 // Components
 import EditToken from './EditToken';
 import TokenListHead from './TokenListHead';
@@ -21,14 +30,10 @@ import SearchToolbar from './SearchToolbar';
 import TokenRow from './TokenRow';
 import TrustSet from 'src/components/TrustSet';
 
-const DynamicTokenRow = dynamic(() => import('./TokenRow'));
+// const DynamicTokenRow = dynamic(() => import('./TokenRow'));
 // import WidgetNew from './WidgetNew';
 // import WidgetSlug from './WidgetSlug';
 // import WidgetDate from './WidgetDate';
-
-// Redux
-import { useDispatch, useSelector } from "react-redux";
-import { update_metrics, selectMetrics } from "src/redux/statusSlice";
 
 // ----------------------------------------------------------------------
 
@@ -48,7 +53,6 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
 // https://codesandbox.io/s/q2xmq7?module=/src/App.tsx&file=/package.json:362-373
 // usehooks-ts npm
 export default function TokenList({data}) {
-    const metrics = useSelector(selectMetrics);
     const WSS_URL = 'wss://ws.xrpl.to';
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
@@ -70,6 +74,9 @@ export default function TokenList({data}) {
     const [trustToken, setTrustToken] = useState(null);
     // const [hasMore, setHasMore] = useState(true);
 
+    const { accountProfile } = useContext(AppContext);
+    const admin = accountProfile && accountProfile.account && accountProfile.admin;
+
     useEffect(() => {
         const loadTokens=() => {
             // https://livenet.xrpl.org/api/v1/token/top
@@ -83,6 +90,7 @@ export default function TokenList({data}) {
                     if (res.status === 200 && res.data) {
                         const ret = res.data;
                         dispatch(update_metrics(ret));
+                        dispatch(update_filteredCount(ret));
                         setTokens(ret.tokens);
                     }
                 } catch (error) {
@@ -188,10 +196,17 @@ export default function TokenList({data}) {
     //     setHasMore(false);
     // };
 
+    const Row = ({ idx, style }) => (
+        <TokenRow key={idx} token={tokens[idx]} admin={admin} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
+        // <div className={index % 2 ? 'ListItemOdd' : 'ListItemEven'} style={style}>
+        //   Row {index}
+        // </div>
+    );
+
     return (
         <>
 
-            {/* {isAdmin &&
+            {/* {admin &&
                 <Stack sx={{ mt:2, mb:2, display: { xs: 'none', sm: 'none', md: 'none', lg: 'block' } }}>
                     <WidgetNew showNew={showNew} setShowNew={updateShowNew}/>
                     <WidgetSlug showSlug={showSlug} setShowSlug={updateShowSlug}/>
@@ -209,6 +224,7 @@ export default function TokenList({data}) {
                 onFilterName={handleFilterByName}
                 rows={rows}
                 setRows={updateRows}
+                admin={admin}
                 showNew={showNew} setShowNew={updateShowNew}
                 showSlug={showSlug} setShowSlug={updateShowSlug}
                 showDate={showDate} setShowDate={updateShowDate}
@@ -244,13 +260,22 @@ export default function TokenList({data}) {
                         onRequestSort={handleRequestSort}
                     />
                     <TableBody>
+                        <List
+                            className="List"
+                            height={150}
+                            itemCount={rows}
+                            itemSize={35}
+                            width={300}
+                        >
+                            {Row}
+                        </List>
                         {
-                        //filteredTokens.slice(page * rows, page * rows + rows)
-                        tokens.slice(0, rows).map((row, idx) => {
-                                return (
-                                    <DynamicTokenRow key={idx} token={row} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
-                                );
-                            })}
+                            // tokens.slice(0, rows).map((row, idx) => {
+                            //         return (
+                            //             <TokenRow key={idx} token={row} admin={admin} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
+                            //         );
+                            //     })
+                        }
                         {/* {emptyRows > 0 && (
                                 <TableRow style={{ height: 53 * emptyRows }}>
                                     <TableCell colSpan={6} />

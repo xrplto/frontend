@@ -43,7 +43,6 @@ const OverviewWrapper = styled(Box)(
 function Overview({data}) {
     const dispatch = useDispatch();
     const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-    const didUnmount = useRef(false);
 
     useEffect(() => {
         const websocket = new WebSocket(WSS_FEED_URL)

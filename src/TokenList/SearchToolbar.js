@@ -20,10 +20,6 @@ import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
 import { Icon } from '@iconify/react';
 import searchFill from '@iconify/icons-eva/search-fill';
 
-// Context
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
-
 // ----------------------------------------------------------------------
 const RootStyle = styled(Box)(({ theme }) => ({
     display: 'flex',
@@ -51,6 +47,7 @@ export default function SearchToolbar({
     onFilterName,
     rows,
     setRows,
+    admin,
     showNew,
     setShowNew,
     showSlug,
@@ -58,13 +55,10 @@ export default function SearchToolbar({
     showDate,
     setShowDate
 }) {
-    const { accountProfile } = useContext(AppContext);
 
     const handleChangeRows = (e) => {
         setRows(parseInt(e.target.value, 10));
     };
-
-    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     return (
         <RootStyle sx={{pl:1, pr:1}}>
@@ -82,7 +76,7 @@ export default function SearchToolbar({
             />
 
             <Stack direction='row' alignItems="center" sx={{ml: 2}}>
-                {isAdmin &&
+                {admin &&
                     <Stack direction='row' alignItems="center" sx={{mr: 2, mt: 0.5, display: { xs: 'none', sm: 'none', md: 'none', lg: 'block' }}}>
                         <IconButton onClick={() => { setShowNew(!showNew); }} >
                             <FiberNewIcon color={showNew?'error':'inherit'}/>

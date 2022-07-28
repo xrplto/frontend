@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 // ----------------------------------------------------------------------
 
-export default function TokenMoreMenu({token, setEditToken, setTrustToken}) {
+export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken}) {
     const ref = useRef(null);
     const {
         issuer,
@@ -26,10 +26,6 @@ export default function TokenMoreMenu({token, setEditToken, setTrustToken}) {
     } = token;
 
     const [isOpen, setIsOpen] = useState(false);
-    
-    const { accountProfile } = useContext(AppContext);
-
-    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     return (
         <>
@@ -47,7 +43,7 @@ export default function TokenMoreMenu({token, setEditToken, setTrustToken}) {
                 anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-                {isAdmin && (
+                {admin && (
                     <MenuItem onClick={() => {setIsOpen(false);setEditToken(token);}} disableRipple sx={{ color: 'text.secondary' }}>
                         <EditIcon color='error' sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Edit Token" primaryTypographyProps={{ variant: 'subtitle2', color:'error' }} />

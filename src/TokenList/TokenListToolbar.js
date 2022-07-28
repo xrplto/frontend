@@ -12,7 +12,7 @@ import {
 // ----------------------------------------------------------------------
 // Redux
 import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
+import { selectFilteredCount } from "src/redux/statusSlice";
 // ----------------------------------------------------------------------
 const RootStyle = styled(Box)(({ theme }) => ({
     display: 'flex',
@@ -29,8 +29,7 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 }));
 
 export default function TokenListToolbar({ rows, setRows, page, setPage}) {
-    const metrics = useSelector(selectMetrics);
-    const length = metrics.length;
+    const length = useSelector(selectFilteredCount);
 
     const num = length / rows;
     let page_count = Math.floor(num)
