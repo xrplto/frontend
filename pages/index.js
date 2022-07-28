@@ -130,7 +130,7 @@ function Overview({data}) {
                     </Grid>
                     <Grid item xs={12} md={12} lg={12} >
                         {/* <DynamicTokenList data={data}/> */}
-                        <TokenList data={data}/>
+                        <TokenList data={data} />
                     </Grid>
                     <Grid item xs={12} md={12} lg={12} >
                         <HowWeWork />
