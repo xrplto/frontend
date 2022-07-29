@@ -1,5 +1,6 @@
 import axios from 'axios'
 import React, { Suspense } from "react";
+import { TableVirtuoso } from 'react-virtuoso'
 // import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 import useWebSocket from "react-use-websocket";
@@ -8,6 +9,7 @@ import VisibilitySensor from "react-visibility-sensor";
 import TrackVisibility from 'react-on-screen';
 // import { extractExchanges } from 'src/utils/tx';
 // import { BeatLoader } from "react-spinners";
+import Virtuoso from './Virtuoso';
 
 // Material
 import { styled } from '@mui/material/styles';
@@ -141,7 +143,7 @@ export default function TokenList({data}) {
                 cMap.set(nt.md5, nt);
             }
 
-            let newTokens = [];
+            // let newTokens = [];
             let changed = false;
             for (var token of tokens) {
                 const md5 = token.md5;
@@ -159,7 +161,7 @@ export default function TokenList({data}) {
                     changed = true;
                     token.bearbull = bearbull;
                 }
-                newTokens.push(token);
+                // newTokens.push(token);
             }
             if (changed) {
                 // setTokens(newTokens);
@@ -307,6 +309,17 @@ export default function TokenList({data}) {
                     </div>
                 }
             > */}
+
+            <Virtuoso
+                tokens={tokens}
+                order={order}
+                orderBy={orderBy}
+                onRequestSort={handleRequestSort}
+
+                admin={admin}
+                setEditToken={setEditToken}
+                setTrustToken={setTrustToken}
+            />
 
             <Box
                 sx={{

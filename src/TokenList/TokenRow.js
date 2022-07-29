@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import React, { Suspense } from "react";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import VisibilitySensor from "react-visibility-sensor";
 
@@ -18,8 +19,6 @@ import {
     TableRow,
     Typography
 } from '@mui/material';
-
-
 
 // Redux
 import { useSelector } from "react-redux";
@@ -76,9 +75,9 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + '... ' : str;
 };
 
-export default function TokenRow({token, admin, setEditToken, setTrustToken}) {
+const TokenRow = React.memo(({token, admin, setEditToken, setTrustToken}) => {
     const BASE_URL = 'https://api.xrpl.to/api';
-    const metrics = useSelector(selectMetrics);
+    const metrics = {USD: 2}; // useSelector(selectMetrics);
     const {
         id,
         // issuer,
@@ -103,6 +102,8 @@ export default function TokenRow({token, admin, setEditToken, setTrustToken}) {
         imgExt,
         bearbull
     } = token;
+
+    // console.log(id);
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
 
@@ -251,4 +252,6 @@ export default function TokenRow({token, admin, setEditToken, setTrustToken}) {
             </TableCell>
         </TableRow>
     );
-}
+});
+
+export default TokenRow;

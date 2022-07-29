@@ -65,7 +65,10 @@
     "react-use-websocket": "^3.0.0",
     "react-copy-to-clipboard": "^5.1.0",
     "react-visibility-sensor": "^5.1.1",
-    "react-infinite-scroll-component": "6.1.0"
+    "react-infinite-scroll-component": "6.1.0",
+    "react-virtuoso": "^2.16.5",
+    "faker": "5.1.0",
+    "lodash": "latest"
   },
   "scripts": {
     "dev": "next",
