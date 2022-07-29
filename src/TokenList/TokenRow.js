@@ -76,7 +76,7 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + '... ' : str;
 };
 
-export default function TokenRow({token, admin, sync, bears, bulls, setEditToken, setTrustToken}) {
+export default function TokenRow({token, admin, setEditToken, setTrustToken}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const metrics = useSelector(selectMetrics);
     const {
@@ -100,7 +100,8 @@ export default function TokenRow({token, admin, sync, bears, bulls, setEditToken
         pro7d,
         pro24h,
         exch,
-        imgExt
+        imgExt,
+        bearbull
     } = token;
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
@@ -108,15 +109,10 @@ export default function TokenRow({token, admin, sync, bears, bulls, setEditToken
     const marketcap = amount * exch / metrics.USD;
 
     let priceColor = '';
-    if (sync === 0) {
-        if (pro24h < 0)
+    if (bearbull) {
+        if (bearbull === -1)
             priceColor = '#FF6C40';
-        else
-            priceColor = '#54D62C';
-    } else {
-        if (bears.includes(md5))
-            priceColor = '#FF6C40';
-        else if (bulls.includes(md5))
+        else if (bearbull === 1)
             priceColor = '#54D62C';
     }
 

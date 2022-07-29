@@ -95,6 +95,10 @@ export async function getStaticProps() {
 
         data = res.data;
 
+        for (var token of data.tokens) {
+            token.bearbull = token.pro24h < 0 ? -1:1;
+        }
+
         var t2 = performance.now();
         var dt = (t2 - t1).toFixed(2);
 

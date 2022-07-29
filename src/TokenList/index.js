@@ -78,37 +78,35 @@ export default function TokenList({data}) {
     const [editToken, setEditToken] = useState(null);
     const [trustToken, setTrustToken] = useState(null);
     
-    const [bears, setBears] = useState([]);
-    const [bulls, setBulls] = useState([]);
     const [sync, setSync] = useState(0);
     // const [hasMore, setHasMore] = useState(true);
 
     const { accountProfile } = useContext(AppContext);
     const admin = accountProfile && accountProfile.account && accountProfile.admin;
 
-    useEffect(() => {
-        const websocket = new WebSocket(WSS_FEED_URL)
-        websocket.onopen = () => {
-            console.log('connected')
-        }
+    // useEffect(() => {
+    //     const websocket = new WebSocket(WSS_FEED_URL)
+    //     websocket.onopen = () => {
+    //         console.log('connected')
+    //     }
 
-        websocket.onmessage = (event) => {
-            processMessages(event);
-        }
+    //     websocket.onmessage = (event) => {
+    //         processMessages(event);
+    //     }
     
-        return () => {
-            websocket.close()
-        }
-    }, [])
+    //     return () => {
+    //         websocket.close()
+    //     }
+    // }, [])
 
-    // const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-    //     onOpen: () => console.log('WS opened.'),
-    //     onClose: () => console.log('WS closed.'),
-    //     shouldReconnect: (closeEvent) => true,
-    //     onMessage: (event) =>  processMessages(event),
-    //     // reconnectAttempts: 10,
-    //     // reconnectInterval: 3000,
-    // });
+    const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
+        onOpen: () => console.log('WS opened.'),
+        onClose: () => console.log('WS closed.'),
+        shouldReconnect: (closeEvent) => true,
+        onMessage: (event) =>  processMessages(event),
+        // reconnectAttempts: 10,
+        // reconnectInterval: 3000,
+    });
     
     const processMessages = (event) => {
         try {
@@ -121,20 +119,22 @@ export default function TokenList({data}) {
 
             // console.log(json.tokens);
 
-            // json.tokens = [
-            //     {
-            //         "md5": "0413ca7cfc258dfaf698c02fe304e607",
-            //         "exch": 0.023699995994735382,
-            //         "pro24h": -6.674273598810572,
-            //         "p24h": -0.000557907346761026,
-            //         "pro7d": 23.136049129452402,
-            //         "p7d": 0.0015705872139334812,
-            //         "vol24h": 3275628.9955383483,
-            //         "vol24htx": 964,
-            //         "vol24hx": 3275628.9955383483,
-            //         "vol24hxrp": 82279.51683999998
-            //     }
-            // ]
+            t1 = Date.now();
+
+            json.tokens = [
+                {
+                    "md5": "0413ca7cfc258dfaf698c02fe304e607",
+                    "exch": 0.023699995994735382,
+                    "pro24h": -6.674273598810572,
+                    "p24h": -0.000557907346761026,
+                    "pro7d": 23.136049129452402,
+                    "p7d": 0.0015705872139334812,
+                    "vol24h": 3275628.9955383483,
+                    "vol24htx": 964,
+                    "vol24hx": 3275628.9955383483,
+                    "vol24hxrp": 82279.51683999998
+                }
+            ]
 
             let cMap = new Map();
             for (var nt of json.tokens) {
@@ -142,39 +142,34 @@ export default function TokenList({data}) {
             }
 
             let newTokens = [];
-            let newBears = [];
-            let newBulls = [];
-
             let changed = false;
             for (var token of tokens) {
                 const md5 = token.md5;
                 const nt = cMap.get(md5);
+                let original = token.bearbull;
+                let bearbull = 0;
                 if (nt) {
                     if (token.exch > nt.exch)
-                        newBears.push(md5);
+                        bearbull = -1;
                     else
-                        newBulls.push(md5);
+                        bearbull = 1;
                     Object.assign(token, nt);
-                    changed = true;
                 }
-                Object.assign(token, {exch: sync + 1});
+                if (bearbull !== original) {
+                    changed = true;
+                    token.bearbull = bearbull;
+                }
                 newTokens.push(token);
             }
             if (changed) {
-                //setBears(newBears);
-                //setBulls(newBulls);
                 // setTokens(newTokens);
                 setSync(sync + 1);
             }
 
-            setSync(sync + 1);
-
             var t2 = Date.now();
             var dt = (t2 - t1).toFixed(2);
 
-            console.log(`${sync} - ${dt} ms`);
-
-            
+            console.log(`${dt} ms`);
         } catch(err) {
             console.error(err);
         }
@@ -182,13 +177,18 @@ export default function TokenList({data}) {
 
     useEffect(() => {
         function clearSyncColors() {
-            setBears([]);
-            setBulls([]);
+            const newTokens = [];
+            for (var token of tokens) {
+                // Object.assign(token, {bearbull:0});
+                token.bearbull = 0;
+                newTokens.push(token);
+            }
+            setTokens(newTokens);
             console.log(`Clear bearbull ${sync}`);
         }
         setTimeout(() => {
             clearSyncColors();
-        }, 2000);
+        }, 3000);
     }, [sync]);
 
     useEffect(() => {
@@ -336,9 +336,6 @@ export default function TokenList({data}) {
                                             key={idx}
                                             token={row}
                                             admin={admin}
-                                            sync={sync}
-                                            bears={bears}
-                                            bulls={bulls}
                                             setEditToken={setEditToken}
                                             setTrustToken={setTrustToken}
                                         />
