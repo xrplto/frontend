@@ -56,11 +56,18 @@ const TransTypo = styled(Typography)(
     `
 );
 
-const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
+const AdminImage = styled(LazyLoadImage)(({ theme }) => ({
+    borderRadius: '50%',
+    overflow: 'hidden',
     '&:hover': {
         cursor: 'pointer',
         opacity: 0.6
     },
+}));
+
+const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
+    borderRadius: '50%',
+    overflow: 'hidden'
 }));
 
 function truncate(str, n){
@@ -69,7 +76,7 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + '... ' : str;
 };
 
-export default function TokenRow({token, setEditToken, setTrustToken, admin}) {
+export default function TokenRow({token, admin, sync, bears, bulls, setEditToken, setTrustToken}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const metrics = useSelector(selectMetrics);
     const {
@@ -93,20 +100,24 @@ export default function TokenRow({token, setEditToken, setTrustToken, admin}) {
         pro7d,
         pro24h,
         exch,
-        imgExt,
-        bearbull
+        imgExt
     } = token;
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
 
     const marketcap = amount * exch / metrics.USD;
 
-    let bullish = '';
-    if (bearbull) {
-        if (bearbull === -1)
-            bullish = '#FF6C40';
-        else if (bearbull === 1)
-            bullish = '#54D62C';
+    let priceColor = '';
+    if (sync === 0) {
+        if (pro24h < 0)
+            priceColor = '#FF6C40';
+        else
+            priceColor = '#54D62C';
+    } else {
+        if (bears.includes(md5))
+            priceColor = '#FF6C40';
+        else if (bulls.includes(md5))
+            priceColor = '#54D62C';
     }
 
     let date_fixed = '';
@@ -126,9 +137,8 @@ export default function TokenRow({token, setEditToken, setTrustToken, admin}) {
             <TableCell align="left">{id}</TableCell>
             <TableCell align="left" sx={{p:0}}>
                 <Stack direction="row" alignItems="center" spacing={2} sx={{p:0}}>
-                    <Avatar sx={{ width: 56, height: 56 }}>
                     {admin ? (
-                        <TokenImage
+                        <AdminImage
                             src={imgUrl} // use normal <img> attributes as props
                             width={56}
                             height={56}
@@ -136,14 +146,13 @@ export default function TokenRow({token, setEditToken, setTrustToken, admin}) {
                             onError={(event) => event.target.src = '/static/alt.png'}
                         />
                     ):(
-                        <LazyLoadImage
+                        <TokenImage
                             src={imgUrl} // use normal <img> attributes as props
                             width={56}
                             height={56}
                             onError={(event) => event.target.src = '/static/alt.png'}
                         />
                     )}
-                    </Avatar>
                     
                     <Link
                         underline="none"
@@ -171,7 +180,7 @@ export default function TokenRow({token, setEditToken, setTrustToken, admin}) {
             </TableCell>
             <TableCell align="right"
                 sx={{
-                    color: bullish,
+                    color: priceColor,
                     pl:0,
                     pr:0
                 }}

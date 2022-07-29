@@ -1,7 +1,6 @@
 import axios from 'axios'
 import dynamic from 'next/dynamic';
 import { performance } from 'perf_hooks';
-import useWebSocket from "react-use-websocket";
 import { useState, useEffect, useRef } from 'react';
 
 // Material
@@ -95,18 +94,6 @@ export async function getStaticProps() {
         const res = await axios.get(`${BASE_URL}/initial`);
 
         data = res.data;
-
-        const tokens = data.tokens;
-        const newTokens = [];
-
-        for (var token of tokens) {
-            const md5 = token.md5;
-            const pro24h = token.pro24h;
-            token.bearbull = pro24h < 0 ? -1:1;
-            newTokens.push(token);
-        }
-
-        data.tokens = newTokens;
 
         var t2 = performance.now();
         var dt = (t2 - t1).toFixed(2);

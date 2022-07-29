@@ -1,6 +1,8 @@
 import axios from 'axios'
+import React, { Suspense } from "react";
 // import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
+import useWebSocket from "react-use-websocket";
 import LazyLoad from 'react-lazyload';
 import VisibilitySensor from "react-visibility-sensor";
 import TrackVisibility from 'react-on-screen';
@@ -12,7 +14,6 @@ import { styled } from '@mui/material/styles';
 import {
     Box,
     Table,
-    TableCell,
     TableBody
 } from '@mui/material';
 
@@ -34,8 +35,6 @@ import TokenListToolbar from './TokenListToolbar';
 import SearchToolbar from './SearchToolbar';
 import TokenRow from './TokenRow';
 import TrustSet from 'src/components/TrustSet';
-
-import ReactVirtualizedTable from './ReactVirtualizedTable';
 
 // const DynamicTokenRow = dynamic(() => import('./TokenRow'));
 
@@ -78,6 +77,10 @@ export default function TokenList({data}) {
     const [load, setLoad] = useState(false);
     const [editToken, setEditToken] = useState(null);
     const [trustToken, setTrustToken] = useState(null);
+    
+    const [bears, setBears] = useState([]);
+    const [bulls, setBulls] = useState([]);
+    const [sync, setSync] = useState(0);
     // const [hasMore, setHasMore] = useState(true);
 
     const { accountProfile } = useContext(AppContext);
@@ -96,11 +99,11 @@ export default function TokenList({data}) {
         return () => {
             websocket.close()
         }
-      }, [])
+    }, [])
 
     // const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-    //     onOpen: () => console.log('WebSocket connection opened.'),
-    //     onClose: () => console.log('WebSocket connection closed.'),
+    //     onOpen: () => console.log('WS opened.'),
+    //     onClose: () => console.log('WS closed.'),
     //     shouldReconnect: (closeEvent) => true,
     //     onMessage: (event) =>  processMessages(event),
     //     // reconnectAttempts: 10,
@@ -139,38 +142,54 @@ export default function TokenList({data}) {
             }
 
             let newTokens = [];
+            let newBears = [];
+            let newBulls = [];
+
             let changed = false;
             for (var token of tokens) {
                 const md5 = token.md5;
                 const nt = cMap.get(md5);
-                let original = token.bearbull;
-                let bearbull = 0;
                 if (nt) {
                     if (token.exch > nt.exch)
-                        bearbull = -1;
+                        newBears.push(md5);
                     else
-                        bearbull = 1;
+                        newBulls.push(md5);
                     Object.assign(token, nt);
-                }
-                if (bearbull !== original) {
                     changed = true;
-                    token.bearbull = bearbull;
                 }
+                Object.assign(token, {exch: sync + 1});
                 newTokens.push(token);
             }
-            if (changed)
-                setTokens(newTokens);
+            if (changed) {
+                //setBears(newBears);
+                //setBulls(newBulls);
+                // setTokens(newTokens);
+                setSync(sync + 1);
+            }
+
+            setSync(sync + 1);
 
             var t2 = Date.now();
             var dt = (t2 - t1).toFixed(2);
 
-            console.log(`${dt} ms`);
+            console.log(`${sync} - ${dt} ms`);
 
             
         } catch(err) {
             console.error(err);
         }
     };
+
+    useEffect(() => {
+        function clearSyncColors() {
+            setBears([]);
+            setBulls([]);
+            console.log(`Clear bearbull ${sync}`);
+        }
+        setTimeout(() => {
+            clearSyncColors();
+        }, 2000);
+    }, [sync]);
 
     useEffect(() => {
         const loadTokens=() => {
@@ -317,6 +336,9 @@ export default function TokenList({data}) {
                                             key={idx}
                                             token={row}
                                             admin={admin}
+                                            sync={sync}
+                                            bears={bears}
+                                            bulls={bulls}
                                             setEditToken={setEditToken}
                                             setTrustToken={setTrustToken}
                                         />
