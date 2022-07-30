@@ -4,12 +4,6 @@ import { TableVirtuoso } from 'react-virtuoso'
 // import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 import useWebSocket from "react-use-websocket";
-import LazyLoad from 'react-lazyload';
-import VisibilitySensor from "react-visibility-sensor";
-import TrackVisibility from 'react-on-screen';
-// import { extractExchanges } from 'src/utils/tx';
-// import { BeatLoader } from "react-spinners";
-import Virtuoso from './Virtuoso';
 
 // Material
 import { styled } from '@mui/material/styles';
@@ -35,7 +29,7 @@ import EditToken from './EditToken';
 import TokenListHead from './TokenListHead';
 import TokenListToolbar from './TokenListToolbar';
 import SearchToolbar from './SearchToolbar';
-import TokenRow from './TokenRow';
+import {TokenRow} from './TokenRow';
 import TrustSet from 'src/components/TrustSet';
 
 // const DynamicTokenRow = dynamic(() => import('./TokenRow'));
@@ -53,6 +47,14 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
     "::-webkit-scrollbar": { display: "none" },
 }));
 
+
+function getInitialTokens(data) {
+    console.log('getInitialTokens is called!');
+    if (data)
+        return data.tokens;
+    return [];
+}
+
 // max-height: 440px;
 // https://codesandbox.io/s/q2xmq7?module=/src/App.tsx&file=/package.json:362-373
 // usehooks-ts npm
@@ -67,21 +69,22 @@ export default function TokenList({data}) {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
     const [order, setOrder] = useState('desc');
-    // -----------------------------------------------
+    
     const [orderBy, setOrderBy] = useState('vol24hxrp');
-    // -----------------------------------------------
-    const [rows, setRows] = useState(100);
-    const [showNew, setShowNew] = useState(false);
-    const [showSlug, setShowSlug] = useState(false);
-    const [showDate, setShowDate] = useState(false);
-    const [tokens, setTokens] = useState(data?data.tokens:[]); // useState(data?data.tokens.slice(0, 20):[]);
-    // const [allTokens, setAllTokens] = useState(data?data.tokens:[]);
+    
+    const [tokens, setTokens] = useState(() => getInitialTokens(data)); // useState(data?data.tokens.slice(0, 20):[]);
     const [load, setLoad] = useState(false);
     const [editToken, setEditToken] = useState(null);
     const [trustToken, setTrustToken] = useState(null);
     
     const [sync, setSync] = useState(0);
-    // const [hasMore, setHasMore] = useState(true);
+
+    // -----------------------------------------------
+    const [rows, setRows] = useState(100);
+    const [showNew, setShowNew] = useState(false);
+    const [showSlug, setShowSlug] = useState(false);
+    const [showDate, setShowDate] = useState(false);
+    // -----------------------------------------------
 
     const { accountProfile } = useContext(AppContext);
     const admin = accountProfile && accountProfile.account && accountProfile.admin;
@@ -143,7 +146,7 @@ export default function TokenList({data}) {
                 cMap.set(nt.md5, nt);
             }
 
-            // let newTokens = [];
+            //let newTokens = [];
             let changed = false;
             for (var token of tokens) {
                 const md5 = token.md5;
@@ -156,15 +159,18 @@ export default function TokenList({data}) {
                     else
                         bearbull = 1;
                     Object.assign(token, nt);
+                    token.time = Date.now();
+                    token.bearbull = bearbull;
                 }
                 if (bearbull !== original) {
                     changed = true;
+                    token.time = Date.now();
                     token.bearbull = bearbull;
                 }
-                // newTokens.push(token);
+                //newTokens.push(token);
             }
             if (changed) {
-                // setTokens(newTokens);
+                //setTokens(newTokens);
                 setSync(sync + 1);
             }
 
@@ -177,21 +183,39 @@ export default function TokenList({data}) {
         }
     };
 
-    useEffect(() => {
-        function clearSyncColors() {
-            const newTokens = [];
-            for (var token of tokens) {
-                // Object.assign(token, {bearbull:0});
-                token.bearbull = 0;
-                newTokens.push(token);
-            }
-            setTokens(newTokens);
-            console.log(`Clear bearbull ${sync}`);
-        }
-        setTimeout(() => {
-            clearSyncColors();
-        }, 3000);
-    }, [sync]);
+    // useEffect(() => {
+    //     function clearSyncColors() {
+    //         const newTokens = [];
+    //         for (var token of tokens) {
+    //             // Object.assign(token, {bearbull:0});
+    //             token.changed = Date.now();
+    //             token.bearbull = 0;
+    //             newTokens.push(token);
+    //         }
+    //         setTokens(newTokens);
+    //         console.log(`Clear bearbull ${sync}`);
+    //     }
+    //     setTimeout(() => {
+    //         clearSyncColors();
+    //     }, 2000);
+    // }, [sync]);
+
+    // useEffect(() => {
+    //     function clearSyncColors() {
+    //         // const newTokens = [];
+    //         for (var token of tokens) {
+    //             // Object.assign(token, {bearbull:0});
+    //             token.changed = Date.now();
+    //             token.bearbull = 0;
+    //             // newTokens.push(token);
+    //         }
+    //         setTokens(tokens);
+    //         console.log(`Clear bearbull ${sync}`);
+    //     }
+    //     setTimeout(() => {
+    //         clearSyncColors();
+    //     }, 2000);
+    // }, [tokens]);
 
     useEffect(() => {
         const loadTokens=() => {
@@ -273,6 +297,10 @@ export default function TokenList({data}) {
         setLoad(true);
     };
 
+
+    // This example works fine, but ours???
+    // https://codesandbox.io/s/wkxolyrpo5?file=/realTimeTable.js:0-4076
+
     return (
         <>
             {/* {admin &&
@@ -310,7 +338,7 @@ export default function TokenList({data}) {
                 }
             > */}
 
-            <Virtuoso
+            {/* <Virtuoso
                 tokens={tokens}
                 order={order}
                 orderBy={orderBy}
@@ -319,7 +347,7 @@ export default function TokenList({data}) {
                 admin={admin}
                 setEditToken={setEditToken}
                 setTrustToken={setTrustToken}
-            />
+            /> */}
 
             <Box
                 sx={{
@@ -344,9 +372,11 @@ export default function TokenList({data}) {
                     <TableBody>
                         {
                             tokens.slice(0, rows).map((row, idx) => {
+                                    // console.log(idx);
                                     return (
                                         <TokenRow
                                             key={idx}
+                                            time={row.time}
                                             token={row}
                                             admin={admin}
                                             setEditToken={setEditToken}

@@ -75,9 +75,36 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + '... ' : str;
 };
 
-const TokenRow = React.memo(({token, admin, setEditToken, setTrustToken}) => {
+function areEqual(prevProps, nextProps) {
+    /*
+    return true if passing nextProps to render would return
+    the same result as passing prevProps to render,
+    otherwise return false
+    */
+    const token1 = prevProps.token;
+    const token2 = nextProps.token;
+    const equal = JSON.stringify(token1) === JSON.stringify(token2);
+    const equal1 = token1.bearbull === token2.bearbull;
+    console.log(equal1);
+    return equal;
+}
+
+function getPriceColor(token) {
+    const bearbull = token.bearbull;
+    let color = '';
+    if (bearbull === -1)
+        color = '#FF6C40';
+    else if (bearbull === 1)
+        color = '#54D62C';
+    return color;
+}
+
+export const TokenRow = React.memo(fTokenRow);
+
+function fTokenRow({time, token, admin, setEditToken, setTrustToken}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const metrics = {USD: 2}; // useSelector(selectMetrics);
+    const [priceColor, setPriceColor] = useState('');
     const {
         id,
         // issuer,
@@ -99,23 +126,20 @@ const TokenRow = React.memo(({token, admin, setEditToken, setTrustToken}) => {
         pro7d,
         pro24h,
         exch,
-        imgExt,
-        bearbull
+        imgExt
     } = token;
 
-    // console.log(id);
+    useEffect(() => {
+        console.log(time);
+        setPriceColor(getPriceColor(token));
+        setTimeout(() => {
+            setPriceColor('');
+        }, 3000);
+    }, [time]);
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
 
     const marketcap = amount * exch / metrics.USD;
-
-    let priceColor = '';
-    if (bearbull) {
-        if (bearbull === -1)
-            priceColor = '#FF6C40';
-        else if (bearbull === 1)
-            priceColor = '#54D62C';
-    }
 
     let date_fixed = '';
     try {
@@ -129,7 +153,6 @@ const TokenRow = React.memo(({token, admin, setEditToken, setTrustToken}) => {
             hover
             key={id}
             tabIndex={-1}
-            role="checkbox"
         >
             <TableCell align="left">{id}</TableCell>
             <TableCell align="left" sx={{p:0}}>
@@ -252,6 +275,4 @@ const TokenRow = React.memo(({token, admin, setEditToken, setTrustToken}) => {
             </TableCell>
         </TableRow>
     );
-});
-
-export default TokenRow;
+};
