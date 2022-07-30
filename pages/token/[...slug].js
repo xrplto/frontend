@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
 import { performance } from 'perf_hooks';
+import { useState, useEffect } from 'react';
+import useWebSocket from "react-use-websocket";
 
 // Material
 import {
@@ -10,6 +10,10 @@ import {
     styled,
     Toolbar
 } from '@mui/material';
+
+// Redux
+import { useDispatch } from "react-redux";
+import { update_metrics } from "src/redux/statusSlice";
 
 // Components
 import Topbar from 'src/layouts/Topbar';
@@ -28,16 +32,47 @@ const OverviewWrapper = styled(Box)(
 );
 
 function Detail({data}) {
-    const token = data.token;
+    const dispatch = useDispatch();
+    const [token, setToken] = useState(() => data.token);
+    const WSS_FEED_URL = `wss://api.xrpl.to/ws/token/${token.md5}`;
+
+    const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
+        onOpen: () => console.log('WS opened.'),
+        onClose: () => console.log('WS closed.'),
+        shouldReconnect: (closeEvent) => true,
+        onMessage: (event) =>  processMessages(event),
+        // reconnectAttempts: 10,
+        // reconnectInterval: 3000,
+    });
+
+    const processMessages = (event) => {
+        try {
+            // [transactions24H, tradedXRP24H, tradedTokens24H, timeCalc24H, timeSchedule, CountApiCall];
+            var t1 = Date.now();
+
+            const json = JSON.parse(event.data);
+
+            dispatch(update_metrics(json));
+
+            setToken(json.token);
+
+            var t2 = Date.now();
+            var dt = (t2 - t1).toFixed(2);
+
+            console.log(`${dt} ms`);
+        } catch(err) {
+            console.error(err);
+        }
+    };
 
     return (
         <OverviewWrapper>
             <Toolbar id="back-to-top-anchor" />
-            <Topbar md5={token.md5}/>
+            <Topbar />
             <Header />
 
             <Container maxWidth="xl">
-                <TokenDetail data={data}/>
+                <TokenDetail token={token} tab={data.tab}/>
             </Container>
 
             <ScrollToTop />
@@ -50,9 +85,9 @@ function Detail({data}) {
 
 export default Detail;
 
-const BASE_URL = 'http://135.181.118.217/api';
-
 export async function getServerSideProps(ctx) {
+    const BASE_URL = 'http://135.181.118.217/api';
+
     let data = null;
     try {
 
@@ -63,11 +98,8 @@ export async function getServerSideProps(ctx) {
 
         var t1 = performance.now();
 
-        // https://api.xrpl.to/api/richlist/xrdoge-classic-xrdc?start=0&limit=10&freeze=false
-        const res = await axios.get(`${BASE_URL}/richlist/${slug}?start=0&limit=10&freeze=false`);
-
-        // https://api.xrpl.to/api/detail/bitstamp-usd
-        // const res = await axios.get(`${BASE_URL}/token/${slug}`);
+        // https://api.xrpl.to/api/token/bitstamp-usd
+        const res = await axios.get(`${BASE_URL}/token/${slug}`);
 
         data = res.data;
         if (tab)

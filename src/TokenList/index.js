@@ -1,6 +1,5 @@
 import axios from 'axios'
 import React, { Suspense } from "react";
-import { TableVirtuoso } from 'react-virtuoso'
 // import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 import useWebSocket from "react-use-websocket";
@@ -13,16 +12,13 @@ import {
     TableBody
 } from '@mui/material';
 
-// Loader
-import { PulseLoader } from "react-spinners";
-
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Redux
-import { useDispatch } from "react-redux";
-import { update_metrics, update_filteredCount } from "src/redux/statusSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { update_metrics, update_filteredCount, selectMetrics } from "src/redux/statusSlice";
 
 // Components
 import EditToken from './EditToken';
@@ -47,19 +43,12 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
     "::-webkit-scrollbar": { display: "none" },
 }));
 
-
-function getInitialTokens(data) {
-    console.log('getInitialTokens is called!');
-    if (data)
-        return data.tokens;
-    return [];
-}
-
 // max-height: 440px;
 // https://codesandbox.io/s/q2xmq7?module=/src/App.tsx&file=/package.json:362-373
 // usehooks-ts npm
-export default function TokenList({data}) {
+export default function TokenList({tokens, setTokens, tMap}) {
     const dispatch = useDispatch();
+    const metrics = useSelector(selectMetrics);
 
     const WSS_URL = 'wss://ws.xrpl.to';
     const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
@@ -71,14 +60,11 @@ export default function TokenList({data}) {
     const [order, setOrder] = useState('desc');
     
     const [orderBy, setOrderBy] = useState('vol24hxrp');
-    
-    const [tokens, setTokens] = useState(() => getInitialTokens(data)); // useState(data?data.tokens.slice(0, 20):[]);
+
     const [load, setLoad] = useState(false);
     const [editToken, setEditToken] = useState(null);
     const [trustToken, setTrustToken] = useState(null);
     
-    const [sync, setSync] = useState(0);
-
     // -----------------------------------------------
     const [rows, setRows] = useState(100);
     const [showNew, setShowNew] = useState(false);
@@ -112,6 +98,22 @@ export default function TokenList({data}) {
         // reconnectAttempts: 10,
         // reconnectInterval: 3000,
     });
+
+    const applyTokenChanges = (newTokens) => {
+        for (var t of newTokens) {
+            const token = tMap.get(t.md5);
+            if (token) {
+                let bearbull = 1;
+                if (token.exch > t.exch)
+                    bearbull = -1;
+                
+                token.time = Date.now();
+                token.bearbull = bearbull;
+
+                Object.assign(token, t);
+            }
+        }
+    }
     
     const processMessages = (event) => {
         try {
@@ -122,56 +124,23 @@ export default function TokenList({data}) {
 
             dispatch(update_metrics(json));
 
-            // console.log(json.tokens);
+            // json.tokens = [
+            //     {
+            //         "md5": "0413ca7cfc258dfaf698c02fe304e607",
+            //         "exch": 0.023699995994735382,
+            //         "pro24h": -6.674273598810572,
+            //         "p24h": -0.000557907346761026,
+            //         "pro7d": 23.136049129452402,
+            //         "p7d": 0.0015705872139334812,
+            //         "vol24h": 3275628.9955383483,
+            //         "vol24htx": 964,
+            //         "vol24hx": 3275628.9955383483,
+            //         "vol24hxrp": 82279.51683999998
+            //     }
+            // ]
 
-            t1 = Date.now();
-
-            json.tokens = [
-                {
-                    "md5": "0413ca7cfc258dfaf698c02fe304e607",
-                    "exch": 0.023699995994735382,
-                    "pro24h": -6.674273598810572,
-                    "p24h": -0.000557907346761026,
-                    "pro7d": 23.136049129452402,
-                    "p7d": 0.0015705872139334812,
-                    "vol24h": 3275628.9955383483,
-                    "vol24htx": 964,
-                    "vol24hx": 3275628.9955383483,
-                    "vol24hxrp": 82279.51683999998
-                }
-            ]
-
-            let cMap = new Map();
-            for (var nt of json.tokens) {
-                cMap.set(nt.md5, nt);
-            }
-
-            //let newTokens = [];
-            let changed = false;
-            for (var token of tokens) {
-                const md5 = token.md5;
-                const nt = cMap.get(md5);
-                let original = token.bearbull;
-                let bearbull = 0;
-                if (nt) {
-                    if (token.exch > nt.exch)
-                        bearbull = -1;
-                    else
-                        bearbull = 1;
-                    Object.assign(token, nt);
-                    token.time = Date.now();
-                    token.bearbull = bearbull;
-                }
-                if (bearbull !== original) {
-                    changed = true;
-                    token.time = Date.now();
-                    token.bearbull = bearbull;
-                }
-                //newTokens.push(token);
-            }
-            if (changed) {
-                //setTokens(newTokens);
-                setSync(sync + 1);
+            if (json.tokens && json.tokens.length > 0) {
+                applyTokenChanges(json.tokens);
             }
 
             var t2 = Date.now();
@@ -182,40 +151,6 @@ export default function TokenList({data}) {
             console.error(err);
         }
     };
-
-    // useEffect(() => {
-    //     function clearSyncColors() {
-    //         const newTokens = [];
-    //         for (var token of tokens) {
-    //             // Object.assign(token, {bearbull:0});
-    //             token.changed = Date.now();
-    //             token.bearbull = 0;
-    //             newTokens.push(token);
-    //         }
-    //         setTokens(newTokens);
-    //         console.log(`Clear bearbull ${sync}`);
-    //     }
-    //     setTimeout(() => {
-    //         clearSyncColors();
-    //     }, 2000);
-    // }, [sync]);
-
-    // useEffect(() => {
-    //     function clearSyncColors() {
-    //         // const newTokens = [];
-    //         for (var token of tokens) {
-    //             // Object.assign(token, {bearbull:0});
-    //             token.changed = Date.now();
-    //             token.bearbull = 0;
-    //             // newTokens.push(token);
-    //         }
-    //         setTokens(tokens);
-    //         console.log(`Clear bearbull ${sync}`);
-    //     }
-    //     setTimeout(() => {
-    //         clearSyncColors();
-    //     }, 2000);
-    // }, [tokens]);
 
     useEffect(() => {
         const loadTokens=() => {
@@ -372,10 +307,10 @@ export default function TokenList({data}) {
                     <TableBody>
                         {
                             tokens.slice(0, rows).map((row, idx) => {
-                                    // console.log(idx);
                                     return (
                                         <TokenRow
                                             key={idx}
+                                            mUSD = {metrics.USD}
                                             time={row.time}
                                             token={row}
                                             admin={admin}

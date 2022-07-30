@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react';
 
-
 // Material
 import {
     Box,
@@ -15,19 +14,19 @@ import {
 // Components
 import LinkCascade from './LinkCascade';
 import Common from './common';
-// import Overview from './overview';
-// import Market from './market';
-// import Trade from './trade';
-// import History from './history';
-// import RichList from './richlist';
-// import Wallet from './wallet';
+import Overview from './overview';
+import Market from './market';
+import Trade from './trade';
+import History from './history';
+import RichList from './richlist';
+import Wallet from './wallet';
 
-const DynamicOverview = dynamic(() => import('./overview'));
-const DynamicMarket = dynamic(() => import('./market'));
-const DynamicTrade = dynamic(() => import('./trade'));
-const DynamicHistory = dynamic(() => import('./history'));
-const DynamicRichList = dynamic(() => import('./richlist'));
-const DynamicWallet = dynamic(() => import('./wallet'));
+// const DynamicOverview = dynamic(() => import('./overview'));
+// const DynamicMarket = dynamic(() => import('./market'));
+// const DynamicTrade = dynamic(() => import('./trade'));
+// const DynamicHistory = dynamic(() => import('./history'));
+// const DynamicRichList = dynamic(() => import('./richlist'));
+// const DynamicWallet = dynamic(() => import('./wallet'));
 
 // ---------------------------------------------------
 
@@ -78,12 +77,8 @@ function getTabID(tab) {
     return idx;
 }
 
-export default function TokenDetail({data}) {
-    const router = useRouter();
-
-    const token = data.token;
-
-    const [tabID, setTabID] = useState(getTabID(data.tab));
+export default function TokenDetail({token, tab}) {
+    const [tabID, setTabID] = useState(getTabID(tab));
 
     const gotoTabView = (event) => {
         const anchor = (event.target.ownerDocument || document).querySelector(
@@ -128,22 +123,22 @@ export default function TokenDetail({data}) {
                 <Tab value={5} label={tabLabels[5]} {...a11yProps(5)} />
             </Tabs>
             <TabPanel value={tabID} id={0}>
-                <DynamicOverview token={token} />
+                <Overview token={token} />
             </TabPanel>
             <TabPanel value={tabID} id={1}>
-                <DynamicMarket token={token}/>
+                <Market token={token}/>
             </TabPanel>
             <TabPanel value={tabID} id={2}>
-                <DynamicTrade token={token} />
+                <Trade token={token} />
             </TabPanel>
             <TabPanel value={tabID} id={3}>
-                <DynamicHistory token={token} />
+                <History token={token} />
             </TabPanel>
             <TabPanel value={tabID} id={4}>
-                <DynamicRichList data={data}/>
+                <RichList token={token}/>
             </TabPanel>
             <TabPanel value={tabID} id={5}>
-                <DynamicWallet data={data}/>
+                <Wallet />
             </TabPanel>
         </>
     );

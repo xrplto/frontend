@@ -12,10 +12,6 @@ import {
     Toolbar
 } from '@mui/material';
 
-// Redux
-import { useDispatch } from "react-redux";
-import { update_metrics } from "src/redux/statusSlice";
-
 // Components
 import Topbar from 'src/layouts/Topbar';
 import Header from 'src/TokenList/Header';
@@ -39,12 +35,27 @@ const OverviewWrapper = styled(Box)(
 `
 );
 
+function getInitialTokens(data) {
+    console.log('getInitialTokens is called!');
+    if (data)
+        return data.tokens;
+    return [];
+}
+
 function Overview({data}) {
+    const [tokens, setTokens] = useState(() => getInitialTokens(data));
+
+    const tMap = new Map();
+    for (var t of tokens) {
+        tMap.set(t.md5, t);
+    }
+
+    console.log('~~~OVERVIEW~~~')
 
     return (
         <OverviewWrapper>
             <Toolbar id="back-to-top-anchor" />
-            <Topbar md5={'NONE'}/>
+            <Topbar />
             <Header />
             
             <Container maxWidth="xl">
@@ -60,7 +71,11 @@ function Overview({data}) {
                     </Grid>
                     <Grid item xs={12} md={12} lg={12} >
                         {/* <DynamicTokenList data={data}/> */}
-                        <TokenList data={data} />
+                        <TokenList
+                            tokens={tokens}
+                            tMap={tMap}
+                            setTokens={setTokens}
+                        />
                     </Grid>
                     <Grid item xs={12} md={12} lg={12} >
                         <HowWeWork />

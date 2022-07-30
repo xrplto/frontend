@@ -68,11 +68,6 @@ const Separator = styled('span')(({ theme }) => ({
     fontSize: '0.4rem'
 }));
 
-// const ContentTypography = withStyles({
-//     root: {
-//         color: alpha('#919EAB', 0.99)
-//     }
-// })(Typography);
 // ----------------------------------------------------------------------
 
 function Rate(num) {
@@ -81,76 +76,8 @@ function Rate(num) {
     return fCurrency3(1 / num);
 }
 
-function Topbar({md5}) {
+export default function Topbar() {
     const metrics = useSelector(selectMetrics);
-
-    // const dispatch = useDispatch();
-    // const didUnmount = useRef(false);
-    // const {sendMessage, lastMessage, readyState} = useWebSocket(
-    //     `wss://api.xrpl.to/ws/sync/${md5}`,
-    //     {
-    //         shouldReconnect: (closeEvent) => {
-    //             /*
-    //                 useWebSocket will handle unmounting for you, but this is an example of a 
-    //                 case in which you would not want it to automatically reconnect
-    //             */
-    //             console.log('shouldReconnect');
-    //             return didUnmount.current === false;
-    //         },
-    //         reconnectAttempts: 10,
-    //         reconnectInterval: 3000,
-    //     }
-    // );
-
-    // useEffect(() => {
-    //     return () => {
-    //       didUnmount.current = true;
-    //     };
-    // }, []);
-
-    // // const connectionStatus = {
-    // //     [ReadyState.CONNECTING]: 'Connecting',
-    // //     [ReadyState.OPEN]: 'Open',
-    // //     [ReadyState.CLOSING]: 'Closing',
-    // //     [ReadyState.CLOSED]: 'Closed',
-    // //     [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-    // // } [readyState];
-
-    // useEffect(() => {
-    //     try {
-    //         // [transactions24H, tradedXRP24H, tradedTokens24H, timeCalc24H, timeSchedule, CountApiCall];
-    //         const res = lastMessage.data;
-    //         const json = JSON.parse(res);
-
-    //         const newMetrics = {
-    //             count: json.count,
-    //             USD: json.exch.USD,
-    //             EUR: json.exch.EUR,
-    //             JPY: json.exch.JPY,
-    //             CNY: json.exch.CNY,
-    //             H24: json.H24,
-    //             global: json.global,
-    //         };
-    //         console.log(json.tokens);
-
-    //         dispatch(update_metrics(newMetrics));
-    //     } catch(err) {}
-    // }, [lastMessage, dispatch]);
-
-    // useEffect(() => {
-    //     function getStatus() {
-    //         if (connectionStatus === 'Open') {
-    //             const req = {md5, sync: metrics.sync};
-    //             sendMessage(JSON.stringify(req));
-    //         }
-    //     }
-
-    //     const timer = setInterval(() => getStatus(), 10000)
-
-    //     return () => {
-    //         clearInterval(timer);
-    //     }
-    // }, [connectionStatus, metrics, sendMessage, md5]);
 
     return (
         <TopWrapper>
@@ -203,6 +130,4 @@ function Topbar({md5}) {
         </TopWrapper>
     );
 }
-
-export default Topbar;
 
