@@ -33,7 +33,7 @@ function Rate(num, exch) {
     return fNumber(num / exch);
 }
 
-export default function Summary({data}) {
+export default function Summary() {
     const [showContent, setShowContent] = useState(false);
     return (
         <Stack sx={{pt:2, pl:2.5}}>

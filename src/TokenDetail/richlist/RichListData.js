@@ -57,8 +57,8 @@ export default function RichListData({token}) {
 
     useEffect(() => {
         function getRichList() {
-            // https://api.xrpl.to/api/richlist/xrdoge-classic-xrdc?start=0&limit=100&freeze=false
-            axios.get(`${BASE_URL}/richlist/${urlSlug}?start=${page*rows}&limit=${rows}&freeze=${frozen}`)
+            // https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=100&freeze=false
+            axios.get(`${BASE_URL}/richlist/${token.md5}?start=${page*rows}&limit=${rows}&freeze=${frozen}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {

@@ -17,8 +17,6 @@ import { Chart } from 'src/components/Chart';
 // Components
 import ChartOptions from './ChartOptions';
 
-// Utils
-import { fCurrency5, fNumber } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
 function extractGraphData(items) {
     // const info = {time, length, top10, top20, top50, top100, active24H};

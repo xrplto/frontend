@@ -1,32 +1,13 @@
-import { useState } from 'react';
+import axios from 'axios';
 import Decimal from 'decimal.js';
+import { useState, useEffect } from 'react';
 
 // Material
-import { withStyles } from '@mui/styles';
 import {
-    alpha, styled, useTheme,
-    Avatar,
-    Box,
-    Button,
+    styled,
     CardHeader,
-    Chip,
-    Grid,
-    IconButton,
-    Link,
-    Rating,
-    Stack,
-    Tooltip,
-    Typography
+    Stack
 } from '@mui/material';
-
-// Components
-
-// Redux
-import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
-
-// Utils
-import { fNumber } from 'src/utils/formatNumber';
 
 // Chart
 import { Chart } from 'src/components/Chart';
@@ -58,8 +39,27 @@ function getSeries(richList) {
 
     return series;
 }
-export default function Donut({richList}) {
-    const theme = useTheme();
+export default function Donut({token}) {
+    const BASE_URL = 'https://api.xrpl.to/api';
+    const [richList, setRichList] = useState([]);
+
+    useEffect(() => {
+        function getTop10RichList() {
+            // https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=10&freeze=false
+            axios.get(`${BASE_URL}/richlist/${token.md5}?start=0&limit=10&freeze=false`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        setRichList(ret.richList);
+                    }
+                }).catch(err => {
+                    console.log("Error on getting richlist!", err);
+                }).then(function () {
+                    // always executed
+                });
+        }
+        getTop10RichList();
+    }, []);
 
     const state = {
         series: getSeries(richList),

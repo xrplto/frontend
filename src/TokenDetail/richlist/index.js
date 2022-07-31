@@ -1,3 +1,4 @@
+
 // Material
 import {
     Grid,
@@ -10,12 +11,11 @@ import TopListChart from './TopListChart';
 import RichStatistics from './RichStatistics';
 import Donut from './Donut';
 import RichListData from './RichListData';
+
 // ----------------------------------------------------------------------
 
-export default function RichList({data}) {
-    const token = data.token;
-    const richInfo = data.richInfo;
-    const richList = data.richList;
+export default function RichList({token}) {
+
     return (
         <Grid container spacing={3} sx={{p:0}}>
             <Grid item xs={12} md={12} lg={8}>
@@ -23,7 +23,7 @@ export default function RichList({data}) {
             </Grid>
 
             <Grid item xs={12} md={12} lg={4}>
-                <RichStatistics token={token} richInfo={richInfo} />
+                <RichStatistics token={token} />
             </Grid>
 
             <Grid item xs={12} md={12} lg={8}>
@@ -31,7 +31,7 @@ export default function RichList({data}) {
             </Grid>
 
             <Grid item xs={12} md={12} lg={4}>
-                <Donut richList={richList}/>
+                <Donut token={token} />
             </Grid>
 
             <Grid item xs={12} md={12} lg={12}>

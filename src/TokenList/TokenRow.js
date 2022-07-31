@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import React, { Suspense } from "react";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import VisibilitySensor from "react-visibility-sensor";
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -19,10 +18,6 @@ import {
     TableRow,
     Typography
 } from '@mui/material';
-
-// Redux
-import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
 
 // Components
 import TokenMoreMenu from './TokenMoreMenu';
@@ -84,8 +79,6 @@ function areEqual(prevProps, nextProps) {
     const token1 = prevProps.token;
     const token2 = nextProps.token;
     const equal = JSON.stringify(token1) === JSON.stringify(token2);
-    const equal1 = token1.bearbull === token2.bearbull;
-    console.log(equal1);
     return equal;
 }
 
@@ -101,9 +94,8 @@ function getPriceColor(token) {
 
 export const TokenRow = React.memo(fTokenRow);
 
-function fTokenRow({time, token, admin, setEditToken, setTrustToken}) {
+function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
     const BASE_URL = 'https://api.xrpl.to/api';
-    const metrics = {USD: 2}; // useSelector(selectMetrics);
     const [priceColor, setPriceColor] = useState('');
     const {
         id,
@@ -130,7 +122,6 @@ function fTokenRow({time, token, admin, setEditToken, setTrustToken}) {
     } = token;
 
     useEffect(() => {
-        console.log(time);
         setPriceColor(getPriceColor(token));
         setTimeout(() => {
             setPriceColor('');
@@ -139,7 +130,8 @@ function fTokenRow({time, token, admin, setEditToken, setTrustToken}) {
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
 
-    const marketcap = amount * exch / metrics.USD;
+    const price = fNumber(exch / mUSD);
+    const marketcap = amount * exch / mUSD;
 
     let date_fixed = '';
     try {
@@ -206,7 +198,7 @@ function fTokenRow({time, token, admin, setEditToken, setTrustToken}) {
                 }}
             >
                 <TransTypo variant="h4" noWrap>
-                    $ {fNumber(exch / metrics.USD)}
+                    $ {price}
                 </TransTypo>
                 <TransTypo variant="h6" noWrap><Icon icon={rippleSolid} width={12} height={12}/> {fNumber(exch)}</TransTypo>
                 {/* <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems='center'>

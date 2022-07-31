@@ -1,3 +1,6 @@
+import axios from 'axios';
+import { useState, useEffect } from 'react';
+
 // Material
 import { withStyles } from '@mui/styles';
 import {
@@ -11,13 +14,6 @@ import {
     TableCell
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
-
-// Components
-import BearBullLabel from 'src/layouts/BearBullLabel';
-
-// Redux
-import { useSelector/*, useDispatch*/ } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
 
 // Utils
 import { fIntNumber, fCurrency3, fNumber } from 'src/utils/formatNumber';
@@ -52,48 +48,30 @@ const badge24hStyle = {
 };
 // ----------------------------------------------------------------------
 
-export default function RichStatistics({token, richInfo}) {
+export default function RichStatistics({token}) {
     const theme = useTheme();
-    const metrics = useSelector(selectMetrics);
+    const BASE_URL = 'https://api.xrpl.to/api';
 
-    const {
-        id,
-        name,
-        amount,
-        exch,
-        maxMin24h,
-        pro24h,
-        p24h,
-        vol24h,
-        vol24hxrp,
-        vol24hx,
-        /*
-        pro7d,
-        p7d,
-        holders,
-        offers,
-        issuer,
-        currency,
-        date,
-        trustlines,*/
-    } = token;
+    const [richInfo, setRichInfo] = useState({time:Date.now(), length:0, top10:0, top20:0, top50:0, top100:0, active24H:0});
 
-    let user = token.user;
-    if (!user) user = name;
-
-    const marketcap = amount * exch / metrics.USD;
-    let voldivmarket = 0;
-    if (marketcap > 0)
-        voldivmarket = fNumber(vol24hx / (amount * exch));
+    useEffect(() => {
+        function getRichInfo() {
+            // https://api.xrpl.to/api/richinfo/0413ca7cfc258dfaf698c02fe304e607
+            axios.get(`${BASE_URL}/richinfo/${token.md5}`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        setRichInfo(ret.richInfo);
+                    }
+                }).catch(err => {
+                    console.log("Error on getting richInfo!", err);
+                }).then(function () {
+                    // always executed
+                });
+        }
+        getRichInfo();
+    }, []);
    
-    let strPc24h;
-    if (p24h < 0) {
-        strPc24h = fNumber(-p24h);
-        strPc24h = '-$' + strPc24h;
-    } else {
-        strPc24h = '$' + fNumber(p24h);
-    }
-
     return (
         <StackStyle>
             <CardHeader title={`${name} Holders Statistics`}  subheader='' sx={{p:2}}/>
