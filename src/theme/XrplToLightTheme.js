@@ -1151,8 +1151,10 @@ export const XrplToLightTheme = createTheme({
         variantMapping: {
           h1: 'h1',
           h2: 'h2',
+          h2a: 'h2',
           h3: 'h3',
           h4: 'div',
+          h4a: 'h4',
           h5: 'div',
           h6: 'div',
           subtitle1: 'div',
@@ -1161,11 +1163,14 @@ export const XrplToLightTheme = createTheme({
           body2: 'div',
           wallet_h3: 'h3',
           wallet_h2: 'h2',
-          para_content: 'p',
+          p1: 'p',
+          p2: 'p',
           wallet_name: 'p',
           link_cascade: 'span',
           label1: 'span',
-          sponsored: 'span'
+          sponsored: 'span',
+          pay_name: 'span',
+          pay_label: 'span'
         }
       },
       styleOverrides: {
@@ -1197,16 +1202,33 @@ export const XrplToLightTheme = createTheme({
       marginTop: 14,
       marginBottom: 10
     },
-    para_content: {
+    p1: {
       fontSize: 12,
       lineHeight: '18px',
       color: '#58667E',
       paddingBottom: 15
     },
+    p2: {
+      fontSize: 14,
+      color: '#878787',
+      paddingBottom: 10
+    },
     wallet_name: {
       fontWeight: 600,
       fontSize: 16,
       color: colors.alpha.black[100],
+      margin: 0
+    },
+    pay_name: {
+      fontWeight: 500,
+      fontSize: 14,
+      color: colors.alpha.black[100],
+      margin: 0
+    },
+    pay_label: {
+      fontWeight: 500,
+      fontSize: 12,
+      color: '#878787',
       margin: 0
     },
     link_cascade: {
@@ -1239,6 +1261,10 @@ export const XrplToLightTheme = createTheme({
       fontWeight: 700,
       fontSize: '1rem' // 30
     },
+    h2a: {
+      fontWeight: 700,
+      fontSize: '24' // 30
+    },
     h3: {
       fontWeight: 700,
       fontSize: '0.9rem' // 30
@@ -1252,6 +1278,11 @@ export const XrplToLightTheme = createTheme({
     h4: {
       // fontWeight: 700,
       fontSize: 16
+    },
+    h4a: {
+      fontSize: 14,
+      fontWeight: 500,
+      textTransform: 'uppercase'
     },
     h5: {
       fontWeight: 700,

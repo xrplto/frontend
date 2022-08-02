@@ -297,7 +297,6 @@ export default function TokenList({tokens, setTokens, tMap}) {
                     "::-webkit-scrollbar": { display: "none" },
                 }}
             >
-                {/* <LazyLoad height={200}> */}
                 <Table>
                     <TokenListHead
                         order={order}

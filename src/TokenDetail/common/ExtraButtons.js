@@ -6,6 +6,7 @@ import {
     Button,
     Chip,
     Grid,
+    Link,
     Stack,
     Typography
 } from '@mui/material';
@@ -61,14 +62,21 @@ export default function ExtraButtons({token}) {
                 </Grid>
 
                 <Grid item>
-                    <Button
-                        variant="outlined"
-                        onClick={handleByCrypto}
-                        color='primary'
-                        size="small"
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        // target="_blank"
+                        href={`/buy-crypto`}
+                        rel="noreferrer noopener nofollow"
                     >
-                        Buy Crypto
-                    </Button>
+                        <Button
+                            variant="outlined"
+                            color='primary'
+                            size="small"
+                        >
+                            Buy Crypto
+                        </Button>
+                    </Link>
                 </Grid>
 
                 

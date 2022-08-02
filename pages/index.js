@@ -36,7 +36,6 @@ const OverviewWrapper = styled(Box)(
 );
 
 function getInitialTokens(data) {
-    console.log('getInitialTokens is called!');
     if (data)
         return data.tokens;
     return [];
@@ -49,8 +48,6 @@ function Overview({data}) {
     for (var t of tokens) {
         tMap.set(t.md5, t);
     }
-
-    console.log('~~~OVERVIEW~~~')
 
     return (
         <OverviewWrapper>
