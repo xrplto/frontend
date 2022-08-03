@@ -1214,12 +1214,14 @@ export const XrplToDarkTheme = createTheme({
           wallet_h2: 'h2',
           p1: 'p',
           p2: 'p',
+          p3: 'p',
           wallet_name: 'p',
           link_cascade: 'span',
           label1: 'span',
           sponsored: 'span',
           pay_name: 'span',
-          pay_label: 'span'
+          pay_label: 'span',
+          s1: 'span'
         }
       },
       styleOverrides: {
@@ -1261,7 +1263,12 @@ export const XrplToDarkTheme = createTheme({
     p2: {
       fontSize: 14,
       color: '#878787',
-      paddingBottom: 10
+      paddingBottom: 0
+    },
+    p3: {
+      fontSize: 14,
+      color: colors.alpha.black[100],
+      paddingBottom: 0
     },
     wallet_name: {
       fontWeight: 600,
@@ -1408,7 +1415,12 @@ export const XrplToDarkTheme = createTheme({
       fontSize: 13,
       fontWeight: 700,
       // textTransform: 'uppercase'
-    }
+    },
+    s1: {
+      fontWeight: 700,
+      fontSize: 18,
+      color: "#ffffff"
+    },
   },
   shadows: [
     'none',

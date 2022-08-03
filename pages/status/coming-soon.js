@@ -70,7 +70,7 @@ const ButtonNotify = styled(Button)(
 export default function StatusComingSoon() {
     const calculateTimeLeft = () => {
         // const difference = +new Date(`2023`) - +new Date();
-        const difference = +new Date(`2023`) - 1000 * 60 * 60 * 24 * 30 * 5 - +new Date();
+        const difference = +new Date(`2023`) - 1000 * 60 * 60 * 24 * 30 * 4 - +new Date();
         let timeLeft = {};
 
         if (difference > 0) {

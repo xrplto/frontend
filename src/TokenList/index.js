@@ -1,6 +1,6 @@
 import axios from 'axios'
 import React, { Suspense } from "react";
-// import dynamic from 'next/dynamic';
+import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 import useWebSocket from "react-use-websocket";
 
@@ -29,6 +29,9 @@ import {TokenRow} from './TokenRow';
 import TrustSet from 'src/components/TrustSet';
 
 // const DynamicTokenRow = dynamic(() => import('./TokenRow'));
+// const TokenRow = dynamic(() =>
+//     import('./TokenRow').then((mod) => mod.TokenRow)
+// )
 
 // ----------------------------------------------------------------------
 const ContentWrapper = styled(Box)(({ theme }) => ({
