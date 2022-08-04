@@ -1,6 +1,7 @@
 import axios from 'axios'
 import React, { Suspense } from "react";
 import dynamic from 'next/dynamic';
+import LazyLoad from 'react-lazy-load';
 import { useState, useEffect } from 'react';
 import useWebSocket from "react-use-websocket";
 
@@ -235,9 +236,6 @@ export default function TokenList({tokens, setTokens, tMap}) {
         setLoad(true);
     };
 
-
-    // This example works fine, but ours???
-    // https://codesandbox.io/s/wkxolyrpo5?file=/realTimeTable.js:0-4076
 
     return (
         <>

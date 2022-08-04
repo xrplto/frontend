@@ -2,17 +2,21 @@ import axios from 'axios'
 import Decimal from 'decimal.js';
 // import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
+import { isMobileSafari, isSafari, isChrome, isIOS, deviceType, OsTypes } from 'react-device-detect';
 
 // Material
 import { withStyles } from '@mui/styles';
 import {
     alpha, styled, useTheme,
+    Alert,
     Button,
     Card,
     Checkbox,
     FormControlLabel,
     Grid,
     MenuItem,
+    Slide,
+    Snackbar,
     Stack,
     TextField,
     Typography
@@ -62,44 +66,53 @@ const MenuProps = {
     },
 };
 
+function TransitionLeft(props) {
+    return <Slide {...props} direction="left" />;
+}
+
+const ERR_NONE = 0;
+const ERR_ACCOUNT_LOGIN = 1;
+const ERR_NETWORK = 2;
+const MSG_SUCCESSFUL = 3;
+
 export default function BuyCrypto({fiats, coins}) {
     const BASE_URL = 'https://api.xrpl.to/api';
-
+    const { accountProfile, darkMode } = useContext(AppContext);
     const [fiat, setFiat] = useState('USD');
     const [coin, setCoin] = useState('XRP');
     const [fiatAmount, setFiatAmount] = useState('0');
     const [coinAmount, setCoinAmount] = useState('0');
     const [prices, setPrices] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [selPay, setSelPay] = useState(-1);
+    const [limitMin, setLimitMin] = useState(0);
+    const [limitMax, setLimitMax] = useState(0);
     const [disclaimer, setDisclaimer] = useState(false);
 
-    const [selPay, setSelPay] = useState(0);
+    const [state, setState] = useState({
+        openSnack: false,
+        message: ERR_NONE
+    });
+    const { message, openSnack } = state;
+
     const [error, setError] = useState(0);
 
     const [sync, setSync] = useState(0);
     const [counter, setCounter] = useState(60);
+
+    const [loading, setLoading] = useState(false);
+    const [ordering, setOrdering] = useState(false);
     
-    const { accountProfile, darkMode } = useContext(AppContext);
-    const admin = accountProfile && accountProfile.account && accountProfile.admin;
+    
+    const isLoggedIn = accountProfile && accountProfile.account;
 
     const banxa_black = "/banxa-logo-black.png";
     const banxa_white = "/banxa-logo-white.png";
     
     const banxa_img = darkMode?banxa_white:banxa_black;
 
-    let limit_min = 0;
-    let limit_max = 0;
-    if (prices.length > 0) {
-        const m = prices[selPay];
-        try {
-            limit_min = m.transaction_limit.min;
-            limit_max = m.transaction_limit.max;
-        } catch (err) {}
-    }
-
     let isBuyCryptoDisabled = true;
     const amount = GetNum(fiatAmount);
-    if (amount > 0 && limit_min > 0 && amount > limit_min && amount < limit_max && disclaimer)
+    if (amount > 0 && limitMin > 0 && amount > limitMin && amount < limitMax && disclaimer)
         isBuyCryptoDisabled = false;
 
     useEffect(() => {
@@ -108,6 +121,9 @@ export default function BuyCrypto({fiats, coins}) {
             // https://api.xrpl.to/api/banxa/prices?source_amount=100&source=USD&target=XRP
             const amount = GetNum(fiatAmount);
             setCounter(0);
+            setSelPay(-1);
+            setLimitMax(0);
+            setLimitMin(0);
 
             if (amount === 0) {
                 setCoinAmount('0');
@@ -120,9 +136,29 @@ export default function BuyCrypto({fiats, coins}) {
                 try {
                     if (res.status === 200 && res.data) {
                         const prices = res.data.prices;
-                        setPrices(prices);
-                        setCoinAmount(prices[0].coin_amount);
-                        setSelPay(0);
+                        const newPrices = [];
+
+                        for (var p of prices) {
+                            let add = true;
+                            const agents = p.supported_agents;
+                            if (agents) {
+                                for (var a of agents) {
+                                    if (a.browser === 'safari' && !isSafari) {
+                                        add = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (add)
+                                newPrices.push(p);
+                        }
+                        if (newPrices.length > 0) {
+                            setPrices(newPrices);
+                            setSelPay(0);
+                        } else {
+                            setSelPay(-1);
+                        }
+                        
                     }
                 } catch (error) {
                     setCoinAmount('0');
@@ -168,13 +204,72 @@ export default function BuyCrypto({fiats, coins}) {
 
 
     useEffect(() => {
-        if (prices.length > 0) {
-            const idx = selPay;
-            setCoinAmount(prices[idx].coin_amount);
+        if (prices.length > 0 && selPay >= 0) {
+            const p = prices[selPay];
+            setCoinAmount(p.coin_amount);
+            setLimitMin(GetNum(p.transaction_limit.min));
+            setLimitMax(GetNum(p.transaction_limit.max));
         } else {
             setCoinAmount('0');
         }
     }, [selPay]);
+
+    const onProcessOrder = async () => {
+        setOrdering(true);
+        try {
+            const body = {
+                // account_reference: "xrpl.to",
+                payment_method_id: prices[selPay].payment_method_id,
+                source: fiat,
+                source_amount: fiatAmount,
+                target: "XRP",
+                wallet_address: accountProfile.account,
+                return_url_on_success: "https://xrpl.to/buy-crypto"
+            };
+
+            // {
+            //     "payment_method_id": 6030,
+            //     "source": "USD",
+            //     "source_amount": "100",
+            //     "target": "XRP",
+            //     "wallet_address": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm",
+            //     "return_url_on_success": "https://sologenic.org/trade"
+            // }
+
+            const res = await axios.post(`${BASE_URL}/banxa/orders`, body);
+
+            const retry = true;
+            if (res.status === 200) {
+                const newOrder = res.data.order;
+                if (newOrder && newOrder.checkout_url) {
+                    // {
+                    //     "id": "73c73f9ddb4c2930eebd11f319e60e78",
+                    //     "account_id": "291a29fb4ee6f9eaffd28df1b77bc232",
+                    //     "account_reference": "xrpl.to",
+                    //     "order_type": "CRYPTO-BUY",
+                    //     "fiat_code": "USD",
+                    //     "coin_code": "XRP",
+                    //     "wallet_address": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm",
+                    //     "blockchain": {
+                    //         "id": 7,
+                    //         "code": "XRP",
+                    //         "description": "Ripple"
+                    //     },
+                    //     "created_at": "04-Aug-2022 02:05:38",
+                    //     "checkout_url": "https://xrplto.banxa-sandbox.com?expires=1659578798&id=f974d347-f44f-483f-846a-bad72442a8ab&oid=73c73f9ddb4c2930eebd11f319e60e78&signature=9e8c920c17a2d842459564d1d6e245655b22242cd03235f55468a9915474a933"
+                    // }
+                    retry = false;
+                    window.open(newOrder.checkout_url, "_blank") //to open new page
+                }
+            }
+            if (retry)
+                showAlert(ERR_NETWORK);
+        } catch (err) {
+            console.log(err);
+            showAlert(ERR_NETWORK);
+        }
+        setOrdering(false);
+    };
 
     const handleChangeAmount = (e) => {
         setFiatAmount(e.target.value);
@@ -184,9 +279,6 @@ export default function BuyCrypto({fiats, coins}) {
     const handleChangeFiat = (e) => {
         setFiat(e.target.value);
         setSync(sync + 1);
-    }
-
-    const handleBuyCrypto = (e) => {
     }
 
     const handleRefresh = (e) => {
@@ -199,16 +291,37 @@ export default function BuyCrypto({fiats, coins}) {
         setDisclaimer(e.target.checked);
     };
 
+    const handleCloseSnack = () => {
+        setState({ openSnack: false, message: message });
+    };
+
+    const showAlert = (msg) => {
+        setState({ openSnack: true, message: msg });
+    }
+
+    const handleBuyCrypto = (e) => {
+        if (!isLoggedIn) {
+            showAlert(ERR_ACCOUNT_LOGIN)
+        } else {
+            onProcessOrder();
+        }
+    }
     return (
         <>
-            {/* {admin &&
-                <Stack sx={{ mt:2, mb:2, display: { xs: 'none', sm: 'none', md: 'none', lg: 'block' } }}>
-                    <WidgetNew showNew={showNew} setShowNew={updateShowNew}/>
-                    <WidgetSlug showSlug={showSlug} setShowSlug={updateShowSlug}/>
-                    <WidgetDate showDate={showDate} setShowDate={updateShowDate}/>
-                    <EditToken token={editToken} setToken={setEditToken}/>
-                </Stack>
-            } */}
+            <Snackbar
+                autoHideDuration={2000}
+                anchorOrigin={{ vertical:'top', horizontal:'right' }}
+                open={openSnack}
+                onClose={handleCloseSnack}
+                TransitionComponent={TransitionLeft}
+                key={'TransitionLeft'}
+            >
+                <Alert variant="filled" severity={message === MSG_SUCCESSFUL?"success":"error"} sx={{ m: 2, mt:0 }}>
+                    {message === ERR_ACCOUNT_LOGIN && 'Please connect wallet!'}
+                    {message === ERR_NETWORK && 'Network error, try again!'}
+                    {message === MSG_SUCCESSFUL && 'Successfully submitted the order!'}
+                </Alert>
+            </Snackbar>
             <Stack alignItems="center" sx={{mt:5, mb:3}}>
                 <Typography variant="h2a">Buy Crypto with Fiat</Typography>
             </Stack>
@@ -259,10 +372,10 @@ export default function BuyCrypto({fiats, coins}) {
                         ))}
                     </TextField>
                 </Stack>
-                {limit_min > 0 &&
+                {limitMin > 0 &&
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                         <ErrorOutlineOutlinedIcon fontSize="small" color="error"/>
-                        <Typography variant="p3">Min: {fIntNumber(limit_min)} {fiat} - Max: {fIntNumber(limit_max)} {fiat}</Typography>
+                        <Typography variant="p3">Min: {fIntNumber(limitMin)} {fiat} - Max: {fIntNumber(limitMax)} {fiat}</Typography>
                     </Stack>
                 }
             </Stack>
@@ -382,15 +495,17 @@ export default function BuyCrypto({fiats, coins}) {
                     />
 
                     <Stack alignItems='flex-end'>
-                        <Button
+                        <LoadingButton
+                            size="small"
                             disabled={isBuyCryptoDisabled}
-                            variant="outlined"
-                            sx={{ mt: 3 }}
                             onClick={handleBuyCrypto}
-                            color={error > 0 ? 'error':'primary'}
+                            loading={ordering}
+                            variant="outlined"
+                            color="primary"
+                            sx={{mt:3}}
                         >
                             BUY CRYPTO
-                        </Button>
+                        </LoadingButton>
                     </Stack>
                 </Card>
             </Stack>

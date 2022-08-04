@@ -9,11 +9,8 @@ import {
     IconButton,
     Link,
     styled,
-    Stack,
-    Tooltip
+    Stack
 } from '@mui/material';
-import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
-import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin';
 
 // Iconify Icons
 import { Icon } from '@iconify/react';
@@ -51,14 +48,6 @@ export default function Header(props) {
                         <Logo />
                     </Box>
                     <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1.5 }}>
-                        <Link
-                            href="/buy-crypto"
-                            rel="noreferrer noopener nofollow"
-                        >
-                            <Tooltip title="Buy crypto">
-                                <IconButton> <CurrencyExchangeIcon /> </IconButton>
-                            </Tooltip>
-                        </Link>
                         <Account />
                         <IconButton onClick={() => { toggleTheme() }} >
                             {darkMode ? (

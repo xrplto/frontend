@@ -104,17 +104,6 @@ const TokenImage = styled(Avatar)(({ theme }) => ({
     },
 }));
 
-function getDate(date) {
-    let date_fixed = 'undefined';
-    try {
-        if (date) {
-            date_fixed = date.split('T')[0];
-        }
-    } catch (e) { }
-    
-    return date_fixed;
-}
-
 // const ERR_NONE = 0;
 const ERR_TRANSFER = 1;
 const ERR_NOT_VALID = 2;
@@ -225,6 +214,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                 if (ret.status) {
                     // Update myself
                     Object.assign(token, data);
+                    token.time = Date.now();
                     setFile(null);
                     showAlert(MSG_SUCCESSFUL);
                     finish = true;
@@ -350,7 +340,11 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
             .then(res => {
                 let ret = res.status === 200 ? res.data : undefined;
                 if (ret && ret.date) {
-                    setDate(ret.date);
+                    let date_fixed = '';
+                    try {
+                        date_fixed = ret.date.split('T')[0];
+                    } catch (e) {}
+                    setDate(date_fixed);
                 }
             }).catch(err => {
                 // console.log("Error on getting created date!!!", err);
@@ -523,7 +517,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                         </TableCell>
                         <TableCell align="left" sx={{pt:0, pb:0.2}}>
                             <Stack direction='row' alignItems='center' spacing={1}>
-                                <Typography variant="subtitle2" color='primary'>{getDate(date)}</Typography>
+                                <Typography variant="subtitle2" color='primary'>{date}</Typography>
                                 <Tooltip title={'Get date from online'}>
                                     <IconButton onClick={handleGetDate} size="small" edge="end" aria-label="getdate">
                                         <Icon icon={baselineGetApp} />

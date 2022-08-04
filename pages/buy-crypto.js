@@ -12,7 +12,7 @@ import {
 
 // Components
 import Topbar from 'src/layouts/Topbar';
-import Header from 'src/TokenList/Header';
+import Header from 'src/BuyCrypto/Header';
 import BuyCrypto from 'src/BuyCrypto';
 import Footer from 'src/layouts/Footer';
 

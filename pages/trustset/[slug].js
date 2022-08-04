@@ -126,13 +126,6 @@ function TrustLine(props) {
 
     const marketcap = amount * exch / metrics.USD;
 
-    let date_fixed = '';
-    try {
-        if (date) {
-            date_fixed = date.split('T')[0];
-        }
-    } catch (e) { }
-
     useEffect(() => {
         var timer = null;
         var isRunning = false;
@@ -542,7 +535,7 @@ function TrustLine(props) {
                             <Stack alignItems='center' sx={{mt:2}}>
                                 <Label>CREATED ON</Label>
                                 <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
-                                    {date_fixed}
+                                    {date}
                                 </Typography>
                                 <Label>TOTAL SUPPLY</Label>
                                 <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
