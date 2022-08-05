@@ -48,6 +48,17 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
     "::-webkit-scrollbar": { display: "none" },
 }));
 
+function normalizeTag(tag) {
+    if (tag && tag.length > 0) {
+        const tag1 = tag.split(' ').join('-');  // Replace space
+        const tag2 = tag1.replace(/&/g, "and"); // Replace &
+        const tag3 = tag2.toLowerCase(); // Make lowercase
+        const final = tag3.replace(/[^a-zA-Z0-9-]/g, '');
+        return final;
+    }
+    return '';
+}
+
 // ----------------------------------------------------------------------
 export default function UserDesc({token}) {
     const [rating, setRating] = useState(2);
@@ -171,10 +182,18 @@ export default function UserDesc({token}) {
                 {tags && tags.map((tag, idx) => {
                     return (
                         <Grid item key={md5 + idx + tag}>
-                            <Chip
-                                size="small"
-                                label={tag}
-                            />
+                            <Link
+                                href={`/view/${normalizeTag(tag)}`}
+                                sx={{ pl: 0, pr: 0, display: 'inline-flex' }}
+                                underline="none"
+                                rel="noreferrer noopener nofollow"
+                            >
+                                <Chip
+                                    size="small"
+                                    label={tag}
+                                    onClick={handleDelete}
+                                />
+                            </Link>
                         </Grid>
                     );
                 })}

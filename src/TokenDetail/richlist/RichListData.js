@@ -136,7 +136,6 @@ export default function RichListData({token}) {
                                     <TableRow
                                         hover
                                         key={id}
-                                        tabIndex={-1}
                                         // sx={{
                                         //     [`& .${tableCellClasses.root}`]: {
                                         //         color: (/*buy*/dir === 'sell' ? '#007B55' : '#B72136')

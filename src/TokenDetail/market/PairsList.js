@@ -162,7 +162,6 @@ export default function PairsList({token, pairs}) {
                                 <TableRow
                                     hover
                                     key={pair}
-                                    tabIndex={-1}
                                 >
                                     <TableCell align="left" sx={{pt:0.5, pb:0.5}}>
                                         {fNumber(id)}

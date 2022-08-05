@@ -87,13 +87,6 @@ export default function HistoryData({token, pair}) {
         // md5
     } = token;
 
-    const handleChangePair = (event, value) => {
-        const strPair = event.target.value;
-        const newPair = pairs.find(e => e.pair === strPair);
-        if (newPair)
-            setPair(newPair);
-    }
-
     useEffect(() => {
         function getExchanges() {
             if (!pair) return;
@@ -227,7 +220,6 @@ export default function HistoryData({token, pair}) {
                                     <TableRow
                                         hover
                                         key={_id}
-                                        tabIndex={-1}
                                         sx={{
                                             [`& .${tableCellClasses.root}`]: {
                                                 color: (/*buy*/dir === 'sell' ? '#007B55' : '#B72136')

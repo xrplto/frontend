@@ -219,7 +219,6 @@ export default function AccountBalance({pair}) {
                         <TableBody>
                             <TableRow
                                 key={-1}
-                                tabIndex={-1}
                             >
                                 <TableCell align="center" sx={{ p:0 }}>
                                     <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{curr1.name}</Typography>

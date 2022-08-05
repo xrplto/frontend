@@ -204,7 +204,6 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                     >
                     {isBid ?
                         <TableRow
-                            tabIndex={-1}
                             hover
                             sx={{
                                 cursor: 'pointer',
@@ -226,7 +225,6 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                     :
                         <TableRow
                             hover
-                            tabIndex={-1}
                             sx={{
                                 cursor: 'pointer',
                                 background: `${askBackgroundColor}`,

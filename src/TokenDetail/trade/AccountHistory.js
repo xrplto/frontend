@@ -380,7 +380,6 @@ export default function AccountHistory({pair}) {
                                             <TableRow
                                                 hover
                                                 key={_id}
-                                                tabIndex={-1}
                                                 sx={{
                                                     [`& .${tableCellClasses.root}`]: {
                                                         color: (buy ? '#007B55' : '#B72136')
@@ -528,7 +527,6 @@ export default function AccountHistory({pair}) {
                                         <TableRow
                                             hover
                                             key={seq}
-                                            tabIndex={-1}
                                             sx={{
                                                 [`& .${tableCellClasses.root}`]: {
                                                     // color: (cancel ? '#FFC107': (dir === 'buy' ? '#007B55' : '#B72136'))

@@ -1,7 +1,4 @@
 import axios from 'axios'
-import React, { Suspense } from "react";
-import dynamic from 'next/dynamic';
-import LazyLoad from 'react-lazy-load';
 import { useState, useEffect } from 'react';
 import useWebSocket from "react-use-websocket";
 
@@ -29,11 +26,6 @@ import SearchToolbar from './SearchToolbar';
 import {TokenRow} from './TokenRow';
 import TrustSet from 'src/components/TrustSet';
 
-// const DynamicTokenRow = dynamic(() => import('./TokenRow'));
-// const TokenRow = dynamic(() =>
-//     import('./TokenRow').then((mod) => mod.TokenRow)
-// )
-
 // ----------------------------------------------------------------------
 const ContentWrapper = styled(Box)(({ theme }) => ({
     display: "flex",
@@ -47,9 +39,6 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
     "::-webkit-scrollbar": { display: "none" },
 }));
 
-// max-height: 440px;
-// https://codesandbox.io/s/q2xmq7?module=/src/App.tsx&file=/package.json:362-373
-// usehooks-ts npm
 export default function TokenList({tokens, setTokens, tMap}) {
     const dispatch = useDispatch();
     const metrics = useSelector(selectMetrics);
@@ -78,21 +67,6 @@ export default function TokenList({tokens, setTokens, tMap}) {
 
     const { accountProfile } = useContext(AppContext);
     const admin = accountProfile && accountProfile.account && accountProfile.admin;
-
-    // useEffect(() => {
-    //     const websocket = new WebSocket(WSS_FEED_URL)
-    //     websocket.onopen = () => {
-    //         console.log('connected')
-    //     }
-
-    //     websocket.onmessage = (event) => {
-    //         processMessages(event);
-    //     }
-    
-    //     return () => {
-    //         websocket.close()
-    //     }
-    // }, [])
 
     const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
         onOpen: () => console.log('WS opened.'),
@@ -262,28 +236,6 @@ export default function TokenList({tokens, setTokens, tMap}) {
                 showSlug={showSlug} setShowSlug={updateShowSlug}
                 showDate={showDate} setShowDate={updateShowDate}
             />
-            {/* <InfiniteScroll
-                style={{overflow: "inherit"}}
-                dataLength={allTokens.length}
-                next={addMoreData}
-                hasMore={hasMore}
-                loader={
-                    <div style={{display: "flex",justifyContent:"center",paddingTop:"10px"}}>
-                        <BeatLoader color={"#00AB55"} size={10} />
-                    </div>
-                }
-            > */}
-
-            {/* <Virtuoso
-                tokens={tokens}
-                order={order}
-                orderBy={orderBy}
-                onRequestSort={handleRequestSort}
-
-                admin={admin}
-                setEditToken={setEditToken}
-                setTrustToken={setTrustToken}
-            /> */}
 
             <Box
                 sx={{
@@ -326,18 +278,8 @@ export default function TokenList({tokens, setTokens, tMap}) {
                                 </TableRow>
                             )} */}
                     </TableBody>
-                    {/*isTokenNotFound && (
-                        <TableBody>
-                            <TableRow>
-                                <TableCell align="center" colSpan={6} sx={{ py: 3 }}>
-                                        <SearchNotFound searchQuery={filterName} />
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    )*/}
                 </Table>
             </Box>
-            {/* </InfiniteScroll> */}
             <TokenListToolbar
                 rows={rows}
                 setRows={updateRows}

@@ -165,7 +165,6 @@ export default function ExchHistory({pair}) {
                                 <TableRow
                                     hover
                                     key={_id}
-                                    tabIndex={-1}
                                     sx={{
                                         [`& .${tableCellClasses.root}`]: {
                                             color: (cancel ? '#FFC107': (dir === 'sell' ? '#007B55' : '#B72136'))
