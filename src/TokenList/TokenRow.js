@@ -162,7 +162,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
                             <Link
                                 underline="none"
                                 color="inherit"
-                                href={`token/${urlSlug}`}
+                                href={`/token/${urlSlug}`}
                                 rel="noreferrer noopener nofollow"
                             >
                                 <Stack>

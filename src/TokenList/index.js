@@ -39,7 +39,7 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
     "::-webkit-scrollbar": { display: "none" },
 }));
 
-export default function TokenList({tokens, setTokens, tMap}) {
+export default function TokenList({tag, tokens, setTokens, tMap}) {
     const dispatch = useDispatch();
     const metrics = useSelector(selectMetrics);
 
@@ -137,7 +137,9 @@ export default function TokenList({tokens, setTokens, tMap}) {
             // https://github.com/WietseWind/fetch-xrpl-transactions
             // https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc
             const start = page * rows;
-            axios.get(`${BASE_URL}/tokens?start=${start}&limit=${rows}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}`)
+            let ntag = '';
+            if (tag) ntag = tag;
+            axios.get(`${BASE_URL}/tokens?tag=${ntag}&start=${start}&limit=${rows}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}`)
             .then(res => {
                 try {
                     if (res.status === 200 && res.data) {

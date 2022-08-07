@@ -1,5 +1,4 @@
 import axios from 'axios'
-import dynamic from 'next/dynamic';
 import { performance } from 'perf_hooks';
 import { useState, useEffect, useRef } from 'react';
 
@@ -14,11 +13,11 @@ import {
 
 // Components
 import Topbar from 'src/layouts/Topbar';
-import Header from 'src/TokenTagList/Header';
+import Header from 'src/TokenList/Header';
 
-import TokenList from 'src/TokenTagList';
+import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/layouts/ScrollToTop';
-import Summary from 'src/TokenTagList/Summary';
+import SummaryTag from 'src/TokenList/SummaryTag';
 import Footer from 'src/layouts/Footer';
 
 // overflow: scroll;
@@ -61,7 +60,7 @@ function Overview({data}) {
                     spacing={3}
                 >
                     <Grid item xs={12} md={12} lg={8} >
-                        <Summary tagName={data.tagName}/>
+                        <SummaryTag tagName={data.tagName}/>
                     </Grid>
                     <Grid item xs={12} md={12} lg={12} >
                         <TokenList
@@ -87,14 +86,14 @@ export default Overview;
 const BASE_URL = 'http://135.181.118.217/api';
 
 export async function getServerSideProps(ctx) {
-    // https://api.xrpl.to/api/tokensbytag?tag=collectables-and-nfts&start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=
+    // https://api.xrpl.to/api/tokens?tag=collectables-and-nfts&start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=
     let data = null;
     try {
         const tag = ctx.params.tag;
 
         var t1 = performance.now();
 
-        const res = await axios.get(`${BASE_URL}/tokensbytag?tag=${tag}&start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`);
+        const res = await axios.get(`${BASE_URL}/tokens?tag=${tag}&start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`);
 
         data = res.data;
 
