@@ -1,0 +1,65 @@
+import axios from 'axios';
+import { performance } from 'perf_hooks';
+
+const TradeToken = () => {};
+
+export default TradeToken;
+
+export async function getServerSideProps(ctx) {
+    const BASE_URL = 'http://135.181.118.217/api';
+
+    let data = null;
+    try {
+        const md5 = ctx.params.md5;
+        var t1 = performance.now();
+
+        // https://api.xrpl.to/api/token/0413ca7cfc258dfaf698c02fe304e607
+        const res = await axios.get(`${BASE_URL}/token/${md5}`);
+
+        data = res.data;
+
+        var t2 = performance.now();
+        var dt = (t2 - t1).toFixed(2);
+
+        console.log(`9. getServerSideProps(trade redirect) md5: ${md5} took: ${dt}ms`);
+    } catch (e) {
+        console.log(e);
+    }
+    let ret = {};
+    let urlSlug = null;
+    if (data && data.token) {
+        let ogp = {};
+        const token = data.token;
+        const {
+            name,
+            imgExt,
+            md5
+        } = token;
+
+        urlSlug = token.urlSlug;
+
+        let user = token.user;
+        if (!user) user = name;
+
+        // https://xrpl.to/token/sologenic-solo/trade
+        ogp.canonical = `https://xrpl.to/token/${urlSlug}/trade`;
+        ogp.title = `Trade ${name} On The XRP Ledger`;
+        ogp.url = `https://xrpl.to/token/${urlSlug}/trade`;
+        ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${imgExt}`;
+        ogp.desc = `Trade ${name} On The XRPL.to`;
+
+        ret = {data, ogp};
+    }
+
+    return {
+        redirect: {
+        permanent: false,
+        destination: urlSlug?`/token/${urlSlug}/trade`:'/404'
+        }
+    }
+
+    return {
+        props: ret, // will be passed to the page component as props
+    }
+}
+
