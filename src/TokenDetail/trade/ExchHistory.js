@@ -24,6 +24,19 @@ import infoFilled from '@iconify/icons-ep/info-filled';
 import { fNumber } from 'src/utils/formatNumber';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 // ----------------------------------------------------------------------
+
+const expo = (x, f) => {
+    return Number.parseFloat(x).toExponential(f);
+}
+
+const fmNumber = (value, len) => {
+    const amount = new Decimal(value).toNumber();
+    if ((amount.toString().length > 8 && amount < 0.001) || amount > 1000000000)
+        return expo(amount, 2);
+    else
+        return new Decimal(amount).toFixed(len, Decimal.ROUND_DOWN);
+}
+
 export default function ExchHistory({pair}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
@@ -141,6 +154,11 @@ export default function ExchHistory({pair}) {
                                 amount = vGot;
                                 // buy = true;
                             }
+
+                            amount = fmNumber(amount, 2);
+
+                            // if (sumAmount.toString().length > 8)
+                            //     sumAmount = expo(sumAmount, 2);
                             
                             const nDate = new Date((date + EPOCH_OFFSET) * 1000);
                             // const year = nDate.getFullYear();
@@ -175,7 +193,7 @@ export default function ExchHistory({pair}) {
                                         <Typography variant="subtitle2">{fNumber(exch)}</Typography>
                                     </TableCell>
                                     <TableCell align="left" colSpan={2} sx={{ p:0 }}>
-                                        {new Decimal(amount).toFixed(2, Decimal.ROUND_DOWN)}
+                                        {amount}
                                     </TableCell>
 
                                     {/* <TableCell align="left" sx={{ p:0 }}>

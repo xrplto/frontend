@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import useWebSocket from "react-use-websocket";
 import {MD5} from "crypto-js";
+import Decimal from 'decimal.js';
 
 // Material
 import {
@@ -28,7 +29,6 @@ import AccountBalance from './AccountBalance';
 import PlaceOrder from './PlaceOrder';
 
 // Utils
-import Decimal from 'decimal.js';
 
 // ----------------------------------------------------------------------
 const StackDexStyle = styled(Stack)(({ theme }) => ({
@@ -44,6 +44,18 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
     padding: '0px 12px'
 }));
 
+const expo = (x, f) => {
+    return Number.parseFloat(x).toExponential(f);
+}
+
+const fmNumber = (value, len) => {
+    const amount = new Decimal(value).toNumber();
+    if ((amount.toString().length > 8 && amount < 0.001) || amount > 1000000000)
+        return expo(amount, 2);
+    else
+        return new Decimal(amount).toFixed(len, Decimal.ROUND_DOWN);
+}
+
 export default function TradePanel({pair, bids, asks, bidId, askId}) {
     const [buySell, setBuySell] = useState('BUY');
     const [amount, setAmount] = useState('');
@@ -57,9 +69,11 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
         setBuySell('SELL');
         setMarketLimit('limit');
         const bid = bids[idx];
-        const sumAmount = bid.sumAmount.toFixed(2);
-        const sumValue = bid.sumValue.toFixed(5);
-        const price = bid.price.toFixed(5);
+
+        const sumAmount = fmNumber(bid.sumAmount, 2);
+        const sumValue = fmNumber(bid.sumValue, 5);
+        const price = fmNumber(bid.price, 5);
+
         setAmount(sumAmount);
         setPrice(price);
         setValue(sumValue);
@@ -71,9 +85,11 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
         setBuySell('BUY');
         setMarketLimit('limit');
         const ask = asks[idx];
-        const sumAmount = ask.sumAmount.toFixed(2);
-        const sumValue = ask.sumValue.toFixed(5);
-        const price = ask.price.toFixed(5);
+
+        const sumAmount = fmNumber(ask.sumAmount, 2);
+        const sumValue = fmNumber(ask.sumValue, 5);
+        const price = fmNumber(ask.price, 5);
+
         setAmount(sumAmount);
         setPrice(price);
         setValue(sumValue);

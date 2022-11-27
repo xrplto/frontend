@@ -1,3 +1,4 @@
+import Decimal from 'decimal.js';
 import React, { useEffect, useState } from 'react';
 
 // Material
@@ -122,32 +123,35 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
         return Number.parseFloat(x).toExponential(f);
     }
 
+    const fmNumber = (value, len) => {
+        const amount = new Decimal(value).toNumber();
+        if ((amount.toString().length > 8 && amount < 0.001) || amount > 1000000000)
+            return expo(amount, 2);
+        else
+            return new Decimal(amount).toFixed(len, Decimal.ROUND_DOWN);
+    }
+
     const buildPriceLevels = (levels, orderType = ORDER_TYPE_BIDS) => {
         return (
             levels.slice(0, 30).map((level, idx) => {
                 // const id = level.id;
                 let price = level.price;//fNumber(level.price);
-                const avgPrice = level.avgPrice.toFixed(5);
-                let amount = level.amount.toFixed(2); // fNumber(level.amount);
+                let avgPrice = level.avgPrice;
+                let amount = level.amount; // fNumber(level.amount);
                 const value = level.value.toFixed(2); // fNumber(level.value);
-                let sumAmount = level.sumAmount.toFixed(2); // fNumber(level.sumAmount);
-                const sumValue = level.sumValue.toFixed(2); // fNumber(level.sumValue);
+                let sumAmount = level.sumAmount; // fNumber(level.sumAmount);
+                const sumValue = level.sumValue; // fNumber(level.sumValue);
                 const isNew = level.isNew;
                 const isBid = orderType === ORDER_TYPE_BIDS;
                 const depth = getIndicatorProgress(level.amount);
                 const currName1 = pair?.curr1.name;
                 const currName2 = pair?.curr2.name;
-
-                if (price < 0.00000001)
-                    price = expo(price, 2);
-                else
-                    price = price.toFixed(5);
-
-                if (amount.toString().length > 8)
-                    amount = expo(amount, 2);
-
-                if (sumAmount.toString().length > 8)
-                    sumAmount = expo(sumAmount, 2);
+                
+                avgPrice = fmNumber(avgPrice, 5);
+                price = fmNumber(price, 5);
+                amount = fmNumber(amount, 2);
+                sumAmount = fmNumber(sumAmount, 2);
+                sumValue = fmNumber(sumValue, 2);
               
                 let bidBackgroundColor;
                 if (isNew)
@@ -191,11 +195,11 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                                     <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>≈  {avgPrice}</Typography>
                                 </Stack>
                                 <Stack direction="row">
-                                    <Typography variant='body2'>Sum {currName1}:</Typography>
+                                    <Typography variant='body2' noWrap>Sum {currName1}:</Typography>
                                     <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumAmount}</Typography>
                                 </Stack>
                                 <Stack direction="row">
-                                    <Typography variant='body2'>Sum {currName2}:</Typography>
+                                    <Typography variant='body2' noWrap>Sum {currName2}:</Typography>
                                     <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumValue}</Typography>
                                 </Stack>
                             </Stack>
