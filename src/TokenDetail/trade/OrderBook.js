@@ -189,20 +189,44 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                     <Tooltip
                         key={`Tooltip${orderType}${idx}`}
                         title={
-                            <Stack>
-                                <Stack direction="row">
-                                    <Typography variant='body2'>Avg Price:</Typography>
-                                    <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>≈  {avgPrice}</Typography>
-                                </Stack>
-                                <Stack direction="row">
-                                    <Typography variant='body2' noWrap>Sum {currName1}:</Typography>
-                                    <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumAmount}</Typography>
-                                </Stack>
-                                <Stack direction="row">
-                                    <Typography variant='body2' noWrap>Sum {currName2}:</Typography>
-                                    <Typography variant='body2' align='right' sx={{minWidth: '120px'}}>{sumValue}</Typography>
-                                </Stack>
-                            </Stack>
+                            <Table
+                                sx={{
+                                    [`& .${tableCellClasses.root}`]: {
+                                        borderBottom: "0px solid",
+                                        borderBottomColor: theme.palette.divider
+                                    }
+                                }}
+                            >
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell align='right' width='30px' sx={{pt:1, pb:1}}>
+                                            <Typography variant='body2'>Avg Price:</Typography>
+                                        </TableCell>
+                                        <TableCell sx={{pt:1, pb:1}}>
+                                            <Typography variant='body2'>≈  {avgPrice}</Typography>
+                                        </TableCell>
+                                    </TableRow>
+
+                                    <TableRow>
+                                        <TableCell align='right' sx={{pt:1, pb:1}}>
+                                            <Typography variant='body2' noWrap>Sum {currName1}:</Typography>
+                                        </TableCell>
+                                        <TableCell sx={{pt:1, pb:1}}>
+                                            <Typography variant='body2'>{sumAmount}</Typography>
+                                        </TableCell>
+                                    </TableRow>
+
+                                    <TableRow>
+                                        <TableCell sx={{pt:1, pb:1}} align='right'>
+                                            <Typography variant='body2' noWrap>Sum {currName2}:</Typography>
+                                        </TableCell>
+                                        <TableCell sx={{pt:1, pb:1}}>
+                                            <Typography variant='body2'>{sumValue}</Typography>
+                                        </TableCell>
+                                    </TableRow>
+
+                                </TableBody>
+                            </Table>
                         }
                         placement='right-end' arrow
                     >
