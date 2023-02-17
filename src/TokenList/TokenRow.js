@@ -21,7 +21,7 @@ import {
 
 // Components
 import TokenMoreMenu from './TokenMoreMenu';
-import BearBullLabel from 'src/layouts/BearBullLabel';
+import BearBullLabel from 'src/components/BearBullLabel';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
