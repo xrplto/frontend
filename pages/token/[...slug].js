@@ -60,7 +60,7 @@ function Detail({data}) {
             var t2 = Date.now();
             var dt = (t2 - t1).toFixed(2);
 
-            console.log(`${dt} ms`);
+            // console.log(`${dt} ms`);
         } catch(err) {
             console.error(err);
         }

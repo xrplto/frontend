@@ -1,17 +1,16 @@
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { useState } from 'react';
 
 // Material
 import {
-    alpha,
+    alpha, styled, useMediaQuery, useTheme,
     Box,
     Container,
     IconButton,
     Link,
-    styled,
     Stack,
     Tooltip
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin';
 
@@ -21,11 +20,14 @@ import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
 import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 import fiatIcon from '@iconify/icons-simple-icons/fiat';
 
-// Utils
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
 // Components
 import Logo from 'src/components/Logo';
-import Account from 'src/components/Account';
+import Wallet from 'src/components/Wallet';
+import NavSearchBar from './NavSearchBar';
 
 const HeaderWrapper = styled(Box)(
     ({ theme }) => `
@@ -40,34 +42,94 @@ const HeaderWrapper = styled(Box)(
 );
 
 export default function Header(props) {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const { toggleTheme, darkMode } = useContext(AppContext);
-    const data = props.data;
+    // const data = props.data;
+
+    const [fullSearch, setFullSearch] = useState(false);
+
+    const handleFullSearch = (e) => {
+        setFullSearch(true);
+    }
 
     return (
         <HeaderWrapper>
             <Container maxWidth="xl">
                 <Box display="flex" alignItems="center" justifyContent="space-between" flex={2} sx={{pl:0, pr:0}}>
-                    <Box>
+                    <Box id='logo-container-laptop'
+                        sx={{
+                            mr: 2,
+                            display: { xs: 'none', sm: 'flex' },
+                        }}
+                    >
                         <Logo />
                     </Box>
-                    <Stack direction="row" alignItems="center" spacing={{ xs: 0.5, sm: 1.5 }}>
-                        <Link
-                            href="/buy-crypto"
-                            rel="noreferrer noopener nofollow"
+
+                    {fullSearch &&
+                        <NavSearchBar
+                            id='id_search_tokens'
+                            placeholder='Search'
+                            fullSearch={fullSearch}
+                            setFullSearch={setFullSearch}
+                        />
+                    }
+
+                    {!fullSearch &&
+                        <Box id='logo-container-mobile'
+                            sx={{
+                                mr: 2,
+                                display: { xs: 'flex', sm: 'none' },
+                            }}
                         >
-                            <Tooltip title="Buy crypto">
-                                <IconButton> <CurrencyExchangeIcon /> </IconButton>
-                            </Tooltip>
-                        </Link>
-                        <Account />
-                        <IconButton onClick={() => { toggleTheme() }} >
-                            {darkMode ? (
-                                <Icon icon={baselineBrightnessHigh} />
-                            ) : (
-                                <Icon icon={baselineBrightness4} />
-                            )}
-                        </IconButton>
-                    </Stack>
+                            <Logo />
+                        </Box>
+                    }
+
+                    <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+                        {!fullSearch && !isMobile &&
+                            <Stack mr={2}>
+                                <NavSearchBar
+                                    id='id_search_tokens'
+                                    placeholder='Search'
+                                    fullSearch={fullSearch}
+                                    setFullSearch={setFullSearch}
+                                />
+                            </Stack>
+                        }
+
+                        {!fullSearch && isMobile &&
+                            <IconButton
+                                aria-label='search'
+                                onClick={handleFullSearch}
+                            >
+                                <SearchIcon />
+                            </IconButton>
+                        }
+                        
+                        {!fullSearch &&
+                            <>
+                                <Link
+                                    href="/buy-crypto"
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Tooltip title="Buy crypto">
+                                        <IconButton> <CurrencyExchangeIcon /> </IconButton>
+                                    </Tooltip>
+                                </Link>
+                                <Wallet />
+                            </>
+                        }
+                        {!isMobile &&
+                            <IconButton onClick={() => { toggleTheme() }} >
+                                {darkMode ? (
+                                    <Icon icon={baselineBrightness4} />
+                                ) : (
+                                    <Icon icon={baselineBrightnessHigh} />
+                                )}
+                            </IconButton>
+                        }
+                    </Box>
                 </Box>
             </Container>
         </HeaderWrapper>

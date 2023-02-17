@@ -929,28 +929,20 @@ export const XrplToLightTheme = createTheme({
         tag: {
           margin: 1
         },
-        root: {
-          '.MuiAutocomplete-inputRoot.MuiOutlinedInput-root .MuiAutocomplete-endAdornment':
-            {
-              right: 14
-            }
-        },
         clearIndicator: {
-          background: colors.error.lighter,
+          background: alpha(colors.error.lighter, 0.2),
           color: colors.error.main,
           marginRight: 8,
 
           '&:hover': {
-            background: colors.error.lighter,
-            color: colors.error.dark
+            background: alpha(colors.error.lighter, 0.3)
           }
         },
         popupIndicator: {
-          color: colors.alpha.black[50],
+          color: colors.alpha.black[70],
 
           '&:hover': {
-            background: colors.primary.lighter,
-            color: colors.primary.main
+            background: alpha(colors.primary.lighter, 0.2)
           }
         }
       }
@@ -1151,7 +1143,9 @@ export const XrplToLightTheme = createTheme({
       defaultProps: {
         variantMapping: {
           h1: 'h1',
+          h1a: 'h1',
           h2: 'h2',
+          h2a: 'h2',
           h2a: 'h2',
           h3: 'h3',
           h4: 'div',
@@ -1173,7 +1167,21 @@ export const XrplToLightTheme = createTheme({
           sponsored: 'span',
           pay_name: 'span',
           pay_label: 'span',
-          s1: 'span'
+          s1: 'span',
+          s2: 'span',
+          s3: 'span',
+          s4: 'span',
+          s5: 'span',
+          s6: 'span',
+          s7: 'span',
+          s8: 'span',
+          s9: 'span',
+          s10: 'span',
+          s11: 'span',
+          s12: 'span',
+          s13: 'span',
+          s14: 'span',
+          s15: 'span'
         }
       },
       styleOverrides: {
@@ -1184,7 +1192,66 @@ export const XrplToLightTheme = createTheme({
           fontSize: 17,
           lineHeight: 1.7
         }
-      }
+      },
+      variants: [
+        {
+          props: { variant: 'h1a' },
+          style: ({ theme }) => ({
+            fontWeight: 600,
+            fontSize: 28,
+            [theme.breakpoints.up('md')]: {
+              fontSize: 32,
+            },
+            [theme.breakpoints.up('lg')]: {
+              fontSize: 40,
+            },
+          })
+        },
+        {
+          props: { variant: 'h2a' },
+          style: ({ theme }) => ({
+            fontWeight: 600,
+            fontSize: 18,
+            [theme.breakpoints.up('md')]: {
+              fontSize: 24,
+            },
+          })
+        },
+        {
+          props: { variant: 's1' },
+          style: ({ theme }) => ({
+            fontWeight: 400,
+            fontSize: 16,
+            lineHeight: 1.4,
+            color: colors.alpha.black[100],
+            [theme.breakpoints.up('md')]: {
+              fontSize: 20,
+            },
+          })
+        },
+        {
+          props: { variant: 's13' },
+          style: ({ theme }) => ({
+            fontWeight: 400,
+            fontSize: 12,
+            color: colors.alpha.black[50],
+            [theme.breakpoints.up('sm')]: {
+              fontSize: 16,
+            },
+          })
+        },
+        {
+          props: { variant: 'd5' },
+          style: ({ theme }) => ({
+            fontWeight: 600,
+            fontSize: 14,
+            color: colors.alpha.black[100],
+            [theme.breakpoints.up('sm')]: {
+              fontSize: 20,
+            },
+          })
+        }
+      ],
     }
   },
   shape: {
@@ -1373,7 +1440,67 @@ export const XrplToLightTheme = createTheme({
       fontWeight: 700,
       // textTransform: 'uppercase'
     },
-    s1: {
+    s2: {
+      fontWeight: 500,
+      fontSize: 12,
+      color: '#EB5757'
+    },
+    s3: {
+      fontWeight: 600,
+      fontSize: 16,
+      color: colors.alpha.black[100]
+    },
+    s4: {
+      fontWeight: 400,
+      fontSize: 16,
+      color: colors.alpha.black[50]
+    },
+    s5: {
+      fontWeight: 500,
+      fontSize: 16,
+      color: colors.alpha.black[100]
+    },
+    s6: {
+      fontWeight: 500,
+      fontSize: 14,
+      // color: colors.alpha.black[100]
+    },
+    s7: {
+      fontWeight: 400,
+      fontSize: 12,
+      color: colors.alpha.black[50]
+    },
+    s8: {
+      fontWeight: 400,
+      fontSize: 12,
+      color: colors.alpha.black[100]
+    },
+    s9: {
+      fontWeight: 700,
+      fontSize: 25,
+      lineHeight: 1.4,
+      color: colors.alpha.black[100]
+    },
+    s10: {
+      fontWeight: 400,
+      fontSize: { xs: 11, sm: 16 },
+      color: colors.alpha.black[100]
+    },
+    s11: {
+      fontWeight: 400,
+      fontSize: 12,
+    },
+    s12: {
+      fontWeight: 400,
+      fontSize: 10,
+      color: colors.alpha.black[50]
+    },
+    s14: {
+      fontWeight: 500,
+      fontSize: 12,
+      color: colors.alpha.black[90]
+    },
+    s15: {
       fontWeight: 700,
       fontSize: 18,
       color: "#2D2D2D"

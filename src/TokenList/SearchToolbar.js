@@ -62,7 +62,7 @@ export default function SearchToolbar({
 
     return (
         <RootStyle sx={{pl:1, pr:1}}>
-            <SearchBox
+            {/* <SearchBox
                 value={filterName}
                 onChange={onFilterName}
                 placeholder="Search ..."
@@ -73,7 +73,9 @@ export default function SearchToolbar({
                     </InputAdornment>
                 }
                 sx={{pb:0.3}}
-            />
+            /> */}
+
+            <Stack></Stack>
 
             <Stack direction='row' alignItems="center" sx={{ml: 2}}>
                 {admin &&

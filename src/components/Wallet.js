@@ -46,7 +46,7 @@ export default function Account() {
         var counter = 150;
         if (openLogin) {
             timer = setInterval(async () => {
-                console.log(counter + " " + isRunning, uuid);
+                // console.log(counter + " " + isRunning, uuid);
                 if (isRunning) return;
                 isRunning = true;
                 try {

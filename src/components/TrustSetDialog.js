@@ -132,7 +132,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
         var isRunning = false;
         var counter = 150;
         async function getPayload() {
-            console.log(counter + " " + isRunning, uuid);
+            // console.log(counter + " " + isRunning, uuid);
             if (isRunning) return;
             isRunning = true;
             try {

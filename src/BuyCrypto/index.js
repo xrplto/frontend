@@ -485,7 +485,7 @@ export default function BuyCrypto({fiats, coins}) {
                             }}
                         />
                         <Stack sx={{width:'70%'}}>
-                            <Typography variant="p2">You will receive <Typography variant="s1" noWrap> ≈ {fNumber(coinAmount)} XRP</Typography></Typography>
+                            <Typography variant="p2">You will receive <Typography variant="s15" noWrap> ≈ {fNumber(coinAmount)} XRP</Typography></Typography>
                             <Typography variant="p3" noWrap>Up to 48 hours</Typography>
                         </Stack>
                     </Stack>
