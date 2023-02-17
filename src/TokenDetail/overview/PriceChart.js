@@ -273,6 +273,7 @@ export default function PriceChart({ token }) {
                         <ToggleButton sx={{pt:0,pb:0}} value="1M">1M</ToggleButton>
                         <ToggleButton sx={{pt:0,pb:0}} value="3M">3M</ToggleButton>
                         <ToggleButton sx={{pt:0,pb:0}} value="1Y">1Y</ToggleButton>
+                        <ToggleButton sx={{pt:0,pb:0}} value="ALL">ALL</ToggleButton>
                     </ToggleButtonGroup>
                 </Grid>
             </Grid>

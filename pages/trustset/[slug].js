@@ -50,7 +50,6 @@ const OverviewWrapper = styled(Box) (
     align-items: center;
     justify-content: center;
     display: flex;
-    background: '${theme.palette.common.white}';
     flex: 1;
     overflow-x: hidden;
 `
@@ -194,7 +193,7 @@ function TrustLine(props) {
             LimitAmount.value = new Decimal(amount).toDP(0, Decimal.ROUND_DOWN).toNumber();
 
             const Flags = 0x00020000;
-            
+
             const body={ LimitAmount, Flags };
 
             const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
@@ -311,7 +310,7 @@ function TrustLine(props) {
                                     icon={<Icon icon={link45deg} width="16" height="16" />} />
                             </Link>
                         )}
-                        
+
                         {whitepaper && (
                             <Link
                                 underline="none"
@@ -512,7 +511,7 @@ function TrustLine(props) {
                                     {uuid ? `Cancel (${counter})`:`Generate QR`}
                                 </LoadingButton>
 
-                                {nextUrl && 
+                                {nextUrl &&
                                     <Link
                                         underline="none"
                                         color="inherit"
@@ -548,7 +547,7 @@ function TrustLine(props) {
                             </Stack>
                         </Grid>
                     </Grid>
-                    
+
                 </Stack>
                 </Card>
             </Container>
@@ -617,12 +616,12 @@ export async function getServerSideProps(ctx) {
 //     // Call an external API endpoint to get posts
 //     const res = await fetch('https://.../posts')
 //     const posts = await res.json()
-  
+
 //     // Get the paths we want to pre-render based on posts
 //     const paths = posts.map((post) => ({
 //       params: { id: post.id },
 //     }))
-  
+
 //     // We'll pre-render only these paths at build time.
 //     // { fallback: false } means other routes should 404.
 //     return { paths, fallback: false }

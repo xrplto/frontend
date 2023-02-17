@@ -10,8 +10,8 @@ const themeColors = {
   warning: '#FFA319',
   error: '#FF1943',
   info: '#33C2FF',
-  black: '#CBCCD2',
-  white: '#111633',
+  black: '#FFFFFF',
+  white: '#252525',
   primaryAlt: '#111633',
   trueWhite: '#ffffff'
 };
@@ -52,7 +52,7 @@ const colors = {
   },
   layout: {
     general: {
-      bodyBg: '#070C27'
+      bodyBg: '#17171A'
     },
     sidebar: {
       background: themeColors.primaryAlt,
@@ -812,7 +812,8 @@ export const XrplToDarkTheme = createTheme({
     },
     MuiLink: {
       defaultProps: {
-        underline: 'hover'
+        underline: 'hover',
+        color: '#2de370'
       }
     },
     MuiLinearProgress: {
@@ -1054,7 +1055,7 @@ export const XrplToDarkTheme = createTheme({
           // fontWeight: 'bold',
           // color: colors.alpha.black[70],
           // background: 'inherit'
-          background: colors.alpha.white[100]
+          // background: colors.alpha.white[100]
         }
       }
     },
@@ -1356,11 +1357,11 @@ export const XrplToDarkTheme = createTheme({
       // textTransform: 'uppercase',
       // color: colors.alpha.black[50]
     },
-    link: {
-      fontSize: 14,
-      fontWeight: 500,
-      color: '#A0A0A0'
-    },
+    // link: {
+    //   fontSize: 14,
+    //   fontWeight: 500,
+    //   color: '#A0A0A0'
+    // },
     kyc: {
       fontSize: 10,
       color: "#34B60C",

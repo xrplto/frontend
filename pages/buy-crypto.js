@@ -11,10 +11,11 @@ import {
 } from '@mui/material';
 
 // Components
-import Topbar from 'src/layouts/Topbar';
-import Header from 'src/BuyCrypto/Header';
+import Topbar from 'src/components/Topbar';
+import Header from 'src/components/Header';
+import Footer from 'src/components/Footer';
+
 import BuyCrypto from 'src/BuyCrypto';
-import Footer from 'src/layouts/Footer';
 
 // const DynamicTokenList = dynamic(() => import('src/TokenList'));
 
@@ -24,7 +25,6 @@ import Footer from 'src/layouts/Footer';
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
     overflow: hidden;
-    background: ${theme.palette.common.white};
     flex: 1;
 `
 );

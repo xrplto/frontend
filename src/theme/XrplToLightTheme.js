@@ -10,7 +10,7 @@ const themeColors = {
   warning: '#FFA319',
   error: '#FF1943',
   info: '#33C2FF',
-  black: '#223354',
+  black: '#000000',
   white: '#ffffff',
   primaryAlt: '#000C57'
 };
@@ -759,7 +759,8 @@ export const XrplToLightTheme = createTheme({
     },
     MuiLink: {
       defaultProps: {
-        underline: 'hover'
+        underline: 'hover',
+        color: '#06a144'
       }
     },
     MuiLinearProgress: {
@@ -1003,7 +1004,7 @@ export const XrplToLightTheme = createTheme({
           // fontWeight: 'bold',
           // color: colors.alpha.black[70],
           // background: 'inherit'
-          background: colors.alpha.white[100]
+          // background: colors.alpha.white[100]
         }
       }
     },
@@ -1312,11 +1313,11 @@ export const XrplToLightTheme = createTheme({
       // textTransform: 'uppercase',
       // color: colors.alpha.black[50]
     },
-    link: {
-      fontSize: 14,
-      fontWeight: 500,
-      color: '#58667E'
-    },
+    // link: {
+    //   fontSize: 14,
+    //   fontWeight: 500,
+    //   color: '#58667E'
+    // },
     kyc: {
       fontSize: 10,
       color: "#34B60C",

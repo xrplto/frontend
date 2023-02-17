@@ -18,6 +18,16 @@ function XRPLToApp(props) {
                 />
                 <meta name="google-site-verification" content="hh6F1f8GQ-_d3L7eGAcBc9G020PM2jSDzIjT12_I-Mc" />
 
+                <link rel="apple-touch-icon" sizes="192x192" href="/icons/apple-icon.png" />
+                <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+                <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+                <link rel="icon" type="image/png" sizes="32x32" href="/favicon-96x96.png" />
+
+                <link rel="manifest" href="/site.webmanifest" />
+                {/* <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#121619" /> */}
+                <meta name="msapplication-TileColor" content="#121619" />
+                <meta name="theme-color" content="#ffffff"/>
+
                 {/* <meta name="robots" content="nofollow"/> */}
 
                 <link rel="canonical" href={ogp.canonical}/>

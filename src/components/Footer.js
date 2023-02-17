@@ -46,9 +46,9 @@ const HeaderWrapper = styled(Box)(
 function Footer() {
     const { darkMode } = useContext(AppContext);
 
-    const img_black = "/xrpl-to-logo-black.png";
-    const img_white = "/xrpl-to-logo-white.png";
-    
+    const img_black = "/logo/xrpl-to-logo-black.svg";
+    const img_white = "/logo/xrpl-to-logo-white.svg";
+
     const img = darkMode?img_white:img_black;
     return (
         <FooterWrapper>
@@ -69,7 +69,7 @@ function Footer() {
                             />
                         </Link>
                     </Grid>
-                    
+
                     <Grid item xs={12} md={7} lg={7} sx={{ mt: 3 }}>
                         <Grid container>
                             <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
@@ -277,7 +277,7 @@ function Footer() {
 
                     <Grid item xs={12} sx={{ mt: 3 }}>
                         <Typography textAlign="left" variant="subtitle1">
-                            &copy; 2022 XRPL.to. All rights reserved
+                            &copy; 2023 XRPL.to. All rights reserved
                             {/* <Link
                                 href="https://nftlabs.to"
                                 target="_blank"

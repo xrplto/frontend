@@ -16,17 +16,18 @@ import { useDispatch } from "react-redux";
 import { update_metrics } from "src/redux/statusSlice";
 
 // Components
-import Topbar from 'src/layouts/Topbar';
-import Header from 'src/TokenDetail/Header'
-import ScrollToTop from 'src/layouts/ScrollToTop';
+import Topbar from 'src/components/Topbar';
+import Header from 'src/components/Header'
+import Footer from 'src/components/Footer';
+import ScrollToTop from 'src/components/ScrollToTop';
+
 import TokenDetail from 'src/TokenDetail';
-import Footer from 'src/layouts/Footer';
+
 
 // overflow: hidden;
 const OverviewWrapper = styled(Box)(
     ({ theme }) => `
     overflow: hidden;
-    background: ${theme.palette.common.white};
     flex: 1;
 `
 );

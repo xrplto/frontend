@@ -9,8 +9,8 @@ import {
 function Logo() {
     const { darkMode } = useContext(AppContext);
 
-    const img_black = "/xrpl-to-logo-black.png";
-    const img_white = "/xrpl-to-logo-white.png";
+    const img_black = "/logo/xrpl-to-logo-black.svg";
+    const img_white = "/logo/xrpl-to-logo-white.svg";
     
     const img = darkMode?img_white:img_black;
     

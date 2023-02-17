@@ -12,13 +12,14 @@ import {
 } from '@mui/material';
 
 // Components
-import Topbar from 'src/layouts/Topbar';
-import Header from 'src/TokenList/Header';
+import Topbar from 'src/components/Topbar';
+import Header from 'src/components/Header';
+import Footer from 'src/components/Footer';
+import ScrollToTop from 'src/components/ScrollToTop';
 
 import TokenList from 'src/TokenList';
-import ScrollToTop from 'src/layouts/ScrollToTop';
 import SummaryTag from 'src/TokenList/SummaryTag';
-import Footer from 'src/layouts/Footer';
+
 
 // overflow: scroll;
 // overflow: auto;
@@ -26,7 +27,6 @@ import Footer from 'src/layouts/Footer';
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
     overflow: hidden;
-    background: ${theme.palette.common.white};
     flex: 1;
 `
 );

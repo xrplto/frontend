@@ -13,14 +13,15 @@ import {
 } from '@mui/material';
 
 // Components
-import Topbar from 'src/layouts/Topbar';
-import Header from 'src/TokenList/Header';
+import Topbar from 'src/components/Topbar';
+import Header from 'src/components/Header';
+import Footer from 'src/components/Footer';
 
 import TokenList from 'src/TokenList';
-import ScrollToTop from 'src/layouts/ScrollToTop';
+import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 import HowWeWork from 'src/TokenList/HowWeWork';
-import Footer from 'src/layouts/Footer';
+
 
 // const DynamicTokenList = dynamic(() => import('src/TokenList'));
 
@@ -30,7 +31,6 @@ import Footer from 'src/layouts/Footer';
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
     overflow: hidden;
-    background: ${theme.palette.common.white};
     flex: 1;
 `
 );

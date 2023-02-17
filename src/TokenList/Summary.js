@@ -17,7 +17,7 @@ import { selectMetrics } from "src/redux/statusSlice";
 import { fNumber } from 'src/utils/formatNumber';
 
 // Components
-import BearBull from 'src/layouts/BearBull';
+import BearBull from 'src/components/BearBull';
 
 // CBCCD2
 const ContentTypography = withStyles({
