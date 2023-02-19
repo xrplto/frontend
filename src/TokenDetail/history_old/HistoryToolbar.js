@@ -9,9 +9,6 @@ import {
     Toolbar
 } from '@mui/material';
 
-// Utils
-import { fIntNumber } from 'src/utils/formatNumber';
-
 // ----------------------------------------------------------------------
 
 const RootStyle = styled(Toolbar)(({ theme }) => ({
@@ -69,7 +66,7 @@ export default function HistoryToolbar({ count, rows, setRows, page, setPage}) {
             </Grid>
 
             <Grid container item xs={6} md={4} lg={4}>
-                Showing {start} - {end} out of {fIntNumber(count)}
+                Showing {start} - {end} out of {count}
             </Grid>
 
             <Grid container item xs={0} md={4} lg={4} sx={{ display: { xs: 'none', md: 'block' } }}>
