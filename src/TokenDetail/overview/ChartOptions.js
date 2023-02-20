@@ -89,53 +89,6 @@ export default function ChartOptions() {
             strokeColors: theme.palette.background.paper
         },
 
-        // Tooltip
-        tooltip: {
-            shared: true,
-            intersect: false,
-            theme: 'dark',
-            style: {
-                fontSize: '16px',
-                fontFamily: undefined
-            },
-            // custom: function({series, seriesIndex, dataPointIndex, w}) {
-            //     var data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
-                
-            //     return '<ul>' +
-            //     '<li><b>Price</b>: ' + data[0] + '</li>' +
-            //     '<li><b>Number</b>: ' + data[1] + '</li>' +
-            //     '<li><b>Number</b>: ' + data[2] + '</li>' +
-            //     '</ul>';
-            // },
-            x: {
-                show: false,
-                format: 'MM/dd/yyyy, h:mm:ss TT',
-            },
-            y: {
-                formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
-                    return `${fCurrency5(value)} XRP`;
-                },
-                title: {
-                    formatter: (seriesName) => {
-                        // return seriesName;
-                        return '';
-                    }
-                }
-            },
-            z: {
-                formatter: (z) => {
-                    if (typeof z !== 'undefined') {
-                        return `$ ${fCurrency5(z)}`;
-                    }
-                    return z;
-                },
-                title: ''
-            },
-            marker: {
-                show: true,
-            },
-        },
-
         // Legend
         legend: {
             show: true,

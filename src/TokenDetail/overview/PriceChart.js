@@ -1,33 +1,48 @@
 import axios from 'axios';
+import Decimal from 'decimal.js';
+import KalmanFilter from 'kalmanjs';
 import { useState, useEffect } from 'react';
+import csvDownload from 'json-to-csv-export';
+import createMedianFilter from 'moving-median';
 // Material
 import {
     useTheme,
     Box,
+    Button,
     Grid,
+    IconButton,
     Stack,
     ToggleButton,
     ToggleButtonGroup,
     Typography
 } from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
 // Chart
 import { Chart } from 'src/components/Chart';
 
-// Components
-import ChartOptions from './ChartOptions';
-
 // Utils
 import { fCurrency5, fNumber } from 'src/utils/formatNumber';
+
+// Components
+import ChartOptions from './ChartOptions';
 // ----------------------------------------------------------------------
 export default function PriceChart({ token }) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
     const [data, setData] = useState([]);
+    const [originalData, setOriginalData] = useState([]);
     const [range, setRange] = useState('1D');
 
     const [minTime, setMinTime] = useState(0);
     const [maxTime, setMaxTime] = useState(0);
+
+    const { accountProfile } = useContext(AppContext);
+    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     useEffect(() => {
         function getGraph () {
@@ -37,11 +52,24 @@ export default function PriceChart({ token }) {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
                         const items = ret.history;
-                        setData(items);
+                        setOriginalData(items);
+
                         if (items && items.length > 0) {
                             setMinTime(items[0][0]);
                             setMaxTime(items[items.length - 1][0]);
                         }
+
+                        const newItems = [];
+                        const median = createMedianFilter(3);
+                        for (const item of items) {
+                            const time = item[0];
+                            const m = median(item[1]);
+                            const usd = item[2];
+                            newItems.push([time, m, usd]);
+                        }
+
+                        setData(items);
+                        
                     }
                 }).catch(err => {
                     console.log("Error on getting graph data.", err);
@@ -127,6 +155,54 @@ export default function PriceChart({ token }) {
                     return fNumber(val);
                 }
             }
+        },
+
+        // Tooltip
+        tooltip: {
+            shared: true,
+            intersect: false,
+            theme: 'dark',
+            style: {
+                fontSize: '16px',
+                fontFamily: undefined
+            },
+            // custom: function({series, seriesIndex, dataPointIndex, w}) {
+            //     var data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
+                
+            //     return '<ul>' +
+            //     '<li><b>Price</b>: ' + data[0] + '</li>' +
+            //     '<li><b>Number</b>: ' + data[1] + '</li>' +
+            //     '<li><b>Number</b>: ' + data[2] + '</li>' +
+            //     '</ul>';
+            // },
+            x: {
+                show: false,
+                format: 'MM/dd/yyyy, h:mm:ss TT',
+            },
+            y: {
+                formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+                    const idx = dataPointIndex;
+                    return `${fCurrency5(value)} XRP`;
+                },
+                title: {
+                    formatter: (seriesName) => {
+                        // return seriesName;
+                        return '';
+                    }
+                }
+            },
+            z: {
+                formatter: (z) => {
+                    if (typeof z !== 'undefined') {
+                        return `$ ${fCurrency5(z)}`;
+                    }
+                    return z;
+                },
+                title: ''
+            },
+            marker: {
+                show: true,
+            },
         },
 
     });
@@ -242,7 +318,7 @@ export default function PriceChart({ token }) {
                 * @param { index } index of the tick / currently executing iteration in yaxis labels array
                 */
                 formatter: function(val, index) {
-                    return fCurrency5(val);
+                    return fCurrency5(val) + 'Y';
                 }
             }
         }
@@ -253,11 +329,62 @@ export default function PriceChart({ token }) {
             setRange(newRange);
     };
 
+    const handleDownloadCSV = (event) => {
+        // data
+        
+        const kalmanFilter = new KalmanFilter({R: 0.0001, Q: 0.1});
+        const median = createMedianFilter(3);
+        const csvData = [];
+        let old = data[0][1];
+        let pos = 0;
+        for (const p of data) {
+            pos++;
+            const v = p[1];
+            const row = {};
+
+            row.original = v;
+            row.kalman = kalmanFilter.filter(v);
+            // Filter
+            const newValue = new Decimal(v).mul(0.01).toString();
+            row.filter = new Decimal(old).mul(0.99).add(newValue).toNumber();
+            old = row.filter;
+
+            csvData.push(row);
+
+            row.median = median(v);
+        }
+
+        const ipAddressesData = [
+            {
+              id: "1",
+              name: "Sarajane Wheatman",
+              ip: "40.98.252.240"
+            },
+            {
+              id: "2",
+              name: "Linell Humpherston",
+              ip: "82.225.151.150"
+            }
+          ]
+        const dataToConvert = {
+            data: csvData,
+            filename: 'filter_report',
+            delimiter: ',',
+            headers: ['Original', "Kalman", "Filter", "median"]
+        }
+        csvDownload(dataToConvert);
+    }
+
     return (
         <>
             <Grid container rowSpacing={2} alignItems="center" sx={{mt: 0}}>
                 <Grid container item xs={12} md={6}>
-                    <Typography variant="h3">{`${user} to XRP Chart`}</Typography>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        <Typography variant="h3">{`${user} to XRP Chart`}</Typography>
+                        <IconButton onClick={handleDownloadCSV}>
+                            <DownloadIcon fontSize="small" />
+                        </IconButton>
+                    </Stack>
                 </Grid>
                 {/* <CardHeader title={`${user} to XRP Chart`} subheader='' /> */}
 
