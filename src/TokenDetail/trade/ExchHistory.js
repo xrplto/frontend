@@ -83,8 +83,9 @@ export default function ExchHistory({pair}) {
     //     },
     //     "curr2": {
     //         "currency": "XRP",
+    //         "issuer": "XRPL",
     //         "value": 873555.2630949989,
-    //         "md5": "71dbd3aabf2d99d205e0e2556ae4cf55",
+    //         "md5": "84e5efeb89c4eae8f68188982dc290d8",
     //         "name": "XRP"
     //     },
     //     "count": 2678,

@@ -36,16 +36,16 @@ export default function Summary() {
     const metrics = useSelector(selectMetrics);
     const [showContent, setShowContent] = useState(false);
 
-    const gMarketcap = new Decimal(metrics.global[0]).div(1000000000).toFixed(2, Decimal.ROUND_DOWN);
-    const gMarketcapPro = new Decimal(metrics.global[1]).toNumber();
-    const gDexVolume = new Decimal(metrics.global[2]).toNumber();
-    const gDexVolumePro = new Decimal(metrics.global[3]).toNumber();
-    const gScamVolume = new Decimal(metrics.global[4]).toNumber();
-    const gScamVolumePro = new Decimal(metrics.global[5]).toFixed(2, Decimal.ROUND_DOWN);
-    const gStableVolume = new Decimal(metrics.global[6]).toNumber();
-    const gStableVolumePro = new Decimal(metrics.global[7]).toFixed(2, Decimal.ROUND_DOWN);
-    const gXRPdominance = new Decimal(metrics.global[8]).toNumber();
-    const gXRPdominancePro = new Decimal(metrics.global[9]).toNumber();
+    const gMarketcap = new Decimal(metrics.global.gMarketcap).div(1000000000).toFixed(2, Decimal.ROUND_DOWN);
+    const gMarketcapPro = new Decimal(metrics.global.gMarketcapPro).toNumber();
+    const gDexVolume = new Decimal(metrics.global.gDexVolume).toNumber();
+    const gDexVolumePro = new Decimal(metrics.global.gDexVolumePro).toNumber();
+    const gScamVolume = new Decimal(metrics.global.gScamVolume).toNumber();
+    const gScamVolumePro = new Decimal(metrics.global.gScamVolumePro).toFixed(2, Decimal.ROUND_DOWN);
+    const gStableVolume = new Decimal(metrics.global.gStableVolume).toNumber();
+    const gStableVolumePro = new Decimal(metrics.global.gStableVolumePro).toFixed(2, Decimal.ROUND_DOWN);
+    const gXRPdominance = new Decimal(metrics.global.gXRPdominance).toNumber();
+    const gXRPdominancePro = new Decimal(metrics.global.gXRPdominancePro).toNumber();
 
     return (
         <Stack sx={{mt:2}}>

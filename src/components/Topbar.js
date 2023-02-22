@@ -1,5 +1,3 @@
-import { useEffect, useState, useRef } from 'react';
-
 // Material
 import {
     alpha,
@@ -96,22 +94,22 @@ export default function Topbar() {
                             </Tooltip>
                         </H24Style>
                         <Typography variant="small">Trades:</Typography>
-                        <Typography align="center" color="#74CAFF" variant="small">{fIntNumber(metrics.H24[0])}</Typography>
+                        <Typography align="center" color="#74CAFF" variant="small">{fIntNumber(metrics.H24.transactions24H)}</Typography>
                         {/* <Typography variant="small">|</Typography> */}
                         <Typography variant="small">Vol:</Typography>
                         <Typography align="center" color="#FF6C40" variant="small">
                             <Stack direction="row" spacing={0.5} alignItems='center'>
                                 <Icon icon={rippleSolid} color="#54D62C"/>
                                 <Typography align="center" color="#54D62C" variant="small">
-                                    {fNumber(metrics.H24[1])}
+                                    {fNumber(metrics.H24.tradedXRP24H)}
                                 </Typography>
                             </Stack>
                         </Typography>
                         {/* <Typography variant="small">|</Typography> */}
                         <Typography variant="small" noWrap>Tokens Traded:</Typography>
-                        <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24[2])}</Typography>
+                        <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24.tradedTokens24H)}</Typography>
                         <Typography variant="small" noWrap>Active Addresses:</Typography>
-                        <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24[3])}</Typography>
+                        <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24.activeAddresses24H)}</Typography>
                     </Stack>
                     <Stack direction="row" spacing={2} alignItems="center" sx={{ml:5, mr:2}}>
                         <Stack direction="row" spacing={0.5} alignItems='center'>

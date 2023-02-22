@@ -91,8 +91,9 @@ export default function PairsSelect({ token, pair, setPair}) {
                             },
                             "curr2": {
                                 "currency": "XRP",
+                                "issuer": "XRPL",
                                 "value": 328571.7821960003,
-                                "md5": "71dbd3aabf2d99d205e0e2556ae4cf55",
+                                "md5": "84e5efeb89c4eae8f68188982dc290d8",
                                 "name": "XRP"
                             },
                             "count": 1697,

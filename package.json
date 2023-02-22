@@ -49,7 +49,6 @@
     "next-images": "1.8.4",
     "nprogress": "0.2.0",
     "numeral": "2.0.6",
-    "kalmanjs": "^1.1.0",
     "json-to-csv-export": "^2.1.1",
     "perf_hooks": "^0.0.1",
     "crypto-js": "^4.1.1",

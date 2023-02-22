@@ -37,7 +37,7 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
 
 function getXRPPair(issuer, currency) {
     //MD5('undefined_XRP').toString();
-    const t1 = 'undefined_XRP'
+    const t1 = 'XRPL_XRP'
     const t2 = issuer  + '_' +  currency;
     let pair = t1 + t2;
     if (t1.localeCompare(t2) > 0)
@@ -57,8 +57,9 @@ function getInitPair(token) {
     //     },
     //     "curr2": {
     //         "currency": "XRP",
+    //         "issuer": "XRPL",
     //         "value": 873555.2630949989,
-    //         "md5": "71dbd3aabf2d99d205e0e2556ae4cf55",
+    //         "md5": "84e5efeb89c4eae8f68188982dc290d8",
     //         "name": "XRP"
     //     },
     //     "count": 2678,
@@ -70,7 +71,7 @@ function getInitPair(token) {
     const name = token.name;
     const pairMD5 = getXRPPair(issuer, currency);
     const curr1 = {currency, name, issuer, value: 0, ...token};
-    const curr2 = {currency:'XRP', name: 'XRP', value: 0, md5: '71dbd3aabf2d99d205e0e2556ae4cf55'};
+    const curr2 = {currency:'XRP', issuer: "XRPL", name: 'XRP', value: 0, md5: '84e5efeb89c4eae8f68188982dc290d8'};
     const pair = {id: 1, pair: pairMD5, curr1, curr2, count: 0};
 
     return pair;

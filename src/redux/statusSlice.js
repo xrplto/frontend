@@ -8,8 +8,19 @@ const initialState = {
         EUR:100,
         JPY:100,
         CNY:100,
-        H24: [0, 0, 0, 0],
-        global: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        H24: {
+            transactions24H: 0,
+            tradedXRP24H: 0,
+            tradedTokens24H: 0,
+            activeAddresses24H: 0
+        },
+        global: {
+            gMarketcap: 0, gMarketcapPro: 0,
+            gDexVolume: 0, gDexVolumePro: 0,
+            gScamVolume: 0, gScamVolumePro: 0,
+            gStableVolume: 0, gStableVolumePro: 0,
+            gXRPdominance: 0, gXRPdominancePro: 0
+        },
     },
     accountData: {
         balance: {},

@@ -62,8 +62,9 @@ export default function AccountBalance({pair}) {
         },
         {
             "currency": "XRP",
+            "issuer": "XRPL",
             "value": 408593.89259000024,
-            "md5": "71dbd3aabf2d99d205e0e2556ae4cf55",
+            "md5": "84e5efeb89c4eae8f68188982dc290d8",
             "name": "XRP"
         }
     */
@@ -84,7 +85,7 @@ export default function AccountBalance({pair}) {
             const curr1 = pair.curr1;
             const curr2 = pair.curr2;
             const account = accountProfile.account;
-            // https://api.xrpl.to/api/accountinfo/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=undefined
+            // https://api.xrpl.to/api/accountinfo/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=XRPL
             axios.get(`${BASE_URL}/accountinfo/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;

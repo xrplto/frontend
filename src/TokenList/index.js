@@ -95,7 +95,6 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
     
     const processMessages = (event) => {
         try {
-            // [transactions24H, tradedXRP24H, tradedTokens24H, timeCalc24H, timeSchedule, CountApiCall];
             var t1 = Date.now();
 
             const json = JSON.parse(event.data);

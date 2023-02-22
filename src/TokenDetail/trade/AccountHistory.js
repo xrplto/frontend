@@ -466,6 +466,7 @@ export default function AccountHistory({pair}) {
                                         },
                                         "takerGot": {
                                             "currency": "XRP",
+                                            "issuer": "XRPL",
                                             "value": "0.0061"
                                         },
                                         "pair": "fa99aff608a10186d3b1ff33b5cd665f"

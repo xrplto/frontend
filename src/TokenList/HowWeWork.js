@@ -1,18 +1,12 @@
-import Decimal from 'decimal.js';
 import { useState } from 'react';
 // Material
 import { withStyles } from '@mui/styles';
 import {
     alpha,
-    Grid,
     Link,
     Stack,
     Typography
 } from '@mui/material';
-
-// Redux
-import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
