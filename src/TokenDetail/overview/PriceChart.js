@@ -3,6 +3,7 @@ import Decimal from 'decimal.js';
 import { useState, useEffect } from 'react';
 import csvDownload from 'json-to-csv-export';
 import createMedianFilter from 'moving-median';
+
 // Material
 import {
     useTheme,
@@ -26,6 +27,7 @@ import { Chart } from 'src/components/Chart';
 
 // Utils
 import { fCurrency5, fNumber } from 'src/utils/formatNumber';
+import smoothed_z_score from 'src/utils/smooth';
 
 // Components
 import ChartOptions from './ChartOptions';
@@ -58,6 +60,7 @@ export default function PriceChart({ token }) {
 
                         const newItems = [];
                         const median = createMedianFilter(5);
+
                         for (const item of items) {
                             const time = item[0];
                             const exch = item[1];
@@ -333,10 +336,53 @@ export default function PriceChart({ token }) {
 
     const handleDownloadCSV = (event) => {
         // data
+
+        const data = [1,1,1.1,1, 0.9, 1, 1, 1.1, 1, 0.9, 1, 1.1, 1, 1, 0.9, 1, 1, 1.1, 1, 1, 1, 1, 1.1, 0.9, 1, 1.1, 1, 1, 0.9,
+            1, 1.1, 1, 1, 1.1, 1, 0.8, 0.9, 1, 1.2, 0.9, 1, 1, 1.1, 1.2, 1, 1.5, 1, 3, 2, 5, 3, 2, 1, 1, 1, 0.9, 1, 1,
+            3, 2.6, 4, 3, 3.2, 2, 1, 1, 0.8, 4, 4, 2, 2.5, 1, 1, 1];
+
+        const smooth = smoothed_z_score(data, {lag: 5, threshold: 0.2, influence: 0.5});
         
         const median1 = createMedianFilter(5);
-        const median2 = createMedianFilter(2);
+        const median2 = createMedianFilter(3);
         const csvData = [];
+        let idx = 0;
+        for (const p of data) {
+            const row = {};
+
+            row.original = p;
+            row.median1 = median1(p);
+            row.median2 = median2(p);
+            row.smooth = smooth[idx];
+
+            csvData.push(row);
+
+            idx++;
+        }
+
+        const dataToConvert = {
+            data: csvData,
+            filename: 'filter_report',
+            delimiter: ',',
+            headers: ['Original', "Median_5", "Median_3", "Smooth"]
+        }
+        csvDownload(dataToConvert);
+    }
+
+    const handleDownloadCSV1 = (event) => {
+        // data
+
+        const values = [];
+        for (const p of data) {
+            const exch = p[1];
+            values.push(exch);
+        }
+        const smooth = smoothed_z_score(values, {lag: 5, threshold: 0.2, influence: 0.5});
+        
+        const median1 = createMedianFilter(5);
+        const median2 = createMedianFilter(3);
+        const csvData = [];
+        let idx = 0;
         for (const p of data) {
             const time = p[0];
             const v = p[1];
@@ -345,16 +391,19 @@ export default function PriceChart({ token }) {
             row.original = v;
             row.median1 = median1(v);
             row.median2 = median2(v);
+            row.smooth = smooth[idx];
             row.time = time;
 
             csvData.push(row);
+
+            idx++;
         }
 
         const dataToConvert = {
             data: csvData,
             filename: 'filter_report',
             delimiter: ',',
-            headers: ['Original', "Median_5", "Median_2", "Time"]
+            headers: ['Original', "Median_5", "Median_3", "Smooth", "Time"]
         }
         csvDownload(dataToConvert);
     }
