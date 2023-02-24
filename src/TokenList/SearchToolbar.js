@@ -47,7 +47,7 @@ export default function SearchToolbar({
     onFilterName,
     rows,
     setRows,
-    admin,
+    isAdmin,
     showNew,
     setShowNew,
     showSlug,
@@ -78,7 +78,7 @@ export default function SearchToolbar({
             <Stack></Stack>
 
             <Stack direction='row' alignItems="center" sx={{ml: 2}}>
-                {admin &&
+                {isAdmin &&
                     <Stack direction='row' alignItems="center" sx={{mr: 2, mt: 0.5, display: { xs: 'none', sm: 'none', md: 'none', lg: 'block' }}}>
                         <IconButton onClick={() => { setShowNew(!showNew); }} >
                             <FiberNewIcon color={showNew?'error':'inherit'}/>

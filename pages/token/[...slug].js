@@ -99,7 +99,7 @@ export async function getServerSideProps(ctx) {
         var t1 = performance.now();
 
         // https://api.xrpl.to/api/token/bitstamp-usd
-        const res = await axios.get(`${BASE_URL}/token/${slug}`);
+        const res = await axios.get(`${BASE_URL}/token/${slug}?desc=yes`);
 
         data = res.data;
         if (tab)

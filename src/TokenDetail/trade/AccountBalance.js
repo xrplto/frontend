@@ -121,6 +121,7 @@ export default function AccountBalance({pair}) {
             try {
                 const res = await axios.get(`${BASE_URL}/xumm/payloadlogin/${uuid}`);
                 const admin = res.data.admin;
+                const tokens = res.data.token;
                 const data = res.data.data;
                 const account = data.response.account;
                 const token = data.application.issued_user_token;
@@ -136,7 +137,7 @@ export default function AccountBalance({pair}) {
                 */
                 if (account) {
                     setOpenLogin(false);
-                    setAccountProfile({account: account, uuid: uuid, token:token, admin:admin});
+                    setAccountProfile({account, uuid, token, admin, tokens});
                     return;
                 }
             } catch (err) {

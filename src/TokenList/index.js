@@ -66,7 +66,7 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
     // -----------------------------------------------
 
     const { accountProfile } = useContext(AppContext);
-    const admin = accountProfile && accountProfile.account && accountProfile.admin;
+    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
         onOpen: () => console.log('WS opened.'),
@@ -214,7 +214,7 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
 
     return (
         <>
-            {/* {admin &&
+            {/* {isAdmin &&
                 <Stack sx={{ mt:2, mb:2, display: { xs: 'none', sm: 'none', md: 'none', lg: 'block' } }}>
                     <WidgetNew showNew={showNew} setShowNew={updateShowNew}/>
                     <WidgetSlug showSlug={showSlug} setShowSlug={updateShowSlug}/>
@@ -232,7 +232,7 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
                 onFilterName={handleFilterByName}
                 rows={rows}
                 setRows={updateRows}
-                admin={admin}
+                isAdmin={isAdmin}
                 showNew={showNew} setShowNew={updateShowNew}
                 showSlug={showSlug} setShowSlug={updateShowSlug}
                 showDate={showDate} setShowDate={updateShowDate}
@@ -266,7 +266,7 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
                                             mUSD = {metrics.USD}
                                             time={row.time}
                                             token={row}
-                                            admin={admin}
+                                            admin={isAdmin}
                                             setEditToken={setEditToken}
                                             setTrustToken={setTrustToken}
                                         />
