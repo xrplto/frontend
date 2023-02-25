@@ -190,23 +190,24 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
         try {
             let res;
 
-            const account = accountProfile.account;
+            const accountAdmin = accountProfile.account;
+            const accountToken = accountProfile.btoken;
 
             const formdata = new FormData();
             formdata.append('avatar', file);
-            formdata.append('account', account);
+            formdata.append('account', accountAdmin);
             formdata.append('data', JSON.stringify(data));
             
             /*const res = await axios.post(`${BASE_URL}/admin/update_token`, formdata, {
                 headers: { "Content-Type": "multipart/form-data" }
             });*/
             
-            /*const body = {account, data};
+            /*const body = {accountAdmin, data};
 
             res = await axios.post(`${BASE_URL}/admin/update_token`, body);*/
 
             res = await axios.post(`${BASE_URL}/admin/update_token`, formdata, {
-                headers: { "Content-Type": "multipart/form-data" }
+                headers: { "Content-Type": "multipart/form-data", 'x-access-account': accountAdmin, 'x-access-token': accountToken }
             });
 
             if (res.status === 200) {

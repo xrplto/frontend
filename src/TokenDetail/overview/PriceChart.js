@@ -36,6 +36,7 @@ export default function PriceChart({ token }) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
     const [data, setData] = useState([]);
+    const [originalData, setOriginalData] = useState([]);
     const [range, setRange] = useState('1D');
 
     const [minTime, setMinTime] = useState(0);
@@ -53,23 +54,27 @@ export default function PriceChart({ token }) {
                     if (ret) {
                         const items = ret.history;
 
+                        setOriginalData(items);
+
                         if (items && items.length > 0) {
                             setMinTime(items[0][0]);
                             setMaxTime(items[items.length - 1][0]);
                         }
 
                         const newItems = [];
-                        const median = createMedianFilter(5);
+                        const median1 = createMedianFilter(2);
+                        const median2 = createMedianFilter(2);
 
                         for (const item of items) {
                             const time = item[0];
                             const exch = item[1];
                             const usd = item[2];
                             
-                            const m = median(exch);
+                            const m1 = median1(exch);
+                            const m2 = median2(m1);
                             try {
-                                const ratio = Decimal.div(exch, m).toNumber();
-                                if (ratio < 2.5 && ratio > 0.3) {
+                                const ratio = Decimal.div(exch, m2).toNumber();
+                                if (ratio < 1.2 && ratio > 0.9) {
                                     newItems.push([time, exch, usd]);
                                 }
                             } catch (e) {}
@@ -336,74 +341,24 @@ export default function PriceChart({ token }) {
 
     const handleDownloadCSV = (event) => {
         // data
-
-        const data = [1,1,1.1,1, 0.9, 1, 1, 1.1, 1, 0.9, 1, 1.1, 1, 1, 0.9, 1, 1, 1.1, 1, 1, 1, 1, 1.1, 0.9, 1, 1.1, 1, 1, 0.9,
-            1, 1.1, 1, 1, 1.1, 1, 0.8, 0.9, 1, 1.2, 0.9, 1, 1, 1.1, 1.2, 1, 1.5, 1, 3, 2, 5, 3, 2, 1, 1, 1, 0.9, 1, 1,
-            3, 2.6, 4, 3, 3.2, 2, 1, 1, 0.8, 4, 4, 2, 2.5, 1, 1, 1];
-
-        const smooth = smoothed_z_score(data, {lag: 5, threshold: 0.2, influence: 0.5});
-        
-        const median1 = createMedianFilter(5);
-        const median2 = createMedianFilter(3);
+        const median1 = createMedianFilter(2);
+        const median2 = createMedianFilter(2);
         const csvData = [];
-        let idx = 0;
-        for (const p of data) {
+        for (const p of originalData) {
+            const val = p[1];
             const row = {};
 
-            row.original = p;
-            row.median1 = median1(p);
-            row.median2 = median2(p);
-            row.smooth = smooth[idx];
-
+            row.original = val;
+            row.median1 = median1(val);
+            row.median2 = median2(row.median1);
             csvData.push(row);
-
-            idx++;
         }
 
         const dataToConvert = {
             data: csvData,
             filename: 'filter_report',
             delimiter: ',',
-            headers: ['Original', "Median_5", "Median_3", "Smooth"]
-        }
-        csvDownload(dataToConvert);
-    }
-
-    const handleDownloadCSV1 = (event) => {
-        // data
-
-        const values = [];
-        for (const p of data) {
-            const exch = p[1];
-            values.push(exch);
-        }
-        const smooth = smoothed_z_score(values, {lag: 5, threshold: 0.2, influence: 0.5});
-        
-        const median1 = createMedianFilter(5);
-        const median2 = createMedianFilter(3);
-        const csvData = [];
-        let idx = 0;
-        for (const p of data) {
-            const time = p[0];
-            const v = p[1];
-            const row = {};
-
-            row.original = v;
-            row.median1 = median1(v);
-            row.median2 = median2(v);
-            row.smooth = smooth[idx];
-            row.time = time;
-
-            csvData.push(row);
-
-            idx++;
-        }
-
-        const dataToConvert = {
-            data: csvData,
-            filename: 'filter_report',
-            delimiter: ',',
-            headers: ['Original', "Median_5", "Median_3", "Smooth", "Time"]
+            headers: ['Original', "Median_1", "Median_2"]
         }
         csvDownload(dataToConvert);
     }

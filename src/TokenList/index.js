@@ -69,8 +69,8 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-        onOpen: () => console.log('WS opened.'),
-        onClose: () => console.log('WS closed.'),
+        onOpen: () => {},
+        onClose: () => {},
         shouldReconnect: (closeEvent) => true,
         onMessage: (event) =>  processMessages(event),
         // reconnectAttempts: 10,

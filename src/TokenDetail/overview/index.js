@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React from 'react';
 import dynamic from "next/dynamic";
 import { useState, useEffect } from 'react';
@@ -16,6 +17,10 @@ import {
     Stack
 } from '@mui/material';
 
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+
 // Components
 import PriceChart from './PriceChart';
 import PriceStatistics from './PriceStatistics';
@@ -24,6 +29,9 @@ import Description from './Description';
 // ----------------------------------------------------------------------
 
 export default function Overview({token}) {
+    const BASE_URL = 'https://api.xrpl.to/api';
+    const { accountProfile, setLoading, openSnackbar } = useContext(AppContext);
+
     const [showEditor, setShowEditor] = useState(false);
     const [description, setDescription] = useState(token.description || "");
 
@@ -35,9 +43,46 @@ export default function Overview({token}) {
         setDescription(text);
     }
 
-    const onApplyDescription = () => {
+    const onApplyDescription = async () => {
+        if (token.description === description) return;
 
-    }
+        let finish = false;
+        setLoading(true);
+        try {
+            let res;
+
+            const accountAdmin = accountProfile.account;
+            const accountToken = accountProfile.btoken;
+
+            const body = {md5: token.md5, description};
+
+            res = await axios.post(`${BASE_URL}/admin/update_description`, body, {
+                headers: { 'x-access-account': accountAdmin, 'x-access-token': accountToken }
+            });
+
+            if (res.status === 200) {
+                const ret = res.data;
+                if (ret.status) {
+                    token.description = description;
+                    openSnackbar('Successful!', 'success');
+                    finish = true;
+                } else {
+                    // { status: false, data: null, err: 'ERR_URL_SLUG' }
+                    // ERR_TRANSFER
+                    // ERR_GENERAL
+                    // ERR_URL_SLUG
+                    // ERR_INTERNAL
+                    const err = ret.err;
+                    openSnackbar(err, 'error');
+                }
+            }
+        } catch (err) {
+            console.log(err);
+        }
+        setLoading(false);
+        if (finish)
+            setShowEditor(false);
+    };
 
     return (
         <Grid container spacing={{ xs: 0, md: 3 }}>

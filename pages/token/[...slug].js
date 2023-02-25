@@ -34,12 +34,12 @@ const OverviewWrapper = styled(Box)(
 
 function Detail({data}) {
     const dispatch = useDispatch();
-    const [token, setToken] = useState(() => data.token);
+    const [token, setToken] = useState(data.token);
     const WSS_FEED_URL = `wss://api.xrpl.to/ws/token/${token.md5}`;
 
     const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-        onOpen: () => console.log('WS opened.'),
-        onClose: () => console.log('WS closed.'),
+        onOpen: () => {},
+        onClose: () => {},
         shouldReconnect: (closeEvent) => true,
         onMessage: (event) =>  processMessages(event),
         // reconnectAttempts: 10,
@@ -54,7 +54,7 @@ function Detail({data}) {
 
             dispatch(update_metrics(json));
 
-            setToken(json.token);
+            setToken({...token, ...json.token});
 
             var t2 = Date.now();
             var dt = (t2 - t1).toFixed(2);

@@ -53,13 +53,13 @@ export default function Account() {
                     const res = await axios.get(`${BASE_URL}/xumm/payloadlogin/${uuid}`);
                     const data = res.data.data;
                     const admin = res.data.admin;
-                    const tokens = res.data.token;
+                    const btoken = res.data.btoken;
                     const account = data.response.account;
                     const token = data.application.issued_user_token;
                     if (account) {
                         setOpen(true);
                         setOpenLogin(false);
-                        setAccountProfile({account, uuid, token, admin, tokens});
+                        setAccountProfile({account, uuid, token, admin, btoken});
                         return;
                     }
                 } catch (err) {

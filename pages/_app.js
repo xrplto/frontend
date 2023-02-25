@@ -1,9 +1,15 @@
 import Head from 'next/head';
 import ThemeProvider from 'src/theme/ThemeProvider';
 import CssBaseline from '@mui/material/CssBaseline';
+
 import { ContextProvider } from 'src/AppContext';
 
+import XSnackbar from 'src/components/Snackbar';
+import { useSnackbar } from 'src/components/useSnackbar';
+
 function XRPLToApp(props) {
+    const { isOpen, msg, variant, openSnackbar, closeSnackbar } = useSnackbar();
+
     const { Component, pageProps } = props;
 
     const ogp = pageProps.ogp || {};
@@ -53,10 +59,11 @@ function XRPLToApp(props) {
                 <meta name="twitter:image:src" content={ogp.imgUrl}/>
                 {/* <!-- Meta Tags Generated via https://www.opengraph.xyz --> */}
             </Head>
-            <ContextProvider data={data}>
+            <ContextProvider data={data} openSnackbar={openSnackbar}>
                 <ThemeProvider>
                     <CssBaseline />
                     <Component {...pageProps} />
+                    <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
                 </ThemeProvider>
             </ContextProvider>
         </>

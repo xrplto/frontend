@@ -11,7 +11,7 @@ import { PuffLoader } from "react-spinners";
 
 export const AppContext = createContext({});
 
-export function ContextProvider({ children, data }) {
+export function ContextProvider({ children, data, openSnackbar }) {
     const [loading, setLoading] = useState(false);
     const [darkMode, setDarkMode] = useState(true);
     const [accountProfile, _setAccountProfile] = useState(null);
@@ -32,7 +32,7 @@ export function ContextProvider({ children, data }) {
     }, []);
 
     useEffect(() => {
-        const profile = window.localStorage.getItem('accountProfile');
+        const profile = window.localStorage.getItem('accountProfile1');
         //const profile = '{"account":"rDsRQWRTRrtzAgK8HH7rcCAZnWeCsJm28K","uuid":"4a3eb58c-aa97-4d48-9ab2-92d90df9a75f"}';
         if (profile) {
             _setAccountProfile(JSON.parse(profile));
@@ -40,13 +40,13 @@ export function ContextProvider({ children, data }) {
     }, [])
 
     const setAccountProfile = (profile) => {
-        window.localStorage.setItem('accountProfile', JSON.stringify(profile));
+        window.localStorage.setItem('accountProfile1', JSON.stringify(profile));
         _setAccountProfile(profile);
     };
 
     return (
         <AppContext.Provider
-            value={{ toggleTheme, darkMode, accountProfile, setAccountProfile, setLoading }}
+            value={{ toggleTheme, darkMode, accountProfile, setAccountProfile, setLoading, openSnackbar }}
         >
             
             <Backdrop
