@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
+import {MD5} from "crypto-js";
 
 // Material
 import { withStyles } from '@mui/styles';
@@ -72,6 +73,10 @@ function truncate(str, n){
     //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
 };
+
+function getMD5(issuer, currency) {
+    return MD5(issuer  + '_' +  currency).toString();
+}
 
 export default function HistoryData({token}) {
     const theme = useTheme();
@@ -180,19 +185,20 @@ export default function HistoryData({token}) {
                                 } = row;
 
                                 let exch;
-                                let volume;
-                                let name1, name2;
+                                // let volume;
+                                let name;
 
-                                if (dir === 'buy') {
-                                    volume = got.value;
+                                const md51 = getMD5(paid.issuer, paid.currency);
+                                // const md52 = getMD5(got.issuer, got.currency);
+
+                                if (md5 === md51) {
+                                    // volume = got.value;
                                     exch = Decimal.div(got.value, paid.value).toNumber();
-                                    name1 = got.name;
-                                    name2 = paid.name;
+                                    name = got.name;
                                 } else {
-                                    volume = paid.value;
+                                    // volume = paid.value;
                                     exch = Decimal.div(paid.value, got.value).toNumber();
-                                    name1 = paid.name;
-                                    name2 = got.name;
+                                    name = paid.name;
                                 }
 
                                 const strDateTime = formatDateTime(time);
@@ -227,7 +233,7 @@ export default function HistoryData({token}) {
                                                 )}
                                             </Stack>
                                         </TableCell>
-                                        <TableCell align="left"><Typography variant="caption">{fNumber(exch)} {name1} / {name2}</Typography></TableCell>
+                                        <TableCell align="left"><Typography variant="caption">{fNumber(exch)} {name}</Typography></TableCell>
                                         {/* <TableCell align="left"><Typography variant="subtitle2">{fNumber(volume)}</Typography></TableCell> */}
                                         
                                         <TableCell align="left">

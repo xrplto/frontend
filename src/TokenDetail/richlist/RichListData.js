@@ -6,6 +6,7 @@ import {
     useTheme,
     Avatar,
     Box,
+    Checkbox,
     IconButton,
     Link,
     Stack,
@@ -17,6 +18,10 @@ import {
     Typography
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
 // Redux
 import { useSelector } from "react-redux";
@@ -41,14 +46,20 @@ function truncate(str, n){
 };
 
 export default function RichListData({token}) {
-    const metrics = useSelector(selectMetrics);
+    const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
+    const metrics = useSelector(selectMetrics);
+    const { accountProfile, setLoading, openSnackbar } = useContext(AppContext);
+    
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(20);
     const [frozen, setFrozen] = useState(false);
     const [count, setCount] = useState(0);
     const [richList, setRichList] = useState([]);
-    const theme = useTheme();
+    const [wallets, setWallets] = useState([]); // Team Wallets
+
+    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
+    
     const {
         name,
         exch,
@@ -73,6 +84,66 @@ export default function RichListData({token}) {
         }
         getRichList();
     }, [page, rows, frozen]);
+
+    useEffect(() => {
+        function getTeamWallets() {
+            const accountAdmin = accountProfile.account;
+            const accountToken = accountProfile.btoken;
+            // https://api.xrpl.to/api/admin/get_team_wallets/0413ca7cfc258dfaf698c02fe304e607
+            axios.get(`${BASE_URL}/admin/get_team_wallets/${token.md5}`, {
+                headers: { 'x-access-account': accountAdmin, 'x-access-token': accountToken }
+            })
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        setWallets(ret.wallets);
+                        console.log(ret.wallets);
+                    }
+                }).catch(err => {
+                    console.log("Error on getting team wallets!", err);
+                }).then(function () {
+                    // always executed
+                });
+        }
+        if (isAdmin)
+            getTeamWallets();
+    }, [isAdmin]);
+
+    const onChangeTeamWallet = async (account) => {
+        setLoading(true);
+        try {
+            let res;
+
+            const accountAdmin = accountProfile.account;
+            const accountToken = accountProfile.btoken;
+
+            let action = 'add';
+
+            if (wallets.includes(account)) {
+                action = 'remove';
+            }
+
+            const body = {md5: token.md5, account, action};
+
+            res = await axios.post(`${BASE_URL}/admin/update_team_wallets`, body, {
+                headers: { 'x-access-account': accountAdmin, 'x-access-token': accountToken }
+            });
+
+            if (res.status === 200) {
+                const ret = res.data;
+                if (ret.status) {
+                    setWallets(ret.wallets);
+                    openSnackbar('Successful!', 'success');
+                } else {
+                    const err = ret.err;
+                    openSnackbar(err, 'error');
+                }
+            }
+        } catch (err) {
+            console.log(err);
+        }
+        setLoading(false);
+    }
 
     const onChangeFrozen = (e) => {
         setFrozen(!frozen);
@@ -117,6 +188,9 @@ export default function RichListData({token}) {
                             <TableCell align="left">Balance({name})</TableCell>
                             <TableCell align="left">Holding</TableCell>
                             <TableCell align="left">Value</TableCell>
+                            {isAdmin &&
+                                <TableCell align="left">Team Wallet</TableCell>
+                            }
                             <TableCell align="left"></TableCell>
                         </TableRow>
                     </TableHead>
@@ -174,6 +248,17 @@ export default function RichListData({token}) {
                                             </Stack>
                                             </Stack>
                                         </TableCell>
+
+                                        {isAdmin &&
+                                            <TableCell align="left">
+                                                <Checkbox
+                                                    checked={wallets.includes(account)}
+                                                    // onChange={onChangeTeamWallet(account)}
+                                                    onClick={() => {onChangeTeamWallet(account)}}
+                                                    inputProps={{ 'aria-label': 'controlled' }}
+                                                />
+                                            </TableCell>
+                                        }
                                         <TableCell align="left">
                                             <Stack direction="row" alignItems='center' spacing={2}>
                                                 <Link

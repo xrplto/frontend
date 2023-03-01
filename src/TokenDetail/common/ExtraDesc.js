@@ -41,6 +41,12 @@ const SupplyTypography = withStyles({
     }
 })(Typography);
 
+const TotalSupplyTypography = withStyles({
+    root: {
+        color: "#FFC107"
+    }
+})(Typography);
+
 export default function ExtraDesc({token}) {
     const theme = useTheme();
     const metrics = useSelector(selectMetrics);
@@ -48,6 +54,7 @@ export default function ExtraDesc({token}) {
     const {
         name,
         amount,
+        supply,
         exch,
         vol24h,
         /*vol24htx,
@@ -63,10 +70,11 @@ export default function ExtraDesc({token}) {
     let user = token.user;
     if (!user) user = name;
 
-    const marketcap = fNumber(amount * exch / metrics.USD);
-    const supply = fNumber(amount);
+    const marketcap = fNumber(new Decimal(supply).mul(exch).div(metrics.USD).toNumber());
+    const circulatingSupply = fNumber(supply);
+    const totalSupply = fNumber(amount);
     const volume = fNumber(vol24h);
-    const voldivmarket = Decimal.div(vol24h, amount).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+    const voldivmarket = Decimal.div(vol24h, supply).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
     return (
         <Stack spacing={2}>
@@ -122,7 +130,12 @@ export default function ExtraDesc({token}) {
                                 <Icon icon={infoFilled} />
                             </Tooltip>
                         </Stack>
-                        <SupplyTypography variant="body1">{supply}</SupplyTypography>
+                        <SupplyTypography variant="body1">{circulatingSupply}</SupplyTypography>
+                    </Stack>
+
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{mt: 1}}>
+                        <Typography variant="body1">Total Supply</Typography>
+                        <TotalSupplyTypography variant="body1">{totalSupply}</TotalSupplyTypography>
                     </Stack>
                 </Grid>
 
@@ -164,7 +177,13 @@ export default function ExtraDesc({token}) {
                         </Tooltip>
                     </Stack>
                     <Stack alignItems="center">
-                        <SupplyTypography variant="desc" sx={{mt:3,mb:3}}>{supply}</SupplyTypography>
+                        <SupplyTypography variant="desc" sx={{mt:3,mb:2}}>{circulatingSupply}</SupplyTypography>
+                    </Stack>
+
+                    <Typography variant="body1" sx={{pl:3}}>Total Supply</Typography>
+
+                    <Stack alignItems="center">
+                        <TotalSupplyTypography variant="desc" sx={{mt:1,mb:1}}>{totalSupply}</TotalSupplyTypography>
                     </Stack>
                 </Grid>
             </Grid>

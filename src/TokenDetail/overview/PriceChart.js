@@ -56,11 +56,6 @@ export default function PriceChart({ token }) {
 
                         setOriginalData(items);
 
-                        if (items && items.length > 0) {
-                            setMinTime(items[0][0]);
-                            setMaxTime(items[items.length - 1][0]);
-                        }
-
                         const newItems = [];
                         const median1 = createMedianFilter(2);
                         const median2 = createMedianFilter(2);
@@ -78,6 +73,11 @@ export default function PriceChart({ token }) {
                                     newItems.push([time, exch, usd]);
                                 }
                             } catch (e) {}
+                        }
+
+                        if (newItems && newItems.length > 0) {
+                            setMinTime(newItems[0][0]);
+                            setMaxTime(newItems[newItems.length - 1][0]);
                         }
 
                         setData(newItems);

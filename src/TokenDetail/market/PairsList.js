@@ -242,7 +242,7 @@ export default function PairsList({token, pairs}) {
                                                     </Link>
                                                 </Stack>
                                             )}
-                                            {curr2.issuer && (
+                                            {curr2.issuer && curr2.issuer !== 'XRPL' && (
                                                 <Stack direction="row" alignItems='center'>
                                                     <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{user2}</Typography>
                                                     <Link

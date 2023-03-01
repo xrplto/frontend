@@ -32,7 +32,7 @@ const TABLE_HEAD = [
     { no: 6, id: 'vol24htx', label: 'Trades', align: 'right', width: '6%', order: true },
     { no: 7, id: 'marketcap', label: 'Market Cap', align: 'right', width: '10%', order: true },
     { no: 8, id: 'trustlines', label: 'TrustLines', align: 'right', width: '10%', order: true },
-    { no: 9, id: 'amount', label: 'Total Supply', align: 'right', width: '15%', order: true },
+    { no: 9, id: 'supply', label: 'Circulating Supply', align: 'right', width: '15%', order: true },
     { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'right', width: '15%', order: false },
     { id: '' }
 ];

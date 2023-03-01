@@ -57,7 +57,7 @@ export default function PriceDesc({token}) {
                             component="img"
                             alt=""
                             sx={{ width: 135, height: 50, mt: 2 }}
-                            src={`${BASE_URL}/sparkline/${md5}`}
+                            src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
                         />
                     </Stack>
                 }/>

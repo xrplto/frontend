@@ -127,7 +127,7 @@ export default function ChartOptions(series) {
             y: {
                 formatter: (y) => {
                     if (typeof y !== 'undefined') {
-                        return `Holding Addresses: ${fIntNumber(y)}`;
+                        return `Trustlines: ${fIntNumber(y)}`;
                     }
                     return y;
                 },

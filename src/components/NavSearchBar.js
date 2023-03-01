@@ -114,7 +114,7 @@ const RenderOption = ({
 
                     <LazyLoadImage
                         alt=''
-                        src={`${BASE_URL}/sparkline/${md5}`}
+                        src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
                         width={108}
                         height={36}
                     />

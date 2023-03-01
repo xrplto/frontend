@@ -103,7 +103,8 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
         name,
         // currency,
         date,
-        amount,
+        amount, // Total Supply
+        supply, // Circulating Supply
         trustlines,
         vol24hxrp, // XRP amount with pair token
         vol24hx, // Token amount with pair XRP
@@ -131,7 +132,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
 
     const price = fNumber(exch / mUSD);
-    const marketcap = amount * exch / mUSD;
+    const marketcap = supply * exch / mUSD;
 
     return (
         <TableRow
@@ -231,13 +232,13 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
             </TableCell>
             <TableCell align="right" sx={{pl:0, pr:0}}>
                 <LazyLoadComponent>
-                    {fNumber(amount)} <Typography variant="small" noWrap>{name}</Typography>
+                    {fNumber(supply)} <Typography variant="small" noWrap>{name}</Typography>
                 </LazyLoadComponent>
             </TableCell>
             <TableCell align="right">
                 <LazyLoadImage
                     alt=''
-                    src={`${BASE_URL}/sparkline/${md5}`}
+                    src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
                     width={135}
                     height={50}
                 />
