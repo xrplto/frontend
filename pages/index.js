@@ -97,13 +97,11 @@ const BASE_URL = 'http://135.181.118.217/api';
 // revalidation is enabled and a new request comes in
 export async function getStaticProps() {
     // https://api.xrpl.to/api/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false
-    // https://api.xrpl.to/api/initial
     let data = null;
     try {
         var t1 = performance.now();
 
-        // const res = await axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false`);
-        const res = await axios.get(`${BASE_URL}/initial`);
+        const res = await axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false`);
 
         data = res.data;
 

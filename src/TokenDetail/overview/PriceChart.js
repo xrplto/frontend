@@ -36,7 +36,6 @@ export default function PriceChart({ token }) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
     const [data, setData] = useState([]);
-    const [originalData, setOriginalData] = useState([]);
     const [range, setRange] = useState('1D');
 
     const [minTime, setMinTime] = useState(0);
@@ -54,33 +53,12 @@ export default function PriceChart({ token }) {
                     if (ret) {
                         const items = ret.history;
 
-                        setOriginalData(items);
-
-                        const newItems = [];
-                        const median1 = createMedianFilter(2);
-                        const median2 = createMedianFilter(2);
-
-                        for (const item of items) {
-                            const time = item[0];
-                            const exch = item[1];
-                            const usd = item[2];
-                            
-                            const m1 = median1(exch);
-                            const m2 = median2(m1);
-                            try {
-                                const ratio = Decimal.div(exch, m2).toNumber();
-                                if (ratio < 1.2 && ratio > 0.9) {
-                                    newItems.push([time, exch, usd]);
-                                }
-                            } catch (e) {}
+                        if (items && items.length > 0) {
+                            setMinTime(items[0][0]);
+                            setMaxTime(items[items.length - 1][0]);
                         }
 
-                        if (newItems && newItems.length > 0) {
-                            setMinTime(newItems[0][0]);
-                            setMaxTime(newItems[newItems.length - 1][0]);
-                        }
-
-                        setData(newItems);
+                        setData(items);
                     }
                 }).catch(err => {
                     console.log("Error on getting graph data.", err);
@@ -344,7 +322,7 @@ export default function PriceChart({ token }) {
         const median1 = createMedianFilter(2);
         const median2 = createMedianFilter(2);
         const csvData = [];
-        for (const p of originalData) {
+        for (const p of data) {
             const val = p[1];
             const row = {};
 

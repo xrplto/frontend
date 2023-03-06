@@ -51,6 +51,7 @@ export default function Description({token, showEditor, setShowEditor, descripti
         vol24h,
         vol24hxrp,
         vol24hx,
+        urlSlug,
         /*
         date,
         md5,
@@ -96,10 +97,10 @@ export default function Description({token, showEditor, setShowEditor, descripti
 
             <Typography sx={{mt:2}}>
                 If you would like to know where to buy {user}, the top XRPL DEX for trading in {user} token are currently 
-                <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener nofollow"
-                    href={`https://xumm.app/detect/xapp:xumm.dex?issuer=${issuer}&currency=${currency}`}
-                >{' Xumm DEX'}</Link> and
-                <Link color="#3366FF" underline="none" target="_blank" rel="noreferrer noopener nofollow"
+                <Link color="#3366FF" underline="none"
+                    href={`/token/${urlSlug}/trade`}
+                >{' XRPL.to DEX'}</Link> and
+                <Link color="#3366FF" underline="none"
                     href={`https://sologenic.org/trade?network=mainnet&market=${currency}%2B${issuer}%2FXRP`}
                 >{' Sologenic DEX'}</Link>.
                 

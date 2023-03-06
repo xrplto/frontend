@@ -136,7 +136,7 @@ export default function UserDesc({token}) {
             <Box
                 sx={{
                     display: "flex",
-                    gap: 1,
+                    gap: 0.5,
                     py: 1,
                     overflow: "auto",
                     width: "100%",
@@ -147,11 +147,11 @@ export default function UserDesc({token}) {
                 }}
             >
                 <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Rank by Volume(24h)</Typography>}>
-                    <Chip label={'Rank #' + id} color="primary" variant="outlined" size="small"/>
+                    <Chip label={<Typography variant="s16">Rank # {id}</Typography>} color="primary" variant="outlined" size="small"/>
                 </Tooltip>
-                <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
-                <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
-                <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
+                <Chip label={<Typography variant="s16">{holders} Holders</Typography>} color="error" variant="outlined" size="small"/>
+                <Chip label={<Typography variant="s16">{offers} Offers</Typography>} color="warning" variant="outlined" size="small"/>
+                <Chip label={<Typography variant="s16">{trustlines} TrustLines</Typography>} color="info" variant="outlined" size="small"/>
                 {/* <Chip label='Sponsored' color="primary" variant={"outlined"} size="small" icon={<Avatar sx={{ width: 16, height: 16 }} src="/static/sponsor.png"/>}  /> */}
             </Box>
 

@@ -27,23 +27,11 @@ import {TokenRow} from './TokenRow';
 import TrustSet from 'src/components/TrustSet';
 
 // ----------------------------------------------------------------------
-const ContentWrapper = styled(Box)(({ theme }) => ({
-    display: "flex",
-    gap: 1,
-    py: 1,
-    overflow: "auto",
-    width: "100%",
-    "& > *": {
-        scrollSnapAlign: "center",
-    },
-    "::-webkit-scrollbar": { display: "none" },
-}));
-
 export default function TokenList({tag, tokens, setTokens, tMap}) {
     const dispatch = useDispatch();
     const metrics = useSelector(selectMetrics);
 
-    const WSS_URL = 'wss://ws.xrpl.to';
+    // const WSS_URL = 'wss://ws.xrpl.to';
     const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
     const BASE_URL = 'https://api.xrpl.to/api';
     

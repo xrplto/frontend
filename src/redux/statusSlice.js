@@ -3,7 +3,7 @@ import { configureStore } from "@reduxjs/toolkit";
 
 const initialState = {
     metrics: {
-        count: 0,
+        total: 0,
         USD:100,
         EUR:100,
         JPY:100,
@@ -41,7 +41,7 @@ const statusSlice = createSlice({
         update_metrics: (state, action) => {
             const data = action.payload;
             const metrics = {
-                count: data.count,
+                total: data.total,
                 USD: data.exch.USD,
                 EUR: data.exch.EUR,
                 JPY: data.exch.JPY,
@@ -54,7 +54,7 @@ const statusSlice = createSlice({
         },
         update_filteredCount: (state, action) => {
             const data = action.payload;
-            state.filteredCount = data.length;
+            state.filteredCount = data.count;
         },
         updateAccountData: (state, action) => {
             state.accountData = action.payload;
@@ -80,7 +80,7 @@ export function configureRedux(data) {
     if (data) {
         defaultState = {
             metrics: {
-                count: data.count,
+                total: data.total,
                 USD: data.exch.USD,
                 EUR: data.exch.EUR,
                 JPY: data.exch.JPY,
@@ -93,7 +93,7 @@ export function configureRedux(data) {
                 offers:[]
             },
             refreshAccount: 0,
-            filteredCount: data.length
+            filteredCount: data.count
         }
     }
 

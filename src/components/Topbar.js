@@ -83,7 +83,7 @@ export default function Topbar() {
                 <ContentWrapper>
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Typography variant="small">Tokens: </Typography>
-                        <Typography variant="small">{fIntNumber(metrics.count)}</Typography>
+                        <Typography variant="small">{fIntNumber(metrics.total)}</Typography>
                         <H24Style>
                             <Tooltip title="Metrics on 24 hours">
                                 <Stack spacing={0} alignItems='center'>

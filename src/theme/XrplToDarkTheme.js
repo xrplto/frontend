@@ -1231,7 +1231,8 @@ export const XrplToDarkTheme = createTheme({
           s12: 'span',
           s13: 'span',
           s14: 'span',
-          s15: 'span'
+          s15: 'span',
+          s16: 'span',
         }
       },
       styleOverrides: {
@@ -1298,6 +1299,17 @@ export const XrplToDarkTheme = createTheme({
             color: colors.alpha.black[100],
             [theme.breakpoints.up('sm')]: {
               fontSize: 20,
+            },
+          })
+        },
+        {
+          props: { variant: 's16' },
+          style: ({ theme }) => ({
+            fontWeight: 400,
+            fontSize: 11,
+            // color: colors.alpha.black[100],
+            [theme.breakpoints.up('sm')]: {
+              fontSize: 13,
             },
           })
         }
