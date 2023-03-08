@@ -137,7 +137,7 @@ export default function HistoryData({token}) {
                     <TableHead>
                         <TableRow>
                             <TableCell align="left">#</TableCell>
-                            <TableCell align="left">Type</TableCell>
+                            <TableCell align="left">Dir</TableCell>
                             <TableCell align="left">Price</TableCell>
                             {/* <TableCell align="left">Volume</TableCell> */}
                             <TableCell align="left">Paid</TableCell>
@@ -172,33 +172,40 @@ export default function HistoryData({token}) {
                         //     "time": 1471034710000
                         // },
                         hists.map((row, idx) => {
+
                                 const {
                                     _id,
                                     dir,
                                     account,
-                                    paid,
-                                    got,
-                                    pair,
-                                    hash,
+                                    maker,
+                                    taker,
+                                    seq,
+                                    takerPaid,
+                                    takerGot,
                                     ledger,
+                                    hash,
                                     time
                                 } = row;
 
+                                
+                                const paidName = normalizeCurrencyCodeXummImpl(takerPaid.currency);
+                                const gotName = normalizeCurrencyCodeXummImpl(takerGot.currency);
+                                const md51 = getMD5(takerPaid.issuer, takerPaid.currency);
+                                
                                 let exch;
-                                // let volume;
                                 let name;
-
-                                const md51 = getMD5(paid.issuer, paid.currency);
+                                let type;
                                 // const md52 = getMD5(got.issuer, got.currency);
-
                                 if (md5 === md51) {
                                     // volume = got.value;
-                                    exch = Decimal.div(got.value, paid.value).toNumber();
-                                    name = got.name;
+                                    exch = Decimal.div(takerGot.value, takerPaid.value).toNumber();
+                                    name = gotName;
+                                    type = dir==='buy'?'buy':'sell';
                                 } else {
                                     // volume = paid.value;
-                                    exch = Decimal.div(paid.value, got.value).toNumber();
-                                    name = paid.name;
+                                    exch = Decimal.div(takerPaid.value, takerGot.value).toNumber();
+                                    name = paidName;
+                                    type = dir==='buy'?'sell':'buy';
                                 }
 
                                 const strDateTime = formatDateTime(time);
@@ -209,7 +216,7 @@ export default function HistoryData({token}) {
                                         key={_id}
                                         sx={{
                                             [`& .${tableCellClasses.root}`]: {
-                                                color: (dir === 'sell' ? '#007B55' : '#B72136')
+                                                color: (type === 'sell' ? '#B72136' : '#007B55')
                                             }
                                         }}
                                     >
@@ -218,17 +225,17 @@ export default function HistoryData({token}) {
                                             <Stack spacing={1}>
                                                 {dir==='sell' && (
                                                     <Stack direction="row">
-                                                        <BuyTypography variant="caption">
-                                                        buy
-                                                        </BuyTypography>
+                                                        <SellTypography variant="caption">
+                                                        sell
+                                                        </SellTypography>
                                                     </Stack>
                                                 )}
                                                 
                                                 {dir==='buy' && (
                                                     <Stack direction="row">
-                                                        <SellTypography variant="caption">
-                                                        sell
-                                                        </SellTypography>
+                                                        <BuyTypography variant="caption">
+                                                        buy
+                                                        </BuyTypography>
                                                     </Stack>
                                                 )}
                                             </Stack>
@@ -237,11 +244,11 @@ export default function HistoryData({token}) {
                                         {/* <TableCell align="left"><Typography variant="subtitle2">{fNumber(volume)}</Typography></TableCell> */}
                                         
                                         <TableCell align="left">
-                                            {fNumber(paid.value)} <Typography variant="caption">{paid.name}</Typography>
+                                            {fNumber(takerPaid.value)} <Typography variant="caption">{paidName}</Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
-                                            {fNumber(got.value)} <Typography variant="caption">{got.name}</Typography>
+                                            {fNumber(takerGot.value)} <Typography variant="caption">{gotName}</Typography>
                                         </TableCell>
 
                                         <TableCell align="left">

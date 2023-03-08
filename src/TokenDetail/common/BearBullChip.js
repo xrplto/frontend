@@ -39,8 +39,16 @@ BearBullChip.propTypes = {
     tooltip: PropTypes.any
 };
 
+function abs(num) {
+    if (num < 0)
+        return -num;
+    return num;
+}
+
 export default function BearBullChip({value, tooltip}) {
-    const pro = fPercent(value);
+    let pro = fPercent(value);
+
+    if (abs(pro) < 0.0001) pro = 0;
 
     let strPro = 0;
     if (pro < 0) {

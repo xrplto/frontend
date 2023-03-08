@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {MD5} from "crypto-js";
 import Decimal from 'decimal.js';
 import { useState, useEffect } from 'react';
 
@@ -11,14 +12,9 @@ import {
     TableCell,
     TableHead,
     TableRow,
-    Tooltip,
     Typography
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
-
-// Iconify
-import { Icon } from '@iconify/react';
-import infoFilled from '@iconify/icons-ep/info-filled';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
@@ -37,10 +33,13 @@ const fmNumber = (value, len) => {
         return new Decimal(amount).toFixed(len, Decimal.ROUND_DOWN);
 }
 
-export default function ExchHistory({pair}) {
+function getMD5(issuer, currency) {
+    return MD5(issuer  + '_' +  currency).toString();
+}
+
+export default function ExchHistory({pair, md5}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
-    const EPOCH_OFFSET = 946684800;
 
     const [tradeExchs, setTradeExchs] = useState([]);
 
@@ -50,12 +49,12 @@ export default function ExchHistory({pair}) {
             const page = 0;
             const rows = 30;
             // SOLO
-            // https://api.xrpl.to/api/exchs?pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
-            axios.get(`${BASE_URL}/exchs?pair=${pair.pair}&page=${page}&limit=${rows}`)
+            // https://api.xrpl.to/api/last_trades?md5=ekfjlk&pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
+            axios.get(`${BASE_URL}/last_trades?md5=${md5}&issuer=${pair.curr2.issuer}&currency=${pair.curr2.currency}&limit=30`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
-                        setTradeExchs(ret.exchs);
+                        setTradeExchs(ret.trades);
                     }
                 }).catch(err => {
                     console.log("Error on getting exchanges!!!", err);
@@ -71,26 +70,6 @@ export default function ExchHistory({pair}) {
             clearInterval(timer);
         }
     }, [pair]);
-
-    // {
-    //     "pair": "fa99aff608a10186d3b1ff33b5cd665f",
-    //     "curr1": {
-    //         "currency": "534F4C4F00000000000000000000000000000000",
-    //         "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-    //         "value": 1170095.762918316,
-    //         "md5": "0413ca7cfc258dfaf698c02fe304e607",
-    //         "name": "SOLO"
-    //     },
-    //     "curr2": {
-    //         "currency": "XRP",
-    //         "issuer": "XRPL",
-    //         "value": 873555.2630949989,
-    //         "md5": "84e5efeb89c4eae8f68188982dc290d8",
-    //         "name": "XRP"
-    //     },
-    //     "count": 2678,
-    //     "id": 1
-    // }
 
     return (
         <Stack>
@@ -130,38 +109,36 @@ export default function ExchHistory({pair}) {
                                 //seq,
                                 takerPaid,
                                 takerGot,
-                                date,
+                                time,
                                 cancel,
                                 // pair,
                                 // xUSD
                             } = row;
-                            const curr1 = pair.curr1;
-                            const curr2 = pair.curr2;
-                            
-                            const vPaid = takerPaid.value;
-                            const vGot = takerGot.value;
 
+                            const paidName = normalizeCurrencyCodeXummImpl(takerPaid.currency);
+                            const gotName = normalizeCurrencyCodeXummImpl(takerGot.currency);
+                            const md51 = getMD5(takerPaid.issuer, takerPaid.currency);
+                            
                             let exch;
+                            let name;
                             let amount;
-                            // let buy;
-                            if (takerPaid.issuer === curr1.issuer && takerPaid.currency === curr1.currency) {
-                                // SELL, Red
-                                exch = vGot / vPaid;
-                                amount = vPaid;
-                                // buy = false;
+                            let type;
+                            // const md52 = getMD5(got.issuer, got.currency);
+                            if (md5 === md51) {
+                                // volume = got.value;
+                                exch = Decimal.div(takerGot.value, takerPaid.value).toNumber();
+                                name = gotName;
+                                amount = fmNumber(takerPaid.value, 2);
+                                type = dir==='buy'?'buy':'sell';
                             } else {
-                                // BUY, Green
-                                exch = vPaid / vGot;
-                                amount = vGot;
-                                // buy = true;
+                                // volume = paid.value;
+                                exch = Decimal.div(takerPaid.value, takerGot.value).toNumber();
+                                name = paidName;
+                                amount = fmNumber(takerGot.value, 2);
+                                type = dir==='buy'?'sell':'buy';
                             }
-
-                            amount = fmNumber(amount, 2);
-
-                            // if (sumAmount.toString().length > 8)
-                            //     sumAmount = expo(sumAmount, 2);
                             
-                            const nDate = new Date((date + EPOCH_OFFSET) * 1000);
+                            const nDate = new Date(time);
                             // const year = nDate.getFullYear();
                             // const month = nDate.getMonth() + 1;
                             // const day = nDate.getDate();
@@ -174,11 +151,8 @@ export default function ExchHistory({pair}) {
                             // const strDate = `${year}-${month}-${day}`;
                             const strTime = `${hour}:${min}:${sec}`;
 
-                            const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
-                            const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
-
-                            //const namePaid = '';
-                            //const nameGot = '';
+                            // const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
+                            // const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
 
                             return (
                                 <TableRow
@@ -186,7 +160,7 @@ export default function ExchHistory({pair}) {
                                     key={_id}
                                     sx={{
                                         [`& .${tableCellClasses.root}`]: {
-                                            color: (cancel ? '#FFC107': (dir === 'sell' ? '#007B55' : '#B72136'))
+                                            color: (type === 'sell' ? '#B72136' : '#007B55')
                                         }
                                     }}
                                 >

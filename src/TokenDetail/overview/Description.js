@@ -1,7 +1,6 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
+import Decimal from 'decimal.js';
 
-import MarkdownIt from 'markdown-it';
 // import MDEditor from 'react-markdown-editor-lite';
 
 import dynamic from "next/dynamic";
@@ -44,14 +43,17 @@ export default function Description({token, showEditor, setShowEditor, descripti
         id,
         name,
         exch,
+        usd,
         pro24h,
         amount,
+        supply,
         issuer,
         currency,
         vol24h,
         vol24hxrp,
         vol24hx,
         urlSlug,
+        marketcap,
         /*
         date,
         md5,
@@ -64,10 +66,8 @@ export default function Description({token, showEditor, setShowEditor, descripti
     let user = token.user;
     if (!user) user = name;
 
-    const price = fNumber(exch / metrics.USD);
-    const marketcap = fNumber(amount * exch / metrics.USD);
-    const supply = fNumber(amount);
-    const volume24h = fNumber(vol24hxrp / metrics.USD);
+    const price = fNumber(usd || 0);
+    const usdMarketCap = Decimal.div(marketcap, metrics.USD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
     //const vpro7d = fPercent(pro7d);
     const vpro24h = fPercent(pro24h);
@@ -92,7 +92,7 @@ export default function Description({token, showEditor, setShowEditor, descripti
             <Typography variant="h2" fontSize='1.1rem' sx={{mt:0}}>{`${name} Price Live Data`}</Typography>
 
             <Typography sx={{mt:3}}>
-                The live {user} price today is ${price} USD with a 24-hour trading volume of ${volume24h} {name}. We update our {name} to USD price in real-time. {user} is {strPro24h} in the last 24 hours. The current XRPL.to ranking is #{id}, with a live market cap of ${marketcap} USD. It has a circulating supply of {supply} {name} tokens.
+                The live {user} price today is ${price} USD with a 24-hour trading volume of {fNumber(vol24hx)} {name}. We update our {name} to USD price in real-time. {user} is {strPro24h} in the last 24 hours. The current XRPL.to ranking is #{id}, with a live market cap of ${fNumber(usdMarketCap)} USD. It has a circulating supply of {fNumber(supply)} {name} tokens.
             </Typography>
 
             <Typography sx={{mt:2}}>

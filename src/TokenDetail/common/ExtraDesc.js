@@ -57,24 +57,27 @@ export default function ExtraDesc({token}) {
         supply,
         exch,
         vol24h,
-        /*vol24htx,
+        marketcap,
+        vol24htx,
+        vol24hx,
+        vol24hxrp,
         holders,
         offers,
-        id
+        id,
         issuer,
         currency,
         date,
-        trustlines,*/
+        trustlines
     } = token;
   
     let user = token.user;
     if (!user) user = name;
 
-    const marketcap = fNumber(new Decimal(supply).mul(exch).div(metrics.USD).toNumber());
     const circulatingSupply = fNumber(supply);
     const totalSupply = fNumber(amount);
-    const volume = fNumber(vol24h);
-    const voldivmarket = Decimal.div(vol24h, supply).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+    const volume = fNumber(vol24hx);
+    const voldivmarket = marketcap>0?Decimal.div(vol24hxrp, marketcap).toNumber():0; // .toFixed(5, Decimal.ROUND_DOWN)
+    const usdMarketCap = Decimal.div(marketcap, metrics.USD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
     return (
         <Stack spacing={2}>
@@ -100,12 +103,12 @@ export default function ExtraDesc({token}) {
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Stack direction="row" alignItems="center" gap={1}>
                             <Typography variant="body1">Market Cap</Typography>
-                            <Tooltip title={<Typography variant="body2">The total market value of a cryptocurrency's circulating supply.<br/>It is analogous to the free-float capitalization in the stock market.<br/>Market Cap = Current Price x Circulating Supply.</Typography>}>
+                            <Tooltip title={<Typography variant="body2">The total market value of a cryptocurrency's circulating supply.<br/>It is analogous to the free-float capitalization in the stock market.<br/>arket Capitalization = (Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens).</Typography>}>
                                 <Icon icon={infoFilled} />
                             </Tooltip>
                         </Stack>
 
-                        <MarketTypography variant="body1">$ {marketcap}</MarketTypography>
+                        <MarketTypography variant="body1">$ {fNumber(usdMarketCap)}</MarketTypography>
                     </Stack>
 
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{mt: 1}}>
@@ -142,12 +145,12 @@ export default function ExtraDesc({token}) {
                 <Grid item xs={12} md={4} sx={{display: { xs: 'none', md: 'block' }, borderRight: '1px solid', borderRightColor: theme.palette.divider}}>
                     <Stack direction="row" alignItems="center" gap={1} sx={{pl:3}}>
                         <Typography variant="body1">Market Cap</Typography>
-                        <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">The total market value of a cryptocurrency's circulating supply.<br/>It is analogous to the free-float capitalization in the stock market.<br/>Market Cap = Current Price x Circulating Supply.</Typography>}>
+                        <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">The total market value of a cryptocurrency's circulating supply.<br/>It is analogous to the free-float capitalization in the stock market.<br/>Market Capitalization = (Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)</Typography>}>
                             <Icon icon={infoFilled} />
                         </Tooltip>
                     </Stack>
                     <Stack alignItems="center">
-                        <MarketTypography variant="desc" sx={{mt:3,mb:3}}>$ {marketcap}</MarketTypography>
+                        <MarketTypography variant="desc" sx={{mt:3,mb:3}}>$ {fNumber(usdMarketCap)}</MarketTypography>
                     </Stack>
                 </Grid>
 

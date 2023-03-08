@@ -1,3 +1,4 @@
+import Decimal from 'decimal.js';
 import { useState, useEffect } from 'react';
 import React, { Suspense } from "react";
 import { LazyLoadImage, LazyLoadComponent } from 'react-lazy-load-image-component';
@@ -119,7 +120,9 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
         pro7d,
         pro24h,
         exch,
-        imgExt
+        usd,
+        imgExt,
+        marketcap
     } = token;
 
     useEffect(() => {
@@ -131,8 +134,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
 
-    const price = fNumber(exch / mUSD);
-    const marketcap = supply * exch / mUSD;
+    const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
     return (
         <TableRow
@@ -186,7 +188,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
                 }}
             >
                 <LazyLoadComponent>
-                    <TransitionTypo variant="h4" noWrap>$ {price}</TransitionTypo>
+                    <TransitionTypo variant="h4" noWrap>$ {fNumber(usd)}</TransitionTypo>
                     <TransitionTypo variant="h6" noWrap><Icon icon={rippleSolid} width={12} height={12}/> {fNumber(exch)}</TransitionTypo>
                 </LazyLoadComponent>
             </TableCell>
@@ -220,7 +222,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
             </TableCell>
             <TableCell align="right" sx={{pl:0, pr:0}}>
                 <LazyLoadComponent>
-                    ${fNumber(marketcap)}
+                    ${fNumber(usdMarketCap)}
                 </LazyLoadComponent>
             </TableCell>
             {/* <TableCell align="left">{holders}</TableCell>

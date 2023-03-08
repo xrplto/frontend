@@ -299,6 +299,9 @@ export default function PriceChart({ token }) {
             show: true,
             tickAmount: 2,
             labels: {
+                style: {
+                    colors: ['#008FFB00'],
+                },
                 /**
                 * Allows users to apply a custom formatter function to yaxis labels.
                 *
@@ -306,7 +309,8 @@ export default function PriceChart({ token }) {
                 * @param { index } index of the tick / currently executing iteration in yaxis labels array
                 */
                 formatter: function(val, index) {
-                    return fCurrency5(val) + 'Y';
+                    return fNumber(val);
+                    // return '   ';
                 }
             }
         }
@@ -320,7 +324,7 @@ export default function PriceChart({ token }) {
     const handleDownloadCSV = (event) => {
         // data
         const median1 = createMedianFilter(2);
-        const median2 = createMedianFilter(2);
+        const median2 = createMedianFilter(3);
         const csvData = [];
         for (const p of data) {
             const val = p[1];
@@ -328,7 +332,8 @@ export default function PriceChart({ token }) {
 
             row.original = val;
             row.median1 = median1(val);
-            row.median2 = median2(row.median1);
+            row.median2 = median2(val);
+            row.time = p[0];
             csvData.push(row);
         }
 
@@ -336,7 +341,7 @@ export default function PriceChart({ token }) {
             data: csvData,
             filename: 'filter_report',
             delimiter: ',',
-            headers: ['Original', "Median_1", "Median_2"]
+            headers: ['Original', "Median_1", "Median_2", "Time"]
         }
         csvDownload(dataToConvert);
     }

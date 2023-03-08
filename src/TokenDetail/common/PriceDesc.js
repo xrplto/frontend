@@ -1,15 +1,9 @@
 // Material
 import {
-    Avatar,
-    Chip,
     Box,
     Stack,
     Typography
 } from '@mui/material';
-
-// Redux
-import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
 
 // Components
 import BearBullChip from './BearBullChip';
@@ -21,11 +15,10 @@ import { fNumber } from 'src/utils/formatNumber';
 export default function PriceDesc({token}) {
     const BASE_URL = 'https://api.xrpl.to/api'; // 'http://localhost/api';
 
-    const metrics = useSelector(selectMetrics);
-
     const {
         name,
         exch,
+        usd,
         pro7d,
         pro24h,
         md5,
@@ -40,7 +33,7 @@ export default function PriceDesc({token}) {
             <Stack direction="row" spacing={2} sx={{mt:0}} alignItems='center'>
                 <Stack direction="row" spacing={1} alignItems='center'>
                     <Typography variant="price" noWrap>
-                        $ {fNumber(exch / metrics.USD)}
+                        $ {fNumber(usd)}
                     </Typography>
                     <Typography variant="subtitle1" style={{marginTop:8}}>
                         {fNumber(exch)} XRP

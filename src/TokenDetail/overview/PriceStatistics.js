@@ -61,6 +61,7 @@ export default function PriceStatistics({token}) {
         vol24h,
         vol24hxrp,
         vol24hx,
+        marketcap,
         /*
         pro7d,
         p7d,
@@ -75,9 +76,9 @@ export default function PriceStatistics({token}) {
     let user = token.user;
     if (!user) user = name;
 
-    const marketcap = amount * exch / metrics.USD;
-    const voldivmarket = Decimal.div(vol24h, amount).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
-   
+    const voldivmarket = marketcap>0?Decimal.div(vol24hxrp, marketcap).toNumber():0; // .toFixed(5, Decimal.ROUND_DOWN)
+    const usdMarketCap = Decimal.div(marketcap, metrics.USD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+
     let strPc24h;
     if (p24h < 0) {
         strPc24h = fNumber(-p24h);
@@ -137,7 +138,7 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Market Cap</Typography></TableCell>
-                        <TableCell align="left">$ {fNumber(marketcap)}</TableCell>
+                        <TableCell align="left">$ {fNumber(usdMarketCap)}</TableCell>
                     </TableRow>
                 </TableBody>
             </Table>

@@ -7,6 +7,8 @@ import { ContextProvider } from 'src/AppContext';
 import XSnackbar from 'src/components/Snackbar';
 import { useSnackbar } from 'src/components/useSnackbar';
 
+import "./zMain.css";
+
 function XRPLToApp(props) {
     const { isOpen, msg, variant, openSnackbar, closeSnackbar } = useSnackbar();
 

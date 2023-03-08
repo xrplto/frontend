@@ -813,7 +813,7 @@ export const XrplToDarkTheme = createTheme({
     MuiLink: {
       defaultProps: {
         underline: 'hover',
-        color: '#2de370'
+        color: '#2de370 !important'
       }
     },
     MuiLinearProgress: {

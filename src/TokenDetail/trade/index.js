@@ -239,7 +239,7 @@ export default function Trade({token}) {
             <Grid item xs={12} md={9.5} lg={9.5} >
                 <Grid container spacing={3} sx={{p:0}}>
                     <Grid item xs={12} md={4} lg={4} sx={{ display: { xs: 'none', sm: 'none', md: 'block' } }}>
-                        <ExchHistory pair={pair} />
+                        <ExchHistory pair={pair} md5={token.md5} />
                     </Grid>
                     <Grid item xs={12} md={8} lg={8}>
                         <OrderBook pair={pair} asks={asks} bids={bids} onBidClick={onBidClick} onAskClick={onAskClick}/>

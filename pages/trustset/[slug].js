@@ -115,7 +115,8 @@ function TrustLine(props) {
         imgExt,
         md5,
         tags,
-        social
+        social,
+        marketcap
     } = token;
 
     let user = token.user;
@@ -123,7 +124,7 @@ function TrustLine(props) {
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
 
-    const marketcap = amount * exch / metrics.USD;
+    // const marketcap = amount * exch / metrics.USD;
 
     useEffect(() => {
         var timer = null;
