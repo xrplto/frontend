@@ -133,10 +133,16 @@ export async function getServerSideProps(ctx) {
         ogp.desc = `Get the latest ${user} price, ${name} market cap, trading pairs, charts and data today from the world's number one XRP Ledger token price-tracking website`;
 
         ret = {data, ogp};
-    }
-
-    return {
-        props: ret, // will be passed to the page component as props
+        return {
+            props: ret, // will be passed to the page component as props
+        }
+    } else {
+        return {
+            redirect: {
+                permanent: false,
+                destination: '/404'
+            }
+        }
     }
 }
 

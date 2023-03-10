@@ -137,18 +137,13 @@ export default function PairsList({token, pairs}) {
                             user2 = truncate(user2, 12);
 
                             // market=434F524500000000000000000000000000000000%2BrcoreNywaoz2ZCQ8Lg2EbSLnGuRBmun6D%2F534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz
-                            let soloDexURL = '';
-                            if (curr2.issuer)
-                                soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}%2B${curr2.issuer}`;
-                            else
-                                soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}`;
+                            let soloDexURL = `https://sologenic.org/trade?network=mainnet&market=${curr1.currency}%2B${curr1.issuer}%2F${curr2.currency}`;
+                            if (curr2.currency !== 'XRP')
+                                soloDexURL += `%2B${curr2.issuer}`;
 
-                            let gatehubDexURL = '';
-                            if (curr2.issuer)
-                                gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}+${curr2.issuer}`;
-                            else
-                                gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}`;
-                                
+                            let gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}`;
+                            if (curr2.currency !== 'XRP')
+                                gatehubDexURL += `+${curr2.issuer}`;
 
                             let xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
 

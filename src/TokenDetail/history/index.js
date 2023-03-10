@@ -140,8 +140,10 @@ export default function HistoryData({token}) {
                             <TableCell align="left">Dir</TableCell>
                             <TableCell align="left">Price</TableCell>
                             {/* <TableCell align="left">Volume</TableCell> */}
-                            <TableCell align="left">Paid</TableCell>
-                            <TableCell align="left">Got</TableCell>
+                            <TableCell align="left">Taker Paid</TableCell>
+                            <TableCell align="left">Taker Got</TableCell>
+                            <TableCell align="left">Taker</TableCell>
+                            <TableCell align="left">Maker</TableCell>
                             <TableCell align="left">Time</TableCell>
                             <TableCell align="left">Ledger</TableCell>
                             <TableCell align="left">Account</TableCell>
@@ -249,6 +251,30 @@ export default function HistoryData({token}) {
 
                                         <TableCell align="left">
                                             {fNumber(takerGot.value)} <Typography variant="caption">{gotName}</Typography>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            <Link
+                                                // underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={`https://bithomp.com/explorer/${taker}`}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                {truncate(taker, 12)}
+                                            </Link>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            <Link
+                                                // underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={`https://bithomp.com/explorer/${maker}`}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                {truncate(maker, 12)}
+                                            </Link>
                                         </TableCell>
 
                                         <TableCell align="left">

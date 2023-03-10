@@ -3,11 +3,6 @@ import { useState, useEffect } from 'react';
 import React, { Suspense } from "react";
 import { LazyLoadImage, LazyLoadComponent } from 'react-lazy-load-image-component';
 
-// Iconify
-import { Icon } from '@iconify/react';
-import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
-
 // Material
 import { withStyles } from '@mui/styles';
 import {
@@ -17,8 +12,19 @@ import {
     Stack,
     TableCell,
     TableRow,
+    Tooltip,
     Typography
 } from '@mui/material';
+
+// Iconify
+import { Icon } from '@iconify/react';
+import infoFilled from '@iconify/icons-ep/info-filled';
+import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
+import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
 // Components
 import TokenMoreMenu from './TokenMoreMenu';
@@ -97,6 +103,9 @@ export const TokenRow = React.memo(fTokenRow);
 
 function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
     const BASE_URL = 'https://api.xrpl.to/api';
+    const { accountProfile } = useContext(AppContext);
+    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
+
     const [priceColor, setPriceColor] = useState('');
     const {
         id,
@@ -107,6 +116,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
         amount, // Total Supply
         supply, // Circulating Supply
         trustlines,
+        lines,
         vol24hxrp, // XRP amount with pair token
         vol24hx, // Token amount with pair XRP
         //vol24h,
@@ -171,8 +181,8 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
                                 <Stack>
                                     <Typography variant="token" color={urlSlug === md5?'#B72136':''} noWrap>{truncate(name, 8)}</Typography>
                                     <Typography variant="caption" noWrap>
-                                        {truncate(user, 8)}
-                                        {kyc && (<Typography variant='kyc'>KYC</Typography>)}
+                                        {truncate(user, 13)}
+                                        {kyc && (<Typography variant='kyc' sx={{ml: 0.2}}>KYC</Typography>)}
                                     </Typography>
                                     <Typography variant="small">{date}</Typography>
                                 </Stack>
@@ -183,8 +193,6 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
             <TableCell align="right"
                 sx={{
                     color: priceColor,
-                    pl:0,
-                    pr:0
                 }}
             >
                 <LazyLoadComponent>
@@ -192,17 +200,17 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
                     <TransitionTypo variant="h6" noWrap><Icon icon={rippleSolid} width={12} height={12}/> {fNumber(exch)}</TransitionTypo>
                 </LazyLoadComponent>
             </TableCell>
-            <TableCell align="right" sx={{pl:0, pr:0}}>
+            <TableCell align="right">
                 <LazyLoadComponent>
                     <BearBullLabel value={pro24h} variant="h4" />
                 </LazyLoadComponent>
             </TableCell>
-            <TableCell align="right" sx={{pl:0, pr:0}}>
+            <TableCell align="right">
                 <LazyLoadComponent>
                     <BearBullLabel value={pro7d} variant="h4" />
                 </LazyLoadComponent>
             </TableCell>
-            <TableCell align="right" sx={{pl:0, pr:0}}>
+            <TableCell align="right">
                 <LazyLoadComponent>
                     <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems='center'>
                         <Icon icon={rippleSolid} />
@@ -215,24 +223,33 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
                     </Stack>
                 </LazyLoadComponent>
             </TableCell>
-            <TableCell align="right" sx={{pl:0, pr:0}}>
+            <TableCell align="right">
                 <LazyLoadComponent>
                     {fNumber(vol24htx)}
                 </LazyLoadComponent>
             </TableCell>
-            <TableCell align="right" sx={{pl:0, pr:0}}>
+            <TableCell align="right">
                 <LazyLoadComponent>
                     ${fNumber(usdMarketCap)}
                 </LazyLoadComponent>
             </TableCell>
             {/* <TableCell align="left">{holders}</TableCell>
             <TableCell align="left">{offers}</TableCell> */}
-            <TableCell align="right" sx={{pl:0, pr:0}}>
-                <LazyLoadComponent>
-                    {trustlines}
-                </LazyLoadComponent>
-            </TableCell>
-            <TableCell align="right" sx={{pl:0, pr:0}}>
+            {isAdmin ?
+                <TableCell align="right">
+                    <LazyLoadComponent>
+                        <Typography variant="body1">{trustlines} / {lines}</Typography>
+                    </LazyLoadComponent>
+                </TableCell>
+                :
+                <TableCell align="right">
+                    <LazyLoadComponent>
+                        {trustlines}
+                    </LazyLoadComponent>
+                </TableCell>
+            }
+            
+            <TableCell align="right">
                 <LazyLoadComponent>
                     {fNumber(supply)} <Typography variant="small" noWrap>{name}</Typography>
                 </LazyLoadComponent>
