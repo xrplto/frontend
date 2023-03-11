@@ -9,9 +9,13 @@ import {
     useTheme,
     Box,
     Button,
+    FormControl,
+    FormControlLabel,
+    FormGroup,
     Grid,
     IconButton,
     Stack,
+    Switch,
     ToggleButton,
     ToggleButtonGroup,
     Typography
@@ -27,15 +31,68 @@ import { Chart } from 'src/components/Chart';
 
 // Utils
 import { fCurrency5, fNumber } from 'src/utils/formatNumber';
-import smoothed_z_score from 'src/utils/smooth';
 
 // Components
 import ChartOptions from './ChartOptions';
 // ----------------------------------------------------------------------
+
+function convertToOHLC(priceData, interval) {
+    var ohlcData = [];
+    var currentOHLC = {
+        open: null,
+        high: null,
+        low: null,
+        close: null,
+        time: null
+    };
+    var currentTime = null;
+  
+    for (var i = 0; i < priceData.length; i++) {
+        var price = priceData[i];
+        const priceTime = price[0];
+        const priceValue = price[1];
+    
+        if (currentTime === null || Math.floor(priceTime / (interval * 60 * 1000)) > Math.floor(currentTime / (interval * 60 * 1000))) {
+            if (currentTime !== null) {
+                const x = currentOHLC.time;
+                const y = [currentOHLC.open, currentOHLC.high, currentOHLC.low, currentOHLC.close];
+                // ohlcData.push(currentOHLC);
+                ohlcData.push([x, y]);
+            }
+    
+            currentOHLC = {
+                open: priceValue,
+                high: priceValue,
+                low: priceValue,
+                close: priceValue,
+                time: priceTime
+            };
+            currentTime = priceTime;
+        } else {
+            if (currentOHLC.high < priceValue) {
+                currentOHLC.high = priceValue;
+            }
+            if (currentOHLC.low > priceValue) {
+                currentOHLC.low = priceValue;
+            }
+            currentOHLC.close = priceValue;
+        }
+    }
+  
+    // Push the last OHLC object to the result array
+    ohlcData.push(currentOHLC);
+
+    return ohlcData;
+}
+
 export default function PriceChart({ token }) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
+
+    const [candleStick, setCandleStick] = useState(true);
+
     const [data, setData] = useState([]);
+    const [candleStickData, setCandleStickData] = useState([]);
     const [range, setRange] = useState('1D');
 
     const [minTime, setMinTime] = useState(0);
@@ -47,7 +104,7 @@ export default function PriceChart({ token }) {
     useEffect(() => {
         function getGraph () {
             // https://api.xrpl.to/api/graph/0527842b8550fce65ff44e913a720037?range=1D
-            axios.get(`${BASE_URL}/graph/${token.md5}?range=${range}`)
+            axios.get(`${BASE_URL}/graph/${token.md5}?range=${range}&candlestick=${candleStick}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -59,6 +116,7 @@ export default function PriceChart({ token }) {
                         }
 
                         setData(items);
+                        setCandleStickData(convertToOHLC(items, 5));
                     }
                 }).catch(err => {
                     console.log("Error on getting graph data.", err);
@@ -69,7 +127,7 @@ export default function PriceChart({ token }) {
 
         getGraph();
 
-    }, [range]);    
+    }, [range, candleStick]);    
 
     let user = token.user;
     if (!user) user = token.name;
@@ -316,6 +374,115 @@ export default function PriceChart({ token }) {
         }
     };
 
+    const CHART_DATA_CANDLESTICK1 = [
+        {
+            name: '',
+            type: 'candlestick',
+            data: candleStickData
+        }
+    ];
+
+    var optionsCandleStick1 = {
+        series: [{
+            data: candleStickData
+        }],
+        chart: {
+            type: 'candlestick',
+            height: 364,
+            id: 'candles',
+            toolbar: {
+                autoSelected: 'pan',
+                show: false
+            },
+            zoom: {
+                enabled: false
+            },
+        },
+        plotOptions: {
+            candlestick: {
+            colors: {
+                upward: '#3C90EB',
+                downward: '#DF7D46'
+            }
+            }
+        },
+        xaxis: {
+            type: 'datetime'
+        }
+    };
+
+    const CHART_DATA_CANDLESTICK2 = [
+        {
+            name: '',
+            type: 'bar',
+            data: candleStickData
+        }
+    ];
+    
+    var optionsCandleStick2 = {
+        series: [{
+            name: 'volume',
+            type: 'bar',
+            data: candleStickData
+        }],
+        chart: {
+            height: 130,
+            type: 'bar',
+            brush: {
+                enabled: true,
+                target: 'candles'
+            },
+            selection: {
+                enabled: true,
+                xaxis: {
+                    min: minTime,
+                    max: maxTime
+                },
+                fill: {
+                    color: '#ccc',
+                    opacity: 0.4
+                },
+                stroke: {
+                    color: '#0D47A1',
+                }
+            },
+        },
+        dataLabels: {
+            enabled: false
+        },
+        plotOptions: {
+            bar: {
+            columnWidth: '80%',
+            colors: {
+                ranges: [{
+                    from: -1000,
+                    to: 0,
+                    color: '#F15B46'
+                }, {
+                    from: 1,
+                    to: 10000,
+                    color: '#FEB019'
+                }],
+        
+            },
+            }
+        },
+        stroke: {
+            width: 0
+        },
+        xaxis: {
+            type: 'datetime',
+            axisBorder: {
+                offsetX: 13
+            }
+        },
+        yaxis: {
+            labels: {
+                show: false
+            }
+        }
+    };
+
     const handleChange = (event, newRange) => {
         if (newRange)
             setRange(newRange);
@@ -346,6 +513,10 @@ export default function PriceChart({ token }) {
         csvDownload(dataToConvert);
     }
 
+    const handleChangeCandleStick = (event) => {
+        setCandleStick(event.target.checked);
+    };
+
     return (
         <>
             <Grid container rowSpacing={2} alignItems="center" sx={{mt: 0}}>
@@ -357,6 +528,16 @@ export default function PriceChart({ token }) {
                                 <DownloadIcon fontSize="small" />
                             </IconButton>
                         }
+                        <FormControl component="fieldset" variant="standard">
+                            <FormGroup>
+                                <FormControlLabel
+                                    control={
+                                        <Switch checked={candleStick} onChange={handleChangeCandleStick} name="candlestick" />
+                                    }
+                                    label="CandleStick"
+                                />
+                            </FormGroup>
+                        </FormControl>
                     </Stack>
                 </Grid>
                 {/* <CardHeader title={`${user} to XRP Chart`} subheader='' /> */}
@@ -378,10 +559,19 @@ export default function PriceChart({ token }) {
                 </Grid>
             </Grid>
             <Box sx={{ p: 0, pb: 0 }} dir="ltr">
-                <Chart series={CHART_DATA1} options={options1} height={364} />
+                {candleStick?
+                    <Chart series={CHART_DATA_CANDLESTICK1} options={optionsCandleStick1} height={364} />
+                    :
+                    <Chart series={CHART_DATA1} options={options1} height={364} />
+                }
+                
             </Box>
             <Box sx={{ mt: -5, pb: 1 }} dir="ltr">
-                <Chart series={CHART_DATA2} options={options2} height={130} />
+                {candleStick?
+                    <Chart series={CHART_DATA_CANDLESTICK2} options={optionsCandleStick2} height={130} />
+                    :
+                    <Chart series={CHART_DATA2} options={options2} height={130} />
+                }
             </Box>
         </>
     );
