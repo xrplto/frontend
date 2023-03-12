@@ -13,10 +13,10 @@ import {
 // Components
 import OrderBook from "./OrderBook";
 import ExchHistory from './ExchHistory';
-import AccountHistory from './AccountHistory';
 import PairsSelect from './PairsSelect';
 import TradePanel from './TradePanel';
 import BidAskChart from './BidAskChart';
+import Account from './account';
 
 // Utils
 import Decimal from 'decimal.js';
@@ -256,7 +256,7 @@ export default function Trade({token}) {
             </Grid>
 
             <Grid item xs={12}>
-                <AccountHistory pair={pair}/>
+                <Account token={token} />
             </Grid>
         </Grid>
     );

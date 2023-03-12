@@ -1,0 +1,93 @@
+import PropTypes from 'prop-types';
+import { useState } from 'react';
+
+// Material
+import {
+    styled,
+    useTheme
+} from '@mui/material';
+
+import {
+    Box,
+    Stack,
+    Tab,
+    Tabs
+} from '@mui/material';
+
+// Components
+import History from './History';
+import Orders from './Orders';
+// ----------------------------------------------------------------------
+const StackStyle = styled(Stack)(({ theme }) => ({
+    //boxShadow: theme.customShadows.z0,
+    //backdropFilter: 'blur(2px)',
+    //WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
+    //backgroundColor: alpha(theme.palette.background.default, 0.0),
+    //borderRadius: '13px',
+    //padding: '0em 0.5em 1.5em 0.5em',
+    //backgroundColor: alpha("#919EAB", 0.03),
+}));
+// ----------------------------------------------------------------------
+
+function TabPanel(props) {
+    const { children, value, id, ...other } = props;
+ 
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== id}
+            id={`simple-tabpanel-${id}`}
+            aria-labelledby={`simple-tab-${id}`}
+            {...other}
+        >
+            {value === id && (
+                <Box sx={{
+                    p: { xs: 0, md: 3 },
+                    pt: { xs: 3 },
+                }}>
+                    {children}
+                </Box>
+            )}
+        </div>
+    );
+}
+  
+TabPanel.propTypes = {
+    children: PropTypes.node,
+    id: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired,
+};
+
+function a11yProps(index) {
+    return {
+        id: `simple-tab-${index}`,
+        'aria-controls': `simple-tabpanel-${index}`,
+    };
+}
+
+export default function Account({token}) {
+    const [tabID, setTabID] = useState(0);
+
+    const handleChangeTab = (event, newID) => {
+        console.log(newID);
+        setTabID(newID);
+    };
+
+    return (
+        <>
+            <Tabs value={tabID} onChange={handleChangeTab} variant="scrollable" scrollButtons="auto" aria-label="token-tabs">
+                <Tab value={0} label="OPEN ORDERS" {...a11yProps(0)} />
+                <Tab value={1} label="TRADE HISTORY" {...a11yProps(1)} />
+            </Tabs>
+
+            <TabPanel value={tabID} id={0}>
+                {/* <Orders token={token} /> */}
+            </TabPanel>
+
+            <TabPanel value={tabID} id={1}>
+                <History token={token} />
+            </TabPanel>
+
+        </>
+    );
+}

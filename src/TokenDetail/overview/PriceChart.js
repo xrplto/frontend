@@ -89,10 +89,7 @@ export default function PriceChart({ token }) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
 
-    const [candleStick, setCandleStick] = useState(true);
-
     const [data, setData] = useState([]);
-    const [candleStickData, setCandleStickData] = useState([]);
     const [range, setRange] = useState('1D');
 
     const [minTime, setMinTime] = useState(0);
@@ -104,7 +101,7 @@ export default function PriceChart({ token }) {
     useEffect(() => {
         function getGraph () {
             // https://api.xrpl.to/api/graph/0527842b8550fce65ff44e913a720037?range=1D
-            axios.get(`${BASE_URL}/graph/${token.md5}?range=${range}&candlestick=${candleStick}`)
+            axios.get(`${BASE_URL}/graph/${token.md5}?range=${range}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -116,7 +113,6 @@ export default function PriceChart({ token }) {
                         }
 
                         setData(items);
-                        setCandleStickData(convertToOHLC(items, 5));
                     }
                 }).catch(err => {
                     console.log("Error on getting graph data.", err);
@@ -127,18 +123,10 @@ export default function PriceChart({ token }) {
 
         getGraph();
 
-    }, [range, candleStick]);    
+    }, [range]);    
 
     let user = token.user;
     if (!user) user = token.name;
-
-    const CHART_DATA1 = [
-        {
-            name: 'XRP',
-            type: 'area',
-            data: data
-        }
-    ];
 
     let options1 = ChartOptions();
 
@@ -160,7 +148,13 @@ export default function PriceChart({ token }) {
             }
         },
 
-        series: CHART_DATA1,
+        series: [
+            {
+                name: 'XRP',
+                type: 'area',
+                data: data
+            }
+        ],
 
         // Grid
         grid: {
@@ -252,14 +246,6 @@ export default function PriceChart({ token }) {
         },
 
     });
-
-    const CHART_DATA2 = [
-        {
-            name: '',
-            type: 'area',
-            data: data
-        }
-    ];
 
     /*selection: {
         enabled: true,
@@ -374,115 +360,6 @@ export default function PriceChart({ token }) {
         }
     };
 
-    const CHART_DATA_CANDLESTICK1 = [
-        {
-            name: '',
-            type: 'candlestick',
-            data: candleStickData
-        }
-    ];
-
-    var optionsCandleStick1 = {
-        series: [{
-            data: candleStickData
-        }],
-        chart: {
-            type: 'candlestick',
-            height: 364,
-            id: 'candles',
-            toolbar: {
-                autoSelected: 'pan',
-                show: false
-            },
-            zoom: {
-                enabled: false
-            },
-        },
-        plotOptions: {
-            candlestick: {
-            colors: {
-                upward: '#3C90EB',
-                downward: '#DF7D46'
-            }
-            }
-        },
-        xaxis: {
-            type: 'datetime'
-        }
-    };
-
-    const CHART_DATA_CANDLESTICK2 = [
-        {
-            name: '',
-            type: 'bar',
-            data: candleStickData
-        }
-    ];
-    
-    var optionsCandleStick2 = {
-        series: [{
-            name: 'volume',
-            type: 'bar',
-            data: candleStickData
-        }],
-        chart: {
-            height: 130,
-            type: 'bar',
-            brush: {
-                enabled: true,
-                target: 'candles'
-            },
-            selection: {
-                enabled: true,
-                xaxis: {
-                    min: minTime,
-                    max: maxTime
-                },
-                fill: {
-                    color: '#ccc',
-                    opacity: 0.4
-                },
-                stroke: {
-                    color: '#0D47A1',
-                }
-            },
-        },
-        dataLabels: {
-            enabled: false
-        },
-        plotOptions: {
-            bar: {
-            columnWidth: '80%',
-            colors: {
-                ranges: [{
-                    from: -1000,
-                    to: 0,
-                    color: '#F15B46'
-                }, {
-                    from: 1,
-                    to: 10000,
-                    color: '#FEB019'
-                }],
-        
-            },
-            }
-        },
-        stroke: {
-            width: 0
-        },
-        xaxis: {
-            type: 'datetime',
-            axisBorder: {
-                offsetX: 13
-            }
-        },
-        yaxis: {
-            labels: {
-                show: false
-            }
-        }
-    };
-
     const handleChange = (event, newRange) => {
         if (newRange)
             setRange(newRange);
@@ -513,31 +390,17 @@ export default function PriceChart({ token }) {
         csvDownload(dataToConvert);
     }
 
-    const handleChangeCandleStick = (event) => {
-        setCandleStick(event.target.checked);
-    };
-
     return (
         <>
             <Grid container rowSpacing={2} alignItems="center" sx={{mt: 0}}>
                 <Grid container item xs={12} md={6}>
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Typography variant="h3">{`${user} to XRP Chart`}</Typography>
-                        {isAdmin &&
+                        {isAdmin && range !== 'OHLC' &&
                             <IconButton onClick={handleDownloadCSV}>
                                 <DownloadIcon fontSize="small" />
                             </IconButton>
                         }
-                        <FormControl component="fieldset" variant="standard">
-                            <FormGroup>
-                                <FormControlLabel
-                                    control={
-                                        <Switch checked={candleStick} onChange={handleChangeCandleStick} name="candlestick" />
-                                    }
-                                    label="CandleStick"
-                                />
-                            </FormGroup>
-                        </FormControl>
                     </Stack>
                 </Grid>
                 {/* <CardHeader title={`${user} to XRP Chart`} subheader='' /> */}
@@ -559,19 +422,10 @@ export default function PriceChart({ token }) {
                 </Grid>
             </Grid>
             <Box sx={{ p: 0, pb: 0 }} dir="ltr">
-                {candleStick?
-                    <Chart series={CHART_DATA_CANDLESTICK1} options={optionsCandleStick1} height={364} />
-                    :
-                    <Chart series={CHART_DATA1} options={options1} height={364} />
-                }
-                
+                <Chart series={options1.series} options={options1} height={364} />
             </Box>
             <Box sx={{ mt: -5, pb: 1 }} dir="ltr">
-                {candleStick?
-                    <Chart series={CHART_DATA_CANDLESTICK2} options={optionsCandleStick2} height={130} />
-                    :
-                    <Chart series={CHART_DATA2} options={options2} height={130} />
-                }
+                <Chart series={options2.series} options={options2} height={130} />
             </Box>
         </>
     );

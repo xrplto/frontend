@@ -21,13 +21,17 @@ import {
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
 
-// Components
-import HistoryToolbar from './HistoryToolbar';
+// Context
+import { useContext } from 'react'
+import { AppContext } from 'src/AppContext'
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 import { formatDateTime } from 'src/utils/formatTime';
+
+// Components
+import HistoryToolbar from './HistoryToolbar';
 
 // ----------------------------------------------------------------------
 const CancelTypography = withStyles({
@@ -78,25 +82,22 @@ function getMD5(issuer, currency) {
     return MD5(issuer  + '_' +  currency).toString();
 }
 
-export default function HistoryData({token}) {
+export default function History({token}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
+
+    const { accountProfile, setLoading } = useContext(AppContext);
+    const accountAddress = accountProfile?.account;
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);
     const [count, setCount] = useState(0);
     const [hists, setHists] = useState([]);
-    
-    const {
-        issuer,
-        currency,
-        md5
-    } = token;
 
     useEffect(() => {
         function getHistories() {
             // https://api.xrpl.to/api/history?md5=c9ac9a6c44763c1bd9ccc6e47572fd26&page=0&limit=10
-            axios.get(`${BASE_URL}/history?md5=${md5}&page=${page}&limit=${rows}`)
+            axios.get(`${BASE_URL}/history?md5=${token.md5}&page=${page}&limit=${rows}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -197,8 +198,8 @@ export default function HistoryData({token}) {
                                 let exch;
                                 let name;
                                 let type;
-
-                                if (md5 === md51) {
+                                
+                                if (md51 === token.md5) {
                                     // volume = got.value;
                                     exch = Decimal.div(takerGot.value, takerPaid.value).toNumber();
                                     name = gotName;
