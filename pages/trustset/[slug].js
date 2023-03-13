@@ -15,6 +15,7 @@ import {
     Chip,
     Container,
     Grid,
+    IconButton,
     Link,
     Slide,
     Snackbar,
@@ -22,12 +23,11 @@ import {
     styled,
     Typography
 } from '@mui/material';
-
 import LoadingButton from '@mui/lab/LoadingButton';
 
-import {
-    Token as TokenIcon
-} from '@mui/icons-material';
+import PersonIcon from '@mui/icons-material/Person';
+import TokenIcon from '@mui/icons-material/Token';
+import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -295,6 +295,7 @@ function TrustLine(props) {
                             </Stack>
                         </Stack>
                     </Stack>
+                    
                     <Stack direction="row" spacing={1} sx={{mt:2}}>
                         {domain && (
                             <Link
@@ -490,6 +491,32 @@ function TrustLine(props) {
                             )}
                         </Stack>
                     </Box>
+
+                    <Stack spacing={1} sx={{mt: 2}}>
+                        <Stack direction="row" alignItems="center">
+                            
+                            <Link
+                                underline="none"
+                                color="inherit"
+                                target="_blank"
+                                href={`https://bithomp.com/explorer/${issuer}`}
+                                rel="noreferrer noopener nofollow"
+                            >
+                                <Stack direction="row" spacing={0.5} alignItems="center">
+                                    <PersonIcon style={{color: "#B72136"}} fontSize="small" />
+                                    <Typography variant="s7">{issuer}</Typography>
+                                    <IconButton edge="end" aria-label="bithomp" size="small">
+                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                    </IconButton>
+                                </Stack>
+                            </Link>
+                        </Stack>
+                        
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                            <LocalAtmIcon style={{color: "#B72136"}} fontSize="small" />
+                            <Typography variant="s7">{currency} ({name})</Typography>
+                        </Stack>
+                    </Stack>
 
                     <Grid container direction="row" justifyContent="flex-start" alignItems="flex-start" sx={{mt:3, mb:3}}>
                         <Grid item xs={12} sm={6}>

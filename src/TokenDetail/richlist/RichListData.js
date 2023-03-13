@@ -49,7 +49,9 @@ export default function RichListData({token}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const metrics = useSelector(selectMetrics);
+
     const { accountProfile, setLoading, openSnackbar } = useContext(AppContext);
+    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
     
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(20);
@@ -58,8 +60,6 @@ export default function RichListData({token}) {
     const [richList, setRichList] = useState([]);
     const [wallets, setWallets] = useState([]); // Team Wallets
 
-    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
-    
     const {
         name,
         exch,
@@ -97,7 +97,6 @@ export default function RichListData({token}) {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
                         setWallets(ret.wallets);
-                        console.log(ret.wallets);
                     }
                 }).catch(err => {
                     console.log("Error on getting team wallets!", err);

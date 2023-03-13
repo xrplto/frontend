@@ -62,6 +62,7 @@ export default function PriceStatistics({token}) {
         vol24hxrp,
         vol24hx,
         marketcap,
+        dom,
         /*
         pro7d,
         p7d,
@@ -130,7 +131,7 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Market Dominance</Typography></TableCell>
-                        <TableCell align="left">No Data</TableCell>
+                        <TableCell align="left">{fNumber(dom || 0)} %</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Market Rank</Typography></TableCell>
