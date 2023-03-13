@@ -27,6 +27,9 @@ import {
 import { tableCellClasses } from "@mui/material/TableCell";
 import CancelIcon from '@mui/icons-material/Cancel';
 
+// Loader
+import { PuffLoader } from "react-spinners";
+
 // Components
 import QRDialog from 'src/components/QRDialog';
 
@@ -34,14 +37,6 @@ import QRDialog from 'src/components/QRDialog';
 import { useContext } from 'react'
 import { AppContext } from 'src/AppContext'
 
-// Redux
-import { useSelector, useDispatch } from "react-redux";
-import { selectAccountData, selectRefreshAccount, refreshAccountData } from "src/redux/statusSlice";
-
-// Utils
-import { fNumber } from 'src/utils/formatNumber';
-import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
-import { formatDateTime } from 'src/utils/formatTime';
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -97,12 +92,9 @@ function truncate(str, n) {
 
 export default function Orders({pair}) {
     const theme = useTheme();
-    const dispatch = useDispatch();
     const BASE_URL = 'https://api.xrpl.to/api';
     
-    const accountData = useSelector(selectAccountData);
-    
-    const { accountProfile, setLoading } = useContext(AppContext);
+    const { accountProfile, sync, setSync } = useContext(AppContext);
     const accountAddress = accountProfile?.account;
     
     const [openScanQR, setOpenScanQR] = useState(false);
@@ -110,8 +102,35 @@ export default function Orders({pair}) {
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
 
+    const [loading, setLoading] = useState(false);
+
+    const [offers, setOffers] = useState([]);
+
     const curr1 = pair.curr1;
-    // const curr2 = pair.curr2;
+    const curr2 = pair.curr2;
+
+    useEffect(() => {
+        function getOffers() {
+            const accountAddress = accountProfile?.account;
+            if (!accountAddress) return;
+            setLoading(true);
+            // https://api.xrpl.to/api/account/offers/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=4C656467657250756E6B73000000000000000000&issuer1=rLpunkscgfzS8so59bUCJBVqZ3eHZue64r&curr2=XRP&issuer2=XRPL
+            axios.get(`${BASE_URL}/account/offers/${accountAddress}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        // setCount(ret.count);
+                        setOffers(ret.offers);
+                    }
+                }).catch(err => {
+                    console.log("Error on getting account orders!!!", err);
+                }).then(function () {
+                    // always executed
+                    setLoading(false);
+                });
+        }
+        getOffers();
+    }, [accountProfile, pair, sync]);
 
     const handleCancel = (event, seq) => {
         onOfferCancelXumm(seq);
@@ -146,7 +165,7 @@ export default function Orders({pair}) {
                     setOpenScanQR(false);
                     if (dispatched_result === 'tesSUCCESS') {
                         // TRIGGER account refresh
-                        dispatch(refreshAccountData());
+                        setSync(sync + 1);
                     }
                     return;
                 }
@@ -166,7 +185,7 @@ export default function Orders({pair}) {
                 clearInterval(timer)
             }
         };
-    }, [dispatch, openScanQR, uuid]);
+    }, [openScanQR, uuid]);
 
     const onOfferCancelXumm = async (seq) => {
         setLoading(true);
@@ -262,43 +281,28 @@ export default function Orders({pair}) {
                     </TableHead>
                     <TableBody>
                     {
-                        accountAddress && accountData?.offers?.map((row) => {
+                        offers.map((row) => {
                                 const {
                                     // flags,
                                     quality,
                                     seq,
-                                    taker_gets,
-                                    taker_pays
+                                    takerGets,
+                                    takerPays
                                 } = row;
+
                                 let exch = quality;
+
                                 const _id = seq;
 
-                                const gets = taker_gets.value || new Decimal(taker_gets).div(1000000).toNumber();
-                                const pays = taker_pays.value || new Decimal(taker_pays).div(1000000).toNumber();
-
-                                let name_pays;
-                                let name_gets;
-
-                                if (!taker_pays.value) {
-                                    name_pays = 'XRP';
-                                } else
-                                    name_pays = normalizeCurrencyCodeXummImpl(taker_pays.currency);
-
-                                
-                                if (!taker_gets.value)
-                                    name_gets = 'XRP';
-                                else
-                                    name_gets = normalizeCurrencyCodeXummImpl(taker_gets.currency);
-
                                 let buy;
-                                if (taker_pays.issuer === curr1.issuer && taker_pays.currency === curr1.currency) {
+                                if (takerPays.issuer === curr1.issuer && takerPays.currency === curr1.currency) {
                                     // BUY
                                     buy = true;
-                                    exch = new Decimal(gets).div(pays).toNumber();
+                                    exch = new Decimal(takerGets.value).div(takerPays.value).toNumber();
                                 } else {
                                     // SELL
                                     buy = false;
-                                    exch = new Decimal(pays).div(gets).toNumber();
+                                    exch = new Decimal(takerPays.value).div(takerGets.value).toNumber();
                                 }
 
                                 return (
@@ -326,11 +330,11 @@ export default function Orders({pair}) {
                                         </TableCell>
                                         <TableCell align="left">{exch}</TableCell>
                                         <TableCell align="left">
-                                            <Typography variant="h6" noWrap>{gets} <Typography variant="small">{name_gets}</Typography></Typography>
+                                            <Typography variant="h6" noWrap>{takerGets.value} <Typography variant="small">{takerGets.name}</Typography></Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
-                                            <Typography variant="h6" noWrap>{pays} <Typography variant="small">{name_pays}</Typography></Typography>
+                                            <Typography variant="h6" noWrap>{takerPays.value} <Typography variant="small">{takerPays.name}</Typography></Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
@@ -344,11 +348,23 @@ export default function Orders({pair}) {
                     </TableBody>
                 </Table>
             </Box>
-            {!accountAddress && (
+            {!accountAddress ?
                 <ConnectWalletContainer>
                     <Typography variant='subtitle2' color='error'>Connect your wallet to access data</Typography>
                 </ConnectWalletContainer>
-            )}
+                :
+                loading ?
+                    <Stack alignItems="center" sx={{mt: 5, mb: 5}}>
+                        <PuffLoader color={"#00AB55"} size={35} sx={{mt:5, mb:5}}/>
+                    </Stack>
+                    :
+                    offers.length === 0 ?
+                        <ConnectWalletContainer>
+                            <Typography variant='subtitle2' color='error'>No Open Orders</Typography>
+                        </ConnectWalletContainer>
+                        :
+                        <></>
+            }
         </StackStyle>
     );
 }

@@ -27,7 +27,6 @@ import { AppContext } from 'src/AppContext'
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
-import { updateAccountData, selectRefreshAccount } from "src/redux/statusSlice";
 // ----------------------------------------------------------------------
 
 // Utils
@@ -36,8 +35,7 @@ export default function AccountBalance({pair}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
-    const refreshAccount = useSelector(selectRefreshAccount);
-    const { accountProfile, setAccountProfile, setLoading } = useContext(AppContext);
+    const { accountProfile, setAccountProfile, setLoading, sync, setSync } = useContext(AppContext);
 
     const [openLogin, setOpenLogin] = useState(false);
     const [uuid, setUuid] = useState(null);
@@ -85,18 +83,12 @@ export default function AccountBalance({pair}) {
             const curr1 = pair.curr1;
             const curr2 = pair.curr2;
             const account = accountProfile.account;
-            // https://api.xrpl.to/api/accountinfo/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=XRPL
-            axios.get(`${BASE_URL}/accountinfo/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`)
+            // https://api.xrpl.to/api/account/info/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=XRPL
+            axios.get(`${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
                         setAccountPairBalance(ret.pair);
-                        const accountData = {
-                            account: account,
-                            pair: ret.pair,
-                            offers: ret.offers
-                        };
-                        dispatch(updateAccountData(accountData));
                     }
                 }).catch(err => {
                     console.log("Error on getting details!!!", err);
@@ -107,7 +99,7 @@ export default function AccountBalance({pair}) {
         // console.log('account_info')
         getAccountInfo();
 
-    }, [dispatch, accountProfile, pair, refreshAccount]);
+    }, [dispatch, accountProfile, pair, sync]);
 
     useEffect(() => {
         var timer = null;

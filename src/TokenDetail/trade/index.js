@@ -256,7 +256,7 @@ export default function Trade({token}) {
             </Grid>
 
             <Grid item xs={12}>
-                <Account token={token} />
+                <Account token={token} pair={pair} />
             </Grid>
         </Grid>
     );

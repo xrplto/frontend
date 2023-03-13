@@ -21,6 +21,9 @@ import {
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
 
+// Loader
+import { PuffLoader } from "react-spinners";
+
 // Context
 import { useContext } from 'react'
 import { AppContext } from 'src/AppContext'
@@ -70,6 +73,13 @@ const SellTypography = withStyles({
     }
 })(Typography);
 
+const ConnectWalletContainer = styled(Box)({
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    height: '10vh'
+});
+
 // ----------------------------------------------------------------------
 
 function truncate(str, n){
@@ -86,8 +96,10 @@ export default function History({token}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
 
-    const { accountProfile, setLoading } = useContext(AppContext);
+    const { accountProfile } = useContext(AppContext);
     const accountAddress = accountProfile?.account;
+
+    const [loading, setLoading] = useState(false);
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);
@@ -96,8 +108,11 @@ export default function History({token}) {
 
     useEffect(() => {
         function getHistories() {
+            const accountAddress = accountProfile?.account;
+            if (!accountAddress) return;
+            setLoading(true);
             // https://api.xrpl.to/api/history?md5=c9ac9a6c44763c1bd9ccc6e47572fd26&page=0&limit=10
-            axios.get(`${BASE_URL}/history?md5=${token.md5}&page=${page}&limit=${rows}`)
+            axios.get(`${BASE_URL}/history?account=${accountAddress}&md5=${token.md5}&page=${page}&limit=${rows}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -108,10 +123,11 @@ export default function History({token}) {
                     console.log("Error on getting exchanges!!!", err);
                 }).then(function () {
                     // always executed
+                    setLoading(false);
                 });
         }
         getHistories();
-    }, [page, rows]);
+    }, [accountProfile, page, rows]);
 
     return (
         <>
@@ -329,13 +345,29 @@ export default function History({token}) {
                     </TableBody>
                 </Table>
             </Box>
-            <HistoryToolbar
-                count={count}
-                rows={rows}
-                setRows={setRows}
-                page={page}
-                setPage={setPage}
-            />
+            {!accountAddress ?
+                <ConnectWalletContainer>
+                    <Typography variant='subtitle2' color='error'>Connect your wallet to access data</Typography>
+                </ConnectWalletContainer>
+                :
+                count > 0 ?
+                    <HistoryToolbar
+                        count={count}
+                        rows={rows}
+                        setRows={setRows}
+                        page={page}
+                        setPage={setPage}
+                    />
+                    :
+                    loading ?
+                        <Stack alignItems="center" sx={{mt: 5, mb: 5}}>
+                            <PuffLoader color={"#00AB55"} size={35} sx={{mt:5, mb:5}}/>
+                        </Stack>
+                        :
+                        <ConnectWalletContainer>
+                            <Typography variant='subtitle2' color='error'>No Trading History</Typography>
+                        </ConnectWalletContainer>
+            }
         </>
     );
 }

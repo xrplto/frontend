@@ -22,11 +22,6 @@ const initialState = {
             gXRPdominance: 0, gXRPdominancePro: 0
         },
     },
-    accountData: {
-        balance: {},
-        offers:[]
-    },
-    refreshAccount: 0,
     filteredCount: 0
 }
 
@@ -55,24 +50,16 @@ const statusSlice = createSlice({
         update_filteredCount: (state, action) => {
             const data = action.payload;
             state.filteredCount = data.count;
-        },
-        updateAccountData: (state, action) => {
-            state.accountData = action.payload;
-        },
-        refreshAccountData: (state, action) => {
-            state.refreshAccount++;
-        },
+        }
     },
 });
 
-export const { update_metrics, update_filteredCount, updateAccountData, refreshAccountData } = statusSlice.actions;
+export const { update_metrics, update_filteredCount } = statusSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
 // in the slice file. For example: `useSelector((state) => state.counter.value)`
 export const selectMetrics = (state) => state.status.metrics;
-export const selectAccountData = (state) => state.status.accountData;
-export const selectRefreshAccount = (state) => state.status.refreshAccount;
 export const selectFilteredCount = (state) => state.status.filteredCount;
 
 export function configureRedux(data) {
@@ -88,11 +75,6 @@ export function configureRedux(data) {
                 H24: data.H24,
                 global: data.global,
             },
-            accountData: {
-                balance: {},
-                offers:[]
-            },
-            refreshAccount: 0,
             filteredCount: data.count
         }
     }

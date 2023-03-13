@@ -12,6 +12,7 @@ import { PuffLoader } from "react-spinners";
 export const AppContext = createContext({});
 
 export function ContextProvider({ children, data, openSnackbar }) {
+    const [sync, setSync] = useState(0);
     const [loading, setLoading] = useState(false);
     const [darkMode, setDarkMode] = useState(true);
     const [accountProfile, _setAccountProfile] = useState(null);
@@ -46,7 +47,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
 
     return (
         <AppContext.Provider
-            value={{ toggleTheme, darkMode, accountProfile, setAccountProfile, setLoading, openSnackbar }}
+            value={{ toggleTheme, darkMode, accountProfile, setAccountProfile, setLoading, openSnackbar, sync, setSync }}
         >
             
             <Backdrop

@@ -65,11 +65,10 @@ function a11yProps(index) {
     };
 }
 
-export default function Account({token}) {
+export default function Account({token, pair}) {
     const [tabID, setTabID] = useState(0);
 
     const handleChangeTab = (event, newID) => {
-        console.log(newID);
         setTabID(newID);
     };
 
@@ -81,7 +80,7 @@ export default function Account({token}) {
             </Tabs>
 
             <TabPanel value={tabID} id={0}>
-                {/* <Orders token={token} /> */}
+                <Orders pair={pair} />
             </TabPanel>
 
             <TabPanel value={tabID} id={1}>

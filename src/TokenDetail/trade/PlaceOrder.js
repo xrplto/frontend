@@ -17,7 +17,6 @@ import { AppContext } from 'src/AppContext'
 
 // Redux
 import { useDispatch } from "react-redux";
-import { refreshAccountData } from "src/redux/statusSlice";
 
 // Components
 import QRDialog from 'src/components/QRDialog';
@@ -44,7 +43,7 @@ const MSG_SUCCESSFUL = 4;
 export default function PlaceOrder({buySell, pair, amount, value}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
-    const { accountProfile, setLoading } = useContext(AppContext);
+    const { accountProfile, setLoading, sync, setSync } = useContext(AppContext);
     const [openScanQR, setOpenScanQR] = useState(false);
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
@@ -83,7 +82,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                     setOpenScanQR(false);
                     if (dispatched_result && dispatched_result === 'tesSUCCESS') {
                         // TRIGGER account refresh
-                        dispatch(refreshAccountData());
+                        setSync(sync + 1);
                         showAlert(MSG_SUCCESSFUL);
                     }
                     else

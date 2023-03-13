@@ -33,7 +33,6 @@ import { AppContext } from 'src/AppContext';
 // Loader
 import { PuffLoader } from "react-spinners";
 
-
 // Components
 import PayMethod from './PayMethod';
 
