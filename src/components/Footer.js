@@ -85,7 +85,7 @@ function Footer() {
                                         <Typography variant='link'>XRP Ledger Explorer</Typography>
                                     </Link>
                                     <Link
-                                        href="/status/coming-soon"
+                                        href="https://docs.xrpl.to"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"

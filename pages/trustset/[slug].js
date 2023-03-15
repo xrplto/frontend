@@ -3,10 +3,11 @@ import { performance } from 'perf_hooks';
 import { useState, useEffect } from 'react';
 import { withStyles } from '@mui/styles';
 import Decimal from 'decimal.js';
+import {CopyToClipboard} from 'react-copy-to-clipboard';
 
 // Material
 import {
-    alpha,
+    alpha, styled,
     Alert,
     Avatar,
     Box,
@@ -20,7 +21,7 @@ import {
     Slide,
     Snackbar,
     Stack,
-    styled,
+    Tooltip,
     Typography
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -34,6 +35,11 @@ import { Icon } from '@iconify/react';
 import link45deg from '@iconify/icons-bi/link-45deg';
 import linkExternal from '@iconify/icons-charm/link-external';
 import paperIcon from '@iconify/icons-akar-icons/paper';
+import copyIcon from '@iconify/icons-fad/copy';
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext'
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
@@ -77,9 +83,12 @@ function TrustLine(props) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const QR_BLUR = '/static/blurqr.png';
 
+    const { accountProfile, openSnackbar } = useContext(AppContext);
+
     let data = {};
     if (props && props.data) data = props.data;
     const token = data.token;
+    const info = token?.issuer_info || {};
 
     const metrics = useSelector(selectMetrics);
 
@@ -492,7 +501,7 @@ function TrustLine(props) {
                         </Stack>
                     </Box>
 
-                    <Stack spacing={1} sx={{mt: 2}}>
+                    <Stack spacing={0} sx={{mt: 2}}>
                         <Stack direction="row" alignItems="center">
                             
                             <Link
@@ -505,8 +514,8 @@ function TrustLine(props) {
                                 <Stack direction="row" spacing={0.5} alignItems="center">
                                     <PersonIcon style={{color: "#B72136"}} fontSize="small" />
                                     <Typography variant="s7">{issuer}</Typography>
-                                    <IconButton edge="end" aria-label="bithomp" size="small">
-                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                    <IconButton edge="end" aria-label="bithomp">
+                                        <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 18, height: 18 }} />
                                     </IconButton>
                                 </Stack>
                             </Link>
@@ -514,7 +523,14 @@ function TrustLine(props) {
                         
                         <Stack direction="row" spacing={0.5} alignItems="center">
                             <LocalAtmIcon style={{color: "#B72136"}} fontSize="small" />
-                            <Typography variant="s7">{currency} ({name})</Typography>
+                            <Typography variant="s7">{currency}</Typography>
+                            <CopyToClipboard text={currency} onCopy={()=>openSnackbar("Copied!", "success")}>
+                                <Tooltip title={'Click to copy'}>
+                                    <IconButton>
+                                        <Icon icon={copyIcon} />
+                                    </IconButton>
+                                </Tooltip>
+                            </CopyToClipboard>
                         </Stack>
                     </Stack>
 
@@ -571,6 +587,10 @@ function TrustLine(props) {
                                 <Label>MARKET CAP</Label>
                                 <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
                                     ${fNumber(marketcap)}
+                                </Typography>
+                                <Label>BLACKHOLED</Label>
+                                <Typography variant='subtitle1' color='primary' sx={{mb:1}}>
+                                    {info.blackholed?"YES":"NO"}
                                 </Typography>
                             </Stack>
                         </Grid>

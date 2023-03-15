@@ -142,7 +142,7 @@ export default function ExplorersMenu({issuer}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="sologenic" src="/static/livenetxrplorg.png" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="xrpl" src="/static/livenetxrplorg.png" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPL Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>

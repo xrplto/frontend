@@ -121,7 +121,11 @@ export default function Description({token, showEditor, setShowEditor, descripti
             }
 
             {!showEditor &&
-                <ReactMarkdown>{description}</ReactMarkdown>
+                <ReactMarkdown
+                    className="reactMarkDown"
+                >
+                    {description}
+                </ReactMarkdown>
             }
 
         </Stack>

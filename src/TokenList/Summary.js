@@ -36,13 +36,13 @@ export default function Summary() {
     const metrics = useSelector(selectMetrics);
     const [showContent, setShowContent] = useState(false);
 
-    const gMarketcap = new Decimal(metrics.global.gMarketcap).div(1000000000).toFixed(2, Decimal.ROUND_DOWN);
+    const gMarketcap = new Decimal(metrics.global.gMarketcap).div(metrics.USD).div(1000000).toFixed(2, Decimal.ROUND_DOWN);
     const gMarketcapPro = new Decimal(metrics.global.gMarketcapPro).toNumber();
-    const gDexVolume = new Decimal(metrics.global.gDexVolume).toNumber();
+    const gDexVolume = new Decimal(metrics.global.gDexVolume).div(metrics.USD).toNumber();
     const gDexVolumePro = new Decimal(metrics.global.gDexVolumePro).toNumber();
-    const gScamVolume = new Decimal(metrics.global.gScamVolume).toNumber();
+    const gScamVolume = new Decimal(metrics.global.gScamVolume).div(metrics.USD).toNumber();
     const gScamVolumePro = new Decimal(metrics.global.gScamVolumePro).toFixed(2, Decimal.ROUND_DOWN);
-    const gStableVolume = new Decimal(metrics.global.gStableVolume).toNumber();
+    const gStableVolume = new Decimal(metrics.global.gStableVolume).div(metrics.USD).toNumber();
     const gStableVolumePro = new Decimal(metrics.global.gStableVolumePro).toFixed(2, Decimal.ROUND_DOWN);
     const gXRPdominance = new Decimal(metrics.global.gXRPdominance).toNumber();
     const gXRPdominancePro = new Decimal(metrics.global.gXRPdominancePro).toNumber();
@@ -51,7 +51,7 @@ export default function Summary() {
         <Stack sx={{mt:2}}>
             <Typography variant='h1'>Today's XRPL Token Prices by Volume</Typography>
 
-            <ContentTypography variant='subtitle1' sx={{mt:2}}>The global token market cap is <strong>${fNumber(gMarketcap)}B</strong>, a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last day.
+            <ContentTypography variant='subtitle1' sx={{mt:2}}>The global token market cap is <strong>${fNumber(gMarketcap)}M</strong>, a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last day.
             <Link
                 component="button"
                 underline="always"

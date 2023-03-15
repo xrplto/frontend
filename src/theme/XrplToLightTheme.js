@@ -738,23 +738,25 @@ export const XrplToLightTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          padding: 0
+          background: '#F4F5FB',
+          padding: 0,
+          border: '1px solid #E0E7EC'
         },
-        elevation0: {
-          boxShadow: 'none'
-        },
-        elevation: {
-          boxShadow: colors.shadows.card
-        },
-        elevation2: {
-          boxShadow: colors.shadows.cardSm
-        },
-        elevation24: {
-          boxShadow: colors.shadows.cardLg
-        },
-        outlined: {
-          boxShadow: colors.shadows.card
-        }
+        // elevation0: {
+        //   boxShadow: 'none'
+        // },
+        // elevation: {
+        //   boxShadow: colors.shadows.card
+        // },
+        // elevation2: {
+        //   boxShadow: colors.shadows.cardSm
+        // },
+        // elevation24: {
+        //   boxShadow: colors.shadows.cardLg
+        // },
+        // outlined: {
+        //   boxShadow: colors.shadows.card
+        // }
       }
     },
     MuiLink: {
@@ -1181,7 +1183,10 @@ export const XrplToLightTheme = createTheme({
           s12: 'span',
           s13: 'span',
           s14: 'span',
-          s15: 'span'
+          s15: 'span',
+          s16: 'span',
+          s17: 'span',
+          s18: 'span'
         }
       },
       styleOverrides: {
@@ -1248,6 +1253,17 @@ export const XrplToLightTheme = createTheme({
             color: colors.alpha.black[100],
             [theme.breakpoints.up('sm')]: {
               fontSize: 20,
+            },
+          })
+        },
+        {
+          props: { variant: 's16' },
+          style: ({ theme }) => ({
+            fontWeight: 400,
+            fontSize: 11,
+            // color: colors.alpha.black[100],
+            [theme.breakpoints.up('sm')]: {
+              fontSize: 13,
             },
           })
         }
@@ -1504,6 +1520,16 @@ export const XrplToLightTheme = createTheme({
       fontWeight: 700,
       fontSize: 18,
       color: "#2D2D2D"
+    },
+    s17: {
+      fontWeight: 400,
+      fontSize: 14,
+      color: colors.alpha.black[70]
+    },
+    s18: {
+      fontWeight: 500,
+      fontSize: 14,
+      color: colors.alpha.black[100]
     },
   },
   shadows: [

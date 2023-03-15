@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import {CopyToClipboard} from 'react-copy-to-clipboard';
 
 // Material
 import {
@@ -7,6 +8,7 @@ import {
     Button,
     Chip,
     Grid,
+    IconButton,
     Link,
     Rating,
     Stack,
@@ -21,20 +23,35 @@ import {
     Share as ShareIcon
 } from '@mui/icons-material';
 
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+
 // Iconify
 import { Icon } from '@iconify/react';
 import link45deg from '@iconify/icons-bi/link-45deg';
 import linkExternal from '@iconify/icons-charm/link-external';
 import paperIcon from '@iconify/icons-akar-icons/paper';
+import copyIcon from '@iconify/icons-ph/copy';
 // import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 // import listCheck from '@iconify/icons-ci/list-check';
+import blackholeIcon from '@iconify/icons-arcticons/blackhole';
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
 // Components
 import ExplorersMenu from './ExplorersMenu';
 import CommunityMenu from './CommunityMenu';
 import ChatMenu from './ChatMenu';
 import Share from './Share';
+import IssuerInfoDialog from './IssuerInfoDialog';
 // import TrustSet from './TrustSet';
+
+function truncate(str, n){
+    if (!str) return '';
+    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
+    return (str.length > n) ? str.substr(0, n-1) + '... ' : str;
+};
 
 const ContentWrapper = styled(Box)(({ theme }) => ({
     display: "flex",
@@ -61,8 +78,11 @@ function normalizeTag(tag) {
 
 // ----------------------------------------------------------------------
 export default function UserDesc({token}) {
+    const { accountProfile, openSnackbar } = useContext(AppContext);
+
     const [rating, setRating] = useState(2);
     // const [trustToken, setTrustToken] = useState(null);
+    const [openIssuerInfo, setOpenIssuerInfo] = useState(false);
 
     const {
         id,
@@ -78,8 +98,11 @@ export default function UserDesc({token}) {
         md5,
         tags,
         social,
-        urlSlug
+        urlSlug,
+        issuer_info
     } = token;
+
+    const info = issuer_info || {};
 
     let user = token.user;
     if (!user) user = name;
@@ -93,15 +116,17 @@ export default function UserDesc({token}) {
     const handleDelete = () => {
     }
 
-    // const handleSetTrust = (e) => {
-    //     setTrustToken(token);
-    // }
-
-    const handleShare = (e) => {
+    const handleOpenIssuerInfo = () => {
+        setOpenIssuerInfo(true);
     }
-  
+
     return (
         <Stack>
+            <IssuerInfoDialog
+                open={openIssuerInfo}
+                setOpen={setOpenIssuerInfo}
+                token={token}
+            />
             
             <Stack direction="row" spacing={1} alignItems='center'>
                 <Avatar
@@ -260,6 +285,29 @@ export default function UserDesc({token}) {
                     </Grid>
                 )}
             </Grid>
+
+            <Stack direction="row" sx={{mt: 3}}>
+                <Chip label={<Typography variant="s7">Issuer: <Typography variant="s8">{truncate(issuer, 16)}</Typography></Typography>} sx={{pl:0.5,pr:0}}
+                    deleteIcon={
+                        <Stack direction="row" spacing={0} alignItems="center">
+                            <Tooltip title={'Copy Address'}>
+                                <IconButton>
+                                    <CopyToClipboard text={issuer} onCopy={()=>openSnackbar("Copied!", "success")}>
+                                        <Icon icon={copyIcon} width="16" height="16"/>
+                                    </CopyToClipboard>
+                                </IconButton>
+                            </Tooltip>
+                            {info.blackholed &&
+                                <Tooltip title={'Blackholed'}>
+                                    <Icon icon={blackholeIcon} width="24" height="24" style={{color: "#ff0000"}} />
+                                </Tooltip>
+                            }
+                        </Stack>
+                    }
+                    onDelete={handleDelete} onClick={handleOpenIssuerInfo}
+                    icon={<Avatar alt="xrpl" src="/static/livenetxrplorg.png" sx={{ mr:1, width: 16, height: 16 }} />} 
+                />
+            </Stack>
         </Stack>
     );
 }

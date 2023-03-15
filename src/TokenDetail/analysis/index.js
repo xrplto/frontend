@@ -1,0 +1,214 @@
+import axios from 'axios'
+import { useState, useEffect } from 'react';
+import Decimal from 'decimal.js';
+import {MD5} from "crypto-js";
+
+// Material
+import { withStyles } from '@mui/styles';
+import {
+    styled, useTheme,
+    Avatar,
+    Box,
+    IconButton,
+    Link,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Typography
+} from '@mui/material';
+import { tableCellClasses } from "@mui/material/TableCell";
+
+// Loader
+import { PuffLoader } from "react-spinners";
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+
+// Redux
+import { useDispatch, useSelector } from "react-redux";
+import { update_metrics, update_filteredCount, selectMetrics } from "src/redux/statusSlice";
+
+// Utils
+import { fNumber } from 'src/utils/formatNumber';
+import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
+import { formatDateTime } from 'src/utils/formatTime';
+
+// Components
+import TokenListHead from './TokenListHead';
+import EditToken from './EditToken';
+import {TokenRow} from './TokenRow';
+import TokenListToolbar from './TokenListToolbar';
+import TrustSet from 'src/components/TrustSet';
+
+// ----------------------------------------------------------------------
+const CancelTypography = withStyles({
+    root: {
+        color: "#FF6C40",
+        borderRadius: '6px',
+        border: '0.05em solid #FF6C40',
+        //fontSize: '0.5rem',
+        lineHeight: '1',
+        paddingLeft: '3px',
+        paddingRight: '3px',
+    }
+})(Typography);
+
+const BuyTypography = withStyles({
+    root: {
+        color: "#007B55",
+        borderRadius: '6px',
+        border: '0.05em solid #007B55',
+        //fontSize: '0.5rem',
+        lineHeight: '1',
+        paddingLeft: '3px',
+        paddingRight: '3px',
+    }
+})(Typography);
+
+const SellTypography = withStyles({
+    root: {
+        color: "#B72136",
+        borderRadius: '6px',
+        border: '0.05em solid #B72136',
+        //fontSize: '0.5rem',
+        lineHeight: '1',
+        paddingLeft: '3px',
+        paddingRight: '3px',
+    }
+})(Typography);
+
+const ConnectWalletContainer = styled(Box)({
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    height: '10vh'
+});
+
+// ----------------------------------------------------------------------
+
+function truncate(str, n){
+    if (!str) return '';
+    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
+    return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
+};
+
+function getMD5(issuer, currency) {
+    return MD5(issuer  + '_' +  currency).toString();
+}
+
+export default function AnalysisData({token}) {
+    const theme = useTheme();
+    const metrics = useSelector(selectMetrics);
+    const BASE_URL = 'https://api.xrpl.to/api';
+
+    const { accountProfile } = useContext(AppContext);
+    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
+
+    const [page, setPage] = useState(0);
+    const [rows, setRows] = useState(10);
+    const [count, setCount] = useState(0);
+    const [tokens, setTokens] = useState([]);
+
+    const [editToken, setEditToken] = useState(null);
+    const [trustToken, setTrustToken] = useState(null);
+
+    const [loading, setLoading] = useState(false);
+    
+    const {
+        issuer,
+        currency,
+        md5
+    } = token;
+
+    useEffect(() => {
+        function getTokens() {
+            setLoading(true);
+            // https://api.xrpl.to/api/other_tokens?md5=c9ac9a6c44763c1bd9ccc6e47572fd26&issuer=rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B&page=0&limit=10
+            axios.get(`${BASE_URL}/other_tokens?md5=${md5}&issuer=${issuer}&page=${page}&limit=${rows}`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        setCount(ret.count);
+                        setTokens(ret.tokens);
+                    }
+                }).catch(err => {
+                    console.log("Error on getting tokens!!!", err);
+                }).then(function () {
+                    // always executed
+                    setLoading(false);
+                });
+        }
+        getTokens();
+    }, [page, rows]);
+
+    return (
+        <>
+            <EditToken token={editToken} setToken={setEditToken}/>
+            <TrustSet token={trustToken} setToken={setTrustToken}/>
+            <Typography variant="s2">Other tokens by this issuer</Typography>
+            <Box
+                sx={{
+                    display: "flex",
+                    gap: 1,
+                    py: 1,
+                    overflow: "auto",
+                    width: "100%",
+                    "& > *": {
+                        scrollSnapAlign: "center",
+                    },
+                    "::-webkit-scrollbar": { display: "none" },
+                }}
+            >
+                <Table>
+                    {count > 0 &&
+                        <TokenListHead />
+                    }
+                    <TableBody>
+                        {
+                            tokens.map((row, idx) => {
+                                    return (
+                                        <TokenRow
+                                            key={idx}
+                                            mUSD = {metrics.USD}
+                                            time={row.time}
+                                            token={row}
+                                            admin={isAdmin}
+                                            setEditToken={setEditToken}
+                                            setTrustToken={setTrustToken}
+                                        />
+                                    );
+                                })
+                        }
+                        {/* {emptyRows > 0 && (
+                                <TableRow style={{ height: 53 * emptyRows }}>
+                                    <TableCell colSpan={6} />
+                                </TableRow>
+                            )} */}
+                    </TableBody>
+                </Table>
+            </Box>
+            {count > 0 ?
+                <TokenListToolbar
+                    count={count}
+                    rows={rows}
+                    setRows={setRows}
+                    page={page}
+                    setPage={setPage}
+                />
+                :
+                loading ?
+                    <Stack alignItems="center" sx={{mt: 5, mb: 5}}>
+                        <PuffLoader color={"#00AB55"} size={35} sx={{mt:5, mb:5}}/>
+                    </Stack>
+                    :
+                    <ConnectWalletContainer>
+                        <Typography variant='subtitle2' color='error'>No other tokens by this issuer</Typography>
+                    </ConnectWalletContainer>
+            }
+        </>
+    );
+}

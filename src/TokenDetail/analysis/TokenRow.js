@@ -178,6 +178,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
                                 color="inherit"
                                 href={`/token/${urlSlug}`}
                                 rel="noreferrer noopener nofollow"
+                                // style={{textDecoration: "none"}}
                             >
                                 <Stack>
                                     <Typography variant="token" color={isOMCF!=='yes'?'#222531':urlSlug === md5?'#B72136':''} noWrap>{truncate(name, 8)}</Typography>
@@ -265,7 +266,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
             </TableCell>
 
             <TableCell align="right">
-                <TokenMoreMenu token={token} admin={admin} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
+                <TokenMoreMenu token={token} setTrustToken={setTrustToken}/>
             </TableCell>
         </TableRow>
     );

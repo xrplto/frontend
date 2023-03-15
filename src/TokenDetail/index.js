@@ -17,6 +17,7 @@ import Common from './common';
 import Overview from './overview';
 import Market from './market';
 import Trade from './trade';
+import Analysis from './analysis';
 import History from './history';
 import RichList from './richlist';
 import Wallet from './wallet';
@@ -66,8 +67,8 @@ function a11yProps(index) {
     };
 }
 
-const tabValues = ['', 'markets', 'trade', 'historical-data', 'trustlines', 'wallets'];
-const tabLabels = ['Overview', 'Markets', 'Trade', 'Historical Data', 'Trustlines', 'Wallets'];
+const tabValues = ['', 'markets', 'trade', 'onchain-analysis', 'historical-data', 'trustlines', 'wallets'];
+const tabLabels = ['Overview', 'Markets', 'Trade', 'Analysis', 'Historical Data', 'Trustlines', 'Wallets'];
 
 function getTabID(tab) {
     if (!tab) return 0;
@@ -121,6 +122,7 @@ export default function TokenDetail({token, tab}) {
                 <Tab value={3} label={tabLabels[3]} {...a11yProps(3)} />
                 <Tab value={4} label={tabLabels[4]} {...a11yProps(4)} />
                 <Tab value={5} label={tabLabels[5]} {...a11yProps(5)} />
+                <Tab value={6} label={tabLabels[6]} {...a11yProps(6)} />
             </Tabs>
             <TabPanel value={tabID} id={0}>
                 <Overview token={token} />
@@ -132,12 +134,15 @@ export default function TokenDetail({token, tab}) {
                 <Trade token={token} />
             </TabPanel>
             <TabPanel value={tabID} id={3}>
-                <History token={token} />
+                <Analysis token={token} />
             </TabPanel>
             <TabPanel value={tabID} id={4}>
-                <RichList token={token}/>
+                <History token={token} />
             </TabPanel>
             <TabPanel value={tabID} id={5}>
+                <RichList token={token}/>
+            </TabPanel>
+            <TabPanel value={tabID} id={6}>
                 <Wallet />
             </TabPanel>
         </>

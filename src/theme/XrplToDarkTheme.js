@@ -790,24 +790,25 @@ export const XrplToDarkTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundImage: 'none',
-          padding: 0
+          background: '#21252B',
+          padding: 0,
+          border: '1px solid #32373C'
         },
-        elevation0: {
-          boxShadow: 'none'
-        },
-        elevation: {
-          boxShadow: colors.shadows.card
-        },
-        elevation2: {
-          boxShadow: colors.shadows.cardSm
-        },
-        elevation24: {
-          boxShadow: colors.shadows.cardLg
-        },
-        outlined: {
-          boxShadow: colors.shadows.card
-        }
+        // elevation0: {
+        //   boxShadow: 'none'
+        // },
+        // elevation: {
+        //   boxShadow: colors.shadows.card
+        // },
+        // elevation2: {
+        //   boxShadow: colors.shadows.cardSm
+        // },
+        // elevation24: {
+        //   boxShadow: colors.shadows.cardLg
+        // },
+        // outlined: {
+        //   boxShadow: colors.shadows.card
+        // }
       }
     },
     MuiLink: {
@@ -1233,6 +1234,8 @@ export const XrplToDarkTheme = createTheme({
           s14: 'span',
           s15: 'span',
           s16: 'span',
+          s17: 'span',
+          s18: 'span'
         }
       },
       styleOverrides: {
@@ -1561,6 +1564,16 @@ export const XrplToDarkTheme = createTheme({
       fontWeight: 700,
       fontSize: 18,
       color: "#ffffff"
+    },
+    s17: {
+      fontWeight: 400,
+      fontSize: 14,
+      color: colors.alpha.black[70]
+    },
+    s18: {
+      fontWeight: 500,
+      fontSize: 14,
+      color: colors.alpha.black[100]
     },
   },
   shadows: [

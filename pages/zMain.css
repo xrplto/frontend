@@ -1,19 +1,19 @@
-a:link {
+.reactMarkDown a:link {
   color: #3366FF;
   background-color: transparent;
   text-decoration: none;
 }
-a:visited {
+.reactMarkDown a:visited {
   color: #3366FF;
   background-color: transparent;
   text-decoration: none;
 }
-a:hover {
+.reactMarkDown a:hover {
   color: #3366FF;
   background-color: transparent;
   text-decoration: underline;
 }
-a:active {
+.reactMarkDown a:active {
   color: #3366FF;
   background-color: transparent;
   text-decoration: underline;
