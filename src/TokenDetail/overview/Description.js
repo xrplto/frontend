@@ -89,13 +89,13 @@ export default function Description({token, showEditor, setShowEditor, descripti
 
     return (
         <Stack>
-            <Typography variant="h2" fontSize='1.1rem' sx={{mt:0}}>{`${name} Price Live Data`}</Typography>
+            <Typography variant="h2" fontSize='1.1rem' sx={{mt:{xs: 4, md: 0} }}>{`${name} Price Live Data`}</Typography>
 
             <Typography sx={{mt:3}}>
                 The live {user} price today is ${price} USD with a 24-hour trading volume of {fNumber(vol24hx)} {name}. We update our {name} to USD price in real-time. {user} is {strPro24h} in the last 24 hours. The current XRPL.to ranking is #{id}, with a live market cap of ${fNumber(usdMarketCap)} USD. It has a circulating supply of {fNumber(supply)} {name} tokens.
             </Typography>
 
-            <Typography sx={{mt:2}}>
+            <Typography sx={{mt:2, mb: 3}}>
                 If you would like to know where to buy {user}, the top XRPL DEX for trading in {user} token are currently 
                 <Link color="#3366FF" underline="none"
                     href={`/token/${urlSlug}/trade`}
@@ -107,7 +107,7 @@ export default function Description({token, showEditor, setShowEditor, descripti
             </Typography>
 
             {isAdmin &&
-                <Stack direction="row" sx={{mt: 3, mb: 0}} >
+                <Stack direction="row" sx={{mt: 0, mb: 0}} >
                     <Tooltip title={showEditor?"Apply changes":"Click to edit description"}>
                         <IconButton onClick={handleClickEdit} edge="end" aria-label="edit" size="small">
                             {showEditor?

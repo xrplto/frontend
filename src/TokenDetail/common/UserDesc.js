@@ -23,6 +23,7 @@ import {
     Share as ShareIcon
 } from '@mui/icons-material';
 
+import LocalFloristTwoToneIcon from '@mui/icons-material/LocalFloristTwoTone';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 // Iconify
@@ -34,6 +35,7 @@ import copyIcon from '@iconify/icons-ph/copy';
 // import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 // import listCheck from '@iconify/icons-ci/list-check';
 import blackholeIcon from '@iconify/icons-arcticons/blackhole';
+import currencyRipple from '@iconify/icons-tabler/currency-ripple';
 
 // Context
 import { useContext } from 'react';
@@ -99,7 +101,8 @@ export default function UserDesc({token}) {
         tags,
         social,
         urlSlug,
-        issuer_info
+        issuer_info,
+        assessment
     } = token;
 
     const info = issuer_info || {};
@@ -291,7 +294,7 @@ export default function UserDesc({token}) {
                     deleteIcon={
                         <Stack direction="row" spacing={0} alignItems="center">
                             <Tooltip title={'Copy Address'}>
-                                <IconButton>
+                                <IconButton size="small">
                                     <CopyToClipboard text={issuer} onCopy={()=>openSnackbar("Copied!", "success")}>
                                         <Icon icon={copyIcon} width="16" height="16"/>
                                     </CopyToClipboard>
@@ -301,6 +304,21 @@ export default function UserDesc({token}) {
                                 <Tooltip title={'Blackholed'}>
                                     <Icon icon={blackholeIcon} width="24" height="24" style={{color: "#ff0000"}} />
                                 </Tooltip>
+                            }
+                            {assessment &&
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    target="_blank"
+                                    href={assessment}
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Tooltip title={'Assessment'}>
+                                        <IconButton size="small">
+                                            <Icon icon={currencyRipple} width="18" height="18" />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Link>
                             }
                         </Stack>
                     }
