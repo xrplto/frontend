@@ -3,8 +3,7 @@ import { useState } from 'react';
 
 // Material
 import {
-    styled,
-    useTheme
+    styled
 } from '@mui/material';
 
 import {

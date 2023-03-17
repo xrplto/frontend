@@ -23,17 +23,18 @@ const StickyTableCell = withStyles((theme) => ({
 //    { id: 'offers', label: 'Offers', align: 'left', order: true },
 
 const TABLE_HEAD = [
-    { no: 0, id: 'id',            label: '#',                  align: 'left', width: '', order: false },
-    { no: 1, id: 'name',          label: 'Name',               align: 'left', width: '11%', order: true },
-    { no: 2, id: 'exch',          label: 'Price',              align: 'right', width: '8%', order: true },
-    { no: 3, id: 'pro24h',        label: '24h (%)',            align: 'right', width: '6%', order: true },
-    { no: 4, id: 'pro7d',         label: '7d (%)',             align: 'right', width: '6%', order: true },
-    { no: 5, id: 'vol24hxrp',     label: 'Volume(24h)',        align: 'right', width: '10%', order: true },
-    { no: 6, id: 'vol24htx',      label: 'Trades',             align: 'right', width: '6%', order: true },
-    { no: 7, id: 'marketcap',     label: 'Market Cap',         align: 'right', width: '10%', order: true },
-    { no: 8, id: 'trustlines',    label: 'TrustLines',         align: 'right', width: '10%', order: true },
-    { no: 9, id: 'supply',        label: 'Circulating Supply', align: 'right', width: '13%', order: true },
-    { no: 10, id: 'historyGraph', label: 'Last 7 Days',        align: 'right', width: '13%', order: false },
+    { no: 0, id: 'star',          label: '',                   align: 'left', width: '', order: false },
+    { no: 1, id: 'id',            label: '#',                  align: 'left', width: '', order: false },
+    { no: 2, id: 'name',          label: 'Name',               align: 'left', width: '11%', order: true },
+    { no: 3, id: 'exch',          label: 'Price',              align: 'right', width: '8%', order: true },
+    { no: 4, id: 'pro24h',        label: '24h (%)',            align: 'right', width: '6%', order: true },
+    { no: 5, id: 'pro7d',         label: '7d (%)',             align: 'right', width: '6%', order: true },
+    { no: 6, id: 'vol24hxrp',     label: 'Volume(24h)',        align: 'right', width: '10%', order: true },
+    { no: 7, id: 'vol24htx',      label: 'Trades',             align: 'right', width: '6%', order: true },
+    { no: 8, id: 'marketcap',     label: 'Market Cap',         align: 'right', width: '10%', order: true },
+    { no: 9, id: 'trustlines',    label: 'TrustLines',         align: 'right', width: '10%', order: true },
+    { no: 10, id: 'supply',        label: 'Circulating Supply', align: 'right', width: '13%', order: true },
+    { no: 11, id: 'historyGraph', label: 'Last 7 Days',        align: 'right', width: '13%', order: false },
     { id: '' }
 ];
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 // Material
 import {
-    alpha, styled, useTheme,
+    alpha, styled,
     Box,
     IconButton,
     InputAdornment,

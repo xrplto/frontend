@@ -42,7 +42,7 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
     
     const [orderBy, setOrderBy] = useState('vol24hxrp');
 
-    const [load, setLoad] = useState(false);
+    const [sync, setSync] = useState(false);
     const [editToken, setEditToken] = useState(null);
     const [trustToken, setTrustToken] = useState(null);
     
@@ -55,6 +55,8 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
 
     const { accountProfile } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
+
+    const [watchList, setWatchList] = useState([]);
 
     const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
         onOpen: () => {},
@@ -143,60 +145,78 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
             }).then(function () {
                 // Always executed
                 setSearch(filterName);
-                setLoad(false);
             });
         };
-        if (load) {
-            loadTokens();
-        } else {
-            if (search !== filterName)
-                loadTokens();
+        loadTokens();
+    }, [sync]);
+
+    useEffect(() => {
+        function getWatchList() {
+            const account = accountProfile?.account;
+            const accountToken = accountProfile?.btoken;
+            if (!account) {
+                setWatchList([]);
+                return;
+            }
+            // https://api.xrpl.to/api/watchlist/getlist?account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
+            axios.get(`${BASE_URL}/watchlist/getlist?account=${account}`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        setWatchList(ret.watchList);
+                    }
+                }).catch(err => {
+                    console.log("Error on getting watchlist!", err);
+                }).then(function () {
+                    // always executed
+                });
         }
-    }, [load]);
+        getWatchList();
+    }, [sync, accountProfile]);
 
     const handleRequestSort = (event, id, no) => {
         const isDesc = orderBy === id && order === 'desc';
         setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(id);
         setPage(0);
-        setLoad(true);
+        setSync(sync + 1);
     };
 
     const updatePage = (newPage)  => {
         if (newPage === page) return;
         setPage(newPage);
-        setLoad(true);
+        setSync(sync + 1);
     }
 
     const updateRows = (newRows) => {
         if (newRows === rows) return;
         setRows(newRows);
         if (tokens.length < newRows)
-            setLoad(true);
+            setSync(sync + 1);
     }
 
     const updateShowNew = (val) => {
         setShowNew(val);
         setPage(0);
-        setLoad(true);
+        setSync(sync + 1);
     }
 
     const updateShowSlug = (val) => {
         setShowSlug(val);
         setPage(0);
-        setLoad(true);
+        setSync(sync + 1);
     }
 
     const updateShowDate = (val) => {
         setShowDate(val);
         setPage(0);
-        setLoad(true);
+        setSync(sync + 1);
     }
 
     const handleFilterByName = (event) => {
         setFilterName(event.target.value);
         setPage(0);
-        setLoad(true);
+        setSync(sync + 1);
     };
 
 

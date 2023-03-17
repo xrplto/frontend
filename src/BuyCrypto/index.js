@@ -7,9 +7,8 @@ import { isMobileSafari, isSafari, isChrome, isIOS, deviceType, OsTypes } from '
 // Material
 import { withStyles } from '@mui/styles';
 import {
-    alpha, styled, useTheme,
+    alpha,
     Alert,
-    Button,
     Card,
     Checkbox,
     FormControlLabel,
@@ -22,7 +21,6 @@ import {
     Typography
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
-import LoopIcon from '@mui/icons-material/Loop';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 

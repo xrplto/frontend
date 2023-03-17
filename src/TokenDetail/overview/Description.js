@@ -1,6 +1,6 @@
 import React from 'react';
 import Decimal from 'decimal.js';
-
+import { useState, useEffect } from 'react';
 // import MDEditor from 'react-markdown-editor-lite';
 
 import dynamic from "next/dynamic";
@@ -13,6 +13,8 @@ const MDEditor = dynamic(() => import("react-markdown-editor-lite"), {
 
 // Material
 import {
+    styled,
+    Box,
     CardHeader,
     IconButton,
     Link,
@@ -33,6 +35,71 @@ import { selectMetrics } from "src/redux/statusSlice";
 
 // Utils
 import { fPercent, fNumber } from 'src/utils/formatNumber';
+
+const ReadMore = ({ children }) => {
+    const [showFullContent, setShowFullContent] = useState(false);
+
+    const toggleReadMore = () => {
+        setShowFullContent(!showFullContent);
+    };
+
+    const ContentClosed = styled('div')(
+        ({ theme }) => `
+        -webkit-box-flex: 1;
+        flex-grow: 1;
+        height: 30em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+    
+        &::after {
+            content: "";
+            position: absolute;
+            left: 0px;
+            bottom: 0px;
+            width: 100%;
+            height: 8em;
+            background: linear-gradient(180deg, rgba(255,255,255,0), ${theme.palette.background.default});
+            z-index: 1000;
+        }
+    `
+    );
+    
+    const ContentOpened = styled('div')(
+        ({ theme }) => `
+        height: unset;
+        overflow: unset;
+        text-overflow: unset;
+        min-height: 20em;
+    `
+    );
+
+    return (
+        <Stack>
+            {showFullContent?
+                <ContentOpened>
+                    {children}
+                </ContentOpened>
+                :
+                <ContentClosed>
+                    {children}
+                </ContentClosed>
+            }
+
+            <Stack direction="row">
+                <Link
+                    component="button"
+                    underline="none"
+                    variant="body2"
+                    color="#3366FF"
+                    onClick={toggleReadMore}
+                >
+                    <Typography variant='s6' sx={{pt: 3, pb: 3}}>{showFullContent?'Read Less':'Read More'}</Typography>
+                </Link>
+            </Stack>
+        </Stack>
+    );
+};
 
 export default function Description({token, showEditor, setShowEditor, description, onApplyDescription}) {
     const { accountProfile } = useContext(AppContext);
@@ -120,12 +187,14 @@ export default function Description({token, showEditor, setShowEditor, descripti
                 </Stack>
             }
 
-            {!showEditor &&
-                <ReactMarkdown
-                    className="reactMarkDown"
-                >
-                    {description}
-                </ReactMarkdown>
+            {!showEditor && description &&
+                <ReadMore >
+                    <ReactMarkdown
+                        className="reactMarkDown"
+                    >
+                        {description}
+                    </ReactMarkdown>
+                </ReadMore>
             }
 
         </Stack>

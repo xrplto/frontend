@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 
 // Material
 import {
-    useTheme,
     Box,
     Stack,
     ToggleButton,

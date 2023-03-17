@@ -1,3 +1,4 @@
+import axios from 'axios';
 import Decimal from 'decimal.js';
 import { useState, useEffect } from 'react';
 import React, { Suspense } from "react";
@@ -21,6 +22,8 @@ import { Icon } from '@iconify/react';
 import infoFilled from '@iconify/icons-ep/info-filled';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+import StarOutlineIcon from '@mui/icons-material/StarOutline';
+import StarRateIcon from '@mui/icons-material/StarRate';
 
 // Context
 import { useContext } from 'react';
@@ -133,7 +136,8 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
         usd,
         imgExt,
         marketcap,
-        isOMCF
+        isOMCF,
+        isInWatchlist
     } = token;
 
     useEffect(() => {
@@ -147,11 +151,83 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
 
     const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
+    const onChangeTeamWallet = async (account) => {
+        setLoading(true);
+        try {
+            let res;
+
+            const accountAdmin = accountProfile.account;
+            const accountToken = accountProfile.btoken;
+
+            let action = 'add';
+
+            if (wallets.includes(account)) {
+                action = 'remove';
+            }
+
+            const body = {md5: token.md5, account, action};
+
+            res = await axios.post(`${BASE_URL}/admin/update_team_wallets`, body, {
+                headers: { 'x-access-account': accountAdmin, 'x-access-token': accountToken }
+            });
+
+            if (res.status === 200) {
+                const ret = res.data;
+                if (ret.status) {
+                    setWallets(ret.wallets);
+                    openSnackbar('Successful!', 'success');
+                } else {
+                    const err = ret.err;
+                    openSnackbar(err, 'error');
+                }
+            }
+        } catch (err) {
+            console.log(err);
+        }
+        setLoading(false);
+    }
+
+    const onChangeWatchlist = async (md5) => {
+        console.log(token.isInWatchlist);
+        if (token.isInWatchlist === 'yes') {
+            token.isInWatchlist = 'no';
+        } else {
+            token.isInWatchlist = 'yes';
+        }
+    }
+
     return (
         <TableRow
             hover
             key={id}
         >
+            <TableCell align="left">
+                {isInWatchlist === 'yes' ?
+                    <Tooltip title="Remove from Watchlist">
+                        <StarRateIcon
+                            onClick={() => {onChangeWatchlist(md5)}}
+                            fontSize="small"
+                            sx={{
+                                cursor: 'pointer',
+                                color: '#F6B87E'
+                            }}
+                        />
+                    </Tooltip>
+                    :
+                    <Tooltip title="Add to Watchlist and follow token">
+                        <StarOutlineIcon
+                            onClick={() => {onChangeWatchlist(md5)}}
+                            fontSize="small"
+                            sx={{
+                                cursor: 'pointer',
+                                '&:hover': {
+                                    color: '#F6B87E'
+                                },
+                            }}
+                        />
+                    </Tooltip>
+                }
+            </TableCell>
             <TableCell align="left">{id}</TableCell>
             <TableCell align="left" sx={{p:0}}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{p:0}}>
