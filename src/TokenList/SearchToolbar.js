@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import {
     alpha, styled,
     Box,
+    Button,
+    Chip,
     IconButton,
     InputAdornment,
     Link,
@@ -11,6 +13,8 @@ import {
     Select,
     Stack
 } from '@mui/material';
+import StarOutlineIcon from '@mui/icons-material/StarOutline';
+import StarRateIcon from '@mui/icons-material/StarRate';
 
 import FiberNewIcon from '@mui/icons-material/FiberNew';
 import DoNotTouchIcon from '@mui/icons-material/DoNotTouch';
@@ -75,7 +79,20 @@ export default function SearchToolbar({
                 sx={{pb:0.3}}
             /> */}
 
-            <Stack></Stack>
+            <Stack direction="row" alignItems="center">
+                <Link
+                    underline="none"
+                    color="inherit"
+                    // target="_blank"
+                    href={`/watchlist`}
+                    rel="noreferrer noopener nofollow"
+                >
+                    {/* <Button variant="outlined" startIcon={<StarRateIcon />} size="small" color="disabled">
+                        Watchlist
+                    </Button> */}
+                    <Chip variant={"outlined"} icon={<StarOutlineIcon fontSize="small" />} label={'Watchlist'} onClick={()=>{}}/>
+                </Link>
+            </Stack>
 
             <Stack direction='row' alignItems="center" sx={{ml: 2}}>
                 {isAdmin &&

@@ -104,7 +104,7 @@ function getPriceColor(token) {
 
 export const TokenRow = React.memo(fTokenRow);
 
-function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
+function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, watchList, onChangeWatchList}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const { accountProfile } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
@@ -136,8 +136,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
         usd,
         imgExt,
         marketcap,
-        isOMCF,
-        isInWatchlist
+        isOMCF
     } = token;
 
     useEffect(() => {
@@ -151,61 +150,16 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
 
     const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
-    const onChangeTeamWallet = async (account) => {
-        setLoading(true);
-        try {
-            let res;
-
-            const accountAdmin = accountProfile.account;
-            const accountToken = accountProfile.btoken;
-
-            let action = 'add';
-
-            if (wallets.includes(account)) {
-                action = 'remove';
-            }
-
-            const body = {md5: token.md5, account, action};
-
-            res = await axios.post(`${BASE_URL}/admin/update_team_wallets`, body, {
-                headers: { 'x-access-account': accountAdmin, 'x-access-token': accountToken }
-            });
-
-            if (res.status === 200) {
-                const ret = res.data;
-                if (ret.status) {
-                    setWallets(ret.wallets);
-                    openSnackbar('Successful!', 'success');
-                } else {
-                    const err = ret.err;
-                    openSnackbar(err, 'error');
-                }
-            }
-        } catch (err) {
-            console.log(err);
-        }
-        setLoading(false);
-    }
-
-    const onChangeWatchlist = async (md5) => {
-        console.log(token.isInWatchlist);
-        if (token.isInWatchlist === 'yes') {
-            token.isInWatchlist = 'no';
-        } else {
-            token.isInWatchlist = 'yes';
-        }
-    }
-
     return (
         <TableRow
             hover
             key={id}
         >
             <TableCell align="left">
-                {isInWatchlist === 'yes' ?
+                {watchList.includes(md5) ?
                     <Tooltip title="Remove from Watchlist">
                         <StarRateIcon
-                            onClick={() => {onChangeWatchlist(md5)}}
+                            onClick={() => {onChangeWatchList(md5)}}
                             fontSize="small"
                             sx={{
                                 cursor: 'pointer',
@@ -216,7 +170,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
                     :
                     <Tooltip title="Add to Watchlist and follow token">
                         <StarOutlineIcon
-                            onClick={() => {onChangeWatchlist(md5)}}
+                            onClick={() => {onChangeWatchList(md5)}}
                             fontSize="small"
                             sx={{
                                 cursor: 'pointer',

@@ -17,7 +17,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
     const [darkMode, setDarkMode] = useState(true);
     const [accountProfile, _setAccountProfile] = useState(null);
 
-    const store = configureRedux(data);
+    const [store, setStore] = useState(configureRedux(data));
 
     const toggleTheme = () => {
         window.localStorage.setItem('appTheme', !darkMode);

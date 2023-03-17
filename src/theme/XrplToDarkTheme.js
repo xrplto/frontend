@@ -93,6 +93,14 @@ const colors = {
       100: themeColors.black
     }
   },
+  disabled: {
+    lighter: '#BDBDBD',
+    light: '#9E9E9E',
+    main: '#757575',
+    dark: '#616161',
+    darker: '#424242',
+    contrastText: '#fff'
+  },
   primary: {
       lighter: alpha("#fff", 0.1),
       light: '#5BE584',
@@ -302,6 +310,11 @@ export const XrplToDarkTheme = createTheme({
       white: colors.alpha.white[100]
     },
     mode: 'dark',
+    disabled: {
+      light: colors.disabled.light,
+      main: colors.disabled.main,
+      dark: colors.disabled.dark
+    },
     primary: {
       light: colors.primary.light,
       main: colors.primary.main,

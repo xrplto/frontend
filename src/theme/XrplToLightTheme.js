@@ -93,17 +93,25 @@ const colors = {
       100: themeColors.black
     }
   },
-  secondary: {
-    lighter: lighten(themeColors.secondary, 0.85),
-    light: lighten(themeColors.secondary, 0.25),
-    main: themeColors.secondary,
-    dark: darken(themeColors.secondary, 0.2)
+  disabled: {
+    lighter: '#F5F5F5',
+    light: '#EEEEEE',
+    main: '#E0E0E0',
+    dark: '#BDBDBD',
+    darker: '#9E9E9E',
+    contrastText: '#fff'
   },
   primary: {
     lighter: lighten(themeColors.primary, 0.85),
     light: lighten(themeColors.primary, 0.3),
     main: themeColors.primary,
     dark: darken(themeColors.primary, 0.2)
+  },
+  secondary: {
+    lighter: lighten(themeColors.secondary, 0.85),
+    light: lighten(themeColors.secondary, 0.25),
+    main: themeColors.secondary,
+    dark: darken(themeColors.secondary, 0.2)
   },
   success: {
     lighter: lighten(themeColors.success, 0.85),
@@ -257,6 +265,11 @@ export const XrplToLightTheme = createTheme({
       white: colors.alpha.white[100]
     },
     mode: 'light',
+    disabled: {
+      light: colors.disabled.light,
+      main: colors.disabled.main,
+      dark: colors.disabled.dark
+    },
     primary: {
       light: colors.primary.light,
       main: colors.primary.main,

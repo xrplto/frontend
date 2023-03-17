@@ -27,7 +27,7 @@ import {TokenRow} from './TokenRow';
 import TrustSet from 'src/components/TrustSet';
 
 // ----------------------------------------------------------------------
-export default function TokenList({tag, tokens, setTokens, tMap}) {
+export default function TokenList({showWatchList, tag, tokens, setTokens, tMap}) {
     const dispatch = useDispatch();
     const metrics = useSelector(selectMetrics);
 
@@ -42,7 +42,7 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
     
     const [orderBy, setOrderBy] = useState('vol24hxrp');
 
-    const [sync, setSync] = useState(false);
+    const [sync, setSync] = useState(showWatchList?1:0);
     const [editToken, setEditToken] = useState(null);
     const [trustToken, setTrustToken] = useState(null);
     
@@ -53,7 +53,7 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
     const [showDate, setShowDate] = useState(false);
     // -----------------------------------------------
 
-    const { accountProfile } = useContext(AppContext);
+    const { accountProfile, openSnackbar, setLoading } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     const [watchList, setWatchList] = useState([]);
@@ -126,9 +126,16 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
             // https://github.com/WietseWind/fetch-xrpl-transactions
             // https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc
             const start = page * rows;
+
             let ntag = '';
-            if (tag) ntag = tag;
-            axios.get(`${BASE_URL}/tokens?tag=${ntag}&start=${start}&limit=${rows}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}`)
+            if (tag)
+                ntag = tag;
+
+            let watchAccount = '';
+            if (showWatchList)
+                watchAccount = accountProfile?.account || '';
+
+            axios.get(`${BASE_URL}/tokens?tag=${ntag}&watchlist=${watchAccount}&start=${start}&limit=${rows}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}`)
             .then(res => {
                 try {
                     if (res.status === 200 && res.data) {
@@ -147,7 +154,8 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
                 setSearch(filterName);
             });
         };
-        loadTokens();
+        if (sync > 0)
+            loadTokens();
     }, [sync]);
 
     useEffect(() => {
@@ -158,12 +166,12 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
                 setWatchList([]);
                 return;
             }
-            // https://api.xrpl.to/api/watchlist/getlist?account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
-            axios.get(`${BASE_URL}/watchlist/getlist?account=${account}`)
+            // https://api.xrpl.to/api/watchlist/get_list?account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
+            axios.get(`${BASE_URL}/watchlist/get_list?account=${account}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
-                        setWatchList(ret.watchList);
+                        setWatchList(ret.watchlist);
                     }
                 }).catch(err => {
                     console.log("Error on getting watchlist!", err);
@@ -173,6 +181,50 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
         }
         getWatchList();
     }, [sync, accountProfile]);
+
+    const onChangeWatchList = async (md5) => {
+        const account = accountProfile?.account;
+        const accountToken = accountProfile?.btoken;
+
+        if (!account || !accountToken) {
+            openSnackbar('Please login!', 'error');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            let res;
+
+            let action = 'add';
+
+            if (watchList.includes(md5)) {
+                action = 'remove';
+            }
+
+            const body = {md5, account, action};
+
+            res = await axios.post(`${BASE_URL}/watchlist/update_watchlist`, body, {
+                headers: { 'x-access-token': accountToken }
+            });
+
+            if (res.status === 200) {
+                const ret = res.data;
+                if (ret.status) {
+                    setWatchList(ret.watchlist);
+                    openSnackbar('Successful!', 'success');
+                    if (showWatchList) {
+                        setSync(sync + 1);
+                    }
+                } else {
+                    const err = ret.err;
+                    openSnackbar(err, 'error');
+                }
+            }
+        } catch (err) {
+            console.log(err);
+        }
+        setLoading(false);
+    }
 
     const handleRequestSort = (event, id, no) => {
         const isDesc = orderBy === id && order === 'desc';
@@ -277,6 +329,8 @@ export default function TokenList({tag, tokens, setTokens, tMap}) {
                                             admin={isAdmin}
                                             setEditToken={setEditToken}
                                             setTrustToken={setTrustToken}
+                                            watchList={watchList}
+                                            onChangeWatchList={onChangeWatchList}
                                         />
                                     );
                                 })
