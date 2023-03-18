@@ -130,7 +130,7 @@ export default function ExplorersMenu({issuer}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xrplf" src="/static/explorerxrplf.png" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="xrplf" src="/static/explorerxrplf.svg" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRP Ledger Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>

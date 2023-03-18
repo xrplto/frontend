@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Material
 import {
@@ -80,7 +81,7 @@ function normalizeTag(tag) {
 
 // ----------------------------------------------------------------------
 export default function UserDesc({token}) {
-    const { accountProfile, openSnackbar } = useContext(AppContext);
+    const { darkMode, accountProfile, openSnackbar } = useContext(AppContext);
 
     const [rating, setRating] = useState(2);
     // const [trustToken, setTrustToken] = useState(null);
@@ -115,6 +116,11 @@ export default function UserDesc({token}) {
     const isChat = social && (social.telegram || social.discord);
 
     const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+
+    const img_xrplf_black = "/static/xrplf_black.svg";
+    const img_xrplf_white = "/static/xrplf_white.svg";
+    
+    const img_xrplf = darkMode?img_xrplf_white:img_xrplf_black;
 
     const handleDelete = () => {
     }
@@ -284,7 +290,7 @@ export default function UserDesc({token}) {
                 </Grid> */}
                 {isCommunity && (
                     <Grid item sx={{pb:1}}>
-                        <CommunityMenu token={token}/>
+                        <CommunityMenu token={token} />
                     </Grid>
                 )}
             </Grid>
@@ -315,7 +321,11 @@ export default function UserDesc({token}) {
                                 >
                                     <Tooltip title={'Assessment'}>
                                         <IconButton size="small">
-                                            <Icon icon={currencyRipple} width="18" height="18" />
+                                            <LazyLoadImage
+                                                src={img_xrplf}
+                                                width={16}
+                                                height={16}
+                                            />
                                         </IconButton>
                                     </Tooltip>
                                 </Link>
