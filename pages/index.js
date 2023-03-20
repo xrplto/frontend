@@ -1,7 +1,7 @@
 import axios from 'axios'
 import dynamic from 'next/dynamic';
 import { performance } from 'perf_hooks';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 // Material
 import {
@@ -69,6 +69,7 @@ function Overview({data}) {
                     <Grid item xs={12} md={12} lg={12} >
                         {/* <DynamicTokenList data={data}/> */}
                         <TokenList
+                            tags={data.tags}
                             tokens={tokens}
                             tMap={tMap}
                             setTokens={setTokens}
@@ -101,7 +102,7 @@ export async function getStaticProps() {
     try {
         var t1 = performance.now();
 
-        const res = await axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false`);
+        const res = await axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`);
 
         data = res.data;
 

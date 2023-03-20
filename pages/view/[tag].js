@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { performance } from 'perf_hooks';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 // Material
 import {
@@ -65,6 +65,8 @@ function Overview({data}) {
                     <Grid item xs={12} md={12} lg={12} >
                         <TokenList
                             tag={data.tag}
+                            tagName={data.tagName}
+                            tags={data.tags}
                             tokens={tokens}
                             tMap={tMap}
                             setTokens={setTokens}
@@ -93,7 +95,7 @@ export async function getServerSideProps(ctx) {
 
         var t1 = performance.now();
 
-        const res = await axios.get(`${BASE_URL}/tokens?tag=${tag}&start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`);
+        const res = await axios.get(`${BASE_URL}/tokens?tag=${tag}&start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&tags=yes`);
 
         data = res.data;
 

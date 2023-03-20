@@ -114,8 +114,8 @@ export default function Orders({pair}) {
             const accountAddress = accountProfile?.account;
             if (!accountAddress) return;
             setLoading(true);
-            // https://api.xrpl.to/api/account/offers/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=4C656467657250756E6B73000000000000000000&issuer1=rLpunkscgfzS8so59bUCJBVqZ3eHZue64r&curr2=XRP&issuer2=XRPL
-            axios.get(`${BASE_URL}/account/offers/${accountAddress}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`)
+            // https://api.xrpl.to/api/account/offers/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?pair=7f64eb975be54ed0f1717c522e2ad754
+            axios.get(`${BASE_URL}/account/offers/${accountAddress}?pair=${pair.pair}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -282,27 +282,46 @@ export default function Orders({pair}) {
                     <TableBody>
                     {
                         offers.map((row) => {
+
+                                /*{
+                                    "_id": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm_71158478",
+                                    "account": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm",
+                                    "seq": 71158478,
+                                    "flags": 0,
+                                    "gets": {
+                                        "issuer": "XRPL",
+                                        "currency": "XRP",
+                                        "name": "XRP",
+                                        "value": "5"
+                                    },
+                                    "pays": {
+                                        "issuer": "rLpunkscgfzS8so59bUCJBVqZ3eHZue64r",
+                                        "currency": "4C656467657250756E6B73000000000000000000",
+                                        "name": "LedgerPunks",
+                                        "value": "5000"
+                                    },
+                                    "pair": "1e766311a6e689cd7225b5923ed5811c"
+                                },*/
                                 const {
                                     // flags,
-                                    quality,
                                     seq,
-                                    takerGets,
-                                    takerPays
+                                    gets,
+                                    pays
                                 } = row;
 
-                                let exch = quality;
+                                let exch = 0;
 
                                 const _id = seq;
 
                                 let buy;
-                                if (takerPays.issuer === curr1.issuer && takerPays.currency === curr1.currency) {
+                                if (pays.issuer === curr1.issuer && pays.currency === curr1.currency) {
                                     // BUY
                                     buy = true;
-                                    exch = new Decimal(takerGets.value).div(takerPays.value).toNumber();
+                                    exch = new Decimal(gets.value).div(pays.value).toNumber();
                                 } else {
                                     // SELL
                                     buy = false;
-                                    exch = new Decimal(takerPays.value).div(takerGets.value).toNumber();
+                                    exch = new Decimal(pays.value).div(gets.value).toNumber();
                                 }
 
                                 return (
@@ -330,11 +349,11 @@ export default function Orders({pair}) {
                                         </TableCell>
                                         <TableCell align="left">{exch}</TableCell>
                                         <TableCell align="left">
-                                            <Typography variant="h6" noWrap>{takerGets.value} <Typography variant="small">{takerGets.name}</Typography></Typography>
+                                            <Typography variant="h6" noWrap>{gets.value} <Typography variant="small">{gets.name}</Typography></Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
-                                            <Typography variant="h6" noWrap>{takerPays.value} <Typography variant="small">{takerPays.name}</Typography></Typography>
+                                            <Typography variant="h6" noWrap>{pays.value} <Typography variant="small">{pays.name}</Typography></Typography>
                                         </TableCell>
 
                                         <TableCell align="left">

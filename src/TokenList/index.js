@@ -27,7 +27,7 @@ import {TokenRow} from './TokenRow';
 import TrustSet from 'src/components/TrustSet';
 
 // ----------------------------------------------------------------------
-export default function TokenList({showWatchList, tag, tokens, setTokens, tMap}) {
+export default function TokenList({showWatchList, tag, tagName, tags, tokens, setTokens, tMap}) {
     const dispatch = useDispatch();
     const metrics = useSelector(selectMetrics);
 
@@ -288,6 +288,8 @@ export default function TokenList({showWatchList, tag, tokens, setTokens, tMap})
             <TrustSet token={trustToken} setToken={setTrustToken}/>
             
             <SearchToolbar
+                tags={tags}
+                tagName={tagName}
                 filterName={filterName}
                 onFilterName={handleFilterByName}
                 rows={rows}

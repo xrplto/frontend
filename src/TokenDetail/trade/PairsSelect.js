@@ -101,14 +101,12 @@ export default function PairsSelect({ token, pair, setPair}) {
                         }*/
                         const newPairs = ret.pairs;
                         setPairs(newPairs);
-                        if (!pair) {
+                        if (!pair) { // Not required
                             setPair(newPairs[0]);
-                            updatePair(newPairs[0]);
-                        } else {
+                        } else { // Not required
                             const check = newPairs.find(e => e.pair === pair.pair);
                             if (!check) {
                                 setPair(newPairs[0]);
-                                updatePair(newPairs[0]);
                             }
                         }
                     }

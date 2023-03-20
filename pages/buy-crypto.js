@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { performance } from 'perf_hooks';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 // Material
 import {

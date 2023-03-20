@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Material
 import {
@@ -15,6 +15,8 @@ import {
     OutlinedInput,
     Select,
     Stack,
+    Tab,
+    Tabs,
     Tooltip
 } from '@mui/material';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
@@ -66,30 +68,30 @@ const SearchBox = styled(OutlinedInput)(({ theme }) => ({
     }
 }));
 
-const ShadowContent = styled('div')(
+const HeaderWrapper = styled(Box)(
     ({ theme }) => `
-    -webkit-box-flex: 1;
-    flex-grow: 1;
-    height: 30em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    position: relative;
-
-    &::after {
-        content: "";
-        position: absolute;
-        left: 0px;
-        bottom: 0px;
-        width: 100%;
-        height: 8em;
-        background: linear-gradient(180deg, rgba(255,255,255,0), ${theme.palette.background.default});
-        z-index: 1000;
-    }
+    width: 100%;
+    display: flex;
+    align-items: center;
+    height: ${theme.spacing(10)};
+    margin-bottom: ${theme.spacing(0)};
+    border-radius: 0px;
+    border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
 `
 );
 
+function getTagValue(tags, tagName) {
+    if (!tags || tags.length < 1 || !tagName) return 0;
+    const idx = tags.indexOf(tagName);
+    if (idx < 0)
+        return 0;
+    return idx + 1;
+}
+
 // ----------------------------------------------------------------------
 export default function SearchToolbar({
+    tags,
+    tagName,
     filterName,
     onFilterName,
     rows,
@@ -103,29 +105,14 @@ export default function SearchToolbar({
     setShowDate
 }) {
     const theme = useTheme();
+    
+    const myRef = useRef(null)
+
     const BASE_URL = 'https://api.xrpl.to/api';
 
     const { openSnackbar } = useContext(AppContext);
 
-    const [tags, setTags] = useState([]);
-
-    useEffect(() => {
-        function getTags() {
-            // https://api.xrpl.to/api/tags
-            axios.get(`${BASE_URL}/tags`)
-                .then(res => {
-                    let ret = res.status === 200 ? res.data : undefined;
-                    if (ret) {
-                        setTags(ret.tags);
-                    }
-                }).catch(err => {
-                    console.log("Error on getting watchlist!", err);
-                }).then(function () {
-                    // always executed
-                });
-        }
-        getTags();
-    }, []);
+    const [tagValue, setTagValue] = useState(getTagValue(tags, tagName));
 
     const handleChangeRows = (e) => {
         setRows(parseInt(e.target.value, 10));
@@ -134,22 +121,31 @@ export default function SearchToolbar({
     const handleDelete = () => {
     }
 
-    return (
-        <Stack direction={{ xs: 'column', md: 'row' }} alignItems="center" justifyContent="space-between" style={{borderBottom: `1px solid ${alpha('#CBCCD2', 0.1)}`}}>
-            {/* <SearchBox
-                value={filterName}
-                onChange={onFilterName}
-                placeholder="Search ..."
-                size="small"
-                startAdornment={
-                    <InputAdornment position="start">
-                        <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
-                    </InputAdornment>
-                }
-                sx={{pb:0.3}}
-            /> */}
+    const ShadowContent = styled('div')(
+        ({ theme }) => `
+        -webkit-box-flex: 1;
+        flex-grow: 1;
+        height: 1em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+    
+        &::before {
+            content: "";
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            width: 8em;
+            height: 100%;
+            background: linear-gradient(270deg, ${theme.palette.background.default}, rgba(255,255,255,0));
+            z-index: 1000;
+        }
+    `
+    );
 
-            <Stack direction="row" alignItems="center" spacing={0.5} sx={{mr: 0}}>
+    return (
+        <>
+            <Stack direction="row" alignItems="center" spacing={0.5} sx={{display: { xs: 'block', md: 'none' }, mb: 2}}>
                 <Link
                     underline="none"
                     color="inherit"
@@ -164,87 +160,143 @@ export default function SearchToolbar({
                 </Link>
 
                 <Chip variant={"outlined"} icon={<TroubleshootIcon fontSize="small" />} label={'Portfolio'} onClick={()=>{openSnackbar("Coming soon!", "success")}}/>
-
-                
-                
             </Stack>
-
-            <Divider orientation="vertical" variant="middle" flexItem sx={{display: { xs: 'none', md: 'flex' }, ml: 1, mr: 1, mt: 2, mb: 2}} />
-
-            <Box
-                sx={{
-                    display: "flex",
-                    gap: 0.5,
-                    py: 1,
-                    overflow: "auto",
-                    width: "100%",
-                    "& > *": {
-                        scrollSnapAlign: "center",
-                    },
-                    "::-webkit-scrollbar": { display: "none" },
-                }}
-
-                style={{
-                    '&::after': {
-                        position: "absolute",
-                        right: "0px",
-                        top: "0px",
-                        height: "100%",
-                        width: "8em",
-                        background: `linear-gradient(270deg, rgba(255,255,255,0), ${theme.palette.background.default})`,
-                        zIndex: 1000
+        
+            <RootStyle>
+                {/* <SearchBox
+                    value={filterName}
+                    onChange={onFilterName}
+                    placeholder="Search ..."
+                    size="small"
+                    startAdornment={
+                        <InputAdornment position="start">
+                            <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
+                        </InputAdornment>
                     }
-                }}
-            >
-                {tags && tags.map((tag, idx) => {
-                    return (
-                        <Link
-                            href={`/view/${normalizeTag(tag)}`}
-                            sx={{ pl: 0, pr: 0, display: 'inline-flex' }}
-                            underline="none"
-                            rel="noreferrer noopener nofollow"
-                        >
-                            <Chip
-                                size="small"
-                                label={tag}
-                                onClick={handleDelete}
-                            />
-                        </Link>
-                    );
-                })}
-            </Box>
+                    sx={{pb:0.3}}
+                /> */}
 
-            <Stack direction='row' alignItems="center" sx={{display: { xs: 'none', md: 'flex' }, ml: 2}}>
-                {isAdmin &&
-                    <Stack direction='row' alignItems="center" sx={{mr: 2, mt: 0.5}}>
-                        <IconButton onClick={() => { setShowNew(!showNew); }} >
-                            <FiberNewIcon color={showNew?'error':'inherit'}/>
-                        </IconButton>
+                <Stack direction="row" alignItems="center" spacing={0.5} sx={{display: { xs: 'none', md: 'flex' }, mr: 0}}>
+                    <Link
+                        underline="none"
+                        color="inherit"
+                        // target="_blank"
+                        href={`/watchlist`}
+                        rel="noreferrer noopener nofollow"
+                    >
+                        {/* <Button variant="outlined" startIcon={<StarRateIcon />} size="small" color="disabled">
+                            Watchlist
+                        </Button> */}
+                        <Chip variant={"outlined"} icon={<StarOutlineIcon fontSize="small" />} label={'Watchlist'} onClick={()=>{}}/>
+                    </Link>
 
-                        <IconButton onClick={() => { setShowSlug(!showSlug);; }} >
-                            <DoNotTouchIcon color={showSlug?'error':'inherit'}/>
-                        </IconButton>
+                    <Chip variant={"outlined"} icon={<TroubleshootIcon fontSize="small" />} label={'Portfolio'} onClick={()=>{openSnackbar("Coming soon!", "success")}}/>
+                </Stack>
 
-                        <IconButton onClick={() => { setShowDate(!showDate); }} >
-                            <UpdateDisabledIcon color={showDate?'error':'inherit'}/>
-                        </IconButton>
-                    </Stack>
-                }
+                <Divider orientation="vertical" variant="middle" flexItem sx={{display: { xs: 'none', md: 'flex' }, ml: 1, mr: 0, mt: 2, mb: 2}} />
 
-                Rows
-                <Select
-                    value={rows}
-                    onChange={handleChangeRows}
+                <Tabs
+                    value={tagValue}
+                    // onChange={handleChange}
+                    variant="scrollable"
+                    scrollButtons
+                    // allowScrollButtonsMobile
+                    // scrollButtons="auto"
+                    aria-label="tag-tabs"
                     sx={{
-                        mt:0.4,
-                        '& .MuiOutlinedInput-notchedOutline' : { border: 'none' }
+                        "& .MuiTabs-indicator": {
+                            display: "none"
+                            //backgroundColor: "orange"
+                        }
                     }}
                 >
-                    <MenuItem value={100}>100</MenuItem>
-                    <MenuItem value={50}>50</MenuItem>
-                    <MenuItem value={20}>20</MenuItem>
-                </Select>
-            </Stack>
-        </Stack>
+                    <Tab
+                        key={0}
+                        value={0}
+                        disableRipple
+                        label={
+                            <Link
+                                href={`/`}
+                                sx={{ pl: 0, pr: 0, display: 'inline-flex' }}
+                                underline="none"
+                                rel="noreferrer noopener nofollow"
+                            >
+                                <Chip
+                                    size="small"
+                                    label={"Tokens"}
+                                    onClick={handleDelete}
+                                    color={tagValue === 0 ?"primary":undefined}
+                                />
+                            </Link>
+                        }
+                        style={{
+                            paddingLeft:0,
+                            paddingRight:0
+                        }}
+                    />
+                    {tags && tags.map((tag, idx) => {
+                        const nTag = normalizeTag(tag);
+                        return (
+                            <Tab
+                                key={idx+1}
+                                value={idx+1}
+                                disableRipple
+                                label={
+                                    <Link
+                                        href={`/view/${nTag}`}
+                                        sx={{ pl: 0, pr: 0, display: 'inline-flex' }}
+                                        underline="none"
+                                        rel="noreferrer noopener nofollow"
+                                    >
+                                        <Chip
+                                            size="small"
+                                            label={tag}
+                                            onClick={handleDelete}
+                                            color={tagName === tag ?"primary":undefined}
+                                        />
+                                    </Link>
+                                }
+                                style={{
+                                    paddingLeft:0,
+                                    paddingRight:0
+                                }}
+                            />
+                        );
+                    })}
+                </Tabs>
+
+                <Stack direction='row' alignItems="center" sx={{display: { xs: 'none', md: 'flex' }, ml: 0}}>
+                    {isAdmin &&
+                        <Stack direction='row' alignItems="center" sx={{mr: 2, mt: 0.5}}>
+                            <IconButton onClick={() => { setShowNew(!showNew); }} >
+                                <FiberNewIcon color={showNew?'error':'inherit'}/>
+                            </IconButton>
+
+                            <IconButton onClick={() => { setShowSlug(!showSlug);; }} >
+                                <DoNotTouchIcon color={showSlug?'error':'inherit'}/>
+                            </IconButton>
+
+                            <IconButton onClick={() => { setShowDate(!showDate); }} >
+                                <UpdateDisabledIcon color={showDate?'error':'inherit'}/>
+                            </IconButton>
+                        </Stack>
+                    }
+
+                    Rows
+                    <Select
+                        value={rows}
+                        onChange={handleChangeRows}
+                        sx={{
+                            mt:0.4,
+                            '& .MuiOutlinedInput-notchedOutline' : { border: 'none' }
+                        }}
+                    >
+                        <MenuItem value={100}>100</MenuItem>
+                        <MenuItem value={50}>50</MenuItem>
+                        <MenuItem value={20}>20</MenuItem>
+                    </Select>
+                </Stack>
+            </RootStyle>
+        </>
     );
 }
