@@ -28,44 +28,6 @@ import HistoryToolbar from './HistoryToolbar';
 import { fNumber } from 'src/utils/formatNumber';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 import { formatDateTime } from 'src/utils/formatTime';
-
-// ----------------------------------------------------------------------
-const CancelTypography = withStyles({
-    root: {
-        color: "#FF6C40",
-        borderRadius: '6px',
-        border: '0.05em solid #FF6C40',
-        //fontSize: '0.5rem',
-        lineHeight: '1',
-        paddingLeft: '3px',
-        paddingRight: '3px',
-    }
-})(Typography);
-
-const BuyTypography = withStyles({
-    root: {
-        color: "#007B55",
-        borderRadius: '6px',
-        border: '0.05em solid #007B55',
-        //fontSize: '0.5rem',
-        lineHeight: '1',
-        paddingLeft: '3px',
-        paddingRight: '3px',
-    }
-})(Typography);
-
-const SellTypography = withStyles({
-    root: {
-        color: "#B72136",
-        borderRadius: '6px',
-        border: '0.05em solid #B72136',
-        //fontSize: '0.5rem',
-        lineHeight: '1',
-        paddingLeft: '3px',
-        paddingRight: '3px',
-    }
-})(Typography);
-
 // ----------------------------------------------------------------------
 
 function truncate(str, n){
@@ -136,16 +98,13 @@ export default function HistoryData({token}) {
                     <TableHead>
                         <TableRow>
                             <TableCell align="left">#</TableCell>
-                            <TableCell align="left">Dir</TableCell>
+                            <TableCell align="left">Time</TableCell>
                             <TableCell align="left">Price</TableCell>
-                            {/* <TableCell align="left">Volume</TableCell> */}
                             <TableCell align="left">Taker Paid</TableCell>
                             <TableCell align="left">Taker Got</TableCell>
                             <TableCell align="left">Taker</TableCell>
                             <TableCell align="left">Maker</TableCell>
-                            <TableCell align="left">Time</TableCell>
                             <TableCell align="left">Ledger</TableCell>
-                            <TableCell align="left">Account</TableCell>
                             <TableCell align="left">Hash</TableCell>
                         </TableRow>
                     </TableHead>
@@ -176,8 +135,6 @@ export default function HistoryData({token}) {
 
                                 const {
                                     _id,
-                                    dir,
-                                    account,
                                     maker,
                                     taker,
                                     seq,
@@ -196,18 +153,15 @@ export default function HistoryData({token}) {
                                 
                                 let exch;
                                 let name;
-                                let type;
 
                                 if (md5 === md51) {
                                     // volume = got.value;
                                     exch = Decimal.div(takerGot.value, takerPaid.value).toNumber();
                                     name = gotName;
-                                    type = dir==='buy'?'buy':'sell';
                                 } else {
                                     // volume = paid.value;
                                     exch = Decimal.div(takerPaid.value, takerGot.value).toNumber();
                                     name = paidName;
-                                    type = dir==='buy'?'sell':'buy';
                                 }
 
                                 const strDateTime = formatDateTime(time);
@@ -216,35 +170,12 @@ export default function HistoryData({token}) {
                                     <TableRow
                                         hover
                                         key={_id}
-                                        sx={{
-                                            [`& .${tableCellClasses.root}`]: {
-                                                color: (type === 'sell' ? '#B72136' : '#007B55')
-                                            }
-                                        }}
                                     >
                                         <TableCell align="left"><Typography variant="subtitle2">{idx + page * rows + 1}</Typography></TableCell>
                                         <TableCell align="left">
-                                            <Stack spacing={1}>
-                                                {dir==='sell' && (
-                                                    <Stack direction="row">
-                                                        <SellTypography variant="caption">
-                                                        sell
-                                                        </SellTypography>
-                                                    </Stack>
-                                                )}
-                                                
-                                                {dir==='buy' && (
-                                                    <Stack direction="row">
-                                                        <BuyTypography variant="caption">
-                                                        buy
-                                                        </BuyTypography>
-                                                    </Stack>
-                                                )}
-                                            </Stack>
+                                            <Typography variant="caption">{strDateTime}</Typography>
                                         </TableCell>
                                         <TableCell align="left"><Typography variant="caption">{fNumber(exch)} {name}</Typography></TableCell>
-                                        {/* <TableCell align="left"><Typography variant="subtitle2">{fNumber(volume)}</Typography></TableCell> */}
-                                        
                                         <TableCell align="left">
                                             {fNumber(takerPaid.value)} <Typography variant="caption">{paidName}</Typography>
                                         </TableCell>
@@ -256,7 +187,7 @@ export default function HistoryData({token}) {
                                         <TableCell align="left">
                                             <Link
                                                 // underline="none"
-                                                color="inherit"
+                                                // color="inherit"
                                                 target="_blank"
                                                 href={`https://bithomp.com/explorer/${taker}`}
                                                 rel="noreferrer noopener nofollow"
@@ -268,7 +199,7 @@ export default function HistoryData({token}) {
                                         <TableCell align="left">
                                             <Link
                                                 // underline="none"
-                                                color="inherit"
+                                                // color="inherit"
                                                 target="_blank"
                                                 href={`https://bithomp.com/explorer/${maker}`}
                                                 rel="noreferrer noopener nofollow"
@@ -276,27 +207,12 @@ export default function HistoryData({token}) {
                                                 {truncate(maker, 12)}
                                             </Link>
                                         </TableCell>
-
-                                        <TableCell align="left">
-                                            <Typography variant="caption">{strDateTime}</Typography>
-                                        </TableCell>
                                         <TableCell align="left">{ledger}</TableCell>
-                                        <TableCell align="left">
-                                            <Link
-                                                // underline="none"
-                                                color="inherit"
-                                                target="_blank"
-                                                href={`https://bithomp.com/explorer/${account}`}
-                                                rel="noreferrer noopener nofollow"
-                                            >
-                                                {truncate(account, 12)}
-                                            </Link>
-                                        </TableCell>
                                         <TableCell align="left">
                                             <Stack direction="row" alignItems='center'>
                                                 <Link
                                                     // underline="none"
-                                                    color="inherit"
+                                                    // color="inherit"
                                                     target="_blank"
                                                     href={`https://bithomp.com/explorer/${hash}`}
                                                     rel="noreferrer noopener nofollow"
@@ -311,7 +227,7 @@ export default function HistoryData({token}) {
 
                                                 <Link
                                                     // underline="none"
-                                                    color="inherit"
+                                                    // color="inherit"
                                                     target="_blank"
                                                     href={`https://livenet.xrpl.org/transactions/${hash}`}
                                                     rel="noreferrer noopener nofollow"

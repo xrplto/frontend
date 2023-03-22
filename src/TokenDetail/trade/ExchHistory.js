@@ -37,6 +37,100 @@ function getMD5(issuer, currency) {
     return MD5(issuer  + '_' +  currency).toString();
 }
 
+function convertTrade(md5, trades) {
+    if (!trades || trades.length < 1) return [];
+    /*
+    {
+        "_id": "78545243_2",
+        "maker": "rMM1zmsQ5dA2932mXpFV3vTa6QoU681AYa",
+        "taker": "ra1x1s3qdFqbSZLbdMkLWJRKMDPzgxycN3",
+        "seq": 77099195,
+        "pair": "5a1b51eae66799a2359f810696bd3291",
+        "takerPaid": {
+            "currency": "XRP",
+            "issuer": "XRPL",
+            "value": "39"
+        },
+        "takerGot": {
+            "currency": "434F524500000000000000000000000000000000",
+            "issuer": "rcoreNywaoz2ZCQ8Lg2EbSLnGuRBmun6D",
+            "value": "26.6994848127106"
+        },
+        "ledger": 78545243,
+        "hash": "15C378C6EDBCB61ACA84D0486A4EF34252750F149EAAD1A92FBFBF372A752571",
+        "time": 1679326790000
+    },
+    */
+    let prevLedger = 0;
+    let prevExch = 0;
+    let ctrades = [];
+
+    let d1 = 0;
+    let d2 = 0;
+
+    for (var i = trades.length - 1; i >= 0; i--) {
+        const t = trades[i];
+
+        const {
+            _id,
+            takerPaid,
+            takerGot,
+            time,
+            ledger
+        } = t;
+
+        const md51 = getMD5(takerPaid.issuer, takerPaid.currency);
+        
+        let exch;
+        let amount;
+        let color = undefined;
+
+        if (ledger !== prevLedger) {
+            if (ledger > 0) {
+                prevExch = Decimal.div(d1, d2).toNumber();
+            }
+            d1 = 0;
+            d2 = 0;
+        }
+        
+        if (md5 === md51) {
+            // volume = got.value;
+            exch = Decimal.div(takerGot.value, takerPaid.value).toNumber();
+            amount = fmNumber(takerPaid.value, 2);
+
+            d1 = Decimal.add(takerGot.value, d1).toString();
+            d2 = Decimal.add(takerPaid.value, d2).toString();
+        } else {
+            // volume = paid.value;
+            exch = Decimal.div(takerPaid.value, takerGot.value).toNumber();
+            amount = fmNumber(takerGot.value, 2);
+
+            d1 = Decimal.add(takerPaid.value, d1).toString();
+            d2 = Decimal.add(takerGot.value, d2).toString();
+        }
+
+        if (exch > prevExch) {
+            color = '#007B55';
+        } else {
+            color = '#B72136';
+        }
+
+        prevLedger = ledger;
+
+        const data = {
+            _id,
+            exch,
+            amount,
+            color,
+            time
+        };
+
+        ctrades.push(data)
+    }
+
+    return ctrades.reverse();
+}
+
 export default function ExchHistory({pair, md5}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
@@ -46,15 +140,12 @@ export default function ExchHistory({pair, md5}) {
     useEffect(() => {
         function getTradeExchanges() {
             if (!pair) return;
-            const page = 0;
-            const rows = 30;
-            // SOLO
-            // https://api.xrpl.to/api/last_trades?md5=ekfjlk&pair=fa99aff608a10186d3b1ff33b5cd665f&page=0&limit=5
-            axios.get(`${BASE_URL}/last_trades?md5=${md5}&issuer=${pair.curr2.issuer}&currency=${pair.curr2.currency}&limit=30`)
+            // https://api.xrpl.to/api/last_trades?md5=b56a99b1c7d21a2bd621e3a2561f596b&issuer=XRPL&currency=XRP&limit=40
+            axios.get(`${BASE_URL}/last_trades?md5=${md5}&issuer=${pair.curr2.issuer}&currency=${pair.curr2.currency}&limit=40`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
-                        setTradeExchs(ret.trades);
+                        setTradeExchs(convertTrade(md5, ret.trades));
                     }
                 }).catch(err => {
                     console.log("Error on getting exchanges!!!", err);
@@ -98,69 +189,29 @@ export default function ExchHistory({pair, md5}) {
                 </TableHead>
                 <TableBody>
                 {
-                    tradeExchs.map((row) => {
+                    tradeExchs.slice(0, 30).map((row) => {
                             const {
                                 _id,
-                                dir,
-                                //hash,
-                                //maker,
-                                //taker,
-                                //ledger,
-                                //seq,
-                                takerPaid,
-                                takerGot,
-                                time,
-                                cancel,
-                                // pair,
-                                // xUSD
+                                exch,
+                                amount,
+                                color,
+                                time
                             } = row;
 
-                            const paidName = normalizeCurrencyCodeXummImpl(takerPaid.currency);
-                            const gotName = normalizeCurrencyCodeXummImpl(takerGot.currency);
-                            const md51 = getMD5(takerPaid.issuer, takerPaid.currency);
-                            
-                            let exch;
-                            let name;
-                            let amount;
-                            let type;
-                            // const md52 = getMD5(got.issuer, got.currency);
-                            if (md5 === md51) {
-                                // volume = got.value;
-                                exch = Decimal.div(takerGot.value, takerPaid.value).toNumber();
-                                name = gotName;
-                                amount = fmNumber(takerPaid.value, 2);
-                                type = dir==='buy'?'buy':'sell';
-                            } else {
-                                // volume = paid.value;
-                                exch = Decimal.div(takerPaid.value, takerGot.value).toNumber();
-                                name = paidName;
-                                amount = fmNumber(takerGot.value, 2);
-                                type = dir==='buy'?'sell':'buy';
-                            }
-                            
                             const nDate = new Date(time);
-                            // const year = nDate.getFullYear();
-                            // const month = nDate.getMonth() + 1;
-                            // const day = nDate.getDate();
-                            const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                            const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
-                            const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2,useGrouping: false});
 
-                            // const strTime = (new Date(date)).toLocaleTimeString('en-US', { hour12: false });
-                            // const strTime = nDate.format("YYYY-MM-DD HH:mm:ss");
-                            // const strDate = `${year}-${month}-${day}`;
+                            const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+                            const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+                            const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+
                             const strTime = `${hour}:${min}:${sec}`;
-
-                            // const namePaid = normalizeCurrencyCodeXummImpl(takerPaid.currency);
-                            // const nameGot = normalizeCurrencyCodeXummImpl(takerGot.currency);
-
                             return (
                                 <TableRow
                                     hover
                                     key={_id}
                                     sx={{
                                         [`& .${tableCellClasses.root}`]: {
-                                            color: (type === 'sell' ? '#B72136' : '#007B55')
+                                            color
                                         }
                                     }}
                                 >
@@ -170,14 +221,6 @@ export default function ExchHistory({pair, md5}) {
                                     <TableCell align="left" colSpan={2} sx={{ p:0 }}>
                                         {amount}
                                     </TableCell>
-
-                                    {/* <TableCell align="left" sx={{ p:0 }}>
-                                        {new Decimal(vPaid).toFixed(2, Decimal.ROUND_DOWN)} <Typography variant="small">{namePaid}</Typography>
-                                    </TableCell>
-
-                                    <TableCell align="left" sx={{ p:0 }}>
-                                        {new Decimal(vGot).toFixed(2, Decimal.ROUND_DOWN)} <Typography variant="small">{nameGot}</Typography>
-                                    </TableCell> */}
 
                                     <TableCell align="left" sx={{ p:0 }}>
                                         <Stack>

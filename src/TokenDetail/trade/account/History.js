@@ -153,16 +153,13 @@ export default function History({token}) {
                     <TableHead>
                         <TableRow>
                             <TableCell align="left">#</TableCell>
-                            <TableCell align="left">Dir</TableCell>
+                            <TableCell align="left">Time</TableCell>
                             <TableCell align="left">Price</TableCell>
-                            {/* <TableCell align="left">Volume</TableCell> */}
                             <TableCell align="left">Taker Paid</TableCell>
                             <TableCell align="left">Taker Got</TableCell>
                             <TableCell align="left">Taker</TableCell>
                             <TableCell align="left">Maker</TableCell>
-                            <TableCell align="left">Time</TableCell>
                             <TableCell align="left">Ledger</TableCell>
-                            <TableCell align="left">Account</TableCell>
                             <TableCell align="left">Hash</TableCell>
                         </TableRow>
                     </TableHead>
@@ -193,8 +190,6 @@ export default function History({token}) {
 
                                 const {
                                     _id,
-                                    dir,
-                                    account,
                                     maker,
                                     taker,
                                     seq,
@@ -213,18 +208,15 @@ export default function History({token}) {
                                 
                                 let exch;
                                 let name;
-                                let type;
                                 
                                 if (md51 === token.md5) {
                                     // volume = got.value;
                                     exch = Decimal.div(takerGot.value, takerPaid.value).toNumber();
                                     name = gotName;
-                                    type = dir==='buy'?'buy':'sell';
                                 } else {
                                     // volume = paid.value;
                                     exch = Decimal.div(takerPaid.value, takerGot.value).toNumber();
                                     name = paidName;
-                                    type = dir==='buy'?'sell':'buy';
                                 }
 
                                 const strDateTime = formatDateTime(time);
@@ -233,35 +225,12 @@ export default function History({token}) {
                                     <TableRow
                                         hover
                                         key={_id}
-                                        sx={{
-                                            [`& .${tableCellClasses.root}`]: {
-                                                color: (type === 'sell' ? '#B72136' : '#007B55')
-                                            }
-                                        }}
                                     >
                                         <TableCell align="left"><Typography variant="subtitle2">{idx + page * rows + 1}</Typography></TableCell>
                                         <TableCell align="left">
-                                            <Stack spacing={1}>
-                                                {dir==='sell' && (
-                                                    <Stack direction="row">
-                                                        <SellTypography variant="caption">
-                                                        sell
-                                                        </SellTypography>
-                                                    </Stack>
-                                                )}
-                                                
-                                                {dir==='buy' && (
-                                                    <Stack direction="row">
-                                                        <BuyTypography variant="caption">
-                                                        buy
-                                                        </BuyTypography>
-                                                    </Stack>
-                                                )}
-                                            </Stack>
+                                            <Typography variant="caption">{strDateTime}</Typography>
                                         </TableCell>
                                         <TableCell align="left"><Typography variant="caption">{fNumber(exch)} {name}</Typography></TableCell>
-                                        {/* <TableCell align="left"><Typography variant="subtitle2">{fNumber(volume)}</Typography></TableCell> */}
-                                        
                                         <TableCell align="left">
                                             {fNumber(takerPaid.value)} <Typography variant="caption">{paidName}</Typography>
                                         </TableCell>
@@ -273,7 +242,7 @@ export default function History({token}) {
                                         <TableCell align="left">
                                             <Link
                                                 // underline="none"
-                                                color="inherit"
+                                                // color="inherit"
                                                 target="_blank"
                                                 href={`https://bithomp.com/explorer/${taker}`}
                                                 rel="noreferrer noopener nofollow"
@@ -285,7 +254,7 @@ export default function History({token}) {
                                         <TableCell align="left">
                                             <Link
                                                 // underline="none"
-                                                color="inherit"
+                                                // color="inherit"
                                                 target="_blank"
                                                 href={`https://bithomp.com/explorer/${maker}`}
                                                 rel="noreferrer noopener nofollow"
@@ -293,27 +262,12 @@ export default function History({token}) {
                                                 {truncate(maker, 12)}
                                             </Link>
                                         </TableCell>
-
-                                        <TableCell align="left">
-                                            <Typography variant="caption">{strDateTime}</Typography>
-                                        </TableCell>
                                         <TableCell align="left">{ledger}</TableCell>
-                                        <TableCell align="left">
-                                            <Link
-                                                // underline="none"
-                                                color="inherit"
-                                                target="_blank"
-                                                href={`https://bithomp.com/explorer/${account}`}
-                                                rel="noreferrer noopener nofollow"
-                                            >
-                                                {truncate(account, 12)}
-                                            </Link>
-                                        </TableCell>
                                         <TableCell align="left">
                                             <Stack direction="row" alignItems='center'>
                                                 <Link
                                                     // underline="none"
-                                                    color="inherit"
+                                                    // color="inherit"
                                                     target="_blank"
                                                     href={`https://bithomp.com/explorer/${hash}`}
                                                     rel="noreferrer noopener nofollow"
@@ -328,7 +282,7 @@ export default function History({token}) {
 
                                                 <Link
                                                     // underline="none"
-                                                    color="inherit"
+                                                    // color="inherit"
                                                     target="_blank"
                                                     href={`https://livenet.xrpl.org/transactions/${hash}`}
                                                     rel="noreferrer noopener nofollow"
