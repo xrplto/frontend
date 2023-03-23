@@ -65,6 +65,10 @@ const colors = {
       menuItemIconColor: lighten(themeColors.secondary, 0.3),
       menuItemIconColorActive: themeColors.primary,
       menuItemHeadingColor: darken(themeColors.secondary, 0.3)
+    },
+    currency: {
+      background1: darken('#f2f5f9', 0.05),
+      background2: darken('#f2f5f9', 0.1)
     }
   },
   alpha: {
@@ -259,6 +263,10 @@ export const XrplToLightTheme = createTheme({
     textColor: colors.secondary.main
   },
   spacing: 9,
+  currency: {
+    background1: colors.layout.currency.background1,
+    background2: colors.layout.currency.background2,
+  },
   palette: {
     common: {
       black: colors.alpha.black[100],

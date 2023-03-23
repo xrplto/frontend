@@ -36,6 +36,9 @@ import { selectMetrics } from "src/redux/statusSlice";
 // Utils
 import { fPercent, fNumber } from 'src/utils/formatNumber';
 
+// Components
+import Converter from './Converter';
+
 const ReadMore = ({ children }) => {
     const [showFullContent, setShowFullContent] = useState(false);
 
@@ -156,7 +159,9 @@ export default function Description({token, showEditor, setShowEditor, descripti
 
     return (
         <Stack>
-            <Typography variant="h2" fontSize='1.1rem' sx={{mt:{xs: 4, md: 0} }}>{`${name} Price Live Data`}</Typography>
+            <Converter token={token} />
+
+            <Typography variant="h2" fontSize='1.1rem' sx={{ mt:4 }}>{`${name} Price Live Data`}</Typography>
 
             <Typography sx={{mt:3}}>
                 The live {user} price today is ${price} USD with a 24-hour trading volume of {fNumber(vol24hx)} {name}. We update our {name} to USD price in real-time. {user} is {strPro24h} in the last 24 hours. The current XRPL.to ranking is #{id}, with a live market cap of ${fNumber(usdMarketCap)} USD. It has a circulating supply of {fNumber(supply)} {name} tokens.

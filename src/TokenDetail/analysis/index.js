@@ -45,41 +45,6 @@ import TokenListToolbar from './TokenListToolbar';
 import TrustSet from 'src/components/TrustSet';
 
 // ----------------------------------------------------------------------
-const CancelTypography = withStyles({
-    root: {
-        color: "#FF6C40",
-        borderRadius: '6px',
-        border: '0.05em solid #FF6C40',
-        //fontSize: '0.5rem',
-        lineHeight: '1',
-        paddingLeft: '3px',
-        paddingRight: '3px',
-    }
-})(Typography);
-
-const BuyTypography = withStyles({
-    root: {
-        color: "#007B55",
-        borderRadius: '6px',
-        border: '0.05em solid #007B55',
-        //fontSize: '0.5rem',
-        lineHeight: '1',
-        paddingLeft: '3px',
-        paddingRight: '3px',
-    }
-})(Typography);
-
-const SellTypography = withStyles({
-    root: {
-        color: "#B72136",
-        borderRadius: '6px',
-        border: '0.05em solid #B72136',
-        //fontSize: '0.5rem',
-        lineHeight: '1',
-        paddingLeft: '3px',
-        paddingRight: '3px',
-    }
-})(Typography);
 
 const ConnectWalletContainer = styled(Box)({
     display: 'flex',
@@ -89,16 +54,6 @@ const ConnectWalletContainer = styled(Box)({
 });
 
 // ----------------------------------------------------------------------
-
-function truncate(str, n){
-    if (!str) return '';
-    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
-    return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
-};
-
-function getMD5(issuer, currency) {
-    return MD5(issuer  + '_' +  currency).toString();
-}
 
 export default function AnalysisData({token}) {
     const theme = useTheme();

@@ -1,24 +1,21 @@
 import Decimal from 'decimal.js';
 import { useState, useEffect } from 'react';
-import React, { Suspense } from "react";
+import React from "react";
 import { LazyLoadImage, LazyLoadComponent } from 'react-lazy-load-image-component';
 
 // Material
 import { withStyles } from '@mui/styles';
 import {
     styled,
-    Avatar,
     Link,
     Stack,
     TableCell,
     TableRow,
-    Tooltip,
     Typography
 } from '@mui/material';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import infoFilled from '@iconify/icons-ep/info-filled';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 
@@ -76,18 +73,6 @@ function truncate(str, n){
     //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
     return (str.length > n) ? str.substr(0, n-1) + '... ' : str;
 };
-
-function areEqual(prevProps, nextProps) {
-    /*
-    return true if passing nextProps to render would return
-    the same result as passing prevProps to render,
-    otherwise return false
-    */
-    const token1 = prevProps.token;
-    const token2 = nextProps.token;
-    const equal = JSON.stringify(token1) === JSON.stringify(token2);
-    return equal;
-}
 
 function getPriceColor(token) {
     const bearbull = token.bearbull;
