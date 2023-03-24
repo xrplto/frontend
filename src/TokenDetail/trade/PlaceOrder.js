@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import Decimal from 'decimal.js';
 
 // Material
 import { withStyles } from '@mui/styles';
@@ -40,7 +41,7 @@ const ERR_INVALID_VALUE = 2;
 const ERR_REJECTED = 3;
 const MSG_SUCCESSFUL = 4;
 
-export default function PlaceOrder({buySell, pair, amount, value}) {
+export default function PlaceOrder({marketLimit, buySell, pair, amount, value}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
     const { accountProfile, setLoading, sync, setSync } = useContext(AppContext);
@@ -120,7 +121,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 // BUY logic
                 // TakerGets: curr2(value) TakerPays: curr1(amount)
                 if (curr2.currency === 'XRP') {
-                    TakerGets = (value * 1000000).toString();
+                    TakerGets = Decimal.mul(value, 1000000).toString();
                     TakerPays = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
                 } else {
                     TakerGets = {currency:curr2.currency, issuer:curr2.issuer, value: value.toString()};
@@ -131,15 +132,32 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
                 // TakerGets: curr1(amount) TakerPays: curr2(value)
                 if (curr2.currency === 'XRP') {
                     TakerGets = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
-                    TakerPays = (value * 1000000).toString();
+                    TakerPays = Decimal.mul(value, 1000000).toString();
                 } else {
                     TakerGets = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
                     TakerPays = {currency:curr2.currency, issuer:curr2.issuer, value: value.toString()};
                 }
             }
-            const body={/*Account,*/ TakerGets, TakerPays, user_token};
 
-            const res = await axios.post(`${BASE_URL}/xumm/offercreate`, body);
+            const OfferCreate = {
+                tfPassive: 0x00010000,
+                tfImmediateOrCancel: 0x00020000,
+                tfFillOrKill: 0x00040000,
+                tfSell: 0x00080000
+            };
+
+            let Flags = 0;
+            if (marketLimit === "limit") {
+                Flags = OfferCreate.tfSell;
+            } else {
+                if (buySell === 'BUY')
+                    Flags = OfferCreate.tfImmediateOrCancel;
+                else
+                    Flags = OfferCreate.tfSell | OfferCreate.tfImmediateOrCancel;
+            }
+            const body={/*Account,*/ TakerGets, TakerPays, Flags, user_token};
+
+            const res = await axios.post(`${BASE_URL}/offer/create`, body);
 
             if (res.status === 200) {
                 const uuid = res.data.data.uuid;
@@ -160,7 +178,7 @@ export default function PlaceOrder({buySell, pair, amount, value}) {
     const onDisconnectXumm = async (uuid) => {
         setLoading(true);
         try {
-            const res = await axios.delete(`${BASE_URL}/xumm/logout/${uuid}`);
+            const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
             if (res.status === 200) {
                 setUuid(null);
             }

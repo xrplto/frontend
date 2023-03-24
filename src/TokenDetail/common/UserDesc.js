@@ -46,6 +46,7 @@ import { AppContext } from 'src/AppContext';
 import ExplorersMenu from './ExplorersMenu';
 import CommunityMenu from './CommunityMenu';
 import ChatMenu from './ChatMenu';
+import Watch from './Watch';
 import Share from './Share';
 import IssuerInfoDialog from './IssuerInfoDialog';
 // import TrustSet from './TrustSet';
@@ -145,14 +146,9 @@ export default function UserDesc({token}) {
                 />
                 <Stack spacing={0.2}>
                     <Typography variant="h2" color='#22B14C' fontSize='1.1rem'>{user}</Typography>
-                    <Stack direction='row' alignItems='center' spacing={1}>
-                        <Rating
-                            name="simple-controlled"
-                            value={rating}
-                            onChange={(event, newValue) => {
-                                setRating(newValue);
-                            }}
-                        />
+                    <Stack direction='row' alignItems='center' spacing={0.5}>
+                        <TokenIcon fontSize="small" color="disabled" />
+                        <Typography variant="s17">{name}</Typography>
                         <Stack>
                             {kyc && (<Typography variant='kyc2'>KYC</Typography>)}
                         </Stack>
@@ -160,7 +156,7 @@ export default function UserDesc({token}) {
                 </Stack>
                 <Grid container direction="row" spacing={1} sx={{mt: 2}}>
                     <Grid item>
-                        <Chip variant={"outlined"} icon={<TokenIcon />} label={name} />
+                        <Watch token={token}/>
                     </Grid>
                     <Grid item>
                         <Share token={token}/>

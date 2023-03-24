@@ -196,7 +196,7 @@ export default function Orders({pair}) {
             
             const body={OfferSequence, user_token};
 
-            const res = await axios.post(`${BASE_URL}/xumm/offercancel`, body);
+            const res = await axios.post(`${BASE_URL}/offer/cancel`, body);
 
             if (res.status === 200) {
                 const uuid = res.data.data.uuid;
@@ -217,7 +217,7 @@ export default function Orders({pair}) {
     const onDisconnectXumm = async (uuid) => {
         setLoading(true);
         try {
-            const res = await axios.delete(`${BASE_URL}/xumm/logout/${uuid}`);
+            const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
             if (res.status === 200) {
                 setUuid(null);
             }

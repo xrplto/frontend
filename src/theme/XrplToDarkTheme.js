@@ -66,10 +66,6 @@ const colors = {
       menuItemIconColorActive: '#ffffff',
       menuItemHeadingColor: darken(themeColors.secondary, 0.3)
     },
-    currency: {
-      background1: 'rgb(23, 25, 36)',
-      background2: 'rgb(34, 37, 49)'
-    }
   },
   alpha: {
     white: {
@@ -309,8 +305,9 @@ export const XrplToDarkTheme = createTheme({
   },
   spacing: 9,
   currency: {
-    background1: colors.layout.currency.background1,
-    background2: colors.layout.currency.background2,
+    background1: 'rgb(23, 25, 36)',
+    background2: 'rgb(34, 37, 49)',
+    border: '1px solid #32373C'
   },
   palette: {
     common: {
@@ -1141,12 +1138,12 @@ export const XrplToDarkTheme = createTheme({
       styleOverrides: {
         tooltip: {
           color: colors.alpha.black[100],
-          background: alpha('#1A3444', 0.99),
+          background: alpha('#222531', 1),
           padding: '8px 16px',
           fontSize: 13
         },
         arrow: {
-          color: alpha('#1A3444', 0.99)
+          color: alpha('#222531', 1)
         }
       }
     },

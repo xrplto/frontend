@@ -232,7 +232,7 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
                     <Typography alignItems='right' sx={{mr:2}}>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
                 </Box>
 
-                <PlaceOrder buySell={buySell} pair={pair} amount={amount} value={value}/>
+                <PlaceOrder marketLimit={marketLimit} buySell={buySell} pair={pair} amount={amount} value={value}/>
             </StackDexStyle>
         </>
     );

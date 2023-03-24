@@ -65,10 +65,6 @@ const colors = {
       menuItemIconColor: lighten(themeColors.secondary, 0.3),
       menuItemIconColorActive: themeColors.primary,
       menuItemHeadingColor: darken(themeColors.secondary, 0.3)
-    },
-    currency: {
-      background1: darken('#f2f5f9', 0.05),
-      background2: darken('#f2f5f9', 0.1)
     }
   },
   alpha: {
@@ -264,8 +260,9 @@ export const XrplToLightTheme = createTheme({
   },
   spacing: 9,
   currency: {
-    background1: colors.layout.currency.background1,
-    background2: colors.layout.currency.background2,
+    background1: darken('#f2f5f9', 0.05),
+    background2: darken('#f2f5f9', 0.1),
+    border: '1px solid #E0E7EC'
   },
   palette: {
     common: {
@@ -1088,15 +1085,15 @@ export const XrplToLightTheme = createTheme({
     MuiTooltip: {
       styleOverrides: {
         tooltip: {
-          color: colors.alpha.white[100],
-          background: alpha('#0E2A3A', 0.95),
+          color: colors.alpha.black[100],
+          background: alpha('#fff', 1),
           // backgroundColor: alpha(colors.alpha.black['100'], 0.95),
           padding: '8px 16px',
           fontSize: 13
         },
         arrow: {
+          background: alpha('#fff', 1),
           color: colors.alpha.black[100],
-          //color: alpha(colors.alpha.black['100'], 0.95),
         }
       }
     },

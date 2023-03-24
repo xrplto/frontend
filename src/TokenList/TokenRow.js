@@ -14,13 +14,13 @@ import {
     Tooltip,
     Typography
 } from '@mui/material';
+import StarOutlineIcon from '@mui/icons-material/StarOutline';
+import StarRateIcon from '@mui/icons-material/StarRate';
 
 // Iconify
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
-import StarOutlineIcon from '@mui/icons-material/StarOutline';
-import StarRateIcon from '@mui/icons-material/StarRate';
 
 // Context
 import { useContext } from 'react';
