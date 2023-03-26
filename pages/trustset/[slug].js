@@ -8,7 +8,6 @@ import {CopyToClipboard} from 'react-copy-to-clipboard';
 // Material
 import {
     alpha, styled,
-    Alert,
     Avatar,
     Box,
     Button,
@@ -18,8 +17,6 @@ import {
     Grid,
     IconButton,
     Link,
-    Slide,
-    Snackbar,
     Stack,
     Tooltip,
     Typography
@@ -47,10 +44,6 @@ import { fNumber } from 'src/utils/formatNumber';
 // Components
 import LogoTrustline from 'src/components/LogoTrustline';
 
-// Redux
-import { useSelector, useDispatch } from "react-redux";
-import { selectMetrics, update_metrics } from "src/redux/statusSlice";
-
 const OverviewWrapper = styled(Box) (
   ({ theme }) => `
     align-items: center;
@@ -67,18 +60,6 @@ const Label = withStyles({
     }
 })(Typography);
 
-function TransitionLeft(props) {
-    return <Slide {...props} direction="left" />;
-}
-
-const ERR_NONE = 0;
-const MSG_COPIED = 1;
-const ERR_INVALID_VALUE = 2;
-const ERR_NETWORK = 3;
-const ERR_TIMEOUT = 4;
-const ERR_REJECTED = 5;
-const MSG_SUCCESSFUL = 6;
-
 function TrustLine(props) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const QR_BLUR = '/static/blurqr.png';
@@ -89,15 +70,6 @@ function TrustLine(props) {
     if (props && props.data) data = props.data;
     const token = data.token;
     const info = token?.issuer_info || {};
-
-    const metrics = useSelector(selectMetrics);
-
-    const [state, setState] = useState({
-        openSnack: false,
-        message: ERR_NONE
-    });
-
-    const { message, openSnack } = state;
 
     const [qrUrl, setQrUrl] = useState(QR_BLUR);
     const [uuid, setUuid] = useState(null);
@@ -121,7 +93,7 @@ function TrustLine(props) {
         holders,
         offers,
         trustlines,
-        imgExt,
+        ext,
         md5,
         tags,
         social,
@@ -131,7 +103,8 @@ function TrustLine(props) {
     let user = token.user;
     if (!user) user = name;
 
-    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+    // const imgUrl = `/static/tokens/${md5}.${ext}`;
+    const imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
 
     // const marketcap = amount * exch / metrics.USD;
 
@@ -152,10 +125,11 @@ function TrustLine(props) {
                 if (resolved_at) {
                     setQrUrl(QR_BLUR); setUuid(null); setNextUrl(null);
                     if (dispatched_result && dispatched_result === 'tesSUCCESS') {
-                        showAlert(MSG_SUCCESSFUL);
+                        openSnackbar('Successfully set trustline!', 'success');
                     }
-                    else
-                        showAlert(ERR_REJECTED);
+                    else {
+                        openSnackbar('Operation rejected!', 'error');
+                    }
 
                     return;
                 }
@@ -165,7 +139,7 @@ function TrustLine(props) {
             count--;
             setCounter(count);
             if (count <= 0) {
-                showAlert(ERR_TIMEOUT);
+                openSnackbar('Timeout!', 'error');
                 handleScanQRClose();
             }
         }
@@ -218,8 +192,8 @@ function TrustLine(props) {
                 setNextUrl(nextlink);
             }
         } catch (err) {
-            console.log(err);
-            showAlert(ERR_NETWORK);
+            // console.log(err);
+            openSnackbar('Network error!', 'error');
         }
         setLoading(false);
     };
@@ -251,37 +225,11 @@ function TrustLine(props) {
             onTrustSetXumm();
     }
 
-    const handleCloseSnack = () => {
-        setState({ openSnack: false, message: message });
-    };
-
-    const showAlert = (msg) => {
-        setState({ openSnack: true, message: msg });
-    }
-
     // Open in XUMM
     // https://xumm.app/detect/xapp:xumm.dex?issuer=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&currency=534F4C4F00000000000000000000000000000000
 
     return (
         <OverviewWrapper>
-            <Snackbar
-                autoHideDuration={2000}
-                anchorOrigin={{ vertical:'top', horizontal:'right' }}
-                open={openSnack}
-                onClose={handleCloseSnack}
-                TransitionComponent={TransitionLeft}
-                key={'TransitionLeft'}
-            >
-                <Alert variant="filled" severity={message === MSG_SUCCESSFUL || message === MSG_COPIED?"success":"error"} sx={{ m: 2, mt:0 }}>
-                    {message === ERR_REJECTED && 'Operation rejected!'}
-                    {message === MSG_SUCCESSFUL && 'Successfully set trustline!'}
-                    {message === ERR_INVALID_VALUE && 'Invalid value!'}
-                    {message === ERR_NETWORK && 'Network error!'}
-                    {message === ERR_TIMEOUT && 'Timeout!'}
-                    {message === MSG_COPIED && 'Copied!'}
-                </Alert>
-            </Snackbar>
-
             <Container maxWidth="sm">
 
             <Stack alignItems='center' spacing={2} sx={{mt:2}}>
@@ -637,7 +585,7 @@ export async function getServerSideProps(ctx) {
         const token = data.token;
         const {
             name,
-            imgExt,
+            ext,
             md5,
             urlSlug
         } = token;
@@ -648,7 +596,8 @@ export async function getServerSideProps(ctx) {
         ogp.canonical = `https://xrpl.to/trustset/${urlSlug}`;
         ogp.title = `${name} Trustline On The XRP Ledger`;
         ogp.url = `https://xrpl.to/trustset/${urlSlug}`;
-        ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${imgExt}`;
+        // ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${ext}`;
+        ogp.imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
         ogp.desc = `Setup ${name} Trustline On The XRPL.`;
 
         ret = {data, ogp};

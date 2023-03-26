@@ -150,7 +150,7 @@ export default function Converter({token}) {
         trustlines,
         holders,
         offers,
-        imgExt
+        ext
     } = token;
 
     let user = token.user;
@@ -158,7 +158,8 @@ export default function Converter({token}) {
 
     const price = fNumber(usd || 0);
 
-    const imgUrl1 = `/static/tokens/${md5}.${imgExt}`;
+    // const imgUrl1 = `/static/tokens/${md5}.${ext}`;
+    const imgUrl1 = `https://s1.xrpl.to/image/token/${md5}`;
     const imgUrl2 = `/static/xrp.png`;
 
     const [revert, setRevert] = useState(false);

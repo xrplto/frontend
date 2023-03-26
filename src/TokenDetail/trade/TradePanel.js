@@ -62,6 +62,7 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
     const [price, setPrice] = useState('');
     const [value, setValue] = useState('');
     const [marketLimit, setMarketLimit] = useState('market');
+    const [accountPairBalance, setAccountPairBalance] = useState(null);
 
     useEffect(() => {
         if (bidId < 0) return;
@@ -115,14 +116,14 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
             if (buyorsell === 'BUY') {
                 for (var ask of asks) {
                     if (ask.sumAmount >= amt) {
-                        val = ask.sumValue * amt / ask.sumAmount;
+                        val = new Decimal(ask.sumValue).mul(amt).div(ask.sumAmount).toNumber();
                         break;
                     }
                 }
             } else {
                 for (var bid of bids) {
                     if (bid.sumAmount >= amt) {
-                        val = bid.sumValue * amt / bid.sumAmount;
+                        val = new Decimal(bid.sumValue).mul(amt).div(bid.sumAmount).toNumber();
                         break;
                     }
                 }
@@ -167,7 +168,11 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
                 <Typography variant='subtitle1' sx={{color:'#FFC107', textAlign: 'center', ml:0, mt:2, mb:0}}>Trade Now</Typography>
             </Stack>
             <StackDexStyle spacing={2} sx={{ mt:4, pt:2, pb:2 }}>
-                <AccountBalance pair={pair}/>
+                <AccountBalance
+                    pair={pair}
+                    accountPairBalance={accountPairBalance}
+                    setAccountPairBalance={setAccountPairBalance}
+                />
 
                 <ToggleButtonGroup
                     color="primary"
@@ -232,7 +237,7 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
                     <Typography alignItems='right' sx={{mr:2}}>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
                 </Box>
 
-                <PlaceOrder marketLimit={marketLimit} buySell={buySell} pair={pair} amount={amount} value={value}/>
+                <PlaceOrder marketLimit={marketLimit} buySell={buySell} pair={pair} amount={amount} value={value} accountPairBalance={accountPairBalance} />
             </StackDexStyle>
         </>
     );

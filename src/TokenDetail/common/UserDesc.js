@@ -98,7 +98,7 @@ export default function UserDesc({token}) {
         holders,
         offers,
         trustlines,
-        imgExt,
+        ext,
         md5,
         tags,
         social,
@@ -116,7 +116,8 @@ export default function UserDesc({token}) {
         || social.instagram || social.youtube || social.medium || social.twitch || social.tiktok || social.reddit);*/
     const isChat = social && (social.telegram || social.discord);
 
-    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+    // const imgUrl = `/static/tokens/${md5}.${ext}`;
+    const imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
 
     const img_xrplf_black = "/static/xrplf_black.svg";
     const img_xrplf_white = "/static/xrplf_white.svg";

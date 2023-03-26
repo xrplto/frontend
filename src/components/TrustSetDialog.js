@@ -11,25 +11,16 @@ import {
     Backdrop,
     Button,
     Dialog,
-    DialogActions,
     DialogContent,
     DialogTitle,
-    Divider,
     IconButton,
     Link,
     Stack,
-    Table,
-    TableBody,
-    TableRow,
-    TableCell,
     Tooltip,
     Typography,
     TextField
 } from '@mui/material';
-import { tableCellClasses } from "@mui/material/TableCell";
-import {
-    Close as CloseIcon
-} from '@mui/icons-material';
+import CloseIcon from '@mui/icons-material/Close';
 
 // Context
 import { useContext } from 'react';
@@ -93,21 +84,12 @@ const Label = withStyles({
     }
 })(Typography);
 
-const ERR_NONE = 0;
-const MSG_COPIED = 1;
-const ERR_INVALID_VALUE = 2;
-const ERR_NETWORK = 3;
-const ERR_TIMEOUT = 4;
-const ERR_REJECTED = 5;
-const MSG_SUCCESSFUL = 6;
-
-export default function TrustSetDialog({showAlert, token, setToken}) {
+export default function TrustSetDialog({token, setToken}) {
     const theme = useTheme();
-    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-    
     const BASE_URL = 'https://api.xrpl.to/api';
-    const dispatch = useDispatch();
-    const { accountProfile } = useContext(AppContext);
+    const { accountProfile, openSnackbar } = useContext(AppContext);
+    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+
     const [openScanQR, setOpenScanQR] = useState(false);
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
@@ -121,11 +103,12 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
         user,
         currency,
         md5,
-        imgExt,
+        ext,
         urlSlug
     } = token;
 
-    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+    // const imgUrl = `/static/tokens/${md5}.${ext}`;
+    const imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
 
     useEffect(() => {
         var timer = null;
@@ -145,10 +128,10 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                     setOpenScanQR(false);
                     if (dispatched_result && dispatched_result === 'tesSUCCESS') {
                         handleClose();
-                        showAlert(MSG_SUCCESSFUL);
+                        openSnackbar('Successfully set trustline!', 'success');
+                    } else {
+                        openSnackbar('Operation rejected!', 'error');
                     }
-                    else
-                        showAlert(ERR_REJECTED);
 
                     return;
                 }
@@ -157,7 +140,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
             isRunning = false;
             counter--;
             if (counter <= 0) {
-                showAlert(ERR_TIMEOUT);
+                openSnackbar('Timeout!', 'error');
                 handleScanQRClose();
             }
         }
@@ -215,7 +198,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                 setOpenScanQR(true);
             }
         } catch (err) {
-            showAlert(ERR_NETWORK);
+            openSnackbar('Network error!', 'error');
         }
         setLoading(false);
     };
@@ -262,7 +245,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
         if (fAmount > 0) {
             onTrustSetXumm(fAmount);
         } else {
-            showAlert(ERR_INVALID_VALUE);
+            openSnackbar('Invalid value!', 'error');
         }
     }
 
@@ -325,7 +308,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                             >
                                 https://xrpl.to/trustset/{urlSlug}
                             </Link>
-                            <CopyToClipboard text={`https://xrpl.to/trustset/${urlSlug}`} onCopy={()=>showAlert(MSG_COPIED)}>
+                            <CopyToClipboard text={`https://xrpl.to/trustset/${urlSlug}`} onCopy={()=>openSnackbar('Copied!', 'success')}>
                                 <Tooltip title={'Click to copy'}>
                                     <IconButton>
                                         <Icon icon={copyIcon} />
@@ -344,7 +327,7 @@ export default function TrustSetDialog({showAlert, token, setToken}) {
                                 Set Trustline
                             </Button>
 
-                            <CopyToClipboard text={`https://xrpl.to/trustset/${urlSlug}`} onCopy={()=>showAlert(MSG_COPIED)}>
+                            <CopyToClipboard text={`https://xrpl.to/trustset/${urlSlug}`} onCopy={()=>openSnackbar('Copied!', 'success')}>
                                 <Button
                                     variant="outlined"
                                     color='primary'

@@ -102,101 +102,122 @@ export default function Trade({token}) {
         onMessage: (event) => processMessages(event)
     });
 
-    // useEffect(() => {
-    //     let arr = [];
-    //     if (clearNewFlag) {
-    //         setClearNewFlag(false);
-    //         for (let o of asks) {
-    //             o.isNew = false;
-    //             arr.push(o);
-    //         }
-    //         setAsks(arr);
+    useEffect(() => {
+        let arr = [];
+        if (clearNewFlag) {
+            setClearNewFlag(false);
+            for (let o of asks) {
+                o.isNew = false;
+                arr.push(o);
+            }
+            setAsks(arr);
 
-    //         arr = [];
-    //         for (let o of bids) {
-    //             o.isNew = false;
-    //             arr.push(o);
-    //         }
-    //         setBids(arr);
-    //     }
-    // }, [clearNewFlag, asks, bids]);
+            arr = [];
+            for (let o of bids) {
+                o.isNew = false;
+                arr.push(o);
+            }
+            setBids(arr);
+        }
+    }, [clearNewFlag, asks, bids]);
 
     // Orderbook related useEffect - Start
     useEffect(() => {
+        let reqID = 1;
         function sendRequest() {
             if (!wsReady) return;
+            /*{
+                "id":17,
+                "command":"book_offers",
+                "taker_gets":{
+                    "currency":"534F4C4F00000000000000000000000000000000",
+                    "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
+                },
+                "taker_pays":{
+                    "currency":"XRP"
+                },
+                "ledger_index":"validated",
+                "limit":200
+            }
+
+            {
+                "id":20,
+                "command":"book_offers",
+                "taker_gets":{"currency":"XRP"},
+                "taker_pays":{
+                    "currency":"534F4C4F00000000000000000000000000000000",
+                    "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
+                },
+                "ledger_index":"validated",
+                "limit":200
+            }*/
 
             const curr1 = pair.curr1;
             const curr2 = pair.curr2;
 
-            const cmdSubscribe = {
-                command: "subscribe",
-                books: [{
-                    taker_gets: {
-                        currency: curr1.currency,
-                        issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-                    },
-                    taker_pays: {
-                        currency: curr2.currency,
-                        issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-                    },
-                    taker: curr1.currency === 'XRP' ? undefined : curr1.issuer,
-                    both: true,
-                    snapshot: true
-                 }]
+            const cmdAsk = {
+                id: reqID,
+                command: 'book_offers',
+                taker_gets: {
+                    currency: curr1.currency,
+                    issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+                },
+                taker_pays: {
+                    currency: curr2.currency,
+                    issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+                },
+                ledger_index: 'validated',
+                limit: 60
             }
-
-            
-            sendJsonMessage(cmdSubscribe);
+            const cmdBid = {
+                id: reqID+1,
+                command: 'book_offers',
+                taker_gets: {
+                    currency: curr2.currency,
+                    issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+                },
+                taker_pays: {
+                    currency: curr1.currency,
+                    issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+                },
+                ledger_index: 'validated',
+                limit: 60
+            }
+            sendJsonMessage(cmdAsk);
+            sendJsonMessage(cmdBid);
+            reqID += 2;
         }
 
         sendRequest();
 
-        // const timer = setInterval(() => sendRequest(), 5000);
+        const timer = setInterval(() => sendRequest(), 4000);
 
-        // return () => {
-        //     clearInterval(timer);
-        // }
+        return () => {
+            clearInterval(timer);
+        }
 
     }, [wsReady, pair, sendJsonMessage]);
     // Orderbook related useEffect - END
 
     // web socket process messages for orderbook
     const processMessages = (event) => {
-        let data = null;
-        let type = null;
-        try {
-            data = JSON.parse(event.data);
-            type = data.type;
-        } catch(e) {}
+        const orderBook = JSON.parse(event.data);
 
-        if (!data || !type || data.status !== 'success') {
-            return;
+        if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
+            const req = orderBook.id % 2;
+            //console.log(`Received id ${orderBook.id}`)
+            if (req === 1) {
+                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS, asks);
+                setAsks(parsed);
+            }
+            if (req === 0) {
+                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, bids);
+                setBids(parsed);
+                setTimeout(() => {
+                    setClearNewFlag(true);
+                }, 2000);
+            }
         }
-
-        if (type === "response") {
-            const newAsks = data.result.asks;
-            const newBids = data.result.bids;
-
-            setAsks(formatOrderBook(newAsks, ORDER_TYPE_ASKS, asks));
-            setBids(formatOrderBook(newBids, ORDER_TYPE_BIDS, bids));
-        }
-
-        /*
-        const req = orderBook.id % 2;
-        //console.log(`Received id ${orderBook.id}`)
-        if (req === 1) {
-            const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS, asks);
-            setAsks(parsed);
-        }
-        if (req === 0) {
-            const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, bids);
-            setBids(parsed);
-            setTimeout(() => {
-                setClearNewFlag(true);
-            }, 2000);
-        }
-        */
     };
 
     const onBidClick = (e, idx) => {
@@ -208,21 +229,6 @@ export default function Trade({token}) {
     }
 
     // https://mui.com/system/display/
-
-    /*
-    {
-        "command": "subscribe",
-        "books": [{
-          "taker_gets": {"currency": "XRP"},
-          "taker_pays": {
-              "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-              "currency": "534F4C4F00000000000000000000000000000000"
-          },
-          "taker": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-          "both": true
-         }]
-    }
-    */
 
     return (
         <Grid container spacing={2} sx={{p:0}}>
@@ -257,56 +263,48 @@ export default function Trade({token}) {
 }
 
 const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
-    /*
-    {
-        "Account": "rs6xPU7XL3JU8FETm9Einfe7ZPPJjpoonE",
-        "BookDirectory": "5C8970D155D65DB8FF49B291D7EFFA4A09F9E8A68D9974B25A0E63B60E4BA6F5",
-        "BookNode": "0",
-        "Expiration": 764676717,
-        "Flags": 0,
-        "LedgerEntryType": "Offer",
-        "OwnerNode": "0",
-        "PreviousTxnID": "02C830B02EBEE200DCAF3BD5AC55E3A39D13DBD619F07E881F0A734A29238A48",
-        "PreviousTxnLgrSeq": 78650493,
-        "Sequence": 74065821,
-        "TakerGets": {
-          "currency": "534F4C4F00000000000000000000000000000000",
-          "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-          "value": "230.946811"
-        },
-        "TakerPays": "93540000",
-        "index": "C7B10A8800D22C8CB5F29F6E944BB92B54BD551903987BB9DCDE6B5282F55AE8",
-        "owner_funds": "230.68785",
-        "quality": "405028.3248985845",
-        "taker_gets_funded": {
-          "currency": "534F4C4F00000000000000000000000000000000",
-          "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-          "value": "230.68785"
-        },
-        "taker_pays_funded": "93435113"
-    }
-    */
+    // { ASK
+    //     "Account": "rsoLoDTcxn9wCEHHBR7enMhzQMThkB2w28",
+    //     "BookDirectory": "5C8970D155D65DB8FF49B291D7EFFA4A09F9E8A68D9974B25A1997F7E14CDA39",
+    //     "BookNode": "0",
+    //     "Expiration": 705140180,
+    //     "Flags": 0,
+    //     "LedgerEntryType": "Offer",
+    //     "OwnerNode": "0",
+    //     "PreviousTxnID": "541552841A1ADB8BEA4329DE435F4A9C10C6A0E90626CE1B4AF4D64C8FE26C19",
+    //     "PreviousTxnLgrSeq": 71465030,
+    //     "Sequence": 67605605,
+    //     "TakerGets": {
+    //         "currency": "534F4C4F00000000000000000000000000000000",
+    //         "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+    //         "value": "124.9311956987916"
+    //     },
+    //     "TakerPays": "90000000",
+    //     "index": "C45796CA3444AB63E507582300662E080E393C40D447C530A435CE8BA86AC6A1",
+    //     "owner_funds": "487.6093571004488",
+    //     "quality": "720396.5310392889"
+    // }
 
-    { BID
-        "Account": "rUATLa1awouAR8jS1DwtsXuy8EXCjdktgU",
-        "BookDirectory": "C73FAC6C294EBA5B9E22A8237AAE80725E85372510A6CA794F04F44BA5C57321",
-        "BookNode": "0",
-        "Flags": 131072,
-        "LedgerEntryType": "Offer",
-        "OwnerNode": "15",
-        "PreviousTxnID": "545EB169E174D5BF05F59124B7CCC44BF32BC2DA72A7463459E6CF33121143F0",
-        "PreviousTxnLgrSeq": 71464668,
-        "Sequence": 66420966,
-        "TakerGets": "358550000",
-        "TakerPays": {
-            "currency": "534F4C4F00000000000000000000000000000000",
-            "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-            "value": "500"
-        },
-        "index": "6857750D3847B6A0D40CCCA1A0FDA609DD54CEECAB088A7A94BD6B65A4834E26",
-        "owner_funds": "952667088",
-        "quality": "0.000001394505647747873"
-    }
+    // { BID
+    //     "Account": "rUATLa1awouAR8jS1DwtsXuy8EXCjdktgU",
+    //     "BookDirectory": "C73FAC6C294EBA5B9E22A8237AAE80725E85372510A6CA794F04F44BA5C57321",
+    //     "BookNode": "0",
+    //     "Flags": 131072,
+    //     "LedgerEntryType": "Offer",
+    //     "OwnerNode": "15",
+    //     "PreviousTxnID": "545EB169E174D5BF05F59124B7CCC44BF32BC2DA72A7463459E6CF33121143F0",
+    //     "PreviousTxnLgrSeq": 71464668,
+    //     "Sequence": 66420966,
+    //     "TakerGets": "358550000",
+    //     "TakerPays": {
+    //         "currency": "534F4C4F00000000000000000000000000000000",
+    //         "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+    //         "value": "500"
+    //     },
+    //     "index": "6857750D3847B6A0D40CCCA1A0FDA609DD54CEECAB088A7A94BD6B65A4834E26",
+    //     "owner_funds": "952667088",
+    //     "quality": "0.000001394505647747873"
+    // }
 
     if (offers.length < 1) return []
 

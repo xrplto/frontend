@@ -31,7 +31,7 @@ import { useSelector, useDispatch } from "react-redux";
 
 // Utils
 
-export default function AccountBalance({pair}) {
+export default function AccountBalance({pair, accountPairBalance, setAccountPairBalance}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
@@ -41,10 +41,9 @@ export default function AccountBalance({pair}) {
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
-    const [accountPairBalance, setAccountPairBalance] = useState(null);
 
-    let curr1 = { ...pair.curr1 };
-    let curr2 = { ...pair.curr2 };
+    let curr1 = pair.curr1;
+    let curr2 = pair.curr2;
 
     /*
         {

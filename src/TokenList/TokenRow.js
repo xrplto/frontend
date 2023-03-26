@@ -6,7 +6,7 @@ import { LazyLoadImage, LazyLoadComponent } from 'react-lazy-load-image-componen
 // Material
 import { withStyles } from '@mui/styles';
 import {
-    styled,
+    styled, useMediaQuery, useTheme,
     Link,
     Stack,
     TableCell,
@@ -71,6 +71,18 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
     overflow: 'hidden'
 }));
 
+const badge24hStyle = {
+    display: 'inline-block',
+    marginRight: '4px',
+    color: '#C4CDD5',
+    fontSize: '11px',
+    fontWeight: '500',
+    lineHeight: '18px',
+    backgroundColor: '#323546',
+    borderRadius: '4px',
+    padding: '0.5px 4px'
+};
+
 function truncate(str, n){
     if (!str) return '';
     //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
@@ -90,9 +102,11 @@ function getPriceColor(token) {
 export const TokenRow = React.memo(fTokenRow);
 
 function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, watchList, onChangeWatchList}) {
+    const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const { accountProfile } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     const [priceColor, setPriceColor] = useState('');
     const {
@@ -119,7 +133,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, watch
         pro24h,
         exch,
         usd,
-        imgExt,
+        ext,
         marketcap,
         isOMCF
     } = token;
@@ -131,7 +145,8 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, watch
         }, 3000);
     }, [time]);
 
-    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+    const imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
+    // const imgUrl = `/static/tokens/${md5}.${ext}`;
 
     const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
@@ -167,7 +182,9 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, watch
                     </Tooltip>
                 }
             </TableCell>
-            <TableCell align="left">{id}</TableCell>
+            {!isMobile &&
+                <TableCell align="left">{id}</TableCell>
+            }
             <TableCell align="left" sx={{p:0}}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{p:0}}>
                         {admin ? (
@@ -197,6 +214,9 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, watch
                                 <Stack>
                                     <Typography variant="token" color={isOMCF!=='yes'?'#222531':urlSlug === md5?'#B72136':''} noWrap>{truncate(name, 8)}</Typography>
                                     <Typography variant="caption" color={isOMCF!=='yes'?'#222531':''} noWrap>
+                                        {isMobile &&
+                                            <span style={badge24hStyle}>{id}</span>
+                                        }
                                         {truncate(user, 13)}
                                         {kyc && (<Typography variant='kyc' sx={{ml: 0.2}}>KYC</Typography>)}
                                     </Typography>

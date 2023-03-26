@@ -104,23 +104,14 @@ const TokenImage = styled(Avatar)(({ theme }) => ({
     },
 }));
 
-// const ERR_NONE = 0;
-const ERR_TRANSFER = 1;
-const ERR_NOT_VALID = 2;
-const ERR_URL_SLUG_DUPLICATED  = 3;
-const ERR_INVALID_URL_SLUG  = 4;
-const ERR_DATE_UNKNOWN  = 5;
-const ERR_INTERNAL  = 6;
-const MSG_SUCCESSFUL = 7;
-
-export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
+export default function EditTokenDialog({token, setToken}) {
     const metrics = useSelector(selectMetrics);
 
     const theme = useTheme();
     const fileRef = useRef();
 
     const BASE_URL = 'https://api.xrpl.to/api';
-    const { accountProfile } = useContext(AppContext);
+    const { accountProfile, openSnackbar } = useContext(AppContext);
     const [loading, setLoading] = useState(false);
 
     const {
@@ -131,13 +122,14 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
         dateon
     } = token;
 
-    const imgUrl = `/static/tokens/${md5}.${token.imgExt}`;
+    // const imgUrl = `/static/tokens/${md5}.${token.ext}`;
+    const imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
 
     const [file, setFile] = useState(null);
 
     const [kyc, setKYC] = useState(token.kyc);
 
-    const [imgExt, setImgExt] = useState(token.imgExt);
+    const [ext, setExt] = useState(token.ext);
 
     const [imgData, setImgData] = useState(imgUrl);
 
@@ -217,23 +209,19 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                     Object.assign(token, data);
                     token.time = Date.now();
                     setFile(null);
-                    showAlert(MSG_SUCCESSFUL);
+                    openSnackbar('Successfully changed the token info', 'success');
                     finish = true;
                 } else {
                     // { status: false, data: null, err: 'ERR_URL_SLUG' }
-                    // ERR_TRANSFER
-                    // ERR_GENERAL
-                    // ERR_URL_SLUG
-                    // ERR_INTERNAL
                     const err = ret.err;
                     if (err === 'ERR_TRANSFER')
-                        showAlert(ERR_TRANSFER);
+                        openSnackbar('Upload image error, please try again', 'error');
                     else if (err === 'ERR_GENERAL')
-                        showAlert(ERR_NOT_VALID);
+                        openSnackbar('Invalid data, please check again', 'error');
                     else if (err === 'ERR_URL_SLUG')
-                        showAlert(ERR_URL_SLUG_DUPLICATED);
+                        openSnackbar('Duplicated URL Slug', 'error');
                     else
-                        showAlert(ERR_INTERNAL);
+                        openSnackbar('Internal error occured', 'error');
                 }
             }
         } catch (err) {
@@ -241,13 +229,13 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
         }
         setLoading(false);
         if (finish)
-            onCloseEditToken();
+            setToken(null);
     };
 
     const handleSave = () => {
         const slug = urlSlug?urlSlug.replace(/[^a-zA-Z0-9-]/g, ""):null;
         if (!slug || slug !== urlSlug) {
-            showAlert(ERR_INVALID_URL_SLUG);
+            openSnackbar('Invalid URL Slug, only alphabetic(A-Z, a-z, 0-9, -) allowed', 'error');
             return;
         }
         /*
@@ -258,7 +246,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
         trustlines: 18771,
         urlSlug: "47c6a1d2de5ad3391a58e4f0523c16a3",
         verified: false,
-        imgExt: "jpg"
+        ext: "jpg"
         */
 
         const newToken = {};
@@ -266,7 +254,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
         newToken.domain = domain;
         newToken.user = user;
         newToken.kyc = kyc;
-        newToken.imgExt = imgExt;
+        newToken.ext = ext;
         newToken.date = date;
 
         if (urlSlug)
@@ -309,7 +297,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
     }
 
     const handleClose = () => {
-        onCloseEditToken();
+        setToken(null);
     }
 
     const handleFileSelect = (e) => {
@@ -317,12 +305,12 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
         if (pickedFile) {
             const fileName = pickedFile.name;
             var re = /(?:\.([^.]+))?$/;
-            var ext = re.exec(fileName)[1];
-            if (ext)
-                ext = ext.toLowerCase();
+            var newExt = re.exec(fileName)[1];
+            if (newExt)
+                newExt = newExt.toLowerCase();
 
-            if (ext === 'jpg' || ext === 'png') {
-                setImgExt(ext);
+            if (newExt === 'jpg' || newExt === 'png') {
+                setExt(newExt);
                 setFile(pickedFile);
                 // This is used as src of image
                 const reader = new FileReader();
@@ -349,7 +337,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                 }
             }).catch(err => {
                 // console.log("Error on getting created date!!!", err);
-                showAlert(ERR_DATE_UNKNOWN);
+                openSnackbar('Date is still unknown, you can manually edit it', 'error');
             }).then(function () {
                 // always executed
                 setLoading(false);
@@ -460,7 +448,7 @@ export default function EditTokenDialog({token, showAlert, onCloseEditToken}) {
                         <TableCell align="left" sx={{pt:0.5, pb:0.2}}>
                             <Stack direction='row' spacing={1}>
                                 <Label variant="subtitle2" noWrap>{md5}</Label>
-                                <Label variant="subtitle2" noWrap>{imgExt.toUpperCase()}</Label>
+                                <Label variant="subtitle2" noWrap>{ext.toUpperCase()}</Label>
                             </Stack>
                         </TableCell>
                     </TableRow>

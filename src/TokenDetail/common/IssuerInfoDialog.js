@@ -110,12 +110,13 @@ export default function IssuerInfoDialog({open, setOpen, token}) {
         user,
         currency,
         md5,
-        imgExt,
+        ext,
         urlSlug,
         issuer_info
     } = token;
 
-    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+    // const imgUrl = `/static/tokens/${md5}.${ext}`;
+    const imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
 
     // passwordSpent
     // requireDestTag   | YES

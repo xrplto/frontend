@@ -1,27 +1,12 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
 
 // Material
 import {
-    styled, useTheme, useMediaQuery,
-    Avatar,
-    Alert,
-    Button,
+    useTheme,
     Chip,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    IconButton,
-    Link,
-    Slide,
-    Snackbar,
-    Stack,
-    Tooltip,
-    Typography
+    Tooltip
 } from '@mui/material';
-
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
 
@@ -29,32 +14,17 @@ import StarRateIcon from '@mui/icons-material/StarRate';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-// Redux
-import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
-
-// Iconify
-import { Icon } from '@iconify/react';
-import copyIcon from '@iconify/icons-fad/copy';
-
-// Utils
-import { fNumber } from 'src/utils/formatNumber';
-
 // ----------------------------------------------------------------------
-
 export default function Watch({token}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
     const { accountProfile, openSnackbar, setLoading } = useContext(AppContext);
-    const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-    const metrics = useSelector(selectMetrics);
 
     const [watchList, setWatchList] = useState([]);
-    const [sync, setSync] = useState(0);
 
     const {
         name,
-        imgExt,
+        ext,
         md5,
         exch,
     } = token;
@@ -84,7 +54,7 @@ export default function Watch({token}) {
                 });
         }
         getWatchList();
-    }, [sync, accountProfile]);
+    }, [accountProfile]);
 
     const handleClickOpen = () => {
         setOpen(true);

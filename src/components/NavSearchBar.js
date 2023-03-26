@@ -77,13 +77,14 @@ const RenderOption = ({
     pro7d,
     pro24h,
     exch,
-    imgExt,
+    ext,
     option_type
  }) => {
 
     const BASE_URL = 'https://api.xrpl.to/api';
 
-    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+    // const imgUrl = `/static/tokens/${md5}.${ext}`;
+    const imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
     const link = `/token/${urlSlug}`;
 
     return (

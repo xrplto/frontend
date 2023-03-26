@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 
 // Components
-import TrustSet from 'src/components/TrustSet';
+import TrustSetDialog from 'src/components/TrustSetDialog';
 
 // ----------------------------------------------------------------------
 export default function ExtraButtons({token}) {
@@ -28,7 +28,7 @@ export default function ExtraButtons({token}) {
         holders,
         offers,
         trustlines,
-        imgExt,
+        ext,
         md5,
         tags,
         social,
@@ -47,7 +47,7 @@ export default function ExtraButtons({token}) {
   
     return (
         <Stack alignItems='center'>
-            <TrustSet token={trustToken} setToken={setTrustToken}/>
+            {trustToken && <TrustSetDialog token={trustToken} setToken={setTrustToken} /> }
 
             <Grid container direction="row" spacing={1} sx={{mt: 2}}>
                 <Grid item>

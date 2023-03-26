@@ -47,14 +47,14 @@ function XRPLToApp(props) {
                 {/* <!-- Facebook Meta Tags --> */}
                 <meta property="og:url" content={ogp.url}/>
                 <meta property="og:type" content="website"/>
-                <meta property="og:title" content={`${ogp.title} | XRPL.TO`}/>
+                <meta property="og:title" content={`${ogp.title} | XRPL.to`}/>
                 <meta property="og:description" content={ogp.desc}/>
                 <meta property="og:image" content={ogp.imgUrl}/>
                 {/* <!-- Twitter Meta Tags --> */}
                 <meta name="twitter:card" content="summary_large_image"/>
                 <meta property="twitter:domain" content="xrpl.to"/>
                 <meta property="twitter:url" content={ogp.url}/>
-                <meta name="twitter:title" content={`${ogp.title} | XRPL.TO`}/>
+                <meta name="twitter:title" content={`${ogp.title} | XRPL.to`}/>
                 <meta name="twitter:description" content={ogp.desc}/>
                 {/* <!-- <meta name="twitter:image" content="/static/ogp.png"/> --> */}
                 <meta name="twitter:image" content={ogp.imgUrl}/>

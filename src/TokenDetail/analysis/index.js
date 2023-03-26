@@ -1,25 +1,15 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react';
-import Decimal from 'decimal.js';
-import {MD5} from "crypto-js";
 
 // Material
-import { withStyles } from '@mui/styles';
 import {
     styled, useTheme,
-    Avatar,
     Box,
-    IconButton,
-    Link,
     Stack,
     Table,
     TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
     Typography
 } from '@mui/material';
-import { tableCellClasses } from "@mui/material/TableCell";
 
 // Loader
 import { PuffLoader } from "react-spinners";
@@ -29,20 +19,15 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Redux
-import { useDispatch, useSelector } from "react-redux";
-import { update_metrics, update_filteredCount, selectMetrics } from "src/redux/statusSlice";
-
-// Utils
-import { fNumber } from 'src/utils/formatNumber';
-import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
-import { formatDateTime } from 'src/utils/formatTime';
+import { useSelector } from "react-redux";
+import { selectMetrics } from "src/redux/statusSlice";
 
 // Components
 import TokenListHead from './TokenListHead';
-import EditToken from './EditToken';
 import {TokenRow} from './TokenRow';
 import TokenListToolbar from './TokenListToolbar';
-import TrustSet from 'src/components/TrustSet';
+import EditTokenDialog from 'src/components/EditTokenDialog';
+import TrustSetDialog from 'src/components/TrustSetDialog';
 
 // ----------------------------------------------------------------------
 
@@ -102,8 +87,8 @@ export default function AnalysisData({token}) {
 
     return (
         <>
-            <EditToken token={editToken} setToken={setEditToken}/>
-            <TrustSet token={trustToken} setToken={setTrustToken}/>
+            {editToken && <EditTokenDialog token={editToken} setToken={setEditToken} /> }
+            {trustToken && <TrustSetDialog token={trustToken} setToken={setTrustToken} /> }
             <Typography variant="s2">Other tokens by this issuer</Typography>
             <Box
                 sx={{

@@ -37,7 +37,7 @@ export default function XSnackbar({ isOpen, close, message, variant }) {
             onClose={handleClose}
             anchorOrigin={{ vertical:'top', horizontal:'right' }}
             TransitionComponent={TransitionLeft}
-            sx={{zIndex: 1301}}
+            // sx={{zIndex: 1302}}
         >
             <MuiAlert onClose={handleClose} severity={variant} sx={{ width: '100%' }}>
                 {message}

@@ -32,7 +32,7 @@ export async function getServerSideProps(ctx) {
         const token = data.token;
         const {
             name,
-            imgExt,
+            ext,
             md5
         } = token;
 
@@ -45,7 +45,8 @@ export async function getServerSideProps(ctx) {
         ogp.canonical = `https://xrpl.to/token/${urlSlug}/trade`;
         ogp.title = `Trade ${name} On The XRP Ledger`;
         ogp.url = `https://xrpl.to/token/${urlSlug}/trade`;
-        ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${imgExt}`;
+        // ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${ext}`;
+        ogp.imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
         ogp.desc = `Trade ${name} On The XRPL.to`;
 
         ret = {data, ogp};

@@ -5,11 +5,9 @@ import Decimal from 'decimal.js';
 // Material
 import { withStyles } from '@mui/styles';
 import {
-    Alert,
     Button,
-    Slide,
-    Snackbar,
-    Stack
+    Stack,
+    Typography
 } from '@mui/material';
 
 // Context
@@ -31,40 +29,68 @@ const DisabledButton = withStyles({
     }
 })(Button);
 
-function TransitionLeft(props) {
-    return <Slide {...props} direction="left" />;
-}
-
-const ERR_NONE = 0;
-const ERR_ACCOUNT_LOGIN = 1;
-const ERR_INVALID_VALUE = 2;
-const ERR_REJECTED = 3;
-const MSG_SUCCESSFUL = 4;
-
-export default function PlaceOrder({marketLimit, buySell, pair, amount, value}) {
+export default function PlaceOrder({marketLimit, buySell, pair, amount, value, accountPairBalance}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
-    const { accountProfile, setLoading, sync, setSync } = useContext(AppContext);
+    const { accountProfile, setLoading, openSnackbar, sync, setSync } = useContext(AppContext);
     const [openScanQR, setOpenScanQR] = useState(false);
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
 
-    const [state, setState] = useState({
-        openSnack: false,
-        message: ERR_NONE
-    });
+    const isLoggedIn = accountProfile && accountProfile.account && accountPairBalance;
+    let isSufficientBalance = false;
+    let errMsg = "";
 
-    const { message, openSnack } = state;
+    if (isLoggedIn && amount && value) {
+        /* accountPairBalance
+        {
+            "curr1": {
+                "currency": "534F4C4F00000000000000000000000000000000",
+                "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+                "value": "0.00000383697235788"
+            },
+            "curr2": {
+                "currency": "XRP",
+                "issuer": "XRPL",
+                "value": 26.733742000000007
+            }
+        }
+        */
+        const fAmount = Number(amount); // SOLO
+        const fValue = Number(value); // XRP
 
-    const handleCloseSnack = () => {
-        setState({ openSnack: false, message: message });
-    };
-
-    const showAlert = (msg) => {
-        setState({ openSnack: true, message: msg });
+        if (fAmount > 0 && fValue > 0) {
+            const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
+            const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
+            if (buySell === 'BUY') {
+                if (accountValue >= fValue) {
+                    isSufficientBalance = true;
+                    errMsg = "";
+                } else {
+                    isSufficientBalance = false;
+                    errMsg = "Insufficient wallet balance";
+                }
+            } else {
+                if (accountAmount >= fAmount) {
+                    isSufficientBalance = true;
+                    errMsg = "";
+                } else {
+                    isSufficientBalance = false;
+                    errMsg = "Insufficient wallet balance";
+                }
+            }
+        }
+    } else {
+        errMsg = "";
+        isSufficientBalance = false;
+        if (!isLoggedIn) {
+            errMsg = "Connect your wallet!";
+        }
     }
-    
+
+    const canPlaceOrder = isLoggedIn && isSufficientBalance;
+
     useEffect(() => {
         var timer = null;
         var isRunning = false;
@@ -84,10 +110,11 @@ export default function PlaceOrder({marketLimit, buySell, pair, amount, value}) 
                     if (dispatched_result && dispatched_result === 'tesSUCCESS') {
                         // TRIGGER account refresh
                         setSync(sync + 1);
-                        showAlert(MSG_SUCCESSFUL);
+                        openSnackbar('Successfully submitted the order!', 'success');
                     }
-                    else
-                        showAlert(ERR_REJECTED);
+                    else {
+                        openSnackbar('Transaction signing rejected!', 'error');
+                    }
 
                     return;
                 }
@@ -198,7 +225,7 @@ export default function PlaceOrder({marketLimit, buySell, pair, amount, value}) 
         if (fAmount > 0 && fValue > 0)
             onOfferCreateXumm();
         else {
-            showAlert(ERR_INVALID_VALUE);
+            openSnackbar('Invalid values!', 'error');
         }
 
         // if (accountProfile && accountProfile.account) {
@@ -229,22 +256,10 @@ export default function PlaceOrder({marketLimit, buySell, pair, amount, value}) 
 
     return (
         <Stack alignItems='center'>
-            <Snackbar
-                autoHideDuration={2000}
-                anchorOrigin={{ vertical:'top', horizontal:'right' }}
-                open={openSnack}
-                onClose={handleCloseSnack}
-                TransitionComponent={TransitionLeft}
-                key={'TransitionLeft'}
-            >
-                <Alert variant="filled" severity={message === MSG_SUCCESSFUL?"success":"error"} sx={{ m: 2, mt:0 }}>
-                    {message === ERR_ACCOUNT_LOGIN && 'Please connect wallet!'}
-                    {message === ERR_REJECTED && 'Transaction signing rejected!'}
-                    {message === MSG_SUCCESSFUL && 'Successfully submitted the order!'}
-                    {message === ERR_INVALID_VALUE && 'Invalid values!'}
-                </Alert>
-            </Snackbar>
-            {accountProfile && accountProfile.account ? (
+            {errMsg &&
+                <Typography variant='s2'>{errMsg}</Typography>
+            }
+            {canPlaceOrder ? (
                 <Button
                     variant="outlined"
                     sx={{ mt: 1.5 }}
@@ -257,7 +272,7 @@ export default function PlaceOrder({marketLimit, buySell, pair, amount, value}) 
                 <DisabledButton
                     variant="outlined"
                     sx={{ mt: 1.5 }}
-                    onClick={()=>showAlert(ERR_ACCOUNT_LOGIN)}
+                    // onClick={()=>openSnackbar('Please connect wallet!', 'error')}
                     disabled
                 >
                     PLACE ORDER

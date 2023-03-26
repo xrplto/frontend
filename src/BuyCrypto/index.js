@@ -8,14 +8,11 @@ import { isMobileSafari, isSafari, isChrome, isIOS, deviceType, OsTypes } from '
 import { withStyles } from '@mui/styles';
 import {
     alpha,
-    Alert,
     Card,
     Checkbox,
     FormControlLabel,
     Grid,
     MenuItem,
-    Slide,
-    Snackbar,
     Stack,
     TextField,
     Typography
@@ -37,12 +34,6 @@ import PayMethod from './PayMethod';
 // Utils
 import { fIntNumber, fNumber } from 'src/utils/formatNumber';
 
-const Label = withStyles({
-    root: {
-        color: alpha('#637381', 0.99),
-    }
-})(Typography);
-
 function GetNum(amount) {
     let num = 0;
     try {
@@ -63,18 +54,9 @@ const MenuProps = {
     },
 };
 
-function TransitionLeft(props) {
-    return <Slide {...props} direction="left" />;
-}
-
-const ERR_NONE = 0;
-const ERR_ACCOUNT_LOGIN = 1;
-const ERR_NETWORK = 2;
-const MSG_SUCCESSFUL = 3;
-
 export default function BuyCrypto({fiats, coins}) {
     const BASE_URL = 'https://api.xrpl.to/api';
-    const { accountProfile, darkMode } = useContext(AppContext);
+    const { accountProfile, darkMode, openSnackbar } = useContext(AppContext);
     const [fiat, setFiat] = useState('USD');
     const [coin, setCoin] = useState('XRP');
     const [fiatAmount, setFiatAmount] = useState('0');
@@ -85,21 +67,12 @@ export default function BuyCrypto({fiats, coins}) {
     const [limitMax, setLimitMax] = useState(0);
     const [disclaimer, setDisclaimer] = useState(false);
 
-    const [state, setState] = useState({
-        openSnack: false,
-        message: ERR_NONE
-    });
-    const { message, openSnack } = state;
-
-    const [error, setError] = useState(0);
-
     const [sync, setSync] = useState(0);
     const [counter, setCounter] = useState(60);
 
     const [loading, setLoading] = useState(false);
     const [ordering, setOrdering] = useState(false);
-    
-    
+
     const isLoggedIn = accountProfile && accountProfile.account;
 
     const banxa_black = "/banxa-logo-black.png";
@@ -260,10 +233,10 @@ export default function BuyCrypto({fiats, coins}) {
                 }
             }
             if (retry)
-                showAlert(ERR_NETWORK);
+                openSnackbar('Network error, try again!', 'error');
         } catch (err) {
-            console.log(err);
-            showAlert(ERR_NETWORK);
+            // console.log(err);
+            openSnackbar('Network error, try again!', 'error');
         }
         setOrdering(false);
     };
@@ -288,37 +261,15 @@ export default function BuyCrypto({fiats, coins}) {
         setDisclaimer(e.target.checked);
     };
 
-    const handleCloseSnack = () => {
-        setState({ openSnack: false, message: message });
-    };
-
-    const showAlert = (msg) => {
-        setState({ openSnack: true, message: msg });
-    }
-
     const handleBuyCrypto = (e) => {
         if (!isLoggedIn) {
-            showAlert(ERR_ACCOUNT_LOGIN)
+            openSnackbar('Please connect wallet!', 'error');
         } else {
             onProcessOrder();
         }
     }
     return (
         <>
-            <Snackbar
-                autoHideDuration={2000}
-                anchorOrigin={{ vertical:'top', horizontal:'right' }}
-                open={openSnack}
-                onClose={handleCloseSnack}
-                TransitionComponent={TransitionLeft}
-                key={'TransitionLeft'}
-            >
-                <Alert variant="filled" severity={message === MSG_SUCCESSFUL?"success":"error"} sx={{ m: 2, mt:0 }}>
-                    {message === ERR_ACCOUNT_LOGIN && 'Please connect wallet!'}
-                    {message === ERR_NETWORK && 'Network error, try again!'}
-                    {message === MSG_SUCCESSFUL && 'Successfully submitted the order!'}
-                </Alert>
-            </Snackbar>
             <Stack alignItems="center" sx={{mt:5, mb:3}}>
                 <Typography variant="h2a">Buy Crypto with Fiat</Typography>
             </Stack>
