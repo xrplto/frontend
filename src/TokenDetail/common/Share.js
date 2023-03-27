@@ -8,7 +8,6 @@ import {CopyToClipboard} from 'react-copy-to-clipboard';
 import {
     styled, useTheme, useMediaQuery,
     Avatar,
-    Alert,
     Button,
     Chip,
     Dialog,
@@ -17,8 +16,6 @@ import {
     DialogTitle,
     IconButton,
     Link,
-    Slide,
-    Snackbar,
     Stack,
     Tooltip,
     Typography
@@ -28,6 +25,10 @@ import {
     Share as ShareIcon,
     Close as CloseIcon
 } from '@mui/icons-material';
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
 // Redux
 import { useSelector } from "react-redux";
@@ -82,31 +83,17 @@ ShareDialogTitle.propTypes = {
     onClose: PropTypes.func.isRequired,
 };
 
-function TransitionLeft(props) {
-    return <Slide {...props} direction="left" />;
-}
-
-const ERR_NONE = 0;
-const MSG_COPIED = 1;
-const ERR_INVALID_VALUE = 2;
-const ERR_NETWORK = 3;
-const ERR_TIMEOUT = 4;
-const ERR_REJECTED = 5;
-const MSG_SUCCESSFUL = 6;
-
 export default function Share({token}) {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const metrics = useSelector(selectMetrics);
+    const { accountProfile, openSnackbar } = useContext(AppContext);
+
     const [open, setOpen] = useState(false);
-    const [state, setState] = useState({
-        openSnack: false,
-        message: ERR_NONE
-    });
 
     const {
         name,
-        imgExt,
+        ext,
         md5,
         exch,
     } = token;
@@ -114,20 +101,11 @@ export default function Share({token}) {
     let user = token.user;
     if (!user) user = name;
 
-    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+    // const imgUrl = `/static/tokens/${md5}.${ext}`;
+    const imgUrl = `https://s1.xrpl.to/token/${md5}`;
     const title = `${user} price today, ${name} to USD live, volume, trading history, markets and chart`;
     const desc = `Get the latest ${user} price, ${name} market cap, trading pairs, charts and data today from the world's number one XRP Ledger token price-tracking website`;
     const url = window.location.href;
-
-    const { message, openSnack } = state;
-
-    const handleCloseSnack = () => {
-        setState({ openSnack: false, message: message });
-    };
-
-    const showAlert = (msg) => {
-        setState({ openSnack: true, message: msg });
-    }
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -139,24 +117,6 @@ export default function Share({token}) {
 
     return (
         <>
-            <Snackbar
-                autoHideDuration={2000}
-                anchorOrigin={{ vertical:'top', horizontal:'right' }}
-                open={openSnack}
-                onClose={handleCloseSnack}
-                TransitionComponent={TransitionLeft}
-                key={'TransitionLeft'}
-            >
-                <Alert variant="filled" severity={message === MSG_SUCCESSFUL || message === MSG_COPIED?"success":"error"} sx={{ m: 2, mt:0 }}>
-                    {message === ERR_REJECTED && 'Operation rejected!'}
-                    {message === MSG_SUCCESSFUL && 'Successfully set trustline!'}
-                    {message === ERR_INVALID_VALUE && 'Invalid value!'}
-                    {message === ERR_NETWORK && 'Network error!'}
-                    {message === ERR_TIMEOUT && 'Timeout!'}
-                    {message === MSG_COPIED && 'Copied!'}
-                </Alert>
-            </Snackbar>
-
             <Chip variant={"outlined"} icon={<ShareIcon fontSize="small" />} label={'Share'} onClick={handleClickOpen} />
 
             <ShareDialog
@@ -210,7 +170,7 @@ export default function Share({token}) {
                             >
                                 {url}
                             </Link>
-                            <CopyToClipboard text={url} onCopy={()=>showAlert(MSG_COPIED)}>
+                            <CopyToClipboard text={url} onCopy={()=>openSnackbar('Copied!', 'success')}>
                                 <Tooltip title={'Click to copy'}>
                                     <IconButton>
                                         <Icon icon={copyIcon} />
@@ -226,8 +186,6 @@ export default function Share({token}) {
                     </Button>
                 </DialogActions>
             </ShareDialog>
-
-            {/* {token && <ShareDialog token={token} setToken={setToken} showAlert={showAlert}/>} */}
         </>
     );
 }

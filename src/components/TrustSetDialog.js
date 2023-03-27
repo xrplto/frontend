@@ -108,7 +108,7 @@ export default function TrustSetDialog({token, setToken}) {
     } = token;
 
     // const imgUrl = `/static/tokens/${md5}.${ext}`;
-    const imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
+    const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
     useEffect(() => {
         var timer = null;
@@ -174,7 +174,7 @@ export default function TrustSetDialog({token, setToken}) {
                 issuer,
                 currency,
             } = token;
-            const user_token = accountProfile?.token;
+            const user_token = accountProfile?.user_token;
 
             const Flags = 0x00020000;
 

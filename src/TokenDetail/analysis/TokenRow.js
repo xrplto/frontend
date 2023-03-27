@@ -101,7 +101,6 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
         amount, // Total Supply
         supply, // Circulating Supply
         trustlines,
-        lines,
         vol24hxrp, // XRP amount with pair token
         vol24hx, // Token amount with pair XRP
         //vol24h,
@@ -116,7 +115,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
         pro24h,
         exch,
         usd,
-        imgExt,
+        ext,
         marketcap,
         isOMCF
     } = token;
@@ -128,7 +127,8 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
         }, 3000);
     }, [time]);
 
-    const imgUrl = `/static/tokens/${md5}.${imgExt}`;
+    // const imgUrl = `/static/tokens/${md5}.${ext}`;
+    const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
     const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
@@ -138,7 +138,8 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
             key={id}
         >
             <TableCell align="left">{id}</TableCell>
-            <TableCell align="left" sx={{p:0}}>
+            <LazyLoadComponent>
+                <TableCell align="left" sx={{p:0}}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{p:0}}>
                         {admin ? (
                             <AdminImage
@@ -157,48 +158,39 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
                             />
                         )}
 
-                        <LazyLoadComponent>
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                href={`/token/${urlSlug}`}
-                                rel="noreferrer noopener nofollow"
-                                // style={{textDecoration: "none"}}
-                            >
-                                <Stack>
-                                    <Typography variant="token" color={isOMCF!=='yes'?'#222531':urlSlug === md5?'#B72136':''} noWrap>{truncate(name, 8)}</Typography>
-                                    <Typography variant="caption" color={isOMCF!=='yes'?'#222531':''} noWrap>
-                                        {truncate(user, 13)}
-                                        {kyc && (<Typography variant='kyc' sx={{ml: 0.2}}>KYC</Typography>)}
-                                    </Typography>
-                                    <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography>
-                                </Stack>
-                            </Link>
-                        </LazyLoadComponent>
+                        <Link
+                            underline="none"
+                            color="inherit"
+                            href={`/token/${urlSlug}`}
+                            rel="noreferrer noopener nofollow"
+                            // style={{textDecoration: "none"}}
+                        >
+                            <Stack>
+                                <Typography variant="token" color={isOMCF!=='yes'?'#222531':urlSlug === md5?'#B72136':''} noWrap>{truncate(name, 8)}</Typography>
+                                <Typography variant="caption" color={isOMCF!=='yes'?'#222531':''} noWrap>
+                                    {truncate(user, 13)}
+                                    {kyc && (<Typography variant='kyc' sx={{ml: 0.2}}>KYC</Typography>)}
+                                </Typography>
+                                <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography>
+                            </Stack>
+                        </Link>
                     </Stack>
-            </TableCell>
-            <TableCell align="right"
-                sx={{
-                    color: priceColor,
-                }}
-            >
-                <LazyLoadComponent>
+                </TableCell>
+                <TableCell align="right"
+                    sx={{
+                        color: priceColor,
+                    }}
+                >
                     <TransitionTypo variant="h4" noWrap>$ {fNumber(usd)}</TransitionTypo>
                     <TransitionTypo variant="h6" noWrap><Icon icon={rippleSolid} width={12} height={12}/> {fNumber(exch)}</TransitionTypo>
-                </LazyLoadComponent>
-            </TableCell>
-            <TableCell align="right">
-                <LazyLoadComponent>
+                </TableCell>
+                <TableCell align="right">
                     <BearBullLabel value={pro24h} variant="h4" />
-                </LazyLoadComponent>
-            </TableCell>
-            <TableCell align="right">
-                <LazyLoadComponent>
+                </TableCell>
+                <TableCell align="right">
                     <BearBullLabel value={pro7d} variant="h4" />
-                </LazyLoadComponent>
-            </TableCell>
-            <TableCell align="right">
-                <LazyLoadComponent>
+                </TableCell>
+                <TableCell align="right">
                     <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems='center'>
                         <Icon icon={rippleSolid} />
                         <Typography variant="h4" noWrap>{fNumber(vol24hxrp)}</Typography>
@@ -208,51 +200,36 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
                         <Icon icon={arrowsExchange} color="#0C53B7" width="16" height="16"/>
                         <Typography variant="h5" color="#0C53B7">{fNumber(vol24hx)}</Typography>
                     </Stack>
-                </LazyLoadComponent>
-            </TableCell>
-            <TableCell align="right">
-                <LazyLoadComponent>
+                </TableCell>
+                <TableCell align="right">
                     {fNumber(vol24htx)}
-                </LazyLoadComponent>
-            </TableCell>
-            <TableCell align="right">
-                <LazyLoadComponent>
+                </TableCell>
+                <TableCell align="right">
                     ${fNumber(usdMarketCap)}
-                </LazyLoadComponent>
-            </TableCell>
-            {/* <TableCell align="left">{holders}</TableCell>
-            <TableCell align="left">{offers}</TableCell> */}
-            {isAdmin ?
-                <TableCell align="right">
-                    <LazyLoadComponent>
-                        <Typography variant="body1">{trustlines} / {lines}</Typography>
-                    </LazyLoadComponent>
                 </TableCell>
-                :
+                {/* <TableCell align="left">{holders}</TableCell>
+                <TableCell align="left">{offers}</TableCell> */}
+                
                 <TableCell align="right">
-                    <LazyLoadComponent>
-                        {trustlines}
-                    </LazyLoadComponent>
+                    {trustlines}
                 </TableCell>
-            }
-            
-            <TableCell align="right">
-                <LazyLoadComponent>
+                
+                <TableCell align="right">
                     {fNumber(supply)} <Typography variant="small" noWrap>{name}</Typography>
-                </LazyLoadComponent>
-            </TableCell>
-            <TableCell align="right">
-                <LazyLoadImage
-                    alt=''
-                    src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
-                    width={135}
-                    height={50}
-                />
-            </TableCell>
+                </TableCell>
+                <TableCell align="right">
+                    <LazyLoadImage
+                        alt=''
+                        src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
+                        width={135}
+                        height={50}
+                    />
+                </TableCell>
 
-            <TableCell align="right">
-                <TokenMoreMenu token={token} setTrustToken={setTrustToken}/>
-            </TableCell>
+                <TableCell align="right">
+                    <TokenMoreMenu token={token} setTrustToken={setTrustToken}/>
+                </TableCell>
+            </LazyLoadComponent>
         </TableRow>
     );
 };

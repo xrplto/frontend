@@ -35,7 +35,6 @@ export default function Watch({token}) {
     useEffect(() => {
         function getWatchList() {
             const account = accountProfile?.account;
-            const accountToken = accountProfile?.btoken;
             if (!account) {
                 setWatchList([]);
                 return;
@@ -66,7 +65,7 @@ export default function Watch({token}) {
 
     const onChangeWatchList = async (md5) => {
         const account = accountProfile?.account;
-        const accountToken = accountProfile?.btoken;
+        const accountToken = accountProfile?.token;
 
         if (!account || !accountToken) {
             openSnackbar('Please login!', 'error');

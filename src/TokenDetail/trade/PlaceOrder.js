@@ -142,7 +142,7 @@ export default function PlaceOrder({marketLimit, buySell, pair, amount, value, a
             const curr1 = pair.curr1;
             const curr2 = pair.curr2;
             // const Account = accountProfile.account;
-            const user_token = accountProfile.token;
+            const user_token = accountProfile.user_token;
             let TakerGets, TakerPays;
             if (buySell === 'BUY') {
                 // BUY logic

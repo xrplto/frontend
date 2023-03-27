@@ -1,44 +1,91 @@
-import axios from 'axios';
+import axios from 'axios'
+import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
-import { FadeLoader } from 'react-spinners';
-import { normalizeAmount } from 'src/utils/normalizers';
-
+import Decimal from 'decimal.js';
 // Material
+import { withStyles } from '@mui/styles';
 import {
+    styled,
+    useTheme
+} from '@mui/material';
+
+import {
+    Avatar,
     Backdrop,
     Box,
-    Button,
-    CardMedia,
     Container,
-    Divider,
     IconButton,
     Link,
     Stack,
+    Tab,
+    Tabs,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
     Tooltip,
     Typography
 } from '@mui/material';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import TransferWithinAStationIcon from '@mui/icons-material/TransferWithinAStation';
+import { tableCellClasses } from "@mui/material/TableCell";
+import CancelIcon from '@mui/icons-material/Cancel';
 
 // Loader
 import { PuffLoader, PulseLoader } from "react-spinners";
 import { ProgressBar, Discuss } from 'react-loader-spinner';
 
+
 // Utils
+import { checkExpiration } from 'src/utils/extra';
 import { formatDateTime } from 'src/utils/formatTime';
-import { checkExpiration, getUnixTimeEpochFromRippleEpoch, parseNFTokenID, getImgUrl } from 'src/utils/parse';
 
 // Context
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { useContext } from 'react'
+import { AppContext } from 'src/AppContext'
 
 // Components
 import QRDialog from 'src/components/QRDialog';
-import ConfirmAcceptOfferDialog from './ConfirmAcceptOfferDialog';
-import FlagsContainer from 'src/components/Flags';
 import ListToolbar from './ListToolbar';
-import SeeMoreTypography from 'src/components/SeeMoreTypography';
+
+// ----------------------------------------------------------------------
+const StackStyle = styled(Stack)(({ theme }) => ({
+    //boxShadow: theme.customShadows.z0,
+    //backdropFilter: 'blur(2px)',
+    //WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
+    //backgroundColor: alpha(theme.palette.background.default, 0.0),
+    //borderRadius: '13px',
+    //padding: '0em 0.5em 1.5em 0.5em',
+    //backgroundColor: alpha("#919EAB", 0.03),
+}));
+// ----------------------------------------------------------------------
+
+const BuyTypography = withStyles({
+    root: {
+        color: "#007B55",
+        borderRadius: '5px',
+        border: '0.05em solid #007B55',
+        fontSize: '0.7rem',
+        lineHeight: '1',
+        paddingLeft: '8px',
+        paddingRight: '8px',
+        paddingTop: '3px',
+        paddingBottom: '3px',
+    }
+})(Typography);
+
+const SellTypography = withStyles({
+    root: {
+        color: "#B72136",
+        borderRadius: '5px',
+        border: '0.05em solid #B72136',
+        fontSize: '0.7rem',
+        lineHeight: '1',
+        paddingLeft: '6px',
+        paddingRight: '6px',
+        paddingTop: '3px',
+        paddingBottom: '3px',
+    }
+})(Typography);
 
 function truncate(str, n) {
     if (!str) return '';
@@ -46,90 +93,81 @@ function truncate(str, n) {
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
 };
 
-export default function OfferList({ account, type }) {
-    const BASE_URL = 'https://api.xrpnft.com/api';
-    const { accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
-    const accountLogin = accountProfile?.account;
-    const accountToken = accountProfile?.token;
+export default function OfferList({account}) {
+    const theme = useTheme();
+    const BASE_URL = 'https://api.xrpl.to/api';
+    
+    const { accountProfile, sync, setSync } = useContext(AppContext);
+    
+    const [openScanQR, setOpenScanQR] = useState(false);
+    const [uuid, setUuid] = useState(null);
+    const [qrUrl, setQrUrl] = useState(null);
+    const [nextUrl, setNextUrl] = useState(null);
 
-    const isOwner = accountLogin === account;
+    const [loading, setLoading] = useState(false);
+    const [pageLoading, setPageLoading] = useState(false);
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);
     const [total, setTotal] = useState(0);
     const [offers, setOffers] = useState([]);
 
-    const [openScanQR, setOpenScanQR] = useState(false);
-    const [xummUuid, setXummUuid] = useState(null);
-    const [qrUrl, setQrUrl] = useState(null);
-    const [nextUrl, setNextUrl] = useState(null);
-    const [qrType, setQrType] = useState("NFTokenAcceptOffer");
-
-    const [loading, setLoading] = useState(false);
-    const [pageLoading, setPageLoading] = useState(false);
-
-    const [acceptOffer, setAcceptOffer] = useState(null);
-    const [openConfirm, setOpenConfirm] = useState(false);
-
     useEffect(() => {
         function getOffers() {
             setLoading(true);
-            axios.get(`${BASE_URL}/account/offers?account=${account}&type=${type}&page=${page}&limit=${rows}`)
+            // https://api.xrpl.to/api/account/offers/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
+            axios.get(`${BASE_URL}/account/offers/${account}?page=${page}&limit=${rows}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
                         setTotal(ret.total);
                         setOffers(ret.offers);
-
-                        // const newOffers = [{
-                        //     "_id": "637ddcf72430cc4537c4a8f5",
-                        //     "status": "created",
-                        //     "amount": "500000",
-                        //     "flags": 1,
-                        //     "NFTokenID": "0008000051A8DF348A9C2E8EF14AD99B699E4651C5BE0C0A535753250000001A",
-                        //     "owner": "r3S8px1Qx6ctoQGv8puFwahoLWGjVZksQv",
-                        //     "index": "84F0D691282969DB2ECA1DF333E563CBF5C9523AF3124A8A9743489F6267F842",
-                        //     "type": "NFTokenCreateOffer",
-                        //     "account": "r3S8px1Qx6ctoQGv8puFwahoLWGjVZksQv",
-                        //     "Account": "r3S8px1Qx6ctoQGv8puFwahoLWGjVZksQv",
-                        //     "hash": "C000D46D3230B777B6984AA5C92B9AB4405CD71C4AC0C1903CBFC57B146A24CC",
-                        //     "date": null,
-                        //     "ledger_index": 75946713,
-                        //     "orphaned": "yes"
-                        // }];
-                        // setTotal(1);
-                        // setOffers(newOffers);
                     }
                 }).catch(err => {
-                    console.log("Error on getting offers list!!!", err);
+                    console.log("Error on getting account orders!!!", err);
                 }).then(function () {
                     // always executed
                     setLoading(false);
                 });
         }
         getOffers();
-    }, [account, type, page, rows, sync]);
+    }, [accountProfile, sync]);
+
+    const handleCancel = (event, seq) => {
+        onOfferCancelXumm(seq);
+    }
 
     useEffect(() => {
         var timer = null;
         var isRunning = false;
         var counter = 150;
         async function getPayload() {
-            console.log(counter + " " + isRunning, xummUuid);
             if (isRunning) return;
             isRunning = true;
             try {
-                const ret = await axios.get(`${BASE_URL}/offers/acceptcancel/${xummUuid}`);
-                const resolved_at = ret.data?.resolved_at;
-                const dispatched_result = ret.data?.dispatched_result;
+                const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+                const res = ret.data.data.response;
+                /*
+                {
+                    "hex": "120008228000000024043DCAC32019043DCAC2201B0448348868400000000000000F732103924E47158D3980DDAF7479A838EF3C0AE53D953BD2A526E658AC5F3EF0FA7D2174473045022100D10E91E2704A4BDAB510B599B8258956F9F34592B2B62BE383ED3E4DBF57DE2B02204837DD77A787D4E0DC43DCC53A7BBE160B164617FE3D0FFCFF9F6CC808D46DEE811406598086E863F1FF42AD87DCBE2E1B5F5A8B5EB8",
+                    "txid": "EC13B221808A21EA1012C95FB0EF53BF0110D7AB2EB17104154A27E5E70C39C5",
+                    "resolved_at": "2022-05-23T07:45:37.000Z",
+                    "dispatched_to": "wss://s2.ripple.com",
+                    "dispatched_result": "tesSUCCESS",
+                    "dispatched_nodetype": "MAINNET",
+                    "multisign_account": "",
+                    "account": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm"
+                }
+                */
+
+                const resolved_at = res.resolved_at;
+                const dispatched_result = res.dispatched_result;
                 if (resolved_at) {
                     setOpenScanQR(false);
                     if (dispatched_result === 'tesSUCCESS') {
+                        // TRIGGER account refresh
                         setSync(sync + 1);
-                        openSnackbar('Successful!', 'success');
                     }
-                    else
-                        openSnackbar('Rejected!', 'error');
                     return;
                 }
             } catch (err) {
@@ -137,8 +175,7 @@ export default function OfferList({ account, type }) {
             isRunning = false;
             counter--;
             if (counter <= 0) {
-                openSnackbar('Timeout!', 'error');
-                handleScanQRClose();
+                setOpenScanQR(false);
             }
         }
         if (openScanQR) {
@@ -149,145 +186,53 @@ export default function OfferList({ account, type }) {
                 clearInterval(timer)
             }
         };
-    }, [openScanQR, xummUuid, sync]);
+    }, [openScanQR, uuid]);
 
-    const doProcessOffer = async (offer, isAcceptOrCancel) => {
-        if (!accountLogin || !accountToken) {
-            openSnackbar('Please login', 'error');
-            return;
-        }
-
-        const isSell = offer.flags === 1;
-
-        const index = offer.index;
-        const owner = offer.owner;
-        const destination = offer.destination;
-        const NFTokenID = offer.NFTokenID;
-
-        if (isAcceptOrCancel) {
-            // Accept mode
-            if (accountLogin === owner) {
-                openSnackbar('You are the owner of this offer, you can not accept it.', 'error');
-                return;
-            }
-        } else {
-            // Cancel mode
-            if (accountLogin !== owner) {
-                openSnackbar('You are not the owner of this offer', 'error');
-                return;
-            }
-        }
-
-        setPageLoading(true);
+    const onOfferCancelXumm = async (seq) => {
+        setLoading(true);
         try {
+            const OfferSequence = seq;
+
             const user_token = accountProfile.user_token;
+            
+            const body={OfferSequence, user_token};
 
-            const body = {
-                account: accountLogin,
-                NFTokenID,
-                index,
-                destination,
-                accept: isAcceptOrCancel ? "yes" : "no",
-                sell: isSell ? "yes" : "no",
-                user_token
-            };
-
-            const res = await axios.post(`${BASE_URL}/offers/acceptcancel`, body, { headers: { 'x-access-token': accountToken } });
+            const res = await axios.post(`${BASE_URL}/offer/cancel`, body);
 
             if (res.status === 200) {
-                const newUuid = res.data.data.uuid;
+                const uuid = res.data.data.uuid;
                 const qrlink = res.data.data.qrUrl;
                 const nextlink = res.data.data.next;
 
-                let newQrType = isAcceptOrCancel ? "NFTokenAcceptOffer" : "NFTokenCancelOffer";
-                if (isSell)
-                    newQrType += " [Sell Offer]";
-                else
-                    newQrType += " [Buy Offer]";
-
-                setQrType(newQrType);
-                setXummUuid(newUuid);
+                setUuid(uuid);
                 setQrUrl(qrlink);
                 setNextUrl(nextlink);
                 setOpenScanQR(true);
             }
         } catch (err) {
-            console.error(err);
+            alert(err);
         }
-        setPageLoading(false);
+        setLoading(false);
     };
 
-    const doCancelAll = async () => {
-        if (!accountLogin || !accountToken) {
-            openSnackbar('Please login', 'error');
-            return;
-        }
-
-        setPageLoading(true);
+    const onDisconnectXumm = async (uuid) => {
+        setLoading(true);
         try {
-            const user_token = accountProfile.user_token;
-
-            const body = {
-                account: accountLogin,
-                type,
-                user_token
-            };
-
-            const res = await axios.post(`${BASE_URL}/offers/cancelall`, body, { headers: { 'x-access-token': accountToken } });
-
+            const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
             if (res.status === 200) {
-                const newUuid = res.data.data.uuid;
-                const qrlink = res.data.data.qrUrl;
-                const nextlink = res.data.data.next;
-
-                setQrType('Cancel Offers');
-                setXummUuid(newUuid);
-                setQrUrl(qrlink);
-                setNextUrl(nextlink);
-                setOpenScanQR(true);
+                setUuid(null);
             }
-        } catch (err) {
-            console.error(err);
+        } catch(err) {
         }
-        setPageLoading(false);
-    };
-
-    const onDisconnectXumm = async () => {
-        setPageLoading(true);
-        try {
-            const res = await axios.delete(`${BASE_URL}/offers/acceptcancel/${xummUuid}`);
-            // if (res.status === 200) {
-            //     setXummUuid(null);
-            // }
-        } catch (err) {
-            console.error(err);
-        }
-        setXummUuid(null);
-
-        setPageLoading(false);
+        setLoading(false);
     };
 
     const handleScanQRClose = () => {
         setOpenScanQR(false);
-        onDisconnectXumm();
+        onDisconnectXumm(uuid);
     };
 
-    const handleCancelOffer = async (offer) => {
-        doProcessOffer(offer, false);
-    }
-
-    const handleAcceptOffer = async (offer) => {
-        setAcceptOffer(offer);
-        setOpenConfirm(true);
-    }
-
-    const onContinueAccept = async () => {
-        doProcessOffer(acceptOffer, true);
-    }
-
-    const handleCancelAll = async (e) => {
-        doCancelAll();
-    }
+    // https://api.sologenic.org/api/v1/trades?symbol=534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz%2FXRP&account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
 
     return (
         <Container maxWidth="md" sx={{pl: 0, pr: 0}}>
@@ -306,26 +251,13 @@ export default function OfferList({ account, type }) {
                 />
             </Backdrop>
 
-            {type === 'orphaned' &&
-                <SeeMoreTypography
-                    variant="s7"
-                    text={"When you have multiple Sell Offers on an NFT and one is accepted by another account, your NFT will transfer ownership and the remaining Sell Offers will become orphaned. Similarly, if you accept a Buy Offer from another account, your NFT will transfer ownership and any remaining Buy Offers will become orphaned. When you have multiple Buy Offers on another NFT and one is accepted, the remaining Buy Offers will also become orphaned. It's important to cancel these to conserve your XRP reserve."}
-                />
-            }
-
-            {offers && offers.length > 0 &&
-                <Stack direction="row" justifyContent="right">
-                    <Button
-                        disabled={accountLogin !== account || loading}
-                        variant='outlined'
-                        color='error'
-                        onClick={handleCancelAll}
-                        startIcon={<HighlightOffIcon />}
-                    >
-                        Cancel ALL
-                    </Button>
-                </Stack>
-            }
+            <QRDialog
+                open={openScanQR}
+                type="OfferCancel"
+                onClose={handleScanQRClose}
+                qrUrl={qrUrl}
+                nextUrl={nextUrl}
+            />
 
             {loading ? (
                 <Stack alignItems="center">
@@ -338,16 +270,6 @@ export default function OfferList({ account, type }) {
                 </Stack>
             )
             }
-
-            <ConfirmAcceptOfferDialog open={openConfirm} setOpen={setOpenConfirm} offer={acceptOffer} onContinue={onContinueAccept} />
-
-            <QRDialog
-                open={openScanQR}
-                type={qrType}
-                onClose={handleScanQRClose}
-                qrUrl={qrUrl}
-                nextUrl={nextUrl}
-            />
 
             <Box
                 sx={{
@@ -362,236 +284,139 @@ export default function OfferList({ account, type }) {
                     "::-webkit-scrollbar": { display: "none" },
                 }}
             >
+                <Table stickyHeader size={'small'}
+                    sx={{
+                        [`& .${tableCellClasses.root}`]: {
+                            borderBottom: "0px solid",
+                            borderBottomColor: theme.palette.divider
+                        }
+                    }}
+                >
+                    <TableHead>
+                        <TableRow
+                            sx={{
+                                [`& .${tableCellClasses.root}`]: {
+                                    borderBottom: "1px solid",
+                                    borderBottomColor: theme.palette.divider
+                                }
+                            }}
+                        >
+                            <TableCell align="left"></TableCell>
+                            <TableCell align="left">Taker Gets</TableCell>
+                            <TableCell align="left">Taker Pays</TableCell>
+                            <TableCell align="left">Expire</TableCell>
+                            <TableCell align="left">Time</TableCell>
+                            <TableCell align="left">Hash</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                    {
+                        offers.map((row) => {
+                                /*{
+                                    "_id": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm_71158478",
+                                    "account": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm",
+                                    "seq": 71158478,
+                                    "flags": 0,
+                                    "gets": {
+                                        "issuer": "XRPL",
+                                        "currency": "XRP",
+                                        "name": "XRP",
+                                        "value": "5"
+                                    },
+                                    "pays": {
+                                        "issuer": "rLpunkscgfzS8so59bUCJBVqZ3eHZue64r",
+                                        "currency": "4C656467657250756E6B73000000000000000000",
+                                        "name": "LedgerPunks",
+                                        "value": "5000"
+                                    },
+                                    "pair": "1e766311a6e689cd7225b5923ed5811c"
+                                },*/
+                                const {
+                                    _id,
+                                    account,
+                                    seq,
+                                    flags,
+                                    gets,
+                                    pays,
+                                    expire,
+                                    chash,
+                                    ctime,
+                                    mhash,
+                                    mtime
+                                } = row;
 
-            <Stack>
-                {
-                    offers.map((offer, idx) => {
-                        const price = normalizeAmount(offer.amount);
-                        const isSell = offer.flags === 1;
-                        const NFTokenID = offer.NFTokenID;
-                        const orphaned = offer.orphaned;
-                        const meta = offer.meta;
-                        const dfile = offer.dfile;
+                                const expired = checkExpiration(expire);
 
-                        const {
-                            flag,
-                            royalty,
-                            issuer,
-                            taxon,
-                            transferFee
-                        } = parseNFTokenID(NFTokenID);
+                                const strDateTime = formatDateTime(ctime);
+                                const strExpireTime = expire?formatDateTime(expire):"";
+                                
+                                return (
+                                    <TableRow
+                                        hover
+                                        key={_id}
+                                    >
+                                        <TableCell align="left">
+                                            <Tooltip title="Cancel Offer">
+                                                <IconButton color='error' onClick={e=>handleCancel(e, seq)} aria-label="cancel">
+                                                    <CancelIcon fontSize='small'/>
+                                                </IconButton>
+                                            </Tooltip>
+                                        </TableCell>
 
-                        const isVideo = meta?.video?true:false;
+                                        <TableCell align="left">
+                                            <Typography variant="h6" noWrap>{gets.value} <Typography variant="small">{gets.name}</Typography></Typography>
+                                        </TableCell>
 
-                        const imgUrl = getImgUrl(NFTokenID, meta, dfile, 48);
+                                        <TableCell align="left">
+                                            <Typography variant="h6" noWrap>{pays.value} <Typography variant="small">{pays.name}</Typography></Typography>
+                                        </TableCell>
 
-                        // offer.expiration = 1669585409; // Delete this line.
+                                        <TableCell align="left">
+                                            <Typography variant="h6" noWrap>{strExpireTime}</Typography>
+                                        </TableCell>
 
-                        const expired = checkExpiration(offer.expiration);
+                                        <TableCell align="left">
+                                            <Typography variant="h6" noWrap>{strDateTime}</Typography>
+                                        </TableCell>
 
-                        // let expired = false;
-                        // if (offer.expiration) {
-                        //     const now = Date.now();
-                        //     const expire = (offer.expiration > 946684800 ? offer.expiration: offer.expiration + 946684800) * 1000;
-
-                        //     if (expire < now)
-                        //         expired = true;
-                        // }
-
-                        return (
-                            <Stack key={offer.index} sx={{ mt: 2 }}>
-                                <Stack direction="row" spacing={1} alignItems="center">
-
-                                    <Stack>
-                                        {/* Sell Offer List - Not Owner */}
-                                        {isSell && !isOwner &&
-                                            <>
-                                                {accountLogin === offer.owner ?
-                                                    <Tooltip title="Cancel Offer">
-                                                        <IconButton
-                                                            aria-label='close'
-                                                            onClick={() => handleCancelOffer(offer)}
-                                                        >
-                                                            <HighlightOffIcon fontSize='large' color='error' />
+                                        <TableCell align="left">
+                                            <Stack direction="row" alignItems='center'>
+                                                <Link
+                                                    // underline="none"
+                                                    // color="inherit"
+                                                    target="_blank"
+                                                    href={`https://bithomp.com/explorer/${chash}`}
+                                                    rel="noreferrer noopener nofollow"
+                                                >
+                                                    <Stack direction="row" alignItems='center'>
+                                                        {truncate(chash, 16)}
+                                                        <IconButton edge="end" aria-label="bithomp">
+                                                            <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
                                                         </IconButton>
-                                                    </Tooltip>
-                                                    :
-                                                    <>
-                                                        {orphaned !== 'yes' ?
-                                                            <>
-                                                                {offer.destination && accountLogin !== offer.destination ?
-                                                                    <>
-                                                                        <Tooltip title="This is not transferred to you, you can not accept.">
-                                                                            <IconButton aria-label='close'>
-                                                                                <CheckCircleOutlineIcon fontSize='large' color='disabled' />
-                                                                            </IconButton>
-                                                                        </Tooltip>
-                                                                    </>
-                                                                    :
-                                                                    <Tooltip title="Accept Offer">
-                                                                        <IconButton
-                                                                            aria-label='close'
-                                                                            onClick={() => handleAcceptOffer(offer)}
-                                                                        >
-                                                                            <CheckCircleOutlineIcon fontSize='large' color='success' />
-                                                                        </IconButton>
-                                                                    </Tooltip>
-                                                                }
-                                                            </>
-                                                            :
-                                                            <Tooltip title="This is not offered from the NFT owner.">
-                                                                <IconButton aria-label='close'>
-                                                                    <CheckCircleOutlineIcon fontSize='large' color='disabled' />
-                                                                </IconButton>
-                                                            </Tooltip>
-                                                        }
-                                                    </>
-                                                }
-                                            </>
-                                        }
+                                                    </Stack>
+                                                </Link>
 
-                                        {/* Sell Offer List - Owner */}
-                                        {isSell && isOwner &&
-                                            <>
-                                                {accountLogin === offer.owner ?
-                                                    <Tooltip title="Cancel Offer">
-                                                        <IconButton
-                                                            aria-label='close'
-                                                            onClick={() => handleCancelOffer(offer)}
-                                                        >
-                                                            <HighlightOffIcon fontSize='large' color='error' />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    :
-                                                    <Tooltip title="Only the owner of this offer can cancel.">
-                                                        <IconButton aria-label='close'>
-                                                            <HighlightOffIcon fontSize='large' color='disabled' />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                }
-                                            </>
-                                        }
-
-                                        {/* Buy Offer List - Owner */}
-                                        {!isSell && isOwner &&
-                                            <>
-                                                {accountLogin !== offer.owner ?
-                                                    <Tooltip title="Accept Offer">
-                                                        <IconButton
-                                                            aria-label='close'
-                                                            onClick={() => handleAcceptOffer(offer)}
-                                                        >
-                                                            <CheckCircleOutlineIcon fontSize='large' color='success' />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    :
-                                                    <Tooltip title="Cancel Offer">
-                                                        <IconButton
-                                                            aria-label='close'
-                                                            onClick={() => handleCancelOffer(offer)}
-                                                        >
-                                                            <HighlightOffIcon fontSize='large' color='error' />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                }
-                                            </>
-                                        }
-
-                                        {/* Buy Offer List - Not Owner */}
-                                        {!isSell && !isOwner &&
-                                            <>
-                                                {accountLogin === offer.owner ?
-                                                    <Tooltip title="Cancel Offer">
-                                                        <IconButton
-                                                            aria-label='close'
-                                                            onClick={() => handleCancelOffer(offer)}
-                                                        >
-                                                            <HighlightOffIcon fontSize='large' color='error' />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    :
-                                                    <Tooltip title="Only the owner of this offer can cancel.">
-                                                        <IconButton aria-label='close'>
-                                                            <HighlightOffIcon fontSize='large' color='disabled' />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                }
-                                            </>
-                                        }
-                                    </Stack>
-
-                                    <CardMedia
-                                        component={isVideo?'video':'img'}
-                                        image={imgUrl}
-                                        alt={'NFT'}
-                                        // controls={isVideo}
-                                        autoPlay={isVideo}
-                                        loop={isVideo}
-                                        muted
-                                        style={{
-                                            width:'48px'
-                                        }}
-                                    />
-
-                                    <Stack spacing={0}>
-                                        <Stack direction="row" spacing={2} alignItems="center">
-                                            <Typography variant='s6' color='#33C2FF'>{price.amount} {price.name}</Typography>
-                                            <Link
-                                                // color="inherit"
-                                                target="_blank"
-                                                href={`https://bithomp.com/explorer/${offer.owner}`}
-                                                rel="noreferrer noopener nofollow"
-                                            >
-                                                <Typography variant='s6' style={{ wordWrap: "break-word" }}>{offer.owner}</Typography>
-                                            </Link>
-                                        </Stack>
-
-                                        {offer.destination &&
-                                            <Stack direction="row" spacing={1} alignItems="center">
-                                                {/* <Typography variant='s4'>Destination</Typography> */}
-                                                <TransferWithinAStationIcon />
-                                                <Typography variant='s6'>{offer.destination}</Typography>
+                                                <Link
+                                                    // underline="none"
+                                                    // color="inherit"
+                                                    target="_blank"
+                                                    href={`https://livenet.xrpl.org/transactions/${chash}`}
+                                                    rel="noreferrer noopener nofollow"
+                                                >
+                                                    <IconButton edge="end" aria-label="bithomp">
+                                                        <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
+                                                    </IconButton>
+                                                </Link>
                                             </Stack>
-                                        }
+                                        </TableCell>
 
-                                        <Stack direction="row" spacing={2} alignItems="center">
-                                            <Typography variant="s7">Flags: </Typography>
-                                            <FlagsContainer Flags={flag} />
-                                            {/* <Typography variant="s6">{strDateTime}</Typography> */}
-                                            <Typography variant='s7'>Taxon </Typography>
-                                            <Typography variant='s6'>{taxon}</Typography>
-                                            <Typography variant="s7">Transfer Fee</Typography>
-                                            <Typography variant="s6">{transferFee} %</Typography>
-                                            {offer.expiration &&
-                                                <>
-                                                    <Typography variant="s7">{expired ? 'Expired' : 'Expires'} on</Typography>
-                                                    <Typography variant='s6'>{formatDateTime(offer.expiration * 1000)}</Typography>
-                                                </>
-                                            }
-                                        </Stack>
-
-                                        <Stack direction="row" spacing={1} alignItems="center">
-                                            <Typography variant="s7">NFTokenID: </Typography>
-                                            <Link
-                                                color="inherit"
-                                                // target="_blank"
-                                                href={`/nft/${NFTokenID}`}
-                                                rel="noreferrer noopener nofollow"
-                                            >
-                                                <Typography variant="s6" noWrap>{truncate(NFTokenID, 40)}</Typography>
-                                            </Link>
-                                        </Stack>
-                                    </Stack>
-                                </Stack>
-                                <Divider sx={{ mt: 2 }} />
-                            </Stack>
-                        )
-                    })
-                }
-            </Stack>
-
+                                        
+                                    </TableRow>
+                                );
+                            })}
+                    </TableBody>
+                </Table>
             </Box>
-
             {total > 0 &&
                 <ListToolbar
                     count={total}

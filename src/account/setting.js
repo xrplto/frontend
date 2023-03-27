@@ -90,12 +90,12 @@ const FILE_NEW = 1;
 const FILE_REMOVED = 2;
 
 export default function EditProfile() {
-    const BASE_URL = 'https://api.xrpnft.com/api';
+    const BASE_URL = 'https://api.xrpl.to/api';
 
     const fileRef1 = useRef();
     const fileRef2 = useRef();
     
-    const { accountProfile, setAccountProfile, openSnackbar } = useContext(AppContext);
+    const { accountProfile, doLogIn, openSnackbar } = useContext(AppContext);
     const account = accountProfile?.account;
     const accountToken = accountProfile?.token;
 
@@ -104,8 +104,8 @@ export default function EditProfile() {
     const [name, setName] = useState(accountProfile?.name || '');
     const [description, setDescription] = useState(accountProfile?.description || '');
 
-    const logoImageUrl = accountProfile?.logo?`https://s1.xrpnft.com/profile/${accountProfile.logo}`:null;
-    const bannerImageUrl = accountProfile?.banner?`https://s1.xrpnft.com/profile/${accountProfile.banner}`:null;
+    const logoImageUrl = accountProfile?.logo?`https://s1.xrpl.to/profile/${accountProfile.logo}`:null;
+    const bannerImageUrl = accountProfile?.banner?`https://s1.xrpl.to/profile/${accountProfile.banner}`:null;
 
     // Logo image
     const [fileUrl1, setFileUrl1] = useState(logoImageUrl);
@@ -196,7 +196,7 @@ export default function EditProfile() {
                 const ret = res.data;
                 if (ret.status) {
                     const profile = ret.profile;
-                    setAccountProfile(profile);
+                    doLogIn(profile);
 
                     openSnackbar('Edit profile successful!', 'success')
                     window.location.href = `/account/${profile.account}`;

@@ -52,7 +52,7 @@ export default function Overview({token}) {
             let res;
 
             const accountAdmin = accountProfile.account;
-            const accountToken = accountProfile.btoken;
+            const accountToken = accountProfile.token;
 
             const body = {md5: token.md5, description};
 
@@ -68,10 +68,6 @@ export default function Overview({token}) {
                     finish = true;
                 } else {
                     // { status: false, data: null, err: 'ERR_URL_SLUG' }
-                    // ERR_TRANSFER
-                    // ERR_GENERAL
-                    // ERR_URL_SLUG
-                    // ERR_INTERNAL
                     const err = ret.err;
                     openSnackbar(err, 'error');
                 }

@@ -117,7 +117,7 @@ export default function UserDesc({token}) {
     const isChat = social && (social.telegram || social.discord);
 
     // const imgUrl = `/static/tokens/${md5}.${ext}`;
-    const imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
+    const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
     const img_xrplf_black = "/static/xrplf_black.svg";
     const img_xrplf_white = "/static/xrplf_white.svg";

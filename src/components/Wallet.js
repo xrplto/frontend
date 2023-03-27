@@ -1,45 +1,99 @@
-import { useContext } from 'react'
-import { AppContext } from 'src/AppContext';
 import axios from 'axios';
+import NextLink from 'next/link';
 import { useRef, useState, useEffect } from 'react';
+import {CopyToClipboard} from 'react-copy-to-clipboard';
 
 // Material
-import { 
-    Box,
-    Typography,
-    Button,
-    MenuItem,
+import {
+    alpha, styled,
     Avatar,
+    Badge,
+    Box,
+    Button,
+    Divider,
     IconButton,
-    Stack
+    Link,
+    MenuItem,
+    Popover,
+    Stack,
+    Tooltip,
+    Typography
 } from '@mui/material';
+import GridOnIcon from '@mui/icons-material/GridOn';
+import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import SettingsIcon from '@mui/icons-material/Settings';
+import AssignmentReturnedIcon from '@mui/icons-material/AssignmentReturned';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+import ImportExportIcon from '@mui/icons-material/ImportExport';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import LogoutIcon from '@mui/icons-material/Logout';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CloseIcon from '@mui/icons-material/Close';
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
 // Iconify
 import { Icon } from '@iconify/react';
 import userLock from '@iconify/icons-fa-solid/user-lock';
+import link45deg from '@iconify/icons-bi/link-45deg';
+import linkExternal from '@iconify/icons-charm/link-external';
+import externalLinkLine from '@iconify/icons-ri/external-link-line';
+import paperIcon from '@iconify/icons-akar-icons/paper';
+import copyIcon from '@iconify/icons-fad/copy';
+
+// Utils
+import { getHashIcon } from 'src/utils/extra';
 
 // Components
-import MenuPopover from './MenuPopover';
 import LoginDialog from './LoginDialog';
 
-export default function Account() {
+const ActiveCircle = styled(Box) (
+    () => `
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background-color: rgb(22, 199, 132);
+  `
+);
+
+function truncate(str, n) {
+    if (!str) return '';
+    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
+    return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
+};
+
+function truncateAccount(str) {
+    if (!str) return '';
+    return str.slice(0, 9) + '...' + str.slice(-9);
+};
+
+export default function Wallet() {
     const BASE_URL = 'https://api.xrpl.to/api';
-    const { accountProfile, setAccountProfile, setLoading } = useContext(AppContext);
     const anchorRef = useRef(null);
+    const { setActiveProfile, accountProfile, doLogIn, profiles, removeProfile, doLogOut, openSnackbar, setLoading, sync } = useContext(AppContext);
+    const accountLogin = accountProfile?.account;
+    const accountToken = accountProfile?.token;
+    const accountLogo = accountProfile?.logo;
+    const accountUuid = accountProfile?.xuuid;
+    const isAdmin = accountProfile?.admin;
+
     const [open, setOpen] = useState(false);
     const [openLogin, setOpenLogin] = useState(false);
     const [uuid, setUuid] = useState(null);
-    //const [wsUrl, setWsUrl] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
 
-    /*const connectionStatus = {
-        [ReadyState.CONNECTING]: "Connecting",
-        [ReadyState.OPEN]: "Open",
-        [ReadyState.CLOSING]: "Closing",
-        [ReadyState.CLOSED]: "Closed",
-        [ReadyState.UNINSTANTIATED]: "Uninstantiated",
-    }[readyState];*/
+    let logoImageUrl = null;
+    if (accountProfile) {
+        logoImageUrl = accountLogo?`https://s1.xrpl.to/profile/${accountLogo}`:getHashIcon(accountLogin);
+    }
+
     useEffect(() => {
         var timer = null;
         var isRunning = false;
@@ -50,16 +104,13 @@ export default function Account() {
                 if (isRunning) return;
                 isRunning = true;
                 try {
-                    const res = await axios.get(`${BASE_URL}/xumm/payloadlogin/${uuid}`);
-                    const data = res.data.data;
-                    const admin = res.data.admin;
-                    const btoken = res.data.btoken;
-                    const account = data.response.account;
-                    const token = data.application.issued_user_token;
-                    if (account) {
+                    const res = await axios.get(`${BASE_URL}/account/login/${uuid}`);
+                    const ret = res?.data;
+                    if (ret?.profile) {
+                        const profile = ret.profile;
                         setOpen(true);
                         setOpenLogin(false);
-                        setAccountProfile({account, uuid, token, admin, btoken});
+                        doLogIn(profile);
                         return;
                     }
                 } catch (err) {
@@ -76,12 +127,12 @@ export default function Account() {
                 clearInterval(timer)
             }
         };
-    }, [openLogin, uuid, setAccountProfile]);
+    }, [openLogin, uuid, doLogIn]);
 
     const onConnectXumm = async () => {
         setLoading(true);
         try {
-            const res = await axios.post(`${BASE_URL}/xumm/login`);
+            const res = await axios.post(`${BASE_URL}/account/login`);
             if (res.status === 200) {
                 const uuid = res.data.data.uuid;
                 const qrlink = res.data.data.qrUrl;
@@ -98,16 +149,28 @@ export default function Account() {
         setLoading(false);
     };
 
-    const onDisconnectXumm = async (uuid) => {
+    const onCancelLoginXumm = async (xuuid) => {
         setLoading(true);
         try {
-            const res = await axios.delete(`${BASE_URL}/xumm/logout/${uuid}`);
+            const res = await axios.delete(`${BASE_URL}/account/cancellogin/${xuuid}`);
             if (res.status === 200) {
-                setAccountProfile(null);
-                setUuid(null);
             }
         } catch(err) {
         }
+        setUuid(null);
+        setLoading(false);
+    };
+
+    const onLogoutXumm = async () => {
+        setLoading(true);
+        try {
+            const res = await axios.delete(`${BASE_URL}/account/logout/${accountLogin}/${accountUuid}`, {headers: {'x-access-token': accountToken}});
+            if (res.status === 200) {
+            }
+        } catch(err) {
+        }
+        doLogOut();
+        setUuid(null);
         setLoading(false);
     };
 
@@ -125,78 +188,198 @@ export default function Account() {
 
     const handleLogout = () => {
         setOpen(false);
-        onDisconnectXumm(accountProfile.uuid);
+        onLogoutXumm();
     }
 
     const handleLoginClose = () => {
         setOpenLogin(false);
-        onDisconnectXumm(uuid);
+        onCancelLoginXumm(uuid);
     };
-
-    // <Alert
-    //     variant="outlined"
-    //     severity="success">
-    //     <AlertTitle>{accountProfile.account}</AlertTitle>
-    //     <br/>
-    //     Login successful!
-    //     <br/>
-    // </Alert>
-
-    // <Alert severity="success" color="info">
-    //     Login Successful!
-    // </Alert>
-
-    // <Snackbar open={true} autoHideDuration={2000} onClose={handleClose}>
-    //     <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-    //         Login Successful!
-    //     </Alert>
-    // </Snackbar>
 
     return (
         <>
+            {/* <ChooseAccountDialog /> */}
+
             <IconButton
                 ref={anchorRef}
-                onClick={handleOpen} >
-                {/* <SupervisorAccountIcon fontSize="medium"/> */}
-                <Icon icon={userLock}/>
+                onClick={handleOpen}
+                // onMouseOver={handleOpen}
+            >
+                <Badge color="primary" badgeContent={0}>
+                    {logoImageUrl?(
+                        <Avatar
+                            variant={accountLogo?"":"square"}
+                            alt="user"
+                            src={logoImageUrl}
+                            sx={{ width: 28, height: 28 }}
+                        />
+                    ):(
+                        <Icon icon={userLock}/>
+                    )}
+                </Badge>
             </IconButton>
 
-            <MenuPopover
+            <Popover
                 open={open}
                 onClose={handleClose}
                 anchorEl={anchorRef.current}
-                sx={{ width: 220 }}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                PaperProps={{
+                    sx: {
+                        mt: 1.5,
+                        ml: 0.5,
+                        overflow: 'inherit',
+                        // boxShadow: (theme) => theme.customShadows.z20,
+                        border: (theme) => `solid 1px ${alpha('#919EAB', 0.08)}`,
+                        minWidth: 300,
+                    }
+                }}
             >
-
-                {accountProfile && accountProfile.account ? (
-                        <>
-                        <Stack spacing={1} sx={{ pt: 2 }} alignItems='center'>
-                            <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ mr:1, width: 24, height: 24 }}/>
-                            <Typography align="center" style={{ wordWrap: "break-word" }} variant="body2" sx={{ width: 180, color: 'text.secondary' }} >
-                                {accountProfile.account}
-                            </Typography>
+                {accountLogin ? (
+                    <>
+                        <Stack direction="row" style={{marginTop: '10px'}} sx={{ typography: 'body2', py: 1, px: 3 }} alignItems="center">
+                            <Avatar
+                                variant={accountLogo?"":"square"}
+                                alt="user" src={logoImageUrl}
+                                sx={{ width: 32, height: 32 }}
+                            />
+                            <Stack spacing={0} sx={{ml: 2, mr: 2}}>
+                                <Typography variant='s6'>{truncateAccount(accountLogin)}</Typography>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                    <ActiveCircle />
+                                    <Typography variant='s7'>Active XRPL Account</Typography>
+                                </Stack>
+                            </Stack>
+                            <CopyToClipboard text={accountLogin} onCopy={()=>openSnackbar("Copied!", "success")}>
+                                <Tooltip title={'Click to copy'}>
+                                    <IconButton size="small">
+                                        <ContentCopyIcon fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            </CopyToClipboard>
+                            <Link
+                                underline="none"
+                                color="inherit"
+                                target="_blank"
+                                href={`https://bithomp.com/explorer/${accountLogin}`}
+                                rel="noreferrer noopener nofollow"
+                            >
+                                <Tooltip title={'Check on Bithomp'}>
+                                    <IconButton size="small">
+                                        <OpenInNewIcon fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            </Link>
                         </Stack>
-                        <Box sx={{ p: 2, pt: 1.5 }}>
-                            <Button fullWidth color="inherit" variant="outlined" onClick={handleLogout}>
-                                Logout
-                            </Button>
-                        </Box>
-                        </>
-                    ) : (
                         <MenuItem
-                            key="xumm"
+                            key="account_profile"
+                            sx={{ typography: 'body2', py: 1.5, px: 3 }}
+                        >
+                            <NextLink href={`/account/${accountLogin}`} passHref>
+                                <Stack direction='row' spacing={1} sx={{mr: 2}} alignItems='center'>
+                                    <Badge color="primary" badgeContent={0}>
+                                        <AccountBoxIcon />
+                                    </Badge>
+                                    <Typography variant='s6' style={{marginLeft: '10px'}}>Profile</Typography>
+                                </Stack>
+                            </NextLink>
+                        </MenuItem>
+
+                        <MenuItem
+                            key="settings"
+                            sx={{ typography: 'body2', py: 1.5, px: 3 }}
+                        >
+                            <NextLink href={`/setting`} passHref>
+                                <Stack direction='row' spacing={1} sx={{mr: 2}} alignItems='center'>
+                                    <SettingsIcon />
+                                    <Typography variant='s6' style={{marginLeft: '10px'}}>Settings</Typography>
+                                </Stack>
+                            </NextLink>
+                        </MenuItem>
+                        <Divider />
+
+                        {profiles.map((profile, idx) => {
+                            const account = profile.account;
+
+                            if (account === accountLogin) return null;
+
+                            const accountLogo = profile.logo;
+                            const logoImageUrl = accountLogo?`https://s1.xrpl.to/profile/${accountLogo}`:getHashIcon(account);
+
+                            return (
+                                <MenuItem
+                                    key={"account" + idx}
+                                    sx={{ typography: 'body2', py: 1, px: 3 }}
+                                    onClick={()=>{setActiveProfile(account)}}
+                                >
+                                    <Stack direction="row" sx={{ typography: 'body2'}} alignItems="center">
+                                        <Avatar
+                                            variant={accountLogo?"":"square"}
+                                            alt="user" src={logoImageUrl}
+                                            sx={{ width: 32, height: 32 }}
+                                        />
+                                        <Stack spacing={0} sx={{ml: 2, mr: 2}}>
+                                            <Typography variant='s6'>{truncateAccount(account)}</Typography>
+                                            <Typography variant='s7'>Switch to this Account</Typography>
+                                        </Stack>
+                                        <div onClick={e => e.stopPropagation()}>
+                                            <CopyToClipboard text={account} onCopy={(e)=>openSnackbar("Copied!", "success")}>
+                                                <Tooltip title={'Click to copy'}>
+                                                    <IconButton size="small">
+                                                        <ContentCopyIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </CopyToClipboard>
+                                            <Tooltip title={'Remove'}>
+                                                <IconButton size="small" onClick={(e)=>{e.stopPropagation(); removeProfile(account);}} >
+                                                    <CloseIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </div>
+                                    </Stack>
+                                </MenuItem>
+                            )
+                        })}
+
+                        <MenuItem
+                            key="add_account"
+                            sx={{ typography: 'body2', py: 1.2, px: 3 }}
                             onClick={handleLogin}
-                            sx={{ typography: 'body2', py: 2, px: 2.5 }}
                         >
                             <Stack direction='row' spacing={1} sx={{mr: 2}} alignItems='center'>
-                                <Avatar alt="xumm" src="/static/xumm.jpg"/>
-                                <h3 style={{marginLeft: '10px'}}>XUMM</h3>
+                                <AddCircleOutlineIcon />
+                                <Stack spacing={0} sx={{ml: 1}}>
+                                    <Typography variant='s6'>Add Account</Typography>
+                                    <Typography variant='s7'>Connect multiple accounts</Typography>
+                                </Stack>
                             </Stack>
                         </MenuItem>
-                )}
 
-            {/* <Divider sx={{ my: 1 }} /> */}
-            </MenuPopover>
+                        <MenuItem
+                            key="log_out"
+                            sx={{ typography: 'body2', py: 1.5, px: 3 }}
+                            onClick={handleLogout}
+                        >
+                            <Stack direction='row' spacing={1} sx={{mr: 2}} alignItems='center'>
+                                <LogoutIcon />
+                                <Typography variant='s6' style={{marginLeft: '10px'}}>Logout</Typography>
+                            </Stack>
+                        </MenuItem>
+                    </>
+                ) : (
+                    <MenuItem
+                        key="xumm"
+                        onClick={handleLogin}
+                        sx={{ typography: 'body2', py: 1.5, px: 3 }}
+                    >
+                        <Stack direction='row' spacing={1} sx={{mr: 2}} alignItems='center'>
+                            <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ mr:1, width: 24, height: 24 }}/>
+                            <Typography variant='s3' style={{marginLeft: '10px'}}>Login with XUMM</Typography>
+                        </Stack>
+                    </MenuItem>
+                )}
+            </Popover>
 
             <LoginDialog
                 open={openLogin}

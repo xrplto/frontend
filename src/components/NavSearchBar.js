@@ -84,7 +84,7 @@ const RenderOption = ({
     const BASE_URL = 'https://api.xrpl.to/api';
 
     // const imgUrl = `/static/tokens/${md5}.${ext}`;
-    const imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
+    const imgUrl = `https://s1.xrpl.to/token/${md5}`;
     const link = `/token/${urlSlug}`;
 
     return (
@@ -149,7 +149,7 @@ export default function NavSearchBar({ id, placeholder, fullSearch, setFullSearc
         const body = {
             search
         };
-        // https://api.xrpnft.com/api/search
+        // https://api.xrpl.to/api/search
         axios.post(`${BASE_URL}/search`, body).then(res => {
             try {
                 if (res.status === 200 && res.data) {

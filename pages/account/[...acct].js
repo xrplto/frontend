@@ -63,7 +63,7 @@ export default function Overview({data}) {
 
     let default_banner = darkMode?'/static/banner_black.png':'/static/banner_white.png';
 
-    const bannerImage = profile.banner?`https://s1.xrpnft.com/profile/${profile.banner}`:default_banner;
+    const bannerImage = profile.banner?`https://s1.xrpl.to/profile/${profile.banner}`:default_banner;
 
     return (
         <OverviewWrapper>

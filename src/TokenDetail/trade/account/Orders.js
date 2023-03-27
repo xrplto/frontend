@@ -30,12 +30,16 @@ import CancelIcon from '@mui/icons-material/Cancel';
 // Loader
 import { PuffLoader } from "react-spinners";
 
-// Components
-import QRDialog from 'src/components/QRDialog';
+
+// Utils
+import { checkExpiration } from 'src/utils/extra';
 
 // Context
 import { useContext } from 'react'
 import { AppContext } from 'src/AppContext'
+
+// Components
+import QRDialog from 'src/components/QRDialog';
 
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
@@ -192,7 +196,7 @@ export default function Orders({pair}) {
         try {
             const OfferSequence = seq;
 
-            const user_token = accountProfile.token;
+            const user_token = accountProfile.user_token;
             
             const body={OfferSequence, user_token};
 
@@ -303,15 +307,22 @@ export default function Orders({pair}) {
                                     "pair": "1e766311a6e689cd7225b5923ed5811c"
                                 },*/
                                 const {
-                                    // flags,
+                                    _id,
+                                    account,
                                     seq,
+                                    flags,
                                     gets,
-                                    pays
+                                    pays,
+                                    expire,
+                                    chash,
+                                    ctime,
+                                    mhash,
+                                    mtime
                                 } = row;
 
-                                let exch = 0;
+                                const expired = checkExpiration(expire);
 
-                                const _id = seq;
+                                let exch = 0;
 
                                 let buy;
                                 if (pays.issuer === curr1.issuer && pays.currency === curr1.currency) {

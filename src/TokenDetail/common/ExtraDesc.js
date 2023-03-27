@@ -101,7 +101,7 @@ export default function ExtraDesc({token}) {
             let res;
 
             const accountAdmin = accountProfile.account;
-            const accountToken = accountProfile.btoken;
+            const accountToken = accountProfile.token;
 
             const body = {md5};
 

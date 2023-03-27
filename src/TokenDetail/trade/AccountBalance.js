@@ -35,7 +35,12 @@ export default function AccountBalance({pair, accountPairBalance, setAccountPair
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const dispatch = useDispatch();
-    const { accountProfile, setAccountProfile, setLoading, sync, setSync } = useContext(AppContext);
+    const { accountProfile, doLogIn, setLoading, sync, setSync } = useContext(AppContext);
+    const accountLogin = accountProfile?.account;
+    const accountToken = accountProfile?.token;
+    const accountLogo = accountProfile?.logo;
+    const accountUuid = accountProfile?.xuuid;
+    const isAdmin = accountProfile?.admin;
 
     const [openLogin, setOpenLogin] = useState(false);
     const [uuid, setUuid] = useState(null);
@@ -104,57 +109,41 @@ export default function AccountBalance({pair, accountPairBalance, setAccountPair
         var timer = null;
         var isRunning = false;
         var counter = 150;
-
-        async function getPayload() {
-            // console.log(counter + " " + isRunning, uuid);
-            if (isRunning) return;
-            isRunning = true;
-            try {
-                const res = await axios.get(`${BASE_URL}/xumm/payloadlogin/${uuid}`);
-                const admin = res.data.admin;
-                const btoken = res.data.btoken;
-                const data = res.data.data;
-                const account = data.response.account;
-                const token = data.application.issued_user_token;
-                /*
-                "application": {
-                    "name": "XRPL.TO",
-                    "description": "Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.",
-                    "disabled": 0,
-                    "uuidv4": "1735e8c8-6a04-46ea-a7a9-a9a3c9b657dd",
-                    "icon_url": "https://xumm-cdn.imgix.net/app-logo/8f92a3f4-aa4e-40f9-ba23-b38b7085814f.png",
-                    "issued_user_token": "c3f5d9f8-ee58-43ff-bb6c-e2a84263e4e0"
-                },
-                */
-                if (account) {
-                    setOpenLogin(false);
-                    setAccountProfile({account, uuid, token, admin, btoken});
-                    return;
-                }
-            } catch (err) {
-            }
-            isRunning = false;
-            counter--;
-            if (counter <= 0) {
-                setOpenLogin(false);
-            }
-        }
-
         if (openLogin) {
-            timer = setInterval(getPayload, 2000);
+            timer = setInterval(async () => {
+                // console.log(counter + " " + isRunning, uuid);
+                if (isRunning) return;
+                isRunning = true;
+                try {
+                    const res = await axios.get(`${BASE_URL}/account/login/${uuid}`);
+                    const ret = res?.data;
+                    if (ret?.profile) {
+                        const profile = ret.profile;
+                        setOpen(true);
+                        setOpenLogin(false);
+                        doLogIn(profile);
+                        return;
+                    }
+                } catch (err) {
+                }
+                isRunning = false;
+                counter--;
+                if (counter <= 0) {
+                    setOpenLogin(false);
+                }
+            }, 2000);
         }
-
         return () => {
             if (timer) {
                 clearInterval(timer)
             }
         };
-    }, [openLogin, uuid, setAccountProfile]);
+    }, [openLogin, uuid, doLogIn]);
 
     const onConnectXumm = async () => {
         setLoading(true);
         try {
-            const res = await axios.post(`${BASE_URL}/xumm/login`);
+            const res = await axios.post(`${BASE_URL}/account/login`);
             if (res.status === 200) {
                 const uuid = res.data.data.uuid;
                 const qrlink = res.data.data.qrUrl;
@@ -171,17 +160,15 @@ export default function AccountBalance({pair, accountPairBalance, setAccountPair
         setLoading(false);
     };
 
-    const onDisconnectXumm = async (uuid) => {
+    const onCancelLoginXumm = async (xuuid) => {
         setLoading(true);
         try {
-            const res = await axios.delete(`${BASE_URL}/xumm/logout/${uuid}`);
+            const res = await axios.delete(`${BASE_URL}/account/cancellogin/${xuuid}`);
             if (res.status === 200) {
-                setAccountProfile(null);
-                setUuid(null);
-                setAccountPairBalance(null);
             }
         } catch(err) {
         }
+        setUuid(null);
         setLoading(false);
     };
 
@@ -190,12 +177,13 @@ export default function AccountBalance({pair, accountPairBalance, setAccountPair
     };
 
     // const handleLogout = () => {
-    //     onDisconnectXumm(accountProfile.uuid);
+    //     setOpen(false);
+    //     onLogoutXumm();
     // }
 
     const handleLoginClose = () => {
         setOpenLogin(false);
-        onDisconnectXumm(uuid);
+        onCancelLoginXumm(uuid);
     };
 
     return (

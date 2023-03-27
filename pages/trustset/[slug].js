@@ -104,7 +104,7 @@ function TrustLine(props) {
     if (!user) user = name;
 
     // const imgUrl = `/static/tokens/${md5}.${ext}`;
-    const imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
+    const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
     // const marketcap = amount * exch / metrics.USD;
 
@@ -597,7 +597,7 @@ export async function getServerSideProps(ctx) {
         ogp.title = `${name} Trustline On The XRP Ledger`;
         ogp.url = `https://xrpl.to/trustset/${urlSlug}`;
         // ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${ext}`;
-        ogp.imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
+        ogp.imgUrl = `https://s1.xrpl.to/token/${md5}`;
         ogp.desc = `Setup ${name} Trustline On The XRPL.`;
 
         ret = {data, ogp};

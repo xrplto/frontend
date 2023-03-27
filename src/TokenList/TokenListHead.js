@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { visuallyHidden } from '@mui/utils';
 import { withStyles } from '@mui/styles';
 import {
+    useMediaQuery, useTheme,
     Box,
     TableRow,
     TableCell,
@@ -43,6 +44,8 @@ export default function TokenListHead({
     orderBy,
     onRequestSort
 }) {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const createSortHandler = (id, no) => (event) => {
         onRequestSort(event, id, no);
     };
@@ -50,34 +53,38 @@ export default function TokenListHead({
     return (
         <TableHead>
             <TableRow>
-                {TABLE_HEAD.map((headCell) => (
-                    <StickyTableCell
-                        key={headCell.id}
-                        align={headCell.align}
-                        sortDirection={orderBy === headCell.id ? order : false}
-                        width={headCell.width}
-                        sx={{
-                            ...(headCell.no > 0 && {
-                                // pl:0,
-                                // pr:0,
-                            })
-                        }}
-                    >
-                        <TableSortLabel
-                            hideSortIcon
-                            active={orderBy === headCell.id}
-                            direction={orderBy === headCell.id ? order : 'desc'}
-                            onClick={headCell.order?createSortHandler(headCell.id, headCell.no):undefined}
+                {TABLE_HEAD.map((headCell) => {
+                    if (isMobile && headCell.id === 'id')
+                        return null;
+                    return (
+                        <StickyTableCell
+                            key={headCell.id}
+                            align={headCell.align}
+                            sortDirection={orderBy === headCell.id ? order : false}
+                            width={headCell.width}
+                            sx={{
+                                ...(headCell.no > 0 && {
+                                    // pl:0,
+                                    // pr:0,
+                                })
+                            }}
                         >
-                            {headCell.label}
-                            {orderBy === headCell.id ? (
-                                <Box sx={{ ...visuallyHidden }}>
-                                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                                </Box>
-                            ) : null}
-                        </TableSortLabel>
-                    </StickyTableCell>
-                ))}
+                            <TableSortLabel
+                                hideSortIcon
+                                active={orderBy === headCell.id}
+                                direction={orderBy === headCell.id ? order : 'desc'}
+                                onClick={headCell.order?createSortHandler(headCell.id, headCell.no):undefined}
+                            >
+                                {headCell.label}
+                                {orderBy === headCell.id ? (
+                                    <Box sx={{ ...visuallyHidden }}>
+                                        {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                                    </Box>
+                                ) : null}
+                            </TableSortLabel>
+                        </StickyTableCell>
+                    )
+                })}
             </TableRow>
         </TableHead>
     );

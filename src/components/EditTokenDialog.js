@@ -123,7 +123,7 @@ export default function EditTokenDialog({token, setToken}) {
     } = token;
 
     // const imgUrl = `/static/tokens/${md5}.${token.ext}`;
-    const imgUrl = `https://s1.xrpl.to/image/token/${md5}`;
+    const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
     const [file, setFile] = useState(null);
 
@@ -183,7 +183,7 @@ export default function EditTokenDialog({token, setToken}) {
             let res;
 
             const accountAdmin = accountProfile.account;
-            const accountToken = accountProfile.btoken;
+            const accountToken = accountProfile.token;
 
             const formdata = new FormData();
             formdata.append('avatar', file);

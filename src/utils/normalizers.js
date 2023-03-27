@@ -1,3 +1,4 @@
+import Decimal from 'decimal.js';
 const ieee754Float = require('./IEEE754Float');
 
 /*module.exports.isHex = string => {
@@ -183,3 +184,21 @@ const HexEncoding = {
         return hex;
     },
 };
+
+module.exports.normalizeAmount = (Amount) => {
+    if (!Amount) return {issuer: '', currency: '', amount: ''};
+
+    let issuer = "XRPL";
+    let currency = "XRP";
+    let amount = "";
+    let name = "XRP";
+    if (typeof Amount === 'object') {
+        issuer = Amount.issuer;
+        currency = Amount.currency;
+        amount = new Decimal(Amount.value).toNumber();
+        name = normalizeCurrencyCodeXummImpl(currency);
+    } else {
+        amount = new Decimal(Amount).div(1000000).toNumber();
+    }
+    return {name, issuer, currency, amount};
+}

@@ -88,7 +88,7 @@ export default function RichListData({token}) {
     useEffect(() => {
         function getTeamWallets() {
             const accountAdmin = accountProfile.account;
-            const accountToken = accountProfile.btoken;
+            const accountToken = accountProfile.token;
             // https://api.xrpl.to/api/admin/get_team_wallets/0413ca7cfc258dfaf698c02fe304e607
             axios.get(`${BASE_URL}/admin/get_team_wallets/${token.md5}`, {
                 headers: { 'x-access-account': accountAdmin, 'x-access-token': accountToken }
@@ -114,7 +114,7 @@ export default function RichListData({token}) {
             let res;
 
             const accountAdmin = accountProfile.account;
-            const accountToken = accountProfile.btoken;
+            const accountToken = accountProfile.token;
 
             let action = 'add';
 

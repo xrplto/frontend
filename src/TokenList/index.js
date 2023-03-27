@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import useWebSocket from "react-use-websocket";
 
 // Material
-import { styled } from '@mui/material/styles';
 import {
     Box,
     Table,
@@ -19,12 +18,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { update_metrics, update_filteredCount, selectMetrics } from "src/redux/statusSlice";
 
 // Components
-import EditToken from './EditToken';
 import TokenListHead from './TokenListHead';
 import TokenListToolbar from './TokenListToolbar';
 import SearchToolbar from './SearchToolbar';
 import {TokenRow} from './TokenRow';
-import TrustSet from 'src/components/TrustSet';
+import EditTokenDialog from 'src/components/EditTokenDialog';
+import TrustSetDialog from 'src/components/TrustSetDialog';
 
 // ----------------------------------------------------------------------
 export default function TokenList({showWatchList, tag, tagName, tags, tokens, setTokens, tMap}) {
@@ -161,7 +160,6 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
     useEffect(() => {
         function getWatchList() {
             const account = accountProfile?.account;
-            const accountToken = accountProfile?.btoken;
             if (!account) {
                 setWatchList([]);
                 return;
@@ -184,7 +182,7 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
 
     const onChangeWatchList = async (md5) => {
         const account = accountProfile?.account;
-        const accountToken = accountProfile?.btoken;
+        const accountToken = accountProfile?.token;
 
         if (!account || !accountToken) {
             openSnackbar('Please login!', 'error');
@@ -274,18 +272,9 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
 
     return (
         <>
-            {/* {isAdmin &&
-                <Stack sx={{ mt:2, mb:2, display: { xs: 'none', sm: 'none', md: 'none', lg: 'block' } }}>
-                    <WidgetNew showNew={showNew} setShowNew={updateShowNew}/>
-                    <WidgetSlug showSlug={showSlug} setShowSlug={updateShowSlug}/>
-                    <WidgetDate showDate={showDate} setShowDate={updateShowDate}/>
-                    <EditToken token={editToken} setToken={setEditToken}/>
-                </Stack>
-            } */}
+            {editToken && <EditTokenDialog token={editToken} setToken={setEditToken}/> }
 
-            <EditToken token={editToken} setToken={setEditToken}/>
-
-            <TrustSet token={trustToken} setToken={setTrustToken}/>
+            {trustToken && <TrustSetDialog token={trustToken} setToken={setTrustToken} /> }
             
             <SearchToolbar
                 tags={tags}
@@ -322,20 +311,20 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
                     <TableBody>
                         {
                             tokens.slice(0, rows).map((row, idx) => {
-                                    return (
-                                        <TokenRow
-                                            key={idx}
-                                            mUSD = {metrics.USD}
-                                            time={row.time}
-                                            token={row}
-                                            admin={isAdmin}
-                                            setEditToken={setEditToken}
-                                            setTrustToken={setTrustToken}
-                                            watchList={watchList}
-                                            onChangeWatchList={onChangeWatchList}
-                                        />
-                                    );
-                                })
+                                return (
+                                    <TokenRow
+                                        key={idx}
+                                        mUSD = {metrics.USD}
+                                        time={row.time}
+                                        token={row}
+                                        admin={isAdmin}
+                                        setEditToken={setEditToken}
+                                        setTrustToken={setTrustToken}
+                                        watchList={watchList}
+                                        onChangeWatchList={onChangeWatchList}
+                                    />
+                                );
+                            })
                         }
                         {/* {emptyRows > 0 && (
                                 <TableRow style={{ height: 53 * emptyRows }}>
