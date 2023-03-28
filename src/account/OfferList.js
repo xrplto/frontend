@@ -93,12 +93,17 @@ function truncate(str, n) {
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
 };
 
+function truncateAccount(str) {
+    if (!str) return '';
+    return str.slice(0, 9) + '...' + str.slice(-9);
+};
+
 export default function OfferList({account}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     
-    const { accountProfile, sync, setSync } = useContext(AppContext);
-    
+    const { accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
+    const isLoggedIn = accountProfile && accountProfile.account;
     const [openScanQR, setOpenScanQR] = useState(false);
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
@@ -131,10 +136,16 @@ export default function OfferList({account}) {
                 });
         }
         getOffers();
-    }, [accountProfile, sync]);
+    }, [accountProfile, sync, page, rows]);
 
-    const handleCancel = (event, seq) => {
-        onOfferCancelXumm(seq);
+    const handleCancel = (event, account, seq) => {
+        if (!isLoggedIn) {
+            openSnackbar('Please connect wallet!', 'error');
+        } else if (accountProfile.account !== account) {
+            openSnackbar('You are not the owner of this offer!', 'error');
+        } else {
+            onOfferCancelXumm(seq);
+        }
     }
 
     useEffect(() => {
@@ -147,18 +158,6 @@ export default function OfferList({account}) {
             try {
                 const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
                 const res = ret.data.data.response;
-                /*
-                {
-                    "hex": "120008228000000024043DCAC32019043DCAC2201B0448348868400000000000000F732103924E47158D3980DDAF7479A838EF3C0AE53D953BD2A526E658AC5F3EF0FA7D2174473045022100D10E91E2704A4BDAB510B599B8258956F9F34592B2B62BE383ED3E4DBF57DE2B02204837DD77A787D4E0DC43DCC53A7BBE160B164617FE3D0FFCFF9F6CC808D46DEE811406598086E863F1FF42AD87DCBE2E1B5F5A8B5EB8",
-                    "txid": "EC13B221808A21EA1012C95FB0EF53BF0110D7AB2EB17104154A27E5E70C39C5",
-                    "resolved_at": "2022-05-23T07:45:37.000Z",
-                    "dispatched_to": "wss://s2.ripple.com",
-                    "dispatched_result": "tesSUCCESS",
-                    "dispatched_nodetype": "MAINNET",
-                    "multisign_account": "",
-                    "account": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm"
-                }
-                */
 
                 const resolved_at = res.resolved_at;
                 const dispatched_result = res.dispatched_result;
@@ -235,7 +234,7 @@ export default function OfferList({account}) {
     // https://api.sologenic.org/api/v1/trades?symbol=534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz%2FXRP&account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
 
     return (
-        <Container maxWidth="md" sx={{pl: 0, pr: 0}}>
+        <Container maxWidth="lg" sx={{pl: 0, pr: 0}}>
             <Backdrop
                 sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={pageLoading}
@@ -271,6 +270,8 @@ export default function OfferList({account}) {
             )
             }
 
+            {total > 0 &&
+
             <Box
                 sx={{
                     display: "flex",
@@ -302,16 +303,20 @@ export default function OfferList({account}) {
                             }}
                         >
                             <TableCell align="left"></TableCell>
+                            <TableCell align="left">#</TableCell>
                             <TableCell align="left">Taker Gets</TableCell>
                             <TableCell align="left">Taker Pays</TableCell>
+                            <TableCell align="left">Seq</TableCell>
+                            <TableCell align="left">Account</TableCell>
                             <TableCell align="left">Expire</TableCell>
-                            <TableCell align="left">Time</TableCell>
+                            <TableCell align="left">Modified</TableCell>
+                            <TableCell align="left">Created</TableCell>
                             <TableCell align="left">Hash</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                     {
-                        offers.map((row) => {
+                        offers.map((row, idx) => {
                                 /*{
                                     "_id": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm_71158478",
                                     "account": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm",
@@ -347,7 +352,8 @@ export default function OfferList({account}) {
 
                                 const expired = checkExpiration(expire);
 
-                                const strDateTime = formatDateTime(ctime);
+                                const strCreatedTime = formatDateTime(ctime);
+                                const strModifiedTime = formatDateTime(mtime);
                                 const strExpireTime = expire?formatDateTime(expire):"";
                                 
                                 return (
@@ -357,57 +363,83 @@ export default function OfferList({account}) {
                                     >
                                         <TableCell align="left">
                                             <Tooltip title="Cancel Offer">
-                                                <IconButton color='error' onClick={e=>handleCancel(e, seq)} aria-label="cancel">
+                                                <IconButton color='error' onClick={e=>handleCancel(e, account, seq)} aria-label="cancel">
                                                     <CancelIcon fontSize='small'/>
                                                 </IconButton>
                                             </Tooltip>
                                         </TableCell>
 
                                         <TableCell align="left">
-                                            <Typography variant="h6" noWrap>{gets.value} <Typography variant="small">{gets.name}</Typography></Typography>
+                                            <Typography variant="s6" noWrap>{idx + page * rows + 1}</Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
-                                            <Typography variant="h6" noWrap>{pays.value} <Typography variant="small">{pays.name}</Typography></Typography>
+                                            <Typography variant="s6" noWrap>{gets.value} <Typography variant="small">{gets.name}</Typography></Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
-                                            <Typography variant="h6" noWrap>{strExpireTime}</Typography>
+                                            <Typography variant="s6" noWrap>{pays.value} <Typography variant="small">{pays.name}</Typography></Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
-                                            <Typography variant="h6" noWrap>{strDateTime}</Typography>
+                                            <Typography variant="s6" noWrap>{seq}</Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
-                                            <Stack direction="row" alignItems='center'>
-                                                <Link
-                                                    // underline="none"
-                                                    // color="inherit"
-                                                    target="_blank"
-                                                    href={`https://bithomp.com/explorer/${chash}`}
-                                                    rel="noreferrer noopener nofollow"
-                                                >
-                                                    <Stack direction="row" alignItems='center'>
-                                                        {truncate(chash, 16)}
+                                            <Link
+                                                // underline="none"
+                                                // color="inherit"
+                                                target="_blank"
+                                                href={`https://bithomp.com/explorer/${account}`}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                <Typography variant="s6" noWrap>{truncateAccount(account)}</Typography>
+                                            </Link>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            <Typography variant="s6" noWrap>{strExpireTime}</Typography>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            <Typography variant="s6" noWrap>{strModifiedTime}</Typography>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            <Typography variant="s6" noWrap>{strCreatedTime}</Typography>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            {chash &&
+                                                <Stack direction="row" alignItems='center'>
+                                                    <Link
+                                                        // underline="none"
+                                                        // color="inherit"
+                                                        target="_blank"
+                                                        href={`https://bithomp.com/explorer/${chash}`}
+                                                        rel="noreferrer noopener nofollow"
+                                                    >
+                                                        <Stack direction="row" alignItems='center'>
+                                                            {truncate(chash, 16)}
+                                                            <IconButton edge="end" aria-label="bithomp">
+                                                                <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                            </IconButton>
+                                                        </Stack>
+                                                    </Link>
+
+                                                    <Link
+                                                        // underline="none"
+                                                        // color="inherit"
+                                                        target="_blank"
+                                                        href={`https://livenet.xrpl.org/transactions/${chash}`}
+                                                        rel="noreferrer noopener nofollow"
+                                                    >
                                                         <IconButton edge="end" aria-label="bithomp">
-                                                            <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                            <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
                                                         </IconButton>
-                                                    </Stack>
-                                                </Link>
-
-                                                <Link
-                                                    // underline="none"
-                                                    // color="inherit"
-                                                    target="_blank"
-                                                    href={`https://livenet.xrpl.org/transactions/${chash}`}
-                                                    rel="noreferrer noopener nofollow"
-                                                >
-                                                    <IconButton edge="end" aria-label="bithomp">
-                                                        <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
-                                                    </IconButton>
-                                                </Link>
-                                            </Stack>
+                                                    </Link>
+                                                </Stack>
+                                            }
                                         </TableCell>
 
                                         
@@ -417,6 +449,7 @@ export default function OfferList({account}) {
                     </TableBody>
                 </Table>
             </Box>
+            }
             {total > 0 &&
                 <ListToolbar
                     count={total}

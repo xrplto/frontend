@@ -104,7 +104,8 @@ export default function UserDesc({token}) {
         social,
         urlSlug,
         issuer_info,
-        assessment
+        assessment,
+        date
     } = token;
 
     const info = issuer_info || {};
@@ -154,6 +155,9 @@ export default function UserDesc({token}) {
                             {kyc && (<Typography variant='kyc2'>KYC</Typography>)}
                         </Stack>
                     </Stack>
+                    {date &&
+                        <Typography variant="s7">{date}</Typography>
+                    }
                 </Stack>
                 <Grid container direction="row" spacing={1} sx={{mt: 2}}>
                     <Grid item>

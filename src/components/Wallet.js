@@ -1,5 +1,4 @@
 import axios from 'axios';
-import NextLink from 'next/link';
 import { useRef, useState, useEffect } from 'react';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 
@@ -276,26 +275,38 @@ export default function Wallet() {
                             key="account_profile"
                             sx={{ typography: 'body2', py: 1.5, px: 3 }}
                         >
-                            <NextLink href={`/account/${accountLogin}`} passHref>
+                            <Link
+                                underline="none"
+                                color="inherit"
+                                // target="_blank"
+                                href={`/account/${accountLogin}`}
+                                rel="noreferrer noopener nofollow"
+                            >
                                 <Stack direction='row' spacing={1} sx={{mr: 2}} alignItems='center'>
                                     <Badge color="primary" badgeContent={0}>
                                         <AccountBoxIcon />
                                     </Badge>
                                     <Typography variant='s6' style={{marginLeft: '10px'}}>Profile</Typography>
                                 </Stack>
-                            </NextLink>
+                            </Link>
                         </MenuItem>
 
                         <MenuItem
                             key="settings"
                             sx={{ typography: 'body2', py: 1.5, px: 3 }}
                         >
-                            <NextLink href={`/setting`} passHref>
+                            <Link
+                                underline="none"
+                                color="inherit"
+                                // target="_blank"
+                                href={`/setting`}
+                                rel="noreferrer noopener nofollow"
+                            >
                                 <Stack direction='row' spacing={1} sx={{mr: 2}} alignItems='center'>
                                     <SettingsIcon />
                                     <Typography variant='s6' style={{marginLeft: '10px'}}>Settings</Typography>
                                 </Stack>
-                            </NextLink>
+                            </Link>
                         </MenuItem>
                         <Divider />
 

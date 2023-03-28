@@ -14,6 +14,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Components
+import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Account from 'src/account';
@@ -68,7 +69,7 @@ export default function Overview({data}) {
     return (
         <OverviewWrapper>
             <Toolbar id="back-to-top-anchor" />
-
+            <Topbar />
             <Header />
 
             <BannerWrapper>
@@ -121,9 +122,9 @@ export async function getServerSideProps(ctx) {
         console.log(e);
     }
 
-    if (data && data.profile) {
-    } else {
-        data = {};
+    if (!data) data = {};
+
+    if (!data.profile) {
         data.profile = {account: acct};
     }
 

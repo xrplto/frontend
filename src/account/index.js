@@ -113,8 +113,8 @@ function a11yProps(index) {
     };
 }
 
-const tabValues = ['', 'offers', 'trustlines', 'activity'];
-const tabLabels = ['My Trades', 'Offers', 'TrustLines', 'Activity'];
+const tabValues = ['', 'trustlines', 'activity'];
+const tabLabels = ['Offers', 'TrustLines', 'Activity'];
 
 function getTabID(tab) {
     if (!tab) return 0;
@@ -264,22 +264,22 @@ export default function Account({ profile, tab }) {
                 </Tabs>
             </Box>
             <Box sx={{ my: 1 }}>
-                <TabPanel value={tabID} id={0}>
+                {/* <TabPanel value={tabID} id={0}>
                     <Stack sx={{ minHeight: '20vh' }}>
                         <TradeList account={account} />
                     </Stack>
-                </TabPanel>
-                <TabPanel value={tabID} id={1}>
+                </TabPanel> */}
+                <TabPanel value={tabID} id={0}>
                     <Stack sx={{ minHeight: '20vh' }}>
                         <OfferList account={account} />
                     </Stack>
                 </TabPanel>
-                <TabPanel value={tabID} id={2}>
+                <TabPanel value={tabID} id={1}>
                     <Stack sx={{ minHeight: '20vh' }}>
                         <TrustList account={account} />
                     </Stack>
                 </TabPanel>
-                <TabPanel value={tabID} id={4}>
+                <TabPanel value={tabID} id={2}>
                     <Stack sx={{ minHeight: '20vh' }}>
                         <ActivityList account={account} />
                     </Stack>

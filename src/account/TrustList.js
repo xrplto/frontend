@@ -1,87 +1,116 @@
-import axios from 'axios';
-import {MD5} from "crypto-js";
+import axios from 'axios'
+import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
-import { FadeLoader } from 'react-spinners';
-import { normalizeAmount } from 'src/utils/normalizers';
-
+import Decimal from 'decimal.js';
 // Material
+import { withStyles } from '@mui/styles';
 import {
+    styled,
+    useTheme
+} from '@mui/material';
+
+import {
+    Avatar,
     Backdrop,
     Box,
-    Button,
-    CardMedia,
     Container,
-    Divider,
     IconButton,
     Link,
     Stack,
+    Tab,
+    Tabs,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
     Tooltip,
     Typography
 } from '@mui/material';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import TransferWithinAStationIcon from '@mui/icons-material/TransferWithinAStation';
+import { tableCellClasses } from "@mui/material/TableCell";
+import CancelIcon from '@mui/icons-material/Cancel';
 
 // Loader
 import { PuffLoader, PulseLoader } from "react-spinners";
 import { ProgressBar, Discuss } from 'react-loader-spinner';
 
+
 // Utils
+import { checkExpiration } from 'src/utils/extra';
 import { formatDateTime } from 'src/utils/formatTime';
-import { checkExpiration, getUnixTimeEpochFromRippleEpoch, parseNFTokenID, getImgUrl } from 'src/utils/parse';
+import { fNumber } from 'src/utils/formatNumber';
+import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 
 // Context
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+import { useContext } from 'react'
+import { AppContext } from 'src/AppContext'
 
 // Components
 import QRDialog from 'src/components/QRDialog';
-import ConfirmAcceptOfferDialog from './ConfirmAcceptOfferDialog';
 import ListToolbar from './ListToolbar';
-import SeeMoreTypography from 'src/components/SeeMoreTypography';
 
-function parseRippleState(state) {
-    let balance = Number.parseFloat(state.Balance.value);
-    let highLimit = Number.parseFloat(state.HighLimit.value);
-    let lowLimit = Number.parseFloat(state.LowLimit.value);
-    let currency = state.Balance.currency;
-    let flags = state.Flags;
-    let limit = 0;
-    let issuer = null;
-    let account = null;
+// ----------------------------------------------------------------------
+const StackStyle = styled(Stack)(({ theme }) => ({
+    //boxShadow: theme.customShadows.z0,
+    //backdropFilter: 'blur(2px)',
+    //WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
+    //backgroundColor: alpha(theme.palette.background.default, 0.0),
+    //borderRadius: '13px',
+    //padding: '0em 0.5em 1.5em 0.5em',
+    //backgroundColor: alpha("#919EAB", 0.03),
+}));
 
-    if (balance > 0) {
-        issuer = state.HighLimit.issuer;
-        account = state.LowLimit.issuer;
-        limit = lowLimit;
-    } else if (balance < 0) {
-        issuer = state.LowLimit.issuer;
-        account = state.HighLimit.issuer;
-        limit = highLimit;
-    } else {
-        // balance is zero. check who has a limit set
-        if (highLimit > 0 && lowLimit == 0) {
-            issuer = state.LowLimit.issuer;
-            account = state.HighLimit.issuer;
-            limit = highLimit;
-        } else if (lowLimit > 0 && highLimit == 0) {
-            issuer = state.HighLimit.issuer;
-            account = state.LowLimit.issuer;
-            limit = lowLimit;
-        } else {
-            // can not determine issuer!
-            issuer = null;
-            account = null;
-        }
+const noRipplingStyle = {
+    display: 'inline-block',
+    marginLeft: '4px',
+    color: '#C4CDD5',
+    fontSize: '11px',
+    fontWeight: '500',
+    lineHeight: '18px',
+    backgroundColor: '#323546',
+    borderRadius: '4px',
+    padding: '2px 4px'
+};
+
+const ripplingStyle = {
+    display: 'inline-block',
+    marginLeft: '4px',
+    color: '#FFFFFF',
+    fontSize: '11px',
+    fontWeight: '500',
+    lineHeight: '18px',
+    backgroundColor: '#007B55',
+    borderRadius: '4px',
+    padding: '2px 4px'
+};
+
+const BuyTypography = withStyles({
+    root: {
+        color: "#007B55",
+        borderRadius: '5px',
+        border: '0.05em solid #007B55',
+        fontSize: '0.7rem',
+        lineHeight: '1',
+        paddingLeft: '8px',
+        paddingRight: '8px',
+        paddingTop: '3px',
+        paddingBottom: '3px',
     }
+})(Typography);
 
-    let md5 = null;
-
-    if (issuer && currency)
-        md5 = MD5(issuer + "_" + currency).toString();
-
-    return {account, md5, issuer, currency, flags, balance, limit};
-}
+const SellTypography = withStyles({
+    root: {
+        color: "#B72136",
+        borderRadius: '5px',
+        border: '0.05em solid #B72136',
+        fontSize: '0.7rem',
+        lineHeight: '1',
+        paddingLeft: '6px',
+        paddingRight: '6px',
+        paddingTop: '3px',
+        paddingBottom: '3px',
+    }
+})(Typography);
 
 function truncate(str, n) {
     if (!str) return '';
@@ -89,33 +118,44 @@ function truncate(str, n) {
     return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
 };
 
-export default function TrustList({ account, type }) {
-    const BASE_URL = 'https://api.xrpl.to/api';
-    const { accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
-    const accountLogin = accountProfile?.account;
-    const accountToken = accountProfile?.token;
+function truncateAccount(str) {
+    if (!str) return '';
+    return str.slice(0, 9) + '...' + str.slice(-9);
+};
 
-    const isOwner = accountLogin === account;
+const trustlineFlags = {
+    // Flag Name	 Hex Value	Corresponding TrustSet Flag	Description
+    lsfLowReserve:   0x00010000, // [NONE],         This RippleState object contributes to the low account's owner reserve.
+    lsfHighReserve:  0x00020000, // [NONE],         This RippleState object contributes to the high account's owner reserve.
+    lsfLowAuth:      0x00040000, // tfSetAuth,      The low account has authorized the high account to hold tokens issued by the low account.
+    lsfHighAuth:     0x00080000, // tfSetAuth,      The high account has authorized the low account to hold tokens issued by the high account.
+    lsfLowNoRipple:  0x00100000, // tfSetNoRipple,	The low account has disabled rippling from this trust line.
+    lsfHighNoRipple: 0x00200000, // tfSetNoRipple,	The high account has disabled rippling from this trust line.
+    lsfLowFreeze:    0x00400000, // tfSetFreeze,	The low account has frozen the trust line, preventing the high account from transferring the asset.
+    lsfHighFreeze:   0x00800000  // tfSetFreeze,	The high account has frozen the trust line, preventing the low account from transferring the asset.
+}
+
+export default function TrustList({account}) {
+    const theme = useTheme();
+    const BASE_URL = 'https://api.xrpl.to/api';
+    
+    const { accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
+    const isLoggedIn = accountProfile && accountProfile.account;
+    const [openScanQR, setOpenScanQR] = useState(false);
+    const [uuid, setUuid] = useState(null);
+    const [qrUrl, setQrUrl] = useState(null);
+    const [nextUrl, setNextUrl] = useState(null);
+
+    const [loading, setLoading] = useState(false);
+    const [pageLoading, setPageLoading] = useState(false);
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);
     const [total, setTotal] = useState(0);
     const [lines, setLines] = useState([]);
 
-    const [openScanQR, setOpenScanQR] = useState(false);
-    const [xummUuid, setXummUuid] = useState(null);
-    const [qrUrl, setQrUrl] = useState(null);
-    const [nextUrl, setNextUrl] = useState(null);
-    const [qrType, setQrType] = useState("NFTokenAcceptOffer");
-
-    const [loading, setLoading] = useState(false);
-    const [pageLoading, setPageLoading] = useState(false);
-
-    const [acceptOffer, setAcceptOffer] = useState(null);
-    const [openConfirm, setOpenConfirm] = useState(false);
-
     useEffect(() => {
-        function getTrusts() {
+        function getLines() {
             setLoading(true);
             // https://api.xrpl.to/api/account/lines/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
             axios.get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=${rows}`)
@@ -126,35 +166,56 @@ export default function TrustList({ account, type }) {
                         setLines(ret.lines);
                     }
                 }).catch(err => {
-                    console.log("Error on getting trustlines list!!!", err);
+                    console.log("Error on getting account orders!!!", err);
                 }).then(function () {
                     // always executed
                     setLoading(false);
                 });
         }
-        getTrusts();
-    }, [account, type, page, rows, sync]);
+        getLines();
+    }, [accountProfile, sync, page, rows]);
+
+    const handleCancel = (event, issuer, currency) => {
+        if (!isLoggedIn) {
+            openSnackbar('Please connect wallet!', 'error');
+        } else if (accountProfile.account !== account) {
+            openSnackbar('You are not the owner of this offer!', 'error');
+        } else {
+            // onOfferCancelXumm(seq);
+        }
+    }
 
     useEffect(() => {
         var timer = null;
         var isRunning = false;
         var counter = 150;
         async function getPayload() {
-            console.log(counter + " " + isRunning, xummUuid);
             if (isRunning) return;
             isRunning = true;
             try {
-                const ret = await axios.get(`${BASE_URL}/offers/acceptcancel/${xummUuid}`);
-                const resolved_at = ret.data?.resolved_at;
-                const dispatched_result = ret.data?.dispatched_result;
+                const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+                const res = ret.data.data.response;
+                /*
+                {
+                    "hex": "120008228000000024043DCAC32019043DCAC2201B0448348868400000000000000F732103924E47158D3980DDAF7479A838EF3C0AE53D953BD2A526E658AC5F3EF0FA7D2174473045022100D10E91E2704A4BDAB510B599B8258956F9F34592B2B62BE383ED3E4DBF57DE2B02204837DD77A787D4E0DC43DCC53A7BBE160B164617FE3D0FFCFF9F6CC808D46DEE811406598086E863F1FF42AD87DCBE2E1B5F5A8B5EB8",
+                    "txid": "EC13B221808A21EA1012C95FB0EF53BF0110D7AB2EB17104154A27E5E70C39C5",
+                    "resolved_at": "2022-05-23T07:45:37.000Z",
+                    "dispatched_to": "wss://s2.ripple.com",
+                    "dispatched_result": "tesSUCCESS",
+                    "dispatched_nodetype": "MAINNET",
+                    "multisign_account": "",
+                    "account": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm"
+                }
+                */
+
+                const resolved_at = res.resolved_at;
+                const dispatched_result = res.dispatched_result;
                 if (resolved_at) {
                     setOpenScanQR(false);
                     if (dispatched_result === 'tesSUCCESS') {
+                        // TRIGGER account refresh
                         setSync(sync + 1);
-                        openSnackbar('Successful!', 'success');
                     }
-                    else
-                        openSnackbar('Rejected!', 'error');
                     return;
                 }
             } catch (err) {
@@ -162,8 +223,7 @@ export default function TrustList({ account, type }) {
             isRunning = false;
             counter--;
             if (counter <= 0) {
-                openSnackbar('Timeout!', 'error');
-                handleScanQRClose();
+                setOpenScanQR(false);
             }
         }
         if (openScanQR) {
@@ -174,109 +234,54 @@ export default function TrustList({ account, type }) {
                 clearInterval(timer)
             }
         };
-    }, [openScanQR, xummUuid, sync]);
+    }, [openScanQR, uuid]);
 
-    const doProcessOffer = async (offer, isAcceptOrCancel) => {
-        if (!accountLogin || !accountToken) {
-            openSnackbar('Please login', 'error');
-            return;
-        }
-
-        const isSell = offer.flags === 1;
-
-        const index = offer.index;
-        const owner = offer.owner;
-        const destination = offer.destination;
-        const NFTokenID = offer.NFTokenID;
-
-        if (isAcceptOrCancel) {
-            // Accept mode
-            if (accountLogin === owner) {
-                openSnackbar('You are the owner of this offer, you can not accept it.', 'error');
-                return;
-            }
-        } else {
-            // Cancel mode
-            if (accountLogin !== owner) {
-                openSnackbar('You are not the owner of this offer', 'error');
-                return;
-            }
-        }
-
-        setPageLoading(true);
+    const onOfferCancelXumm = async (seq) => {
+        setLoading(true);
         try {
+            const OfferSequence = seq;
+
             const user_token = accountProfile.user_token;
+            
+            const body={OfferSequence, user_token};
 
-            const body = {
-                account: accountLogin,
-                NFTokenID,
-                index,
-                destination,
-                accept: isAcceptOrCancel ? "yes" : "no",
-                sell: isSell ? "yes" : "no",
-                user_token
-            };
-
-            const res = await axios.post(`${BASE_URL}/offers/acceptcancel`, body, { headers: { 'x-access-token': accountToken } });
+            const res = await axios.post(`${BASE_URL}/offer/cancel`, body);
 
             if (res.status === 200) {
-                const newUuid = res.data.data.uuid;
+                const uuid = res.data.data.uuid;
                 const qrlink = res.data.data.qrUrl;
                 const nextlink = res.data.data.next;
 
-                let newQrType = isAcceptOrCancel ? "NFTokenAcceptOffer" : "NFTokenCancelOffer";
-                if (isSell)
-                    newQrType += " [Sell Offer]";
-                else
-                    newQrType += " [Buy Offer]";
-
-                setQrType(newQrType);
-                setXummUuid(newUuid);
+                setUuid(uuid);
                 setQrUrl(qrlink);
                 setNextUrl(nextlink);
                 setOpenScanQR(true);
             }
         } catch (err) {
-            console.error(err);
+            alert(err);
         }
-        setPageLoading(false);
+        setLoading(false);
     };
 
-    const onDisconnectXumm = async () => {
-        setPageLoading(true);
+    const onDisconnectXumm = async (uuid) => {
+        setLoading(true);
         try {
-            const res = await axios.delete(`${BASE_URL}/offers/acceptcancel/${xummUuid}`);
-            // if (res.status === 200) {
-            //     setXummUuid(null);
-            // }
-        } catch (err) {
-            console.error(err);
+            const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
+            if (res.status === 200) {
+                setUuid(null);
+            }
+        } catch(err) {
         }
-        setXummUuid(null);
-
-        setPageLoading(false);
+        setLoading(false);
     };
 
     const handleScanQRClose = () => {
         setOpenScanQR(false);
-        onDisconnectXumm();
+        onDisconnectXumm(uuid);
     };
 
-    const handleRemoveTrustLine = async (line) => {
-        // doProcessOffer(offer, false);
-    }
-
-    const handleAcceptOffer = async (offer) => {
-        setAcceptOffer(offer);
-        setOpenConfirm(true);
-    }
-
-    const onContinueAccept = async () => {
-        doProcessOffer(acceptOffer, true);
-    }
-
     return (
-        <Container maxWidth="md" sx={{pl: 0, pr: 0}}>
+        <Container maxWidth="lg" sx={{pl: 0, pr: 0}}>
             <Backdrop
                 sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={pageLoading}
@@ -292,6 +297,14 @@ export default function TrustList({ account, type }) {
                 />
             </Backdrop>
 
+            <QRDialog
+                open={openScanQR}
+                type="RemoveTrustLine"
+                onClose={handleScanQRClose}
+                qrUrl={qrUrl}
+                nextUrl={nextUrl}
+            />
+
             {loading ? (
                 <Stack alignItems="center">
                     <PulseLoader color='#00AB55' size={10} />
@@ -304,15 +317,7 @@ export default function TrustList({ account, type }) {
             )
             }
 
-            <ConfirmAcceptOfferDialog open={openConfirm} setOpen={setOpenConfirm} offer={acceptOffer} onContinue={onContinueAccept} />
-
-            <QRDialog
-                open={openScanQR}
-                type={qrType}
-                onClose={handleScanQRClose}
-                qrUrl={qrUrl}
-                nextUrl={nextUrl}
-            />
+            {total > 0 &&
 
             <Box
                 sx={{
@@ -327,62 +332,170 @@ export default function TrustList({ account, type }) {
                     "::-webkit-scrollbar": { display: "none" },
                 }}
             >
+                <Table stickyHeader size={'small'}
+                    sx={{
+                        [`& .${tableCellClasses.root}`]: {
+                            borderBottom: "0px solid",
+                            borderBottomColor: theme.palette.divider
+                        }
+                    }}
+                >
+                    <TableHead>
+                        <TableRow
+                            sx={{
+                                [`& .${tableCellClasses.root}`]: {
+                                    borderBottom: "1px solid",
+                                    borderBottomColor: theme.palette.divider
+                                }
+                            }}
+                        >
+                            <TableCell align="left"></TableCell>
+                            <TableCell align="left">#</TableCell>
+                            <TableCell align="left">Peer</TableCell>
+                            <TableCell align="left">Currency</TableCell>
+                            <TableCell align="left">Peer Limit</TableCell>
+                            <TableCell align="left">Owner Limit</TableCell>
+                            <TableCell align="left">Balance</TableCell>
+                            <TableCell align="left">Rippling</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                    {
+                        lines.map((row, idx) => {
+                                /*
+                                {
+                                    "_id": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm_534F4C4F00000000000000000000000000000000_rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+                                    "Balance": {
+                                        "currency": "534F4C4F00000000000000000000000000000000",
+                                        "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+                                        "value": "10.00000383697235"
+                                    },
+                                    "Flags": 1114112,
+                                    "HighLimit": {
+                                        "currency": "534F4C4F00000000000000000000000000000000",
+                                        "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+                                        "value": "0"
+                                    },
+                                    "HighNode": "342c",
+                                    "LedgerEntryType": "RippleState",
+                                    "LowLimit": {
+                                        "currency": "534F4C4F00000000000000000000000000000000",
+                                        "issuer": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm",
+                                        "value": "1000000000"
+                                    },
+                                    "LowNode": "0",
+                                    "PreviousTxnID": "1DA69360B07CACFD4353933F5ED9CC9933413BEBB4ECF9CE623F7503E3AA3D5E",
+                                    "PreviousTxnLgrSeq": 78677075,
+                                    "index": "F7B30BCAEE7B8590858F40D12C30C7219A14907B12477C5A3788C6DBE386BD78"
+                                },
+                                */
+                                const {
+                                    _id,
+                                    Balance,
+                                    Flags,
+                                    HighLimit,
+                                    LowLimit
+                                } = row;
+                                const flags = Flags || 0;
+                                const currency = Balance.currency;
+                                const currencyName = normalizeCurrencyCodeXummImpl(currency);
+                                let peer = null;
+                                let owner = null;
+                                let peerFrozen = false;
+                                let ownerFrozen = false;
+                                let balance = 0;
+                                if (account === HighLimit.issuer) {
+                                    peer = LowLimit;
+                                    owner = HighLimit;
+                                    peerFrozen = (flags & trustlineFlags.lsfLowFreeze) > 0 ? true : false;
+                                    ownerFrozen = (flags & trustlineFlags.lsfHighFreeze) > 0 ? true : false;
+                                    balance = Decimal.abs(Balance.value).toString();
+                                } else {
+                                    peer = HighLimit;
+                                    owner = LowLimit;
+                                    peerFrozen = (flags & trustlineFlags.lsfHighFreeze) > 0 ? true : false;
+                                    ownerFrozen = (flags & trustlineFlags.lsfLowFreeze) > 0 ? true : false;
+                                    balance = Balance.value;
+                                }
 
-            <Stack>
-                {
-                    lines.map((line, idx) => {
-                        const {account, md5, issuer, currency, flags, balance, limit} = parseRippleState(line)
+                                
+                                const rippling = ((flags & trustlineFlags.lsfLowNoRipple) || (flags & trustlineFlags.lsfHighNoRipple)) ? false : true;
 
-                        return (
-                            <Stack key={md5} sx={{ mt: 2 }}>
-                                <Stack direction="row" spacing={1} alignItems="center">
+                                const frozen = ((flags & trustlineFlags.lsfLowFreeze) || (flags & trustlineFlags.lsfHighFreeze))?true:false;
 
-                                    <Stack>
-                                        <Tooltip title="Remove Trustline">
-                                            <IconButton
-                                                aria-label='close'
-                                                onClick={() => handleRemoveTrustLine(line)}
-                                            >
-                                                <HighlightOffIcon fontSize='large' color='error' />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </Stack>
+                                // const strCreatedTime = formatDateTime(ctime);
+                                // peer, currency, peer limit, owner limit, balance, rippling
+                                return (
+                                    <TableRow
+                                        hover
+                                        key={_id}
+                                    >
+                                        <TableCell align="left">
+                                            <Tooltip title="Remove TrustLine">
+                                                <IconButton color='error' onClick={e=>handleCancel(e, peer.issuer, currency)} aria-label="cancel">
+                                                    <CancelIcon fontSize='small'/>
+                                                </IconButton>
+                                            </Tooltip>
+                                        </TableCell>
 
-                                    <Stack spacing={0}>
-                                        <Stack direction="row" spacing={2} alignItems="center">
-                                            <Typography variant='s6' color='#33C2FF'>{balance}</Typography>
+                                        <TableCell align="left">
+                                            <Typography variant="s6" noWrap>{idx + page * rows + 1}</Typography>
+                                        </TableCell>
+
+                                        <TableCell align="left">
                                             <Link
+                                                // underline="none"
                                                 // color="inherit"
                                                 target="_blank"
-                                                href={`https://bithomp.com/explorer/${issuer}`}
+                                                href={`https://bithomp.com/explorer/${peer.issuer}`}
                                                 rel="noreferrer noopener nofollow"
                                             >
-                                                <Typography variant='s6' style={{ wordWrap: "break-word" }}>{issuer}</Typography>
+                                                <Typography variant="s6" noWrap>{peer.issuer}</Typography>
                                             </Link>
-                                        </Stack>
+                                        </TableCell>
 
-                                        <Stack direction="row" spacing={1} alignItems="center">
-                                            <Typography variant="s7">Issuer: </Typography>
-                                            <Link
-                                                color="inherit"
-                                                // target="_blank"
-                                                href={`https://bithomp.com/explorer/${issuer}`}
-                                                rel="noreferrer noopener nofollow"
-                                            >
-                                                <Typography variant="s6" noWrap>{truncate(issuer, 16)}</Typography>
-                                            </Link>
-                                        </Stack>
-                                    </Stack>
-                                </Stack>
-                                <Divider sx={{ mt: 2 }} />
-                            </Stack>
-                        )
-                    })
-                }
-            </Stack>
+                                        <TableCell align="left">
+                                            <Typography variant="s6" noWrap>{currencyName}</Typography>
+                                        </TableCell>
 
+                                        <TableCell align="left">
+                                            <Typography variant="s6" noWrap>
+                                                {fNumber(peer.value)}
+                                                {peerFrozen &&
+                                                    <span style={ripplingStyle}>FROZEN</span>
+                                                }
+                                            </Typography>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            <Typography variant="s6" noWrap>
+                                                {fNumber(owner.value)}
+                                                {ownerFrozen &&
+                                                    <span style={ripplingStyle}>FROZEN</span>
+                                                }
+                                            </Typography>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            <Typography variant="s6" noWrap>{fNumber(balance)}</Typography>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            <Typography variant="s6" noWrap>
+                                                {rippling ? 
+                                                    <span style={ripplingStyle}>YES</span>
+                                                    :
+                                                    <span style={noRipplingStyle}>NO</span>
+                                                }
+                                            </Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
+                    </TableBody>
+                </Table>
             </Box>
-
+            }
             {total > 0 &&
                 <ListToolbar
                     count={total}

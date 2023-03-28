@@ -219,7 +219,6 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, watch
                                     {truncate(user, 13)}
                                     {kyc && (<Typography variant='kyc' sx={{ml: 0.2}}>KYC</Typography>)}
                                 </Typography>
-                                <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography>
                             </Stack>
                         </Link>
                     </Stack>

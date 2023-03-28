@@ -96,14 +96,23 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
         setValue(sumValue);
     }, [askId]);
 
+    useEffect(() => {
+        if (marketLimit !== 'market') return;
+        const amt = new Decimal(amount || 0).toNumber();
+        if (amt === 0) {
+            setValue(0);
+            return;
+        }
+        // if (amt > 0) {}
+
+        const val = calcValue(amount, buySell);
+        setValue(val);
+
+    }, [asks, bids, marketLimit, buySell, amount]);
+
     const handleChangeBuySell = (event, newValue) => {
         if (newValue)
             setBuySell(newValue);
-
-        if (marketLimit === 'market') {
-            const val = calcValue(amount, newValue);
-            setValue(val);
-        }
     };
 
     const calcValue = (amount, buyorsell) => {
@@ -137,13 +146,10 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
     const handleChangeAmount = (e) => {
         const amt = e.target.value;
         setAmount(amt);
-        let val;
-        if (marketLimit === 'market') {
-            val = calcValue(amt, buySell);
-        } else {
-            val = (amt * price).toFixed(6);
+        if (marketLimit !== 'market') {
+            const val = (amt * price).toFixed(6);
+            setValue(val);
         }
-        setValue(val);
     }
 
     const handleChangePrice = (e) => {
