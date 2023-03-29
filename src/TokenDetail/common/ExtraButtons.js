@@ -31,8 +31,7 @@ export default function ExtraButtons({token}) {
         ext,
         md5,
         tags,
-        social,
-        urlSlug
+        social
     } = token;
 
     let user = token.user;

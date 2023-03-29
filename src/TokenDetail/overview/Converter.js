@@ -21,6 +21,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 
+// Iconify
+import { Icon } from '@iconify/react';
+import exchangeIcon from '@iconify/icons-uil/exchange';
+
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -128,7 +132,7 @@ export default function Converter({token}) {
     const { accountProfile } = useContext(AppContext);
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-    const metrics = useSelector(selectMetrics);
+    // const metrics = useSelector(selectMetrics);
     const {
         id,
         name,
@@ -142,7 +146,6 @@ export default function Converter({token}) {
         vol24h,
         vol24hxrp,
         vol24hx,
-        urlSlug,
         marketcap,
         date,
         md5,
@@ -263,7 +266,7 @@ export default function Converter({token}) {
                 </CurrencyContent>
                 <ToggleContent>
                     <IconButton size="medium" onClick={()=>{setRevert(!revert)}}>
-                        <CurrencyExchangeIcon />
+                        <Icon icon={exchangeIcon} width="28" height="28" style={{padding: 6, borderRadius: "50%", color: "#17171AAA", background: "#ffffff"}} />
                     </IconButton>
                 </ToggleContent>
             </ConverterFrame>

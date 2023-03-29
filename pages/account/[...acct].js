@@ -1,11 +1,12 @@
-import axios from 'axios'
+import axios from 'axios';
 import { performance } from 'perf_hooks';
+import { useState, useEffect } from 'react';
 
 // Material
 import {
+    styled,
     Box,
     Container,
-    styled,
     Toolbar
 } from '@mui/material';
 
@@ -58,9 +59,10 @@ const BannerImage = styled('img')(
 );
 
 export default function Overview({data}) {
-    const { darkMode } = useContext(AppContext);
+    const { darkMode, accountProfile } = useContext(AppContext);
 
-    const profile = data.profile;
+    const [profile, setProfile] = useState(data.profile);
+    
 
     let default_banner = darkMode?'/static/banner_black.png':'/static/banner_white.png';
 
@@ -87,7 +89,7 @@ export default function Overview({data}) {
             </BannerWrapper>
 
             <Container maxWidth="xxl">
-                <Account profile={profile} tab={data.tab} />
+                <Account profile={profile} setProfile={setProfile} tab={data.tab} />
             </Container>
 
             <ScrollToTop />

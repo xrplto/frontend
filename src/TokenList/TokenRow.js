@@ -101,7 +101,7 @@ function getPriceColor(token) {
 
 export const TokenRow = React.memo(fTokenRow);
 
-function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, watchList, onChangeWatchList}) {
+function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, onChangeWatchList}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const { accountProfile } = useContext(AppContext);
@@ -126,7 +126,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, watch
         //offers,
         kyc,
         md5,
-        urlSlug,
+        slug,
         user,
         pro7d,
         pro24h,
@@ -187,7 +187,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, watch
                 }
                 <TableCell align="left" sx={{p:0}}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{p:0}}>
-                        {admin ? (
+                        {isAdmin ? (
                             <AdminImage
                                 src={imgUrl} // use normal <img> attributes as props
                                 width={56}
@@ -207,11 +207,11 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, watch
                         <Link
                             underline="none"
                             color="inherit"
-                            href={`/token/${urlSlug}`}
+                            href={`/token/${slug}`}
                             rel="noreferrer noopener nofollow"
                         >
                             <Stack>
-                                <Typography variant="token" color={isOMCF!=='yes'?'#222531':urlSlug === md5?'#B72136':''} noWrap>{truncate(name, 8)}</Typography>
+                                <Typography variant="token" color={isOMCF!=='yes'?'#222531':slug === md5?'#B72136':''} noWrap>{truncate(name, 8)}</Typography>
                                 <Typography variant="caption" color={isOMCF!=='yes'?'#222531':''} noWrap>
                                     {isMobile &&
                                         <span style={badge24hStyle}>{id}</span>
@@ -273,7 +273,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, watch
                 </TableCell>
 
                 <TableCell align="right">
-                    <TokenMoreMenu token={token} admin={admin} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
+                    <TokenMoreMenu token={token} admin={isAdmin} setEditToken={setEditToken} setTrustToken={setTrustToken}/>
                 </TableCell>
             </LazyLoadComponent>
         </TableRow>

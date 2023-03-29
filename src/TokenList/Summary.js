@@ -42,6 +42,8 @@ export default function Summary() {
     const gDexVolumePro = new Decimal(metrics.global.gDexVolumePro).toNumber();
     const gScamVolume = new Decimal(metrics.global.gScamVolume).div(metrics.USD).toNumber();
     const gScamVolumePro = new Decimal(metrics.global.gScamVolumePro).toFixed(2, Decimal.ROUND_DOWN);
+    const gNFTIOUVolume = new Decimal(metrics.global.gNFTIOUVolume || 0).div(metrics.USD).toNumber();
+    const gNFTIOUVolumePro = new Decimal(metrics.global.gNFTIOUVolumePro || 0).toFixed(2, Decimal.ROUND_DOWN);
     const gStableVolume = new Decimal(metrics.global.gStableVolume).div(metrics.USD).toNumber();
     const gStableVolumePro = new Decimal(metrics.global.gStableVolumePro).toFixed(2, Decimal.ROUND_DOWN);
     const gXRPdominance = new Decimal(metrics.global.gXRPdominance).toNumber();
@@ -72,7 +74,7 @@ export default function Summary() {
                 }}
                 
             >
-                <ContentTypography variant='subtitle1' sx={{mt:2}} gutterBottom>The total XRPL Dex volume over the last 24 hours is <strong>${fNumber(gDexVolume)}</strong>, which makes a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. The total volume in Scams is currently <strong>${fNumber(gScamVolume)}</strong>, <strong>{gScamVolumePro}%</strong> of the total XRPL token market 24-hour volume. The volume of all stable currencies is now <strong>${fNumber(gStableVolume)}</strong>, which is <strong>{gStableVolumePro}%</strong> of the total token market 24-hour volume.</ContentTypography>
+                <ContentTypography variant='subtitle1' sx={{mt:2}} gutterBottom>The total XRPL Dex volume over the last 24 hours is <strong>${fNumber(gDexVolume)}</strong>, which makes a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. The total volume in Collectibles & NFTs is currently <strong>${fNumber(gNFTIOUVolume)}</strong>, <strong>{gNFTIOUVolumePro}%</strong> of the total XRPL token market 24-hour volume. The volume of all stable currencies is now <strong>${fNumber(gStableVolume)}</strong>, which is <strong>{gStableVolumePro}%</strong> of the total token market 24-hour volume.</ContentTypography>
                 <ContentTypography variant='subtitle1' gutterBottom>XRP price is currently <strong>${Rate(1, metrics.USD)}</strong>.</ContentTypography>
                 <ContentTypography variant='subtitle1'>XRP dominance is currently ---%, a decrease of -% over the day.</ContentTypography>
             </div>

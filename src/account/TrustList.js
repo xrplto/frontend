@@ -166,14 +166,14 @@ export default function TrustList({account}) {
                         setLines(ret.lines);
                     }
                 }).catch(err => {
-                    console.log("Error on getting account orders!!!", err);
+                    console.log("Error on getting account lines!!!", err);
                 }).then(function () {
                     // always executed
                     setLoading(false);
                 });
         }
         getLines();
-    }, [accountProfile, sync, page, rows]);
+    }, [account, sync, page, rows]);
 
     const handleCancel = (event, issuer, currency) => {
         if (!isLoggedIn) {

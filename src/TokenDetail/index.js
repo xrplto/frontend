@@ -97,9 +97,9 @@ export default function TokenDetail({token, tab}) {
     const handleChangeTab = (event, newID) => {
         let url = '';
         if (newID > 0)
-            url = `/token/${token.urlSlug}/${tabValues[newID]}`;
+            url = `/token/${token.slug}/${tabValues[newID]}`;
         else
-            url = `/token/${token.urlSlug}/`;
+            url = `/token/${token.slug}/`;
         window.history.pushState({}, null, url);
         setTabID(newID);
         gotoTabView(event);

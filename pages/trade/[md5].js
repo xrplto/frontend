@@ -26,41 +26,39 @@ export async function getServerSideProps(ctx) {
         console.log(e);
     }
     let ret = {};
-    let urlSlug = null;
     if (data && data.token) {
         let ogp = {};
         const token = data.token;
         const {
             name,
             ext,
-            md5
+            md5,
+            slug
         } = token;
-
-        urlSlug = token.urlSlug;
 
         let user = token.user;
         if (!user) user = name;
 
         // https://xrpl.to/token/sologenic-solo/trade
-        ogp.canonical = `https://xrpl.to/token/${urlSlug}/trade`;
+        ogp.canonical = `https://xrpl.to/token/${slug}/trade`;
         ogp.title = `Trade ${name} On The XRP Ledger`;
-        ogp.url = `https://xrpl.to/token/${urlSlug}/trade`;
+        ogp.url = `https://xrpl.to/token/${slug}/trade`;
         // ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${ext}`;
         ogp.imgUrl = `https://s1.xrpl.to/token/${md5}`;
         ogp.desc = `Trade ${name} On The XRPL.to`;
 
         ret = {data, ogp};
-    }
 
-    return {
-        redirect: {
-        permanent: false,
-        destination: urlSlug?`/token/${urlSlug}/trade`:'/404'
+        return {
+            props: ret, // will be passed to the page component as props
         }
-    }
-
-    return {
-        props: ret, // will be passed to the page component as props
+    } else {
+        return {
+            redirect: {
+                permanent: false,
+                destination: '/404'
+            }
+        }
     }
 }
 

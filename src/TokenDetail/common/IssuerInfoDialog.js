@@ -111,7 +111,6 @@ export default function IssuerInfoDialog({open, setOpen, token}) {
         currency,
         md5,
         ext,
-        urlSlug,
         issuer_info
     } = token;
 
@@ -150,7 +149,7 @@ export default function IssuerInfoDialog({open, setOpen, token}) {
                 onClose={handleClose}
                 open={open}
                 sx={{zIndex: 1302}}
-                hideBackdrop={true}
+                // hideBackdrop={true}
             >
                 <IssuerInfoDialogTitle id="customized-dialog-title" onClose={handleClose}>
                     <Stack direction='row' alignItems='center'>

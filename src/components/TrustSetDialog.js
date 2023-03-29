@@ -104,7 +104,7 @@ export default function TrustSetDialog({token, setToken}) {
         currency,
         md5,
         ext,
-        urlSlug
+        slug
     } = token;
 
     // const imgUrl = `/static/tokens/${md5}.${ext}`;
@@ -263,7 +263,7 @@ export default function TrustSetDialog({token, setToken}) {
                 onClose={handleClose}
                 open={true}
                 sx={{zIndex: 1302}}
-                hideBackdrop={true}
+                // hideBackdrop={true}
             >
                 <TrustDialogTitle id="customized-dialog-title" onClose={handleClose}>
                     <Stack direction='row' alignItems='center'>
@@ -303,12 +303,12 @@ export default function TrustSetDialog({token, setToken}) {
                                 underline="none"
                                 color="inherit"
                                 target="_blank"
-                                href={`https://xrpl.to/trustset/${urlSlug}`}
+                                href={`https://xrpl.to/trustset/${slug}`}
                                 rel="noreferrer noopener nofollow"
                             >
-                                https://xrpl.to/trustset/{urlSlug}
+                                https://xrpl.to/trustset/{slug}
                             </Link>
-                            <CopyToClipboard text={`https://xrpl.to/trustset/${urlSlug}`} onCopy={()=>openSnackbar('Copied!', 'success')}>
+                            <CopyToClipboard text={`https://xrpl.to/trustset/${slug}`} onCopy={()=>openSnackbar('Copied!', 'success')}>
                                 <Tooltip title={'Click to copy'}>
                                     <IconButton>
                                         <Icon icon={copyIcon} />
@@ -327,7 +327,7 @@ export default function TrustSetDialog({token, setToken}) {
                                 Set Trustline
                             </Button>
 
-                            <CopyToClipboard text={`https://xrpl.to/trustset/${urlSlug}`} onCopy={()=>openSnackbar('Copied!', 'success')}>
+                            <CopyToClipboard text={`https://xrpl.to/trustset/${slug}`} onCopy={()=>openSnackbar('Copied!', 'success')}>
                                 <Button
                                     variant="outlined"
                                     color='primary'

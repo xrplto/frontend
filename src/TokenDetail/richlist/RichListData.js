@@ -62,8 +62,7 @@ export default function RichListData({token}) {
 
     const {
         name,
-        exch,
-        urlSlug
+        exch
     } = token;
 
     useEffect(() => {

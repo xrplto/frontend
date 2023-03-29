@@ -53,7 +53,6 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
     // -----------------------------------------------
 
     const { accountProfile, openSnackbar, setLoading } = useContext(AppContext);
-    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     const [watchList, setWatchList] = useState([]);
 
@@ -155,7 +154,7 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
         };
         if (sync > 0)
             loadTokens();
-    }, [sync]);
+    }, [accountProfile, sync]);
 
     useEffect(() => {
         function getWatchList() {
@@ -283,7 +282,6 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
                 onFilterName={handleFilterByName}
                 rows={rows}
                 setRows={updateRows}
-                isAdmin={isAdmin}
                 showNew={showNew} setShowNew={updateShowNew}
                 showSlug={showSlug} setShowSlug={updateShowSlug}
                 showDate={showDate} setShowDate={updateShowDate}
@@ -317,7 +315,6 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
                                         mUSD = {metrics.USD}
                                         time={row.time}
                                         token={row}
-                                        admin={isAdmin}
                                         setEditToken={setEditToken}
                                         setTrustToken={setTrustToken}
                                         watchList={watchList}

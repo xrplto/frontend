@@ -105,7 +105,7 @@ const TokenImage = styled(Avatar)(({ theme }) => ({
 }));
 
 export default function EditTokenDialog({token, setToken}) {
-    const metrics = useSelector(selectMetrics);
+    // const metrics = useSelector(selectMetrics);
 
     const theme = useTheme();
     const fileRef = useRef();
@@ -129,7 +129,7 @@ export default function EditTokenDialog({token, setToken}) {
 
     const [kyc, setKYC] = useState(token.kyc);
 
-    const [ext, setExt] = useState(token.ext);
+    const [ext, setExt] = useState(token.ext || "");
 
     const [imgData, setImgData] = useState(imgUrl);
 
@@ -139,7 +139,7 @@ export default function EditTokenDialog({token, setToken}) {
 
     const [date, setDate] = useState(token.date);
 
-    const [urlSlug, setUrlSlug] = useState(token.urlSlug);
+    const [slug, setSlug] = useState(token.slug);
 
     const [whitepaper, setWhitePaper] = useState(token.whitepaper);
 
@@ -233,8 +233,8 @@ export default function EditTokenDialog({token, setToken}) {
     };
 
     const handleSave = () => {
-        const slug = urlSlug?urlSlug.replace(/[^a-zA-Z0-9-]/g, ""):null;
-        if (!slug || slug !== urlSlug) {
+        const check = slug?slug.replace(/[^a-zA-Z0-9-]/g, ""):null;
+        if (!check || check !== slug) {
             openSnackbar('Invalid URL Slug, only alphabetic(A-Z, a-z, 0-9, -) allowed', 'error');
             return;
         }
@@ -244,7 +244,7 @@ export default function EditTokenDialog({token, setToken}) {
         kyc: true,
         offers: 57,
         trustlines: 18771,
-        urlSlug: "47c6a1d2de5ad3391a58e4f0523c16a3",
+        slug: "47c6a1d2de5ad3391a58e4f0523c16a3",
         verified: false,
         ext: "jpg"
         */
@@ -257,10 +257,10 @@ export default function EditTokenDialog({token, setToken}) {
         newToken.ext = ext;
         newToken.date = date;
 
-        if (urlSlug)
-            newToken.urlSlug = urlSlug;
+        if (slug)
+            newToken.slug = slug;
         else
-            newToken.urlSlug = md5;
+            newToken.slug = md5;
 
         newToken.whitepaper = whitepaper;
         if (tags)
@@ -362,7 +362,7 @@ export default function EditTokenDialog({token, setToken}) {
             <PulseLoader color={"#FF4842"} size={10} />
         </Backdrop>
         
-        <AdminDialog onClose={handleClose} open={true} sx={{p:5}} hideBackdrop={true} fullWidth={true} maxWidth={'md'}>
+        <AdminDialog onClose={handleClose} open={true} sx={{p:5}} fullWidth={true} maxWidth={'md'}>
             <DialogTitle sx={{pl:4,pr:4,pt:1,pb:1}}>
                 <input
                     ref={fileRef}
@@ -533,12 +533,12 @@ export default function EditTokenDialog({token, setToken}) {
                                     underline="none"
                                     color="inherit"
                                     target="_blank"
-                                    href={`token/${urlSlug}`}
+                                    href={`token/${slug}`}
                                     rel="noreferrer noopener nofollow"
                                 >
-                                    <Typography variant="subtitle2" color='primary'>{urlSlug}</Typography>
+                                    <Typography variant="subtitle2" color='primary'>{slug}</Typography>
                                 </Link>
-                                <EditDialog label='URL Slug' value={urlSlug} setValue={setUrlSlug}/>
+                                <EditDialog label='URL Slug' value={slug} setValue={setSlug}/>
                             </Stack>
                         </TableCell>
                         <TableCell align="right" sx={{pt:0, pb:0.2}}></TableCell>

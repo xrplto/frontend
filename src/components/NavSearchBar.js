@@ -72,7 +72,7 @@ const RenderOption = ({
     //offers,
     kyc,
     md5,
-    urlSlug,
+    slug,
     user,
     pro7d,
     pro24h,
@@ -85,7 +85,7 @@ const RenderOption = ({
 
     // const imgUrl = `/static/tokens/${md5}.${ext}`;
     const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-    const link = `/token/${urlSlug}`;
+    const link = `/token/${slug}`;
 
     return (
         <Link

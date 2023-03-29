@@ -125,7 +125,7 @@ function getTabID(tab) {
     return idx;
 }
 
-export default function Account({ profile, tab }) {
+export default function Account({ profile, setProfile, tab }) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const { accountProfile, openSnackbar, sync } = useContext(AppContext);
     const accountLogin = accountProfile?.account;
@@ -133,6 +133,7 @@ export default function Account({ profile, tab }) {
     // const accountUuid = accountProfile?.xuuid;
 
     const [tabID, setTabID] = useState(getTabID(tab));
+    const [isFirstLoad, setFirstLoad] = useState(true);
 
     const {
         account,
@@ -144,6 +145,15 @@ export default function Account({ profile, tab }) {
     } = profile;
 
     const logoImage = logo ? `https://s1.xrpl.to/profile/${logo}` : getHashIcon(account);
+
+    useEffect(() => {
+        if (!isFirstLoad && accountProfile && accountProfile.account) {
+            setProfile(accountProfile);
+            const url = `/account/${accountProfile.account}/${tabValues[tabID]}`;
+            window.history.pushState({}, null, url);
+        }
+        setFirstLoad(false);
+    }, [accountProfile]);
 
     const gotoTabView = (event) => {
         const anchor = (event.target.ownerDocument || document).querySelector(

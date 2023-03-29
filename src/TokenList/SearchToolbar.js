@@ -96,7 +96,6 @@ export default function SearchToolbar({
     onFilterName,
     rows,
     setRows,
-    isAdmin,
     showNew,
     setShowNew,
     showSlug,
@@ -104,13 +103,8 @@ export default function SearchToolbar({
     showDate,
     setShowDate
 }) {
-    const theme = useTheme();
-    
-    const myRef = useRef(null)
-
-    const BASE_URL = 'https://api.xrpl.to/api';
-
-    const { openSnackbar } = useContext(AppContext);
+    const { accountProfile, openSnackbar } = useContext(AppContext);
+    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     const [tagValue, setTagValue] = useState(getTagValue(tags, tagName));
 

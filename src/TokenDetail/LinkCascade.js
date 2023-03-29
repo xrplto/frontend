@@ -28,7 +28,7 @@ export default function LinkCascade({token, tabID, tabLabels}) {
                     <Link
                         underline="none"
                         color="inherit"
-                        href={`/token/${token.urlSlug}`}
+                        href={`/token/${token.slug}`}
                         rel="noreferrer noopener nofollow"
                     >
                         <Typography variant='link_cascade' color={'primary'}>{token.name}</Typography>

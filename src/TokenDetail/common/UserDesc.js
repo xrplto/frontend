@@ -17,13 +17,10 @@ import {
     Tooltip,
     Typography
 } from '@mui/material';
-
-import {
-    Token as TokenIcon,
-    SyncAlt as SyncAltIcon,
-    Share as ShareIcon
-} from '@mui/icons-material';
-
+import TokenIcon from '@mui/icons-material/Token';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
+import ShareIcon from '@mui/icons-material/Share';
+import EditIcon from '@mui/icons-material/Edit';
 import LocalFloristTwoToneIcon from '@mui/icons-material/LocalFloristTwoTone';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
@@ -49,25 +46,94 @@ import ChatMenu from './ChatMenu';
 import Watch from './Watch';
 import Share from './Share';
 import IssuerInfoDialog from './IssuerInfoDialog';
-// import TrustSet from './TrustSet';
+import EditTokenDialog from 'src/components/EditTokenDialog';
+
+const IconCover = styled('div')(
+    ({ theme }) => `
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        position: relative;
+        overflow: hidden;
+        transition: width 1s ease-in-out, height .5s ease-in-out !important;
+        -webkit-tap-highlight-color: transparent;
+        &:hover, &.Mui-focusVisible {
+            z-index: 1;
+            & .MuiImageBackdrop-root {
+                opacity: 0.9;
+            }
+            & .MuiIconEditButton-root {
+                opacity: 1;
+            }
+        }
+    `
+);
+
+const IconWrapper = styled('div')(
+    ({ theme }) => `
+        box-sizing: border-box;
+        display: inline-block;
+        position: relative;
+        width: 56px;
+        height: 56px;
+  `
+);
+
+const IconImage = styled('img')(
+    ({ theme }) => `
+    position: absolute;
+    inset: 0px;
+    box-sizing: border-box;
+    padding: 0px;
+    border: none;
+    margin: auto;
+    display: block;
+    width: 0px; height: 0px;
+    min-width: 100%;
+    max-width: 100%;
+    min-height: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    border-radius: 0px;
+  `
+);
+
+const ImageBackdrop = styled('span')(({ theme }) => ({
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: theme.palette.common.white,
+    opacity: 0,
+    transition: theme.transitions.create('opacity'),
+}));
+
+const CardOverlay = styled('div')(
+    ({ theme }) => `
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    inset: 0;
+`
+);
+
+const AdminImage = styled(LazyLoadImage)(({ theme }) => ({
+    borderRadius: '50%',
+    overflow: 'hidden',
+    '&:hover': {
+        cursor: 'pointer',
+        opacity: 0.6
+    },
+}));
 
 function truncate(str, n){
     if (!str) return '';
     //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
     return (str.length > n) ? str.substr(0, n-1) + '... ' : str;
 };
-
-const ContentWrapper = styled(Box)(({ theme }) => ({
-    display: "flex",
-    gap: '0.3em',
-    py: 1.5,
-    overflow: "auto",
-    width: "100%",
-    "& > *": {
-        scrollSnapAlign: "center",
-    },
-    "::-webkit-scrollbar": { display: "none" },
-}));
 
 function normalizeTag(tag) {
     if (tag && tag.length > 0) {
@@ -83,10 +149,12 @@ function normalizeTag(tag) {
 // ----------------------------------------------------------------------
 export default function UserDesc({token}) {
     const { darkMode, accountProfile, openSnackbar } = useContext(AppContext);
+    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     const [rating, setRating] = useState(2);
     // const [trustToken, setTrustToken] = useState(null);
     const [openIssuerInfo, setOpenIssuerInfo] = useState(false);
+    const [editToken, setEditToken] = useState(null);
 
     const {
         id,
@@ -100,9 +168,9 @@ export default function UserDesc({token}) {
         trustlines,
         ext,
         md5,
+        slug,
         tags,
         social,
-        urlSlug,
         issuer_info,
         assessment,
         date
@@ -134,6 +202,8 @@ export default function UserDesc({token}) {
 
     return (
         <Stack>
+            {editToken && <EditTokenDialog token={editToken} setToken={setEditToken}/> }
+
             <IssuerInfoDialog
                 open={openIssuerInfo}
                 setOpen={setOpenIssuerInfo}
@@ -141,11 +211,30 @@ export default function UserDesc({token}) {
             />
             
             <Stack direction="row" spacing={1} alignItems='center'>
-                <Avatar
-                    alt={user}
-                    src={imgUrl}
-                    sx={{ width: 56, height: 56 }}
-                />
+                {isAdmin ?
+                    <div>
+                        <IconCover>
+                            <IconWrapper>
+                                <IconImage src={imgUrl}/>
+                            </IconWrapper>
+                            <IconButton
+                                className="MuiIconEditButton-root"
+                                aria-label='edit'
+                                sx={{ position: 'absolute', left: '0vw', top: '0vh', opacity: 0, zIndex: 1, width: '56px', height: '56px' }}
+                                onClick={()=>setEditToken(token)}
+                            >
+                                <EditIcon />
+                            </IconButton>
+                            <ImageBackdrop className="MuiImageBackdrop-root" />
+                        </IconCover>
+                    </div>
+                    :
+                    <Avatar
+                        alt={user}
+                        src={imgUrl}
+                        sx={{ width: 56, height: 56 }}
+                    />
+                }
                 <Stack spacing={0.2}>
                     <Typography variant="h2" color='#22B14C' fontSize='1.1rem'>{user}</Typography>
                     <Stack direction='row' alignItems='center' spacing={0.5}>

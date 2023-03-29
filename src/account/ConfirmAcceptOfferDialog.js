@@ -77,7 +77,7 @@ export default function ConfirmAcceptOfferDialog({open, setOpen, offer, onContin
             open={open}
             // sx={{zIndex: 1302}}
             maxWidth="xs"
-            hideBackdrop={true}
+            // hideBackdrop={true}
             disableScrollLock
             disablePortal
             keepMounted

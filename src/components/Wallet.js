@@ -271,16 +271,17 @@ export default function Wallet() {
                                 </Tooltip>
                             </Link>
                         </Stack>
-                        <MenuItem
-                            key="account_profile"
-                            sx={{ typography: 'body2', py: 1.5, px: 3 }}
+                        <Link
+                            underline="none"
+                            color="inherit"
+                            // target="_blank"
+                            href={`/account/${accountLogin}`}
+                            rel="noreferrer noopener nofollow"
                         >
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                // target="_blank"
-                                href={`/account/${accountLogin}`}
-                                rel="noreferrer noopener nofollow"
+                            <MenuItem
+                                key="account_profile"
+                                sx={{ typography: 'body2', py: 1.5, px: 3 }}
+                                onClick={()=>setOpen(false)}
                             >
                                 <Stack direction='row' spacing={1} sx={{mr: 2}} alignItems='center'>
                                     <Badge color="primary" badgeContent={0}>
@@ -288,26 +289,27 @@ export default function Wallet() {
                                     </Badge>
                                     <Typography variant='s6' style={{marginLeft: '10px'}}>Profile</Typography>
                                 </Stack>
-                            </Link>
-                        </MenuItem>
+                            </MenuItem>
+                        </Link>
 
-                        <MenuItem
-                            key="settings"
-                            sx={{ typography: 'body2', py: 1.5, px: 3 }}
+                        <Link
+                            underline="none"
+                            color="inherit"
+                            // target="_blank"
+                            href={`/setting`}
+                            rel="noreferrer noopener nofollow"
                         >
-                            <Link
-                                underline="none"
-                                color="inherit"
-                                // target="_blank"
-                                href={`/setting`}
-                                rel="noreferrer noopener nofollow"
+                            <MenuItem
+                                key="settings"
+                                sx={{ typography: 'body2', py: 1.5, px: 3 }}
+                                onClick={()=>setOpen(false)}
                             >
                                 <Stack direction='row' spacing={1} sx={{mr: 2}} alignItems='center'>
                                     <SettingsIcon />
                                     <Typography variant='s6' style={{marginLeft: '10px'}}>Settings</Typography>
                                 </Stack>
-                            </Link>
-                        </MenuItem>
+                            </MenuItem>
+                        </Link>
                         <Divider />
 
                         {profiles.map((profile, idx) => {
@@ -322,7 +324,7 @@ export default function Wallet() {
                                 <MenuItem
                                     key={"account" + idx}
                                     sx={{ typography: 'body2', py: 1, px: 3 }}
-                                    onClick={()=>{setActiveProfile(account)}}
+                                    onClick={()=>{setActiveProfile(account); setOpen(false);}}
                                 >
                                     <Stack direction="row" sx={{ typography: 'body2'}} alignItems="center">
                                         <Avatar

@@ -41,7 +41,6 @@ export default function EditDialog({label, value, setValue}) {
             <IconButton onClick={handleClickOpen} edge="end" aria-label="edit" size="small">
                 <EditIcon fontSize="inherit"/>
             </IconButton>
-            {/* hideBackdrop={true} */}
             <Dialog open={open} onClose={handleClose}>
                 {/* <DialogTitle>{label}</DialogTitle> */}
                 <DialogContent>

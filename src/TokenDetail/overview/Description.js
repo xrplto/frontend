@@ -122,7 +122,7 @@ export default function Description({token, showEditor, setShowEditor, descripti
         vol24h,
         vol24hxrp,
         vol24hx,
-        urlSlug,
+        slug,
         marketcap,
         /*
         date,
@@ -170,7 +170,7 @@ export default function Description({token, showEditor, setShowEditor, descripti
             <Typography sx={{mt:2, mb: 3}}>
                 If you would like to know where to buy {user}, the top XRPL DEX for trading in {user} token are currently 
                 <Link color="#3366FF" underline="none"
-                    href={`/token/${urlSlug}/trade`}
+                    href={`/token/${slug}/trade`}
                 >{' XRPL.to DEX'}</Link> and
                 <Link color="#3366FF" underline="none"
                     href={`https://sologenic.org/trade?network=mainnet&market=${currency}%2B${issuer}%2FXRP`}

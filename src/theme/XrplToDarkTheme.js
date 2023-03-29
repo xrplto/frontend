@@ -387,19 +387,19 @@ export const XrplToDarkTheme = createTheme({
     }
   },
   components: {
-    MuiBackdrop: {
-      styleOverrides: {
-        root: {
-          backgroundColor: alpha(darken('#070C27', 0.5), 0.4),
-          backdropFilter: 'blur(2px)',
+    // MuiBackdrop: {
+    //   styleOverrides: {
+    //     root: {
+    //       backgroundColor: alpha(darken('#070C27', 0.5), 0.4),
+    //       backdropFilter: 'blur(2px)',
 
-          '&.MuiBackdrop-invisible': {
-            backgroundColor: 'transparent',
-            backdropFilter: 'blur(2px)'
-          }
-        }
-      }
-    },
+    //       '&.MuiBackdrop-invisible': {
+    //         backgroundColor: 'transparent',
+    //         backdropFilter: 'blur(2px)'
+    //       }
+    //     }
+    //   }
+    // },
     MuiFormHelperText: {
       styleOverrides: {
         root: {
@@ -413,7 +413,7 @@ export const XrplToDarkTheme = createTheme({
     MuiDialog: {
       styleOverrides: {
         paper: {
-          backgroundColor: darken(themeColors.primaryAlt, 0.5)
+          backgroundColor: '#17171A'
         }
       }
     },
@@ -808,9 +808,9 @@ export const XrplToDarkTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          background: '#21252B',
+          background: '#17171A',
           padding: 0,
-          border: '1px solid #32373C'
+          border: '1px solid #21252B'
         },
         // elevation0: {
         //   boxShadow: 'none'

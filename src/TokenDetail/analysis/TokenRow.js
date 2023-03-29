@@ -109,7 +109,7 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
         //offers,
         kyc,
         md5,
-        urlSlug,
+        slug,
         user,
         pro7d,
         pro24h,
@@ -161,12 +161,12 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
                         <Link
                             underline="none"
                             color="inherit"
-                            href={`/token/${urlSlug}`}
+                            href={`/token/${slug}`}
                             rel="noreferrer noopener nofollow"
                             // style={{textDecoration: "none"}}
                         >
                             <Stack>
-                                <Typography variant="token" color={isOMCF!=='yes'?'#222531':urlSlug === md5?'#B72136':''} noWrap>{truncate(name, 8)}</Typography>
+                                <Typography variant="token" color={isOMCF!=='yes'?'#222531':slug === md5?'#B72136':''} noWrap>{truncate(name, 8)}</Typography>
                                 <Typography variant="caption" color={isOMCF!=='yes'?'#222531':''} noWrap>
                                     {truncate(user, 13)}
                                     {kyc && (<Typography variant='kyc' sx={{ml: 0.2}}>KYC</Typography>)}

@@ -136,7 +136,7 @@ export default function OfferList({account}) {
                 });
         }
         getOffers();
-    }, [accountProfile, sync, page, rows]);
+    }, [account, sync, page, rows]);
 
     const handleCancel = (event, account, seq) => {
         if (!isLoggedIn) {
