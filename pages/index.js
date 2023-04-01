@@ -91,12 +91,12 @@ function Overview({data}) {
 
 export default Overview;
 
-const BASE_URL = 'http://135.181.118.217/api';
-
 // This function gets called at build time on server-side.
 // It may be called again, on a serverless function, if
 // revalidation is enabled and a new request comes in
 export async function getStaticProps() {
+    const BASE_URL = 'http://135.181.118.217/api';
+
     // https://api.xrpl.to/api/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false
     let data = null;
     try {

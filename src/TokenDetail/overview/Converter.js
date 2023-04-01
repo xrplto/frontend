@@ -89,20 +89,6 @@ const ConverterFrame = styled('div')(
 `
 );
 
-const ConverterFrameMobile = styled('div')(
-    ({ theme }) => `
-    flex-direction: column;
-    overflow: hidden;
-    margin: auto -16px;
-    border-right: none;
-    border-left: none;
-    border-image: initial;
-    border-radius: unset;
-    border-top: ${theme.currency.border};
-    border-bottom: ${theme.currency.border};
-`
-);
-
 const ToggleContent = styled('div')(
     ({ theme }) => `
     cursor: pointer;
@@ -112,20 +98,6 @@ const ToggleContent = styled('div')(
     transform: translate(-50%, -50%);
 `
 );
-
-const styles = theme => ({
-    textField: {
-        width: '90%',
-        marginLeft: 'auto',
-        marginRight: 'auto',            
-        paddingBottom: 0,
-        marginTop: 0,
-        fontWeight: 500
-    },
-    input: {
-        color: 'white'
-    },
-});
 
 export default function Converter({token}) {
     const theme = useTheme();
