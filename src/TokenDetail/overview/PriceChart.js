@@ -222,7 +222,7 @@ export default function PriceChart({ token }) {
             },
             y: {
                 formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
-                    return `${fCurrency5(value)} XRP`;
+                    return `$ ${fCurrency5(value)}`;
                 },
                 title: {
                     formatter: (seriesName) => {
@@ -230,15 +230,6 @@ export default function PriceChart({ token }) {
                         return '';
                     }
                 }
-            },
-            z: {
-                formatter: (z) => {
-                    if (typeof z !== 'undefined') {
-                        return `$ ${fCurrency5(z)}`;
-                    }
-                    return z;
-                },
-                title: ''
             },
             marker: {
                 show: true,
@@ -395,7 +386,7 @@ export default function PriceChart({ token }) {
             <Grid container rowSpacing={2} alignItems="center" sx={{mt: 0}}>
                 <Grid container item xs={12} md={6}>
                     <Stack direction="row" spacing={2} alignItems="center">
-                        <Typography variant="h3">{`${user} to XRP Chart`}</Typography>
+                        <Typography variant="h3">{`${user} to USD Chart`}</Typography>
                         {isAdmin && range !== 'OHLC' &&
                             <IconButton onClick={handleDownloadCSV}>
                                 <DownloadIcon fontSize="small" />
@@ -403,7 +394,7 @@ export default function PriceChart({ token }) {
                         }
                     </Stack>
                 </Grid>
-                {/* <CardHeader title={`${user} to XRP Chart`} subheader='' /> */}
+                {/* <CardHeader title={`${user} to USD Chart`} subheader='' /> */}
 
                 <Grid container item xs={12} md={6} justifyContent="flex-end" >
                     <ToggleButtonGroup

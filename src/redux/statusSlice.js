@@ -12,7 +12,10 @@ const initialState = {
             transactions24H: 0,
             tradedXRP24H: 0,
             tradedTokens24H: 0,
-            activeAddresses24H: 0
+            activeAddresses24H: 0,
+            totalAddresses: 0,
+            totalOffers: 0,
+            totalTrustLines: 0
         },
         global: {
             gMarketcap: 0, gMarketcapPro: 0,

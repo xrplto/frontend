@@ -39,7 +39,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext'
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber, fIntNumber } from 'src/utils/formatNumber';
 
 // Components
 import LogoTrustline from 'src/components/LogoTrustline';
@@ -303,9 +303,9 @@ function TrustLine(props) {
                         }}
                     >
                         <Stack direction="row" spacing={1} sx={{mt:1}}>
-                            <Chip label={holders + " Holders"} color="error" variant="outlined" size="small"/>
-                            <Chip label={offers + " Offers"} color="warning" variant="outlined" size="small"/>
-                            <Chip label={trustlines + " TrustLines"} color="info" variant="outlined" size="small"/>
+                            <Chip label={fIntNumber(holders) + " Holders"} color="error" variant="outlined" size="small"/>
+                            <Chip label={fIntNumber(offers) + " Offers"} color="warning" variant="outlined" size="small"/>
+                            <Chip label={fIntNumber(trustlines) + " TrustLines"} color="info" variant="outlined" size="small"/>
                             {kyc && <Chip label={'KYC'} color="primary" variant="outlined" size="small"/>}
                         </Stack>
 

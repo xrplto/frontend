@@ -31,7 +31,7 @@ import TokenMoreMenu from './TokenMoreMenu';
 import BearBullLabel from 'src/components/BearBullLabel';
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber, fIntNumber } from 'src/utils/formatNumber';
 
 const StickyTableCell = withStyles((theme) => ({
     head: {
@@ -257,7 +257,7 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                 {/* <TableCell align="left">{holders}</TableCell>
                 <TableCell align="left">{offers}</TableCell> */}
                 <TableCell align="right">
-                    {trustlines}
+                    {fIntNumber(trustlines)}
                 </TableCell>
                 
                 <TableCell align="right">

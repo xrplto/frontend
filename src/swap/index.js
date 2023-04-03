@@ -130,7 +130,7 @@ export default function Swap({tokens}) {
     const [counter, setCounter] = useState(150);
 
 
-    const token = tokens[0];
+    const token = tokens[1];
 
     const {
         id,

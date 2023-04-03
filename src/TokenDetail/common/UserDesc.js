@@ -39,6 +39,9 @@ import currencyRipple from '@iconify/icons-tabler/currency-ripple';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
+// Utils
+import { fNumber, fIntNumber } from 'src/utils/formatNumber';
+
 // Components
 import ExplorersMenu from './ExplorersMenu';
 import CommunityMenu from './CommunityMenu';
@@ -193,6 +196,8 @@ export default function UserDesc({token}) {
     
     const img_xrplf = darkMode?img_xrplf_white:img_xrplf_black;
 
+    // const img_xrplf = "/static/xrp.png";
+
     const handleDelete = () => {
     }
 
@@ -245,7 +250,7 @@ export default function UserDesc({token}) {
                         </Stack>
                     </Stack>
                     {date &&
-                        <Typography variant="s7">{date}</Typography>
+                        <Typography variant="s7" noWrap>{date}</Typography>
                     }
                 </Stack>
                 <Grid container direction="row" spacing={1} sx={{mt: 2}}>
@@ -273,9 +278,9 @@ export default function UserDesc({token}) {
                 <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">Rank by Volume(24h)</Typography>}>
                     <Chip label={<Typography variant="s16">Rank # {id}</Typography>} color="primary" variant="outlined" size="small"/>
                 </Tooltip>
-                <Chip label={<Typography variant="s16">{holders} Holders</Typography>} color="error" variant="outlined" size="small"/>
-                <Chip label={<Typography variant="s16">{offers} Offers</Typography>} color="warning" variant="outlined" size="small"/>
-                <Chip label={<Typography variant="s16">{trustlines} TrustLines</Typography>} color="info" variant="outlined" size="small"/>
+                <Chip label={<Typography variant="s16">{fIntNumber(holders)} Holders</Typography>} color="error" variant="outlined" size="small"/>
+                <Chip label={<Typography variant="s16">{fIntNumber(offers)} Offers</Typography>} color="warning" variant="outlined" size="small"/>
+                <Chip label={<Typography variant="s16">{fIntNumber(trustlines)} TrustLines</Typography>} color="info" variant="outlined" size="small"/>
                 {/* <Chip label='Sponsored' color="primary" variant={"outlined"} size="small" icon={<Avatar sx={{ width: 16, height: 16 }} src="/static/sponsor.png"/>}  /> */}
             </Box>
 
@@ -385,47 +390,49 @@ export default function UserDesc({token}) {
                 )}
             </Grid>
 
-            <Stack direction="row" sx={{mt: 3}}>
-                <Chip label={<Typography variant="s7">Issuer: <Typography variant="s8">{truncate(issuer, 16)}</Typography></Typography>} sx={{pl:0.5,pr:0}}
-                    deleteIcon={
-                        <Stack direction="row" spacing={0} alignItems="center">
-                            <Tooltip title={'Copy Address'}>
-                                <IconButton size="small">
-                                    <CopyToClipboard text={issuer} onCopy={()=>openSnackbar("Copied!", "success")}>
-                                        <Icon icon={copyIcon} width="16" height="16"/>
-                                    </CopyToClipboard>
-                                </IconButton>
-                            </Tooltip>
-                            {info.blackholed &&
-                                <Tooltip title={'Blackholed'}>
-                                    <Icon icon={blackholeIcon} width="24" height="24" style={{color: "#ff0000"}} />
+            {issuer_info &&
+                <Stack direction="row" sx={{mt: 3}}>
+                    <Chip label={<Typography variant="s7">Issuer: <Typography variant="s8">{truncate(issuer, 16)}</Typography></Typography>} sx={{pl:0.5,pr:0}}
+                        deleteIcon={
+                            <Stack direction="row" spacing={0} alignItems="center">
+                                <Tooltip title={'Copy Address'}>
+                                    <IconButton size="small">
+                                        <CopyToClipboard text={issuer} onCopy={()=>openSnackbar("Copied!", "success")}>
+                                            <Icon icon={copyIcon} width="16" height="16"/>
+                                        </CopyToClipboard>
+                                    </IconButton>
                                 </Tooltip>
-                            }
-                            {assessment &&
-                                <Link
-                                    underline="none"
-                                    color="inherit"
-                                    target="_blank"
-                                    href={assessment}
-                                    rel="noreferrer noopener nofollow"
-                                >
-                                    <Tooltip title={'Assessment'}>
-                                        <IconButton size="small">
-                                            <LazyLoadImage
-                                                src={img_xrplf}
-                                                width={16}
-                                                height={16}
-                                            />
-                                        </IconButton>
+                                {info.blackholed &&
+                                    <Tooltip title={'Blackholed'}>
+                                        <Icon icon={blackholeIcon} width="24" height="24" style={{color: "#ff0000"}} />
                                     </Tooltip>
-                                </Link>
-                            }
-                        </Stack>
-                    }
-                    onDelete={handleDelete} onClick={handleOpenIssuerInfo}
-                    icon={<Avatar alt="xrpl" src="/static/livenetxrplorg.png" sx={{ mr:1, width: 16, height: 16 }} />} 
-                />
-            </Stack>
+                                }
+                                {assessment &&
+                                    <Link
+                                        underline="none"
+                                        color="inherit"
+                                        target="_blank"
+                                        href={assessment}
+                                        rel="noreferrer noopener nofollow"
+                                    >
+                                        <Tooltip title={'Assessment'}>
+                                            <IconButton size="small">
+                                                <LazyLoadImage
+                                                    src={img_xrplf}
+                                                    width={16}
+                                                    height={16}
+                                                />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </Link>
+                                }
+                            </Stack>
+                        }
+                        onDelete={handleDelete} onClick={handleOpenIssuerInfo}
+                        icon={<Avatar alt="xrpl" src="/static/xrp.png" sx={{ mr:1, width: 20, height: 20 }} />} 
+                    />
+                </Stack>
+            }
         </Stack>
     );
 }

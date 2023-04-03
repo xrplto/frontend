@@ -26,7 +26,7 @@ export function fNumber(num) {
         return num;
     }
 
-    if (intNum.toString().length > 10)
+    if (intNum.toString().length > 12)
         return Number(strNum).toExponential(5);
 
     return fCurrency5(num);

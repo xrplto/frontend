@@ -33,11 +33,10 @@ export default function Market({token}) {
 
         getPairs();
 
-        const timer = setInterval(getPairs, 10000);
-
-        return () => {
-            clearInterval(timer);
-        }
+        // const timer = setInterval(getPairs, 10000);
+        // return () => {
+        //     clearInterval(timer);
+        // }
 
     }, [token]);
 

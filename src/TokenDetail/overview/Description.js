@@ -159,7 +159,9 @@ export default function Description({token, showEditor, setShowEditor, descripti
 
     return (
         <Stack>
-            <Converter token={token} />
+            {issuer !== 'XRPL' &&
+                <Converter token={token} />
+            }
 
             <Typography variant="h2" fontSize='1.1rem' sx={{ mt:4 }}>{`${name} Price Live Data`}</Typography>
 

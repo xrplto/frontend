@@ -1,3 +1,5 @@
+import Decimal from 'decimal.js';
+
 // Material
 import {
     alpha,
@@ -23,7 +25,7 @@ import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 // import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 
 // Utils
-import { fIntNumber, fCurrency3, fNumber } from 'src/utils/formatNumber';
+import { fIntNumber, fCurrency3, fNumber, fPercent } from 'src/utils/formatNumber';
 
 const TopWrapper = styled(Box)(({ theme }) => `
     width: 100%;
@@ -77,6 +79,12 @@ function Rate(num) {
 export default function Topbar() {
     const metrics = useSelector(selectMetrics);
 
+    const totalAddresses = metrics.H24.totalAddresses;
+    const activeAddresses = metrics.H24.activeAddresses24H;
+    let percentAddress = 0;
+    if (totalAddresses > 0)
+        percentAddress = new Decimal(activeAddresses).mul(100).div(totalAddresses).toString();
+
     return (
         <TopWrapper>
             <Container maxWidth="xl">
@@ -84,6 +92,12 @@ export default function Topbar() {
                     <Stack direction="row" spacing={2} alignItems="center">
                         <Typography variant="small">Tokens: </Typography>
                         <Typography variant="small">{fIntNumber(metrics.total)}</Typography>
+                        <Typography variant="small" noWrap>Addresses:</Typography>
+                        <Typography align="center" color="#54D62C" variant="small">{fIntNumber(metrics.H24.totalAddresses)}</Typography>
+                        <Typography variant="small" noWrap>Offers:</Typography>
+                        <Typography align="center" color="#FFC107" variant="small">{fIntNumber(metrics.H24.totalOffers)}</Typography>
+                        <Typography variant="small" noWrap>Trustlines:</Typography>
+                        <Typography align="center" color="#FFA48D" variant="small">{fIntNumber(metrics.H24.totalTrustLines)}</Typography>
                         <H24Style>
                             <Tooltip title="Metrics on 24 hours">
                                 <Stack spacing={0} alignItems='center'>
@@ -99,8 +113,8 @@ export default function Topbar() {
                         <Typography variant="small">Vol:</Typography>
                         <Typography align="center" color="#FF6C40" variant="small">
                             <Stack direction="row" spacing={0.5} alignItems='center'>
-                                <Icon icon={rippleSolid} color="#54D62C"/>
-                                <Typography align="center" color="#54D62C" variant="small">
+                                <Icon icon={rippleSolid} color="#FF6C40"/>
+                                <Typography align="center" color="#FF6C40" variant="small">
                                     {fNumber(metrics.H24.tradedXRP24H)}
                                 </Typography>
                             </Stack>
@@ -109,7 +123,7 @@ export default function Topbar() {
                         <Typography variant="small" noWrap>Tokens Traded:</Typography>
                         <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24.tradedTokens24H)}</Typography>
                         <Typography variant="small" noWrap>Active Addresses:</Typography>
-                        <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24.activeAddresses24H)}</Typography>
+                        <Typography align="center" color="#54D62C" variant="small">{fIntNumber(metrics.H24.activeAddresses24H)}</Typography>
                     </Stack>
                     <Stack direction="row" spacing={2} alignItems="center" sx={{ml:5, mr:2}}>
                         <Stack direction="row" spacing={0.5} alignItems='center'>
