@@ -148,7 +148,7 @@ export async function getServerSideProps(ctx) {
     ogp.title = name || account;
     ogp.url = `https://xrpl.to/account/${account}`;
     ogp.imgUrl = imgUrl;
-    ogp.desc = description?description:'Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.';
+    ogp.desc = description?description:'Manage your XRPL account with ease: Create and modify offers, establish trustlines, and gain insights into your account activity on our user-friendly platform.';
 
     return {
         props: {data, ogp}, // will be passed to the page component as props
