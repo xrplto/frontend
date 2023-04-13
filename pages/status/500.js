@@ -115,7 +115,7 @@ export default function Status500() {
                             <Container maxWidth="sm">
                                 <Box textAlign="center">
                                     <TypographyPrimary variant="h1" sx={{ my: 2 }}>
-                                        XRPL Token Prices, Charts, Market Volume And Activity
+                                    XRPL Token Prices: Charts, Market Volume, and Activity Insights
                                     </TypographyPrimary>
                                     <TypographySecondary
                                         variant="h4"
