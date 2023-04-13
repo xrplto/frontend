@@ -127,11 +127,11 @@ export async function getServerSideProps(ctx) {
         if (!user) user = name;
 
         ogp.canonical = `https://xrpl.to/token/${slug}`;
-        ogp.title = `${user} price today, ${name} to USD live, volume, trading history, markets and chart`;
+        ogp.title = `${user} price today: ${name} to USD conversion, live rates, trading volume, historical data, and interactive chart`;
         ogp.url = `https://xrpl.to/token/${slug}`;
         // ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${ext}`;
         ogp.imgUrl = `https://s1.xrpl.to/token/${md5}`;
-        ogp.desc = `Get the latest ${user} price, ${name} market cap, trading pairs, charts and data today from the world's number one XRP Ledger token price-tracking website`;
+        ogp.desc = `Access up-to-date ${user} prices, ${name} market cap, trading pairs, interactive charts, and comprehensive data from the leading XRP Ledger token price-tracking platform.`;
 
         ret = {data, ogp};
         return {
