@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import Decimal from 'decimal.js';
 
 // Material
@@ -8,21 +9,20 @@ import {
     Container,
     Stack,
     Tooltip,
-    Typography
+    Typography,
+    Button,
+    Menu,
+    MenuItem
 } from '@mui/material';
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
 import { selectMetrics, update_metrics } from "src/redux/statusSlice";
-import useWebSocket, { ReadyState } from 'react-use-websocket';
-// ----------------------------------------------------------------------
+
 
 // Iconify Icons
 import { Icon } from '@iconify/react';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
-// import postageStamp from '@iconify/icons-mdi/postage-stamp';
-// import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
-// import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 
 // Utils
 import { fIntNumber, fCurrency3, fNumber, fPercent } from 'src/utils/formatNumber';
@@ -78,6 +78,7 @@ function Rate(num) {
 
 export default function Topbar() {
     const metrics = useSelector(selectMetrics);
+    const dispatch = useDispatch();
 
     const totalAddresses = metrics.H24.totalAddresses;
     const activeAddresses = metrics.H24.activeAddresses24H;
@@ -85,61 +86,103 @@ export default function Topbar() {
     if (totalAddresses > 0)
         percentAddress = new Decimal(activeAddresses).mul(100).div(totalAddresses).toString();
 
-    return (
-        <TopWrapper>
-            <Container maxWidth="xl">
-                <ContentWrapper>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                        <Typography variant="small">Tokens: </Typography>
-                        <Typography variant="small">{fIntNumber(metrics.total)}</Typography>
-                        <Typography variant="small" noWrap>Addresses:</Typography>
-                        <Typography align="center" color="#54D62C" variant="small">{fIntNumber(metrics.H24.totalAddresses)}</Typography>
-                        <Typography variant="small" noWrap>Offers:</Typography>
-                        <Typography align="center" color="#FFC107" variant="small">{fIntNumber(metrics.H24.totalOffers)}</Typography>
-                        <Typography variant="small" noWrap>Trustlines:</Typography>
-                        <Typography align="center" color="#FFA48D" variant="small">{fIntNumber(metrics.H24.totalTrustLines)}</Typography>
-                        <H24Style>
-                            <Tooltip title="Metrics on 24 hours">
-                                <Stack spacing={0} alignItems='center'>
-                                    <Typography align="center" style={{ wordWrap: "break-word" }} variant="small" >
-                                        24h
-                                    </Typography>
-                                </Stack>
-                            </Tooltip>
-                        </H24Style>
-                        <Typography variant="small">Trades:</Typography>
-                        <Typography align="center" color="#74CAFF" variant="small">{fIntNumber(metrics.H24.transactions24H)}</Typography>
-                        {/* <Typography variant="small">|</Typography> */}
-                        <Typography variant="small">Vol:</Typography>
-                        <Typography align="center" color="#FF6C40" variant="small">
-                            <Stack direction="row" spacing={0.5} alignItems='center'>
-                                <Icon icon={rippleSolid} color="#FF6C40"/>
-                                <Typography align="center" color="#FF6C40" variant="small">
-                                    {fNumber(metrics.H24.tradedXRP24H)}
-                                </Typography>
-                            </Stack>
-                        </Typography>
-                        {/* <Typography variant="small">|</Typography> */}
-                        <Typography variant="small" noWrap>Tokens Traded:</Typography>
-                        <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24.tradedTokens24H)}</Typography>
-                        <Typography variant="small" noWrap>Active Addresses:</Typography>
-                        <Typography align="center" color="#54D62C" variant="small">{fIntNumber(metrics.H24.activeAddresses24H)}</Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{ml:5, mr:2}}>
-                        <Stack direction="row" spacing={0.5} alignItems='center'>
-                            <Icon icon={rippleSolid} width='12' height='12'/>
-                            <Typography variant="small">1</Typography>
-                        </Stack>
-                        <Separator>|</Separator>
-                        <Typography variant="small" noWrap>$ {Rate(metrics.USD)}</Typography>
-                        <Separator>|</Separator>
-                        <Typography variant="small" noWrap>€ {Rate(metrics.EUR)}</Typography>
-                        <Separator>|</Separator>
-                        <Typography variant="small" noWrap>¥ {Rate(metrics.JPY)}</Typography>
-                    </Stack>
-                </ContentWrapper>
-            </Container>
-        </TopWrapper>
-    );
-}
+    const [anchorEl, setAnchorEl] = useState(null);
 
+    const handleClick = (event) => {
+      setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+
+    const handleEuroClick = () => {
+        dispatch(update_metrics({ ...metrics, selectedCurrency: "EUR" }));
+        handleClose();
+    };
+    
+    const handleJPYClick = () => {
+        dispatch(update_metrics({ ...metrics, selectedCurrency: "JPY" }));
+        handleClose();
+    };
+         
+        return (
+            <TopWrapper>
+              <Container maxWidth="xl">
+                <ContentWrapper>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Typography variant="small">Tokens: </Typography>
+                    <Typography variant="small">{fIntNumber(metrics.total)}</Typography>
+                    <Typography variant="small" noWrap>Addresses:</Typography>
+                    <Typography align="center" color="#54D62C" variant="small">{fIntNumber(metrics.H24.totalAddresses)}</Typography>
+                    <Typography variant="small" noWrap>Offers:</Typography>
+                    <Typography align="center" color="#FFC107" variant="small">{fIntNumber(metrics.H24.totalOffers)}</Typography>
+                    <Typography variant="small" noWrap>Trustlines:</Typography>
+                    <Typography align="center" color="#FFA48D" variant="small">{fIntNumber(metrics.H24.totalTrustLines)}</Typography>
+                    <H24Style>
+                      <Tooltip title="Metrics on 24 hours">
+                        <Stack spacing={0} alignItems='center'>
+                          <Typography align="center" style={{ wordWrap: "break-word" }} variant="small" >
+                            24h
+                          </Typography>
+                        </Stack>
+                      </Tooltip>
+                    </H24Style>
+                    <Typography variant="small">Trades:</Typography>
+                    <Typography align="center" color="#74CAFF" variant="small">{fIntNumber(metrics.H24.transactions24H)}</Typography>
+                    {/* <Typography variant="small">|</Typography> */}
+                    <Typography variant="small">Vol:</Typography>
+                    <Typography align="center" color="#FF6C40" variant="small">
+                      <Stack direction="row" spacing={0.5} alignItems='center'>
+                        <Icon icon={rippleSolid} color="#FF6C40"/>
+                        <Typography align="center" color="#FF6C40" variant="small">
+                          {fNumber(metrics.H24.tradedXRP24H)}
+                        </Typography>
+                      </Stack>
+                    </Typography>
+                    {/* <Typography variant="small">|</Typography> */}
+                    <Typography variant="small" noWrap>Tokens Traded:</Typography>
+                    <Typography align="center" color="#3366FF" variant="small">{fIntNumber(metrics.H24.tradedTokens24H)}</Typography>
+                    <Typography variant="small" noWrap>Active Addresses:</Typography>
+                    <Typography align="center" color="#54D62C" variant="small">{fIntNumber(metrics.H24.activeAddresses24H)}</Typography>
+                  </Stack>
+                  <Stack direction="row" spacing={2} alignItems="center" sx={{ ml: 5, mr: 2 }}>
+                    {/* Currency Button */}
+                    <Button onClick={handleClick}>
+                      <Stack direction="row" spacing={0.5} alignItems="center">
+                        {/* Ripple Icon */}
+                        <Icon icon={rippleSolid} width="12" height="12" />
+                      </Stack>
+                      {/* Currency Rate */}
+                      <Typography variant="small" noWrap>$ {Rate(metrics.USD)}</Typography>
+                    </Button>
+                    {/* Currency Menu */}
+                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+                      {/* USD */}
+                      <MenuItem onClick={handleClose}>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Icon icon={rippleSolid} width="12" height="12" />
+                        </Stack>
+                        <Typography variant="small" noWrap>$ {Rate(metrics.USD)}</Typography>
+                      </MenuItem>
+                                            {/* EUR */}
+                                            <MenuItem onClick={handleEuroClick}>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Icon icon={rippleSolid} width="12" height="12" />
+                        </Stack>
+                        <Typography variant="small" noWrap>€ {Rate(metrics.EUR)}</Typography>
+                      </MenuItem>
+                      {/* JPY */}
+                      <MenuItem onClick={handleClose}>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Icon icon={rippleSolid} width="12" height="12" />
+                        </Stack>
+                        <Typography variant="small" noWrap>¥ {Rate(metrics.JPY)}</Typography>
+                      </MenuItem>
+                    </Menu>
+                  </Stack>
+                </ContentWrapper>
+              </Container>
+            </TopWrapper>
+          );
+}
