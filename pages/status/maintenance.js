@@ -44,7 +44,7 @@ export default function StatusMaintenance() {
                         <Box textAlign="center">
                             <Container maxWidth="xs">
                                 <Typography variant="h2" sx={{ mt: 4, mb: 2 }}>
-                                    The site is currently down for maintenance
+                                Our website is temporarily unavailable due to ongoing maintenance.
                                 </Typography>
                                 <Typography
                                     variant="h3"
@@ -52,7 +52,7 @@ export default function StatusMaintenance() {
                                     fontWeight="normal"
                                     sx={{ mb: 4 }}
                                 >
-                                    We apologize for any inconveniences caused
+                                    We sincerely apologize for any inconvenience this may have caused.
                                 </Typography>
                             </Container>
                             <img
@@ -69,33 +69,33 @@ export default function StatusMaintenance() {
                         >
                             <Box>
                                 <Typography component="span" variant="subtitle1">
-                                    Phone:{' '}
-                                </Typography>
-                                <Typography
-                                    component="span"
-                                    variant="subtitle1"
-                                    color="text.primary"
-                                >
-                                    + 00 1 888 555 444
+                                Be back soon. Follow us on social media.
                                 </Typography>
                             </Box>
                             <Box>
-                                <Tooltip arrow placement="top" title="Facebook">
-                                    <IconButton color="primary">
-                                        <FacebookIcon />
-                                    </IconButton>
-                                </Tooltip>
-                                <Tooltip arrow placement="top" title="Twitter">
-                                    <IconButton color="primary">
-                                        <TwitterIcon />
-                                    </IconButton>
-                                </Tooltip>
-                                <Tooltip arrow placement="top" title="Instagram">
-                                    <IconButton color="primary">
-                                        <InstagramIcon />
-                                    </IconButton>
-                                </Tooltip>
-                            </Box>
+    <Tooltip arrow placement="top" title="Facebook">
+        <a href="https://www.facebook.com/xrpl.to">
+            <IconButton color="primary">
+                <FacebookIcon />
+            </IconButton>
+        </a>
+    </Tooltip>
+    <Tooltip arrow placement="top" title="Twitter">
+        <a href="https://twitter.com/xrplto">
+            <IconButton color="primary">
+                <TwitterIcon />
+            </IconButton>
+        </a>
+    </Tooltip>
+    <Tooltip arrow placement="top" title="Instagram">
+        <a href="https://www.instagram.com/xrpl.to/">
+            <IconButton color="primary">
+                <InstagramIcon />
+            </IconButton>
+        </a>
+    </Tooltip>
+</Box>
+
                         </Box>
                     </Container>
                 </TopWrapper>
