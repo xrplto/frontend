@@ -51,7 +51,7 @@ export async function getStaticProps() {
     ogp.title = 'Setting';
     ogp.url = 'https://xrpl.to/setting';
     ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
-    ogp.desc = 'Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.';
+    ogp.desc = 'Customize your profile on our settings page: Edit your profile details, upload a logo and banner image, and update your display name and description with ease.';
 
     ret = {ogp};
 
