@@ -41,11 +41,11 @@ export async function getServerSideProps(ctx) {
 
         // https://xrpl.to/token/sologenic-solo/trade
         ogp.canonical = `https://xrpl.to/token/${slug}/trade`;
-        ogp.title = `Trade ${name} On The XRP Ledger`;
+        ogp.title = `Trade ${name} Seamlessly on the XRP Ledger`;
         ogp.url = `https://xrpl.to/token/${slug}/trade`;
         // ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${ext}`;
         ogp.imgUrl = `https://s1.xrpl.to/token/${md5}`;
-        ogp.desc = `Trade ${name} On The XRPL.to`;
+        ogp.desc = `Effortlessly trade ${name} on the XRPL.to platform for a seamless trading experience.`;
 
         ret = {data, ogp};
 
