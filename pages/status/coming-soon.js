@@ -128,8 +128,7 @@ export default function StatusComingSoon() {
                                     fontWeight="normal"
                                     sx={{ mb: 4 }}
                                 >
-                                    We're working on implementing the last features before our
-                                    launch!
+                                    We're diligently working on adding the final features before our much-anticipated launch!
                                 </Typography>
                             </Container>
                           <img
@@ -163,7 +162,7 @@ export default function StatusComingSoon() {
                                         }
                                     />
                                     <FormHelperText>
-                                        We'll email you once our website is launched!
+                                    We'll send you an email as soon as our feature goes live!
                                     </FormHelperText>
                                 </FormControl>
                                 <Divider sx={{ my: 4 }} />
