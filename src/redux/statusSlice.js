@@ -32,23 +32,18 @@ const statusSlice = createSlice({
     name: "status",
     initialState,
     reducers: {
-        // Redux Toolkit allows us to write "mutating" logic in reducers. It
-        // doesn't actually mutate the state because it uses the Immer library,
-        // which detects changes to a "draft state" and produces a brand new
-        // immutable state based off those changes
         update_metrics: (state, action) => {
             const data = action.payload;
             const metrics = {
-                total: data.total,
-                USD: data.exch.USD,
-                EUR: data.exch.EUR,
-                JPY: data.exch.JPY,
-                CNY: data.exch.CNY,
-                H24: data.H24,
-                global: data.global,
+                total: data.total || 0,
+                USD: data.exch?.USD || 100,
+                EUR: data.exch?.EUR || 100,
+                JPY: data.exch?.JPY || 100,
+                CNY: data.exch?.CNY || 100,
+                H24: data.H24 || initialState.metrics.H24,
+                global: data.global || initialState.metrics.global,
             };
             Object.assign(state.metrics, metrics);
-            // state.metrics = action.payload;
         },
         update_filteredCount: (state, action) => {
             const data = action.payload;
@@ -59,9 +54,6 @@ const statusSlice = createSlice({
 
 export const { update_metrics, update_filteredCount } = statusSlice.actions;
 
-// The function below is called a selector and allows us to select a value from
-// the state. Selectors can also be defined inline where they're used instead of
-// in the slice file. For example: `useSelector((state) => state.counter.value)`
 export const selectMetrics = (state) => state.status.metrics;
 export const selectFilteredCount = (state) => state.status.filteredCount;
 
