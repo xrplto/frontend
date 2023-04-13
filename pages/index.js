@@ -124,10 +124,10 @@ export async function getStaticProps() {
         let ogp = {};
 
         ogp.canonical = 'https://xrpl.to';
-        ogp.title = 'XRPL Token Prices, Charts, Market Volume And Activity';
+        ogp.title = 'XRPL Token Prices: Charts, Market Volume, and Activity Insights';
         ogp.url = 'https://xrpl.to/';
         ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
-        ogp.desc = 'Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.';
+        ogp.desc = 'Discover the latest XRPL DEX token prices and charts, ranked by 24-hour trading volume. Access real-time and historical data for the XRP ecosystem. Browse a comprehensive list of all XRPL tokens, updated automatically.';
 
         ret = {data, ogp};
     }
