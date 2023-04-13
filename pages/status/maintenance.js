@@ -69,33 +69,32 @@ export default function StatusMaintenance() {
                         >
                             <Box>
                                 <Typography component="span" variant="subtitle1">
-                                Be back soon. Follow us on social media.
+                                    Be back soon. Follow us on social media.
                                 </Typography>
                             </Box>
                             <Box>
-    <Tooltip arrow placement="top" title="Facebook">
-        <a href="https://www.facebook.com/xrpl.to">
-            <IconButton color="primary">
-                <FacebookIcon />
-            </IconButton>
-        </a>
-    </Tooltip>
-    <Tooltip arrow placement="top" title="Twitter">
-        <a href="https://twitter.com/xrplto">
-            <IconButton color="primary">
-                <TwitterIcon />
-            </IconButton>
-        </a>
-    </Tooltip>
-    <Tooltip arrow placement="top" title="Instagram">
-        <a href="https://www.instagram.com/xrpl.to/">
-            <IconButton color="primary">
-                <InstagramIcon />
-            </IconButton>
-        </a>
-    </Tooltip>
-</Box>
-
+                                <a href="https://www.facebook.com/xrpl.to">
+                                    <Tooltip arrow placement="top" title="Facebook">
+                                        <IconButton color="primary">
+                                            <FacebookIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                </a>
+                                <a href="https://twitter.com/xrplto">
+                                    <Tooltip arrow placement="top" title="Twitter">
+                                        <IconButton color="primary">
+                                            <TwitterIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                </a>
+                                <a href="https://www.instagram.com/xrpl.to/">
+                                    <Tooltip arrow placement="top" title="Instagram">
+                                        <IconButton color="primary">
+                                            <InstagramIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                </a>
+                            </Box>
                         </Box>
                     </Container>
                 </TopWrapper>
