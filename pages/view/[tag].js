@@ -119,10 +119,10 @@ export async function getServerSideProps(ctx) {
         let ogp = {};
 
         ogp.canonical = 'https://xrpl.to';
-        ogp.title = `Top ${data.tagName} XRPL Tokens by Volume`;
+        ogp.title = `Discover the Most Traded ${data.tagName} XRPL Tokens by Volume`;
         ogp.url = 'https://xrpl.to/';
         ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
-        ogp.desc = `Get today's prices for ${data.tagName} tokens listed by volume ✔️ 24h price change ✔️ 24h volume ✔️ And much more.`;
+        ogp.desc = `Access today's ${data.tagName} token prices ranked by volume, featuring 24-hour price changes, trading volume, and much more for an insightful overview.`;
 
         ret = {data, ogp};
     }
