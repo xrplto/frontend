@@ -149,7 +149,7 @@ export default function ExtraDesc({token}) {
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Stack direction="row" alignItems="center" gap={1}>
                             <Typography variant="body1">Market Cap</Typography>
-                            <Tooltip title={<Typography variant="body2">The total market value of a cryptocurrency's circulating supply.<br/>It is analogous to the free-float capitalization in the stock market.<br/>{omcf==='yes'?'Market Capitalization = Price x Circulating Supply':'Market Capitalization = (Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'}.</Typography>}>
+                            <Tooltip title={<Typography variant="body2">The total market value of a token's circulating supply represents its overall worth.<br/>This concept is similar to free-float capitalization in the stock market.<br/>{omcf==='yes'?'Market Capitalization = Price x Circulating Supply':'Market Capitalization = (Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'}.</Typography>}>
                                 <Icon icon={infoFilled} />
                             </Tooltip>
                         </Stack>
@@ -160,7 +160,7 @@ export default function ExtraDesc({token}) {
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{mt: 1}}>
                         <Stack direction="row" alignItems="center" gap={1}>
                             <Typography variant="body1">Volume (24h)</Typography>
-                            <Tooltip title={<Typography variant="body2">A measure of how much of a token was traded in the last 24 hours.</Typography>}>
+                            <Tooltip title={<Typography variant="body2">A metric representing the trading volume of a token within the past 24 hours.</Typography>}>
                                 <Icon icon={infoFilled} />
                             </Tooltip>
                         </Stack>
@@ -175,7 +175,7 @@ export default function ExtraDesc({token}) {
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{mt: 1}}>
                         <Stack direction="row" alignItems="center" gap={1}>
                             <Typography variant="body1">Circulating Supply</Typography>
-                            <Tooltip title={<Typography variant="body2">The amount of coins that are circulating in the market and are in public hands. It is analogous to the flowing shares in the stock market.</Typography>}>
+                            <Tooltip title={<Typography variant="body2">The number of tokens in circulation within the market and held by the public is comparable to the concept of outstanding shares in the stock market.</Typography>}>
                                 <Icon icon={infoFilled} />
                             </Tooltip>
                         </Stack>
@@ -191,7 +191,7 @@ export default function ExtraDesc({token}) {
                 <Grid item xs={12} md={4} sx={{display: { xs: 'none', md: 'block' }, borderRight: '1px solid', borderRightColor: theme.palette.divider}}>
                     <Stack direction="row" alignItems="center" gap={1} sx={{pl:3}}>
                         <Typography variant="body1">Market Cap</Typography>
-                        <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">The total market value of a cryptocurrency's circulating supply.<br/>It is analogous to the free-float capitalization in the stock market.<br/>{omcf==='yes'?'Market Capitalization = Price x Circulating Supply':'Market Capitalization = (Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'}.</Typography>}>
+                        <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">The total market value of a token's circulating supply represents its overall worth.<br/>This concept is similar to free-float capitalization in the stock market.<br/>{omcf==='yes'?'Market Capitalization = Price x Circulating Supply':'Market Capitalization = (Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'}.</Typography>}>
                             <Icon icon={infoFilled} />
                         </Tooltip>
                         {isAdmin &&
@@ -217,7 +217,7 @@ export default function ExtraDesc({token}) {
                 <Grid item xs={12} md={4} sx={{display: { xs: 'none', md: 'block' }, borderRight: '1px solid', borderRightColor: theme.palette.divider}}>
                     <Stack direction="row" alignItems="center" gap={1} sx={{pl:3}}>
                         <Typography variant="body1">Volume (24h)</Typography>
-                        <Tooltip title={<Typography variant="body2">A measure of how much of a token was traded in the last 24 hours.</Typography>}>
+                        <Tooltip title={<Typography variant="body2">A metric representing the trading volume of a token within the past 24 hours.</Typography>}>
                             <Icon icon={infoFilled} />
                         </Tooltip>
                     </Stack>
@@ -235,7 +235,7 @@ export default function ExtraDesc({token}) {
                 <Grid item xs={12} md={4} sx={{display: { xs: 'none', md: 'block' } }}>
                     <Stack direction="row" alignItems="center" gap={1} sx={{pl:3}}>
                         <Typography variant="body1">Circulating Supply</Typography>
-                        <Tooltip title={<Typography variant="body2">The amount of coins that are circulating in the market and are in public hands. It is analogous to the flowing shares in the stock market.</Typography>}>
+                        <Tooltip title={<Typography variant="body2">The number of tokens in circulation within the market and held by the public is comparable to the concept of outstanding shares in the stock market.</Typography>}>
                             <Icon icon={infoFilled} />
                         </Tooltip>
                     </Stack>
