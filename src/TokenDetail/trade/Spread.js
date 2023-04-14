@@ -39,9 +39,7 @@ const Spread = ({ bids, asks }) => {
         <Typography variant='subtitle1' sx={{color:'#9E86FF', ml:0, mt:2, mb:1}}>
             Spread: {formatNumber(getSpreadAmount(bids, asks))} {getSpreadPercentage(getSpreadAmount(bids, asks), getHighestBid(bids))}
         </Typography>
-        <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">The bid–ask spread (also bid–offer or bid/ask and buy/sell in the case of a market maker) 
-    is the difference between the prices quoted (either by a single market maker or in a limit order book) 
-    for an immediate sale (ask) and an immediate purchase (bid) for stocks, futures contracts, options, or currency pairs.</Typography>}>
+        <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">The bid-ask spread, also known as bid-offer or bid/ask (and buy/sell when referring to a market maker), represents the difference between the quoted prices for an immediate sale (ask) and an immediate purchase (bid) of financial instruments such as stocks, futures contracts, options, or currency pairs. These prices can be quoted by a single market maker or found in a limit order book.</Typography>}>
             <Icon icon={infoFilled} />
         </Tooltip>
         </>
