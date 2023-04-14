@@ -594,11 +594,11 @@ export async function getServerSideProps(ctx) {
         if (!user) user = name;
 
         ogp.canonical = `https://xrpl.to/trustset/${slug}`;
-        ogp.title = `${name} Trustline On The XRP Ledger`;
+        ogp.title = `Establish a ${name} Trustline on the XRP Ledger`;
         ogp.url = `https://xrpl.to/trustset/${slug}`;
         // ogp.imgUrl = `https://xrpl.to/static/tokens/${md5}.${ext}`;
         ogp.imgUrl = `https://s1.xrpl.to/token/${md5}`;
-        ogp.desc = `Setup ${name} Trustline On The XRPL.`;
+        ogp.desc = `Easily set up a ${name} Trustline on the XRPL for secure and streamlined transactions.`;
 
         ret = {data, ogp};
     }
