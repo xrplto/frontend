@@ -30,11 +30,11 @@ export default function SummaryWatchList({}) {
 
     return (
         <Stack sx={{mt:2}}>
-            <Typography variant='h1'>My WatchList</Typography>
+            <Typography variant='h1'>My Token Watchlist</Typography>
 
             {!account &&
                 <ContentTypography variant='subtitle1' sx={{mt:2}}>
-                    Please login to see your WatchList.
+                    Please log in to view your Watchlist.
                 </ContentTypography>
             }
         </Stack>
