@@ -51,9 +51,9 @@ export default function Summary() {
 
     return (
         <Stack sx={{mt:2}}>
-            <Typography variant='h1'>Today's XRPL Token Prices by Volume</Typography>
+            <Typography variant='h1'>Today's Top XRPL Token Prices by Volume</Typography>
 
-            <ContentTypography variant='subtitle1' sx={{mt:2}}>The global token market cap is <strong>${fNumber(gMarketcap)}M</strong>, a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last day.
+            <ContentTypography variant='subtitle1' sx={{mt:2}}>The global token market cap stands at <strong>${fNumber(gMarketcap)}M</strong>, a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last 24 hours.
             <Link
                 component="button"
                 underline="always"
@@ -74,9 +74,9 @@ export default function Summary() {
                 }}
                 
             >
-                <ContentTypography variant='subtitle1' sx={{mt:2}} gutterBottom>The total XRPL Dex volume over the last 24 hours is <strong>${fNumber(gDexVolume)}</strong>, which makes a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. The total volume in Collectibles & NFTs is currently <strong>${fNumber(gNFTIOUVolume)}</strong>, <strong>{gNFTIOUVolumePro}%</strong> of the total XRPL token market 24-hour volume. The volume of all stable currencies is now <strong>${fNumber(gStableVolume)}</strong>, which is <strong>{gStableVolumePro}%</strong> of the total token market 24-hour volume.</ContentTypography>
-                <ContentTypography variant='subtitle1' gutterBottom>XRP price is currently <strong>${Rate(1, metrics.USD)}</strong>.</ContentTypography>
-                <ContentTypography variant='subtitle1'>XRP dominance is currently ---%, a decrease of -% over the day.</ContentTypography>
+                <ContentTypography variant='subtitle1' sx={{mt:2}} gutterBottom>The total XRPL DEX volume in the past 24 hours is <strong>${fNumber(gDexVolume)}</strong>, marking a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. Currently, the total volume in Collectibles & NFTs is <strong>${fNumber(gNFTIOUVolume)}</strong>, accounting for <strong>{gNFTIOUVolumePro}%</strong> of the total XRPL token market's 24-hour volume. The volume of all stablecoins currently stands at <strong>${fNumber(gStableVolume)}</strong>, representing <strong>{gStableVolumePro}%</strong> of the total token market's 24-hour volume.</ContentTypography>
+                <ContentTypography variant='subtitle1' gutterBottom>The current XRP price is <strong>${Rate(1, metrics.USD)}</strong>.</ContentTypography>
+                <ContentTypography variant='subtitle1'>XRP dominance currently stands at ---%, experiencing a decrease of -% over the past 24 hours.</ContentTypography>
             </div>
             
             {/* Today's XRPL Token Prices by Volume
