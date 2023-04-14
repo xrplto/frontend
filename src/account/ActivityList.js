@@ -318,7 +318,7 @@ export default function ActivityList({account}) {
 
                                 case Activity.YOU_RECEIVED_A_NFT:
                                     componentIcon = (<SportsScoreIcon />);
-                                    strActivity = 'You received a NFT';
+                                    strActivity = 'You received an NFT';
                                     // NFTokenID
                                     componentActivity = (
                                         <>
