@@ -110,7 +110,7 @@ export default function Summary() {
                     <WalletCard name='CROSSMARK' link='https://www.crossmark.io/' imgUrl='/static/crossmark.jpg'/>
                 </Grid>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
-                    <WalletCard name='SOLO' link='https://www.sologenic.com/ecosystem/solo-wallet' imgUrl='/static/solo.jpg'/>
+                    <WalletCard name='SOLO Wallet' link='https://www.sologenic.com/ecosystem/solo-wallet' imgUrl='/static/solo.jpg'/>
                 </Grid>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
                     <WalletCard name='Bithomp Paper' link='https://bithomp.com/paperwallet/' imgUrl='/static/bithomp.png'/>
