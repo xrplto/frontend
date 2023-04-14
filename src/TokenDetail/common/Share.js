@@ -103,8 +103,8 @@ export default function Share({token}) {
 
     // const imgUrl = `/static/tokens/${md5}.${ext}`;
     const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-    const title = `${user} price today, ${name} to USD live, volume, trading history, markets and chart`;
-    const desc = `Get the latest ${user} price, ${name} market cap, trading pairs, charts and data today from the world's number one XRP Ledger token price-tracking website`;
+    const title = `${user} price today: ${name} to USD conversion, live rates, trading volume, historical data, and interactive chart`;
+    const desc = `Access up-to-date ${user} prices, ${name} market cap, trading pairs, interactive charts, and comprehensive data from the leading XRP Ledger token price-tracking platform.`;
     const url = window.location.href;
 
     const handleClickOpen = () => {
@@ -140,8 +140,8 @@ export default function Share({token}) {
                             sx={{ width: 64, height: 64, mt: 2 }}
                         />
                         <Typography variant="desc">{user}</Typography>
-                        <Typography variant="desc" sx={{mt:2}} noWrap>Share it with your friends</Typography>
-                        <Typography variant="subtitle1" sx={{mt:1, mb:2}}>The price of {user} is $ {fNumber(exch / metrics.USD)}!</Typography>
+                        <Typography variant="desc" sx={{mt:2}} noWrap>Spread the word: Share with your friends and network</Typography>
+                        <Typography variant="subtitle1" sx={{mt:1, mb:2}}>The current price of {user} is $ {fNumber(exch / metrics.USD)}!</Typography>
                         <Stack direction="row" spacing={2}>
                             <FacebookShareButton
                                 url={url}
