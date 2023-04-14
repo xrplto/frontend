@@ -145,6 +145,11 @@ export default function PairsList({token, pairs}) {
                             if (curr2.currency !== 'XRP')
                                 gatehubDexURL += `+${curr2.issuer}`;
 
+
+                                let xpmarketDexURL = `https://xpmarket.com/dex/${curr1.currency}+${curr1.issuer}/${curr2.currency}`;
+                                if (curr2.currency !== 'XRP')
+                                    xpmarketDexURL += `+${curr2.issuer}`;
+
                             let xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
 
                             let sparkline = '';
@@ -265,7 +270,7 @@ export default function PairsList({token, pairs}) {
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="Sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
                                             <Link
@@ -276,7 +281,7 @@ export default function PairsList({token, pairs}) {
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="Gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
                                             <Link
@@ -287,9 +292,24 @@ export default function PairsList({token, pairs}) {
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="XUMM" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
+
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={xpmarketDexURL}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                <IconButton edge="end" aria-label="solo">
+                                                    <Avatar alt="xpmarket" src="/static/xpmarket.jpg" sx={{ width: 24, height: 24 }} />
+                                                </IconButton>
+                                            </Link>
+
+
+                                            
                                         </Stack>
                                     </TableCell>
                                 </TableRow>
