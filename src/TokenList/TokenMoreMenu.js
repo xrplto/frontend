@@ -67,7 +67,8 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                         <ListItemText primary="Bithomp" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
-                <Link
+                
+                {/* <Link
                     underline="none"
                     color="inherit"
                     target="_blank"
@@ -78,7 +79,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                         <Avatar alt="xrpscan" src="/static/xrpscan.png" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPScan" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
-                </Link>
+                </Link> */ }
                 <Link
                     underline="none"
                     color="inherit"
@@ -139,6 +140,21 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                         <ListItemText primary="GateHub DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
+
+
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://xpmarket.com/dex/${currency}+${issuer}/XRP`}
+                    rel="noreferrer noopener nofollow"
+                >
+                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="gatehub" src="/static/xpmarket.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="xpmarket DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
+                
             </Menu>
         </>
     );
