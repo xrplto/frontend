@@ -23,10 +23,10 @@ export default function SummaryTag({tagName}) {
 
     return (
         <Stack sx={{mt:2}}>
-            <Typography variant='h1'>Top {tagName} Tokens by Volume</Typography>
+            <Typography variant='h1'>Top {tagName} Tokens Ranked by Trading Volume</Typography>
 
             <ContentTypography variant='subtitle1' sx={{mt:2}}>
-                This page lists the top {tagName} tokens. These projects are listed by 24H Volume with the largest first and then descending in order. To reorder the list, simply click on one of the options - such as 24h or 7d - to see the sector from a different perspective.
+            This page showcases the top {tagName} tokens, ranked by 24-hour volume in descending order, with the largest volume first. To reorder the list, simply click on one of the options, such as 24h or 7d, for a different perspective on the sector.
             </ContentTypography>
         </Stack>
     )
