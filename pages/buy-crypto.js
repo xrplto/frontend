@@ -88,10 +88,10 @@ export async function getStaticProps() {
         let ogp = {};
 
         ogp.canonical = 'https://xrpl.to';
-        ogp.title = 'XRPL Token Prices, Charts, Market Volume And Activity';
+        ogp.title = 'Purchasing XRP with Fiat Made Easy, Powered by Banxa';
         ogp.url = 'https://xrpl.to/';
         ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
-        ogp.desc = 'Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.';
+        ogp.desc = 'Effortlessly buy XRP using over 25 fiat currencies, including USD, GBP, CAD, EUR, and AUD, through Banxa seamless process.';
 
         ret = {data, ogp};
     }
