@@ -166,11 +166,11 @@ export default function Description({token, showEditor, setShowEditor, descripti
             <Typography variant="h2" fontSize='1.1rem' sx={{ mt:4 }}>{`${name} Price Live Data`}</Typography>
 
             <Typography sx={{mt:3}}>
-                The live {user} price today is ${price} USD with a 24-hour trading volume of {fNumber(vol24hx)} {name}. We update our {name} to USD price in real-time. {user} is {strPro24h} in the last 24 hours. The current XRPL.to ranking is #{id}, with a live market cap of ${fNumber(usdMarketCap)} USD. It has a circulating supply of {fNumber(supply)} {name} tokens.
+                Today's live {user} price is ${price} USD, accompanied by a 24-hour trading volume of  {fNumber(vol24hx)} {name}. Our {name} to USD price is updated in real-time. In the last 24 hours, {user} has experienced a {strPro24h} change. XRPL.to currently ranks it at  #{id}, with a live market cap of ${fNumber(usdMarketCap)} USD and a circulating supply of {fNumber(supply)} {name} tokens.
             </Typography>
 
             <Typography sx={{mt:2, mb: 3}}>
-                If you would like to know where to buy {user}, the top XRPL DEX for trading in {user} token are currently 
+            If you're interested in purchasing {user}, the top XRPL DEX platforms for trading {user} tokens are currently: 
                 <Link color="#3366FF" underline="none"
                     href={`/token/${slug}/trade`}
                 >{' XRPL.to DEX'}</Link> and
