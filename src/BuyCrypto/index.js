@@ -271,7 +271,7 @@ export default function BuyCrypto({fiats, coins}) {
     return (
         <>
             <Stack alignItems="center" sx={{mt:5, mb:3}}>
-                <Typography variant="h2a">Buy Crypto with Fiat</Typography>
+                <Typography variant="h2a">Buy XRP with Fiat</Typography>
             </Stack>
 
             <Stack sx={{mt:5, mb:3}}>
@@ -452,7 +452,7 @@ export default function BuyCrypto({fiats, coins}) {
                             color="primary"
                             sx={{mt:3}}
                         >
-                            BUY CRYPTO
+                            BUY XRP
                         </LoadingButton>
                     </Stack>
                 </Card>
