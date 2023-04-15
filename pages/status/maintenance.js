@@ -44,7 +44,7 @@ export default function StatusMaintenance() {
                         <Box textAlign="center">
                             <Container maxWidth="xs">
                                 <Typography variant="h2" sx={{ mt: 4, mb: 2 }}>
-                                Our website is temporarily unavailable due to ongoing maintenance.
+                                Site Temporarily Unavailable Due to Maintenance.
                                 </Typography>
                                 <Typography
                                     variant="h3"
@@ -52,7 +52,7 @@ export default function StatusMaintenance() {
                                     fontWeight="normal"
                                     sx={{ mb: 4 }}
                                 >
-                                    We sincerely apologize for any inconvenience this may have caused.
+                                    We Apologize for Any Inconvenience Caused.
                                 </Typography>
                             </Container>
                             <img
