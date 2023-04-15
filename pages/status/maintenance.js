@@ -102,3 +102,27 @@ export default function StatusMaintenance() {
         </>
     );
 }
+
+// This function gets called at build time on server-side.
+// It may be called again, on a serverless function, if
+// revalidation is enabled and a new request comes in
+export async function getStaticProps() {
+    let ret = {};
+
+    const ogp = {};
+    ogp.canonical = 'https://xrpl.to';
+    ogp.title = 'XRPL Token Prices, Charts, Market Volume, and Activity | XRPL.to';
+    ogp.url = 'https://xrpl.to/';
+    ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
+    ogp.desc = 'Find top XRPL DEX token prices and charts, ranked by 24-hour trading volume. Get access to current and historical data for the XRP ecosystem. All XRPL tokens are automatically listed on XRPL.to.';
+
+    ret = {ogp};
+
+    return {
+        props: ret, // will be passed to the page component as props
+        // Next.js will attempt to re-generate the page:
+        // - When a request comes in
+        // - At most once every 10 seconds
+        revalidate: 10, // In seconds
+    }
+}
