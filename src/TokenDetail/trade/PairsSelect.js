@@ -147,6 +147,10 @@ export default function PairsSelect({ token, pair, setPair}) {
     let gatehubDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}`;
     if (curr2.currency !== 'XRP')
         gatehubDexURL += `+${curr2.issuer}`;
+
+    let xpmarketDexURL = `https://gatehub.net/markets/${curr1.currency}+${curr1.issuer}/${curr2.currency}`;
+    if (curr2.currency !== 'XRP')
+        xpmarketDexURL += `+${curr2.issuer}`;
         
     const xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
 
@@ -203,7 +207,7 @@ export default function PairsSelect({ token, pair, setPair}) {
                                 rel="noreferrer noopener nofollow"
                             >
                                 <IconButton edge="end" aria-label="solo">
-                                    <Avatar variant="rounded" alt="sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
+                                    <Avatar variant="rounded" alt="Sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
                                 </IconButton>
                             </Link>
                         </Tooltip>
@@ -216,7 +220,7 @@ export default function PairsSelect({ token, pair, setPair}) {
                                 rel="noreferrer noopener nofollow"
                             >
                                 <IconButton edge="end" aria-label="solo">
-                                    <Avatar variant="rounded" alt="gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
+                                    <Avatar variant="rounded" alt="Gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
                                 </IconButton>
                             </Link>
                         </Tooltip>
@@ -229,7 +233,21 @@ export default function PairsSelect({ token, pair, setPair}) {
                                 rel="noreferrer noopener nofollow"
                             >
                                 <IconButton edge="end" aria-label="solo">
-                                    <Avatar variant="rounded" alt="xumm" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
+                                    <Avatar variant="rounded" alt="XUMM" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
+                                </IconButton>
+                            </Link>
+                        </Tooltip>
+
+                        <Tooltip title="xpmarket">
+                            <Link
+                                underline="none"
+                                color="inherit"
+                                target="_blank"
+                                href={xpmarketDexURL}
+                                rel="noreferrer noopener nofollow"
+                            >
+                                <IconButton edge="end" aria-label="solo">
+                                    <Avatar variant="rounded" alt="xpmarket" src="/static/xpmarket.jpg" sx={{ width: 24, height: 24 }} />
                                 </IconButton>
                             </Link>
                         </Tooltip>
