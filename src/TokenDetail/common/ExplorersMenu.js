@@ -146,6 +146,7 @@ export default function ExplorersMenu({issuer}) {
                         <ListItemText primary="XRPL Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
+                {/*
                 <Link
                     underline="none"
                     color="inherit"
@@ -158,6 +159,7 @@ export default function ExplorersMenu({issuer}) {
                         <ListItemText primary="XRPLORER" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
+                */}
             </Menu>
         </>
     );
