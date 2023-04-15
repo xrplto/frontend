@@ -68,7 +68,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                     </MenuItem>
                 </Link>
                 
-                {/* <Link
+                <Link
                     underline="none"
                     color="inherit"
                     target="_blank"
@@ -79,7 +79,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                         <Avatar alt="xrpscan" src="/static/xrpscan.png" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPScan" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
-                </Link> */ }
+                </Link>
                 <Link
                     underline="none"
                     color="inherit"
