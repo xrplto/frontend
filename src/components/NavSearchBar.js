@@ -105,7 +105,7 @@ const RenderOption = ({
                             onError={(event) => event.target.src = '/static/alt.png'}
                         />
                         <Stack>
-                            <Typography variant="s5" noWrap>{truncate(name, 8)}</Typography>
+                            <Typography variant="token" noWrap>{truncate(name, 8)}</Typography>
                             <Typography variant="s7" noWrap>
                                 {truncate(user, 8)}
                                 {kyc && (<Typography variant='kyc'>KYC</Typography>)}
