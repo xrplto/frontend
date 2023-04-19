@@ -13,6 +13,7 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
 
 // Iconify Icons
 import { Icon } from '@iconify/react';
@@ -110,16 +111,29 @@ export default function Header(props) {
                         {!fullSearch &&
                             <>
                                 <Link
+                                    href="/swap"
+                                    rel="noreferrer noopener nofollow"
+                                >
+                                    <Tooltip title="Swap tokens">
+                                        <IconButton>
+                                            <SwapVertIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Link>
+                                <Link
                                     href="/buy-crypto"
                                     rel="noreferrer noopener nofollow"
                                 >
                                     <Tooltip title="Buy crypto">
-                                        <IconButton> <CurrencyExchangeIcon /> </IconButton>
+                                        <IconButton>
+                                            <CurrencyExchangeIcon />
+                                        </IconButton>
                                     </Tooltip>
                                 </Link>
                                 <Wallet />
                             </>
                         }
+
                         {!isMobile &&
                             <IconButton onClick={() => { toggleTheme() }} >
                                 {darkMode ? (

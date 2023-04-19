@@ -1,7 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import useWebSocket from "react-use-websocket";
-import {MD5} from "crypto-js";
 import Decimal from 'decimal.js';
 
 // Material

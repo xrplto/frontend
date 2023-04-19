@@ -25,17 +25,14 @@ import LoginDialog from 'src/components/LoginDialog';
 import { useContext } from 'react'
 import { AppContext } from 'src/AppContext'
 
-// Redux
-import { useSelector, useDispatch } from "react-redux";
 // ----------------------------------------------------------------------
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
 
-export default function Wallet({}) {
+export default function Wallet({pair}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
-    const dispatch = useDispatch();
     const { accountProfile, doLogIn, setLoading, sync, setSync } = useContext(AppContext);
     const accountLogin = accountProfile?.account;
     const accountToken = accountProfile?.token;

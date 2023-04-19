@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import { withStyles } from '@mui/styles';
 import Decimal from 'decimal.js';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { LazyLoadImage, LazyLoadComponent } from 'react-lazy-load-image-component';
 
 // Material
+import { withStyles } from '@mui/styles';
 import {
     alpha, styled, useTheme,
     Avatar,
@@ -49,6 +49,7 @@ import { fNumber } from 'src/utils/formatNumber';
 
 // Components
 import Wallet from './Wallet';
+import QRDialog from 'src/components/QRDialog';
 
 const Label = withStyles({
     root: {
@@ -88,7 +89,7 @@ const ConverterFrame = styled('div')(
     ({ theme }) => `
     flex-direction: column;
     overflow: hidden;
-    margin: auto -16px;
+    // margin: auto -16px;
     box-sizing: border-box;
     position: relative;
     border-radius: 16px;
@@ -98,7 +99,7 @@ const ConverterFrame = styled('div')(
     @media (max-width: 600px) {
         flex-direction: column;
         overflow: hidden;
-        margin: auto -16px;
+        // margin: auto -16px;
         border-right: none;
         border-left: none;
         border-image: initial;
@@ -124,6 +125,23 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
     overflow: 'hidden'
 }));
 
+const DisabledButton = withStyles({
+    root: {
+        "&.Mui-disabled": {
+            pointerEvents: "unset", // allow :hover styles to be triggered
+            cursor: "not-allowed", // and custom cursor can be defined without :hover state
+        }
+    }
+})(Button);
+
+const ExchangeButton = styled(Button)(
+    ({ theme }) => `
+    @media (max-width: 600px) {
+        border-radius: 0px
+    }
+`
+);
+
 const CURRENCY_ISSUERS = {
     USD: 'rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B', // bitstamp
     BTC: 'rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B', // bitstamp
@@ -140,46 +158,27 @@ const CURRENCY_ISSUERS = {
     XRP: ''
 }
 
-const DEFAULT_PAIR = {
-    curr1: {
-        issuer: 'XRPL',
-        currency: 'XRP',
-        name: 'XRP',
-        md5: '84e5efeb89c4eae8f68188982dc290d8'
-    },
-    curr2: {
-        issuer: 'rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B',
-        currency: 'USD',
-        name: 'USD',
-        md5: 'c9ac9a6c44763c1bd9ccc6e47572fd26'
-    },
-
-}
-
 function truncate(str, n){
     if (!str) return '';
     //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
     return (str.length > n) ? str.substr(0, n-1) + '... ' : str;
 };
 
-export default function Swap({tokens}) {
+export default function Swap({tokens, asks, bids, pair, setPair, revert, setRevert}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const QR_BLUR = '/static/blurqr.png';
 
     const { accountProfile, doLogIn, setLoading, sync, setSync, openSnackbar } = useContext(AppContext);
 
-    const [openLogin, setOpenLogin] = useState(false);
+    const [openScanQR, setOpenScanQR] = useState(false);
     const [uuid, setUuid] = useState(null);
-    const [qrUrl, setQrUrl] = useState(QR_BLUR);
+    const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
 
-    const [counter, setCounter] = useState(150);
+    const [token1, setToken1] = useState(pair.curr1.md5);
+    const [token2, setToken2] = useState(pair.curr2.md5);
 
-    const [revert, setRevert] = useState(false);
-    const [token1, setToken1] = useState(DEFAULT_PAIR.curr1.md5);
-    const [token2, setToken2] = useState(DEFAULT_PAIR.curr2.md5);
-    const [pair, setPair] = useState(DEFAULT_PAIR)
     const [amount1, setAmount1] = useState(1); // XRP
     const [amount2, setAmount2] = useState(0); // Token
 
@@ -189,9 +188,14 @@ export default function Swap({tokens}) {
     const color2 = revert?theme.currency.background1:theme.currency.background2;
 
     const isLoggedIn = accountProfile && accountProfile.account && accountPairBalance;
-    let isSufficientBalance = false;
 
+    let isSufficientBalance = false;
+    let errMsg = "";
+
+    const buySell = 'SELL';
+    const marketLimit = 'market';
     const amount = revert ? amount2 : amount1;
+    const [value, setValue] = useState('');
 
     if (isLoggedIn && amount && value) {
         /* accountPairBalance
@@ -213,7 +217,7 @@ export default function Swap({tokens}) {
         const fValue = Number(value); // XRP
 
         if (fAmount > 0 && fValue > 0) {
-            const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
+            const accountAmount = new Decimal(revert?accountPairBalance.curr2.value:accountPairBalance.curr1.value).toNumber();
             const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
             if (buySell === 'BUY') {
                 if (accountValue >= fValue) {
@@ -269,26 +273,223 @@ export default function Swap({tokens}) {
 
     }, [accountProfile, pair, sync]);
 
+    useEffect(() => {
+        if (marketLimit !== 'market') return;
+        const amt = new Decimal(amount || 0).toNumber();
+        if (amt === 0) {
+            setValue(0);
+            return;
+        }
+        // if (amt > 0) {}
+
+        const val = calcValue(amount, buySell);
+        setValue(val);
+        if (revert)
+            setAmount1(val);
+        else
+            setAmount2(val);
+
+    }, [asks, bids, marketLimit, buySell, amount, revert]);
+
+    useEffect(() => {
+        var timer = null;
+        var isRunning = false;
+        var counter = 150;
+        async function getPayload() {
+            // console.log(counter + " " + isRunning, uuid);
+            if (isRunning) return;
+            isRunning = true;
+            try {
+                const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+                const res = ret.data.data.response;
+                // const account = res.account;
+                const resolved_at = res.resolved_at;
+                const dispatched_result = res.dispatched_result;
+                if (resolved_at) {
+                    setOpenScanQR(false);
+                    if (dispatched_result && dispatched_result === 'tesSUCCESS') {
+                        // TRIGGER account refresh
+                        setSync(sync + 1);
+                        openSnackbar('Exchange successful!', 'success');
+                    }
+                    else {
+                        openSnackbar('Transaction signing rejected!', 'error');
+                    }
+
+                    return;
+                }
+            } catch (err) {
+            }
+            isRunning = false;
+            counter--;
+            if (counter <= 0) {
+                setOpenScanQR(false);
+            }
+        }
+        if (openScanQR) {
+            timer = setInterval(getPayload, 2000);
+        }
+        return () => {
+            if (timer) {
+                clearInterval(timer)
+            }
+        };
+    }, [openScanQR, uuid]);
+
+    const onOfferCreateXumm = async () => {
+        setLoading(true);
+        try {
+            const curr1 = revert?pair.curr2:pair.curr1;
+            const curr2 = revert?pair.curr1:pair.curr2;
+            // const Account = accountProfile.account;
+            const user_token = accountProfile.user_token;
+            let TakerGets, TakerPays;
+            if (buySell === 'BUY') {
+                // BUY logic
+                TakerGets = {currency:curr2.currency, issuer:curr2.issuer, value: value.toString()};
+                TakerPays = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
+            } else {
+                // SELL logic
+                TakerGets = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
+                TakerPays = {currency:curr2.currency, issuer:curr2.issuer, value: value.toString()};
+            }
+
+            const OfferCreate = {
+                tfPassive: 0x00010000,
+                tfImmediateOrCancel: 0x00020000,
+                tfFillOrKill: 0x00040000,
+                tfSell: 0x00080000
+            };
+
+            let Flags = 0;
+            if (marketLimit === "limit") {
+                Flags = OfferCreate.tfSell;
+            } else {
+                if (buySell === 'BUY')
+                    Flags = OfferCreate.tfImmediateOrCancel;
+                else
+                    Flags = OfferCreate.tfSell | OfferCreate.tfImmediateOrCancel;
+            }
+            const body={/*Account,*/ TakerGets, TakerPays, Flags, user_token};
+
+            const res = await axios.post(`${BASE_URL}/offer/create`, body);
+
+            if (res.status === 200) {
+                const uuid = res.data.data.uuid;
+                const qrlink = res.data.data.qrUrl;
+                const nextlink = res.data.data.next;
+
+                setUuid(uuid);
+                setQrUrl(qrlink);
+                setNextUrl(nextlink);
+                setOpenScanQR(true);
+            }
+        } catch (err) {
+            alert(err);
+        }
+        setLoading(false);
+    };
+
+    const onDisconnectXumm = async (uuid) => {
+        setLoading(true);
+        try {
+            const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
+            if (res.status === 200) {
+                setUuid(null);
+            }
+        } catch(err) {
+        }
+        setLoading(false);
+    };
+
+    const calcValue = (amount, buyorsell) => {
+        let val = 0;
+        let amt;
+
+        try {
+            amt = new Decimal(amount).toNumber();
+            if (amt === 0) return 0;
+            if (buyorsell === 'BUY') {
+                for (var ask of asks) {
+                    if (ask.sumAmount >= amt) {
+                        val = new Decimal(ask.sumValue).mul(amt).div(ask.sumAmount).toNumber();
+                        break;
+                    }
+                }
+            } else {
+                for (var bid of bids) {
+                    if (bid.sumAmount >= amt) {
+                        val = new Decimal(bid.sumValue).mul(amt).div(bid.sumAmount).toNumber();
+                        break;
+                    }
+                }
+            }
+            return new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
+        } catch (e) {}
+
+        return 0;
+    }
+
+    const handleScanQRClose = () => {
+        setOpenScanQR(false);
+        onDisconnectXumm(uuid);
+    };
+
+    const handlePlaceOrder = (e) => {
+        const fAmount = Number(amount);
+        const fValue = Number(value);
+        if (fAmount > 0 && fValue > 0)
+            onOfferCreateXumm();
+        else {
+            openSnackbar('Invalid values!', 'error');
+        }
+
+        // if (accountProfile && accountProfile.account) {
+        //     // Create offer
+        //     /*{
+        //         "TransactionType": "OfferCreate",
+        //         "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
+        //         "Fee": "12",
+        //         "Flags": 0,
+        //         "LastLedgerSequence": 7108682,
+        //         "Sequence": 8,
+        //         "TakerGets": "6000000",
+        //         "TakerPays": {
+        //           "currency": "GKO",
+        //           "issuer": "ruazs5h1qEsqpke88pcqnaseXdm6od2xc",
+        //           "value": "2"
+        //         }
+        //     }*/
+        //     onOfferCreateXumm();
+
+        // } else {
+        //     setShowAccountAlert(true);
+        //     setTimeout(() => {
+        //         setShowAccountAlert(false);
+        //     }, 2000);
+        // }
+    }
+
     const handleChangeAmount1 = (e) => {
         const amt = e.target.value;
         setAmount1(amt);
 
-        const cexch = 0;
-        if (amt) {
-            // cexch = Decimal.mul(amt, exch).toNumber();
-        }
-        setAmount2(fNumber(cexch));
+        // const cexch = 0;
+        // if (amt) {
+        //     cexch = Decimal.mul(amt, exch).toNumber();
+        // }
+        // setAmount2(fNumber(cexch));
     }
 
     const handleChangeAmount2 = (e) => {
         const amt = e.target.value;
         setAmount2(amt);
 
-        const cexch = 0;
+        // const cexch = 0;
         // if (amt && exch > 0) {
         //     cexch = Decimal.div(amt, exch).toNumber();
         // }
-        setAmount1(fNumber(cexch));
+        // setAmount1(fNumber(cexch));
     }
 
     const handleChangeToken1 = (e) => {
@@ -398,7 +599,7 @@ export default function Swap({tokens}) {
                                 }
                             }}
                         />
-                        <Typography variant="s2">{accountPairBalance?.curr1.value}</Typography>
+                        <Typography variant="s7">Balance <Typography variant="s2">{accountPairBalance?.curr1.value}</Typography></Typography>
                     </InputContent>
                 </CurrencyContent>
                 <CurrencyContent style={{order: revert ? 1:2, backgroundColor: color2}}>
@@ -476,7 +677,7 @@ export default function Swap({tokens}) {
                                 }
                             }}
                         />
-                        <Typography variant="s2">{accountPairBalance?.curr2.value}</Typography>
+                        <Typography variant="s7">Balance <Typography variant="s2">{accountPairBalance?.curr2.value}</Typography></Typography>
                     </InputContent>
                 </CurrencyContent>
                 <ToggleContent>
@@ -486,27 +687,22 @@ export default function Swap({tokens}) {
                 </ToggleContent>
             </ConverterFrame>
 
-            <Wallet />
+            <Wallet pair={pair} />
 
-            {canPlaceOrder ? (
-                <Button
-                    variant="outlined"
+            <Stack sx={{width: '100%', mt: 2}}>
+                {errMsg &&
+                    <Typography variant='s2'>{errMsg}</Typography>
+                }
+                <ExchangeButton
+                    variant="contained"
                     sx={{ mt: 1.5 }}
                     onClick={handlePlaceOrder}
-                    color={buySell === 'BUY' ? 'primary':'error'}
+                    // color={'primary'}
+                    disabled={!canPlaceOrder}
                 >
-                    PLACE ORDER
-                </Button>
-            ) : (
-                <DisabledButton
-                    variant="outlined"
-                    sx={{ mt: 1.5 }}
-                    // onClick={()=>openSnackbar('Please connect wallet!', 'error')}
-                    disabled
-                >
-                    PLACE ORDER
-                </DisabledButton>
-            )}
+                    Exchange
+                </ExchangeButton>
+            </Stack>
 
             <QRDialog
                 open={openScanQR}
