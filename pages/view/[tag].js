@@ -85,7 +85,7 @@ function Overview({data}) {
 
 export default Overview;
 
-const BASE_URL = 'http://135.181.118.217/api';
+const BASE_URL = 'http://api.xrpl.to/api';
 
 export async function getServerSideProps(ctx) {
     // https://api.xrpl.to/api/tokens?tag=collectables-and-nfts&start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=

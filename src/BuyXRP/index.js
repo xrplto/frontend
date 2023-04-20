@@ -54,7 +54,7 @@ const MenuProps = {
     },
 };
 
-export default function BuyCrypto({fiats, coins}) {
+export default function BuyXRP({fiats, coins}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const { accountProfile, darkMode, openSnackbar } = useContext(AppContext);
     const [fiat, setFiat] = useState('USD');
@@ -194,7 +194,7 @@ export default function BuyCrypto({fiats, coins}) {
                 source_amount: fiatAmount,
                 target: "XRP",
                 wallet_address: accountProfile.account,
-                return_url_on_success: "https://xrpl.to/buy-crypto"
+                return_url_on_success: "https://xrpl.to/buy-xrp"
             };
 
             // {

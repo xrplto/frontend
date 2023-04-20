@@ -78,7 +78,8 @@ const RenderOption = ({
     pro24h,
     exch,
     ext,
-    option_type
+    option_type,
+    isOMCF
  }) => {
 
     const BASE_URL = 'https://api.xrpl.to/api';
@@ -105,11 +106,12 @@ const RenderOption = ({
                             onError={(event) => event.target.src = '/static/alt.png'}
                         />
                         <Stack>
-                            <Typography variant="token" noWrap>{truncate(name, 8)}</Typography>
-                            <Typography variant="s7" noWrap>
-                                {truncate(user, 8)}
-                                {kyc && (<Typography variant='kyc'>KYC</Typography>)}
+                            <Typography variant="token" color={isOMCF!=='yes'?'#222531':''} noWrap>{truncate(name, 8)}</Typography>
+                            <Typography variant="caption" color={isOMCF!=='yes'?'#222531':''} noWrap>
+                                {truncate(user, 13)}
+                                {kyc && (<Typography variant='kyc' sx={{ml: 0.2}}>KYC</Typography>)}
                             </Typography>
+                            {/* <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography> */}
                         </Stack>
                     </Stack>
 

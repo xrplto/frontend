@@ -46,10 +46,12 @@ import { AppContext } from 'src/AppContext'
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
+import { XRP_TOKEN, USD_TOKEN } from 'src/utils/constants';
 
 // Components
 import Wallet from './Wallet';
 import QRDialog from 'src/components/QRDialog';
+import QueryToken from './QueryToken';
 
 const Label = withStyles({
     root: {
@@ -142,22 +144,6 @@ const ExchangeButton = styled(Button)(
 `
 );
 
-const CURRENCY_ISSUERS = {
-    USD: 'rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B', // bitstamp
-    BTC: 'rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B', // bitstamp
-    CNY: 'rKiCet8SdvWxPXnAgYarFUXMh1zCPz432Y', // ripplefox
-    EUR: 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq', // gatehub
-    JPY: 'r94s8px6kSw1uZ1MV98dhSRTvc6VMPoPcN', // tokyojpy
-
-    XRP_MD5: '84e5efeb89c4eae8f68188982dc290d8',
-    USD_MD5: 'c9ac9a6c44763c1bd9ccc6e47572fd26',
-    BTC_MD5: 'ce7b81b078cf2c4f6391c39de3425e54',
-    CNY_MD5: '0f036e757e4aca67a2d4ae7aab638a95',
-    EUR_MD5: 'd129c5dd925a53dc55448798ba718c0f',
-    JPY_MD5: '52dda274a00d29232f2b860cac26e2ca',
-    XRP: ''
-}
-
 function truncate(str, n){
     if (!str) return '';
     //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
@@ -176,8 +162,8 @@ export default function Swap({tokens, asks, bids, pair, setPair, revert, setReve
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
 
-    const [token1, setToken1] = useState(pair.curr1.md5);
-    const [token2, setToken2] = useState(pair.curr2.md5);
+    const [token1, setToken1] = useState(pair.curr1);
+    const [token2, setToken2] = useState(pair.curr2);
 
     const [amount1, setAmount1] = useState(1); // XRP
     const [amount2, setAmount2] = useState(0); // Token
@@ -492,29 +478,26 @@ export default function Swap({tokens, asks, bids, pair, setPair, revert, setReve
         // setAmount1(fNumber(cexch));
     }
 
-    const handleChangeToken1 = (e) => {
-        const value = e.target.value;
-        if (value !== token2) {
-            setToken1(value);
-            configurePair(value, token2);
+    const onChangeToken1 = (token) => {
+        if (token.md5 !== token2.md5) {
+            setToken1(token);
+            configurePair(token, token2);
         }
     }
 
-    const handleChangeToken2 = (e) => {
-        const value = e.target.value;
-        console.log(value);
-        if (value !== token1) {
-            setToken2(value);
-            configurePair(token1, value);
+    const onChangeToken2 = (token) => {
+        if (token.md5 !== token1.md5) {
+            setToken2(token);
+            configurePair(token1, token);
         }
     }
 
-    function configurePair(md51, md52) {
-        const curr1 = tokens.find(e => e.md5 === md51);
-        const curr2 = tokens.find(e => e.md5 === md52);
+    function configurePair(token1, token2) {
+        // const curr1 = tokens.find(e => e.md5 === md51);
+        // const curr2 = tokens.find(e => e.md5 === md52);
         const pair = {
-            curr1,
-            curr2
+            curr1: token1,
+            curr2: token2
         }
         setPair(pair);
     }
@@ -523,60 +506,10 @@ export default function Swap({tokens, asks, bids, pair, setPair, revert, setReve
         <Stack alignItems="center">
             <ConverterFrame>
                 <CurrencyContent style={{order: revert ? 2:1, backgroundColor: color1}}>
-                    <FormControl sx={{ m: 1, maxHeight: 200}}>
-                        <Select
-                            value={token1}
-                            onChange={handleChangeToken1}
-                            MenuProps={{
-                                PaperProps: {
-                                    style: {
-                                        maxHeight: 400, // set the desired height here
-                                    },
-                                },
-                            }}
-                            sx={{
-                                mt:0,
-                                '& .MuiOutlinedInput-notchedOutline' : { border: 'none' },
-                            }}
-                        >
-                            {
-                                tokens.map((row, idx) => {
-                                    const {
-                                        md5,
-                                        name,
-                                        user,
-                                        kyc
-                                    } = row;
-
-                                    const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-                                    // const imgUrl = `/static/tokens/${md5}.${ext}`;
-
-                                    return (
-                                        <MenuItem
-                                            key={md5 + "_token1"}
-                                            value={md5}
-                                        >
-                                            <Stack direction="row" alignItems="center" spacing={1} sx={{p:0}}>
-                                                <TokenImage
-                                                    src={imgUrl} // use normal <img> attributes as props
-                                                    width={48}
-                                                    height={48}
-                                                    onError={(event) => event.target.src = '/static/alt.png'}
-                                                />
-                                                <Stack>
-                                                    <Typography variant="token" noWrap>{truncate(name, 8)}</Typography>
-                                                    <Typography variant="caption" noWrap>
-                                                        {truncate(user, 13)}
-                                                        {kyc && (<Typography variant='kyc' sx={{ml: 0.2}}>KYC</Typography>)}
-                                                    </Typography>
-                                                </Stack>
-                                            </Stack>
-                                        </MenuItem>
-                                    );
-                                })
-                            }
-                        </Select>
-                    </FormControl>
+                    <QueryToken
+                        token={token1}
+                        onChangeToken={onChangeToken1}
+                    />
                     <InputContent>
                         <Input
                             placeholder=''
@@ -603,58 +536,10 @@ export default function Swap({tokens, asks, bids, pair, setPair, revert, setReve
                     </InputContent>
                 </CurrencyContent>
                 <CurrencyContent style={{order: revert ? 1:2, backgroundColor: color2}}>
-                    <Select
-                        value={token2}
-                        onChange={handleChangeToken2}
-                        MenuProps={{
-                            PaperProps: {
-                                style: {
-                                    maxHeight: 400, // set the desired height here
-                                },
-                            },
-                        }}
-                        sx={{
-                            mt:0,
-                            '& .MuiOutlinedInput-notchedOutline' : { border: 'none' }
-                        }}
-                    >
-                        {
-                            tokens.map((row, idx) => {
-                                const {
-                                    md5,
-                                    name,
-                                    user,
-                                    kyc
-                                } = row;
-
-                                const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-                                // const imgUrl = `/static/tokens/${md5}.${ext}`;
-
-                                return (
-                                    <MenuItem
-                                        key={md5 + "_token2"}
-                                        value={md5}
-                                    >
-                                        <Stack direction="row" alignItems="center" spacing={1} sx={{p:0}}>
-                                            <TokenImage
-                                                src={imgUrl} // use normal <img> attributes as props
-                                                width={48}
-                                                height={48}
-                                                onError={(event) => event.target.src = '/static/alt.png'}
-                                            />
-                                            <Stack>
-                                                <Typography variant="token" noWrap>{truncate(name, 8)}</Typography>
-                                                <Typography variant="caption" noWrap>
-                                                    {truncate(user, 13)}
-                                                    {kyc && (<Typography variant='kyc' sx={{ml: 0.2}}>KYC</Typography>)}
-                                                </Typography>
-                                            </Stack>
-                                        </Stack>
-                                    </MenuItem>
-                                );
-                            })
-                        }
-                    </Select>
+                    <QueryToken
+                        token={token2}
+                        onChangeToken={onChangeToken2}
+                    />
                     <InputContent>
                         <Input
                             placeholder=''
@@ -687,21 +572,28 @@ export default function Swap({tokens, asks, bids, pair, setPair, revert, setReve
                 </ToggleContent>
             </ConverterFrame>
 
-            <Wallet pair={pair} />
-
             <Stack sx={{width: '100%', mt: 2}}>
-                {errMsg &&
-                    <Typography variant='s2'>{errMsg}</Typography>
-                }
-                <ExchangeButton
-                    variant="contained"
-                    sx={{ mt: 1.5 }}
-                    onClick={handlePlaceOrder}
-                    // color={'primary'}
-                    disabled={!canPlaceOrder}
-                >
-                    Exchange
-                </ExchangeButton>
+                {accountProfile && accountProfile.account ? (
+                    <>
+                        {errMsg &&
+                            <Typography variant='s2'>{errMsg}</Typography>
+                        }
+
+                        <ExchangeButton
+                            variant="contained"
+                            sx={{ mt: 1.5 }}
+                            onClick={handlePlaceOrder}
+                            // color={'primary'}
+                            disabled={!canPlaceOrder}
+                        >
+                            Exchange
+                        </ExchangeButton>
+                    </>
+                ):(
+                    <>
+                        <Wallet pair={pair} />
+                    </>
+                )}
             </Stack>
 
             <QRDialog

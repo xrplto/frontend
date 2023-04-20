@@ -193,29 +193,29 @@ export default function History({token}) {
                                     maker,
                                     taker,
                                     seq,
-                                    takerPaid,
-                                    takerGot,
+                                    paid,
+                                    got,
                                     ledger,
                                     hash,
                                     time
                                 } = row;
 
                                 
-                                const paidName = normalizeCurrencyCodeXummImpl(takerPaid.currency);
-                                const gotName = normalizeCurrencyCodeXummImpl(takerGot.currency);
-                                const md51 = getMD5(takerPaid.issuer, takerPaid.currency);
-                                // const md52 = getMD5(takerGot.issuer, takerGot.currency);
+                                const paidName = normalizeCurrencyCodeXummImpl(paid.currency);
+                                const gotName = normalizeCurrencyCodeXummImpl(got.currency);
+                                const md51 = getMD5(paid.issuer, paid.currency);
+                                // const md52 = getMD5(got.issuer, got.currency);
                                 
                                 let exch;
                                 let name;
                                 
                                 if (md51 === token.md5) {
                                     // volume = got.value;
-                                    exch = Decimal.div(takerGot.value, takerPaid.value).toNumber();
+                                    exch = Decimal.div(got.value, paid.value).toNumber();
                                     name = gotName;
                                 } else {
                                     // volume = paid.value;
-                                    exch = Decimal.div(takerPaid.value, takerGot.value).toNumber();
+                                    exch = Decimal.div(paid.value, got.value).toNumber();
                                     name = paidName;
                                 }
 
@@ -232,11 +232,11 @@ export default function History({token}) {
                                         </TableCell>
                                         <TableCell align="left"><Typography variant="caption">{fNumber(exch)} {name}</Typography></TableCell>
                                         <TableCell align="left">
-                                            {fNumber(takerPaid.value)} <Typography variant="caption">{paidName}</Typography>
+                                            {fNumber(paid.value)} <Typography variant="caption">{paidName}</Typography>
                                         </TableCell>
 
                                         <TableCell align="left">
-                                            {fNumber(takerGot.value)} <Typography variant="caption">{gotName}</Typography>
+                                            {fNumber(got.value)} <Typography variant="caption">{gotName}</Typography>
                                         </TableCell>
 
                                         <TableCell align="left">

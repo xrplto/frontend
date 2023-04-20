@@ -85,6 +85,24 @@ function Footer() {
                                         <Typography variant='link'>XRP Ledger Explorer</Typography>
                                     </Link>
                                     <Link
+                                        href="/swap"
+                                        sx={{ mt: 2, display: 'inline-flex' }}
+                                        underline="none"
+                                        // target="_blank"
+                                        rel="noreferrer noopener nofollow"
+                                    >
+                                        <Typography variant='link'>Token Swap</Typography>
+                                    </Link>
+                                    <Link
+                                        href="/buy-xrp"
+                                        sx={{ mt: 2, display: 'inline-flex' }}
+                                        underline="none"
+                                        // target="_blank"
+                                        rel="noreferrer noopener nofollow"
+                                    >
+                                        <Typography variant='link'>Buy XRP</Typography>
+                                    </Link>
+                                    <Link
                                         href="https://docs.xrpl.to"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
                                         underline="none"

@@ -65,7 +65,7 @@ export default function ExtraButtons({token}) {
                         underline="none"
                         color="inherit"
                         // target="_blank"
-                        href={`/buy-crypto`}
+                        href={`/buy-xrp`}
                         rel="noreferrer noopener nofollow"
                     >
                         <Button
@@ -73,7 +73,7 @@ export default function ExtraButtons({token}) {
                             color='primary'
                             size="small"
                         >
-                            Buy Crypto
+                            Buy XRP
                         </Button>
                     </Link>
                 </Grid>

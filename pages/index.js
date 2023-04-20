@@ -95,7 +95,7 @@ export default Overview;
 // It may be called again, on a serverless function, if
 // revalidation is enabled and a new request comes in
 export async function getStaticProps() {
-    const BASE_URL = 'http://135.181.118.217/api';
+    const BASE_URL = 'http://api.xrpl.to/api';
 
     // https://api.xrpl.to/api/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=&showNew=false&showSlug=false
     let data = null;

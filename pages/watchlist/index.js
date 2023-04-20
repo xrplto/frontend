@@ -88,7 +88,7 @@ function Overview({data}) {
 
 export default Overview;
 
-const BASE_URL = 'http://135.181.118.217/api';
+const BASE_URL = 'http://api.xrpl.to/api';
 
 // This function gets called at build time on server-side.
 // It may be called again, on a serverless function, if

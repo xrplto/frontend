@@ -152,15 +152,10 @@ export default function Wallet({pair}) {
 
     return (
         <>
-            {accountProfile && accountProfile.account ? (
-                <></>
-            ) : (
-                <Stack alignItems='center' sx={{mt: 2}}>
-                    <Button variant="outlined" color='error' onClick={handleLogin} endIcon={<AccountBalanceWalletIcon />}>
-                        Connect Wallet
-                    </Button>
-                </Stack>
-            )}
+            
+            <Button variant="contained" onClick={handleLogin} startIcon={<AccountBalanceWalletIcon />} sx={{ mt: 1.5 }}>
+                Connect Wallet
+            </Button>
 
             <LoginDialog
                 open={openLogin}

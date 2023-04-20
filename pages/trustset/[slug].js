@@ -560,7 +560,7 @@ function TrustLine(props) {
 export default TrustLine;
 
 export async function getServerSideProps(ctx) {
-    const BASE_URL = 'http://135.181.118.217/api';
+    const BASE_URL = 'http://api.xrpl.to/api';
 
     let data = null;
     try {

@@ -20,6 +20,7 @@ import { Icon } from '@iconify/react';
 import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
 import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
 import fiatIcon from '@iconify/icons-simple-icons/fiat';
+import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 
 // Context
 import { useContext } from 'react';
@@ -121,12 +122,12 @@ export default function Header(props) {
                                     </Tooltip>
                                 </Link>
                                 <Link
-                                    href="/buy-crypto"
+                                    href="/buy-xrp"
                                     rel="noreferrer noopener nofollow"
                                 >
-                                    <Tooltip title="Buy crypto">
+                                    <Tooltip title="Buy XRP">
                                         <IconButton>
-                                            <CurrencyExchangeIcon />
+                                            <Icon icon={rippleSolid} width="20" height="20" />
                                         </IconButton>
                                     </Tooltip>
                                 </Link>

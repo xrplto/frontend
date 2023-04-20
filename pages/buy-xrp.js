@@ -15,7 +15,7 @@ import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 
-import BuyCrypto from 'src/BuyCrypto';
+import BuyXRP from 'src/BuyXRP';
 
 // const DynamicTokenList = dynamic(() => import('src/TokenList'));
 
@@ -37,7 +37,7 @@ function Overview({data}) {
             <Header />
             
             <Container maxWidth="sm">
-                <BuyCrypto
+                <BuyXRP
                     fiats={data.fiats}
                     coins={data.coins}
                 />
@@ -67,7 +67,7 @@ export default Overview;
 // revalidation is enabled and a new request comes in
 export async function getStaticProps() {
     // https://api.xrpl.to/api/banxa/currencies
-    const BASE_URL = 'http://135.181.118.217/api';
+    const BASE_URL = 'http://api.xrpl.to/api';
     let data = null;
     try {
         var t1 = performance.now();

@@ -46,12 +46,12 @@ function convertTrade(md5, trades) {
         "taker": "ra1x1s3qdFqbSZLbdMkLWJRKMDPzgxycN3",
         "seq": 77099195,
         "pair": "5a1b51eae66799a2359f810696bd3291",
-        "takerPaid": {
+        "paid": {
             "currency": "XRP",
             "issuer": "XRPL",
             "value": "39"
         },
-        "takerGot": {
+        "got": {
             "currency": "434F524500000000000000000000000000000000",
             "issuer": "rcoreNywaoz2ZCQ8Lg2EbSLnGuRBmun6D",
             "value": "26.6994848127106"
@@ -73,13 +73,13 @@ function convertTrade(md5, trades) {
 
         const {
             _id,
-            takerPaid,
-            takerGot,
+            paid,
+            got,
             time,
             ledger
         } = t;
 
-        const md51 = getMD5(takerPaid.issuer, takerPaid.currency);
+        const md51 = getMD5(paid.issuer, paid.currency);
         
         let exch;
         let amount;
@@ -95,18 +95,18 @@ function convertTrade(md5, trades) {
         
         if (md5 === md51) {
             // volume = got.value;
-            exch = Decimal.div(takerGot.value, takerPaid.value).toNumber();
-            amount = fmNumber(takerPaid.value, 2);
+            exch = Decimal.div(got.value, paid.value).toNumber();
+            amount = fmNumber(paid.value, 2);
 
-            d1 = Decimal.add(takerGot.value, d1).toString();
-            d2 = Decimal.add(takerPaid.value, d2).toString();
+            d1 = Decimal.add(got.value, d1).toString();
+            d2 = Decimal.add(paid.value, d2).toString();
         } else {
             // volume = paid.value;
-            exch = Decimal.div(takerPaid.value, takerGot.value).toNumber();
-            amount = fmNumber(takerGot.value, 2);
+            exch = Decimal.div(paid.value, got.value).toNumber();
+            amount = fmNumber(got.value, 2);
 
-            d1 = Decimal.add(takerPaid.value, d1).toString();
-            d2 = Decimal.add(takerGot.value, d2).toString();
+            d1 = Decimal.add(paid.value, d1).toString();
+            d2 = Decimal.add(got.value, d2).toString();
         }
 
         if (exch > prevExch) {

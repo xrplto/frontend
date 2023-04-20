@@ -38,13 +38,13 @@ module.exports.extractExchanges = (tx, options={}) => {
 			taker,
 			seq,
             date,
-			takerPaid: {
+			paid: {
 				//currency: decodeCurrency(finalTakerPays.currency), 
                 currency: finalTakerPays.currency, 
 				issuer: finalTakerPays.issuer,
 				value: Decimal.sub(previousTakerPays.value, finalTakerPays.value).toString()
 			},
-			takerGot: {
+			got: {
 				//currency: decodeCurrency(finalTakerGets.currency), 
                 currency: finalTakerGets.currency, 
 				issuer: finalTakerGets.issuer,
@@ -60,20 +60,20 @@ module.exports.extractExchanges = (tx, options={}) => {
 
 		for(let e of exchanges){
 			let col = collapsed.find(c => 
-				compareCurrency(c.takerPaid, e.takerPaid) 
-				&& compareCurrency(c.takerGot, e.takerGot)
+				compareCurrency(c.paid, e.paid) 
+				&& compareCurrency(c.got, e.got)
 			)
 
 			if(!col){
 				collapsed.push({
-					takerPaid: e.takerPaid,
-					takerGot: e.takerGot
+					paid: e.paid,
+					got: e.got
 				})
 			}else{
-				col.takerPaid.value = Decimal.sum(col.takerPaid.value, e.takerPaid.value)
+				col.paid.value = Decimal.sum(col.paid.value, e.paid.value)
 					.toString()
 
-				col.takerGot.value = Decimal.sum(col.takerGot.value, e.takerGot.value)
+				col.got.value = Decimal.sum(col.got.value, e.got.value)
 					.toString()
 			}
 		}

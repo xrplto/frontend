@@ -17,6 +17,9 @@ import {
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext'
 
+// Utils
+import { XRP_TOKEN, USD_TOKEN } from 'src/utils/constants';
+
 // Components
 import Logo from 'src/components/Logo';
 import Swap from 'src/swap';
@@ -28,40 +31,208 @@ import ScrollToTop from 'src/components/ScrollToTop';
 
 const OverviewWrapper = styled(Box)(
     ({ theme }) => `
-        overflow: hidden;
-        flex: 1;
-  `
-);
-
-const SwapWrapper = styled(Box) (
-    ({ theme }) => `
-        align-items: center;
-        justify-content: center;
-        -webkit-box-pack: center;
-        display: flex;
-        flex: 1;
+        // overflow: auto;
         overflow-x: hidden;
-        height: 100%;
+        flex: 1;
+        min-height: 100vh;
   `
 );
 
-const ContainerWrapper = styled(Container) (
+const SwapWrapper = styled(Stack) (
+    ({ theme }) => `
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        -webkit-box-align: center;
+        align-items: center;
+
+        @media (min-width: 0px) {
+            -webkit-box-pack: start;
+            justify-content: flex-start;
+        }
+
+        @media (min-width: 600px) {
+            -webkit-box-pack: center;
+            justify-content: center;
+        }
+   `
+);
+
+const ContainerWrapper = styled(Stack) (
     ({ theme }) => `
     width: 100%;
-    margin-left: auto;
-    box-sizing: border-box;
-    margin-right: auto;
-    display: block;
-    padding-left: 16px;
-    padding-right: 16px;
-    height: 70%;
-
-    @media (max-width: 600px) {
-        padding-left: 0px;
-        padding-right: 0px;
-    }
+    height: 100%;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
   `
 );
+
+const DEFAULT_PAIR = {
+    curr1: XRP_TOKEN,
+    curr2: USD_TOKEN,
+
+}
+
+function Overview({data}) {
+    const WSS_URL = 'wss://ws.xrpl.to';
+
+    const { accountProfile, openSnackbar } = useContext(AppContext);
+
+    const tokens = data.tokens;
+
+    const [revert, setRevert] = useState(false);
+    const [pair, setPair] = useState(DEFAULT_PAIR);
+
+    const [bids, setBids] = useState([]); // Orderbook Bids
+    const [asks, setAsks] = useState([]); // Orderbook Asks
+
+    const [wsReady, setWsReady] = useState(false);
+    const { sendJsonMessage/*, getWebSocket*/ } = useWebSocket(WSS_URL, {
+        onOpen: () => {setWsReady(true);},
+        onClose: () => {setWsReady(false);},
+        shouldReconnect: (closeEvent) => true,
+        onMessage: (event) => processMessages(event)
+    });
+
+    // Orderbook related useEffect - Start
+    useEffect(() => {
+        let reqID = 1;
+        function sendRequest() {
+            if (!wsReady) return;
+            /*{
+                "id":17,
+                "command":"book_offers",
+                "taker_gets":{
+                    "currency":"534F4C4F00000000000000000000000000000000",
+                    "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
+                },
+                "taker_pays":{
+                    "currency":"XRP"
+                },
+                "ledger_index":"validated",
+                "limit":200
+            }
+
+            {
+                "id":20,
+                "command":"book_offers",
+                "taker_gets":{"currency":"XRP"},
+                "taker_pays":{
+                    "currency":"534F4C4F00000000000000000000000000000000",
+                    "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
+                },
+                "ledger_index":"validated",
+                "limit":200
+            }*/
+
+            const curr1 = revert?pair.curr2:pair.curr1;
+            const curr2 = revert?pair.curr1:pair.curr2;
+
+            const cmdAsk = {
+                id: reqID,
+                command: 'book_offers',
+                taker_gets: {
+                    currency: curr1.currency,
+                    issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+                },
+                taker_pays: {
+                    currency: curr2.currency,
+                    issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+                },
+                ledger_index: 'validated',
+                limit: 60
+            }
+            const cmdBid = {
+                id: reqID+1,
+                command: 'book_offers',
+                taker_gets: {
+                    currency: curr2.currency,
+                    issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+                },
+                taker_pays: {
+                    currency: curr1.currency,
+                    issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+                },
+                ledger_index: 'validated',
+                limit: 60
+            }
+            sendJsonMessage(cmdAsk);
+            sendJsonMessage(cmdBid);
+            reqID += 2;
+        }
+
+        sendRequest();
+
+        const timer = setInterval(() => sendRequest(), 4000);
+
+        return () => {
+            clearInterval(timer);
+        }
+
+    }, [wsReady, pair, revert, sendJsonMessage]);
+    // Orderbook related useEffect - END
+
+    // web socket process messages for orderbook
+    const processMessages = (event) => {
+        const orderBook = JSON.parse(event.data);
+
+        if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
+            const req = orderBook.id % 2;
+            //console.log(`Received id ${orderBook.id}`)
+            if (req === 1) {
+                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS);
+                setAsks(parsed);
+            }
+            if (req === 0) {
+                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS);
+                setBids(parsed);
+            }
+        }
+    };
+
+    return (
+        <OverviewWrapper>
+            <Stack>
+                <Toolbar id="back-to-top-anchor" />
+                <Topbar />
+                <Header />
+
+                {/* <Container
+                    maxWidth="sm"
+                    style={{
+                        height: '100%',
+                        minHeight: '100vh'
+                    }}
+                > */}
+                    <Stack
+                        direction="row"
+                        justifyContent="center"
+                        alignItems={{xs: "flex-start", sm: "center"}}
+                        sx={{
+                            mt: {xs: 4, sm: -10}
+                        }}
+                        style={{
+                            height: '100%',
+                            minHeight: '100vh'
+                        }}
+                    >
+                        <Swap tokens={tokens} asks={asks} bids={bids} pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
+                    </Stack>
+                {/* </Container> */}
+
+                <Footer />
+            </Stack>
+
+        </OverviewWrapper>
+    );
+}
+
+export default Overview;
 
 const ORDER_TYPE_BIDS = 1;
 const ORDER_TYPE_ASKS = 2;
@@ -244,162 +415,11 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
     return sortedArrayByPrice;
 }
 
-const DEFAULT_PAIR = {
-    curr1: {
-        issuer: 'XRPL',
-        currency: 'XRP',
-        name: 'XRP',
-        md5: '84e5efeb89c4eae8f68188982dc290d8'
-    },
-    curr2: {
-        issuer: 'rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B',
-        currency: 'USD',
-        name: 'USD',
-        md5: 'c9ac9a6c44763c1bd9ccc6e47572fd26'
-    },
-
-}
-
-function Overview({data}) {
-    const WSS_URL = 'wss://ws.xrpl.to';
-
-    const { accountProfile, openSnackbar } = useContext(AppContext);
-
-    const tokens = data.tokens;
-
-    const [revert, setRevert] = useState(false);
-    const [pair, setPair] = useState(DEFAULT_PAIR);
-
-    const [bids, setBids] = useState([]); // Orderbook Bids
-    const [asks, setAsks] = useState([]); // Orderbook Asks
-
-    const [wsReady, setWsReady] = useState(false);
-    const { sendJsonMessage/*, getWebSocket*/ } = useWebSocket(WSS_URL, {
-        onOpen: () => {setWsReady(true);},
-        onClose: () => {setWsReady(false);},
-        shouldReconnect: (closeEvent) => true,
-        onMessage: (event) => processMessages(event)
-    });
-
-    // Orderbook related useEffect - Start
-    useEffect(() => {
-        let reqID = 1;
-        function sendRequest() {
-            if (!wsReady) return;
-            /*{
-                "id":17,
-                "command":"book_offers",
-                "taker_gets":{
-                    "currency":"534F4C4F00000000000000000000000000000000",
-                    "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
-                },
-                "taker_pays":{
-                    "currency":"XRP"
-                },
-                "ledger_index":"validated",
-                "limit":200
-            }
-
-            {
-                "id":20,
-                "command":"book_offers",
-                "taker_gets":{"currency":"XRP"},
-                "taker_pays":{
-                    "currency":"534F4C4F00000000000000000000000000000000",
-                    "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
-                },
-                "ledger_index":"validated",
-                "limit":200
-            }*/
-
-            const curr1 = revert?pair.curr2:pair.curr1;
-            const curr2 = revert?pair.curr1:pair.curr2;
-
-            const cmdAsk = {
-                id: reqID,
-                command: 'book_offers',
-                taker_gets: {
-                    currency: curr1.currency,
-                    issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-                },
-                taker_pays: {
-                    currency: curr2.currency,
-                    issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-                },
-                ledger_index: 'validated',
-                limit: 60
-            }
-            const cmdBid = {
-                id: reqID+1,
-                command: 'book_offers',
-                taker_gets: {
-                    currency: curr2.currency,
-                    issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-                },
-                taker_pays: {
-                    currency: curr1.currency,
-                    issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-                },
-                ledger_index: 'validated',
-                limit: 60
-            }
-            sendJsonMessage(cmdAsk);
-            sendJsonMessage(cmdBid);
-            reqID += 2;
-        }
-
-        sendRequest();
-
-        const timer = setInterval(() => sendRequest(), 4000);
-
-        return () => {
-            clearInterval(timer);
-        }
-
-    }, [wsReady, pair, revert, sendJsonMessage]);
-    // Orderbook related useEffect - END
-
-    // web socket process messages for orderbook
-    const processMessages = (event) => {
-        const orderBook = JSON.parse(event.data);
-
-        if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
-            const req = orderBook.id % 2;
-            //console.log(`Received id ${orderBook.id}`)
-            if (req === 1) {
-                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS);
-                setAsks(parsed);
-            }
-            if (req === 0) {
-                const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS);
-                setBids(parsed);
-            }
-        }
-    };
-
-    return (
-        <OverviewWrapper>
-            <Toolbar id="back-to-top-anchor" />
-            <Topbar />
-            <Header />
-
-            <ContainerWrapper maxWidth="sm">
-                <SwapWrapper>
-                    <Swap tokens={tokens} asks={asks} bids={bids} pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
-                </SwapWrapper>
-            </ContainerWrapper>
-
-        </OverviewWrapper>
-    );
-}
-
-export default Overview;
-
 // This function gets called at build time on server-side.
 // It may be called again, on a serverless function, if
 // revalidation is enabled and a new request comes in
 export async function getStaticProps() {
-    const BASE_URL = 'http://135.181.118.217/api';
+    const BASE_URL = 'http://api.xrpl.to/api';
 
     // https://api.xrpl.to/api/simple/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=
     let data = null;
