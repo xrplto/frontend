@@ -103,10 +103,10 @@ const colors = {
   },
   primary: {
       lighter: alpha("#fff", 0.1),
-      light: '#5BE584',
-      main: '#00AB55',
-      dark: '#007B55',
-      darker: '#005249',
+      light: '#00AB55',  // #5BE584
+      main: '#007B55',   // #00AB55
+      dark: '#005249',   // #007B55
+      darker: '#003349', // #005249
       contrastText: '#fff'
   },
   // primary: {

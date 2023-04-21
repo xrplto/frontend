@@ -14,38 +14,19 @@ import {
     TableRow,
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
-import {
-    AccountBalanceWallet as AccountBalanceWalletIcon
-} from '@mui/icons-material';
-
-// Components
-import LoginDialog from 'src/components/LoginDialog';
 
 // Context
 import { useContext } from 'react'
 import { AppContext } from 'src/AppContext'
 
-// Redux
-import { useSelector, useDispatch } from "react-redux";
-// ----------------------------------------------------------------------
-
 // Utils
+
+// Components
 
 export default function AccountBalance({pair, accountPairBalance, setAccountPairBalance}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
-    const dispatch = useDispatch();
     const { accountProfile, doLogIn, setLoading, sync, setSync } = useContext(AppContext);
-    const accountLogin = accountProfile?.account;
-    const accountToken = accountProfile?.token;
-    const accountLogo = accountProfile?.logo;
-    const accountUuid = accountProfile?.xuuid;
-    const isAdmin = accountProfile?.admin;
-
-    const [openLogin, setOpenLogin] = useState(false);
-    const [uuid, setUuid] = useState(null);
-    const [qrUrl, setQrUrl] = useState(null);
-    const [nextUrl, setNextUrl] = useState(null);
 
     let curr1 = pair.curr1;
     let curr2 = pair.curr2;
@@ -71,17 +52,13 @@ export default function AccountBalance({pair, accountPairBalance, setAccountPair
         }
     */
 
-    /*const connectionStatus = {
-        [ReadyState.CONNECTING]: "Connecting",
-        [ReadyState.OPEN]: "Open",
-        [ReadyState.CLOSING]: "Closing",
-        [ReadyState.CLOSED]: "Closed",
-        [ReadyState.UNINSTANTIATED]: "Uninstantiated",
-    }[readyState];*/
-
     useEffect(() => {
         function getAccountInfo() {
-            if (!accountProfile || !accountProfile.account) return;
+            if (!accountProfile || !accountProfile.account) {
+                setAccountPairBalance(null);
+                return;
+            }
+
             if (!pair) return;
 
             const curr1 = pair.curr1;
@@ -95,7 +72,7 @@ export default function AccountBalance({pair, accountPairBalance, setAccountPair
                         setAccountPairBalance(ret.pair);
                     }
                 }).catch(err => {
-                    console.log("Error on getting details!!!", err);
+                    console.log("Error on getting account pair balance info.", err);
                 }).then(function () {
                     // always executed
                 });
@@ -103,129 +80,37 @@ export default function AccountBalance({pair, accountPairBalance, setAccountPair
         // console.log('account_info')
         getAccountInfo();
 
-    }, [dispatch, accountProfile, pair, sync]);
-
-    useEffect(() => {
-        var timer = null;
-        var isRunning = false;
-        var counter = 150;
-        if (openLogin) {
-            timer = setInterval(async () => {
-                // console.log(counter + " " + isRunning, uuid);
-                if (isRunning) return;
-                isRunning = true;
-                try {
-                    const res = await axios.get(`${BASE_URL}/account/login/${uuid}`);
-                    const ret = res?.data;
-                    if (ret?.profile) {
-                        const profile = ret.profile;
-                        setOpen(true);
-                        setOpenLogin(false);
-                        doLogIn(profile);
-                        return;
-                    }
-                } catch (err) {
-                }
-                isRunning = false;
-                counter--;
-                if (counter <= 0) {
-                    setOpenLogin(false);
-                }
-            }, 2000);
-        }
-        return () => {
-            if (timer) {
-                clearInterval(timer)
-            }
-        };
-    }, [openLogin, uuid, doLogIn]);
-
-    const onConnectXumm = async () => {
-        setLoading(true);
-        try {
-            const res = await axios.post(`${BASE_URL}/account/login`);
-            if (res.status === 200) {
-                const uuid = res.data.data.uuid;
-                const qrlink = res.data.data.qrUrl;
-                const nextlink = res.data.data.next;
-
-                setUuid(uuid);
-                setQrUrl(qrlink);
-                setNextUrl(nextlink);
-                setOpenLogin(true);
-            }
-        } catch (err) {
-            alert(err);
-        }
-        setLoading(false);
-    };
-
-    const onCancelLoginXumm = async (xuuid) => {
-        setLoading(true);
-        try {
-            const res = await axios.delete(`${BASE_URL}/account/cancellogin/${xuuid}`);
-            if (res.status === 200) {
-            }
-        } catch(err) {
-        }
-        setUuid(null);
-        setLoading(false);
-    };
-
-    const handleLogin = () => {
-        onConnectXumm();
-    };
-
-    // const handleLogout = () => {
-    //     setOpen(false);
-    //     onLogoutXumm();
-    // }
-
-    const handleLoginClose = () => {
-        setOpenLogin(false);
-        onCancelLoginXumm(uuid);
-    };
+    }, [accountProfile, pair, sync]);
 
     return (
         <>
-            {accountProfile && accountProfile.account ? (
-                accountPairBalance && <Table size={'small'}
-                        sx={{
-                            [`& .${tableCellClasses.root}`]: {
-                                borderBottom: "0px solid",
-                                borderBottomColor: theme.palette.divider
-                            }
-                        }}
-                    >
-                        <TableBody>
-                            <TableRow
-                                key={-1}
-                            >
-                                <TableCell align="center" sx={{ p:0 }}>
-                                    <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{curr1.name}</Typography>
-                                    {new Decimal(accountPairBalance.curr1.value).toFixed(8, Decimal.ROUND_DOWN)}
-                                </TableCell>
-                                <TableCell align="center" sx={{ p:0 }}>
-                                    <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
-                                    {new Decimal(accountPairBalance.curr2.value).toFixed(6, Decimal.ROUND_DOWN)}
-                                </TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-            ) : (
-                <Stack alignItems='center'>
-                    <Button variant="outlined" color='error' onClick={handleLogin} endIcon={<AccountBalanceWalletIcon />}>
-                        Connect Wallet
-                    </Button>
-                </Stack>
+            {accountPairBalance ? (
+                <Table size={'small'}
+                    sx={{
+                        [`& .${tableCellClasses.root}`]: {
+                            borderBottom: "0px solid",
+                            borderBottomColor: theme.palette.divider
+                        }
+                    }}
+                >
+                    <TableBody>
+                        <TableRow
+                            key={-1}
+                        >
+                            <TableCell align="center" sx={{ p:0 }}>
+                                <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{curr1.name}</Typography>
+                                {new Decimal(accountPairBalance.curr1.value).toFixed(8, Decimal.ROUND_DOWN)}
+                            </TableCell>
+                            <TableCell align="center" sx={{ p:0 }}>
+                                <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
+                                {new Decimal(accountPairBalance.curr2.value).toFixed(6, Decimal.ROUND_DOWN)}
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            ):(
+                <Stack sx={{mt:2}} />
             )}
-
-            <LoginDialog
-                open={openLogin}
-                handleClose={handleLoginClose}
-                qrUrl={qrUrl}
-                nextUrl={nextUrl}
-            />
         </>
     );
 }

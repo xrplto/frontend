@@ -18,6 +18,7 @@ import { AppContext } from 'src/AppContext'
 import { useDispatch } from "react-redux";
 
 // Components
+import ConnectWallet from 'src/components/ConnectWallet';
 import QRDialog from 'src/components/QRDialog';
 // ----------------------------------------------------------------------
 const DisabledButton = withStyles({
@@ -256,27 +257,33 @@ export default function PlaceOrder({marketLimit, buySell, pair, amount, value, a
 
     return (
         <Stack alignItems='center'>
-            {errMsg &&
-                <Typography variant='s2'>{errMsg}</Typography>
-            }
-            {canPlaceOrder ? (
-                <Button
-                    variant="outlined"
-                    sx={{ mt: 1.5 }}
-                    onClick={handlePlaceOrder}
-                    color={buySell === 'BUY' ? 'primary':'error'}
-                >
-                    PLACE ORDER
-                </Button>
-            ) : (
-                <DisabledButton
-                    variant="outlined"
-                    sx={{ mt: 1.5 }}
-                    // onClick={()=>openSnackbar('Please connect wallet!', 'error')}
-                    disabled
-                >
-                    PLACE ORDER
-                </DisabledButton>
+            {accountProfile && accountProfile.account ? (
+                <>
+                    {errMsg &&
+                        <Typography variant='s2'>{errMsg}</Typography>
+                    }
+                    {canPlaceOrder ? (
+                        <Button
+                            variant="outlined"
+                            sx={{ mt: 1.5 }}
+                            onClick={handlePlaceOrder}
+                            color={buySell === 'BUY' ? 'primary':'error'}
+                        >
+                            PLACE ORDER
+                        </Button>
+                    ) : (
+                        <DisabledButton
+                            variant="outlined"
+                            sx={{ mt: 1.5 }}
+                            // onClick={()=>openSnackbar('Please connect wallet!', 'error')}
+                            disabled
+                        >
+                            PLACE ORDER
+                        </DisabledButton>
+                    )}
+                </>
+            ):(
+                <ConnectWallet pair={pair} />
             )}
 
             <QRDialog

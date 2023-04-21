@@ -49,7 +49,7 @@ import { fNumber } from 'src/utils/formatNumber';
 import { XRP_TOKEN, USD_TOKEN } from 'src/utils/constants';
 
 // Components
-import Wallet from './Wallet';
+import ConnectWallet from 'src/components/ConnectWallet';
 import QRDialog from 'src/components/QRDialog';
 import QueryToken from './QueryToken';
 
@@ -590,9 +590,7 @@ export default function Swap({tokens, asks, bids, pair, setPair, revert, setReve
                         </ExchangeButton>
                     </>
                 ):(
-                    <>
-                        <Wallet pair={pair} />
-                    </>
+                    <ConnectWallet pair={pair} />
                 )}
             </Stack>
 

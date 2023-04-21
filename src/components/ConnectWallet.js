@@ -30,8 +30,7 @@ import { AppContext } from 'src/AppContext'
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
 
-export default function Wallet({pair}) {
-    const theme = useTheme();
+export default function ConnectWallet() {
     const BASE_URL = 'https://api.xrpl.to/api';
     const { accountProfile, doLogIn, setLoading, sync, setSync } = useContext(AppContext);
     const accountLogin = accountProfile?.account;
@@ -44,9 +43,6 @@ export default function Wallet({pair}) {
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
-
-    let curr1 = pair.curr1;
-    let curr2 = pair.curr2;
 
     /*
         {
@@ -152,7 +148,6 @@ export default function Wallet({pair}) {
 
     return (
         <>
-            
             <Button variant="contained" onClick={handleLogin} startIcon={<AccountBalanceWalletIcon />} sx={{ mt: 1.5 }}>
                 Connect Wallet
             </Button>
