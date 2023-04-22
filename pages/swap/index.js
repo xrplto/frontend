@@ -130,8 +130,8 @@ function Overview({data}) {
                 "limit":200
             }*/
 
-            const curr1 = revert?pair.curr2:pair.curr1;
-            const curr2 = revert?pair.curr1:pair.curr2;
+            const curr1 = pair.curr1;
+            const curr2 = pair.curr2;
 
             const cmdAsk = {
                 id: reqID,

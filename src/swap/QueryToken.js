@@ -25,7 +25,7 @@ import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
-import { XRP_TOKEN } from 'src/utils/constants';
+import { XRP_TOKEN, USD_TOKEN } from 'src/utils/constants';
 
 const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
     borderRadius: '50%',
@@ -49,7 +49,7 @@ export default function QueryToken({token, onChangeToken}) {
 
     const [loading, setLoading] = useState(false);
 
-    const [tokens, setTokens] = useState([XRP_TOKEN]);
+    const [tokens, setTokens] = useState([XRP_TOKEN, USD_TOKEN]);
     const [filter, setFilter] = useState('');
 
     const loadTokens = () => {
