@@ -11,6 +11,10 @@ import {
     Typography
 } from '@mui/material';
 
+// Utils
+import { fNumber } from 'src/utils/formatNumber';
+import { CURRENCY_ISSUERS } from 'src/utils/constants';
+
 // Components
 import TrustSetDialog from 'src/components/TrustSetDialog';
 
@@ -55,6 +59,7 @@ export default function ExtraButtons({token}) {
                         onClick={handleSetTrust}
                         color='primary'
                         size="small"
+                        disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
                     >
                         TrustSet
                     </Button>

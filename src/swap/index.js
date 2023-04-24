@@ -191,7 +191,8 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
     const [amount1, setAmount1] = useState(1); // XRP
     const [amount2, setAmount2] = useState(0); // Token
 
-    const [tokenExch, setTokenExch] = useState(0);
+    const [tokenExch1, setTokenExch1] = useState(0);
+    const [tokenExch2, setTokenExch2] = useState(0);
 
     const [active, setActive] = useState('AMOUNT');
 
@@ -203,7 +204,12 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
     const value = revert?amount1:amount2;
     const setAmount = revert?setAmount2:setAmount1;
     const setValue = revert?setAmount1:setAmount2;
-    const tokenPrice = new Decimal(tokenExch || 0).mul(amount1 || 0).div(metrics.USD || 1).toNumber();
+    const tokenPrice1 = new Decimal(tokenExch1 || 0).mul(amount1 || 0).div(metrics.USD || 1).toNumber();
+    const tokenPrice2 = new Decimal(tokenExch2 || 0).mul(amount2 || 0).div(metrics.USD || 1).toNumber();
+
+    const inputPrice = revert?tokenPrice2:tokenPrice1;
+    const outputPrice = revert?tokenPrice1:tokenPrice2;
+    const priceImpact = inputPrice > 0 ? new Decimal(outputPrice).sub(inputPrice).mul(100).div(inputPrice).toDP(2, Decimal.ROUND_DOWN).toNumber() : 0;
 
     // const color1 = revert?theme.currency.background2:theme.currency.background1;
     // const color2 = revert?theme.currency.background1:theme.currency.background2;
@@ -286,13 +292,15 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
     useEffect(() => {
         function getTokenPrice() {
             setLoadingPrice(true);
-            const md5 = token1.md5;
-            // https://api.xrpl.to/api/token/c9ac9a6c44763c1bd9ccc6e47572fd26
-            axios.get(`${BASE_URL}/token/${md5}`)
+            const md51 = token1.md5;
+            const md52 = token2.md5;
+            // https://api.xrpl.to/api/pair_rates?md51=84e5efeb89c4eae8f68188982dc290d8&md52=c9ac9a6c44763c1bd9ccc6e47572fd26
+            axios.get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
-                        setTokenExch(ret.token?.exch || 0);
+                        setTokenExch1(ret.rate1 || 0);
+                        setTokenExch2(ret.rate2 || 0);
                     }
                 }).catch(err => {
                     console.log("Error on getting token info!", err);
@@ -303,7 +311,7 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
         }
         getTokenPrice();
 
-    }, [token1, amount1]);
+    }, [token1, amount1, token2, amount2]);
 
     useEffect(() => {
         if (active === 'VALUE') {
@@ -545,10 +553,13 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
             <OverviewWrapper>
                 <ConverterFrame>
                     <CurrencyContent style={{order: revert ? 2:1, backgroundColor: color1}}>
-                        <QueryToken
-                            token={token1}
-                            onChangeToken={onChangeToken1}
-                        />
+                        <Stack>
+                            <QueryToken
+                                token={token1}
+                                onChangeToken={onChangeToken1}
+                            />
+                            <Typography variant="s7">Balance <Typography variant="s2">{revert?accountPairBalance?.curr2.value:accountPairBalance?.curr1.value}</Typography></Typography>
+                        </Stack>
                         <InputContent>
                             <Input
                                 placeholder=''
@@ -571,14 +582,17 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
                                     }
                                 }}
                             />
-                            <Typography variant="s7">Balance <Typography variant="s2">{revert?accountPairBalance?.curr2.value:accountPairBalance?.curr1.value}</Typography></Typography>
+                            <Typography variant="s2">$ {fNumber(tokenPrice1)}</Typography>
                         </InputContent>
                     </CurrencyContent>
                     <CurrencyContent style={{order: revert ? 1:2, backgroundColor: color2}}>
-                        <QueryToken
-                            token={token2}
-                            onChangeToken={onChangeToken2}
-                        />
+                        <Stack>
+                            <QueryToken
+                                token={token2}
+                                onChangeToken={onChangeToken2}
+                            />
+                            <Typography variant="s7">Balance <Typography variant="s2">{revert?accountPairBalance?.curr1.value:accountPairBalance?.curr2.value}</Typography></Typography>
+                        </Stack>
                         <InputContent>
                             <Input
                                 placeholder=''
@@ -601,7 +615,7 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
                                     }
                                 }}
                             />
-                            <Typography variant="s7">Balance <Typography variant="s2">{revert?accountPairBalance?.curr1.value:accountPairBalance?.curr2.value}</Typography></Typography>
+                            <Typography variant="s2">$ {fNumber(tokenPrice2)}</Typography>
                         </InputContent>
                     </CurrencyContent>
                     <ToggleContent>
@@ -620,11 +634,11 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
                             width: '100%'
                         }}
                     >
-                        <Typography variant="s6">Price</Typography>
+                        <Typography variant="s6">Price impact</Typography>
                         {loadingPrice ? 
                             <ClipLoader color='#EB5757' size={15} />
                             :
-                            <Typography variant="s2">$ {fNumber(tokenPrice)}</Typography>
+                            <Typography variant="s2">{priceImpact} %</Typography>
                         }
                     </Stack>
                 </CurrencyContent>

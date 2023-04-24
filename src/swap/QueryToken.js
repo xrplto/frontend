@@ -35,6 +35,11 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
 const CustomSelect = styled(Select)(({ theme }) => ({
     '& .MuiOutlinedInput-notchedOutline' : {
         border: 'none'
+    },
+    '& .MuiOutlinedInput-input' : {
+        paddingLeft: 0,
+        paddingTop: 10,
+        paddingBottom: 3,
     }
 }));
 

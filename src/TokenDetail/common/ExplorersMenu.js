@@ -87,7 +87,7 @@ export default function ExplorersMenu({issuer}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://bithomp.com/explorer/${issuer}`}
+                    href={issuer==='XRPL'?`https://bithomp.com`:`https://bithomp.com/explorer/${issuer}`}
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
@@ -99,7 +99,7 @@ export default function ExplorersMenu({issuer}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://gatehub.net/explorer/${issuer}`}
+                    href={issuer==='XRPL'?`https://gatehub.net`:`https://gatehub.net/explorer/${issuer}`}
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
@@ -111,7 +111,7 @@ export default function ExplorersMenu({issuer}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://xrpscan.com/account/${issuer}`}
+                    href={issuer==='XRPL'?`https://xrpscan.com`:`https://xrpscan.com/account/${issuer}`}
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() =>  handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
@@ -126,7 +126,7 @@ export default function ExplorersMenu({issuer}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://explorer.xrplf.org/${issuer}`}
+                    href={issuer==='XRPL'?`https://explorer.xrplf.org`:`https://explorer.xrplf.org/${issuer}`}
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
@@ -138,7 +138,7 @@ export default function ExplorersMenu({issuer}) {
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://livenet.xrpl.org/accounts/${issuer}`}
+                    href={issuer==='XRPL'?`https://livenet.xrpl.org`:`https://livenet.xrpl.org/accounts/${issuer}`}
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>

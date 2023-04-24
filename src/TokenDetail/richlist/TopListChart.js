@@ -44,7 +44,8 @@ export default function TopListChart({ token }) {
 
     useEffect(() => {
         function getGraph () {
-            // https://api.xrpl.to/api/graphrich/0413ca7cfc258dfaf698c02fe304e607?range=7D
+            // https://api.xrpl.to/api/graphrich/c9ac9a6c44763c1bd9ccc6e47572fd26?range=ALL
+            // https://api.xrpl.to/api/graphrich/84e5efeb89c4eae8f68188982dc290d8?range=ALL
             axios.get(`${BASE_URL}/graphrich/${token.md5}?range=${range}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
@@ -57,6 +58,11 @@ export default function TopListChart({ token }) {
                             setGraphData2(data[1]);
                             setGraphData3(data[2]);
                             setGraphData4(data[3]);
+                        } else {
+                            setGraphData1([]);
+                            setGraphData2([]);
+                            setGraphData3([]);
+                            setGraphData4([]);
                         }
                     }
                 }).catch(err => {
@@ -115,6 +121,7 @@ export default function TopListChart({ token }) {
                     <ToggleButton sx={{pt:0,pb:0}} value="7D">7D</ToggleButton>
                     <ToggleButton sx={{pt:0,pb:0}} value="1M">1M</ToggleButton>
                     <ToggleButton sx={{pt:0,pb:0}} value="3M">3M</ToggleButton>
+                    <ToggleButton sx={{pt:0,pb:0}} value="ALL">ALL</ToggleButton>
                 </ToggleButtonGroup>
             </Stack>
             <Box sx={{ p: 0, pb: 0 }} dir="ltr">

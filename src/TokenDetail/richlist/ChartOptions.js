@@ -137,7 +137,7 @@ export default function ChartOptions(series) {
                     }
                 }
             },
-            z: {
+            /*z: {
                 formatter: (z) => {
                     if (typeof z !== 'undefined') {
                         return `Active Addresses: ${fIntNumber(z)}`;
@@ -145,7 +145,7 @@ export default function ChartOptions(series) {
                     return z;
                 },
                 title: ''
-            },
+            },*/
             marker: {
                 show: true,
             },

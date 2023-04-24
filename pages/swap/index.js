@@ -197,37 +197,28 @@ function Overview({data}) {
 
     return (
         <OverviewWrapper>
-            <Stack>
-                <Toolbar id="back-to-top-anchor" />
-                <Topbar />
-                <Header />
+            <Toolbar id="back-to-top-anchor" />
+            <Topbar />
+            <Header />
 
-                {/* <Container
-                    maxWidth="sm"
+            <Container maxWidth="sm">
+                <Stack
+                    direction="row"
+                    justifyContent="center"
+                    alignItems={{xs: "flex-start", sm: "center"}}
+                    sx={{
+                        mt: {xs: 4, sm: -10}
+                    }}
                     style={{
                         height: '100%',
                         minHeight: '100vh'
                     }}
-                > */}
-                    <Stack
-                        direction="row"
-                        justifyContent="center"
-                        alignItems={{xs: "flex-start", sm: "center"}}
-                        sx={{
-                            mt: {xs: 4, sm: -10}
-                        }}
-                        style={{
-                            height: '100%',
-                            minHeight: '100vh'
-                        }}
-                    >
-                        <Swap tokens={tokens} asks={asks} bids={bids} pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
-                    </Stack>
-                {/* </Container> */}
+                >
+                    <Swap tokens={tokens} asks={asks} bids={bids} pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
+                </Stack>
+            </Container>
 
-                <Footer />
-            </Stack>
-
+            <Footer />
         </OverviewWrapper>
     );
 }

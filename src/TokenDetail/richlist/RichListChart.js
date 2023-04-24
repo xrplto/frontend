@@ -21,7 +21,7 @@ function extractGraphData(items) {
     // const info = {time, length, top10, top20, top50, top100, active24H};
     const res = [];
     for (var item of items) {
-        res.push([item.time, item.length, item.active24H]);
+        res.push([item.time, item.length/*, item.active24H*/]);
     }
     return res;
 }
@@ -43,6 +43,8 @@ export default function RichListChart({ token }) {
                         if (items && items.length > 0) {
                             const len = items.length;
                             setGraphData(extractGraphData(items));
+                        } else {
+                            setGraphData([]);
                         }
                     }
                 }).catch(err => {
@@ -86,6 +88,7 @@ export default function RichListChart({ token }) {
                     <ToggleButton sx={{pt:0,pb:0}} value="7D">7D</ToggleButton>
                     <ToggleButton sx={{pt:0,pb:0}} value="1M">1M</ToggleButton>
                     <ToggleButton sx={{pt:0,pb:0}} value="3M">3M</ToggleButton>
+                    <ToggleButton sx={{pt:0,pb:0}} value="ALL">ALL</ToggleButton>
                 </ToggleButtonGroup>
             </Stack>
             <Box sx={{ p: 0, pb: 0 }} dir="ltr">
