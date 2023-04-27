@@ -68,9 +68,21 @@ export default function TokenListHead({
                     position: "sticky",
                     zIndex: 1002,
                     left: 52,
-                    background: darkMode ? "#17171A" : '#F2F5F9'
+                    background: darkMode ? "#17171A" : '#F2F5F9',
+                    '&:before': (isMobile && scrollLeft ? {
+                        content: "''",
+                        boxShadow: "inset 10px 0 8px -8px #00000026",
+                        position: "absolute",
+                        top: "0",
+                        right: "0",
+                        bottom: "-1px",
+                        width: "30px",
+                        transform: "translate(100%)",
+                        transition: "box-shadow .3s",
+                        pointerEvents: "none",
+                    } : {})
                 },
-                '& .MuiTableCell-root:nth-child(3)': {
+                '& .MuiTableCell-root:nth-child(3)': !isMobile && {
                     position: "sticky",
                     zIndex: 1003,
                     left: 99,

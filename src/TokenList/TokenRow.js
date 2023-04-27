@@ -204,7 +204,7 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                 <TableCell align="left" sx={{p:0,
                     position: "sticky",
                     zIndex: 1003,
-                    left: 99,
+                    left: isMobile ? 52 : 99,
                     background: darkMode ? "#17171A" : '#F2F5F9',
                     '&:before': (scrollLeft ? {
                         content: "''",
