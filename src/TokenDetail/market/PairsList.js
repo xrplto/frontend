@@ -21,6 +21,9 @@ import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
+import { useEffect, useRef, useState } from 'react';
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
@@ -73,6 +76,23 @@ function truncate(str, n){
 export default function PairsList({token, pairs}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
+    const { darkMode } = useContext(AppContext);
+
+    const tableRef = useRef(null);
+    const [scrollLeft, setScrollLeft] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrollLeft(tableRef?.current?.scrollLeft > 0);
+        };
+
+        tableRef?.current?.addEventListener('scroll', handleScroll);
+
+        return () => {
+            tableRef?.current?.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
     // const {
     //     issuer,
     //     currency,
@@ -94,6 +114,7 @@ export default function PairsList({token, pairs}) {
                     },
                     "::-webkit-scrollbar": { display: "none" },
                 }}
+                ref={tableRef}
             >
                 <Table stickyHeader sx={{
                     [`& .${tableCellClasses.root}`]: {
@@ -103,8 +124,30 @@ export default function PairsList({token, pairs}) {
                 }}>
                     <TableHead>
                         <TableRow>
-                            <TableCell align="left">#</TableCell>
-                            <TableCell align="left">Pair</TableCell>
+                            <TableCell align="left" sx={{
+                                position: "sticky",
+                                zIndex: 1001,
+                                left: 0,
+                                background: darkMode ? "#17171A" : '#F2F5F9'
+                            }}>#</TableCell>
+                            <TableCell align="left" sx={{
+                                position: "sticky",
+                                zIndex: 1002,
+                                left: 56,
+                                background: darkMode ? "#17171A" : '#F2F5F9',
+                                '&:before': (scrollLeft ? {
+                                    content: "''",
+                                    boxShadow: "inset 10px 0 8px -8px #00000026",
+                                    position: "absolute",
+                                    top: "0",
+                                    right: "0",
+                                    bottom: "-1px",
+                                    width: "30px",
+                                    transform: "translate(100%)",
+                                    transition: "box-shadow .3s",
+                                    pointerEvents: "none",
+                                } : {})
+                            }}>Pair</TableCell>
                             <TableCell align="left">Domain</TableCell>
                             <TableCell align="left">Last 7 Days</TableCell>
                             <TableCell align="left">Volume<span style={badge24hStyle}>24h</span></TableCell>
@@ -160,13 +203,41 @@ export default function PairsList({token, pairs}) {
                             
                             return (
                                 <TableRow
-                                    hover
                                     key={pair}
+                                    sx={{
+                                        "&:hover": {
+                                            "& .MuiTableCell-root": {
+                                                backgroundColor: darkMode ? "#232326 !important" : ''
+                                            }
+                                        }
+                                    }}
                                 >
-                                    <TableCell align="left" sx={{pt:0.5, pb:0.5}}>
+                                    <TableCell align="left" sx={{pt:0.5, pb:0.5,
+                                        position: "sticky",
+                                        zIndex: 1001,
+                                        left: 0,
+                                        background: darkMode ? "#17171A" : '#F2F5F9'
+                                    }}>
                                         {fNumber(id)}
                                     </TableCell>
-                                    <TableCell align="left" sx={{pt:0.5, pb:0.5}}>
+                                    <TableCell align="left" sx={{pt:0.5, pb:0.5,
+                                        position: "sticky",
+                                        zIndex: 1003,
+                                        left: 56,
+                                        background: darkMode ? "#17171A" : '#F2F5F9',
+                                        '&:before': (scrollLeft ? {
+                                            content: "''",
+                                            boxShadow: "inset 10px 0 8px -8px #00000026",
+                                            position: "absolute",
+                                            top: "0",
+                                            right: "0",
+                                            bottom: "-1px",
+                                            width: "30px",
+                                            transform: "translate(100%)",
+                                            transition: "box-shadow .3s",
+                                            pointerEvents: "none",
+                                        } : {})
+                                    }}>
                                         <Stack direction="row" alignItems='center'>
                                             <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
                                             <Icon icon={arrowsExchange} width="16" height="16"/>
