@@ -45,7 +45,8 @@ export default function TokenListHead({
     order,
     orderBy,
     onRequestSort,
-    scrollLeft
+    scrollLeft,
+    tokens
 }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -67,7 +68,7 @@ export default function TokenListHead({
                 '& .MuiTableCell-root:nth-child(2)': {
                     position: "sticky",
                     zIndex: 1002,
-                    left: 52,
+                    left: tokens.length > 0 ? 52 : 32,
                     background: darkMode ? "#17171A" : '#F2F5F9',
                     '&:before': (isMobile && scrollLeft ? {
                         content: "''",
@@ -85,7 +86,7 @@ export default function TokenListHead({
                 '& .MuiTableCell-root:nth-child(3)': !isMobile && {
                     position: "sticky",
                     zIndex: 1003,
-                    left: 99,
+                    left: tokens.length > 0 ? 99 : 72,
                     background: darkMode ? "#17171A" : '#F2F5F9',
                     '&:before': (scrollLeft ? {
                         content: "''",

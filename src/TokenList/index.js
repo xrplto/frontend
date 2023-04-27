@@ -61,10 +61,10 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
             setScrollLeft(tableRef?.current?.scrollLeft > 0);
         };
 
-        tableRef.current.addEventListener('scroll', handleScroll);
+        tableRef?.current?.addEventListener('scroll', handleScroll);
 
         return () => {
-            tableRef.current.removeEventListener('scroll', handleScroll);
+            tableRef?.current?.removeEventListener('scroll', handleScroll);
         };
     }, []);
 
@@ -328,6 +328,7 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
                         orderBy={orderBy}
                         onRequestSort={handleRequestSort}
                         scrollLeft={scrollLeft}
+                        tokens={tokens}
                     />
                     <TableBody>
                         {
