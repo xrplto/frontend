@@ -192,7 +192,7 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                     </Tooltip>
                 }
             </TableCell>
-            <LazyLoadComponent>
+            <LazyLoadComponent visibleByDefault={true}>
                 {!isMobile &&
                     <TableCell align="left" sx={{
                         position: "sticky",
