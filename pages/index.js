@@ -30,7 +30,6 @@ import HowWeWork from 'src/TokenList/HowWeWork';
 // overflow: hidden;
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
-    overflow: hidden;
     flex: 1;
 `
 );

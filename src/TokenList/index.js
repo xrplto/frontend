@@ -292,10 +292,15 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
                     display: "flex",
                     gap: 1,
                     py: 1,
-                    overflow: "auto",
                     width: "100%",
                     "& > *": {
                         scrollSnapAlign: "center",
+                    },
+                    "& .MuiTableHead-root": {
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 1,
+                        backgroundColor: "#17171A"
                     },
                     "::-webkit-scrollbar": { display: "none" },
                 }}
