@@ -101,10 +101,10 @@ function getPriceColor(token) {
 
 export const TokenRow = React.memo(fTokenRow);
 
-function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, onChangeWatchList}) {
+function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, onChangeWatchList, scrollLeft}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
-    const { accountProfile } = useContext(AppContext);
+    const { accountProfile, darkMode } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -134,7 +134,7 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
         usd,
         ext,
         marketcap,
-        isOMCF
+        isOMCF,
     } = token;
 
     useEffect(() => {
@@ -151,10 +151,21 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
 
     return (
         <TableRow
-            hover
             key={id}
+            sx={{
+                "&:hover": {
+                    "& .MuiTableCell-root": {
+                        backgroundColor: darkMode ? "#232326 !important" : ''
+                    }
+                }
+            }}
         >
-            <TableCell align="left">
+            <TableCell align="left" style={{
+                position: "sticky",
+                zIndex: 1001,
+                left: 0,
+                background: darkMode ? "#17171A" : '#F2F5F9'
+            }}>
                 {watchList.includes(md5) ?
                     <Tooltip title="Remove from Watchlist">
                         <StarRateIcon
@@ -183,9 +194,31 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
             </TableCell>
             <LazyLoadComponent>
                 {!isMobile &&
-                    <TableCell align="left">{id}</TableCell>
+                    <TableCell align="left" sx={{
+                        position: "sticky",
+                        zIndex: 1002,
+                        left: 52,
+                        background: darkMode ? "#17171A" : '#F2F5F9'
+                    }}>{id}</TableCell>
                 }
-                <TableCell align="left" sx={{p:0}}>
+                <TableCell align="left" sx={{p:0,
+                    position: "sticky",
+                    zIndex: 1003,
+                    left: 99,
+                    background: darkMode ? "#17171A" : '#F2F5F9',
+                    '&:before': (scrollLeft ? {
+                        content: "''",
+                        boxShadow: "inset 10px 0 8px -8px #00000026",
+                        position: "absolute",
+                        top: "0",
+                        right: "0",
+                        bottom: "-1px",
+                        width: "30px",
+                        transform: "translate(100%)",
+                        transition: "box-shadow .3s",
+                        pointerEvents: "none",
+                    } : {})
+                }}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{p:0}}>
                         {isAdmin ? (
                             <AdminImage

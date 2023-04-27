@@ -24,6 +24,7 @@ import SearchToolbar from './SearchToolbar';
 import {TokenRow} from './TokenRow';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 import TrustSetDialog from 'src/components/TrustSetDialog';
+import { useRef } from 'react';
 
 // ----------------------------------------------------------------------
 export default function TokenList({showWatchList, tag, tagName, tags, tokens, setTokens, tMap}) {
@@ -51,6 +52,21 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
     const [showSlug, setShowSlug] = useState(false);
     const [showDate, setShowDate] = useState(false);
     // -----------------------------------------------
+
+    const tableRef = useRef(null);
+    const [scrollLeft, setScrollLeft] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrollLeft(tableRef?.current?.scrollLeft > 0);
+        };
+
+        tableRef.current.addEventListener('scroll', handleScroll);
+
+        return () => {
+            tableRef.current.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
 
     const { accountProfile, openSnackbar, setLoading } = useContext(AppContext);
 
@@ -292,24 +308,21 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
                     display: "flex",
                     gap: 1,
                     py: 1,
+                    overflow: "auto",
                     width: "100%",
                     "& > *": {
                         scrollSnapAlign: "center",
                     },
-                    "& .MuiTableHead-root": {
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 1,
-                        backgroundColor: "#17171A"
-                    },
                     "::-webkit-scrollbar": { display: "none" },
                 }}
+                ref={tableRef}
             >
                 <Table>
                     <TokenListHead
                         order={order}
                         orderBy={orderBy}
                         onRequestSort={handleRequestSort}
+                        scrollLeft={scrollLeft}
                     />
                     <TableBody>
                         {
@@ -324,6 +337,7 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
                                         setTrustToken={setTrustToken}
                                         watchList={watchList}
                                         onChangeWatchList={onChangeWatchList}
+                                        scrollLeft={scrollLeft}
                                     />
                                 );
                             })

@@ -10,6 +10,8 @@ import {
     TableHead,
     TableSortLabel
 } from '@mui/material';
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 // ----------------------------------------------------------------------
 
 const StickyTableCell = withStyles((theme) => ({
@@ -42,7 +44,8 @@ const TABLE_HEAD = [
 export default function TokenListHead({
     order,
     orderBy,
-    onRequestSort
+    onRequestSort,
+    scrollLeft
 }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -50,9 +53,42 @@ export default function TokenListHead({
         onRequestSort(event, id, no);
     };
 
+    const { darkMode } = useContext(AppContext)
+
     return (
         <TableHead>
-            <TableRow>
+            <TableRow sx={{
+                '& .MuiTableCell-root:nth-child(1)': {
+                    position: "sticky",
+                    zIndex: 1001,
+                    left: 0,
+                    background: darkMode ? "#17171A" : '#F2F5F9'
+                },
+                '& .MuiTableCell-root:nth-child(2)': {
+                    position: "sticky",
+                    zIndex: 1002,
+                    left: 52,
+                    background: darkMode ? "#17171A" : '#F2F5F9'
+                },
+                '& .MuiTableCell-root:nth-child(3)': {
+                    position: "sticky",
+                    zIndex: 1003,
+                    left: 99,
+                    background: darkMode ? "#17171A" : '#F2F5F9',
+                    '&:before': (scrollLeft ? {
+                        content: "''",
+                        boxShadow: "inset 10px 0 8px -8px #00000026",
+                        position: "absolute",
+                        top: "0",
+                        right: "0",
+                        bottom: "-1px",
+                        width: "30px",
+                        transform: "translate(100%)",
+                        transition: "box-shadow .3s",
+                        pointerEvents: "none",
+                    } : {})
+                }
+            }}>
                 {TABLE_HEAD.map((headCell) => {
                     if (isMobile && headCell.id === 'id')
                         return null;
