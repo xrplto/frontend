@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Decimal from 'decimal.js';
 import {MD5} from "crypto-js";
 
@@ -28,6 +28,8 @@ import HistoryToolbar from './HistoryToolbar';
 import { fNumber } from 'src/utils/formatNumber';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 import { formatDateTime } from 'src/utils/formatTime';
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 // ----------------------------------------------------------------------
 
 function truncate(str, n){
@@ -43,6 +45,8 @@ function getMD5(issuer, currency) {
 export default function HistoryData({token}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
+
+    const { darkMode } = useContext(AppContext);
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);
@@ -74,6 +78,21 @@ export default function HistoryData({token}) {
         getHistories();
     }, [page, rows]);
 
+    const tableRef = useRef(null);
+    const [scrollLeft, setScrollLeft] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrollLeft(tableRef?.current?.scrollLeft > 0);
+        };
+
+        tableRef?.current?.addEventListener('scroll', handleScroll);
+
+        return () => {
+            tableRef?.current?.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
     return (
         <>
             <Box
@@ -88,17 +107,44 @@ export default function HistoryData({token}) {
                     },
                     "::-webkit-scrollbar": { display: "none" },
                 }}
+                ref={tableRef}
             >
                 <Table stickyHeader sx={{
                     [`& .${tableCellClasses.root}`]: {
                         borderBottom: "1px solid",
                         borderBottomColor: theme.palette.divider
-                    }
+                    },
+                    // "& .MuiTableCell-root": {
+                    //     borderBottom: "none",
+                    //     boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
+                    // }
                 }}>
                     <TableHead>
                         <TableRow>
-                            <TableCell align="left">#</TableCell>
-                            <TableCell align="left">Time</TableCell>
+                            <TableCell align="left" sx={{
+                                position: "sticky",
+                                zIndex: 1001,
+                                left: 0,
+                                background: darkMode ? "#17171A" : '#F2F5F9'
+                            }}>#</TableCell>
+                            <TableCell align="left" sx={{
+                                position: "sticky",
+                                zIndex: 1002,
+                                left: hists.length > 0 ? 48 : 40,
+                                background: darkMode ? "#17171A" : '#F2F5F9',
+                                '&:before': (scrollLeft ? {
+                                    content: "''",
+                                    boxShadow: "inset 10px 0 8px -8px #00000026",
+                                    position: "absolute",
+                                    top: "0",
+                                    right: "0",
+                                    bottom: "-1px",
+                                    width: "30px",
+                                    transform: "translate(100%)",
+                                    transition: "box-shadow .3s",
+                                    pointerEvents: "none",
+                                } : {})
+                            }}>Time</TableCell>
                             <TableCell align="left">Price</TableCell>
                             <TableCell align="left">Taker Paid</TableCell>
                             <TableCell align="left">Taker Got</TableCell>
@@ -168,11 +214,41 @@ export default function HistoryData({token}) {
 
                                 return (
                                     <TableRow
-                                        hover
                                         key={_id}
+                                        sx={{
+                                            "&:hover": {
+                                                "& .MuiTableCell-root": {
+                                                    backgroundColor: darkMode ? "#232326 !important" : ''
+                                                }
+                                            }
+                                        }}
                                     >
-                                        <TableCell align="left"><Typography variant="subtitle2">{idx + page * rows + 1}</Typography></TableCell>
-                                        <TableCell align="left">
+                                        <TableCell align="left" style={{
+                                            position: "sticky",
+                                            zIndex: 1001,
+                                            left: 0,
+                                            background: darkMode ? "#17171A" : '#F2F5F9'
+                                        }}>
+                                            <Typography variant="subtitle2">{idx + page * rows + 1}</Typography>
+                                        </TableCell>
+                                        <TableCell align="left" sx={{
+                                            position: "sticky",
+                                            zIndex: 1002,
+                                            left: 48,
+                                            background: darkMode ? "#17171A" : '#F2F5F9',
+                                            '&:before': (scrollLeft ? {
+                                                content: "''",
+                                                boxShadow: "inset 10px 0 8px -8px #00000026",
+                                                position: "absolute",
+                                                top: "0",
+                                                right: "0",
+                                                bottom: "-1px",
+                                                width: "30px",
+                                                transform: "translate(100%)",
+                                                transition: "box-shadow .3s",
+                                                pointerEvents: "none",
+                                            } : {})
+                                        }}>
                                             <Typography variant="caption">{strDateTime}</Typography>
                                         </TableCell>
                                         <TableCell align="left"><Typography variant="caption">{fNumber(exch)} {name}</Typography></TableCell>

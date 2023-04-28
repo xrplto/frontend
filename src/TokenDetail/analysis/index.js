@@ -10,6 +10,7 @@ import {
     TableBody,
     Typography
 } from '@mui/material';
+import { tableCellClasses } from '@mui/material/TableCell';
 
 // Loader
 import { PuffLoader } from "react-spinners";
@@ -87,7 +88,7 @@ export default function AnalysisData({token}) {
     }, [page, rows]);
 
     const tableRef = useRef(null);
-const [scrollLeft, setScrollLeft] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -121,10 +122,10 @@ const [scrollLeft, setScrollLeft] = useState(0);
                 ref={tableRef}
             >
                 <Table sx={{
-                    "& .MuiTableCell-root": {
-                        borderBottom: "none",
-                        boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
-                    }
+                    [`& .${tableCellClasses.root}`]: {
+                        borderBottom: "1px solid",
+                        borderBottomColor: theme.palette.divider
+                    },
                 }}>
                     {count > 0 &&
                         <TokenListHead scrollLeft={scrollLeft} tokens={tokens} />

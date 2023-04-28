@@ -118,7 +118,7 @@ export default function PairsList({token, pairs}) {
             >
                 <Table stickyHeader sx={{
                     [`& .${tableCellClasses.root}`]: {
-                        borderBottom: "0px solid",
+                        borderBottom: "1px solid",
                         borderBottomColor: theme.palette.divider
                     }
                 }}>
