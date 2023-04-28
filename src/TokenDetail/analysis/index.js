@@ -28,6 +28,7 @@ import {TokenRow} from './TokenRow';
 import TokenListToolbar from './TokenListToolbar';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 import TrustSetDialog from 'src/components/TrustSetDialog';
+import { useRef } from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -85,6 +86,21 @@ export default function AnalysisData({token}) {
         getTokens();
     }, [page, rows]);
 
+    const tableRef = useRef(null);
+const [scrollLeft, setScrollLeft] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrollLeft(tableRef?.current?.scrollLeft > 0);
+        };
+
+        tableRef?.current?.addEventListener('scroll', handleScroll);
+
+        return () => {
+            tableRef?.current?.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
     return (
         <>
             {editToken && <EditTokenDialog token={editToken} setToken={setEditToken} /> }
@@ -102,10 +118,16 @@ export default function AnalysisData({token}) {
                     },
                     "::-webkit-scrollbar": { display: "none" },
                 }}
+                ref={tableRef}
             >
-                <Table>
+                <Table sx={{
+                    "& .MuiTableCell-root": {
+                        borderBottom: "none",
+                        boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
+                    }
+                }}>
                     {count > 0 &&
-                        <TokenListHead />
+                        <TokenListHead scrollLeft={scrollLeft} tokens={tokens} />
                     }
                     <TableBody>
                         {
@@ -119,6 +141,7 @@ export default function AnalysisData({token}) {
                                             admin={isAdmin}
                                             setEditToken={setEditToken}
                                             setTrustToken={setTrustToken}
+                                            scrollLeft={scrollLeft}
                                         />
                                     );
                                 })

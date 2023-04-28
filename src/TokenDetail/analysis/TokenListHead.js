@@ -9,6 +9,8 @@ import {
     TableHead,
     TableSortLabel
 } from '@mui/material';
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 // ----------------------------------------------------------------------
 
 const StickyTableCell = withStyles((theme) => ({
@@ -34,10 +36,36 @@ const TABLE_HEAD = [
     { id: '' }
 ];
 
-export default function TokenListHead({}) {
+export default function TokenListHead({ scrollLeft, tokens }) {
+    const { darkMode } = useContext(AppContext);
 
     return (
-        <TableHead>
+        <TableHead sx={{
+            '& .MuiTableCell-root:nth-child(1)': {
+                position: "sticky",
+                zIndex: 1001,
+                left: 0,
+                background: darkMode ? "#17171A" : '#F2F5F9'
+            },
+            '& .MuiTableCell-root:nth-child(2)': {
+                position: "sticky",
+                zIndex: 1002,
+                left: tokens.length > 0 ? 67 : 40,
+                background: darkMode ? "#17171A" : '#F2F5F9',
+                '&:before': (scrollLeft ? {
+                    content: "''",
+                    boxShadow: "inset 10px 0 8px -8px #00000026",
+                    position: "absolute",
+                    top: "0",
+                    right: "0",
+                    bottom: "-1px",
+                    width: "30px",
+                    transform: "translate(100%)",
+                    transition: "box-shadow .3s",
+                    pointerEvents: "none",
+                } : {})
+            },
+        }}>
             <TableRow>
                 {TABLE_HEAD.map((headCell) => (
                     <StickyTableCell

@@ -86,9 +86,9 @@ function getPriceColor(token) {
 
 export const TokenRow = React.memo(fTokenRow);
 
-function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
+function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, scrollLeft}) {
     const BASE_URL = 'https://api.xrpl.to/api';
-    const { accountProfile } = useContext(AppContext);
+    const { accountProfile, darkMode } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     const [priceColor, setPriceColor] = useState('');
@@ -134,12 +134,40 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken}) {
 
     return (
         <TableRow
-            hover
             key={id}
+            sx={{
+                "&:hover": {
+                    "& .MuiTableCell-root": {
+                        backgroundColor: darkMode ? "#232326 !important" : ''
+                    }
+                }
+            }}
         >
-            <TableCell align="left">{id}</TableCell>
-            <LazyLoadComponent>
-                <TableCell align="left" sx={{p:0}}>
+            <TableCell align="left" style={{
+                position: "sticky",
+                zIndex: 1001,
+                left: 0,
+                background: darkMode ? "#17171A" : '#F2F5F9'
+            }}>{id}</TableCell>
+            <LazyLoadComponent visibleByDefault={true}>
+                <TableCell align="left" sx={{p:0,
+                    position: "sticky",
+                    zIndex: 1003,
+                    left: 67,
+                    background: darkMode ? "#17171A" : '#F2F5F9',
+                    '&:before': (scrollLeft ? {
+                        content: "''",
+                        boxShadow: "inset 10px 0 8px -8px #00000026",
+                        position: "absolute",
+                        top: "0",
+                        right: "0",
+                        bottom: "-1px",
+                        width: "30px",
+                        transform: "translate(100%)",
+                        transition: "box-shadow .3s",
+                        pointerEvents: "none",
+                    } : {})
+                }}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{p:0}}>
                         {admin ? (
                             <AdminImage
