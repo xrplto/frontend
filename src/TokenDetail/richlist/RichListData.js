@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Material
 import {
@@ -50,7 +50,7 @@ export default function RichListData({token}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const metrics = useSelector(selectMetrics);
 
-    const { accountProfile, setLoading, openSnackbar } = useContext(AppContext);
+    const { accountProfile, setLoading, openSnackbar, darkMode } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
     
     const [page, setPage] = useState(0);
@@ -147,6 +147,21 @@ export default function RichListData({token}) {
         setFrozen(!frozen);
     }
 
+    const tableRef = useRef(null);
+    const [scrollLeft, setScrollLeft] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrollLeft(tableRef?.current?.scrollLeft > 0);
+        };
+
+        tableRef?.current?.addEventListener('scroll', handleScroll);
+
+        return () => {
+            tableRef?.current?.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
     return (
         <>
             <Box
@@ -161,6 +176,7 @@ export default function RichListData({token}) {
                     },
                     "::-webkit-scrollbar": { display: "none" },
                 }}
+                ref={tableRef}
             >
                 <Table stickyHeader sx={{
                     [`& .${tableCellClasses.root}`]: {
@@ -170,7 +186,24 @@ export default function RichListData({token}) {
                 }}>
                     <TableHead>
                         <TableRow>
-                            <TableCell align="left">#</TableCell>
+                            <TableCell align="left" sx={{
+                                position: "sticky",
+                                zIndex: 1001,
+                                left: 0,
+                                background: darkMode ? "#17171A" : '#F2F5F9',
+                                '&:before': (scrollLeft ? {
+                                    content: "''",
+                                    boxShadow: "inset 10px 0 8px -8px #00000026",
+                                    position: "absolute",
+                                    top: "0",
+                                    right: "0",
+                                    bottom: "-1px",
+                                    width: "30px",
+                                    transform: "translate(100%)",
+                                    transition: "box-shadow .3s",
+                                    pointerEvents: "none",
+                                } : {})
+                            }}>#</TableCell>
                             <TableCell align="left">Address</TableCell>
                             <TableCell align="left">
                                 <Link
@@ -206,15 +239,38 @@ export default function RichListData({token}) {
                                 
                                 return (
                                     <TableRow
-                                        hover
                                         key={id}
                                         // sx={{
                                         //     [`& .${tableCellClasses.root}`]: {
                                         //         color: (/*buy*/dir === 'sell' ? '#007B55' : '#B72136')
                                         //     }
                                         // }}
+                                        sx={{
+                                            "&:hover": {
+                                                "& .MuiTableCell-root": {
+                                                    backgroundColor: darkMode ? "#232326 !important" : ''
+                                                }
+                                            }
+                                        }}
                                     >
-                                        <TableCell align="left">
+                                        <TableCell align="left" sx={{                 
+                                            position: "sticky",
+                                            zIndex: 1001,
+                                            left: 0,
+                                            background: darkMode ? "#17171A" : '#F2F5F9',
+                                            '&:before': (scrollLeft ? {
+                                                content: "''",
+                                                boxShadow: "inset 10px 0 8px -8px #00000026",
+                                                position: "absolute",
+                                                top: "0",
+                                                right: "0",
+                                                bottom: "-1px",
+                                                width: "30px",
+                                                transform: "translate(100%)",
+                                                transition: "box-shadow .3s",
+                                                pointerEvents: "none",
+                                            } : {})
+                                        }}>
                                             <Typography variant="subtitle1">{id}</Typography>
                                         </TableCell>
                                         <TableCell align="left">
