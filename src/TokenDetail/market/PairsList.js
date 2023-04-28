@@ -133,7 +133,7 @@ export default function PairsList({token, pairs}) {
                             <TableCell align="left" sx={{
                                 position: "sticky",
                                 zIndex: 1002,
-                                left: 56,
+                                left: 40,
                                 background: darkMode ? "#17171A" : '#F2F5F9',
                                 '&:before': (scrollLeft ? {
                                     content: "''",
@@ -223,7 +223,7 @@ export default function PairsList({token, pairs}) {
                                     <TableCell align="left" sx={{pt:0.5, pb:0.5,
                                         position: "sticky",
                                         zIndex: 1003,
-                                        left: 56,
+                                        left: 40,
                                         background: darkMode ? "#17171A" : '#F2F5F9',
                                         '&:before': (scrollLeft ? {
                                             content: "''",
