@@ -40,6 +40,7 @@ import { AppContext } from 'src/AppContext'
 
 // Components
 import QRDialog from 'src/components/QRDialog';
+import { useRef } from 'react';
 
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
@@ -98,7 +99,7 @@ export default function Orders({pair}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     
-    const { accountProfile, sync, setSync } = useContext(AppContext);
+    const { accountProfile, sync, setSync, darkMode } = useContext(AppContext);
     const accountAddress = accountProfile?.account;
     
     const [openScanQR, setOpenScanQR] = useState(false);
@@ -234,6 +235,21 @@ export default function Orders({pair}) {
         setOpenScanQR(false);
         onDisconnectXumm(uuid);
     };
+    
+    const tableRef = useRef(null);
+    const [scrollLeft, setScrollLeft] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrollLeft(tableRef?.current?.scrollLeft > 0);
+        };
+
+        tableRef?.current?.addEventListener('scroll', handleScroll);
+
+        return () => {
+            tableRef?.current?.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
 
     // https://api.sologenic.org/api/v1/trades?symbol=534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz%2FXRP&account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
 
@@ -258,6 +274,7 @@ export default function Orders({pair}) {
                     },
                     "::-webkit-scrollbar": { display: "none" },
                 }}
+                ref={tableRef}
             >
                 <Table stickyHeader size={'small'}
                     sx={{
@@ -276,7 +293,24 @@ export default function Orders({pair}) {
                                 }
                             }}
                         >
-                            <TableCell align="left">Side</TableCell>
+                            <TableCell align="left" sx={{
+                                position: "sticky",
+                                zIndex: 1001,
+                                left: 0,
+                                background: darkMode ? "#17171A" : '#F2F5F9',
+                                '&:before': (scrollLeft ? {
+                                    content: "''",
+                                    boxShadow: "inset 10px 0 8px -8px #00000026",
+                                    position: "absolute",
+                                    top: "0",
+                                    right: "0",
+                                    bottom: "-1px",
+                                    width: "30px",
+                                    transform: "translate(100%)",
+                                    transition: "box-shadow .3s",
+                                    pointerEvents: "none",
+                                } : {})
+                            }}>Side</TableCell>
                             <TableCell align="left">Price</TableCell>
                             <TableCell align="left">Taker Gets</TableCell>
                             <TableCell align="left">Taker Pays</TableCell>
@@ -337,15 +371,36 @@ export default function Orders({pair}) {
 
                                 return (
                                     <TableRow
-                                        hover
                                         key={_id}
                                         sx={{
                                             [`& .${tableCellClasses.root}`]: {
                                                 color: (buy ? '#007B55' : '#B72136')
+                                            },
+                                            "&:hover": {
+                                                "& .MuiTableCell-root": {
+                                                    backgroundColor: darkMode ? "#232326 !important" : ''
+                                                }
                                             }
                                         }}
                                     >
-                                        <TableCell align="left">
+                                        <TableCell align="left" sx={{
+                                            position: "sticky",
+                                            zIndex: 1001,
+                                            left: 0,
+                                            background: darkMode ? "#17171A" : '#F2F5F9',
+                                            '&:before': (scrollLeft ? {
+                                                content: "''",
+                                                boxShadow: "inset 10px 0 8px -8px #00000026",
+                                                position: "absolute",
+                                                top: "0",
+                                                right: "0",
+                                                bottom: "-1px",
+                                                width: "30px",
+                                                transform: "translate(100%)",
+                                                transition: "box-shadow .3s",
+                                                pointerEvents: "none",
+                                            } : {})
+                                        }}>
                                             {
                                                 buy ? (
                                                     <BuyTypography variant="caption">

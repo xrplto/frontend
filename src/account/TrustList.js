@@ -1,6 +1,6 @@
 import axios from 'axios'
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Decimal from 'decimal.js';
 // Material
 import { withStyles } from '@mui/styles';
@@ -139,7 +139,7 @@ export default function TrustList({account}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     
-    const { accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
+    const { accountProfile, openSnackbar, sync, setSync, darkMode } = useContext(AppContext);
     const isLoggedIn = accountProfile && accountProfile.account;
     const [openScanQR, setOpenScanQR] = useState(false);
     const [uuid, setUuid] = useState(null);
@@ -280,6 +280,21 @@ export default function TrustList({account}) {
         onDisconnectXumm(uuid);
     };
 
+    const tableRef = useRef(null);
+    const [scrollLeft, setScrollLeft] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrollLeft(tableRef?.current?.scrollLeft > 0);
+        };
+
+        tableRef?.current?.addEventListener('scroll', handleScroll);
+
+        return () => {
+            tableRef?.current?.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
     return (
         <Container maxWidth="lg" sx={{pl: 0, pr: 0}}>
             <Backdrop
@@ -331,6 +346,7 @@ export default function TrustList({account}) {
                     },
                     "::-webkit-scrollbar": { display: "none" },
                 }}
+                ref={tableRef}
             >
                 <Table stickyHeader size={'small'}
                     sx={{
@@ -349,8 +365,30 @@ export default function TrustList({account}) {
                                 }
                             }}
                         >
-                            <TableCell align="left"></TableCell>
-                            <TableCell align="left">#</TableCell>
+                            <TableCell align="left" sx={{
+                                position: "sticky",
+                                zIndex: 1001,
+                                left: 0,
+                                background: darkMode ? "#17171A" : '#F2F5F9'
+                            }}></TableCell>
+                            <TableCell align="left" sx={{
+                                position: "sticky",
+                                zIndex: 1002,
+                                left: 32,
+                                background: darkMode ? "#17171A" : '#F2F5F9',
+                                '&:before': (scrollLeft ? {
+                                    content: "''",
+                                    boxShadow: "inset 10px 0 8px -8px #00000026",
+                                    position: "absolute",
+                                    top: "0",
+                                    right: "0",
+                                    bottom: "-1px",
+                                    width: "30px",
+                                    transform: "translate(100%)",
+                                    transition: "box-shadow .3s",
+                                    pointerEvents: "none",
+                                } : {})
+                            }}>#</TableCell>
                             <TableCell align="left">Peer</TableCell>
                             <TableCell align="left">Currency</TableCell>
                             <TableCell align="left">Peer Limit</TableCell>
@@ -427,10 +465,21 @@ export default function TrustList({account}) {
                                 // peer, currency, peer limit, owner limit, balance, rippling
                                 return (
                                     <TableRow
-                                        hover
                                         key={_id}
+                                        sx={{
+                                            "&:hover": {
+                                                "& .MuiTableCell-root": {
+                                                    backgroundColor: darkMode ? "#232326 !important" : ''
+                                                }
+                                            }
+                                        }}
                                     >
-                                        <TableCell align="left">
+                                        <TableCell align="left" sx={{
+                                            position: "sticky",
+                                            zIndex: 1001,
+                                            left: 0,
+                                            background: darkMode ? "#17171A" : '#F2F5F9'
+                                        }}>
                                             <Tooltip title="Remove TrustLine">
                                                 <IconButton color='error' onClick={e=>handleCancel(e, peer.issuer, currency)} aria-label="cancel">
                                                     <CancelIcon fontSize='small'/>
@@ -438,7 +487,24 @@ export default function TrustList({account}) {
                                             </Tooltip>
                                         </TableCell>
 
-                                        <TableCell align="left">
+                                        <TableCell align="left" sx={{
+                                            position: "sticky",
+                                            zIndex: 1002,
+                                            left: 32,
+                                            background: darkMode ? "#17171A" : '#F2F5F9',
+                                            '&:before': (scrollLeft ? {
+                                                content: "''",
+                                                boxShadow: "inset 10px 0 8px -8px #00000026",
+                                                position: "absolute",
+                                                top: "0",
+                                                right: "0",
+                                                bottom: "-1px",
+                                                width: "30px",
+                                                transform: "translate(100%)",
+                                                transition: "box-shadow .3s",
+                                                pointerEvents: "none",
+                                            } : {})
+                                        }}>
                                             <Typography variant="s6" noWrap>{idx + page * rows + 1}</Typography>
                                         </TableCell>
 
