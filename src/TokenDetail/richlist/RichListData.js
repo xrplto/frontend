@@ -3,7 +3,6 @@ import { useState, useEffect, useRef } from 'react';
 
 // Material
 import {
-    useTheme,
     Avatar,
     Box,
     Checkbox,
@@ -17,7 +16,6 @@ import {
     TableRow,
     Typography
 } from '@mui/material';
-import { tableCellClasses } from "@mui/material/TableCell";
 
 // Context
 import { useContext } from 'react';
@@ -46,7 +44,6 @@ function truncate(str, n){
 };
 
 export default function RichListData({token}) {
-    const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const metrics = useSelector(selectMetrics);
 
@@ -179,9 +176,9 @@ export default function RichListData({token}) {
                 ref={tableRef}
             >
                 <Table stickyHeader sx={{
-                    [`& .${tableCellClasses.root}`]: {
-                        borderBottom: "1px solid",
-                        borderBottomColor: theme.palette.divider
+                    "& .MuiTableCell-root": {
+                        borderBottom: "none",
+                        boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
                     }
                 }}>
                     <TableHead>

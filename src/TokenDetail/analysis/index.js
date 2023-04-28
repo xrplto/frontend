@@ -3,14 +3,13 @@ import { useState, useEffect } from 'react';
 
 // Material
 import {
-    styled, useTheme,
+    styled,
     Box,
     Stack,
     Table,
     TableBody,
     Typography
 } from '@mui/material';
-import { tableCellClasses } from '@mui/material/TableCell';
 
 // Loader
 import { PuffLoader } from "react-spinners";
@@ -43,7 +42,6 @@ const ConnectWalletContainer = styled(Box)({
 // ----------------------------------------------------------------------
 
 export default function AnalysisData({token}) {
-    const theme = useTheme();
     const metrics = useSelector(selectMetrics);
     const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -122,10 +120,10 @@ export default function AnalysisData({token}) {
                 ref={tableRef}
             >
                 <Table sx={{
-                    [`& .${tableCellClasses.root}`]: {
-                        borderBottom: "1px solid",
-                        borderBottomColor: theme.palette.divider
-                    },
+                    "& .MuiTableCell-root": {
+                        borderBottom: "none",
+                        boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
+                    }
                 }}>
                     {count > 0 &&
                         <TokenListHead scrollLeft={scrollLeft} tokens={tokens} />

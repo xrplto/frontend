@@ -1,6 +1,6 @@
 // Material
 import {
-    styled, useTheme,
+    styled,
     Avatar,
     Box,
     IconButton,
@@ -13,7 +13,6 @@ import {
     TableRow,
     Typography
 } from '@mui/material';
-import { tableCellClasses } from "@mui/material/TableCell";
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -75,7 +74,6 @@ function truncate(str, n){
 
 export default function PairsList({token, pairs}) {
     const BASE_URL = 'https://api.xrpl.to/api';
-    const theme = useTheme();
     const { darkMode } = useContext(AppContext);
 
     const tableRef = useRef(null);
@@ -117,9 +115,9 @@ export default function PairsList({token, pairs}) {
                 ref={tableRef}
             >
                 <Table stickyHeader sx={{
-                    [`& .${tableCellClasses.root}`]: {
-                        borderBottom: "1px solid",
-                        borderBottomColor: theme.palette.divider
+                    "& .MuiTableCell-root": {
+                        borderBottom: "none",
+                        boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
                     }
                 }}>
                     <TableHead>

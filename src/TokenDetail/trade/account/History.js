@@ -6,7 +6,7 @@ import {MD5} from "crypto-js";
 // Material
 import { withStyles } from '@mui/styles';
 import {
-    styled, useTheme,
+    styled,
     Avatar,
     Box,
     IconButton,
@@ -19,7 +19,6 @@ import {
     TableRow,
     Typography
 } from '@mui/material';
-import { tableCellClasses } from "@mui/material/TableCell";
 
 // Loader
 import { PuffLoader } from "react-spinners";
@@ -94,7 +93,6 @@ function getMD5(issuer, currency) {
 }
 
 export default function History({token}) {
-    const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
 
     const { accountProfile, darkMode } = useContext(AppContext);
@@ -162,9 +160,9 @@ export default function History({token}) {
                 ref={tableRef}
             >
                 <Table stickyHeader sx={{
-                    [`& .${tableCellClasses.root}`]: {
-                        borderBottom: "1px solid",
-                        borderBottomColor: theme.palette.divider
+                    "& .MuiTableCell-root": {
+                        borderBottom: "none",
+                        boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
                     }
                 }}>
                     <TableHead>

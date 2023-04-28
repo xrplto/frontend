@@ -6,7 +6,6 @@ import Decimal from 'decimal.js';
 import { withStyles } from '@mui/styles';
 import {
     styled,
-    useTheme
 } from '@mui/material';
 
 import {
@@ -27,7 +26,6 @@ import {
     Tooltip,
     Typography
 } from '@mui/material';
-import { tableCellClasses } from "@mui/material/TableCell";
 import CancelIcon from '@mui/icons-material/Cancel';
 
 // Loader
@@ -136,7 +134,6 @@ const trustlineFlags = {
 }
 
 export default function TrustList({account}) {
-    const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     
     const { accountProfile, openSnackbar, sync, setSync, darkMode } = useContext(AppContext);
@@ -350,21 +347,14 @@ export default function TrustList({account}) {
             >
                 <Table stickyHeader size={'small'}
                     sx={{
-                        [`& .${tableCellClasses.root}`]: {
-                            borderBottom: "0px solid",
-                            borderBottomColor: theme.palette.divider
+                        "& .MuiTableCell-root": {
+                            borderBottom: "none",
+                            boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
                         }
                     }}
                 >
                     <TableHead>
-                        <TableRow
-                            sx={{
-                                [`& .${tableCellClasses.root}`]: {
-                                    borderBottom: "1px solid",
-                                    borderBottomColor: theme.palette.divider
-                                }
-                            }}
-                        >
+                        <TableRow>
                             <TableCell align="left" sx={{
                                 position: "sticky",
                                 zIndex: 1001,

@@ -7,9 +7,7 @@ import {
     Box,
     Table,
     TableBody,
-    useTheme
 } from '@mui/material';
-import { tableCellClasses } from "@mui/material/TableCell";
 
 // Context
 import { useContext } from 'react';
@@ -32,7 +30,6 @@ import { useRef } from 'react';
 export default function TokenList({showWatchList, tag, tagName, tags, tokens, setTokens, tMap}) {
     const dispatch = useDispatch();
     const metrics = useSelector(selectMetrics);
-    const theme = useTheme();
 
     // const WSS_URL = 'wss://ws.xrpl.to';
     const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
@@ -321,10 +318,10 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
                 ref={tableRef}
             >
                 <Table sx={{
-                    [`& .${tableCellClasses.root}`]: {
-                        borderBottom: "1px solid",
-                        borderBottomColor: theme.palette.divider
-                    },
+                    "& .MuiTableCell-root": {
+                        borderBottom: "none",
+                        boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
+                    }
                 }}>
                     <TokenListHead
                         order={order}
