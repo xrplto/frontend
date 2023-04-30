@@ -138,7 +138,7 @@ export default function Drawer({ toggleDrawer, isOpen }) {
         <Box
           id="logo-container-laptop"
           sx={{
-            display: { xs: 'none', sm: 'flex' },
+            display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             background: darkMode ? '#17171A' : '#fff',

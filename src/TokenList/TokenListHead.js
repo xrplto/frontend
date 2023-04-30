@@ -68,7 +68,7 @@ export default function TokenListHead({
                 '& .MuiTableCell-root:nth-child(2)': {
                     position: "sticky",
                     zIndex: 1002,
-                    left: tokens.length > 0 ? 52 : 32,
+                    left: tokens.length > 0 ? (isMobile ? 28 : 52) : (isMobile ? 8 : 32),
                     background: darkMode ? "#17171A" : '#F2F5F9',
                     '&:before': (isMobile && scrollLeft ? {
                         content: "''",

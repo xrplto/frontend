@@ -204,7 +204,7 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                 <TableCell align="left" sx={{p:0,
                     position: "sticky",
                     zIndex: 1003,
-                    left: isMobile ? 52 : 99,
+                    left: isMobile ? (isMobile ? 28 : 52) : 99,
                     background: darkMode ? "#17171A" : '#F2F5F9',
                     '&:before': (scrollLeft ? {
                         content: "''",
@@ -217,22 +217,22 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                         transform: "translate(100%)",
                         transition: "box-shadow .3s",
                         pointerEvents: "none",
-                    } : {})
+                    } : {}),
                 }}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{p:0}}>
                         {isAdmin ? (
                             <AdminImage
                                 src={imgUrl} // use normal <img> attributes as props
-                                width={56}
-                                height={56}
+                                width={isMobile ? 25 : 56}
+                                height={isMobile ? 25 : 56}
                                 onClick={() => setEditToken(token)}
                                 onError={(event) => event.target.src = '/static/alt.png'}
                             />
                         ):(
                             <TokenImage
                                 src={imgUrl} // use normal <img> attributes as props
-                                width={56}
-                                height={56}
+                                width={isMobile ? 25 : 56}
+                                height={isMobile ? 25 : 56}
                                 onError={(event) => event.target.src = '/static/alt.png'}
                             />
                         )}

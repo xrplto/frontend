@@ -7,6 +7,8 @@ import {
     Box,
     Table,
     TableBody,
+    useTheme,
+    useMediaQuery
 } from '@mui/material';
 
 // Context
@@ -28,8 +30,10 @@ import { useRef } from 'react';
 
 // ----------------------------------------------------------------------
 export default function TokenList({showWatchList, tag, tagName, tags, tokens, setTokens, tMap}) {
+    const theme = useTheme();
     const dispatch = useDispatch();
     const metrics = useSelector(selectMetrics);
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     // const WSS_URL = 'wss://ws.xrpl.to';
     const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
@@ -320,7 +324,8 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
                 <Table sx={{
                     "& .MuiTableCell-root": {
                         borderBottom: "none",
-                        boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
+                        boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)",
+                        padding: isMobile ? '4px' : '16px'
                     }
                 }}>
                     <TokenListHead
