@@ -6,7 +6,7 @@ import {
     Link
 } from '@mui/material';
 
-function Logo() {
+function Logo({ style }) {
     const { darkMode } = useContext(AppContext);
 
     const img_black = "/logo/xrpl-to-logo-black.svg";
@@ -20,6 +20,7 @@ function Logo() {
             sx={{ pl: 0, pr: 0, py: 3, display: 'inline-flex' }}
             underline="none"
             rel="noreferrer noopener nofollow"
+            style={style}
         >
             {/* <Box component="img" src={img} sx={{ height: 46 }} /> */}
             <LazyLoadImage

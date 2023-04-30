@@ -11,6 +11,7 @@ import {
     Tooltip
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import MenuIcon from '@mui/icons-material/Menu';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
@@ -30,6 +31,7 @@ import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
 import Wallet from 'src/components/Wallet';
 import NavSearchBar from './NavSearchBar';
+import Drawer from './Drawer';
 
 const HeaderWrapper = styled(Box)(
     ({ theme }) => `
@@ -46,13 +48,19 @@ const HeaderWrapper = styled(Box)(
 export default function Header(props) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isTablet = useMediaQuery(theme.breakpoints.down('md'));
     const { toggleTheme, darkMode } = useContext(AppContext);
     // const data = props.data;
 
     const [fullSearch, setFullSearch] = useState(false);
+    const [drawer, setDrawer] = useState(false);
 
     const handleFullSearch = (e) => {
         setFullSearch(true);
+    }
+
+    const toggleDrawer = (isOpen = true) => {
+        setDrawer(isOpen);
     }
 
     return (
@@ -63,9 +71,29 @@ export default function Header(props) {
                         sx={{
                             mr: 2,
                             display: { xs: 'none', sm: 'flex' },
+                            alignItems: 'center',
                         }}
                     >
-                        <Logo />
+                        <Logo style={{ marginRight: 10 }} />
+
+                        {!isTablet &&
+                            <>
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    href="/tokens"
+                                    style={{ marginRight: 12 }}>Tokens</Link>
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    href="/swap"
+                                    style={{ marginRight: 12 }}>Swap</Link>
+                                <Link
+                                    underline="none"
+                                    color="inherit"
+                                    href="/fiat">Fiat</Link>
+                            </>
+                        }
                     </Box>
 
                     {fullSearch &&
@@ -89,7 +117,7 @@ export default function Header(props) {
                     }
 
                     <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                        {!fullSearch && !isMobile &&
+                        {!fullSearch && !isTablet &&
                             <Stack mr={2}>
                                 <NavSearchBar
                                     id='id_search_tokens'
@@ -100,7 +128,7 @@ export default function Header(props) {
                             </Stack>
                         }
 
-                        {!fullSearch && isMobile &&
+                        {!fullSearch && isTablet &&
                             <IconButton
                                 aria-label='search'
                                 onClick={handleFullSearch}
@@ -109,7 +137,7 @@ export default function Header(props) {
                             </IconButton>
                         }
                         
-                        {!fullSearch &&
+                        {/* {!fullSearch &&
                             <>
                                 <Link
                                     href="/swap"
@@ -133,6 +161,10 @@ export default function Header(props) {
                                 </Link>
                                 <Wallet />
                             </>
+                        } */}
+
+                        {!fullSearch &&
+                            <Wallet />
                         }
 
                         {!isMobile &&
@@ -144,6 +176,17 @@ export default function Header(props) {
                                 )}
                             </IconButton>
                         }
+
+                        {isTablet &&
+                            <IconButton onClick={() => toggleDrawer(true)}>
+                                <MenuIcon />
+                            </IconButton>
+                        }
+
+                        <Drawer
+                            toggleDrawer={toggleDrawer}
+                            isOpen={drawer}
+                        />
                     </Box>
                 </Box>
             </Container>
