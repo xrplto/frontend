@@ -81,7 +81,7 @@ export default function Header(props) {
                                 <Link
                                     underline="none"
                                     color="inherit"
-                                    href="/tokens"
+                                    href="https://xrpl.to"
                                     style={{ marginRight: 12 }}>Tokens</Link>
                                 <Link
                                     underline="none"
@@ -91,7 +91,7 @@ export default function Header(props) {
                                 <Link
                                     underline="none"
                                     color="inherit"
-                                    href="/fiat">Fiat</Link>
+                                    href="/buy-xrp">Fiat</Link>
                             </>
                         }
                     </Box>

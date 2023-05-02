@@ -20,7 +20,8 @@ import axios from 'axios';
 export default function Drawer({ toggleDrawer, isOpen }) {
   const BASE_URL = 'https://api.xrpl.to/api';
 
-  const { darkMode, accountProfile, doLogIn, doLogOut, setLoading } = useContext(AppContext);
+  const { darkMode, accountProfile, doLogIn, doLogOut, setLoading } =
+    useContext(AppContext);
   const accountLogin = accountProfile?.account;
 
   const [open, setOpen] = useState(false);
@@ -155,19 +156,38 @@ export default function Drawer({ toggleDrawer, isOpen }) {
           </IconButton>
         </Box>
 
-        {['Tokens', 'Swap', 'Fiat'].map((text) => (
-          <Link
-            key={text}
-            underline="none"
-            color="inherit"
-            href={text}
-            rel="noreferrer noopener nofollow"
-          >
-            <MenuItem key={text} divider={true} sx={{ py: 1.5, px: 3 }}>
-              <Typography variant="s6">{text}</Typography>
-            </MenuItem>
-          </Link>
-        ))}
+        <Link
+          underline="none"
+          color="inherit"
+          href="https://xrpl.to"
+          rel="noreferrer noopener nofollow"
+        >
+          <MenuItem divider={true} sx={{ py: 1.5, px: 3 }}>
+            <Typography variant="s6">Tokens</Typography>
+          </MenuItem>
+        </Link>
+
+        <Link
+          underline="none"
+          color="inherit"
+          href="/swap"
+          rel="noreferrer noopener nofollow"
+        >
+          <MenuItem divider={true} sx={{ py: 1.5, px: 3 }}>
+            <Typography variant="s6">Swap</Typography>
+          </MenuItem>
+        </Link>
+
+        <Link
+          underline="none"
+          color="inherit"
+          href="/buy-xrp"
+          rel="noreferrer noopener nofollow"
+        >
+          <MenuItem divider={true} sx={{ py: 1.5, px: 3 }}>
+            <Typography variant="s6">Fiat</Typography>
+          </MenuItem>
+        </Link>
 
         <Button
           key={accountLogin ? 'log_out' : 'xumm'}
@@ -181,7 +201,7 @@ export default function Drawer({ toggleDrawer, isOpen }) {
             color: 'inherit',
             backgroundColor: darkMode ? 'rgb(45, 43, 55)' : '#fff',
             '&:hover': {
-              backgroundColor: darkMode ? 'rgb(45, 43, 55, 0.8)' : '#EFF2F5',
+              backgroundColor: darkMode ? 'rgb(45, 43, 55, 0.8)' : '#EFF2F5'
             }
           }}
         >
