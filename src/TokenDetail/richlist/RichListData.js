@@ -247,7 +247,7 @@ export default function RichListData({token}) {
                                         sx={{
                                             "&:hover": {
                                                 "& .MuiTableCell-root": {
-                                                    backgroundColor: darkMode ? "#232326 !important" : ''
+                                                    backgroundColor: darkMode ? "#232326 !important" : "#D9DCE0 !important"
                                                 }
                                             }
                                         }}

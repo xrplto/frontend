@@ -155,7 +155,7 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
             sx={{
                 "&:hover": {
                     "& .MuiTableCell-root": {
-                        backgroundColor: darkMode ? "#232326 !important" : ''
+                        backgroundColor: darkMode ? "#232326 !important" : "#D9DCE0 !important"
                     }
                 }
             }}
