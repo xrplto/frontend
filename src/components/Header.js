@@ -72,6 +72,11 @@ export default function Header(props) {
                             mr: 2,
                             display: { xs: 'none', sm: 'flex' },
                             alignItems: 'center',
+                            "& .MuiLink-root": {
+                                "&:hover": {
+                                    color: "#6188ff"
+                                }
+                            }
                         }}
                     >
                         <Logo style={{ marginRight: 25 }} />

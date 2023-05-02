@@ -157,7 +157,10 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                     "& .MuiTableCell-root": {
                         backgroundColor: darkMode ? "#232326 !important" : "#D9DCE0 !important"
                     }
-                }
+                },
+                "& .MuiTypography-root": {
+                    fontSize: isMobile && '14px'
+                },
             }}
         >
             <TableCell align="left" style={{
