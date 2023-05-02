@@ -72,7 +72,7 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
         };
     }, []);
 
-    const { accountProfile, openSnackbar, setLoading } = useContext(AppContext);
+    const { accountProfile, openSnackbar, setLoading, darkMode } = useContext(AppContext);
 
     const [watchList, setWatchList] = useState([]);
 
@@ -324,7 +324,9 @@ export default function TokenList({showWatchList, tag, tagName, tags, tokens, se
                 <Table sx={{
                     "& .MuiTableCell-root": {
                         borderBottom: "none",
-                        boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)",
+                        boxShadow: darkMode
+                            ? "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
+                            : "inset 0 -1px 0 #dadee3",
                         padding: isMobile ? '4px' : '16px'
                     }
                 }}>

@@ -302,7 +302,9 @@ export default function OfferList({account}) {
                     sx={{
                         "& .MuiTableCell-root": {
                             borderBottom: "none",
-                            boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
+                            boxShadow: darkMode
+                                ? "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
+                                : "inset 0 -1px 0 #dadee3",
                         }
                     }}
                 >

@@ -45,7 +45,7 @@ export default function AnalysisData({token}) {
     const metrics = useSelector(selectMetrics);
     const BASE_URL = 'https://api.xrpl.to/api';
 
-    const { accountProfile } = useContext(AppContext);
+    const { accountProfile, darkMode } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     const [page, setPage] = useState(0);
@@ -122,7 +122,9 @@ export default function AnalysisData({token}) {
                 <Table sx={{
                     "& .MuiTableCell-root": {
                         borderBottom: "none",
-                        boxShadow: "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
+                        boxShadow: darkMode
+                            ? "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
+                            : "inset 0 -1px 0 #dadee3",
                     }
                 }}>
                     {count > 0 &&
