@@ -61,7 +61,7 @@ export default function TokenListHead({
             <TableRow sx={{
                 '& .MuiTableCell-root': {
                     fontSize: isMobile && 12,
-                    fontWeight: 'normal'
+                    fontWeight: '700'
                 },
                 '& .MuiTableCell-root:nth-child(1)': {
                     position: "sticky",
