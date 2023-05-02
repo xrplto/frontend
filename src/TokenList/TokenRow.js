@@ -244,8 +244,8 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                             rel="noreferrer noopener nofollow"
                         >
                             <Stack>
-                                <Typography variant="token" color={isOMCF!=='yes'?'#222531':slug === md5?'#B72136':''} noWrap>{truncate(name, 8)}</Typography>
-                                <Typography variant="caption" color={isOMCF!=='yes'?'#222531':''} noWrap>
+                                <Typography variant="token" color={isOMCF!=='yes'?'#222531':slug === md5?'#B72136':''} noWrap={isMobile ? false : true}>{truncate(name, 8)}</Typography>
+                                <Typography variant="caption" color={isOMCF!=='yes'?'#222531':''} noWrap={isMobile ? false : true}>
                                     {isMobile &&
                                         <span style={badge24hStyle}>{id}</span>
                                     }
@@ -261,8 +261,8 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                         color: priceColor,
                     }}
                 >
-                    <TransitionTypo variant="h4" noWrap>$ {fNumber(usd)}</TransitionTypo>
-                    <TransitionTypo variant="h6" noWrap><Icon icon={rippleSolid} width={12} height={12}/> {fNumber(exch)}</TransitionTypo>
+                    <TransitionTypo variant="h4" noWrap={isMobile ? false : true}>$ {fNumber(usd)}</TransitionTypo>
+                    <TransitionTypo variant="h6" noWrap={isMobile ? false : true}><Icon icon={rippleSolid} width={12} height={12}/> {fNumber(exch)}</TransitionTypo>
                 </TableCell>
                 <TableCell align="right">
                     <BearBullLabel value={pro24h} variant="h4" />
@@ -273,7 +273,7 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                 <TableCell align="right">
                     <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems='center'>
                         <Icon icon={rippleSolid} />
-                        <Typography variant="h4" noWrap>{fNumber(vol24hxrp)}</Typography>
+                        <Typography variant="h4" noWrap={isMobile ? false : true}>{fNumber(vol24hxrp)}</Typography>
                     </Stack>
                     <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems='center'>
                         {/* <Icon icon={outlineToken} color="#0C53B7"/> */}
@@ -294,7 +294,7 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                 </TableCell>
                 
                 <TableCell align="right">
-                    {fNumber(supply)} <Typography variant="small" noWrap>{name}</Typography>
+                    {fNumber(supply)} <Typography variant="small" noWrap={isMobile ? false : true}>{name}</Typography>
                 </TableCell>
                 <TableCell align="right">
                     <LazyLoadImage
