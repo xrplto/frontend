@@ -82,12 +82,12 @@ export default function Header(props) {
                                     underline="none"
                                     color="inherit"
                                     href="https://xrpl.to"
-                                    style={{ marginRight: 12, fontWeight: 600 }}>Tokens</Link>
+                                    style={{ marginRight: 27, fontWeight: 600 }}>Tokens</Link>
                                 <Link
                                     underline="none"
                                     color="inherit"
                                     href="/swap"
-                                    style={{ marginRight: 12, fontWeight: 600 }}>Swap</Link>
+                                    style={{ marginRight: 27, fontWeight: 600 }}>Swap</Link>
                                 <Link
                                     underline="none"
                                     color="inherit"
