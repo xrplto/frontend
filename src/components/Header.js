@@ -74,7 +74,7 @@ export default function Header(props) {
                             alignItems: 'center',
                         }}
                     >
-                        <Logo style={{ marginRight: 10 }} />
+                        <Logo style={{ marginRight: 25 }} />
 
                         {!isTablet &&
                             <>
@@ -82,16 +82,17 @@ export default function Header(props) {
                                     underline="none"
                                     color="inherit"
                                     href="https://xrpl.to"
-                                    style={{ marginRight: 12 }}>Tokens</Link>
+                                    style={{ marginRight: 12, fontWeight: 600 }}>Tokens</Link>
                                 <Link
                                     underline="none"
                                     color="inherit"
                                     href="/swap"
-                                    style={{ marginRight: 12 }}>Swap</Link>
+                                    style={{ marginRight: 12, fontWeight: 600 }}>Swap</Link>
                                 <Link
                                     underline="none"
                                     color="inherit"
-                                    href="/buy-xrp">Fiat</Link>
+                                    href="/buy-xrp"
+                                    style={{ fontWeight: 600 }}>Fiat</Link>
                             </>
                         }
                     </Box>

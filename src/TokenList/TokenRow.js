@@ -219,7 +219,7 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                         pointerEvents: "none",
                     } : {}),
                 }}>
-                    <Stack direction="row" alignItems="center" spacing={isMobile ? 2 : 3} sx={{p:0}}>
+                    <Stack direction="row" alignItems="center" spacing={2} sx={{p:0}}>
                         {isAdmin ? (
                             <AdminImage
                                 src={imgUrl} // use normal <img> attributes as props
