@@ -8,30 +8,20 @@ import {
     IconButton,
     Link,
     Stack,
-    Tooltip
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
-import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
-import CurrencyBitcoinIcon from '@mui/icons-material/CurrencyBitcoin';
-import SwapVertIcon from '@mui/icons-material/SwapVert';
 
 // Iconify Icons
-import { Icon } from '@iconify/react';
-import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
-import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
-import fiatIcon from '@iconify/icons-simple-icons/fiat';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 
 // Context
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
 
 // Components
 import Logo from 'src/components/Logo';
 import Wallet from 'src/components/Wallet';
 import NavSearchBar from './NavSearchBar';
 import Drawer from './Drawer';
+import ThemeSwitcher from './ThemeSwitcher';
 
 const HeaderWrapper = styled(Box)(
     ({ theme }) => `
@@ -49,7 +39,6 @@ export default function Header(props) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-    const { toggleTheme, darkMode } = useContext(AppContext);
     // const data = props.data;
 
     const [fullSearch, setFullSearch] = useState(false);
@@ -142,53 +131,21 @@ export default function Header(props) {
                                 <SearchIcon />
                             </IconButton>
                         }
-                        
-                        {/* {!fullSearch &&
-                            <>
-                                <Link
-                                    href="/swap"
-                                    rel="noreferrer noopener nofollow"
-                                >
-                                    <Tooltip title="Swap tokens">
-                                        <IconButton>
-                                            <SwapVertIcon />
-                                        </IconButton>
-                                    </Tooltip>
-                                </Link>
-                                <Link
-                                    href="/buy-xrp"
-                                    rel="noreferrer noopener nofollow"
-                                >
-                                    <Tooltip title="Buy XRP">
-                                        <IconButton>
-                                            <Icon icon={rippleSolid} width="20" height="20" />
-                                        </IconButton>
-                                    </Tooltip>
-                                </Link>
-                                <Wallet />
-                            </>
-                        } */}
 
-                        {!fullSearch &&
+                        {!fullSearch && !isTablet &&
                             <Wallet />
                         }
 
                         {!isMobile &&
-                            <IconButton onClick={() => { toggleTheme() }} >
-                                {darkMode ? (
-                                    <Icon icon={baselineBrightness4} />
-                                ) : (
-                                    <Icon icon={baselineBrightnessHigh} />
-                                )}
-                            </IconButton>
+                            <ThemeSwitcher />
                         }
 
-                        {isTablet &&
+                        {isTablet && !fullSearch &&
                             <IconButton onClick={() => toggleDrawer(true)}>
                                 <MenuIcon />
                             </IconButton>
                         }
-
+                        
                         <Drawer
                             toggleDrawer={toggleDrawer}
                             isOpen={drawer}
