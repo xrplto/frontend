@@ -34,7 +34,9 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CloseIcon from '@mui/icons-material/Close';
-import WalletIcon from '@mui/icons-material/Wallet';
+import {
+  AccountBalanceWallet as AccountBalanceWalletIcon
+} from '@mui/icons-material';
 
 // Context
 import { useContext } from 'react';
@@ -222,17 +224,17 @@ export default function Wallet({ style }) {
         direction="row"
         spacing={1}
         sx={{
-          backgroundColor: '#8100E8',
+          backgroundColor: '#2C21B4',
           padding: '3px 7px',
           '&:hover': {
-            backgroundColor: '#5A00A2'
+            backgroundColor: '#221991'
           }
         }}
         alignItems="center"
         ref={anchorRef}
         onClick={accountLogin ? handleOpen : handleLogin}
       >
-        <WalletIcon
+        <AccountBalanceWalletIcon
           fontSize="small"
           sx={{
             color: '#fff',
