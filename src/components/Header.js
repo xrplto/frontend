@@ -133,7 +133,7 @@ export default function Header(props) {
                         }
 
                         {!fullSearch && !isTablet &&
-                            <Wallet />
+                            <Wallet style={{ marginRight: '5px' }} />
                         }
 
                         {!isMobile &&

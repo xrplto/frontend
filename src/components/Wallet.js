@@ -76,7 +76,7 @@ function truncateAccount(str, length = 9) {
   return str.slice(0, length) + '...' + str.slice(length * -1);
 }
 
-export default function Wallet() {
+export default function Wallet({ style }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const BASE_URL = 'https://api.xrpl.to/api';
@@ -217,7 +217,7 @@ export default function Wallet() {
   };
 
   return (
-    <>
+    <Box style={style}>
       <Button
         direction="row"
         spacing={1}
@@ -477,6 +477,6 @@ export default function Wallet() {
         qrUrl={qrUrl}
         nextUrl={nextUrl}
       />
-    </>
+    </Box>
   );
 }
