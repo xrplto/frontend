@@ -12,7 +12,8 @@ import {
     TableCell,
     TableRow,
     Tooltip,
-    Typography
+    Typography,
+    Box
 } from '@mui/material';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
@@ -207,7 +208,7 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                 <TableCell align="left" sx={{p:0,
                     position: "sticky",
                     zIndex: 1003,
-                    left: isMobile ? (isMobile ? 28 : 52) : 99,
+                    left: isMobile ? 28 : 99,
                     background: darkMode ? "#17171A" : '#F2F5F9',
                     '&:before': (scrollLeft ? {
                         content: "''",
@@ -223,22 +224,24 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                     } : {}),
                 }}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{p:0}}>
-                        {isAdmin ? (
-                            <AdminImage
-                                src={imgUrl} // use normal <img> attributes as props
-                                width={isMobile ? 25 : 56}
-                                height={isMobile ? 25 : 56}
-                                onClick={() => setEditToken(token)}
-                                onError={(event) => event.target.src = '/static/alt.png'}
-                            />
-                        ):(
-                            <TokenImage
-                                src={imgUrl} // use normal <img> attributes as props
-                                width={isMobile ? 25 : 56}
-                                height={isMobile ? 25 : 56}
-                                onError={(event) => event.target.src = '/static/alt.png'}
-                            />
-                        )}
+                        <Box>
+                            {isAdmin ? (
+                                <AdminImage
+                                    src={imgUrl} // use normal <img> attributes as props
+                                    width={isMobile ? 25 : 56}
+                                    height={isMobile ? 25 : 56}
+                                    onClick={() => setEditToken(token)}
+                                    onError={(event) => event.target.src = '/static/alt.png'}
+                                />
+                            ):(
+                                <TokenImage
+                                    src={imgUrl} // use normal <img> attributes as props
+                                    width={isMobile ? 25 : 56}
+                                    height={isMobile ? 25 : 56}
+                                    onError={(event) => event.target.src = '/static/alt.png'}
+                                />
+                            )}
+                        </Box>
 
                         <Link
                             underline="none"
