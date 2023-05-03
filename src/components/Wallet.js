@@ -34,9 +34,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CloseIcon from '@mui/icons-material/Close';
-import {
-  AccountBalanceWallet as AccountBalanceWalletIcon
-} from '@mui/icons-material';
+import { AccountBalanceWallet as AccountBalanceWalletIcon } from '@mui/icons-material';
 
 // Context
 import { useContext } from 'react';
@@ -299,17 +297,17 @@ export default function Wallet({ style }) {
               <Link
                 underline="none"
                 color="inherit"
-                target="_blank"
-                href={`https://bithomp.com/explorer/${accountLogin}`}
+                href={`/setting`}
                 rel="noreferrer noopener nofollow"
               >
-                <Tooltip title={'Check on Bithomp'}>
+                <Tooltip title={'Settings'}>
                   <IconButton size="small">
-                    <OpenInNewIcon fontSize="small" />
+                    <SettingsIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
               </Link>
             </Stack>
+            
             <Link
               underline="none"
               color="inherit"
@@ -337,32 +335,7 @@ export default function Wallet({ style }) {
                 </Stack>
               </MenuItem>
             </Link>
-
-            <Link
-              underline="none"
-              color="inherit"
-              // target="_blank"
-              href={`/setting`}
-              rel="noreferrer noopener nofollow"
-            >
-              <MenuItem
-                key="settings"
-                sx={{ typography: 'body2', py: 1.5, px: 3 }}
-                onClick={() => setOpen(false)}
-              >
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{ mr: 2 }}
-                  alignItems="center"
-                >
-                  <SettingsIcon />
-                  <Typography variant="s6" style={{ marginLeft: '10px' }}>
-                    Settings
-                  </Typography>
-                </Stack>
-              </MenuItem>
-            </Link>
+            
             <Divider />
 
             {profiles.map((profile, idx) => {
