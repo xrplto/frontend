@@ -102,3 +102,31 @@ export function fPercent(number) {
 export function fData(number) {
     return numeral(number).format('0.0 b');
 }
+
+export function fNumberWithSuffix(number) {
+    let suffix = "";
+    let formattedNumber = "";
+
+    if (Math.abs(number) >= 1e12) {
+        // Trillion
+        suffix = "T";
+        formattedNumber = (number / 1e12).toFixed(2);
+    } else if (Math.abs(number) >= 1e9) {
+        // Billion
+        suffix = "B";
+        formattedNumber = (number / 1e9).toFixed(2);
+    } else if (Math.abs(number) >= 1e6) {
+        // Million
+        suffix = "M";
+        formattedNumber = (number / 1e6).toFixed(2);
+    } else if (Math.abs(number) >= 1e3) {
+        // Thousand
+        suffix = "K";
+        formattedNumber = (number / 1e3).toFixed(2);
+    } else {
+        // Less than 1000
+        formattedNumber = number.toFixed(2);
+    }
+
+    return formattedNumber + suffix;
+};
