@@ -436,8 +436,7 @@ export default function Wallet({ style }) {
                       Account Reserve
                     </Typography>
                     <Tooltip
-                      title={`There is 10 XRP reserve requirement to activate any XRP wallet. Once an XRP address is funded with the 10XRP ledger network and is non-refundable and non-recoverable unless the network lowers the reserve requirement.
-After you activate your XRP Wallet, you can then activate your SOLO Wallet. S OLO Walletshave a reserve requirement of 2 XRP, so your Network Reserve will change to 10 XRP when you activate your SOLO Wallet. Fees can be paid out of reserve funds.`}
+                      title={`To activate an XRP wallet, a reserve of 10 XRP is mandatory. Once the XRP address is funded with this amount on the ledger network, the reserve becomes locked and unable to be retrieved unless either the network decides to reduce the reserve requirement, or the user deletes the wallet. It's possible to pay fees using the reserve funds.`}
                     >
                       <HelpIcon
                         sx={{
