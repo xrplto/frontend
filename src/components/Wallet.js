@@ -357,7 +357,8 @@ export default function Wallet({ style }) {
             <Box
               sx={{
                 paddingRight: '27px',
-                paddingLeft: '27px'
+                paddingLeft: '27px',
+                marginTop: 2
               }}
             >
               <Typography variant="caption">Total Balance</Typography>
@@ -389,9 +390,9 @@ export default function Wallet({ style }) {
                   </Typography>
                 </Stack>
 
-                <Divider sx={{ my: 1 }} />
+                {/* <Divider sx={{ my: 1 }} /> */}
 
-                <Stack direction="row" justifyContent="space-between">
+                {/* <Stack direction="row" justifyContent="space-between">
                   <Stack direction="row" alignItems="center">
                     <TokenImage
                       src={
@@ -413,7 +414,7 @@ export default function Wallet({ style }) {
                   <Typography variant="caption">
                     {accountBalance?.curr2?.value}
                   </Typography>
-                </Stack>
+                </Stack> */}
               </Box>
 
               <Box
@@ -437,7 +438,7 @@ export default function Wallet({ style }) {
                     </Typography>
                     <Tooltip
                       title={`There is 10 XRP reserve requirement to activate any XRP wallet. Once an XRP address is funded with the 10XRP ledger network and is non-refundable and non-recoverable unless the network lowers the reserve requirement.
-After you activate your XRP Wallet, you can then activate your SOLO Wallet. SOLO Wallets have a reserve requirement of 2 XRP, so your Network Reserve will change to 10 XRP when you activate your SOLO Wallet. Fees can be paid out of reserve funds.`}
+After you activate your XRP Wallet, you can then activate your SOLO Wallet. S OLO Walletshave a reserve requirement of 2 XRP, so your Network Reserve will change to 10 XRP when you activate your SOLO Wallet. Fees can be paid out of reserve funds.`}
                     >
                       <HelpIcon
                         sx={{
