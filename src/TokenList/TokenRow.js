@@ -228,16 +228,16 @@ function fTokenRow({mUSD, time, token, setEditToken, setTrustToken, watchList, o
                             {isAdmin ? (
                                 <AdminImage
                                     src={imgUrl} // use normal <img> attributes as props
-                                    width={isMobile ? 25 : 56}
-                                    height={isMobile ? 25 : 56}
+                                    width={isMobile ? 25 : 46}
+                                    height={isMobile ? 25 : 46}
                                     onClick={() => setEditToken(token)}
                                     onError={(event) => event.target.src = '/static/alt.png'}
                                 />
                             ):(
                                 <TokenImage
                                     src={imgUrl} // use normal <img> attributes as props
-                                    width={isMobile ? 25 : 56}
-                                    height={isMobile ? 25 : 56}
+                                    width={isMobile ? 25 : 46}
+                                    height={isMobile ? 25 : 46}
                                     onError={(event) => event.target.src = '/static/alt.png'}
                                 />
                             )}
