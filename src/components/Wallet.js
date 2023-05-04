@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useRef, useState, useEffect } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Material
 import {
@@ -34,6 +35,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CloseIcon from '@mui/icons-material/Close';
+import HelpIcon from '@mui/icons-material/Help';
 import { AccountBalanceWallet as AccountBalanceWalletIcon } from '@mui/icons-material';
 
 // Context
@@ -55,6 +57,11 @@ import { getHashIcon } from 'src/utils/extra';
 // Components
 import LoginDialog from './LoginDialog';
 
+const pair = {
+  '534F4C4F00000000000000000000000000000000': 'SOLO',
+  XRP: 'XRP'
+};
+
 const ActiveCircle = styled(Box)(
   () => `
         width: 8px;
@@ -64,6 +71,11 @@ const ActiveCircle = styled(Box)(
         background-color: rgb(22, 199, 132);
   `
 );
+
+const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
+  borderRadius: '50%',
+  overflow: 'hidden'
+}));
 
 function truncate(str, n) {
   if (!str) return '';
@@ -90,7 +102,8 @@ export default function Wallet({ style }) {
     doLogOut,
     openSnackbar,
     setLoading,
-    sync
+    sync,
+    darkMode
   } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
@@ -103,6 +116,7 @@ export default function Wallet({ style }) {
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
+  const [accountBalance, setAccountBalance] = useState(null);
 
   let logoImageUrl = null;
   if (accountProfile) {
@@ -216,16 +230,48 @@ export default function Wallet({ style }) {
     onCancelLoginXumm(uuid);
   };
 
+  useEffect(() => {
+    function getAccountInfo() {
+      if (!accountProfile || !accountProfile.account) {
+        return;
+      }
+
+      const account = accountProfile.account;
+      // https://api.xrpl.to/api/account/info/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=XRPL
+      axios
+        .get(
+          `${BASE_URL}/account/info/${account}?curr1=XRP&issuer1=XRPL&curr2=534F4C4F00000000000000000000000000000000&issuer2=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz`
+        )
+        .then((res) => {
+          let ret = res.status === 200 ? res.data : undefined;
+          if (ret) {
+            setAccountBalance(ret.pair);
+          }
+        })
+        .catch((err) => {
+          console.log('Error on getting account pair balance info.', err);
+        })
+        .then(function () {
+          // always executed
+        });
+    }
+    // console.log('account_info')
+    getAccountInfo();
+  }, [accountProfile, sync]);
+
   return (
     <Box style={style}>
       <Button
         direction="row"
         spacing={1}
         sx={{
-          backgroundColor: '#2C21B4',
           padding: '3px 7px',
+          // backgroundPosition: 'right center',
+          backgroundImage:
+            'linear-gradient(to right, #721DA6 0%, #3021C1 51%, #721DA6 100%)',
           '&:hover': {
-            backgroundColor: '#221991'
+            backgroundPosition:
+              'right center' /* change the direction of the change here */
           }
         }}
         alignItems="center"
@@ -301,41 +347,144 @@ export default function Wallet({ style }) {
                 rel="noreferrer noopener nofollow"
               >
                 <Tooltip title={'Settings'}>
-                  <IconButton size="small">
+                  <IconButton size="small" onClick={() => setOpen(false)}>
                     <SettingsIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
               </Link>
             </Stack>
-            
-            <Link
-              underline="none"
-              color="inherit"
-              // target="_blank"
-              href={`/account/${accountLogin}`}
-              rel="noreferrer noopener nofollow"
+
+            <Box
+              sx={{
+                paddingRight: '27px',
+                paddingLeft: '27px'
+              }}
             >
-              <MenuItem
-                key="account_profile"
-                sx={{ typography: 'body2', py: 1.5, px: 3 }}
-                onClick={() => setOpen(false)}
+              <Typography variant="caption">Total Balance</Typography>
+
+              <Box
+                sx={{
+                  backgroundColor: darkMode ? '#2D2D2D' : '#fff',
+                  padding: '10px',
+                  borderRadius: '4px'
+                }}
               >
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{ mr: 2 }}
-                  alignItems="center"
-                >
-                  <Badge color="primary" badgeContent={0}>
-                    <AccountBoxIcon />
-                  </Badge>
-                  <Typography variant="s6" style={{ marginLeft: '10px' }}>
-                    Profile
+                <Stack direction="row" justifyContent="space-between">
+                  <Stack direction="row" alignItems="center">
+                    <TokenImage
+                      src={'/static/xrp.3e1e159f.svg'} // use normal <img> attributes as props
+                      width={18}
+                      height={18}
+                      onError={(event) =>
+                        (event.target.src = '/static/alt.png')
+                      }
+                    />
+                    <Typography variant="caption" ml={1}>
+                      XRP
+                    </Typography>
+                  </Stack>
+
+                  <Typography variant="caption">
+                    {accountBalance?.curr1?.value}
                   </Typography>
                 </Stack>
-              </MenuItem>
-            </Link>
-            
+
+                <Divider sx={{ my: 1 }} />
+
+                <Stack direction="row" justifyContent="space-between">
+                  <Stack direction="row" alignItems="center">
+                    <TokenImage
+                      src={
+                        darkMode
+                          ? '/static/solo.94fe652e.svg'
+                          : '/static/solo.2a1752f9.svg'
+                      } // use normal <img> attributes as props
+                      width={18}
+                      height={18}
+                      onError={(event) =>
+                        (event.target.src = '/static/alt.png')
+                      }
+                    />
+                    <Typography variant="caption" ml={1}>
+                      SOLO
+                    </Typography>
+                  </Stack>
+
+                  <Typography variant="caption">
+                    {accountBalance?.curr2?.value}
+                  </Typography>
+                </Stack>
+              </Box>
+
+              <Box
+                sx={{
+                  padding: '10px',
+                  border: '1px solid #3E3e3e',
+                  margin: '5px 0',
+                  borderRadius: '4px'
+                }}
+              >
+                <Stack direction="row" justifyContent="space-between">
+                  <Stack direction="row" alignItems="center">
+                    <Typography
+                      variant="caption"
+                      mr={1}
+                      sx={{
+                        color: '#878787'
+                      }}
+                    >
+                      Account Reserve
+                    </Typography>
+                    <Tooltip
+                      title={`There is 10 XRP reserve requirement to activate any XRP wallet. Once an XRP address is funded with the 10XRP ledger network and is non-refundable and non-recoverable unless the network lowers the reserve requirement.
+After you activate your XRP Wallet, you can then activate your SOLO Wallet. SOLO Wallets have a reserve requirement of 2 XRP, so your Network Reserve will change to 10 XRP when you activate your SOLO Wallet. Fees can be paid out of reserve funds.`}
+                    >
+                      <HelpIcon
+                        sx={{
+                          width: '18px',
+                          height: '18px'
+                        }}
+                      />
+                    </Tooltip>
+                  </Stack>
+
+                  <Box>
+                    {/* <Typography variant="caption">12</Typography> */}
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: '#878787',
+                        fontSize: '11px'
+                      }}
+                    >
+                      XRP
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
+
+              <Link
+                underline="none"
+                color="inherit"
+                // target="_blank"
+                href={`/account/${accountLogin}`}
+                rel="noreferrer noopener nofollow"
+              >
+                <Button
+                  key="account_profile"
+                  onClick={() => setOpen(false)}
+                  sx={{
+                    paddingRight: '27px',
+                    paddingLeft: '27px',
+                    color: 'inherit',
+                    width: '100%'
+                  }}
+                >
+                  VIEW WALLET
+                </Button>
+              </Link>
+            </Box>
+
             <Divider />
 
             {profiles.map((profile, idx) => {
