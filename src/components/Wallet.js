@@ -266,12 +266,11 @@ export default function Wallet({ style }) {
         spacing={1}
         sx={{
           padding: '3px 7px',
-          // backgroundPosition: 'right center',
-          backgroundImage:
-            'linear-gradient(to right, #721DA6 0%, #3021C1 51%, #721DA6 100%)',
+          backgroundImage: 'linear-gradient(to right, #721DA6 0%, #3021C1 51%, #721DA6 100%)',
+          transition: '0.5s',
+          backgroundSize: '200% auto',
           '&:hover': {
-            backgroundPosition:
-              'right center' /* change the direction of the change here */
+            backgroundPosition: 'right center'
           }
         }}
         alignItems="center"
