@@ -436,7 +436,7 @@ export default function Wallet({ style }) {
                       Account Reserve
                     </Typography>
                     <Tooltip
-                      title={`To activate an XRP wallet, a reserve of 10 XRP is mandatory. Once the XRP address is funded with this amount on the ledger network, the reserve becomes non-refundable and non-recoverable unless the network decides to decrease the reserve requirement. It's possible to pay fees using the reserve funds.`}
+                      title={`To activate an XRP wallet, a reserve of 10 XRP is mandatory. Once the XRP address is funded with this amount on the ledger network, the reserve becomes locked and unable to be retrieved unless either the network decides to reduce the reserve requirement, or the user deletes the wallet. It's possible to pay fees using the reserve funds.`}
                     >
                       <HelpIcon
                         sx={{
