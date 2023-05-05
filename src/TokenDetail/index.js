@@ -8,7 +8,9 @@ import {
     Box,
     Divider,
     Tab,
-    Tabs
+    Tabs,
+    useTheme,
+    useMediaQuery
 } from '@mui/material';
 
 // Components
@@ -80,6 +82,8 @@ function getTabID(tab) {
 
 export default function TokenDetail({token, tab}) {
     const [tabID, setTabID] = useState(getTabID(tab));
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
     const gotoTabView = (event) => {
         const anchor = (event.target.ownerDocument || document).querySelector(
@@ -107,7 +111,9 @@ export default function TokenDetail({token, tab}) {
 
     return (
         <>
-            <LinkCascade token={token} tabID={tabID} tabLabels={tabLabels} />
+            {!isMobile &&
+                <LinkCascade token={token} tabID={tabID} tabLabels={tabLabels} />
+            }
             
             <Common token={token} />
 

@@ -5,7 +5,8 @@ import { useState, useEffect } from 'react';
 import {
     useTheme,
     Chip,
-    Tooltip
+    Tooltip,
+    IconButton
 } from '@mui/material';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
@@ -18,7 +19,7 @@ import { AppContext } from 'src/AppContext';
 export default function Watch({token}) {
     const BASE_URL = 'https://api.xrpl.to/api';
     const theme = useTheme();
-    const { accountProfile, openSnackbar, setLoading } = useContext(AppContext);
+    const { accountProfile, openSnackbar, setLoading, darkMode } = useContext(AppContext);
 
     const [watchList, setWatchList] = useState([]);
 
@@ -108,29 +109,21 @@ export default function Watch({token}) {
         <>
             {watchList.includes(md5) ?
                 <Tooltip title="Remove from Watchlist">
-                    <Chip
-                        variant={"outlined"}
-                        icon={
-                            <StarRateIcon fontSize="small" />
-                        }
-                        label={'Watch'}
-                        onClick={() => {onChangeWatchList(md5)}}
+                    <IconButton
                         sx={{
                             "& .MuiChip-icon": {
                                 color: '#F6B87E'
-                            }
+                            },
+                            borderRadius: '4px',
+                            border: `1px solid ${darkMode ? '#616161' : '#bdbdbd'}`
                         }}
-                    />
+                        onClick={() => {onChangeWatchList(md5)}}>
+                        <StarRateIcon fontSize="small" />
+                    </IconButton>
                 </Tooltip>
                 :
                 <Tooltip title="Add to Watchlist and follow token">
-                    <Chip
-                        variant={"outlined"}
-                        icon={
-                            <StarOutlineIcon fontSize="small" />
-                        }
-                        label={'Watch'}
-                        onClick={() => {onChangeWatchList(md5)}}
+                    <IconButton
                         sx={{
                             // cursor: 'pointer',
                             '&:hover': {
@@ -139,8 +132,12 @@ export default function Watch({token}) {
                                     color: '#F6B87E'
                                 }
                             },
+                            borderRadius: '4px',
+                            border: `1px solid ${darkMode ? '#616161' : '#bdbdbd'}`
                         }}
-                    />
+                        onClick={() => {onChangeWatchList(md5)}}>
+                        <StarOutlineIcon fontSize="small" />
+                    </IconButton>
                 </Tooltip>
             }
         </>

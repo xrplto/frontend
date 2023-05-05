@@ -87,7 +87,7 @@ export default function Share({token}) {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
     const metrics = useSelector(selectMetrics);
-    const { accountProfile, openSnackbar } = useContext(AppContext);
+    const { accountProfile, openSnackbar, darkMode } = useContext(AppContext);
 
     const [open, setOpen] = useState(false);
 
@@ -116,8 +116,18 @@ export default function Share({token}) {
     };
 
     return (
-        <>
-            <Chip variant={"outlined"} icon={<ShareIcon fontSize="small" />} label={'Share'} onClick={handleClickOpen} />
+        <>            
+            <IconButton
+                sx={{
+                    "& .MuiChip-icon": {
+                        color: '#F6B87E'
+                    },
+                    borderRadius: '4px',
+                    border: `1px solid ${darkMode ? '#616161' : '#bdbdbd'}`
+                }}
+                onClick={handleClickOpen}>
+                <ShareIcon fontSize="small" />
+            </IconButton>
 
             <ShareDialog
                 fullScreen={fullScreen}
