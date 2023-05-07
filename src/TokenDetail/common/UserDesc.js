@@ -328,7 +328,13 @@ export default function UserDesc({ token }) {
             </Typography>
           )}
         </Stack>
-        <Grid container direction="row" spacing={1} sx={{ mt: 2 }}>
+        <Grid
+          container
+          direction="row"
+          spacing={1}
+          sx={{ mt: 2 }}
+          justifyContent={isTablet ? 'flex-end' : 'flex-start'}
+        >
           <Grid item>
             <Watch token={token} />
           </Grid>
