@@ -117,7 +117,9 @@ export default function TokenDetail({token, tab}) {
             
             <Common token={token} />
 
-            <Divider orientation="horizontal" sx={{mt:2,mb:2}} variant="middle" flexItem />
+            {!isMobile &&
+                <Divider orientation="horizontal" sx={{mt:2,mb:2}} variant="middle" flexItem />
+            }
 
             <div id="back-to-top-tab-anchor" />
 

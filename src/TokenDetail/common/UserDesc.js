@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { useSelector } from 'react-redux';
+import { selectMetrics } from 'src/redux/statusSlice';
+
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Material
+import { withStyles } from '@mui/styles';
 import {
   Avatar,
   Box,
@@ -38,9 +42,9 @@ import copyIcon from '@iconify/icons-ph/copy';
 // import listCheck from '@iconify/icons-ci/list-check';
 import blackholeIcon from '@iconify/icons-arcticons/blackhole';
 import currencyRipple from '@iconify/icons-tabler/currency-ripple';
+import infoFilled from '@iconify/icons-ep/info-filled';
 
 // Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Utils
@@ -57,6 +61,8 @@ import EditTokenDialog from 'src/components/EditTokenDialog';
 import Drawer from 'src/components/Drawer';
 import TagsDrawer from 'src/components/TagsDrawer';
 import LinksDrawer from 'src/components/LinksDrawer';
+
+import Decimal from 'decimal.js';
 
 const IconCover = styled('div')(
   ({ theme }) => `
@@ -139,6 +145,30 @@ const AdminImage = styled(LazyLoadImage)(({ theme }) => ({
   }
 }));
 
+const SupplyTypography = withStyles({
+  root: {
+    color: '#3366FF'
+  }
+})(Typography);
+
+const TotalSupplyTypography = withStyles({
+  root: {
+    color: '#FFC107'
+  }
+})(Typography);
+
+const VolumeTypography = withStyles({
+  root: {
+    color: '#FF6C40'
+  }
+})(Typography);
+
+const MarketTypography = withStyles({
+  root: {
+    color: '#2CD9C5'
+  }
+})(Typography);
+
 function truncate(str, n) {
   if (!str) return '';
   //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
@@ -188,8 +218,24 @@ export default function UserDesc({ token }) {
     social,
     issuer_info,
     assessment,
-    date
+    date,
+    marketcap,
+    vol24hx,
+    vol24hxrp,
+    amount,
+    supply
   } = token;
+
+  const [showStat, setShowStat] = useState(false);
+  const metrics = useSelector(selectMetrics);
+
+  const [omcf, setOMCF] = useState(token.isOMCF || 'no'); // is Old Market Cap Formula
+  const usdMarketCap = Decimal.div(marketcap, metrics.USD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const volume = fNumber(vol24hx);
+  const voldivmarket =
+    marketcap > 0 ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
+  const circulatingSupply = fNumber(supply);
+  const totalSupply = fNumber(amount);
 
   const info = issuer_info || {};
 
@@ -299,7 +345,8 @@ export default function UserDesc({ token }) {
           '& > *': {
             scrollSnapAlign: 'center'
           },
-          '::-webkit-scrollbar': { display: 'none' }
+          '::-webkit-scrollbar': { display: 'none' },
+          mb: isTablet ? 2 : 0
         }}
       >
         <Tooltip
@@ -367,6 +414,137 @@ export default function UserDesc({ token }) {
                     );
                 })}
             </Box> */}
+
+      {showStat && (
+        <Grid
+          container
+          item
+          xs={12}
+          sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}
+        >
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Stack direction="row" alignItems="center" gap={1}>
+              <Typography variant="body1">Market Cap</Typography>
+              <Tooltip
+                title={
+                  <Typography variant="body2">
+                    The total market value of a token's circulating supply
+                    represents its overall worth.
+                    <br />
+                    This concept is similar to free-float capitalization in the
+                    stock market.
+                    <br />
+                    {omcf === 'yes'
+                      ? 'Market Capitalization = Price x Circulating Supply'
+                      : 'Market Capitalization = (Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'}
+                    .
+                  </Typography>
+                }
+              >
+                <Icon icon={infoFilled} />
+              </Tooltip>
+            </Stack>
+
+            <MarketTypography variant="body1">
+              $ {fNumber(usdMarketCap)}
+            </MarketTypography>
+          </Stack>
+
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mt: 1 }}
+          >
+            <Stack direction="row" alignItems="center" gap={1}>
+              <Typography variant="body1">Volume (24h)</Typography>
+              <Tooltip
+                title={
+                  <Typography variant="body2">
+                    A metric representing the trading volume of a token within
+                    the past 24 hours.
+                  </Typography>
+                }
+              >
+                <Icon icon={infoFilled} />
+              </Tooltip>
+            </Stack>
+            <VolumeTypography variant="body1">
+              {volume}{' '}
+              <VolumeTypography variant="small"> {name}</VolumeTypography>
+            </VolumeTypography>
+          </Stack>
+
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mt: 1 }}
+          >
+            <Typography variant="body1">Volume / Marketcap</Typography>
+            <VolumeTypography variant="body1">
+              {fNumber(voldivmarket)}
+            </VolumeTypography>
+          </Stack>
+
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mt: 1 }}
+          >
+            <Stack direction="row" alignItems="center" gap={1}>
+              <Typography variant="body1">Circulating Supply</Typography>
+              <Tooltip
+                title={
+                  <Typography variant="body2">
+                    The number of tokens in circulation within the market and
+                    held by the public is comparable to the concept of
+                    outstanding shares in the stock market.
+                  </Typography>
+                }
+              >
+                <Icon icon={infoFilled} />
+              </Tooltip>
+            </Stack>
+            <SupplyTypography variant="body1">
+              {circulatingSupply}
+            </SupplyTypography>
+          </Stack>
+
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mt: 1 }}
+          >
+            <Typography variant="body1">Total Supply</Typography>
+            <TotalSupplyTypography variant="body1">
+              {totalSupply}
+            </TotalSupplyTypography>
+          </Stack>
+        </Grid>
+      )}
+      {isTablet && (
+        <Button
+          color="inherit"
+          onClick={() => setShowStat(!showStat)}
+          sx={{
+            width: '100%',
+            backgroundColor: darkMode ? '#343445' : '#fff',
+            '&:hover': {
+              backgroundColor: darkMode ? '#2B2C38' : '#EBEDF0'
+            },
+            mb: 1
+          }}
+        >
+          {`${!showStat ? 'More' : 'less'} stats`}
+        </Button>
+      )}
 
       <Grid
         container
