@@ -52,7 +52,7 @@ export default function ExtraButtons({token}) {
         <Stack alignItems='center'>
             {trustToken && <TrustSetDialog token={trustToken} setToken={setTrustToken} /> }
 
-            <Grid container direction="row" spacing={1} sx={{mt: 2}}>
+            <Grid container direction="row" spacing={1}>
                 <Grid item>
                     <Button
                         variant="outlined"
@@ -82,8 +82,6 @@ export default function ExtraButtons({token}) {
                         </Button>
                     </Link>
                 </Grid>
-
-                
             </Grid>
 
             <Stack direction='row' alignItems='center' sx={{mt:1}}>

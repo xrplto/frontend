@@ -61,6 +61,8 @@ import EditTokenDialog from 'src/components/EditTokenDialog';
 import Drawer from 'src/components/Drawer';
 import TagsDrawer from 'src/components/TagsDrawer';
 import LinksDrawer from 'src/components/LinksDrawer';
+import PriceDesc from './PriceDesc';
+import ExtraButtons from './ExtraButtons';
 
 import Decimal from 'decimal.js';
 
@@ -414,6 +416,24 @@ export default function UserDesc({ token }) {
                     );
                 })}
             </Box> */}
+
+      {isTablet && (
+        <>
+          <Grid item xs={12} lg={6} mb={2}>
+            <PriceDesc token={token} />
+          </Grid>
+
+          <Grid item xs={12} lg={6}>
+            <ExtraButtons token={token} />
+          </Grid>
+
+          <Divider
+            sx={{
+              my: 1.5
+            }}
+          />
+        </>
+      )}
 
       {showStat && (
         <Grid
