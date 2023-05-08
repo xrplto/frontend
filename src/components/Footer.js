@@ -58,7 +58,7 @@ function Footer() {
                     color: 'rgb(152, 202, 255) !important',
                 }
             } }}>
-                <Grid container sx={{ml:1}}>
+                <Grid container>
                     <Grid item xs={12} md={5} lg={5} sx={{ mt: 3 }}>
                         <Link
                             href="/"

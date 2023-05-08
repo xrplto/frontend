@@ -80,7 +80,7 @@ export default function LowHighBar24H({ token }) {
       justifyContent={isTablet ? 'space-between' : 'flex-start'}
     >
       <Typography variant="caption">Low: ${fNumber(min)}</Typography>
-      <Box sx={{ width: 160 }}>
+      <Box sx={{ width: isTablet ? 360 : 160 }}>
         <LowhighBarSlider
           valueLabelDisplay="on"
           aria-label="Low High Bar Slider"
