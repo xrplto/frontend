@@ -132,8 +132,8 @@ export default function TokenDetail({ token, tab }) {
 
   useEffect(() => {
     const handleScroll = () => {
-      const tableOffsetTop = tabRef.current.offsetTop;
-      const tableHeight = tabRef.current.clientHeight;
+      const tableOffsetTop = tabRef?.current?.offsetTop;
+      const tableHeight = tabRef?.current?.clientHeight;
       const scrollTop = window.scrollY;
       const anchorTop = tableOffsetTop;
       const anchorBottom = tableOffsetTop + tableHeight;
