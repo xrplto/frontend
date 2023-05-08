@@ -356,6 +356,14 @@ export const XrplToLightTheme = createTheme({
     //     }
     //   }
     // },
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          paddingLeft: '16px !important',
+          paddingRight: '16px !important',
+        }
+      }
+    },
     MuiFormHelperText: {
       styleOverrides: {
         root: {

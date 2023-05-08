@@ -52,8 +52,13 @@ function Footer() {
     const img = darkMode?img_white:img_black;
     return (
         <FooterWrapper>
-            <Container maxWidth="xl" sx={{ mt: 4, mb: 8 }}>
-                <Grid container sx={{ml:5}}>
+            <Container maxWidth="xl" sx={{ mt: 4, mb: 8, '& .MuiLink-root': {
+                color: 'rgb(160, 160, 160) !important',
+                '&:hover': {
+                    color: 'rgb(152, 202, 255) !important',
+                }
+            } }}>
+                <Grid container sx={{ml:1}}>
                     <Grid item xs={12} md={5} lg={5} sx={{ mt: 3 }}>
                         <Link
                             href="/"
@@ -74,7 +79,7 @@ function Footer() {
                         <Grid container>
                             <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
                                 <Stack>
-                                    <Typography variant='h6'>Products</Typography>
+                                    <Typography variant='h6' sx={{ fontWeight: 600 }}>Products</Typography>
                                     <Link
                                         href="https://xrpscan.com/"
                                         sx={{ mt: 2, display: 'inline-flex' }}
@@ -133,7 +138,7 @@ function Footer() {
                             </Grid>
                             <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
                                 <Stack>
-                                    <Typography variant='h6'>Company</Typography>
+                                    <Typography variant='h6' sx={{ fontWeight: 600 }}>Company</Typography>
                                     <Link
                                         href="/status/coming-soon"
                                         sx={{ mt: 2, display: 'inline-flex' }}
@@ -201,7 +206,7 @@ function Footer() {
                             </Grid>
                             <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
                                 <Stack>
-                                    <Typography variant='h6'>Support</Typography>
+                                    <Typography variant='h6' sx={{ fontWeight: 600 }}>Support</Typography>
                                     <Link
                                         href="/status/coming-soon"
                                         sx={{ mt: 2, display: 'inline-flex' }}
@@ -242,7 +247,7 @@ function Footer() {
                             </Grid>
                             <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
                                 <Stack>
-                                    <Typography variant='h6'>Socials</Typography>
+                                    <Typography variant='h6' sx={{ fontWeight: 600 }}>Socials</Typography>
                                     <Link
                                         href="https://www.facebook.com/xrpl.to/"
                                         sx={{ mt: 2, display: 'inline-flex' }}
