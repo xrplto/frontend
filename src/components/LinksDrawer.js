@@ -148,7 +148,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
               <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
                 <Avatar
                   alt="telegram"
-                  src="/static/telegram.png"
+                  src="/static/telegram.webp"
                   sx={{ mr: '5px', width: 16, height: 16 }}
                 />
                 <Typography variant="caption">Telegram</Typography>
@@ -165,7 +165,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
               <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
                 <Avatar
                   alt="discord"
-                  src="/static/discord.png"
+                  src="/static/discord.webp"
                   sx={{ mr: '5px', width: 16, height: 16 }}
                 />
                 <Typography variant="caption">Discord</Typography>
@@ -208,7 +208,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
           <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
             <Avatar
               alt="bithomp"
-              src="/static/bithomp.png"
+              src="/static/bithomp.webp"
               sx={{ mr: '5px', width: 16, height: 16 }}
             />
             <Typography variant="caption">Bithomp</Typography>
@@ -228,7 +228,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
           <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
             <Avatar
               alt="xumm"
-              src="/static/gatehub.jpg"
+              src="/static/gatehub.webp"
               sx={{ mr: '5px', width: 16, height: 16 }}
             />
             <Typography variant="caption">GateHub</Typography>
@@ -248,7 +248,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
           <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
             <Avatar
               alt="xrpscan"
-              src="/static/xrpscan.png"
+              src="/static/xrpscan.webp"
               sx={{ mr: '5px', width: 16, height: 16 }}
             />
             <Typography variant="caption">XRPScan</Typography>
@@ -288,7 +288,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
           <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
             <Avatar
               alt="xrpl"
-              src="/static/livenetxrplorg.png"
+              src="/static/livenetxrplorg.webp"
               sx={{ mr: '5px', width: 16, height: 16 }}
             />
             <Typography variant="caption">XRPL Explorer</Typography>
@@ -327,7 +327,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
             <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
               <Avatar
                 alt="twitter"
-                src="/static/twitter.png"
+                src="/static/twitter.webp"
                 sx={{ mr: '5px', width: 16, height: 16 }}
               />
 
@@ -346,7 +346,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
             <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
               <Avatar
                 alt="facebook"
-                src="/static/facebook.png"
+                src="/static/facebook.webp"
                 sx={{ mr: '5px', width: 16, height: 16 }}
               />
               <Typography variant="caption">Facebook</Typography>
@@ -364,7 +364,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
             <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
               <Avatar
                 alt="linkedin"
-                src="/static/linkedin.png"
+                src="/static/linkedin.webp"
                 sx={{ mr: '5px', width: 16, height: 16 }}
               />
               <Typography variant="caption">LinkedIn</Typography>
@@ -382,7 +382,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
             <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
               <Avatar
                 alt="instagram"
-                src="/static/instagram.png"
+                src="/static/instagram.webp"
                 sx={{ mr: '5px', width: 16, height: 16 }}
               />
               <Typography variant="caption">Instagram</Typography>
@@ -400,7 +400,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
             <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
               <Avatar
                 alt="youtube"
-                src="/static/youtube.png"
+                src="/static/youtube.webp"
                 sx={{ mr: '5px', width: 16, height: 16 }}
               />
               <Typography variant="caption">Youtube</Typography>
@@ -418,7 +418,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
             <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
               <Avatar
                 alt="medium"
-                src="/static/medium.png"
+                src="/static/medium.webp"
                 sx={{ mr: '5px', width: 16, height: 16 }}
               />
               <Typography variant="caption">Medium</Typography>
@@ -436,7 +436,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
             <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
               <Avatar
                 alt="twitch"
-                src="/static/twitch.png"
+                src="/static/twitch.webp"
                 sx={{ mr: '5px', width: 16, height: 16 }}
               />
               <Typography variant="caption">Twitch</Typography>
@@ -454,7 +454,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
             <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
               <Avatar
                 alt="tiktok"
-                src="/static/tiktok.png"
+                src="/static/tiktok.webp"
                 sx={{ mr: '5px', width: 16, height: 16 }}
               />
               <Typography variant="caption">Tiktok</Typography>
@@ -489,7 +489,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
           <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
             <Avatar
               alt="xrpchat"
-              src="/static/xrpchat.png"
+              src="/static/xrpchat.webp"
               sx={{ mr: '5px', width: 16, height: 16 }}
             />
             <Typography variant="caption">XRP Chat</Typography>

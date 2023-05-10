@@ -264,14 +264,14 @@ function fTokenRow({
                   width={isMobile ? 25 : 46}
                   height={isMobile ? 25 : 46}
                   onClick={() => setEditToken(token)}
-                  onError={(event) => (event.target.src = '/static/alt.png')}
+                  onError={(event) => (event.target.src = '/static/alt.webp')}
                 />
               ) : (
                 <TokenImage
                   src={imgUrl} // use normal <img> attributes as props
                   width={isMobile ? 25 : 46}
                   height={isMobile ? 25 : 46}
-                  onError={(event) => (event.target.src = '/static/alt.png')}
+                  onError={(event) => (event.target.src = '/static/alt.webp')}
                 />
               )}
             </Box>

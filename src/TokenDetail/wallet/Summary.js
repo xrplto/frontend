@@ -108,28 +108,28 @@ export default function Summary() {
 
             <Grid container spacing={3} sx={{p:0}}>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
-                    <WalletCard name='XUMM' link='https://xumm.app/' imgUrl='/static/xumm.jpg'/>
+                    <WalletCard name='XUMM' link='https://xumm.app/' imgUrl='/static/xumm.webp'/>
                 </Grid>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
-                    <WalletCard name='GemWallet' link='https://gemwallet.app/' imgUrl='/static/gemwallet.jpg'/>
+                    <WalletCard name='GemWallet' link='https://gemwallet.app/' imgUrl='/static/gemwallet.webp'/>
                 </Grid>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
-                    <WalletCard name='CROSSMARK' link='https://www.crossmark.io/' imgUrl='/static/crossmark.jpg'/>
+                    <WalletCard name='CROSSMARK' link='https://www.crossmark.io/' imgUrl='/static/crossmark.webp'/>
                 </Grid>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
-                    <WalletCard name='SOLO Wallet' link='https://www.sologenic.com/ecosystem/solo-wallet' imgUrl='/static/solo.jpg'/>
+                    <WalletCard name='SOLO Wallet' link='https://www.sologenic.com/ecosystem/solo-wallet' imgUrl='/static/solo.webp'/>
                 </Grid>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
-                    <WalletCard name='Bithomp Paper' link='https://bithomp.com/paperwallet/' imgUrl='/static/bithomp.png'/>
+                    <WalletCard name='Bithomp Paper' link='https://bithomp.com/paperwallet/' imgUrl='/static/bithomp.webp'/>
                 </Grid>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
                     <WalletCard name='LEDGER' link='https://www.ledger.com/' imgUrl='/static/ledger.svg'/>
                 </Grid>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
-                    <WalletCard name="D'CENT" link='https://dcentwallet.com/' imgUrl='/static/dcent.jpg'/>
+                    <WalletCard name="D'CENT" link='https://dcentwallet.com/' imgUrl='/static/dcent.webp'/>
                 </Grid>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
-                    <WalletCard name="COBO" link='https://cobo.com/' imgUrl='/static/cobo.png'/>
+                    <WalletCard name="COBO" link='https://cobo.com/' imgUrl='/static/cobo.webp'/>
                 </Grid>
             </Grid>
         </Stack>

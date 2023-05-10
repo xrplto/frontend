@@ -91,7 +91,7 @@ export default function ExplorersMenu({issuer}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="bithomp" src="/static/bithomp.png" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="bithomp" src="/static/bithomp.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Bithomp" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -103,7 +103,7 @@ export default function ExplorersMenu({issuer}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xumm" src="/static/gatehub.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="xumm" src="/static/gatehub.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="GateHub" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -115,7 +115,7 @@ export default function ExplorersMenu({issuer}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() =>  handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xrpscan" src="/static/xrpscan.png" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="xrpscan" src="/static/xrpscan.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPScan" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -142,7 +142,7 @@ export default function ExplorersMenu({issuer}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xrpl" src="/static/livenetxrplorg.png" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="xrpl" src="/static/livenetxrplorg.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPL Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -155,7 +155,7 @@ export default function ExplorersMenu({issuer}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xumm" src="/static/xrplorer.png" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="xumm" src="/static/xrplorer.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPLORER" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>

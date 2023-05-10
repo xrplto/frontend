@@ -135,7 +135,7 @@ export default function Converter({token}) {
 
     // const imgUrl1 = `/static/tokens/${md5}.${ext}`;
     const imgUrl1 = `https://s1.xrpl.to/token/${md5}`;
-    const imgUrl2 = `/static/xrp.png`;
+    const imgUrl2 = `/static/xrp.webp`;
 
     const [revert, setRevert] = useState(false);
     const [amount1, setAmount1] = useState(1); // Token

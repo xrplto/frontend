@@ -207,7 +207,7 @@ export default function PairsSelect({ token, pair, setPair}) {
                                 rel="noreferrer noopener nofollow"
                             >
                                 <IconButton edge="end" aria-label="solo">
-                                    <Avatar variant="rounded" alt="Sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
+                                    <Avatar variant="rounded" alt="Sologenic" src="/static/solo.webp" sx={{ width: 24, height: 24 }} />
                                 </IconButton>
                             </Link>
                         </Tooltip>
@@ -220,7 +220,7 @@ export default function PairsSelect({ token, pair, setPair}) {
                                 rel="noreferrer noopener nofollow"
                             >
                                 <IconButton edge="end" aria-label="solo">
-                                    <Avatar variant="rounded" alt="Gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
+                                    <Avatar variant="rounded" alt="Gatehub" src="/static/gatehub.webp" sx={{ width: 24, height: 24 }} />
                                 </IconButton>
                             </Link>
                         </Tooltip>
@@ -233,7 +233,7 @@ export default function PairsSelect({ token, pair, setPair}) {
                                 rel="noreferrer noopener nofollow"
                             >
                                 <IconButton edge="end" aria-label="solo">
-                                    <Avatar variant="rounded" alt="XUMM" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
+                                    <Avatar variant="rounded" alt="XUMM" src="/static/xumm.webp" sx={{ width: 24, height: 24 }} />
                                 </IconButton>
                             </Link>
                         </Tooltip>
@@ -247,7 +247,7 @@ export default function PairsSelect({ token, pair, setPair}) {
                                 rel="noreferrer noopener nofollow"
                             >
                                 <IconButton edge="end" aria-label="solo">
-                                    <Avatar variant="rounded" alt="xpmarket" src="/static/xpmarket.jpg" sx={{ width: 24, height: 24 }} />
+                                    <Avatar variant="rounded" alt="xpmarket" src="/static/xpmarket.webp" sx={{ width: 24, height: 24 }} />
                                 </IconButton>
                             </Link>
                         </Tooltip>

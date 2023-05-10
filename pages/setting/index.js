@@ -50,7 +50,7 @@ export async function getStaticProps() {
     ogp.canonical = 'https://xrpl.to/setting';
     ogp.title = 'Setting';
     ogp.url = 'https://xrpl.to/setting';
-    ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
+    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
     ogp.desc = 'Customize your profile on our settings page: Edit your profile details, upload a logo and banner image, and update your display name and description with ease.';
 
     ret = {ogp};

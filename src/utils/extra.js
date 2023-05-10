@@ -17,7 +17,7 @@ const Activity = { // 04:12 PM 03/26/2023
 }
 
 function getHashIcon(account) {
-    let url = '/static/account_logo.png';
+    let url = '/static/account_logo.webp';
     try {
         const icon = hashicon(account, { createCanvas });
         url = icon.toDataURL();

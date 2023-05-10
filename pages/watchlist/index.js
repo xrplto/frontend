@@ -118,7 +118,7 @@ export async function getStaticProps() {
         ogp.canonical = 'https://xrpl.to';
         ogp.title = 'Create a Watchlist: Track Your Favorite XRPL Tokens with Ease';
         ogp.url = 'https://xrpl.to/';
-        ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
+        ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
         ogp.desc = 'Create a custom XRPL token watchlist: Choose from all XRP Ledger tokens, track the latest prices, and stay updated on popular tokens like SOLO, CORE, CSC, and xSPECTAR.';
 
         ret = {data, ogp};

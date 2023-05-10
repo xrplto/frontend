@@ -62,7 +62,7 @@ const Label = withStyles({
 
 function TrustLine(props) {
     const BASE_URL = 'https://api.xrpl.to/api';
-    const QR_BLUR = '/static/blurqr.png';
+    const QR_BLUR = '/static/blurqr.webp';
 
     const { accountProfile, openSnackbar } = useContext(AppContext);
 
@@ -333,7 +333,7 @@ function TrustLine(props) {
                                     href={`https://t.me/${social.telegram}`}
                                     rel="noreferrer noopener nofollow"
                                 >
-                                    <Avatar alt="telegram" src="/static/telegram.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                    <Avatar alt="telegram" src="/static/telegram.webp" sx={{ mr:1, width: 24, height: 24 }} />
                                 </Link>
                             )}
                             {social && social.discord && (
@@ -344,7 +344,7 @@ function TrustLine(props) {
                                     href={`https://discord.gg/${social.discord}`}
                                     rel="noreferrer noopener nofollow"
                                 >
-                                    <Avatar alt="discord" src="/static/discord.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                    <Avatar alt="discord" src="/static/discord.webp" sx={{ mr:1, width: 24, height: 24 }} />
                                 </Link>
                             )}
                             {social && social.twitter && (
@@ -355,7 +355,7 @@ function TrustLine(props) {
                                     href={`https://twitter.com/${social.twitter}`}
                                     rel="noreferrer noopener nofollow"
                                 >
-                                    <Avatar alt="twitter" src="/static/twitter.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                    <Avatar alt="twitter" src="/static/twitter.webp" sx={{ mr:1, width: 24, height: 24 }} />
                                 </Link>
                             )}
                             {social && social.facebook && (
@@ -366,7 +366,7 @@ function TrustLine(props) {
                                     href={`https://facebook.com/${social.facebook}`}
                                     rel="noreferrer noopener nofollow"
                                 >
-                                    <Avatar alt="facebook" src="/static/facebook.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                    <Avatar alt="facebook" src="/static/facebook.webp" sx={{ mr:1, width: 24, height: 24 }} />
                                 </Link>
                             )}
                             {social && social.linkedin && (
@@ -377,7 +377,7 @@ function TrustLine(props) {
                                     href={`https://linkedin.com/${social.linkedin}`}
                                     rel="noreferrer noopener nofollow"
                                 >
-                                    <Avatar alt="linkedin" src="/static/linkedin.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                    <Avatar alt="linkedin" src="/static/linkedin.webp" sx={{ mr:1, width: 24, height: 24 }} />
                                 </Link>
                             )}
                             {social && social.instagram && (
@@ -388,7 +388,7 @@ function TrustLine(props) {
                                     href={`https://instagram.com/${social.instagram}`}
                                     rel="noreferrer noopener nofollow"
                                 >
-                                    <Avatar alt="instagram" src="/static/instagram.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                    <Avatar alt="instagram" src="/static/instagram.webp" sx={{ mr:1, width: 24, height: 24 }} />
                                 </Link>
                             )}
                             {social && social.youtube && (
@@ -399,7 +399,7 @@ function TrustLine(props) {
                                     href={`https://youtube.com/${social.youtube}`}
                                     rel="noreferrer noopener nofollow"
                                 >
-                                    <Avatar alt="youtube" src="/static/youtube.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                    <Avatar alt="youtube" src="/static/youtube.webp" sx={{ mr:1, width: 24, height: 24 }} />
                                 </Link>
                             )}
                             {social && social.medium && (
@@ -410,7 +410,7 @@ function TrustLine(props) {
                                     href={`https://medium.com/${social.medium}`}
                                     rel="noreferrer noopener nofollow"
                                 >
-                                    <Avatar alt="medium" src="/static/medium.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                    <Avatar alt="medium" src="/static/medium.webp" sx={{ mr:1, width: 24, height: 24 }} />
                                 </Link>
                             )}
                             {social && social.twitch && (
@@ -421,7 +421,7 @@ function TrustLine(props) {
                                     href={`https://twitch.tv/${social.twitch}`}
                                     rel="noreferrer noopener nofollow"
                                 >
-                                    <Avatar alt="twitch" src="/static/twitch.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                    <Avatar alt="twitch" src="/static/twitch.webp" sx={{ mr:1, width: 24, height: 24 }} />
                                 </Link>
                             )}
                             {social && social.tiktok && (
@@ -432,7 +432,7 @@ function TrustLine(props) {
                                     href={`https://tiktok.com/${social.tiktok}`}
                                     rel="noreferrer noopener nofollow"
                                 >
-                                    <Avatar alt="tiktok" src="/static/tiktok.png" sx={{ mr:1, width: 24, height: 24 }} />
+                                    <Avatar alt="tiktok" src="/static/tiktok.webp" sx={{ mr:1, width: 24, height: 24 }} />
                                 </Link>
                             )}
                             {social && social.reddit && (

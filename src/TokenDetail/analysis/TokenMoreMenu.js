@@ -56,7 +56,7 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="bithomp" src="/static/bithomp.png" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="bithomp" src="/static/bithomp.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Bithomp" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -68,7 +68,7 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xrpscan" src="/static/xrpscan.png" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="xrpscan" src="/static/xrpscan.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPScan" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -80,7 +80,7 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="gatehub" src="/static/gatehub.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="gatehub" src="/static/gatehub.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="GateHub" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -104,7 +104,7 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xumm" src="/static/xumm.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="xumm" src="/static/xumm.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Xumm DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -116,7 +116,7 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="sologenic" src="/static/solo.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="sologenic" src="/static/solo.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Sologenic DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -128,7 +128,7 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="gatehub" src="/static/gatehub.jpg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="gatehub" src="/static/gatehub.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="GateHub DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>

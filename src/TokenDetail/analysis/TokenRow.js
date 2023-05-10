@@ -175,14 +175,14 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, scrol
                                 width={56}
                                 height={56}
                                 onClick={() => setEditToken(token)}
-                                onError={(event) => event.target.src = '/static/alt.png'}
+                                onError={(event) => event.target.src = '/static/alt.webp'}
                             />
                         ):(
                             <TokenImage
                                 src={imgUrl} // use normal <img> attributes as props
                                 width={56}
                                 height={56}
-                                onError={(event) => event.target.src = '/static/alt.png'}
+                                onError={(event) => event.target.src = '/static/alt.webp'}
                             />
                         )}
 

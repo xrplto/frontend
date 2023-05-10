@@ -101,7 +101,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="telegram" src="/static/telegram.png" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt="telegram" src="/static/telegram.webp" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="Telegram" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>
@@ -115,7 +115,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="discord" src="/static/discord.png" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt="discord" src="/static/discord.webp" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="Discord" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>

@@ -441,7 +441,7 @@ export async function getStaticProps() {
         ogp.canonical = 'https://xrpl.to';
         ogp.title = 'Easily Swap XRP for Any Token on the XRPL.';
         ogp.url = 'https://xrpl.to/';
-        ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
+        ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
         ogp.desc = 'Effortlessly Exchange Tokens on the XRP Ledger with Our Seamless Swap Tool.';
 
         ret = {data, ogp};

@@ -171,7 +171,7 @@ function truncate(str, n){
 export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
-    const QR_BLUR = '/static/blurqr.png';
+    const QR_BLUR = '/static/blurqr.webp';
 
     const metrics = useSelector(selectMetrics);
 

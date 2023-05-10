@@ -256,7 +256,7 @@ export default function UserDesc({ token }) {
 
   const img_xrplf = darkMode ? img_xrplf_white : img_xrplf_black;
 
-  // const img_xrplf = "/static/xrp.png";
+  // const img_xrplf = "/static/xrp.webp";
 
   const handleDelete = () => {};
 
@@ -397,7 +397,7 @@ export default function UserDesc({ token }) {
           variant="outlined"
           size="small"
         />
-        {/* <Chip label='Sponsored' color="primary" variant={"outlined"} size="small" icon={<Avatar sx={{ width: 16, height: 16 }} src="/static/sponsor.png"/>}  /> */}
+        {/* <Chip label='Sponsored' color="primary" variant={"outlined"} size="small" icon={<Avatar sx={{ width: 16, height: 16 }} src="/static/sponsor.webp"/>}  /> */}
       </Box>
 
       {/* <Box
@@ -842,7 +842,7 @@ export default function UserDesc({ token }) {
               icon={
                 <Avatar
                   alt="xrpl"
-                  src="/static/xrp.png"
+                  src="/static/xrp.webp"
                   sx={{ mr: 1, width: 20, height: 20 }}
                 />
               }

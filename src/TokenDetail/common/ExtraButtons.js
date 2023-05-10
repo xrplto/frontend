@@ -91,7 +91,7 @@ export default function ExtraButtons({ token }) {
         sx={{ mt: 1, width: isTablet ? '100%' : 'auto' }}
         justifyContent={isTablet ? 'flex-end' : 'flex-start'}
       >
-        <Avatar sx={{ width: 24, height: 24 }} src="/static/sponsor.png" />
+        <Avatar sx={{ width: 24, height: 24 }} src="/static/sponsor.webp" />
         <Typography variant="sponsored">Sponsored</Typography>
       </Stack>
     </Stack>

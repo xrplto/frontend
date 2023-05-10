@@ -121,7 +121,7 @@ export async function getServerSideProps(ctx) {
         ogp.canonical = 'https://xrpl.to';
         ogp.title = `Discover the Most Traded ${data.tagName} XRPL Tokens by Volume`;
         ogp.url = 'https://xrpl.to/';
-        ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
+        ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
         ogp.desc = `Access today's ${data.tagName} token prices ranked by volume, featuring 24-hour price changes, trading volume, and much more for an insightful overview.`;
 
         ret = {data, ogp};
@@ -155,7 +155,7 @@ export async function getServerSideProps(ctx) {
 
 //         ogp.title = 'XRPL Token Prices, Charts, Market Volume And Activity';
 //         ogp.url = 'https://xrpl.to/';
-//         ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
+//         ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
 //         ogp.desc = 'Top XRPL DEX tokens prices and charts, listed by 24h volume. Access to current and historic data for XRP ecosystem. All XRPL tokens automatically listed.';
 
 //         ret = {data, ogp};

@@ -173,7 +173,7 @@ export default function QueryToken({token, onChangeToken}) {
                                             src={imgUrl} // use normal <img> attributes as props
                                             width={48}
                                             height={48}
-                                            onError={(event) => event.target.src = '/static/alt.png'}
+                                            onError={(event) => event.target.src = '/static/alt.webp'}
                                         />
                                         <Stack>
                                             <Typography variant="token" color={isOMCF!=='yes'?'#222531':''} noWrap>{truncate(name, 8)}</Typography>

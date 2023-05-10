@@ -376,7 +376,7 @@ export default function Wallet({ style }) {
                       width={18}
                       height={18}
                       onError={(event) =>
-                        (event.target.src = '/static/alt.png')
+                        (event.target.src = '/static/alt.webp')
                       }
                     />
                     <Typography variant="caption" ml={1}>
@@ -402,7 +402,7 @@ export default function Wallet({ style }) {
                       width={18}
                       height={18}
                       onError={(event) =>
-                        (event.target.src = '/static/alt.png')
+                        (event.target.src = '/static/alt.webp')
                       }
                     />
                     <Typography variant="caption" ml={1}>

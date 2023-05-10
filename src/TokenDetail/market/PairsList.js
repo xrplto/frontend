@@ -341,7 +341,7 @@ export default function PairsList({token, pairs}) {
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="Sologenic" src="/static/solo.jpg" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="Sologenic" src="/static/solo.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
                                             <Link
@@ -352,7 +352,7 @@ export default function PairsList({token, pairs}) {
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="Gatehub" src="/static/gatehub.jpg" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="Gatehub" src="/static/gatehub.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
                                             <Link
@@ -363,7 +363,7 @@ export default function PairsList({token, pairs}) {
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="XUMM" src="/static/xumm.jpg" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="XUMM" src="/static/xumm.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
 
@@ -375,7 +375,7 @@ export default function PairsList({token, pairs}) {
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="xpmarket" src="/static/xpmarket.jpg" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="xpmarket" src="/static/xpmarket.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
 

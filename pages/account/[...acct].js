@@ -64,7 +64,7 @@ export default function Overview({data}) {
     const [profile, setProfile] = useState(data.profile);
     
 
-    let default_banner = darkMode?'/static/banner_black.png':'/static/banner_white.png';
+    let default_banner = darkMode?'/static/banner_black.webp':'/static/banner_white.webp';
 
     const bannerImage = profile.banner?`https://s1.xrpl.to/profile/${profile.banner}`:default_banner;
 
@@ -141,7 +141,7 @@ export async function getServerSideProps(ctx) {
         description
     } = data.profile;
 
-    const imgUrl = banner?`https://s1.xrpl.to/profile/${banner}`:'https://xrpl.to/static/ogp.png';
+    const imgUrl = banner?`https://s1.xrpl.to/profile/${banner}`:'https://xrpl.to/static/webp.png';
 
     let ogp = {};
     ogp.canonical = `https://xrpl.to/account/${account}`;

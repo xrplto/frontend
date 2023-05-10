@@ -90,7 +90,7 @@ export async function getStaticProps() {
         ogp.canonical = 'https://xrpl.to';
         ogp.title = 'Purchasing XRP with Fiat Made Easy, Powered by Banxa';
         ogp.url = 'https://xrpl.to/';
-        ogp.imgUrl = 'https://xrpl.to/static/ogp.png';
+        ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
         ogp.desc = 'Effortlessly buy XRP using over 25 fiat currencies, including USD, GBP, CAD, EUR, and AUD, through Banxa seamless process.';
 
         ret = {data, ogp};
