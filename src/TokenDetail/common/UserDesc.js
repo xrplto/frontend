@@ -200,8 +200,8 @@ export default function UserDesc({ token }) {
   const [openIssuerInfo, setOpenIssuerInfo] = useState(false);
   const [editToken, setEditToken] = useState(null);
 
-  const [openTagsDrawer, setTagsDrawer] = useState(false);
-  const [openLinksDrawer, setLinksDrawer] = useState(false);
+  const [openTagsDrawer, setOpenTagsDrawer] = useState(false);
+  const [openLinksDrawer, setOpenLinksDrawer] = useState(false);
 
   const {
     id,
@@ -265,11 +265,11 @@ export default function UserDesc({ token }) {
   };
 
   const toggleTagsDrawer = (isOpen = true) => {
-    setTagsDrawer(isOpen);
+    setOpenTagsDrawer(isOpen);
   };
 
   const toggleLinksDrawer = (isOpen = true) => {
-    setLinksDrawer(isOpen);
+    setOpenLinksDrawer(isOpen);
   };
 
   return (
