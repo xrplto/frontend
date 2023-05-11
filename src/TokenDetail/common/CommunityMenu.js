@@ -24,7 +24,8 @@ const LinkChip = styled(Chip)(({ theme }) => ({
         cursor: 'pointer'
     },
     "&&:focus": {
-    }
+    },
+    borderRadius: '6px'
 }));
 
 

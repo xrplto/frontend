@@ -683,7 +683,9 @@ export default function UserDesc({ token }) {
                 >
                   <Chip
                     label={domain}
-                    sx={{ pl: 0.5, pr: 0.5 }}
+                    sx={{ pl: 0.5, pr: 0.5,
+                      borderRadius: '6px'
+                    }}
                     deleteIcon={
                       <Icon icon={linkExternal} width="16" height="16" />
                     }
@@ -705,7 +707,9 @@ export default function UserDesc({ token }) {
                 >
                   <Chip
                     label={'Whitepaper'}
-                    sx={{ pl: 0.5, pr: 0.5 }}
+                    sx={{ pl: 0.5, pr: 0.5,
+                      borderRadius: '6px'
+                    }}
                     deleteIcon={
                       <Icon icon={linkExternal} width="16" height="16" />
                     }
@@ -793,7 +797,9 @@ export default function UserDesc({ token }) {
                 </Typography>
               }
               size={isTablet ? 'small' : 'medium'}
-              sx={{ pl: 0.5, pr: 0 }}
+              sx={{ pl: 0.5, pr: 0,
+                borderRadius: '6px'
+              }}
               deleteIcon={
                 <Stack direction="row" spacing={0} alignItems="center">
                   <Tooltip title={'Copy Address'}>
