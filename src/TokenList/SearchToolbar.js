@@ -169,6 +169,9 @@ export default function SearchToolbar({
             icon={<StarOutlineIcon fontSize="small" />}
             label={'Watchlist'}
             onClick={() => {}}
+            sx={{
+              borderRadius: '8px'
+            }}
           />
         </Link>
 
@@ -178,6 +181,9 @@ export default function SearchToolbar({
           label={'Portfolio'}
           onClick={() => {
             openSnackbar('Coming soon!', 'success');
+          }}
+          sx={{
+            borderRadius: '8px'
           }}
         />
       </Stack>
@@ -217,6 +223,9 @@ export default function SearchToolbar({
               icon={<StarOutlineIcon fontSize="small" />}
               label={'Watchlist'}
               onClick={() => {}}
+              sx={{
+                borderRadius: '8px'
+              }}
             />
           </Link>
 
@@ -226,6 +235,9 @@ export default function SearchToolbar({
             label={'Portfolio'}
             onClick={() => {
               openSnackbar('Coming soon!', 'success');
+            }}
+            sx={{
+              borderRadius: '8px'
             }}
           />
         </Stack>
