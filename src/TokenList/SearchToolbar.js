@@ -284,6 +284,9 @@ export default function SearchToolbar({
                   label={'Tokens'}
                   onClick={handleDelete}
                   color={tagValue === 0 ? 'primary' : undefined}
+                  sx={{
+                    borderRadius: '4px'
+                  }}
                 />
               </Link>
             }
@@ -302,7 +305,8 @@ export default function SearchToolbar({
                 label={'Categories'}
                 onClick={() => setOpenCategoriesDrawer(true)}
                 sx={{
-                  color: 'rgb(97, 136, 255)'
+                  color: 'rgb(97, 136, 255)',
+                  borderRadius: '4px'
                 }}
               />
             }
@@ -331,6 +335,9 @@ export default function SearchToolbar({
                         label={tag}
                         onClick={handleDelete}
                         color={tagName === tag ? 'primary' : undefined}
+                        sx={{
+                          borderRadius: '4px'
+                        }}
                       />
                     </Link>
                   }
