@@ -158,8 +158,9 @@ function fTokenRow({
     }, 3000);
   }, [time]);
 
-  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+  // const imgUrl = `https://s1.xrpl.to/token/${md5}`;
   // const imgUrl = `/static/tokens/${md5}.${ext}`;
+  const imgUrl = `/static/tokens/${md5}.webp`;
 
   const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
