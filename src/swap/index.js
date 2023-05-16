@@ -188,7 +188,7 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
     const [token1, setToken1] = useState(curr1);
     const [token2, setToken2] = useState(curr2);
 
-    const [amount1, setAmount1] = useState(1); // XRP
+    const [amount1, setAmount1] = useState(0); // XRP
     const [amount2, setAmount2] = useState(0); // Token
 
     const [tokenExch1, setTokenExch1] = useState(0);

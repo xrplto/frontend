@@ -75,8 +75,8 @@ export default function BuyXRP({fiats, coins}) {
 
     const isLoggedIn = accountProfile && accountProfile.account;
 
-    const banxa_black = "/banxa-logo-black.png";
-    const banxa_white = "/banxa-logo-white.png";
+    const banxa_black = "/banxa-logo-black.webp";
+    const banxa_white = "/banxa-logo-white.webp";
     
     const banxa_img = darkMode?banxa_white:banxa_black;
 
@@ -110,16 +110,16 @@ export default function BuyXRP({fiats, coins}) {
 
                         for (var p of prices) {
                             let add = true;
-                            const agents = p.supported_agents;
-                            if (agents) {
-                                for (var a of agents) {
-                                    if (a.browser === 'safari' && !isSafari) {
-                                        add = false;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (add)
+                            // // const agents = p.supported_agents;
+                            // // if (agents) {
+                            // //     for (var a of agents) {
+                            // //         if (a.browser === 'safari' && !isSafari) {
+                            // //             add = false;
+                            // //             break;
+                            // //         }
+                            // //     }
+                            // // }
+                            // if (add)
                                 newPrices.push(p);
                         }
                         if (newPrices.length > 0) {

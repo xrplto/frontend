@@ -92,6 +92,22 @@ export default function PlaceOrder({marketLimit, buySell, pair, amount, value, a
 
     const canPlaceOrder = isLoggedIn && isSufficientBalance;
 
+    const getDispatchResult = async () => {
+        const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+        const res = ret.data.data.response;
+        const dispatched_result = res.dispatched_result;
+
+        setOpenScanQR(false);
+        if (dispatched_result && dispatched_result === 'tesSUCCESS') {
+            // TRIGGER account refresh
+            setSync(sync + 1);
+            openSnackbar('Successfully submitted the order!', 'success');
+        }
+        else {
+            openSnackbar('Transaction signing rejected!', 'error');
+        }
+    };
+
     useEffect(() => {
         var timer = null;
         var isRunning = false;
@@ -107,15 +123,16 @@ export default function PlaceOrder({marketLimit, buySell, pair, amount, value, a
                 const resolved_at = res.resolved_at;
                 const dispatched_result = res.dispatched_result;
                 if (resolved_at) {
-                    setOpenScanQR(false);
-                    if (dispatched_result && dispatched_result === 'tesSUCCESS') {
-                        // TRIGGER account refresh
-                        setSync(sync + 1);
-                        openSnackbar('Successfully submitted the order!', 'success');
-                    }
-                    else {
-                        openSnackbar('Transaction signing rejected!', 'error');
-                    }
+                    setTimeout(getDispatchResult, 8000);
+                    // setOpenScanQR(false);
+                    // if (dispatched_result && dispatched_result === 'tesSUCCESS') {
+                    //     // TRIGGER account refresh
+                    //     setSync(sync + 1);
+                    //     openSnackbar('Successfully submitted the order!', 'success');
+                    // }
+                    // else {
+                    //     openSnackbar('Transaction signing rejected!', 'error');
+                    // }
 
                     return;
                 }
