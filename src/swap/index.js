@@ -188,8 +188,8 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
     const [token1, setToken1] = useState(curr1);
     const [token2, setToken2] = useState(curr2);
 
-    const [amount1, setAmount1] = useState(0); // XRP
-    const [amount2, setAmount2] = useState(0); // Token
+    const [amount1, setAmount1] = useState(''); // XRP
+    const [amount2, setAmount2] = useState(''); // Token
 
     const [tokenExch1, setTokenExch1] = useState(0);
     const [tokenExch2, setTokenExch2] = useState(0);
@@ -513,12 +513,22 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
     }
 
     const handleChangeAmount1 = (e) => {
-        setAmount1(e.target.value);
+        const value = e.target.value;
+        const isNumber = /^\d+$/.test(value);
+
+        if (!isNumber && value !== '') return;
+
+        setAmount1(value);
         setActive(revert?'VALUE':'AMOUNT');
     }
 
     const handleChangeAmount2 = (e) => {
-        setAmount2(e.target.value);
+        const value = e.target.value;
+        const isNumber = /^\d+$/.test(value);
+
+        if (!isNumber && value !== '') return;
+
+        setAmount2(value);
         setActive(revert?'AMOUNT':'VALUE');
     }
 
@@ -562,7 +572,7 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
                         </Stack>
                         <InputContent>
                             <Input
-                                placeholder=''
+                                placeholder='0'
                                 autoComplete='new-password'
                                 // margin='dense'
                                 // disabled={revert?true:false}
@@ -595,12 +605,12 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
                         </Stack>
                         <InputContent>
                             <Input
-                                placeholder=''
+                                placeholder='0'
                                 autoComplete='new-password'
                                 // margin='dense'
                                 // disabled={revert?false:true}
                                 disableUnderline
-                                value={amount2}
+                                value={amount1 === '' ? '' : amount2}
                                 onChange={handleChangeAmount2}
                                 sx={{
                                     width: '100%',

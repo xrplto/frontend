@@ -293,7 +293,7 @@ export default function TrustList({account}) {
     }, []);
 
     return (
-        <Container maxWidth="lg" sx={{pl: 0, pr: 0}}>
+        <Container maxWidth="xl" sx={{pl: 0, pr: 0}}>
             <Backdrop
                 sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={pageLoading}

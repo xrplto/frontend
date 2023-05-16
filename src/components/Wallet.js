@@ -109,6 +109,7 @@ export default function Wallet({ style }) {
   const accountToken = accountProfile?.token;
   const accountLogo = accountProfile?.logo;
   const accountUuid = accountProfile?.xuuid;
+  const accountTotalXrp = accountProfile?.xrp;
   const isAdmin = accountProfile?.admin;
 
   const [open, setOpen] = useState(false);
@@ -117,7 +118,6 @@ export default function Wallet({ style }) {
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
   const [accountBalance, setAccountBalance] = useState(null);
-  const [totalXrpBalance, setTotalXrpBalance] = useState(0);
 
   let logoImageUrl = null;
   if (accountProfile) {
@@ -231,22 +231,6 @@ export default function Wallet({ style }) {
     onCancelLoginXumm(uuid);
   };
 
-  const getReservedXrpBalance = async () => {
-    if (!accountProfile || !accountProfile.account) {
-      return;
-    }
-
-    const account = accountProfile.account;
-    
-    try {
-      const res = await axios(`${BASE_URL}/account/info/${account}/total-xrp`);
-      
-      setTotalXrpBalance(res?.data?.balance);
-    } catch (err) {
-      console.log('Error on getting reserved xrp balance.', err);
-    }
-  };
-
   useEffect(() => {
     function getAccountInfo() {
       if (!accountProfile || !accountProfile.account) {
@@ -274,7 +258,6 @@ export default function Wallet({ style }) {
     }
     // console.log('account_info')
     getAccountInfo();
-    getReservedXrpBalance();
   }, [accountProfile, sync]);
 
   return (
@@ -467,7 +450,7 @@ export default function Wallet({ style }) {
 
                   <Box>
                     <Typography variant="caption" mr="5px">
-                      {totalXrpBalance - accountBalance?.curr1?.value}
+                      {Number(accountTotalXrp) - Number(accountBalance?.curr1?.value)}
                     </Typography>
                     <Typography
                       variant="caption"

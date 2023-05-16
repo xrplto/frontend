@@ -246,7 +246,7 @@ export default function OfferList({account}) {
     // https://api.sologenic.org/api/v1/trades?symbol=534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz%2FXRP&account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
 
     return (
-        <Container maxWidth="lg" sx={{pl: 0, pr: 0}}>
+        <Container maxWidth="xl" sx={{pl: 0, pr: 0}}>
             <Backdrop
                 sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={pageLoading}

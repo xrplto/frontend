@@ -143,6 +143,10 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
 
     const handleChangeAmount = (e) => {
         const amt = e.target.value;
+        const isNumber = /^\d+$/.test(amt);
+        
+        if (!isNumber && amt !== '') return;
+
         setAmount(amt);
         if (marketLimit !== 'market') {
             const val = (amt * price).toFixed(6);
@@ -152,6 +156,10 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
 
     const handleChangePrice = (e) => {
         const newPrice = e.target.value;
+        const isNumber = /^\d+$/.test(newPrice);
+        
+        if (!isNumber && newPrice !== '') return;
+
         setPrice(newPrice);
         const val = (amount * newPrice).toFixed(6);
         setValue(val);
