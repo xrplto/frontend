@@ -246,14 +246,16 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
             const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
             const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
             
-            if (fAmount > 0 && fValue > 0) {
-                if (accountAmount >= fAmount) {
-                    isSufficientBalance = true;
+            if (amount1 && amount2) {
+                if (fAmount > 0 && fValue > 0) {
+                    if (accountAmount >= fAmount) {
+                        isSufficientBalance = true;
+                    } else {
+                        errMsg = "Insufficient wallet balance";
+                    }
                 } else {
                     errMsg = "Insufficient wallet balance";
                 }
-            } else {
-                errMsg = "Insufficient wallet balance";
             }
         } catch (e) {
             errMsg = "Insufficient wallet balance";
@@ -657,7 +659,7 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
             <Stack sx={{width: '100%', mt: 2}}>
                 {accountProfile && accountProfile.account ? (
                     <>
-                        {errMsg &&
+                        {errMsg && amount1 !== '' && amount2 !== '' &&
                             <Typography variant='s2' sx={{ml: 2}}>{errMsg}</Typography>
                         }
 
