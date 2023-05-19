@@ -110,6 +110,51 @@ export default function TrustSetDialog({ token, setToken }) {
     var timer = null;
     var isRunning = false;
     var counter = 150;
+    var dispatchTimer = null;
+
+    async function getDispatchResult() {
+      try {
+        const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+        const res = ret.data.data.response;
+        // const account = res.account;
+        const dispatched_result = res.dispatched_result;
+
+        return dispatched_result;
+      } catch (err) {}
+    }
+
+    const startInterval = () => {
+      let times = 0;
+
+      dispatchTimer = setInterval(async () => {
+        const dispatched_result = await getDispatchResult();
+
+        if (dispatched_result && dispatched_result === 'tesSUCCESS') {
+          openSnackbar(
+            `Successfully ${isRemove ? 'removed' : 'set'} trustline!`,
+            'success'
+          );
+          stopInterval();
+          return;
+        }
+
+        times++;
+
+        if (times >= 10) {
+          openSnackbar('Operation rejected!', 'error');
+          stopInterval();
+          return;
+        }
+      }, 1000);
+    };
+
+    // Stop the interval
+    const stopInterval = () => {
+      clearInterval(dispatchTimer);
+      setOpenScanQR(false);
+      handleClose();
+    };
+
     async function getPayload() {
       // console.log(counter + " " + isRunning, uuid);
       if (isRunning) return;
@@ -119,16 +164,8 @@ export default function TrustSetDialog({ token, setToken }) {
         const res = ret.data.data.response;
         // const account = res.account;
         const resolved_at = res.resolved_at;
-        const dispatched_result = res.dispatched_result;
         if (resolved_at) {
-          setOpenScanQR(false);
-          if (dispatched_result && dispatched_result === 'tesSUCCESS') {
-            openSnackbar('Successfully set trustline!', 'success');
-          } else {
-            openSnackbar('Operation rejected!', 'error');
-          }
-          handleClose();
-
+          startInterval();
           return;
         }
       } catch (err) {}

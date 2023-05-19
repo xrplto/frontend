@@ -234,6 +234,49 @@ export default function TrustList({ account }) {
     var timer = null;
     var isRunning = false;
     var counter = 150;
+    var dispatchTimer = null;
+
+    async function getDispatchResult() {
+      try {
+        const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+        const res = ret.data.data.response;
+        // const account = res.account;
+        const dispatched_result = res.dispatched_result;
+
+        return dispatched_result;
+      } catch (err) {}
+    }
+
+    const startInterval = () => {
+      let times = 0;
+
+      dispatchTimer = setInterval(async () => {
+        const dispatched_result = await getDispatchResult();
+
+        if (dispatched_result && dispatched_result === 'tesSUCCESS') {
+          setSync(sync + 1);
+          openSnackbar('Successfully removed trustline!', 'success');
+          getLines();
+          stopInterval();
+          return;
+        }
+
+        times++;
+
+        if (times >= 10) {
+          openSnackbar('Operation rejected!', 'error');
+          stopInterval();
+          return;
+        }
+      }, 1000);
+    };
+
+    // Stop the interval
+    const stopInterval = () => {
+      clearInterval(dispatchTimer);
+      setOpenScanQR(false);
+    };
+
     async function getPayload() {
       if (isRunning) return;
       isRunning = true;
@@ -254,17 +297,8 @@ export default function TrustList({ account }) {
                 */
 
         const resolved_at = res.resolved_at;
-        const dispatched_result = res.dispatched_result;
         if (resolved_at) {
-          setOpenScanQR(false);
-          if (dispatched_result === 'tesSUCCESS') {
-            // TRIGGER account refresh
-            setSync(sync + 1);
-            openSnackbar('Successfully removed trustline!', 'success');
-          } else {
-            openSnackbar('Operation rejected!', 'error');
-          }
-          getLines();
+          startInterval();
           return;
         }
       } catch (err) {}
