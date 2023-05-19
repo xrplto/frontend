@@ -44,6 +44,7 @@ import Decimal from 'decimal.js';
 // Iconify
 import { Icon } from '@iconify/react';
 import copyIcon from '@iconify/icons-fad/copy';
+import Wallet from './Wallet';
 // ----------------------------------------------------------------------
 const TrustDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(1px)',
@@ -91,6 +92,8 @@ export default function TrustSetDialog({ token, setToken }) {
   const BASE_URL = 'https://api.xrpl.to/api';
   const { accountProfile, openSnackbar } = useContext(AppContext);
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+
+  const isLoggedIn = accountProfile && accountProfile.account;
 
   const [openScanQR, setOpenScanQR] = useState(false);
   const [uuid, setUuid] = useState(null);
@@ -188,6 +191,8 @@ export default function TrustSetDialog({ token, setToken }) {
 
   useEffect(() => {
     const getLines = () => {
+      if (!isLoggedIn) return;
+
       setLoading(true);
       // https://api.xrpl.to/api/account/lines/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
       axios
@@ -405,14 +410,18 @@ export default function TrustSetDialog({ token, setToken }) {
               justifyContent="center"
               sx={{ mt: 2 }}
             >
-              <Button
-                variant="outlined"
-                onClick={isRemove ? handleRemoveTrust : handleSetTrust}
-                color={`${isRemove ? 'error' : 'primary'}`}
-                size="small"
-              >
-                {`${isRemove ? 'Remove' : 'Set'} Trustline`}
-              </Button>
+              {isLoggedIn ? (
+                <Button
+                  variant="outlined"
+                  onClick={isRemove ? handleRemoveTrust : handleSetTrust}
+                  color={`${isRemove ? 'error' : 'primary'}`}
+                  size="small"
+                >
+                  {`${isRemove ? 'Remove' : 'Set'} Trustline`}
+                </Button>
+              ) : (
+                <Wallet />
+              )}
 
               <CopyToClipboard
                 text={`https://xrpl.to/trustset/${slug}`}

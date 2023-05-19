@@ -100,7 +100,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
         >
             
             <Backdrop
-                sx={{ color: "#000", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                sx={{ color: "#000", zIndex: (theme) => theme.zIndex.drawer + 202 }}
                 open={loading}
             >
                 <PuffLoader color={"#00AB55"} size={50} />
