@@ -174,7 +174,11 @@ const Sitemap = ({ tokens, slug }) => {
 
 export const getServerSideProps = async (ctx) => {
   let slugs = [];
+  let exch = null;
+  let H24 = null;
+  let global = null;
   let count = 0;
+  let total = 0;
   const time = new Date().toISOString();
 
   const { slug } = ctx.params;
@@ -186,6 +190,10 @@ export const getServerSideProps = async (ctx) => {
 
     count = res.data?.count;
     slugs = res.data?.slugs;
+    exch = res.data?.exch;
+    total = res.data?.total;
+    H24 = res.data?.H24;
+    global = res.data?.global;
 
     var t2 = performance.now();
     var dt = (t2 - t1).toFixed(2);
@@ -194,7 +202,13 @@ export const getServerSideProps = async (ctx) => {
     return {
       props: {
         tokens: slugs,
-        slug
+        slug,
+        data: {
+          exch,
+          total,
+          H24,
+          global
+        }
       }
     };
   } catch (e) {
@@ -202,7 +216,13 @@ export const getServerSideProps = async (ctx) => {
     return {
       props: {
         tokens: [],
-        slug: ''
+        slug: '',
+        data: {
+          exch,
+          total,
+          H24,
+          global
+        }
       }
     };
   }
