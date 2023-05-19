@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import axios from 'axios';
 
 // Material
@@ -20,6 +20,7 @@ import { CURRENCY_ISSUERS } from 'src/utils/constants';
 
 // Components
 import TrustSetDialog from 'src/components/TrustSetDialog';
+import { AppContext } from 'src/AppContext';
 
 // ----------------------------------------------------------------------
 export default function ExtraButtons({ token }) {
@@ -27,6 +28,10 @@ export default function ExtraButtons({ token }) {
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const [trustToken, setTrustToken] = useState(null);
   const [lines, setLines] = useState([]);
+
+  const { accountProfile, openSnackbar } = useContext(AppContext);
+
+  const isLoggedIn = accountProfile && accountProfile.account;
 
   const {
     id,
@@ -48,7 +53,11 @@ export default function ExtraButtons({ token }) {
   if (!user) user = name;
 
   const handleSetTrust = (e) => {
-    setTrustToken(token);
+    if (!isLoggedIn) {
+      openSnackbar('Please connect wallet!', 'error');
+    } else {
+      setTrustToken(token);
+    }
   };
 
   const handleByCrypto = (e) => {};
@@ -56,10 +65,7 @@ export default function ExtraButtons({ token }) {
   return (
     <Stack alignItems="center">
       {trustToken && (
-        <TrustSetDialog
-          token={trustToken}
-          setToken={setTrustToken}
-        />
+        <TrustSetDialog token={trustToken} setToken={setTrustToken} />
       )}
 
       <Grid container direction="row" spacing={1}>
