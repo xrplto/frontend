@@ -25,6 +25,7 @@ import {
   Typography
 } from '@mui/material';
 import CancelIcon from '@mui/icons-material/Cancel';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 // Loader
 import { PuffLoader, PulseLoader } from 'react-spinners';
@@ -411,6 +412,7 @@ export default function TrustList({ account }) {
         lines.length === 0 && (
           <Stack alignItems="center" sx={{ mt: 2, mb: 1 }}>
             <Typography variant="s6" color="#2de370">
+              <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
               [ No TrustLines ]
             </Typography>
           </Stack>

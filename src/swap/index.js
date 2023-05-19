@@ -44,7 +44,7 @@ import linkExternal from '@iconify/icons-charm/link-external';
 import paperIcon from '@iconify/icons-akar-icons/paper';
 import copyIcon from '@iconify/icons-fad/copy';
 import exchangeIcon from '@iconify/icons-uil/exchange';
-import arrowsExchangeAltV from '@iconify/icons-gg/arrows-exchange-alt-v';
+import arrowDownOutline from '@iconify/icons-basil/arrow-down-outline';
 
 // Context
 import { useContext } from 'react';
@@ -406,6 +406,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     const stopInterval = () => {
       clearInterval(dispatchTimer);
       setOpenScanQR(false);
+      setAmount1('');
+      setAmount2('');
     };
 
     async function getPayload() {
@@ -717,7 +719,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           <ToggleContent>
             <IconButton size="medium" onClick={onRevertExchange}>
               <Icon
-                icon={arrowsExchangeAltV}
+                icon={arrowDownOutline}
                 width="36"
                 height="36"
                 style={{

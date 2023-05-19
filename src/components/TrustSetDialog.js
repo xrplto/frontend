@@ -408,7 +408,7 @@ export default function TrustSetDialog({ token, setToken }) {
               <Button
                 variant="outlined"
                 onClick={isRemove ? handleRemoveTrust : handleSetTrust}
-                color="primary"
+                color={`${isRemove ? 'error' : 'primary'}`}
                 size="small"
               >
                 {`${isRemove ? 'Remove' : 'Set'} Trustline`}
