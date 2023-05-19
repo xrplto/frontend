@@ -126,7 +126,7 @@ function Footer() {
                                         <Typography variant='link'>Job Board</Typography>
                                     </Link>
                                     <Link
-                                        href="/sitemap/token.xml"
+                                        href="/sitemap/token"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"

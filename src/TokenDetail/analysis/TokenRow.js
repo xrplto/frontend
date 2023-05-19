@@ -194,12 +194,12 @@ function fTokenRow({mUSD, time, token, admin, setEditToken, setTrustToken, scrol
                             // style={{textDecoration: "none"}}
                         >
                             <Stack>
-                                <Typography variant="token" color={isOMCF!=='yes'?'#222531':slug === md5?'#B72136':''} noWrap>{truncate(name, 8)}</Typography>
-                                <Typography variant="caption" color={isOMCF!=='yes'?'#222531':''} noWrap>
+                                <Typography variant="token" color={isOMCF!=='yes'?(darkMode ? '#fff' : '#222531'):slug === md5?'#B72136':''} noWrap>{truncate(name, 8)}</Typography>
+                                <Typography variant="caption" color={isOMCF!=='yes'?(darkMode ? '#fff' : '#222531'):''} noWrap>
                                     {truncate(user, 13)}
                                     {kyc && (<Typography variant='kyc' sx={{ml: 0.2}}>KYC</Typography>)}
                                 </Typography>
-                                <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography>
+                                <Typography variant="small" color={isOMCF!=='yes'?(darkMode ? '#fff' : '#222531'):''}>{date}</Typography>
                             </Stack>
                         </Link>
                     </Stack>

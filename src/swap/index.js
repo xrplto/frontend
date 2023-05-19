@@ -380,8 +380,10 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
     const onOfferCreateXumm = async () => {
         setLoading(true);
         try {
-            const curr1 = revert?pair.curr2:pair.curr1;
-            const curr2 = revert?pair.curr1:pair.curr2;
+            // const curr1 = revert?pair.curr2:pair.curr1;
+            // const curr2 = revert?pair.curr1:pair.curr2;
+            const curr1 = pair.curr1;
+            const curr2 = pair.curr2;
             // const Account = accountProfile.account;
             const user_token = accountProfile.user_token;
             let TakerGets, TakerPays;
@@ -516,9 +518,8 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
 
     const handleChangeAmount1 = (e) => {
         const value = e.target.value;
-        const isNumber = /^\d+$/.test(value);
 
-        if (!isNumber && value !== '') return;
+        if (isNaN(Number(value))) return;
 
         setAmount1(value);
         setActive(revert?'VALUE':'AMOUNT');
@@ -526,9 +527,8 @@ export default function Swap({asks, bids, pair, setPair, revert, setRevert}) {
 
     const handleChangeAmount2 = (e) => {
         const value = e.target.value;
-        const isNumber = /^\d+$/.test(value);
 
-        if (!isNumber && value !== '') return;
+        if (isNaN(Number(value))) return;
 
         setAmount2(value);
         setActive(revert?'AMOUNT':'VALUE');

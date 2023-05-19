@@ -10,6 +10,7 @@ import {
     TableBody,
     Typography
 } from '@mui/material';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 // Loader
 import { PuffLoader } from "react-spinners";
@@ -170,7 +171,17 @@ export default function AnalysisData({token}) {
                     </Stack>
                     :
                     <ConnectWalletContainer>
-                        <Typography variant='subtitle2' color='error'>No other tokens by this issuer</Typography>
+                        <Typography
+                            variant='subtitle2'
+                            color='error'
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
+                            No other tokens by this issuer
+                        </Typography>
                     </ConnectWalletContainer>
             }
         </>

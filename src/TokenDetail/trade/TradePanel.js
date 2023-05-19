@@ -143,9 +143,8 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
 
     const handleChangeAmount = (e) => {
         const amt = e.target.value;
-        const isNumber = /^\d+$/.test(amt);
         
-        if (!isNumber && amt !== '') return;
+        if (isNaN(Number(amt))) return;
 
         setAmount(amt);
         if (marketLimit !== 'market') {
@@ -156,9 +155,8 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
 
     const handleChangePrice = (e) => {
         const newPrice = e.target.value;
-        const isNumber = /^\d+$/.test(newPrice);
         
-        if (!isNumber && newPrice !== '') return;
+        if (isNaN(Number(newPrice))) return;
 
         setPrice(newPrice);
         const val = (amount * newPrice).toFixed(6);

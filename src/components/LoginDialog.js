@@ -2,14 +2,19 @@ import {
     alpha,
     styled,
     Box,
-    Dialog,
+    Dialog as MuiDialog,
     Link,
     Typography,
     // DialogTitle, 
     //Divider
 } from '@mui/material';
+import { useRouter } from 'next/router';
 
-const QRDialog = styled(Dialog)(({ theme }) => ({
+import { isMobile } from 'react-device-detect';
+import Dialog from './Dialog';
+import { useState } from 'react';
+
+const QRDialog = styled(MuiDialog)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
     // backdropFilter: 'blur(2px)',
     // WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
@@ -31,9 +36,31 @@ export default function LoginDialog(props) {
     const qrUrl = props.qrUrl;
     const nextUrl = props.nextUrl;
 
+    const [openDialog, setOpenDialog] = useState(false);
+
+    const history = useRouter();
+
     const onClose = () => {
         props.handleClose();
     };
+
+    const handleClick = (e) => {
+        e.preventDefault();
+        
+        if (!isMobile) {
+            history.push(nextUrl);
+        } else {
+            setOpenDialog(true);
+        }
+    }
+
+    const handleClose = () => {
+        setOpenDialog(false);
+    }
+
+    const handleRedirect = () => {
+        history.push(nextUrl);
+    }
 
     return (
         <QRDialog onClose={onClose} open={props.open}>
@@ -62,10 +89,17 @@ export default function LoginDialog(props) {
                     target="_blank"
                     href={nextUrl}
                     rel="noreferrer noopener nofollow"
+                    onClick={handleClick}
                 >
                     <LinkTypography variant="h4" color='primary'>Open in XUMM</LinkTypography>
                 </Link>
             </div>
+
+            <Dialog
+                open={openDialog}
+                handleClose={handleClose}
+                handleRedirect={handleRedirect}
+            />
         </QRDialog>
     );
 }

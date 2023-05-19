@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios';
 
 // Material
 import {
@@ -25,6 +26,7 @@ export default function ExtraButtons({ token }) {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const [trustToken, setTrustToken] = useState(null);
+  const [lines, setLines] = useState([]);
 
   const {
     id,
@@ -54,7 +56,10 @@ export default function ExtraButtons({ token }) {
   return (
     <Stack alignItems="center">
       {trustToken && (
-        <TrustSetDialog token={trustToken} setToken={setTrustToken} />
+        <TrustSetDialog
+          token={trustToken}
+          setToken={setTrustToken}
+        />
       )}
 
       <Grid container direction="row" spacing={1}>

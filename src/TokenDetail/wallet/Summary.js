@@ -107,8 +107,21 @@ export default function Summary() {
             </div>
 
             <Grid container spacing={3} sx={{p:0}}>
-                <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
+                <Grid item xs={12} md={6} lg={4} sx={{pl:0, position: 'relative'}}>
                     <WalletCard name='XUMM' link='https://xumm.app/' imgUrl='/static/xumm.webp'/>
+                    <Typography variant='caption' sx={{
+                          width: '95px',
+                          fontSize: '14px',
+                          padding: '4px',
+                          position: 'absolute',
+                          right: '-15px',
+                          top: '30px',
+                          textAlign: 'center',
+                          borderRadius: '25px',
+                          transform: 'rotate(20deg)',
+                          backgroundColor: '#F5403C',
+                          color: 'white',
+                    }}>Recommend</Typography>
                 </Grid>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
                     <WalletCard name='GemWallet' link='https://gemwallet.app/' imgUrl='/static/gemwallet.webp'/>

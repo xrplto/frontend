@@ -25,6 +25,7 @@ import {
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
 import CancelIcon from '@mui/icons-material/Cancel';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 // Loader
 import { PuffLoader } from "react-spinners";
@@ -428,7 +429,15 @@ export default function Orders({pair}) {
             </Box>
             {!accountAddress ?
                 <ConnectWalletContainer>
-                    <Typography variant='subtitle2' color='error'>Connect your wallet to access data</Typography>
+                    <Typography variant='subtitle2' color='error'
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <ErrorOutlineIcon fontSize='small' sx={{ mr: '5px' }} />
+                        Connect your wallet to access data
+                    </Typography>
                 </ConnectWalletContainer>
                 :
                 loading ?
@@ -438,7 +447,15 @@ export default function Orders({pair}) {
                     :
                     offers.length === 0 ?
                         <ConnectWalletContainer>
-                            <Typography variant='subtitle2' color='error'>No Open Orders</Typography>
+                            <Typography variant='subtitle2' color='error'
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <ErrorOutlineIcon fontSize='small' sx={{ mr: '5px' }} />
+                                No Open Orders
+                            </Typography>
                         </ConnectWalletContainer>
                         :
                         <></>

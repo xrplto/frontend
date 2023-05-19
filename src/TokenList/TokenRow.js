@@ -287,7 +287,7 @@ function fTokenRow({
                 <Typography
                   variant="token"
                   color={
-                    isOMCF !== 'yes' ? '#222531' : slug === md5 ? '#B72136' : ''
+                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : slug === md5 ? '#B72136' : ''
                   }
                   noWrap={isMobile ? false : true}
                 >
@@ -295,7 +295,7 @@ function fTokenRow({
                 </Typography>
                 <Typography
                   variant="caption"
-                  color={isOMCF !== 'yes' ? '#222531' : ''}
+                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                   noWrap={isMobile ? false : true}
                 >
                   {isMobile && <span style={badge24hStyle}>{id}</span>}
