@@ -110,18 +110,26 @@ export default function Summary() {
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0, position: 'relative'}}>
                     <WalletCard name='XUMM' link='https://xumm.app/' imgUrl='/static/xumm.webp'/>
                     <Typography variant='caption' sx={{
-                          width: '95px',
-                          fontSize: '14px',
-                          padding: '4px',
-                          position: 'absolute',
-                          right: '-15px',
-                          top: '30px',
-                          textAlign: 'center',
-                          borderRadius: '25px',
-                          transform: 'rotate(20deg)',
-                          backgroundColor: '#F5403C',
-                          color: 'white',
-                    }}>Recommend</Typography>
+  width: '95px',
+  fontSize: '14px',
+  padding: '4px',
+  position: 'absolute',
+  right: '-15px',
+  top: '30px',
+  textAlign: 'center',
+  borderRadius: '25px',
+  transform: 'rotate(20deg)',
+  backgroundColor: '#F5403C',
+  color: 'white',
+  fontFamily: 'Monospace', // Add a unique font
+  textShadow: '2px 2px 4px #000000', // Add text shadow
+  boxShadow: '0 5px 10px rgba(0,0,0,0.3)', // Add box shadow
+  '&:hover': { // Add hover animation
+    transform: 'scale(1.05) rotate(20deg)',
+    transition: 'transform 0.3s ease-in-out',
+  },
+}}>Recommend</Typography>
+
                 </Grid>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
                     <WalletCard name='GemWallet' link='https://gemwallet.app/' imgUrl='/static/gemwallet.webp'/>
