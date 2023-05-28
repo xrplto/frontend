@@ -1,42 +1,31 @@
-import { useRef, useState, useEffect } from 'react';
+import { useState } from 'react';
+import Typography from '@mui/material/Typography';
+import Link from '@mui/material/Link';
 
-// Material
-import {
-    useTheme, useMediaQuery,
-    Link,
-    Typography
-} from '@mui/material';
+export default function SeeMoreTypography({ variant, text }) {
+  const limit = 30;
+  const [showContent, setShowContent] = useState(false);
 
-export default function SeeMoreTypography({variant, text}) {
-    const theme = useTheme();
-    const fullScreen = useMediaQuery(theme.breakpoints.up('sm'));
+  if (!text) {
+    return null;
+  }
 
-    const limit = fullScreen?100:30;
+  const truncatedText = showContent ? text : text.slice(0, limit) + '...';
 
-    const [showContent, setShowContent] = useState(false);
+  const handleToggleContent = () => {
+    setShowContent(!showContent);
+  };
 
-    if (!text)
-        return (<></>);
+  const linkText = showContent ? 'See Less' : 'See More';
 
-    return (
-        <>
-        {text.length < limit ?
-            <Typography variant={variant}>{text}</Typography>
-            :
-            <>
-            <Typography variant={variant}>
-                {showContent ? text: text.slice(0, limit) + " ... "}
-                <Link
-                    component="button"
-                    onClick={() => {
-                        setShowContent(!showContent);
-                    }}
-                >
-                    <Typography variant={variant} color='#2de370' sx={{ml:1}}>{showContent?'See Less':'See More'}</Typography>
-                </Link>
-            </Typography>
-            </>
-        }
-        </>
-    );
-};
+  return (
+    <Typography variant={variant}>
+      {truncatedText}
+      {text.length > limit && (
+        <Link component="button" onClick={handleToggleContent} color="primary">
+          {linkText}
+        </Link>
+      )}
+    </Typography>
+  );
+}
