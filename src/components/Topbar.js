@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Decimal from 'decimal.js';
 
-// Material
+// Material-UI
 import {
   alpha,
   styled,
@@ -61,8 +61,6 @@ const H24Style = styled('div')(({ theme }) => ({
   paddingRight: theme.spacing(0.5),
   paddingTop: theme.spacing(0.07),
   paddingBottom: theme.spacing(0.07),
-  // boxShadow: theme.customShadows.z20,
-  // color: theme.palette.text.widget,
   backgroundColor: '#0C53B7',
   borderRadius: 8,
   transition: theme.transitions.create('opacity'),
@@ -74,14 +72,19 @@ const Separator = styled('span')(({ theme }) => ({
   fontSize: '0.4rem'
 }));
 
-// ----------------------------------------------------------------------
-
+// Utility function to calculate rate
 function Rate(num) {
   if (num === 0) return 0;
   return fCurrency3(1 / num);
 }
 
-export default function Topbar() {
+const currencies = [
+  { label: '$', value: 'USD' },
+  { label: '€', value: 'EUR' },
+  { label: '¥', value: 'JPY' }
+];
+
+const Topbar = () => {
   const metrics = useSelector(selectMetrics);
   const dispatch = useDispatch();
 
@@ -95,8 +98,8 @@ export default function Topbar() {
       .toString();
 
   const [anchorEl, setAnchorEl] = useState(null);
-
   const [rate, setRate] = useState(metrics.USD);
+  const [currentCurrency, setCurrentCurrency] = useState('USD');
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -106,26 +109,14 @@ export default function Topbar() {
     setAnchorEl(null);
   };
 
-  // New function to handle currency change
   const handleCurrencyChange = (currency) => {
     setCurrentCurrency(currency);
     setRate(metrics[currency]);
     handleClose();
   };
 
-  const [currentCurrency, setCurrentCurrency] = useState('USD');
-
-  // Modified event handlers
-  const handleUSDClick = () => {
-    handleCurrencyChange('USD');
-  };
-
-  const handleEuroClick = () => {
-    handleCurrencyChange('EUR');
-  };
-
-  const handleJPYClick = () => {
-    handleCurrencyChange('JPY');
+  const handleCurrencyClick = (currency) => () => {
+    handleCurrencyChange(currency);
   };
 
   return (
@@ -133,24 +124,24 @@ export default function Topbar() {
       <Container maxWidth="xl">
         <ContentWrapper>
           <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="small">Tokens: </Typography>
-            <Typography variant="small">{fIntNumber(metrics.total)}</Typography>
-            <Typography variant="small" noWrap>
+            <Typography variant="body2">Tokens:</Typography>
+            <Typography variant="body2">{fIntNumber(metrics.total)}</Typography>
+            <Typography variant="body2" noWrap>
               Addresses:
             </Typography>
-            <Typography align="center" color="#54D62C" variant="small">
+            <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.totalAddresses)}
             </Typography>
-            <Typography variant="small" noWrap>
+            <Typography variant="body2" noWrap>
               Offers:
             </Typography>
-            <Typography align="center" color="#FFC107" variant="small">
+            <Typography align="center" color="#FFC107" variant="body2">
               {fIntNumber(metrics.H24.totalOffers)}
             </Typography>
-            <Typography variant="small" noWrap>
+            <Typography variant="body2" noWrap>
               Trustlines:
             </Typography>
-            <Typography align="center" color="#FFA48D" variant="small">
+            <Typography align="center" color="#FFA48D" variant="body2">
               {fIntNumber(metrics.H24.totalTrustLines)}
             </Typography>
             <H24Style>
@@ -159,38 +150,36 @@ export default function Topbar() {
                   <Typography
                     align="center"
                     style={{ wordWrap: 'break-word' }}
-                    variant="small"
+                    variant="body2"
                   >
                     24h
                   </Typography>
                 </Stack>
               </Tooltip>
             </H24Style>
-            <Typography variant="small">Trades:</Typography>
-            <Typography align="center" color="#74CAFF" variant="small">
+            <Typography variant="body2">Trades:</Typography>
+            <Typography align="center" color="#74CAFF" variant="body2">
               {fIntNumber(metrics.H24.transactions24H)}
             </Typography>
-            {/* <Typography variant="small">|</Typography> */}
-            <Typography variant="small">Vol:</Typography>
-            <Typography align="center" color="#FF6C40" variant="small">
+            <Typography variant="body2">Vol:</Typography>
+            <Typography align="center" color="#FF6C40" variant="body2">
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <Icon icon={rippleSolid} color="#FF6C40" />
-                <Typography align="center" color="#FF6C40" variant="small">
+                <Typography align="center" color="#FF6C40" variant="body2">
                   {fNumber(metrics.H24.tradedXRP24H)}
                 </Typography>
               </Stack>
             </Typography>
-            {/* <Typography variant="small">|</Typography> */}
-            <Typography variant="small" noWrap>
+            <Typography variant="body2" noWrap>
               Tokens Traded:
             </Typography>
-            <Typography align="center" color="#3366FF" variant="small">
+            <Typography align="center" color="#3366FF" variant="body2">
               {fIntNumber(metrics.H24.tradedTokens24H)}
             </Typography>
-            <Typography variant="small" noWrap>
+            <Typography variant="body2" noWrap>
               Active Addresses:
             </Typography>
-            <Typography align="center" color="#54D62C" variant="small">
+            <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.activeAddresses24H)}
             </Typography>
           </Stack>
@@ -200,56 +189,38 @@ export default function Topbar() {
             alignItems="center"
             sx={{ ml: 5, mr: 2 }}
           >
-            {/* Currency Button */}
             <Button onClick={handleClick}>
               <Stack direction="row" spacing={0.5} alignItems="center">
-                {/* Ripple Icon */}
                 <Icon icon={rippleSolid} width="12" height="12" />
               </Stack>
-              {/* Currency Rate */}
-              <Typography variant="small" noWrap>
-                {currentCurrency === 'USD' && '$'}
-                {currentCurrency === 'EUR' && '€'}
-                {currentCurrency === 'JPY' && '¥'} {Rate(rate)}
+              <Typography variant="body2" noWrap>
+                {currentCurrency} {Rate(rate)}
               </Typography>
             </Button>
-            {/* Currency Menu */}
             <Menu
               anchorEl={anchorEl}
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
-              {/* USD */}
-              <MenuItem onClick={handleUSDClick}>
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <Icon icon={rippleSolid} width="12" height="12" />
-                </Stack>
-                <Typography variant="small" noWrap>
-                  $ {Rate(metrics.USD)}
-                </Typography>
-              </MenuItem>
-              {/* EUR */}
-              <MenuItem onClick={handleEuroClick}>
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <Icon icon={rippleSolid} width="12" height="12" />
-                </Stack>
-                <Typography variant="small" noWrap>
-                  € {Rate(metrics.EUR)}
-                </Typography>
-              </MenuItem>
-              {/* JPY */}
-              <MenuItem onClick={handleJPYClick}>
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <Icon icon={rippleSolid} width="12" height="12" />
-                </Stack>
-                <Typography variant="small" noWrap>
-                  ¥ {Rate(metrics.JPY)}
-                </Typography>
-              </MenuItem>
+              {currencies.map((currency) => (
+                <MenuItem
+                  key={currency.value}
+                  onClick={handleCurrencyClick(currency.value)}
+                >
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Icon icon={rippleSolid} width="12" height="12" />
+                  </Stack>
+                  <Typography variant="body2" noWrap>
+                    {currency.label} {Rate(metrics[currency.value])}
+                  </Typography>
+                </MenuItem>
+              ))}
             </Menu>
           </Stack>
         </ContentWrapper>
       </Container>
     </TopWrapper>
   );
-}
+};
+
+export default Topbar;
