@@ -116,15 +116,7 @@ function Footer() {
                                     >
                                         <Typography variant='link'>Token API</Typography>
                                     </Link>
-                                    <Link
-                                        href="https://jobs.xrpl.org/jobs"
-                                        sx={{ mt: 1.5, display: 'inline-flex' }}
-                                        underline="none"
-                                        target="_blank"
-                                        rel="noreferrer noopener nofollow"
-                                    >
-                                        <Typography variant='link'>Job Board</Typography>
-                                    </Link>
+                                    
                                     <Link
                                         href="/sitemap/token"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
@@ -140,7 +132,7 @@ function Footer() {
                                 <Stack>
                                     <Typography variant='h6' sx={{ fontWeight: 600 }}>Company</Typography>
                                     <Link
-                                        href="/status/coming-soon"
+                                        href="/about"
                                         sx={{ mt: 2, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"
@@ -149,7 +141,7 @@ function Footer() {
                                         <Typography variant='link'>About us</Typography>
                                     </Link>
                                     <Link
-                                        href="/status/coming-soon"
+                                        href="/terms"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"
@@ -158,7 +150,7 @@ function Footer() {
                                         <Typography variant='link'>Terms of use</Typography>
                                     </Link>
                                     <Link
-                                        href="/status/coming-soon"
+                                        href="/privacy"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"
@@ -167,7 +159,7 @@ function Footer() {
                                         <Typography variant='link'>Privacy Policy</Typography>
                                     </Link>
                                     <Link
-                                        href="/status/coming-soon"
+                                        href="/rules"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"
@@ -176,7 +168,7 @@ function Footer() {
                                         <Typography variant='link'>Community Rules</Typography>
                                     </Link>
                                     <Link
-                                        href="/status/coming-soon"
+                                        href="/disclaimer"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"
@@ -185,16 +177,16 @@ function Footer() {
                                         <Typography variant='link'>Disclaimer</Typography>
                                     </Link>
                                     <Link
-                                        href="/status/coming-soon"
+                                        href="/approach"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"
                                         rel="noreferrer noopener nofollow"
                                     >
-                                        <Typography variant='link'>Methodology</Typography>
+                                        <Typography variant='link'>Approach</Typography>
                                     </Link>
                                     <Link
-                                        href="/status/coming-soon"
+                                        href="/careers"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"
@@ -208,7 +200,7 @@ function Footer() {
                                 <Stack>
                                     <Typography variant='h6' sx={{ fontWeight: 600 }}>Support</Typography>
                                     <Link
-                                        href="/status/coming-soon"
+                                        href="https://hmc0r1fnxt5.typeform.com/to/jd3HUclQ"
                                         sx={{ mt: 2, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"
@@ -217,7 +209,7 @@ function Footer() {
                                         <Typography variant='link'>Request Form</Typography>
                                     </Link>
                                     <Link
-                                        href="/status/coming-soon"
+                                        href="https://hmc0r1fnxt5.typeform.com/to/jd3HUclQ"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"
@@ -226,7 +218,7 @@ function Footer() {
                                         <Typography variant='link'>Contact Support</Typography>
                                     </Link>
                                     <Link
-                                        href="/status/coming-soon"
+                                        href="/faq"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"
@@ -235,7 +227,7 @@ function Footer() {
                                         <Typography variant='link'>FAQ</Typography>
                                     </Link>
                                     <Link
-                                        href="/status/coming-soon"
+                                        href="/glossary"
                                         sx={{ mt: 1.5, display: 'inline-flex' }}
                                         underline="none"
                                         target="_blank"
