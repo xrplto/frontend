@@ -80,14 +80,14 @@ export default function Summary() {
 
 
                 <Typography variant='wallet_h2'>Getting Started with an XRP Wallet: A Step-by-Step Guide</Typography>
-                <Typography variant='p1'>1. Choose a wallet: First, decide whether you want a hot or cold wallet for your XRP. Hot wallets like XUMM or Gatehub Wallet are online and easy to access, while cold wallets like Ledger Nano S or paper wallets offer increased security through offline storage.</Typography>
+                <Typography variant='p1'>1. Choose a wallet: First, decide whether you want a hot or cold wallet for your XRP. Hot wallets like Xaman (XUMM) or Gatehub Wallet are online and easy to access, while cold wallets like Ledger Nano S or paper wallets offer increased security through offline storage.</Typography>
                 <Typography variant='p1'>2. Create an account or set up your wallet: For hot wallets, you'll need to sign up for an account with your chosen wallet provider. Provide a valid email address, create a strong password, and follow the account verification process. For cold wallets, follow the setup instructions provided by the manufacturer.</Typography>
                 <Typography variant='p1'>3. Generate an XRP address: After setting up your wallet, it will automatically generate an XRP address for you. This address is a unique identifier that you'll use to send, receive, and store XRP tokens.</Typography>
                 <Typography variant='p1'>4. Fund your wallet: To add XRP to your wallet, you can either purchase XRP from an exchange or receive it from someone else. When purchasing from an exchange, make sure to withdraw the XRP directly to your wallet's address.</Typography>
                 <Typography variant='p1'>5. Send and receive XRP: To send XRP, you'll need the recipient's XRP address. Enter the address and the amount you'd like to send, and confirm the transaction. To receive XRP, simply share your XRP address with the sender.</Typography>
                 <Typography variant='p1'>6. Monitor your balance and transactions: Most XRP wallets provide an overview of your balance and transaction history. Keep track of your funds and ensure that all transactions are processed correctly.</Typography>
                 <Typography variant='p1'>7. Safeguard your wallet: Always remember to back up your wallet's private key or recovery phrase in a secure location. Additionally, enable two-factor authentication (2FA) for hot wallets to enhance security.</Typography>
-                <Typography variant='p1'>XUMM wallet is a prominent XRP Ledger wallet supported by numerous applications. Learn <Link href="https://www.youtube.com/watch?v=dIGDYLffQa8">how to use a XUMM XRP wallet in this tutorial</Link>.</Typography>
+                <Typography variant='p1'>XUMM wallet is a prominent XRP Ledger wallet supported by numerous applications. Learn <Link href="https://www.youtube.com/watch?v=dIGDYLffQa8">how to use Xaman (XUMM) XRP wallet in this tutorial</Link>.</Typography>
 
                 <Typography variant='para'></Typography>
 
@@ -108,7 +108,7 @@ export default function Summary() {
 
             <Grid container spacing={3} sx={{p:0}}>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0, position: 'relative'}}>
-                    <WalletCard name='XUMM' link='https://xumm.app/' imgUrl='/static/xumm.webp'/>
+                    <WalletCard name='Xaman' link='https://xumm.app/' imgUrl='/static/xumm.webp'/>
                     <Typography variant='caption' sx={{
   width: '95px',
   fontSize: '14px',
@@ -119,7 +119,7 @@ export default function Summary() {
   textAlign: 'center',
   borderRadius: '25px',
   transform: 'rotate(20deg)',
-  backgroundColor: '#F5403C',
+  backgroundColor: '#3622D4',
   color: 'white',
   fontFamily: 'Monospace', // Add a unique font
   textShadow: '2px 2px 4px #000000', // Add text shadow
@@ -128,7 +128,7 @@ export default function Summary() {
     transform: 'scale(1.05) rotate(20deg)',
     transition: 'transform 0.3s ease-in-out',
   },
-}}>Recommend</Typography>
+}}>Recommended</Typography>
 
                 </Grid>
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
