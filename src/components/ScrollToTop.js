@@ -1,42 +1,34 @@
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import Box from '@mui/material/Box';
+import Fab from '@mui/material/Fab';
+import Zoom from '@mui/material/Zoom';
+import useScrollTrigger from '@mui/material/useScrollTrigger';
 import PropTypes from 'prop-types';
 import { useContext } from 'react';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import {
-    alpha,
-    styled,
-    Box,
-    Fab,
-    useScrollTrigger,
-    Zoom
- } from '@mui/material';
+import { alpha, styled } from '@mui/system';
 import { AppContext } from 'src/AppContext';
 
- const FabStyle = styled(Fab)(({ theme, darkMode }) => ({
+
+const FabStyle = styled(Fab)(({ theme, darkMode }) => ({
     boxShadow: 'none',
     backdropFilter: 'blur(2px)',
     WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
-    //backgroundColor: alpha(theme.palette.background.default, 0.9),
-    //color: alpha("#00AB88", 0.7),
-    //backgroundColor: alpha("#00AB88", 0.7),
-    // backgroundColor: alpha("#9E86FF", 0.7),
-    // '&:hover': {
-    //     backgroundColor: alpha("#9E86FF", 0.4),
-    // },
     backgroundColor: darkMode ? 'rgb(114, 114, 114)' : 'rgba(23, 24, 27, 0.85)',
     '&:hover': {
-        backgroundColor: 'rgb(41, 41, 41)',
+      backgroundColor: 'rgb(41, 41, 41)',
     },
-}));
+    '& .MuiSvgIcon-root': {
+        color: darkMode ? 'black' : 'white', // Customize the arrow color based on darkMode
+    },
+  }));
+  
 
- ScrollToTop.propTypes = {
-    /**
-     * Injected by the documentation to work in an iframe.
-     * You won't need it on your project.
-     */
+  ScrollToTop.propTypes = {
     window: PropTypes.func,
-};
+  };
+  
 
-export default function ScrollToTop(props) {
+  export default function ScrollToTop(props) {
     const { window } = props;
     // Note that you normally won't need to set the window ref as useScrollTrigger
     // will default to window.
