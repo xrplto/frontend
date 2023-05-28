@@ -79,8 +79,8 @@ export default function LoginDialog(props) {
       <Typography variant="h3" align="center" gutterBottom>
           Connect Wallet
         </Typography>
-        <Typography variant="subtitle1"> Scan the QR code from your Xaman app </Typography>
         </DialogTitle>
+        <Typography variant="subtitle1" align="center"> Scan the QR code from your Xaman app </Typography>
       <StyledDialogContent>
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <StyledQRImage alt="QR" src={qrUrl} />
