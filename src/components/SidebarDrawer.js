@@ -19,7 +19,7 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
       <Link
         underline="none"
         color="inherit"
-        href="https://xrpl.to"
+        href="/"
         rel="noreferrer noopener nofollow"
       >
         <MenuItem divider={true} sx={{ py: 1.5, px: 3 }}>
