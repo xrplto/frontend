@@ -15,6 +15,37 @@ export default function TagsDrawer({
 }) {
   const { darkMode } = useContext(AppContext);
 
+  const renderTags = () => {
+    if (!tags || tags.length === 0) {
+      return null;
+    }
+
+    return tags.map((tag, idx) => (
+      <Link
+        key={`${md5}-${idx}-${tag}`}
+        href={`/view/${normalizeTag(tag)}`}
+        sx={{
+          pl: 0,
+          pr: 0,
+          display: 'inline-flex',
+          marginLeft: '-6px'
+        }}
+        underline="none"
+        rel="noreferrer noopener nofollow"
+      >
+        <Chip
+          label={tag}
+          size="small"
+          sx={{
+            borderInlineStart: `3px solid ${darkMode ? '#17171a' : '#fff'}`,
+            cursor: 'pointer',
+            fontSize: '12px'
+          }}
+        />
+      </Link>
+    ));
+  };
+
   return (
     <Drawer
       headerStyle={{
@@ -30,35 +61,7 @@ export default function TagsDrawer({
         </>
       }
     >
-      <Box sx={{ padding: 2 }}>
-        {tags &&
-          tags.map((tag, idx) => (
-            <Link
-              key={md5 + idx + tag}
-              href={`/view/${normalizeTag(tag)}`}
-              sx={{
-                pl: 0,
-                pr: 0,
-                display: 'inline-flex',
-                marginLeft: '-6px'
-              }}
-              underline="none"
-              rel="noreferrer noopener nofollow"
-            >
-              <Chip
-                label={tag}
-                size="small"
-                sx={{
-                  borderInlineStart: `3px solid ${
-                    darkMode ? '#17171a' : '#fff'
-                  }`,
-                  cursor: 'pointer',
-                  fontSize: '12px'
-                }}
-              />
-            </Link>
-          ))}
-      </Box>
+      <Box sx={{ padding: 2 }}>{renderTags()}</Box>
     </Drawer>
   );
 }
