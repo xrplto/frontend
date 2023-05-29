@@ -38,6 +38,23 @@ const HeaderWrapper = styled(Box)(
 `
 );
 
+const StyledLink = styled(Link)(
+  ({ theme, darkMode }) => `
+    font-weight: 600;
+    margin-right: 27px;
+    transition: background-color 0.3s;
+    padding: 6px 6px; /* Adjust the padding as per your preference */
+    border-radius: 8px; /* Adjust the value as per your preference */
+    &:hover {
+      background-color: ${darkMode ? 'rgba(229, 232, 255, 0.4) !important' : 'rgba(217, 220, 224, .4)'}; 
+      /* Yannier: on here it's picking the 2nd color as default for both themes. */
+      color: ${theme.palette.primary.contrastText};
+      text-decoration: none;
+      cursor: pointer;
+    }
+  `
+);
+
 export default function Header(props) {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
@@ -45,6 +62,7 @@ export default function Header(props) {
 
   const [fullSearch, setFullSearch] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
+  const [darkMode, setDarkMode] = useState(false); // Add darkMode state
 
   const handleFullSearch = (e) => {
     setFullSearch(true);
@@ -53,6 +71,9 @@ export default function Header(props) {
   const toggleDrawer = (isOpen = true) => {
     setOpenDrawer(isOpen);
   };
+
+  // Update the title dynamically
+  const pageTitle = "Your Page Title";
 
   return (
     <HeaderWrapper>
@@ -77,33 +98,24 @@ export default function Header(props) {
               }
             }}
           >
-            <Logo style={{ marginRight: 25 }} />
+            <Logo alt="Logo" style={{ marginRight: 25 }} />
 
             {!isTablet && (
               <>
-                <Link
-                  underline="none"
-                  color="inherit"
-                  href="https://xrpl.to"
-                  style={{ marginRight: 27, fontWeight: 600 }}
-                >
-                  Tokens
+                <Link underline="none" color="inherit" href="/" darkMode={darkMode}>
+                  <StyledLink underline="none" color="inherit" href="/" darkMode={darkMode}>
+                    Tokens
+                  </StyledLink>
                 </Link>
-                <Link
-                  underline="none"
-                  color="inherit"
-                  href="/swap"
-                  style={{ marginRight: 27, fontWeight: 600 }}
-                >
-                  Swap
+                <Link underline="none" color="inherit" href="/swap" darkMode={darkMode}>
+                  <StyledLink underline="none" color="inherit" href="/swap" darkMode={darkMode}>
+                    Swap
+                  </StyledLink>
                 </Link>
-                <Link
-                  underline="none"
-                  color="inherit"
-                  href="/buy-xrp"
-                  style={{ fontWeight: 600 }}
-                >
-                  Fiat
+                <Link underline="none" color="inherit" href="/buy-xrp" darkMode={darkMode}>
+                  <StyledLink underline="none" color="inherit" href="/buy-xrp" darkMode={darkMode}>
+                    Fiat
+                  </StyledLink>
                 </Link>
               </>
             )}
@@ -112,7 +124,7 @@ export default function Header(props) {
           {fullSearch && (
             <NavSearchBar
               id="id_search_tokens"
-              placeholder="Search"
+              placeholder="Search XRPL Tokens"
               fullSearch={fullSearch}
               setFullSearch={setFullSearch}
             />
@@ -126,7 +138,7 @@ export default function Header(props) {
                 display: { xs: 'flex', sm: 'none' }
               }}
             >
-              <Logo />
+              <Logo alt="Logo" />
             </Box>
           )}
 
@@ -159,7 +171,7 @@ export default function Header(props) {
               <Wallet style={{ marginRight: '5px' }} />
             )}
 
-            {!isTablet && <ThemeSwitcher />}
+            {!isTablet && <ThemeSwitcher darkMode={darkMode} setDarkMode={setDarkMode} />}
 
             {isTablet && !fullSearch && (
               <IconButton onClick={() => toggleDrawer(true)}>
