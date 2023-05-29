@@ -1,21 +1,18 @@
-import { useContext } from 'react';
+import React, { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import {
-    Box,
-    Link,
-    useTheme
-} from '@mui/material';
+import Box from '@mui/material/Box';
+import Link from '@mui/material/Link';
+import { useTheme } from '@mui/material/styles';
 
-function LogoTrustline() {
-    const theme = useTheme();
-
+const LogoTrustline = () => {
     const { darkMode } = useContext(AppContext);
 
     const img_black = "/logo/xrpl-to-logo-black.svg";
     const img_white = "/logo/xrpl-to-logo-white.svg";
-    
-    const img = darkMode?img_white:img_black;
+
+    const img = darkMode ? img_white : img_black;
+    const theme = useTheme();
     
     return (
         <Link
@@ -24,7 +21,6 @@ function LogoTrustline() {
             underline="none"
             rel="noreferrer noopener nofollow"
         >
-            {/* <Box component="img" src={img} sx={{ height: 46 }} /> */}
             <LazyLoadImage
                 src={img}
                 width={125}
@@ -32,6 +28,6 @@ function LogoTrustline() {
             />
         </Link>
     );
-}
+};
 
 export default LogoTrustline;
