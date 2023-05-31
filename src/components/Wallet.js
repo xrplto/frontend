@@ -267,7 +267,7 @@ export default function Wallet({ style }) {
         spacing={1}
         sx={{
           padding: '3px 7px',
-          backgroundImage: darkMode ? 'linear-gradient(to right, #007B55 0%, #34c121 51%, #22B04B 100%)' : 'linear-gradient(to right, #721DA6 0%, #3021C1 51%, #721DA6 100%)',
+          backgroundImage: 'linear-gradient(to right, #721DA6 0%, #3021C1 51%, #721DA6 100%)',
           transition: '0.5s',
           backgroundSize: '200% auto',
           '&:hover': {
