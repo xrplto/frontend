@@ -14,6 +14,9 @@ import LowHighBar24H from './LowHighBar24H';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
+
+import NumberTooltip from 'src/components/NumberTooltip';
+
 // ----------------------------------------------------------------------
 export default function PriceDesc({ token }) {
   const BASE_URL = 'https://api.xrpl.to/api'; // 'http://localhost/api';
@@ -33,10 +36,10 @@ export default function PriceDesc({ token }) {
       <Stack direction="row" spacing={2} sx={{ mt: 0 }} alignItems="center">
         <Stack direction="row" spacing={1} alignItems="center">
           <Typography variant="price" noWrap>
-            $ {fNumber(usd)}
+            <NumberTooltip prepend='$' number={fNumber(usd)}/>
           </Typography>
           <Typography variant="subtitle1" style={{ marginTop: 8 }}>
-            {fNumber(exch)} XRP
+            <NumberTooltip number={fNumber(exch)}/> XRP
           </Typography>
         </Stack>
       </Stack>

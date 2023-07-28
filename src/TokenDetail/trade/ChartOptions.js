@@ -4,12 +4,12 @@ import {
 } from '@mui/material';
 
 // Utils
-import { fCurrency5, fNumber } from 'src/utils/formatNumber';
+import { fCurrency5, fNumber, fNumberWithSuffix } from 'src/utils/formatNumber';
 
 // ----------------------------------------------------------------------
-function expo(x, f) {
+/*function expo(x, f) {
     return Number.parseFloat(x).toExponential(f);
-}
+}*/
 
 export default function ChartOptions(series) {
     const theme = useTheme();
@@ -75,7 +75,12 @@ export default function ChartOptions(series) {
             type: 'numeric',
             tickAmount: 1,
             axisBorder: { show: false },
-            axisTicks: { show: false }
+            axisTicks: { show: false },
+			labels: { // webxtor adding formatting for the labels
+				formatter: function(val, index) {
+					return fNumber(val);
+				},
+			}
         },
         // Y Axis
         yaxis: {
@@ -90,11 +95,12 @@ export default function ChartOptions(series) {
                 */
                 formatter: function(val, index) {
                     if (val > 1000) {
-                        val /= 1000;
+						return fNumberWithSuffix(val); //webxtor: no more exp in Y axis
+                        /*val /= 1000;
                         let label = val.toFixed(0) + 'k';
                         if (label.length > 8)
                             label = expo(val, 0);
-                        return label;
+                        return label;*/
                     }
                         
                     return fNumber(val);
@@ -146,7 +152,7 @@ export default function ChartOptions(series) {
             y: {
                 formatter: (y) => {
                     if (typeof y !== 'undefined') {
-                        if (y > 1000) {
+                        /*if (y > 1000) { // webxor: no more expo
                             const expo = (x, f) => {
                                 return Number.parseFloat(x).toExponential(f);
                             }
@@ -155,7 +161,7 @@ export default function ChartOptions(series) {
                             if (label.length > 8)
                                 label = expo(y, 0);
                             return label;
-                        }
+                        }*/
                             
                         return fCurrency5(y);
                     }

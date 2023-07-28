@@ -99,16 +99,21 @@ const InputContent = styled('div')(
 `
 );
 
+let border; // webxtor SEO fix
+if (typeof theme !== 'undefined' && theme.currency ) {
+	border = theme.currency.border;
+}
 const OverviewWrapper = styled('div')(
   ({ theme }) => `
     flex-direction: column;
     overflow: hidden;
-    // margin: auto -16px;
+    /*// margin: auto -16px;*/
     box-sizing: border-box;
     position: relative;
     border-radius: 16px;
     display: flex;
-    border:${theme.currency.border};
+    /*//border:$000{theme.currency.border};//webxtor SEO fix */
+    border: ${border};
     padding-bottom: 10px;
 
     @media (max-width: 600px) {
@@ -116,8 +121,8 @@ const OverviewWrapper = styled('div')(
         border-left: none;
         border-image: initial;
         border-radius: unset;
-        // border-top: ${theme.currency.border};
-        // border-bottom: ${theme.currency.border};
+        /*// border-top: $000{theme.currency.border};
+        // border-bottom: $000{theme.currency.border};*/
         border-top: none;
         border-bottom: none;
     }
@@ -233,9 +238,12 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
   // const color1 = revert?theme.currency.background2:theme.currency.background1;
   // const color2 = revert?theme.currency.background1:theme.currency.background2;
-
-  const color1 = theme.currency.background2;
-  const color2 = theme.currency.background2;
+  var color1, color2;
+  if(typeof theme.currency !== "undefined") // webxtor SEO fix
+  {
+    /*const */color1 = theme.currency.background2;
+    /*const */color2 = theme.currency.background2;
+  }
 
   const isLoggedIn =
     accountProfile && accountProfile.account && accountPairBalance;
@@ -734,7 +742,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         </ConverterFrame>
 
         <CurrencyContent
-          style={{ order: 3, backgroundColor: theme.currency.background2 }}
+          style={{ order: 3, backgroundColor: color2 /*theme.currency.background2*/ /* webxtor SEO fix */ }}
         >
           <Stack
             direction="row"

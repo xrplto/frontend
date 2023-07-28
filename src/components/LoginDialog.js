@@ -49,7 +49,8 @@ export default function LoginDialog(props) {
 
   const router = useRouter();
 
-  const handleClick = async (e) => {
+  const handleClick = async (e) => { 
+    return true; //webxtor: disable this function because it doesn't open anything on mobile
     e.preventDefault();
 
     if (!isMobile) {

@@ -21,6 +21,11 @@ import { tableCellClasses } from "@mui/material/TableCell";
 // Components
 import Spread from './Spread';
 
+// Utils
+import { fNumber } from 'src/utils/formatNumber';
+
+import NumberTooltip from 'src/components/NumberTooltip';
+
 const LoaderContainer = styled('div')({
     display: 'flex',
     justifyContent: 'center',
@@ -119,18 +124,6 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
         setSelected([0, 0]);
     }
 
-    const expo = (x, f) => {
-        return Number.parseFloat(x).toExponential(f);
-    }
-
-    const fmNumber = (value, len) => {
-        const amount = new Decimal(value).toNumber();
-        if ((amount.toString().length > 8 && amount < 0.001) || amount > 1000000000)
-            return expo(amount, 2);
-        else
-            return new Decimal(amount).toFixed(len, Decimal.ROUND_DOWN);
-    }
-
     const buildPriceLevels = (levels, orderType = ORDER_TYPE_BIDS) => {
         return (
             levels.slice(0, 30).map((level, idx) => {
@@ -147,11 +140,11 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                 const currName1 = pair?.curr1.name;
                 const currName2 = pair?.curr2.name;
                 
-                avgPrice = fmNumber(avgPrice, 5);
-                price = fmNumber(price, 5);
-                amount = fmNumber(amount, 2);
-                sumAmount = fmNumber(sumAmount, 2);
-                sumValue = fmNumber(sumValue, 2);
+                avgPrice = fNumber(avgPrice);//fmNumber(avgPrice, 5);
+                price = fNumber(price);//fmNumber(price, 5);
+                amount = fNumber(amount);//fmNumber(amount, 2);
+                sumAmount = fNumber(sumAmount);//fmNumber(sumAmount, 2);
+                sumValue = fNumber(sumValue);//fmNumber(sumValue, 2);
               
                 let bidBackgroundColor;
                 if (isNew)
@@ -203,7 +196,7 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                                             <Typography variant='body2'>Avg Price:</Typography>
                                         </TableCell>
                                         <TableCell sx={{pt:1, pb:1}}>
-                                            <Typography variant='body2'>≈  {avgPrice}</Typography>
+                                            <Typography variant='body2'>≈  <NumberTooltip number={avgPrice} /></Typography>
                                         </TableCell>
                                     </TableRow>
 
@@ -248,7 +241,7 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                             {/* <TableCell sx={{ p:0 }} align="right">{value}</TableCell> */}
                             <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
                             {/* <TableCell sx={{ p:0, pr:1 }} align="right">{price}</TableCell> */}
-                            <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selected[0] > idx?'':'#118860'}`}}>{price}</TableCell>
+                            <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selected[0] > idx?'':'#118860'}`}}><NumberTooltip number={price} pos='bottom' /></TableCell>
                         </TableRow>
                     :
                         <TableRow
@@ -265,7 +258,7 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                             onClick={e=>onAskClick(e, idx)}
                         >
                             {/* <TableCell sx={{ p:0, pl:1 }}>{price}</TableCell> */}
-                            <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selected[1] > idx?'':'#bb3336'}`}}>{price}</TableCell>
+                            <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selected[1] > idx?'':'#bb3336'}`}}><NumberTooltip number={price} pos='bottom' /></TableCell>
                             <TableCell sx={{ p:0 }}>{amount}</TableCell>
                             {/* <TableCell sx={{ p:0 }}>{value}</TableCell> */}
                             <TableCell sx={{ p:0 }}>{sumAmount}</TableCell>

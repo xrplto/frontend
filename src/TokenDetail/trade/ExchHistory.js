@@ -19,19 +19,9 @@ import { tableCellClasses } from "@mui/material/TableCell";
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
+
+import NumberTooltip from 'src/components/NumberTooltip';
 // ----------------------------------------------------------------------
-
-const expo = (x, f) => {
-    return Number.parseFloat(x).toExponential(f);
-}
-
-const fmNumber = (value, len) => {
-    const amount = new Decimal(value).toNumber();
-    if ((amount.toString().length > 8 && amount < 0.001) || amount > 1000000000)
-        return expo(amount, 2);
-    else
-        return new Decimal(amount).toFixed(len, Decimal.ROUND_DOWN);
-}
 
 function getMD5(issuer, currency) {
     return MD5(issuer  + '_' +  currency).toString();
@@ -96,14 +86,14 @@ function convertTrade(md5, trades) {
         if (md5 === md51) {
             // volume = got.value;
             exch = Decimal.div(got.value, paid.value).toNumber();
-            amount = fmNumber(paid.value, 2);
+            amount = fNumber(paid.value);//fmNumber(paid.value, 2);
 
             d1 = Decimal.add(got.value, d1).toString();
             d2 = Decimal.add(paid.value, d2).toString();
         } else {
             // volume = paid.value;
             exch = Decimal.div(paid.value, got.value).toNumber();
-            amount = fmNumber(got.value, 2);
+            amount = fNumber(got.value);//fmNumber(got.value, 2);
 
             d1 = Decimal.add(paid.value, d1).toString();
             d2 = Decimal.add(got.value, d2).toString();
@@ -216,7 +206,7 @@ export default function ExchHistory({pair, md5}) {
                                     }}
                                 >
                                     <TableCell align="left" sx={{ p:0 }}>
-                                        <Typography variant="subtitle2">{fNumber(exch)}</Typography>
+                                        <Typography variant="subtitle2"><NumberTooltip number={fNumber(exch)} pos='bottom' /></Typography>
                                     </TableCell>
                                     <TableCell align="left" colSpan={2} sx={{ p:0 }}>
                                         {amount}

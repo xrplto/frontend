@@ -181,7 +181,7 @@ export const getServerSideProps = async (ctx) => {
   let total = 0;
   const time = new Date().toISOString();
 
-  const { slug } = ctx.params;
+  const { slug } = { slug: 'token' }; //ctx.params; //webxtor disabling dynamic slug: renamed [slug].js to token.js
 
   try {
     var t1 = performance.now();
@@ -198,6 +198,14 @@ export const getServerSideProps = async (ctx) => {
     var t2 = performance.now();
     var dt = (t2 - t1).toFixed(2);
 
+    let ogp = {};
+
+    ogp.canonical = 'https://xrpl.to';
+    ogp.title = slug.charAt(0).toUpperCase() + slug.substr(1) + ' Sitemap';
+    ogp.url = 'https://xrpl.to/';
+    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
+    //ogp.desc = 'Meta description here';
+
     console.log(`3. sitemap/token.xml count: ${count} took: ${dt}ms [${time}]`);
     return {
       props: {
@@ -208,7 +216,8 @@ export const getServerSideProps = async (ctx) => {
           total,
           H24,
           global
-        }
+        },
+        ogp
       }
     };
   } catch (e) {
@@ -222,7 +231,8 @@ export const getServerSideProps = async (ctx) => {
           total,
           H24,
           global
-        }
+        },
+        ogp
       }
     };
   }

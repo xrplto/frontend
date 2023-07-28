@@ -64,6 +64,10 @@ const InputContent = styled('div')(
 `
 );
 
+let border; // webxtor SEO fix
+if (typeof theme !== 'undefined' && theme.currency ) {
+	border = theme.currency.border;
+}
 const ConverterFrame = styled('div')(
     ({ theme }) => `
     flex-direction: row;
@@ -73,7 +77,7 @@ const ConverterFrame = styled('div')(
     position: relative;
     border-radius: 16px;
     display: flex;
-    border:${theme.currency.border};
+    border: ${border} /*$000{theme.currency.border};*/
 
     @media (max-width: 700px) {
         flex-direction: column;
@@ -83,8 +87,8 @@ const ConverterFrame = styled('div')(
         border-left: none;
         border-image: initial;
         border-radius: unset;
-        border-top: ${theme.currency.border};
-        border-bottom: ${theme.currency.border};
+        border-top: ${border}; /*$000{theme.currency.border};*/
+        border-bottom: ${border}; /*$000{theme.currency.border};*/
     }
 `
 );
@@ -141,9 +145,11 @@ export default function Converter({token}) {
     const [amount1, setAmount1] = useState(1); // Token
     const [amount2, setAmount2] = useState(exch?fNumber(exch):0); // XRP
 
-    const color1 = revert?theme.currency.background2:theme.currency.background1;
-    const color2 = revert?theme.currency.background1:theme.currency.background2;
-
+	let color1, color2;
+	if (typeof theme !== 'undefined' && theme.currency ) { //webxtor SEO fix
+		/*const */color1 = revert?theme.currency.background2:theme.currency.background1;
+		/*const */color2 = revert?theme.currency.background1:theme.currency.background2;
+	}
     const handleChangeAmount1 = (e) => {
         const amt = e.target.value;
         setAmount1(amt);

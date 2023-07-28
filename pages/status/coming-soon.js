@@ -49,15 +49,21 @@ const TypographyH1 = styled(Typography)(
 `
 );
 
+let color = 'black';//webxtor SEO fix
+let bgcolor = 'white';
+if (typeof theme !== 'undefined' && theme.colors ) {
+	color = theme.colors.alpha.black[50];
+	bgcolor = theme.colors.alpha.white[100];
+}
 const TypographyH3 = styled(Typography)(
     ({ theme }) => `
-        color: ${theme.colors.alpha.black[50]};
+        color: ${color};/*$000{theme.colors.alpha.black[50]};*/
 `
 );
 
 const OutlinedInputWrapper = styled(OutlinedInput)(
     ({ theme }) => `
-        background-color: ${theme.colors.alpha.white[100]};
+        background-color: ${bgcolor};/*$000{theme.colors.alpha.white[100]};*/
 `
 );
 

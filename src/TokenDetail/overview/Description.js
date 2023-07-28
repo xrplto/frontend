@@ -39,6 +39,8 @@ import { fPercent, fNumber } from 'src/utils/formatNumber';
 // Components
 import Converter from './Converter';
 
+import NumberTooltip from 'src/components/NumberTooltip';
+
 const ReadMore = ({ children }) => {
     const [showFullContent, setShowFullContent] = useState(false);
 
@@ -166,7 +168,7 @@ export default function Description({token, showEditor, setShowEditor, descripti
             <Typography variant="h2" fontSize='1.1rem' sx={{ mt:4 }}>{`${name} Price Live Data`}</Typography>
 
             <Typography sx={{mt:3}}>
-                Today's live {user} price is ${price} USD, accompanied by a 24-hour trading volume of  {fNumber(vol24hx)} {name}. Our {name} to USD price is updated in real-time. In the last 24 hours, {user} has experienced a {strPro24h} change. XRPL.to currently ranks it at  #{id}, with a live market cap of ${fNumber(usdMarketCap)} USD and a circulating supply of {fNumber(supply)} {name} tokens.
+                Today's live {user} price is <NumberTooltip prepend='$' number={price} /> USD, accompanied by a 24-hour trading volume of  {fNumber(vol24hx)} {name}. Our {name} to USD price is updated in real-time. In the last 24 hours, {user} has experienced a {strPro24h} change. XRPL.to currently ranks it at  #{id}, with a live market cap of ${fNumber(usdMarketCap)} USD and a circulating supply of {fNumber(supply)} {name} tokens.
             </Typography>
 
             <Typography sx={{mt:2, mb: 3}}>

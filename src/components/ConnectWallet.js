@@ -54,7 +54,7 @@ const ConnectWallet = () => {
 
           if (ret?.profile) {
             const profile = ret.profile;
-            setOpen(true);
+            //setOpen(true);
             setOpenLogin(false);
             doLogIn(profile);
             return;

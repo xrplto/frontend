@@ -20,6 +20,9 @@ import { selectMetrics } from 'src/redux/statusSlice';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
+
+import NumberTooltip from 'src/components/NumberTooltip';
+
 // ----------------------------------------------------------------------
 const LowhighBarSlider = styled(Slider)(({ theme }) => ({
   //color: "#52af77",
@@ -79,7 +82,7 @@ export default function LowHighBar24H({ token }) {
       spacing={1}
       justifyContent={isTablet ? 'space-between' : 'flex-start'}
     >
-      <Typography variant="caption">Low: ${fNumber(min)}</Typography>
+      <Typography variant="caption">Low: <NumberTooltip prepend='$' number={fNumber(min)}/></Typography>
       <Box sx={{ width: isTablet ? 360 : 160 }}>
         <LowhighBarSlider
           valueLabelDisplay="on"
@@ -88,7 +91,7 @@ export default function LowHighBar24H({ token }) {
           sx={{ mt: 1 }}
         />
       </Box>
-      <Typography variant="caption">High: ${fNumber(max)}</Typography>
+      <Typography variant="caption">High: <NumberTooltip prepend='$' number={fNumber(max)}/></Typography>
     </Stack>
   );
 }

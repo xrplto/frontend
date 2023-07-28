@@ -22,6 +22,8 @@ import { selectMetrics } from "src/redux/statusSlice";
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
 
+import NumberTooltip from 'src/components/NumberTooltip';
+
 // ----------------------------------------------------------------------
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
@@ -80,13 +82,8 @@ export default function PriceStatistics({token}) {
     const voldivmarket = marketcap>0?Decimal.div(vol24hxrp, marketcap).toNumber():0; // .toFixed(5, Decimal.ROUND_DOWN)
     const usdMarketCap = Decimal.div(marketcap, metrics.USD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
-    let strPc24h;
-    if (p24h < 0) {
-        strPc24h = fNumber(-p24h);
-        strPc24h = '-$' + strPc24h;
-    } else {
-        strPc24h = '$' + fNumber(p24h);
-    }
+    let strPc24h = fNumber(p24h < 0 ? -p24h : p24h);
+    let strPc24hPrep = (p24h < 0 ? '-' : '') + '$';
 
     return (
         <StackStyle>
@@ -104,13 +101,13 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >{user} Price</Typography></TableCell>
-                        <TableCell align="left">${fNumber(exch / metrics.USD)}</TableCell>
+                        <TableCell align="left"><NumberTooltip prepend='$' number={fNumber(exch / metrics.USD)} /></TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Price Change<span style={badge24hStyle}>24h</span></Typography></TableCell>
                         <TableCell align="left">
                             <Stack>
-                            {strPc24h}
+                            <NumberTooltip prepend={strPc24hPrep} number={strPc24h} />
                             <BearBullLabel value={pro24h} variant="small"/>
                             </Stack>
                         </TableCell>
@@ -118,7 +115,7 @@ export default function PriceStatistics({token}) {
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >24h Low / 24h High</Typography></TableCell>
                         <TableCell align="left">
-                            ${fNumber(maxMin24h[1])} / ${fNumber(maxMin24h[0])}
+                            <NumberTooltip prepend='$' number={fNumber(maxMin24h[1])} /> / <NumberTooltip prepend='$' number={fNumber(maxMin24h[0])} />
                         </TableCell>
                     </TableRow>
                     <TableRow>
@@ -127,11 +124,11 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Volume / Market Cap</Typography></TableCell>
-                        <TableCell align="left">{fNumber(voldivmarket)}</TableCell>
+                        <TableCell align="left"><NumberTooltip number={fNumber(voldivmarket)} /></TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Market Dominance</Typography></TableCell>
-                        <TableCell align="left">{fNumber(dom || 0)} %</TableCell>
+                        <TableCell align="left"><NumberTooltip number={fNumber(dom || 0)}/> %</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Market Rank</Typography></TableCell>

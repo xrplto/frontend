@@ -61,6 +61,15 @@ function XRPLToApp(props) {
                 <meta name="twitter:image:src" content={ogp.imgUrl}/>
                 {/* <!-- Meta Tags Generated via https://www.opengraph.xyz --> */}
             </Head>
+            <noscript>{/* <!-- webxtor SEO fix --> */}
+            <ContextProvider data={data} openSnackbar={openSnackbar}>
+                {/* <!-- <ThemeProvider> --> */}
+                    {/* <!-- <CssBaseline /> --> */}
+                    <Component {...pageProps} />
+                    <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
+                {/* <!-- </ThemeProvider> --> */}
+            </ContextProvider>
+            </noscript>
             <ContextProvider data={data} openSnackbar={openSnackbar}>
                 <ThemeProvider>
                     <CssBaseline />

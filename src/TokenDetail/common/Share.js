@@ -105,7 +105,7 @@ export default function Share({token}) {
     const imgUrl = `https://s1.xrpl.to/token/${md5}`;
     const title = `${user} price today: ${name} to USD conversion, live rates, trading volume, historical data, and interactive chart`;
     const desc = `Access up-to-date ${user} prices, ${name} market cap, trading pairs, interactive charts, and comprehensive data from the leading XRP Ledger token price-tracking platform.`;
-    const url = window.location.href;
+    const url = typeof window !== 'undefined' && window.location.href ? window.location.href : '';//webxtor SEO fix
 
     const handleClickOpen = () => {
         setOpen(true);

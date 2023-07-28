@@ -1,5 +1,7 @@
 import React from 'react';
 import { Box, Container, Grid, Toolbar, Typography } from '@mui/material';
+import axios from 'axios';
+import { performance } from 'perf_hooks';
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -103,3 +105,46 @@ function FAQPage() {
 }
 
 export default FAQPage;
+
+// This function gets called at build time on server-side.
+// It may be called again, on a serverless function, if
+// revalidation is enabled and a new request comes in
+export async function getStaticProps() {
+    // https://api.xrpl.to/api/banxa/currencies
+    const BASE_URL = 'http://api.xrpl.to/api';
+    let data = null;
+    try {
+        var t1 = performance.now();
+
+        const res = await axios.get(`${BASE_URL}/banxa/currencies`);
+
+        data = res.data;
+
+        var t2 = performance.now();
+        var dt = (t2 - t1).toFixed(2);
+
+        console.log(`2. getStaticProps fiats: ${data.fiats.length} took: ${dt}ms`);
+    } catch (e) {
+        console.log(e);
+    }
+    let ret = {};
+    if (data) {
+        let ogp = {};
+
+        ogp.canonical = 'https://xrpl.to';
+        ogp.title = 'FAQ';
+        ogp.url = 'https://xrpl.to/';
+        ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
+        //ogp.desc = 'Meta description here';
+
+        ret = {data, ogp};
+    }
+
+    return {
+        props: ret, // will be passed to the page component as props
+        // Next.js will attempt to re-generate the page:
+        // - When a request comes in
+        // - At most once every 10 seconds
+        revalidate: 10, // In seconds
+    }
+}
