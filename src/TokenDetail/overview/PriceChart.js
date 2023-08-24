@@ -153,28 +153,44 @@ export default function PriceChart({ token }) {
                 name: 'XRP',
                 type: 'area',
                 data: data
-            }
+            },
+            {
+                //name: 'XRP',
+                type: 'line',
+                data: data
+            },
         ],
-
+        stroke: {
+			width: [0, 2]
+		  },
         // Grid
         grid: {
             strokeDashArray: 3,
             borderColor: theme.palette.divider
         },
-        colors: ['#B72136', '#007B55'],
+        //colors: ['#B72136', '#007B55'],
+        colors: ['#007B55'],
 
         // Fill
         fill: {
             type: 'gradient',
             opacity: 1,
             gradient: {
+				inverseColors: false,
                 type: 'vertical',
                 shadeIntensity: 0,
-                opacityFrom: 0.4,
-                opacityTo: 0,
-                stops: [0, 100]
+                //opacityFrom: [0.4, 1],
+                //opacityTo: [0, 1],
+				//opacityFrom: [0.85],
+				//opacityTo: [0.55],
+				opacityFrom: [0.6, 1],
+				opacityTo: [0.4, 1],
+                gradientToColors:['#B72136', '#B72136'],
+                stops: [50, 70]
             },
         },
+        legend: {show: false},
+        
         // X Axis
         xaxis: {
             type: 'datetime',
@@ -234,6 +250,7 @@ export default function PriceChart({ token }) {
             marker: {
                 show: true,
             },
+            enabledOnSeries: [0]
         },
 
     });

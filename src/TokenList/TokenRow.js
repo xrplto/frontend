@@ -18,7 +18,10 @@ import {
   TableRow,
   Tooltip,
   Typography,
-  Box
+  Box,
+  LinearProgress,
+  Table,
+  TableBody
 } from '@mui/material';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
@@ -158,11 +161,13 @@ function fTokenRow({
     }, 3000);
   }, [time]);
 
-  // const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
   // const imgUrl = `/static/tokens/${md5}.${ext}`;
-  const imgUrl = `/static/tokens/${md5}.webp`;
+  //const imgUrl = `/static/tokens/${md5}.webp`;
 
   const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  
+  const supplyRate = Decimal.div(supply, amount).toNumber()*100;
 
   return (
     <TableRow
@@ -370,6 +375,67 @@ function fTokenRow({
           <Typography variant="small" noWrap={isMobile ? false : true}>
             {name}
           </Typography>
+			<Box display="flex" alignItems="center" pt={1}>
+			  <Box width="100%" sx={{ color: 'darkgrey'}}>
+                    <Tooltip
+                        title={
+                            <Table
+                            sx={{
+								'& .MuiTableCell-root': {
+								  borderBottom: 'none'
+								}
+							  }}
+                            >
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell align='right' width='100%' sx={{pt:0, pb:0}}>
+                                            <Typography variant='small' noWrap sx={{ fontWeight: 'bold', m: 1 }}>Percentage:</Typography>
+                                        </TableCell>
+                                        <TableCell  sx={{pt:0, pb:0}}>
+                                            <Typography variant='small'>{fNumber(supplyRate)}%</Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell  colSpan={2}>
+											<Box sx={{ color: 'darkgrey'}}>
+												<LinearProgress variant="determinate" value={supplyRate}  color='inherit'/>
+											</Box>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell align='right' width='100%' sx={{pt:0, pb:0}}>
+											<Typography variant='small' noWrap sx={{ fontWeight: 'bold', m: 1 }}>Circulating supply:</Typography>
+                                        </TableCell>
+                                        <TableCell  sx={{pt:0, pb:0}}>
+                                            <Typography variant='small' noWrap>{fNumber(supply)} {name}</Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell align='right' sx={{pt:0, pb:0}}>
+                                            <Typography variant='small' noWrap sx={{ fontWeight: 'bold', m: 1 }}>Total supply:</Typography>
+                                        </TableCell>
+                                        <TableCell  sx={{pt:0, pb:0}}>
+                                            <Typography variant='small' noWrap>{fNumber(amount)} {name}</Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        }
+                        placement='bottom-end' arrow
+                        fontSize="small"
+
+						componentsProps={{
+						  tooltip: {
+							sx: {
+							  maxWidth: "400px"
+							},
+						  },
+						}}
+                    >
+					<LinearProgress variant="determinate" value={supplyRate}  color='inherit'/>
+                    </Tooltip>
+			  </Box>
+			</Box>
         </TableCell>
         <TableCell align="right">
           <LazyLoadImage

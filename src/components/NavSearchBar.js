@@ -216,6 +216,7 @@ const NavSearchBar = React.memo(
         }}
         getOptionLabel={(option) => getOptionLabel(option)}
         options={options}
+        filterOptions={(options) => options}
         renderOption={(props, option) => <RenderOption {...option} />}
         loading={loading}
         renderInput={(params) => {

@@ -74,7 +74,7 @@ export default function RichStatistics({token}) {
    
     return (
         <StackStyle>
-            <CardHeader title={`${name} Holders Statistics`}  subheader='' sx={{p:2}}/>
+            <CardHeader title={`${token.name} Holders Statistics`}  subheader='' sx={{p:2}}/>
             <Table sx={{
                 [`& .${tableCellClasses.root}`]: {
                     borderBottom: "1px solid",

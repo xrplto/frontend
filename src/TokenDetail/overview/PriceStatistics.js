@@ -138,6 +138,10 @@ export default function PriceStatistics({token}) {
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Market Cap</Typography></TableCell>
                         <TableCell align="left">$ {fNumber(usdMarketCap)}</TableCell>
                     </TableRow>
+                    <TableRow>
+                        <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Diluted Market Cap</Typography></TableCell>
+                        <TableCell align="left">$ {fNumber(amount*(exch / metrics.USD))}</TableCell>
+                    </TableRow>
                 </TableBody>
             </Table>
         </StackStyle>
