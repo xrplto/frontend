@@ -6,11 +6,12 @@ import {MD5} from "crypto-js";
 // Material
 import { withStyles } from '@mui/styles';
 import {
-    styled,
+    alpha, styled,
     Avatar,
     Box,
     IconButton,
     Link,
+    CardHeader,
     Stack,
     Table,
     TableBody,
@@ -19,6 +20,56 @@ import {
     TableRow,
     Typography
 } from '@mui/material';
+
+// Timeline
+import DateRangeIcon from '@mui/icons-material/DateRange';
+import { makeStyles } from '@mui/styles';
+
+const generateClassName = (rule, sheet) => {
+  // Custom logic to generate class names
+  return `my-component-${rule.key}`;
+};
+
+const useStyles = makeStyles(() => ({
+  customComponent: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    margin: '10px 0',
+    width: '250px',
+  },
+  lineContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '5px',
+    width: '100%',
+  },
+  verticalLine: {
+    width: '2px',
+    height: '15px',
+    background: 'grey',
+    marginRight: '5px', // Adjust margin to align with icon
+    marginLeft: '9px', // Adjust margin to align with icon
+  },
+  icon: {
+    marginRight: '5px', // Adjust margin to align with vertical line
+    fontSize: '1.25rem',
+    color: 'grey',
+  },
+  yearsAgo: {
+    marginRight: '10px',
+    fontSize: '12px',
+    color: 'grey',
+  },
+  price: {
+    marginLeft: 'auto',
+    fontWeight: 'bold',
+    fontSize: '14px',
+  },
+  priceToday: {
+    fontSize: '17px',
+  },
+}), { generateClassName }); // Pass the custom class name generator
 
 // Components
 import HistoryToolbar from './HistoryToolbar';
@@ -30,6 +81,17 @@ import { formatDateTime } from 'src/utils/formatTime';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 // ----------------------------------------------------------------------
+
+// ----------------------------------------------------------------------
+const StackStyle = styled(Stack)(({ theme }) => ({
+    //boxShadow: theme.customShadows.z0,
+    backdropFilter: 'blur(2px)',
+    WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
+    //backgroundColor: alpha(theme.palette.background.default, 0.0),
+    borderRadius: '13px',
+    padding: '0em 0.5em 1.5em 0.5em',
+    backgroundColor: alpha("#919EAB", 0.03),
+}));
 
 function truncate(str, n){
     if (!str) return '';
@@ -74,6 +136,7 @@ export default function HistoryData({token}) {
                 });
         }
         getHistories();
+
     }, [page, rows]);
 
     const tableRef = useRef(null);
@@ -89,10 +152,95 @@ export default function HistoryData({token}) {
         return () => {
             tableRef?.current?.removeEventListener('scroll', handleScroll);
         };
+        
     }, []);
+    
+    // Timeline 
+
+	const {
+		name,
+	 } = token;
+
+	let user = token.user;
+	if (!user) user = name;
+	const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+      
+	function getClosestEntry(date, entries, startIndex = 0) {
+		let closestEntry = entries[startIndex];
+		let minDiff = Math.abs(date - closestEntry[0]);
+
+		for (let i = startIndex; i < entries.length; i++) {
+			const entry = entries[i];
+			const diff = Math.abs(date - entry[0]);
+
+			if (diff > minDiff) {
+				break;
+			}
+
+			minDiff = diff;
+			closestEntry = entry;
+		}
+
+		//console.log('Closest', date, new Date(date).toLocaleDateString("en-US"), new Date(closestEntry[0]).toLocaleDateString("en-US"), startIndex)
+
+		closestEntry[2] = startIndex; // Store the startIndex in the third element
+		return closestEntry;
+	}
+ 
+    const [histsPrices, setHistsPrices] = useState([]);
+    
+    useEffect(() => {
+            axios.get(`${BASE_URL}/graph/${md5}?range=ALL`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+						const currentDate = new Date();
+						const history = ret.history.reverse(); 
+						const yearlyValues = [token.usd];
+						let startIndex = 0;
+
+						for (let yearsAgo = 1; ; yearsAgo++) {
+							const targetDate = new Date(currentDate.getFullYear() - yearsAgo, currentDate.getMonth(), currentDate.getDate());
+							const closestEntry = getClosestEntry(targetDate.getTime(), history, startIndex);
+
+							if (closestEntry[0] === history[history.length - 1][0]) {
+								// Break if we are on the last element
+								// But still check if it's within 10 days to include to output
+								const daysDifference = Math.abs(targetDate - new Date(closestEntry[0])) / (1000 * 60 * 60 * 24);
+								if (daysDifference <= 10) {
+									yearlyValues.push(closestEntry[1]);
+									break;
+								}
+								// If the closest entry is the last one in the dataset, stop
+								break;
+							}
+
+							yearlyValues.push(closestEntry[1]);
+
+							// Update startIndex based on the last iteration
+							startIndex = closestEntry[2];
+						}
+						//console.log(yearlyValues);
+						setHistsPrices(yearlyValues);
+
+                    }
+                }).catch(err => {
+                    console.log("Error on getting graph ALL!!!", err);
+                }).then(function () {
+                    // always executed
+                });        
+    }, []);    
+
+	const classes = useStyles();
 
     return (
         <>
+
+		<Box sx={{
+		  display: 'flex',
+		  alignItems: 'flex-start'
+		}}
+		>
             <Box
                 sx={{
                     display: "flex",
@@ -100,6 +248,7 @@ export default function HistoryData({token}) {
                     py: 1,
                     overflow: "auto",
                     width: "100%",
+                    paddingRight: '30px', // Timeline
                     "& > *": {
                         scrollSnapAlign: "center",
                     },
@@ -280,7 +429,10 @@ export default function HistoryData({token}) {
                                             </Link>
                                         </TableCell>
                                         <TableCell align="left">{ledger}</TableCell>
-                                        <TableCell align="left">
+                                        <TableCell align="left"sx={{
+												width: '5%', //Timeline
+												whiteSpace: 'nowrap'
+										}}>
                                             <Stack direction="row" alignItems='center'>
                                                 <Link
                                                     // underline="none"
@@ -316,6 +468,54 @@ export default function HistoryData({token}) {
                     </TableBody>
                 </Table>
             </Box>
+            
+            {/* Timeline */}
+            
+            <Box>
+            <Typography variant="h2" fontSize="1.1rem">On This Day</Typography>
+            <Typography variant="s7" noWrap sx={{paddingBottom: '20px'}}>
+             {new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}
+			</Typography>
+			<Typography variant="h2" fontSize="1.1rem">&nbsp;</Typography>
+			<StackStyle>
+  
+			<Stack spacing={0.2} sx={{paddingTop: '20px'}}>
+			  <Stack direction="row" alignItems="center" spacing={0.5}>
+				  <Avatar alt={user} src={imgUrl} sx={{ width: 28, height: 28 }} />
+				  <Stack direction="row"  alignItems="baseline" spacing={0.5}>
+					  <Typography variant="h2" fontSize="1rem">{user}</Typography>
+					  <Typography variant="s16">{name}</Typography>
+				  </Stack>
+			  </Stack>
+			  
+			</Stack>
+			
+			<div className={classes.customComponent}>
+			  {histsPrices.map((value, index) => {
+				const isToday = index === 0;
+				const yearsAgoText = isToday ? "Today" : `${index} ${index === 1 ? "year" : "years"} ago`;
+
+				return [
+				  <div className={classes.lineContainer} key={`lineContainer-${index}`}>
+					<DateRangeIcon className={classes.icon} />
+					<span className={classes.yearsAgo}>{yearsAgoText}</span>
+					<span className={`${classes.price} ${isToday ? classes.priceToday : ""}`}>
+					  ${fNumber(value)}
+					</span>
+				  </div>,
+				  index < histsPrices.length - 1 && (
+					<div className={classes.lineContainer} key={`verticalLine-${index}`}>
+					  <div className={classes.verticalLine}></div>
+					</div>
+				  )
+				];
+			  })}
+			</div>
+			</StackStyle>
+			</Box>
+
+		</Box>
+
             <HistoryToolbar
                 count={count}
                 rows={rows}
@@ -323,6 +523,7 @@ export default function HistoryData({token}) {
                 page={page}
                 setPage={setPage}
             />
+
         </>
     );
 }
