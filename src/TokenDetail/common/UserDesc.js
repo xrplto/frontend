@@ -608,7 +608,7 @@ export default function UserDesc({ token }) {
             <Typography variant="body1">Tags</Typography>
 
             <Box display="flex" alignItems="center">
-              {tags.slice(0, 2).map((tag, idx) => (
+              {tags && tags.slice(0, 2).map((tag, idx) => (
                 <Link
                   key={md5 + idx + tag}
                   href={`/view/${normalizeTag(tag)}`}
@@ -634,7 +634,7 @@ export default function UserDesc({ token }) {
                   />
                 </Link>
               ))}
-              {tags.length > 2 && (
+              {tags && tags.length > 2 && (
                 <Chip
                   label={`+${tags.slice(2).length}`}
                   size="small"
