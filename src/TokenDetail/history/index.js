@@ -18,7 +18,8 @@ import {
     TableCell,
     TableHead,
     TableRow,
-    Typography
+    Typography,
+    Grid
 } from '@mui/material';
 
 // Timeline
@@ -48,8 +49,7 @@ const useStyles = makeStyles(() => ({
     width: '2px',
     height: '15px',
     background: 'grey',
-    marginRight: '5px', // Adjust margin to align with icon
-    marginLeft: '9px', // Adjust margin to align with icon
+    marginLeft: '11px', // Adjust margin to align with icon
   },
   icon: {
     marginRight: '5px', // Adjust margin to align with vertical line
@@ -236,11 +236,9 @@ export default function HistoryData({token}) {
     return (
         <>
 
-		<Box sx={{
-		  display: 'flex',
-		  alignItems: 'flex-start'
-		}}
-		>
+		<Grid container spacing={3} sx={{p:0}}>
+			<Grid item xs={12} md={9.5} lg={9.5}>
+			
             <Box
                 sx={{
                     display: "flex",
@@ -248,7 +246,6 @@ export default function HistoryData({token}) {
                     py: 1,
                     overflow: "auto",
                     width: "100%",
-                    paddingRight: '30px', // Timeline
                     "& > *": {
                         scrollSnapAlign: "center",
                     },
@@ -268,13 +265,13 @@ export default function HistoryData({token}) {
                         <TableRow>
                             <TableCell align="left" sx={{
                                 position: "sticky",
-                                zIndex: 1001,
+                                //zIndex: 1001,
                                 left: 0,
                                 background: darkMode ? "#17171A" : '#F2F5F9'
                             }}>#</TableCell>
                             <TableCell align="left" sx={{
                                 position: "sticky",
-                                zIndex: 1002,
+                                //zIndex: 1002,
                                 left: hists.length > 0 ? 48 : 40,
                                 background: darkMode ? "#17171A" : '#F2F5F9',
                                 '&:before': (scrollLeft ? {
@@ -370,7 +367,7 @@ export default function HistoryData({token}) {
                                     >
                                         <TableCell align="left" style={{
                                             position: "sticky",
-                                            zIndex: 1001,
+                                            //zIndex: 1001,
                                             left: 0,
                                             background: darkMode ? "#17171A" : '#F2F5F9'
                                         }}>
@@ -378,7 +375,7 @@ export default function HistoryData({token}) {
                                         </TableCell>
                                         <TableCell align="left" sx={{
                                             position: "sticky",
-                                            zIndex: 1002,
+                                            //zIndex: 1002,
                                             left: 48,
                                             background: darkMode ? "#17171A" : '#F2F5F9',
                                             '&:before': (scrollLeft ? {
@@ -469,17 +466,19 @@ export default function HistoryData({token}) {
                 </Table>
             </Box>
             
+            </Grid>
+            
             {/* Timeline */}
             
-            <Box>
+            <Grid item xs={12}  md={2.5} lg={2.5}>
             <Typography variant="h2" fontSize="1.1rem">On This Day</Typography>
             <Typography variant="s7" noWrap sx={{paddingBottom: '20px'}}>
              {new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}
 			</Typography>
-			<Typography variant="h2" fontSize="1.1rem">&nbsp;</Typography>
+			<Typography variant="h2" fontSize="0.5rem">&nbsp;</Typography>
 			<StackStyle>
   
-			<Stack spacing={0.2} sx={{paddingTop: '20px'}}>
+			<Stack spacing={0.2} sx={{paddingTop: '20px', paddingBottom: '10px'}}>
 			  <Stack direction="row" alignItems="center" spacing={0.5}>
 				  <Avatar alt={user} src={imgUrl} sx={{ width: 28, height: 28 }} />
 				  <Stack direction="row"  alignItems="baseline" spacing={0.5}>
@@ -512,9 +511,9 @@ export default function HistoryData({token}) {
 			  })}
 			</div>
 			</StackStyle>
-			</Box>
+			</Grid>
 
-		</Box>
+		</Grid>
 
             <HistoryToolbar
                 count={count}
