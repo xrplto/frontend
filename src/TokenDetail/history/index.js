@@ -25,6 +25,8 @@ import {
 // Timeline
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import { makeStyles } from '@mui/styles';
+import { FacebookShareButton, TwitterShareButton } from "react-share";
+import { FacebookIcon, TwitterIcon } from "react-share";
 
 const generateClassName = (rule, sheet) => {
   // Custom logic to generate class names
@@ -37,7 +39,7 @@ const useStyles = makeStyles(() => ({
     flexDirection: 'column',
     alignItems: 'flex-start',
     margin: '10px 0',
-    width: '250px',
+    /*maxWidth: '250px',*/
   },
   lineContainer: {
     display: 'flex',
@@ -232,12 +234,17 @@ export default function HistoryData({token}) {
     }, []);    
 
 	const classes = useStyles();
+	
+	// From Share.js
+    const title = `${user} price today: ${name} to USD conversion, live rates, trading volume, historical data, and interactive chart`;
+    const desc = `Access up-to-date ${user} prices, ${name} market cap, trading pairs, interactive charts, and comprehensive data from the leading XRP Ledger token price-tracking platform.`;
+    const url = typeof window !== 'undefined' && window.location.href ? window.location.href : '';//webxtor SEO fix
 
     return (
         <>
 
 		<Grid container spacing={3} sx={{p:0}}>
-			<Grid item xs={12} md={9.5} lg={9.5}>
+			<Grid item xs={12} md={9.5} lg={9.5} sx={{ order: { xs: 2, lg: 1 } }}>
 			
             <Box
                 sx={{
@@ -470,7 +477,7 @@ export default function HistoryData({token}) {
             
             {/* Timeline */}
             
-            <Grid item xs={12}  md={2.5} lg={2.5}>
+            <Grid item xs={12}  md={2.5} lg={2.5} sx={{ order: { xs: 1, lg: 2 } }}>
             <Typography variant="h2" fontSize="1.1rem">On This Day</Typography>
             <Typography variant="s7" noWrap sx={{paddingBottom: '20px'}}>
              {new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}
@@ -496,11 +503,11 @@ export default function HistoryData({token}) {
 
 				return [
 				  <div className={classes.lineContainer} key={`lineContainer-${index}`}>
-					<DateRangeIcon className={classes.icon} />
-					<span className={classes.yearsAgo}>{yearsAgoText}</span>
-					<span className={`${classes.price} ${isToday ? classes.priceToday : ""}`}>
-					  ${fNumber(value)}
-					</span>
+						<DateRangeIcon className={classes.icon} />
+						<span className={classes.yearsAgo}>{yearsAgoText}</span>
+						<span className={`${classes.price} ${isToday ? classes.priceToday : ""}`} style={{ textAlign: 'right' }}>
+						  ${fNumber(value)}
+						</span>
 				  </div>,
 				  index < histsPrices.length - 1 && (
 					<div className={classes.lineContainer} key={`verticalLine-${index}`}>
@@ -510,6 +517,26 @@ export default function HistoryData({token}) {
 				];
 			  })}
 			</div>
+			
+                        <Stack direction="row" spacing={2}  alignItems="center" style={{justifyContent: 'center', paddingTop: '15px' }} >
+							<Box>Share </Box>
+                            <FacebookShareButton
+                                url={url}
+                                quote={title}
+                                hashtag={"#"}
+                                description={desc}
+                            >
+                                <FacebookIcon size={32} round />
+                            </FacebookShareButton>
+                            <TwitterShareButton
+                                title={title}
+                                url={url}
+                                hashtag={"#"}
+                            >
+                                <TwitterIcon size={32} round />
+                            </TwitterShareButton>
+                        </Stack>
+			
 			</StackStyle>
 			</Grid>
 
