@@ -42,6 +42,8 @@ import BearBullLabel from 'src/components/BearBullLabel';
 // Utils
 import { fNumber, fIntNumber } from 'src/utils/formatNumber';
 
+import NumberTooltip from 'src/components/NumberTooltip';
+
 const StickyTableCell = withStyles((theme) => ({
   head: {
     position: 'sticky',
@@ -322,10 +324,10 @@ function fTokenRow({
           }}
         >
           <TransitionTypo variant="h4" noWrap={isMobile ? false : true}>
-            $ {fNumber(usd)}
+            $ <NumberTooltip number={fNumber(usd)} />
           </TransitionTypo>
           <TransitionTypo variant="h6" noWrap={isMobile ? false : true}>
-            <Icon icon={rippleSolid} width={12} height={12} /> {fNumber(exch)}
+            <Icon icon={rippleSolid} width={12} height={12} /> <NumberTooltip prepend='$' number={fNumber(exch)} />
           </TransitionTypo>
         </TableCell>
         <TableCell align="right">
@@ -360,7 +362,7 @@ function fTokenRow({
               height="16"
             />
             <Typography variant="h5" color="#0C53B7">
-              {fNumber(vol24hx)}
+              <NumberTooltip number={fNumber(vol24hx)} />
             </Typography>
           </Stack>
         </TableCell>
@@ -427,7 +429,7 @@ function fTokenRow({
 						componentsProps={{
 						  tooltip: {
 							sx: {
-							  maxWidth: "400px"
+							  maxWidth: "500px"
 							},
 						  },
 						}}

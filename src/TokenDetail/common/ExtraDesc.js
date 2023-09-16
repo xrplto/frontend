@@ -31,6 +31,8 @@ import { fNumber } from 'src/utils/formatNumber';
 import { useSelector } from "react-redux";
 import { selectMetrics } from "src/redux/statusSlice";
 
+import NumberTooltip from 'src/components/NumberTooltip';
+
 // ----------------------------------------------------------------------
 const MarketTypography = withStyles({
     root: {
@@ -222,7 +224,7 @@ export default function ExtraDesc({token}) {
                         </Tooltip>
                     </Stack>
                     <Stack alignItems="center">
-                        <VolumeTypography variant="desc" sx={{mt:3,mb:2}}>{volume} <VolumeTypography variant="small"> {name}</VolumeTypography></VolumeTypography>
+                        <VolumeTypography variant="desc" sx={{mt:3,mb:2}}><NumberTooltip number={volume} /> <VolumeTypography variant="small"> {name}</VolumeTypography></VolumeTypography>
                     </Stack>
 
                     <Typography variant="body1" sx={{pl:3}}>Volume / Marketcap</Typography>
