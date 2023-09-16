@@ -13,9 +13,11 @@ import {
     TableBody,
     TableCell,
     TableHead,
+	TableSortLabel,
     TableRow,
     Typography
 } from '@mui/material';
+import { visuallyHidden } from '@mui/utils';
 
 // Context
 import { useContext } from 'react';
@@ -32,9 +34,13 @@ import RichListToolbar from './RichListToolbar';
 import { Icon } from '@iconify/react';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 import checkIcon from '@iconify/icons-akar-icons/check';
+import caretDown from '@iconify/icons-bx/caret-down';
+import caretUp from '@iconify/icons-bx/caret-up';
 
 // Utils
 import { fNumber, fPercent } from 'src/utils/formatNumber';
+
+import NumberTooltip from 'src/components/NumberTooltip';
 
 // ----------------------------------------------------------------------
 function truncate(str, n){
@@ -44,7 +50,7 @@ function truncate(str, n){
 };
 
 export default function RichListData({token}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = 'https://api.xrpl.to/api';//'http://65.108.4.235:3000/api/';//'https://api.xrpl.to/api';
     const metrics = useSelector(selectMetrics);
 
     const { accountProfile, setLoading, openSnackbar, darkMode } = useContext(AppContext);
@@ -57,6 +63,9 @@ export default function RichListData({token}) {
     const [richList, setRichList] = useState([]);
     const [wallets, setWallets] = useState([]); // Team Wallets
 
+	const [order, setOrder] = useState('desc');
+	const [orderBy, setOrderBy] = useState('');
+
     const {
         name,
         exch
@@ -65,7 +74,7 @@ export default function RichListData({token}) {
     useEffect(() => {
         function getRichList() {
             // https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=100&freeze=false
-            axios.get(`${BASE_URL}/richlist/${token.md5}?start=${page*rows}&limit=${rows}&freeze=${frozen}`)
+            axios.get(`${BASE_URL}/richlist/${token.md5}?start=${page*rows}&limit=${rows}&freeze=${frozen}&sortBy=${orderBy}&sortType=${order}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -79,7 +88,7 @@ export default function RichListData({token}) {
                 });
         }
         getRichList();
-    }, [page, rows, frozen]);
+    }, [page, rows, frozen, orderBy, order]);
 
     useEffect(() => {
         function getTeamWallets() {
@@ -143,6 +152,11 @@ export default function RichListData({token}) {
     const onChangeFrozen = (e) => {
         setFrozen(!frozen);
     }
+	const createSortHandler = (id) => (event) => {
+		const isDesc = orderBy === id && order === 'desc';
+		setOrder(isDesc ? 'asc' : 'desc');
+		setOrderBy(id)
+	};
 
     const tableRef = useRef(null);
     const [scrollLeft, setScrollLeft] = useState(0);
@@ -158,6 +172,8 @@ export default function RichListData({token}) {
             tableRef?.current?.removeEventListener('scroll', handleScroll);
         };
     }, []);
+
+	const vars = {}
 
     return (
         <>
@@ -187,7 +203,7 @@ export default function RichListData({token}) {
                         <TableRow>
                             <TableCell align="left" sx={{
                                 position: "sticky",
-                                zIndex: 1001,
+                                //zIndex: 1001,
                                 left: 0,
                                 background: darkMode ? "#17171A" : '#F2F5F9',
                                 '&:before': (scrollLeft ? {
@@ -215,7 +231,50 @@ export default function RichListData({token}) {
                                     Frozen ({frozen?'YES':'ALL'})
                                 </Link>
                             </TableCell>
-                            <TableCell align="left">Balance({name})</TableCell>
+                            <TableCell align="left">
+ 								{(() => { vars.cellId = 'balance'; })()}
+								<TableSortLabel
+									hideSortIcon
+									active={orderBy === vars.cellId}
+									direction={orderBy === vars.cellId ? order : 'desc'}
+									onClick={
+									  true
+										? createSortHandler(vars.cellId)
+										: undefined
+									}
+								>
+									Balance({name})
+									{orderBy === vars.cellId ? (
+									  <Box sx={{ ...visuallyHidden }}>
+										{order === 'desc'
+										  ? 'sorted descending'
+										  : 'sorted ascending'}
+									  </Box>
+									) : null}
+								</TableSortLabel>                           
+                            </TableCell>
+                            <TableCell align="left">
+								{(() => { vars.cellId = 'balance24h'; })()}
+								<TableSortLabel
+									hideSortIcon
+									active={orderBy === vars.cellId}
+									direction={orderBy === vars.cellId ? order : 'desc'}
+									onClick={
+									  true
+										? createSortHandler(vars.cellId)
+										: undefined
+									}
+								>
+									24h Change
+									{orderBy === vars.cellId ? (
+									  <Box sx={{ ...visuallyHidden }}>
+										{order === 'desc'
+										  ? 'sorted descending'
+										  : 'sorted ascending'}
+									  </Box>
+									) : null}
+								</TableSortLabel>
+							</TableCell>
                             <TableCell align="left">Holding</TableCell>
                             <TableCell align="left">Value</TableCell>
                             {isAdmin &&
@@ -236,6 +295,21 @@ export default function RichListData({token}) {
                                     holding,
                                 } = row;
                                 
+                                var balance24h = false;
+                                if (row.balance24h) {
+									var change = balance - row.balance24h;
+									var percentChange = Math.abs(((change / row.balance24h) * 100)).toFixed(2);
+									var color24h, icon24h;
+									if (change >= 0) {
+										color24h = "#54D62C";
+										icon24h = caretUp;
+									} else {
+										color24h = "#FF6C40";
+										icon24h = caretDown;
+									}
+									balance24h = true;
+								}
+                                
                                 return (
                                     <TableRow
                                         key={id}
@@ -254,7 +328,7 @@ export default function RichListData({token}) {
                                     >
                                         <TableCell align="left" sx={{                 
                                             position: "sticky",
-                                            zIndex: 1001,
+                                            //zIndex: 1001,
                                             left: 0,
                                             background: darkMode ? "#17171A" : '#F2F5F9',
                                             '&:before': (scrollLeft ? {
@@ -290,6 +364,14 @@ export default function RichListData({token}) {
                                             <Typography variant="subtitle1">{fNumber(balance)}</Typography>
                                         </TableCell>
                                         <TableCell align="left">
+                                            {balance24h  &&
+									                <Stack direction="row" spacing={0.1}  alignItems='center'>
+														<Icon icon={icon24h} color={color24h}/>
+														<Typography sx={{color: color24h}} variant="subtitle1"><NumberTooltip number={Math.abs(change)} /> (<NumberTooltip append='%' number={percentChange} />)</Typography>
+													</Stack>
+											}
+                                        </TableCell>
+                                        <TableCell align="left">
                                             <Typography variant="subtitle1">{holding} %</Typography>
                                         </TableCell>
                                         <TableCell align="left">
@@ -301,7 +383,7 @@ export default function RichListData({token}) {
                                                 </Stack>
                                             </Stack>
                                         </TableCell>
-
+                                        
                                         {isAdmin &&
                                             <TableCell align="left">
                                                 <Checkbox
