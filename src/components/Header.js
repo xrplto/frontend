@@ -40,16 +40,14 @@ const HeaderWrapper = styled(Box)(
 
 const StyledLink = styled(Link)(
   ({ theme, darkMode }) => `
-    font-weight: 600;
+    font-weight: 700;
     margin-right: 27px;
     transition: background-color 0.3s;
     padding: 6px 6px; /* Adjust the padding as per your preference */
     border-radius: 8px; /* Adjust the value as per your preference */
     &:hover {
       background-color: ${darkMode ? 'rgba(229, 232, 255, 0.4) !important' : 'rgba(217, 220, 224, .4)'}; 
-      /* Yannier: on here it's picking the 2nd color as default for both themes. */
-      color: ${theme.palette.primary.contrastText};
-      text-decoration: none;
+      color: ${darkMode ? '#FFFFFF' : '#000000'}; 
       cursor: pointer;
     }
   `
@@ -98,7 +96,7 @@ export default function Header(props) {
               }
             }}
           >
-            <Logo alt="Logo" style={{ marginRight: 25 }} />
+            <Logo alt="xrpl.to Logo" style={{ marginRight: 25 }} />
 
             {!isTablet && (
               <>
@@ -138,7 +136,7 @@ export default function Header(props) {
                 display: { xs: 'flex', sm: 'none' }
               }}
             >
-              <Logo alt="Logo" />
+              <Logo alt="xrpl.to Logo" />
             </Box>
           )}
 
@@ -154,7 +152,7 @@ export default function Header(props) {
               <Stack mr={2}>
                 <NavSearchBar
                   id="id_search_tokens"
-                  placeholder="Search"
+                  placeholder="Search XRPL Tokens"
                   fullSearch={fullSearch}
                   setFullSearch={setFullSearch}
                 />
