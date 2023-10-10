@@ -196,9 +196,11 @@ export default function PairsSelect({ token, pair, setPair}) {
                         </CustomSelect>
                 </FormControl>
             </Grid>
+
             <Grid item>
                 <Stack direction="row">
-                    <StackDexStyle direction="row" sx={{ m: 1, minWidth: 120 }} spacing={2} alignItems="center">
+                { /*
+                <StackDexStyle direction="row" sx={{ m: 1, minWidth: 120 }} spacing={2} alignItems="center">
                         DEX
                         <Tooltip title="Sologenic">
                             <Link
@@ -213,6 +215,7 @@ export default function PairsSelect({ token, pair, setPair}) {
                                 </IconButton>
                             </Link>
                         </Tooltip>
+                        
                         <Tooltip title="GateHub">
                             <Link
                                 underline="none"
@@ -254,6 +257,7 @@ export default function PairsSelect({ token, pair, setPair}) {
                             </Link>
                         </Tooltip>
                     </StackDexStyle>
+                    */ }
                 </Stack>
             </Grid>
         </Grid>
