@@ -27,7 +27,7 @@ export default function AccountBalance({pair, accountPairBalance, setAccountPair
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpl.to/api';
     const { accountProfile, doLogIn, setLoading, sync, setSync } = useContext(AppContext);
-
+    const { darkMode } = useContext(AppContext);
     let curr1 = pair.curr1;
     let curr2 = pair.curr2;
 
@@ -102,7 +102,7 @@ export default function AccountBalance({pair, accountPairBalance, setAccountPair
                                 {new Decimal(accountPairBalance.curr1.value).toFixed(8, Decimal.ROUND_DOWN)}
                             </TableCell>
                             <TableCell align="center" sx={{ p:0 }}>
-                                <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
+                            <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{curr2.name}</Typography>
                                 {new Decimal(accountPairBalance.curr2.value).toFixed(6, Decimal.ROUND_DOWN)}
                             </TableCell>
                         </TableRow>
