@@ -65,9 +65,9 @@ export default function ExtraButtons({ token }) {
       <Grid container direction="row" spacing={1}>
         <Grid item>
           <Button
-            variant="outlined"
+            variant="contained"
             onClick={handleSetTrust}
-            color="info"
+            color="primary"
             size="small"
             disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
           >
