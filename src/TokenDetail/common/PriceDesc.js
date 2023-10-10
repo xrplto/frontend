@@ -45,7 +45,23 @@ export default function PriceDesc({ token }) {
       </Stack>
 
       <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-        <BearBullChip value={pro24h} tooltip="24h(%)" />
+       
+      <BearBullChip
+  value={pro24h}
+  tooltip={
+    <Stack alignItems="center">
+      24h (%)
+      <Box
+        component="img"
+        alt=""
+        sx={{ width: 135, height: 50, mt: 2 }}
+        src={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`}
+      />
+    </Stack>
+  }
+/>
+
+        
         <BearBullChip
           value={pro7d}
           tooltip={
