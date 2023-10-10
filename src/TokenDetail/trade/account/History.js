@@ -416,8 +416,10 @@ export default function History({ token }) {
       </Box>
       {!accountAddress ? (
         <ConnectWalletContainer>
+          // this Icon is a little lower than other - Yannier
+          <ErrorOutlineIcon fontSize='small' sx={{ mr: '5px' }} color="error"/>
           <Typography variant="subtitle2" color="error">
-            Connect your wallet to access data
+            Connect your wallet to access data.
           </Typography>
         </ConnectWalletContainer>
       ) : count > 0 ? (
