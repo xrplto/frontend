@@ -30,6 +30,7 @@ function Footer() {
   const img_white = "/logo/xrpl-to-logo-white.svg";
 
   const img = darkMode ? img_white : img_black;
+ 
 
   return (
     <FooterWrapper>
@@ -41,7 +42,7 @@ function Footer() {
           '& .MuiLink-root': {
             color: 'rgb(160, 160, 160) !important',
             '&:hover': {
-              color: 'rgb(152, 202, 255) !important',
+              color: darkMode ? '#007B55 !important  ' : '#5569ff !important',
             },
           },
         }}
