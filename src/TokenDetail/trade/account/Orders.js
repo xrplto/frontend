@@ -368,7 +368,7 @@ export default function Orders({pair}) {
                                         key={_id}
                                         sx={{
                                             [`& .${tableCellClasses.root}`]: {
-                                                color: (buy ? '#007B55' : '#B72136')
+                                                color: (buy ? '#007B55' : '#B72136')  // this places color on table items in Open Orders
                                             },
                                             "&:hover": {
                                                 "& .MuiTableCell-root": {
@@ -442,7 +442,7 @@ export default function Orders({pair}) {
                 :
                 loading ?
                     <Stack alignItems="center" sx={{mt: 5, mb: 5}}>
-                        <PuffLoader color={"#00AB55"} size={35} sx={{mt:5, mb:5}}/>
+                        <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={35} sx={{ mt: 5, mb: 5 }} />
                     </Stack>
                     :
                     offers.length === 0 ?
