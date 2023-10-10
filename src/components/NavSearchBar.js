@@ -100,17 +100,17 @@ const RenderOption = React.memo(
                     : '#222531'
                   : darkMode
                     ? '#007B55'
-                    : '#4E8DF4'}
+                    : '#5569ff'}
                   noWrap
                 >
-                  {truncate(name, 8)}
+                  {truncate(user, 8)}
                 </Typography>
                 <Typography
                   variant="caption"
                   color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                   noWrap
                 >
-                  {truncate(user, 13)}
+                  {truncate(name, 13)}
                   {kyc && (
                     <Typography variant="kyc" sx={{ ml: 0.2 }}>
                       KYC
