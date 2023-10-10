@@ -26,6 +26,10 @@ import {
 import AccountBalance from './AccountBalance';
 import PlaceOrder from './PlaceOrder';
 
+// Context
+import { useContext } from 'react'
+import { AppContext } from 'src/AppContext'
+
 // Utils
 
 // ----------------------------------------------------------------------
@@ -61,7 +65,7 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
     const [value, setValue] = useState('');
     const [marketLimit, setMarketLimit] = useState('market');
     const [accountPairBalance, setAccountPairBalance] = useState(null);
-
+    const { darkMode } = useContext(AppContext);
     useEffect(() => {
         if (bidId < 0) return;
         const idx = bidId;
@@ -200,16 +204,15 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
 
                     {buySell === 'BUY' &&
                         <Typography variant='caption' alignItems={'center'}>
-                            Get <Typography variant="caption" sx={{ color: '#B72136' }}>{curr1.name}</Typography> by selling <Typography variant="caption" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
+                            Get <Typography variant="caption" sx={{ color: '#B72136' }}>{curr1.name}</Typography> by selling <Typography variant="caption" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{curr2.name}</Typography>
                         </Typography>
                     }
 
                     {buySell === 'SELL' &&
                         <Typography variant='caption' alignItems={'center'}>
-                            Sell <Typography variant="caption" sx={{ color: '#B72136' }}>{curr1.name}</Typography> to get <Typography variant="caption" sx={{ color: '#007B55' }}>{curr2.name}</Typography>
+                            Sell <Typography variant="caption" sx={{ color: '#B72136' }}>{curr1.name}</Typography> to get <Typography variant="caption" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{curr2.name}</Typography>
                         </Typography>
                     }
-
                 </Stack>
 
                 <Stack alignItems="center" sx={{mt: 1}}>
