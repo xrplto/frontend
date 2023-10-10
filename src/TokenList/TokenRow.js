@@ -121,7 +121,7 @@ function fTokenRow({
   scrollLeft
 }) {
   const theme = useTheme();
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
   const { accountProfile, darkMode } = useContext(AppContext);
   const isAdmin =
     accountProfile && accountProfile.account && accountProfile.admin;

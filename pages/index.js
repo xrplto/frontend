@@ -84,7 +84,7 @@ function Overview({ data }) {
 export default Overview;
 
 export async function getStaticProps() {
-    const BASE_URL = 'http://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     let data = null;
     try {
         var t1 = performance.now();

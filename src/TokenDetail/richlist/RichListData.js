@@ -50,7 +50,7 @@ function truncate(str, n){
 };
 
 export default function RichListData({token}) {
-    const BASE_URL = 'https://api.xrpl.to/api';//'http://65.108.4.235:3000/api/';//'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const metrics = useSelector(selectMetrics);
 
     const { accountProfile, setLoading, openSnackbar, darkMode } = useContext(AppContext);

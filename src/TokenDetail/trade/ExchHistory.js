@@ -122,7 +122,7 @@ function convertTrade(md5, trades) {
 }
 
 export default function ExchHistory({pair, md5}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const theme = useTheme();
 
     const [tradeExchs, setTradeExchs] = useState([]);

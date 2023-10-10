@@ -410,7 +410,7 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
 // It may be called again, on a serverless function, if
 // revalidation is enabled and a new request comes in
 export async function getStaticProps() {
-    const BASE_URL = 'http://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     // https://api.xrpl.to/api/simple/tokens?start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=
     let data = null;

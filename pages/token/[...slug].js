@@ -86,7 +86,7 @@ function Detail({data}) {
 export default Detail;
 
 export async function getServerSideProps(ctx) {
-    const BASE_URL = 'http://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     let data = null;
     try {

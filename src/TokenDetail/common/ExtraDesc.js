@@ -59,7 +59,7 @@ const TotalSupplyTypography = withStyles({
 })(Typography);
 
 export default function ExtraDesc({token}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const theme = useTheme();
     const metrics = useSelector(selectMetrics);
 

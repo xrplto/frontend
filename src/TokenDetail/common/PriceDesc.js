@@ -19,7 +19,7 @@ import NumberTooltip from 'src/components/NumberTooltip';
 
 // ----------------------------------------------------------------------
 export default function PriceDesc({ token }) {
-  const BASE_URL = 'https://api.xrpl.to/api'; // 'http://localhost/api';
+  const BASE_URL = process.env.API_URL;
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 

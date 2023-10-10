@@ -126,7 +126,7 @@ function getTabID(tab) {
 }
 
 export default function Account({ profile, setProfile, tab }) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const { accountProfile, openSnackbar, sync } = useContext(AppContext);
     const accountLogin = accountProfile?.account;
     // const accountToken = accountProfile?.token;

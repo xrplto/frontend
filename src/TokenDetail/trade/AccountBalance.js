@@ -25,7 +25,7 @@ import { AppContext } from 'src/AppContext'
 
 export default function AccountBalance({pair, accountPairBalance, setAccountPairBalance}) {
     const theme = useTheme();
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const { accountProfile, doLogIn, setLoading, sync, setSync } = useContext(AppContext);
     const { darkMode } = useContext(AppContext);
     let curr1 = pair.curr1;

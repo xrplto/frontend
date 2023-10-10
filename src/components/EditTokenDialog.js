@@ -110,7 +110,7 @@ export default function EditTokenDialog({token, setToken}) {
     const theme = useTheme();
     const fileRef = useRef();
 
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const { accountProfile, openSnackbar } = useContext(AppContext);
     const [loading, setLoading] = useState(false);
 

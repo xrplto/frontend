@@ -11,4 +11,7 @@ const isProd = process.env.RUN_ENV === 'production'
 module.exports = {
     poweredByHeader: false,
     assetPrefix: isProd ? 'https://xrpl.to' : '',
+	env: {
+		API_URL: process.env.API_URL,
+	}
 }

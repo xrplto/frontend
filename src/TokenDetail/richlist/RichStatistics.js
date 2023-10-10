@@ -50,7 +50,7 @@ const badge24hStyle = {
 
 export default function RichStatistics({token}) {
     const theme = useTheme();
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     const [richInfo, setRichInfo] = useState({time:Date.now(), length:0, top10:0, top20:0, top50:0, top100:0, active24H:0});
 

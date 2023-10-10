@@ -69,7 +69,7 @@ export default Overview;
 // revalidation is enabled and a new request comes in
 export async function getStaticProps() {
     // https://api.xrpl.to/api/banxa/currencies
-    const BASE_URL = 'http://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     let data = null;
     try {
         var t1 = performance.now();

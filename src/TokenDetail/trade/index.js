@@ -82,7 +82,7 @@ const ORDER_TYPE_ASKS = 2;
 
 export default function Trade({token}) {
     const WSS_URL = 'wss://ws.xrpl.to';
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     const [pair, setPair] = useState(getInitPair(token));
 

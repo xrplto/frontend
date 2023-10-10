@@ -51,7 +51,7 @@ import ListToolbar from './ListToolbar';
 // ----------------------------------------------------------------------
 export default function ActivityList({account}) {
     const theme = useTheme();
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);

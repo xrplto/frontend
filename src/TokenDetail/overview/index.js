@@ -29,7 +29,7 @@ import Description from './Description';
 // ----------------------------------------------------------------------
 
 export default function Overview({token}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const { accountProfile, setLoading, openSnackbar } = useContext(AppContext);
 
     const [showEditor, setShowEditor] = useState(false);

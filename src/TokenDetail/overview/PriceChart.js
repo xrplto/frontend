@@ -86,7 +86,7 @@ function convertToOHLC(priceData, interval) {
 }
 
 export default function PriceChart({ token }) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const theme = useTheme();
 
     const [data, setData] = useState([]);

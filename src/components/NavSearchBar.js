@@ -20,7 +20,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import useDebounce from 'src/hooks/useDebounce';
 import { AppContext } from 'src/AppContext';
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = process.env.API_URL;
 
 const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
   borderRadius: '50%',

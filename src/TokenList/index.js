@@ -50,7 +50,7 @@ export default function TokenList({
 
   // const WSS_URL = 'wss://ws.xrpl.to';
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
 
   const [filterName, setFilterName] = useState('');
   const [search, setSearch] = useState('');

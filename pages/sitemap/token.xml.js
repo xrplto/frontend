@@ -4,7 +4,7 @@ import { performance } from 'perf_hooks';
 
 const Sitemap = () => {};
 
-const BASE_URL = 'http://api.xrpl.to/api';
+const BASE_URL = process.env.API_URL;
 
 export const getServerSideProps = async ({ res }) => {
     let slugs = [];

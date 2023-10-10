@@ -55,7 +55,7 @@ const MenuProps = {
 };
 
 export default function BuyXRP({fiats, coins}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const { accountProfile, darkMode, openSnackbar } = useContext(AppContext);
     const [fiat, setFiat] = useState('USD');
     const [coin, setCoin] = useState('XRP');

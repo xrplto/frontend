@@ -73,7 +73,7 @@ function truncate(str, n){
 };
 
 export default function PairsList({token, pairs}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const { darkMode } = useContext(AppContext);
 
     const tableRef = useRef(null);

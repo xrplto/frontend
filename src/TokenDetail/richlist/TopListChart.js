@@ -34,7 +34,7 @@ function extractGraphData(items) {
 }
 
 export default function TopListChart({ token }) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     const [range, setRange] = useState('7D');
     const [graphData1, setGraphData1] = useState([]); // Top 100

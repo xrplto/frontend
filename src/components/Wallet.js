@@ -91,7 +91,7 @@ function truncateAccount(str, length = 9) {
 export default function Wallet({ style }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
   const anchorRef = useRef(null);
   const {
     setActiveProfile,

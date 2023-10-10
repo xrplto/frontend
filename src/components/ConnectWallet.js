@@ -18,7 +18,7 @@ import { AppContext } from 'src/AppContext';
 import { fNumber } from 'src/utils/formatNumber';
 
 const ConnectWallet = () => {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
   const {
     accountProfile,
     doLogIn,

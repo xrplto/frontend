@@ -96,7 +96,7 @@ function truncate(str, n) {
 };
 
 export default function Orders({pair}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     
     const { accountProfile, sync, setSync, darkMode } = useContext(AppContext);
     const accountAddress = accountProfile?.account;

@@ -106,7 +106,7 @@ function getMD5(issuer, currency) {
 }
 
 export default function HistoryData({token}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     const { darkMode } = useContext(AppContext);
 

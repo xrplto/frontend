@@ -66,7 +66,7 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
 }));
 
 export default function PairsSelect({ token, pair, setPair}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const { darkMode } = useContext(AppContext);
     const [pairs, setPairs] = useState([]);
 
