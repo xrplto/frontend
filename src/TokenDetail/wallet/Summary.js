@@ -33,8 +33,14 @@ function Rate(num, exch) {
     return fNumber(num / exch);
 }
 
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+
 export default function Summary() {
     const [showContent, setShowContent] = useState(false);
+    const { darkMode } = useContext(AppContext);
     return (
         <Stack sx={{pt:2, pl:2.5}}>
             <Typography variant='wallet_h3'>Wallets</Typography>
@@ -119,7 +125,8 @@ export default function Summary() {
   textAlign: 'center',
   borderRadius: '25px',
   transform: 'rotate(20deg)',
-  backgroundColor: '#3622D4',
+//   backgroundColor: '#3622D4',
+  backgroundColor: `${darkMode ? '#22B14C': '#3366FF'}`,
   color: 'white',
   fontFamily: 'Monospace', // Add a unique font
   textShadow: '2px 2px 4px #000000', // Add text shadow

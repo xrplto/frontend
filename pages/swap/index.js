@@ -83,7 +83,7 @@ function Overview({data}) {
 
     const { accountProfile, openSnackbar } = useContext(AppContext);
 
-    const tokens = data.tokens;
+    const tokens = data && data.tokens ? data.tokens : [];
 
     const [revert, setRevert] = useState(false);
     const [pair, setPair] = useState(DEFAULT_PAIR);

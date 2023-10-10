@@ -489,7 +489,8 @@ export default function HistoryData({token}) {
 			  <Stack direction="row" alignItems="center" spacing={0.5}>
 				  <Avatar alt={user} src={imgUrl} sx={{ width: 28, height: 28 }} />
 				  <Stack direction="row"  alignItems="baseline" spacing={0.5}>
-					  <Typography variant="h2" fontSize="1rem">{user}</Typography>
+					  
+                      <Typography variant="h2" fontSize="1rem" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{user}</Typography>
 					  <Typography variant="s16">{name}</Typography>
 				  </Stack>
 			  </Stack>

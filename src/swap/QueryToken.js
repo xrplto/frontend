@@ -185,7 +185,14 @@ export default function QueryToken({ token, onChangeToken }) {
                     <Typography
                       variant="token"
                       color={
-                        isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
+                        // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
+                        isOMCF !== 'yes'
+                          ? darkMode
+                            ? '#fff'
+                            : '#222531'
+                          : darkMode
+                            ? '#007B55'
+                            : '#4E8DF4'
                       }
                       noWrap
                     >

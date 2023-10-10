@@ -18,6 +18,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 // Iconify Icons
 
 // Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
 // Components
 import Logo from 'src/components/Logo';
@@ -39,15 +41,15 @@ const HeaderWrapper = styled(Box)(
 );
 
 const StyledLink = styled(Link)(
-  ({ theme, darkMode }) => `
+  ({ darkMode }) => `
     font-weight: 700;
     margin-right: 27px;
     transition: background-color 0.3s;
-    padding: 6px 6px; /* Adjust the padding as per your preference */
-    border-radius: 8px; /* Adjust the value as per your preference */
+    padding: 6px 6px; 
+    border-radius: 8px; 
     &:hover {
       background-color: ${darkMode ? 'rgba(229, 232, 255, 0.4) !important' : 'rgba(217, 220, 224, .4)'}; 
-      color: ${darkMode ? '#FFFFFF' : '#000000'}; 
+      color: ${darkMode ? '#005E46' : '#4455CC'};
       cursor: pointer;
     }
   `
@@ -60,7 +62,7 @@ export default function Header(props) {
 
   const [fullSearch, setFullSearch] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [darkMode, setDarkMode] = useState(false); // Add darkMode state
+  const { darkMode, setDarkMode } = useContext(AppContext);
 
   const handleFullSearch = (e) => {
     setFullSearch(true);
@@ -70,8 +72,6 @@ export default function Header(props) {
     setOpenDrawer(isOpen);
   };
 
-  // Update the title dynamically
-  const pageTitle = "Your Page Title";
 
   return (
     <HeaderWrapper>
@@ -100,21 +100,15 @@ export default function Header(props) {
 
             {!isTablet && (
               <>
-                <Link underline="none" color="inherit" href="/" darkMode={darkMode}>
-                  <StyledLink underline="none" color="inherit" href="/" darkMode={darkMode}>
+                  <StyledLink underline="none" color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}} href="/">
                     Tokens
                   </StyledLink>
-                </Link>
-                <Link underline="none" color="inherit" href="/swap" darkMode={darkMode}>
-                  <StyledLink underline="none" color="inherit" href="/swap" darkMode={darkMode}>
+                  <StyledLink underline="none"  color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}} href="/swap">
                     Swap
                   </StyledLink>
-                </Link>
-                <Link underline="none" color="inherit" href="/buy-xrp" darkMode={darkMode}>
-                  <StyledLink underline="none" color="inherit" href="/buy-xrp" darkMode={darkMode}>
+                  <StyledLink underline="none"  color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}} href="/buy-xrp">
                     Fiat
                   </StyledLink>
-                </Link>
               </>
             )}
           </Box>

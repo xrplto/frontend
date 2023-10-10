@@ -7,15 +7,9 @@ import dynamic from "next/dynamic";
 import ReactMarkdown from "react-markdown";
 import "react-markdown-editor-lite/lib/index.css"; // import style manually
 
-const MDEditor = dynamic(() => import("react-markdown-editor-lite"), {
-  ssr: false
-});
-
 // Material
 import {
     styled,
-    Box,
-    CardHeader,
     IconButton,
     Link,
     Stack,
@@ -43,6 +37,8 @@ import NumberTooltip from 'src/components/NumberTooltip';
 
 const ReadMore = ({ children }) => {
     const [showFullContent, setShowFullContent] = useState(false);
+    const { darkMode } = useContext(AppContext);
+    
 
     const toggleReadMore = () => {
         setShowFullContent(!showFullContent);
@@ -96,7 +92,7 @@ const ReadMore = ({ children }) => {
                     component="button"
                     underline="none"
                     variant="body2"
-                    color="#3366FF"
+                    color={ darkMode ? '#22B14C': '#3366FF' }
                     onClick={toggleReadMore}
                 >
                     <Typography variant='s6' sx={{pt: 3, pb: 3}}>{showFullContent?'Read Less':'Read More'}</Typography>
@@ -107,32 +103,21 @@ const ReadMore = ({ children }) => {
 };
 
 export default function Description({token, showEditor, setShowEditor, description, onApplyDescription}) {
-    const { accountProfile } = useContext(AppContext);
+    const { accountProfile, darkMode } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     const metrics = useSelector(selectMetrics);
     const {
         id,
         name,
-        exch,
         usd,
         pro24h,
-        amount,
         supply,
         issuer,
         currency,
-        vol24h,
-        vol24hxrp,
         vol24hx,
         slug,
         marketcap,
-        /*
-        date,
-        md5,
-        pro7d,
-        trustlines,
-        holders,
-        offers*/
     } = token;
 
     let user = token.user;
@@ -173,10 +158,10 @@ export default function Description({token, showEditor, setShowEditor, descripti
 
             <Typography sx={{mt:2, mb: 3}}>
             If you're interested in purchasing {user}, the top XRPL DEX platforms for trading {user} tokens are currently: 
-                <Link color="#3366FF" underline="none"
+                <Link color={ darkMode ? '#22B14C': '#3366FF' } underline="none"
                     href={`/token/${slug}/trade`}
                 >{' XRPL.to DEX'}</Link> and
-                <Link color="#3366FF" underline="none"
+                <Link color={ darkMode ? '#22B14C': '#3366FF' } underline="none"
                     href={`https://sologenic.org/trade?network=mainnet&market=${currency}%2B${issuer}%2FXRP`}
                 >{' Sologenic DEX'}</Link>.
                 
@@ -199,13 +184,14 @@ export default function Description({token, showEditor, setShowEditor, descripti
             {!showEditor && description &&
                 <ReadMore >
                     <ReactMarkdown
-                        className="reactMarkDown"
+                        className={darkMode ? 'reactMarkDowndark' : 'reactMarkDownlight' }
                     >
                         {description}
                     </ReactMarkdown>
                 </ReadMore>
             }
-
         </Stack>
     );
 }
+
+

@@ -238,6 +238,7 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
                     <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
                         <PriceChangeIcon sx={{ color: 'action.active', mr: 1.5, my: 0.5 }} />
                         <TextField fullWidth id="input-with-sx2" label="Price" value={price} onChange={handleChangePrice} variant="standard"/>
+                        
                         <Typography variant="caption" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{curr2.name}</Typography>
                     </Box>
                 )}

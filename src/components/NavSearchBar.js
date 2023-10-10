@@ -94,7 +94,13 @@ const RenderOption = React.memo(
               <Stack>
                 <Typography
                   variant="token"
-                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
+                  color={isOMCF !== 'yes'
+                  ? darkMode
+                    ? '#fff'
+                    : '#222531'
+                  : darkMode
+                    ? '#007B55'
+                    : '#4E8DF4'}
                   noWrap
                 >
                   {truncate(name, 8)}

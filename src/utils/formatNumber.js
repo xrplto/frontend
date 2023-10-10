@@ -69,29 +69,35 @@ export function fNumberWithSuffix(number) {
     let suffix = "";
     let formattedNumber = "";
 
-    if (Math.abs(number) >= 1e12) {
-        // Trillion
-        suffix = "T";
-        formattedNumber = (number / 1e12).toFixed(0);//toFixed(2);
-    } else if (Math.abs(number) >= 1e9) {
-        // Billion
-        suffix = "B";
-        formattedNumber = (number / 1e9).toFixed(0);//toFixed(2);
-    } else if (Math.abs(number) >= 1e6) {
-        // Million
-        suffix = "M";
-        formattedNumber = (number / 1e6).toFixed(0);//toFixed(2);
-    } else if (Math.abs(number) >= 1e3) {
-        // Thousand
-        suffix = "K";
-        formattedNumber = (number / 1e3).toFixed(0);//toFixed(2);
+    if (typeof number === 'number' && !isNaN(number)) {
+        if (Math.abs(number) >= 1e12) {
+            // Trillion
+            suffix = "T";
+            formattedNumber = (number / 1e12).toFixed(0);
+        } else if (Math.abs(number) >= 1e9) {
+            // Billion
+            suffix = "B";
+            formattedNumber = (number / 1e9).toFixed(0);
+        } else if (Math.abs(number) >= 1e6) {
+            // Million
+            suffix = "M";
+            formattedNumber = (number / 1e6).toFixed(0);
+        } else if (Math.abs(number) >= 1e3) {
+            // Thousand
+            suffix = "K";
+            formattedNumber = (number / 1e3).toFixed(0);
+        } else {
+            // Less than 1000
+            formattedNumber = number.toFixed(0);
+        }
     } else {
-        // Less than 1000
-        formattedNumber = number.toFixed(0);//toFixed(2);
+        // Handle the case when 'number' is not a valid number
+        formattedNumber = '0';
     }
 
     return formattedNumber + suffix;
 };
+
 
 // ----------------------------------------------------------------------
 /*function processBigNumber(number, language, currency = undefined) {
