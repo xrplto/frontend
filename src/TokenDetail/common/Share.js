@@ -149,9 +149,10 @@ export default function Share({token}) {
                             src={imgUrl}
                             sx={{ width: 64, height: 64, mt: 2 }}
                         />
-                        <Typography variant="desc">{user}</Typography>
+                        
+                        <Typography variant="desc" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{user} {name}</Typography>
                         <Typography variant="desc" sx={{mt:2}} noWrap>Spread the word: Share with your friends and network</Typography>
-                        <Typography variant="subtitle1" sx={{mt:1, mb:2}}>The current price of {user} is $ {fNumber(exch / metrics.USD)}!</Typography>
+                        <Typography variant="subtitle1" sx={{mt:1, mb:2}}>The current price of {user} {name} is $ {fNumber(exch / metrics.USD)}!</Typography>
                         <Stack direction="row" spacing={2}>
                             <FacebookShareButton
                                 url={url}
@@ -166,7 +167,8 @@ export default function Share({token}) {
                                 url={url}
                                 hashtag={"#"}
                             >
-                                <TwitterIcon size={32} round />
+                                <TwitterIcon size={32} round /> 
+                               
                             </TwitterShareButton>
                         </Stack>
 
