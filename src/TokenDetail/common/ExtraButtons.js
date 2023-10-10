@@ -67,7 +67,7 @@ export default function ExtraButtons({ token }) {
           <Button
             variant="outlined"
             onClick={handleSetTrust}
-            color="primary"
+            color="info"
             size="small"
             disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
           >
