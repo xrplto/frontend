@@ -416,7 +416,6 @@ export default function History({ token }) {
       </Box>
       {!accountAddress ? (
         <ConnectWalletContainer>
-          // this Icon is a little lower than other - Yannier
           <ErrorOutlineIcon fontSize='small' sx={{ mr: '5px' }} color="error"/>
           <Typography variant="subtitle2" color="error">
             Connect your wallet to access data.
@@ -432,11 +431,12 @@ export default function History({ token }) {
         />
       ) : loading ? (
         <Stack alignItems="center" sx={{ mt: 5, mb: 5 }}>
-          <PuffLoader color={'#00AB55'} size={35} sx={{ mt: 5, mb: 5 }} />
+          <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={35} sx={{ mt: 5, mb: 5 }} />
+
         </Stack>
       ) : (
         <ConnectWalletContainer>
-          <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
+          <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} color="error" />
           <Typography variant="subtitle2" color="error">
             No Trading History
           </Typography>
