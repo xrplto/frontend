@@ -61,6 +61,10 @@ const AdminDialog = styled(Dialog)(({ theme }) => ({
     // backgroundColor: alpha("#00AB88", 0.99),
 }));
 
+
+
+
+
 const KYCTypography = withStyles({
     root: {
         color: "#34B60C",
@@ -381,7 +385,7 @@ export default function EditTokenDialog({token, setToken}) {
                             sx={{ mr: 1, width: 56, height: 56 }}
                             onClick={() => fileRef.current.click()}
                         />
-                        <CoinNameTypography variant="h5" noWrap>
+                        <CoinNameTypography variant="h5" noWrap color="primary">
                             {name}
                         </CoinNameTypography>
                     </Stack>
