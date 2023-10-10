@@ -25,7 +25,8 @@ import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
-
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 // ----------------------------------------------------------------------
 
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -39,7 +40,7 @@ const badge24hStyle = {
     display: 'inline-block',
     marginLeft: '4px',
     marginRight: '4px',
-    color: '#C4CDD5',
+   // color: '#C4CDD5',
     fontSize: '11px',
     fontWeight: '500',
     lineHeight: '18px',
@@ -54,7 +55,7 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
     display: 'inline-block',
     marginLeft: '4px',
     marginRight: '4px',
-    color: '#C4CDD5',
+   // color: '#C4CDD5',
     fontSize: '11px',
     fontWeight: '500',
     lineHeight: '18px',
@@ -66,7 +67,7 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
 
 export default function PairsSelect({ token, pair, setPair}) {
     const BASE_URL = 'https://api.xrpl.to/api';
-
+    const { darkMode } = useContext(AppContext);
     const [pairs, setPairs] = useState([]);
 
     useEffect(() => {
@@ -183,7 +184,8 @@ export default function PairsSelect({ token, pair, setPair}) {
                                             <Stack direction="row" alignItems='center'>
                                                 <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
                                                 <Icon icon={arrowsExchange} width="16" height="16"/>
-                                                <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{name2}</Typography>
+                                              
+                                              <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{name2}</Typography>
                                                 <span style={badge24hStyle}>24h</span>
                                                 <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{fNumber(curr1.value)}</Typography>
                                             </Stack>
