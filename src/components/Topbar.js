@@ -23,6 +23,10 @@ import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
 import { Icon } from '@iconify/react';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+
 // Utils
 import {
   fIntNumber,
@@ -79,9 +83,9 @@ function Rate(num) {
 }
 
 const currencies = [
-  { label: '$', value: 'USD' },
-  { label: '€', value: 'EUR' },
-  { label: '¥', value: 'JPY' }
+  { label: 'USD', value: 'USD' },
+  { label: 'EUR', value: 'EUR' },
+  { label: 'JPY', value: 'JPY' }
 ];
 
 const Topbar = () => {
@@ -118,7 +122,11 @@ const Topbar = () => {
   const handleCurrencyClick = (currency) => () => {
     handleCurrencyChange(currency);
   };
-
+const { darkMode } = useContext(AppContext);
+const iconColor = darkMode ? '#FFFFFF' : '#000000';
+const iconStyle = {
+  marginRight: '5px', // Adjust the value as needed
+};
   return (
     <TopWrapper>
       <Container maxWidth="xl">
@@ -191,10 +199,10 @@ const Topbar = () => {
           >
             <Button onClick={handleClick}>
               <Stack direction="row" spacing={0.5} alignItems="center">
-                <Icon icon={rippleSolid} width="12" height="12" />
+                <Icon icon={rippleSolid} width="12" height="12"  color={iconColor} style={iconStyle} />
               </Stack>
               <Typography variant="body2" noWrap>
-                {currentCurrency} {Rate(rate)}
+                 {Rate(rate)} {currentCurrency}
               </Typography>
             </Button>
             <Menu
@@ -208,10 +216,10 @@ const Topbar = () => {
                   onClick={handleCurrencyClick(currency.value)}
                 >
                   <Stack direction="row" spacing={0.5} alignItems="center">
-                    <Icon icon={rippleSolid} width="12" height="12" />
+                    <Icon icon={rippleSolid} width="12" height="12"  style={iconStyle}/>
                   </Stack>
                   <Typography variant="body2" noWrap>
-                    {currency.label} {Rate(metrics[currency.value])}
+                     {Rate(metrics[currency.value])} {currency.label}
                   </Typography>
                 </MenuItem>
               ))}
