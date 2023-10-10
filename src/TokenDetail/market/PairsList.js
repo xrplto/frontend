@@ -42,7 +42,7 @@ const badge24hStyle = {
     display: 'inline-block',
     marginLeft: '4px',
     marginRight: '4px',
-    color: '#C4CDD5',
+   // color: '#C4CDD5',
     fontSize: '11px',
     fontWeight: '500',
     lineHeight: '18px',
@@ -56,7 +56,7 @@ const badgeDEXStyle = {
     display: 'inline-block',
     marginLeft: '4px',
     marginRight: '4px',
-    color: '#C4CDD5',
+    //color: '#C4CDD5',
     fontSize: '11px',
     fontWeight: '500',
     lineHeight: '18px',
@@ -241,7 +241,8 @@ export default function PairsList({token, pairs}) {
                                         <Stack direction="row" alignItems='center'>
                                             <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
                                             <Icon icon={arrowsExchange} width="16" height="16"/>
-                                            <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{name2}</Typography>
+                                            <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{name2}</Typography>
+
                                         </Stack>
                                     </TableCell>
                                     <TableCell align="left" sx={{p:0.5, pb:0.5}}>
@@ -265,7 +266,9 @@ export default function PairsList({token, pairs}) {
                                                     href={`https://${curr2.domain}`}
                                                     rel="noreferrer noopener nofollow"
                                                 >
-                                                    <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.domain}</Typography>
+                                                    // Couldn't find where this changes the color at - Yannier
+                                                    <Typography variant="subtitle2" sx={{ color: darkMode ? '#5569ff' : '#007B55' }}>{curr2.domain}</Typography>
+
                                                 </Link>
                                             )}
                                         </Stack>
@@ -287,8 +290,10 @@ export default function PairsList({token, pairs}) {
                                                 <Typography variant="caption" sx={{ color: '#B72136' }}>{name1}</Typography>
                                             </Stack>
                                             <Stack direction="row" spacing={1} alignItems='center'>
-                                                <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{fNumber(curr2.value)}</Typography>
-                                                <Typography variant="caption" sx={{ color: '#007B55' }}>{name2}</Typography>
+                                            <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{fNumber(curr2.value)}</Typography>
+
+                                                <Typography variant="caption" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{name2}</Typography>
+
                                             </Stack>
                                         </Stack>
                                     </TableCell>
@@ -315,7 +320,8 @@ export default function PairsList({token, pairs}) {
                                             )}
                                             {curr2.issuer && curr2.issuer !== 'XRPL' && (
                                                 <Stack direction="row" alignItems='center'>
-                                                    <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{user2}</Typography>
+                                                    <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{user2}</Typography>
+
                                                     <Link
                                                         underline="none"
                                                         color="inherit"
