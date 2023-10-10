@@ -436,7 +436,7 @@ export default function Orders({pair}) {
                         }}
                     >
                         <ErrorOutlineIcon fontSize='small' sx={{ mr: '5px' }} />
-                        Connect your wallet to access data
+                        Connect your wallet to access data.
                     </Typography>
                 </ConnectWalletContainer>
                 :
