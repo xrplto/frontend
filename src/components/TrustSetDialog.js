@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
+
 // Material
 import { withStyles } from '@mui/styles';
 import {
@@ -89,7 +90,7 @@ const Label = withStyles({
 
 export default function TrustSetDialog({ token, setToken }) {
   const theme = useTheme();
-  const BASE_URL = process.env.API_URL;
+  const BASE_URL = 'https://api.xrpl.to/api';
   const { accountProfile, openSnackbar } = useContext(AppContext);
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -151,6 +152,7 @@ export default function TrustSetDialog({ token, setToken }) {
       }, 1000);
     };
 
+    
     // Stop the interval
     const stopInterval = () => {
       clearInterval(dispatchTimer);
@@ -322,10 +324,13 @@ export default function TrustSetDialog({ token, setToken }) {
     onTrustSetXumm(0);
   };
 
+  const { darkMode } = useContext(AppContext);
+
   return (
     <>
       <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
-        <PulseLoader color={'#FF4842'} size={10} />
+        <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
+        
       </Backdrop>
 
       <TrustDialog
@@ -412,7 +417,7 @@ export default function TrustSetDialog({ token, setToken }) {
             >
               {isLoggedIn ? (
                 <Button
-                  variant="outlined"
+                  variant="contained"
                   onClick={isRemove ? handleRemoveTrust : handleSetTrust}
                   color={`${isRemove ? 'error' : 'primary'}`}
                   size="small"
