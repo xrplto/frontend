@@ -123,10 +123,10 @@ export default function Summary() {
   right: '-15px',
   top: '30px',
   textAlign: 'center',
-  borderRadius: '10px',
+  borderRadius: '12px',
   transform: 'rotate(20deg)',
 //   backgroundColor: '#3622D4',
-  backgroundColor: `${darkMode ? '##007B55': '#5569ff'}`,
+  backgroundColor: `${darkMode ? '#007B55': '#5569ff'}`,
   color: 'white',
   fontFamily: 'Monospace', // Add a unique font
   textShadow: '2px 2px 4px #000000', // Add text shadow
