@@ -126,7 +126,7 @@ export default function Summary() {
   borderRadius: '25px',
   transform: 'rotate(20deg)',
 //   backgroundColor: '#3622D4',
-  backgroundColor: `${darkMode ? '#22B14C': '#3366FF'}`,
+  backgroundColor: `${darkMode ? '##007B55': '#5569ff'}`,
   color: 'white',
   fontFamily: 'Monospace', // Add a unique font
   textShadow: '2px 2px 4px #000000', // Add text shadow
