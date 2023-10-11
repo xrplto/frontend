@@ -244,7 +244,7 @@ export default function ExtraDesc({token}) {
                     </Stack>
 
                     <Stack alignItems="center">
-                        <SupplyTypography variant="desc" sx={{mt:3,mb:2}}>{circulatingSupply}</SupplyTypography>
+                        <SupplyTypography color="primary" variant="desc" sx={{mt:3,mb:2}}>{circulatingSupply} </SupplyTypography>
                     </Stack>
 
 
