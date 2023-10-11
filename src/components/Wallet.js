@@ -91,7 +91,7 @@ function truncateAccount(str, length = 9) {
 export default function Wallet({ style }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const BASE_URL = process.env.API_URL;
+  const BASE_URL = 'https://api.xrpl.to/api';
   const anchorRef = useRef(null);
   const {
     setActiveProfile,
@@ -439,7 +439,7 @@ export default function Wallet({ style }) {
                       Account Reserve
                     </Typography>
                     <Tooltip
-                      title={`To activate an XRP wallet, a reserve of 10 XRP is mandatory. Once the XRP address is funded with this amount on the ledger network, the reserve becomes locked and unable to be retrieved unless either the network decides to reduce the reserve requirement, or the user deletes the wallet. It's possible to pay fees using the reserve funds.`}
+                      title={`To activate an XRP wallet, a reserve of 10 XRP is mandatory. Once the XRP address is funded with this amount on the XRP Ledger network, the reserve becomes locked and unable to be retrieved unless either the network decides to reduce the reserve requirement, or the user deletes the wallet. It's possible to pay fees using the reserve funds.`}
                     >
                       <HelpIcon
                         sx={{
@@ -480,7 +480,7 @@ export default function Wallet({ style }) {
                   sx={{
                     paddingRight: '27px',
                     paddingLeft: '27px',
-                    color: 'inherit',
+                    color: 'primary',
                     width: '100%'
                   }}
                 >
