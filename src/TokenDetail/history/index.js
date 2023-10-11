@@ -400,7 +400,7 @@ export default function HistoryData({token}) {
                                         }}>
                                             <Typography variant="caption">{strDateTime}</Typography>
                                         </TableCell>
-                                        <TableCell align="left"><Typography variant="caption">{fNumber(exch)} {name}</Typography></TableCell>
+                                        <TableCell align="left"><Typography variant="caption" >{fNumber(exch)} {name}</Typography></TableCell>
                                         <TableCell align="left">
                                             {fNumber(paid.value)} <Typography variant="caption">{paidName}</Typography>
                                         </TableCell>
@@ -412,7 +412,7 @@ export default function HistoryData({token}) {
                                         <TableCell align="left">
                                             <Link
                                                 // underline="none"
-                                                // color="inherit"
+                                                color="primary"
                                                 target="_blank"
                                                 href={`https://bithomp.com/explorer/${taker}`}
                                                 rel="noreferrer noopener nofollow"
@@ -424,7 +424,7 @@ export default function HistoryData({token}) {
                                         <TableCell align="left">
                                             <Link
                                                 // underline="none"
-                                                // color="inherit"
+                                                color="primary"
                                                 target="_blank"
                                                 href={`https://bithomp.com/explorer/${maker}`}
                                                 rel="noreferrer noopener nofollow"
@@ -440,12 +440,12 @@ export default function HistoryData({token}) {
                                             <Stack direction="row" alignItems='center'>
                                                 <Link
                                                     // underline="none"
-                                                    // color="inherit"
+                                                    color="primary"
                                                     target="_blank"
                                                     href={`https://bithomp.com/explorer/${hash}`}
                                                     rel="noreferrer noopener nofollow"
                                                 >
-                                                    <Stack direction="row" alignItems='center'>
+                                                    <Stack direction="row" alignItems='center' >
                                                         {truncate(hash, 16)}
                                                         <IconButton edge="end" aria-label="bithomp">
                                                             <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
