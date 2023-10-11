@@ -123,7 +123,7 @@ export default function Summary() {
   right: '-15px',
   top: '30px',
   textAlign: 'center',
-  borderRadius: '25px',
+  borderRadius: '10px',
   transform: 'rotate(20deg)',
 //   backgroundColor: '#3622D4',
   backgroundColor: `${darkMode ? '##007B55': '#5569ff'}`,
