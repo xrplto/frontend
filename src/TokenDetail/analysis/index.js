@@ -167,7 +167,7 @@ export default function AnalysisData({token}) {
                 :
                 loading ?
                     <Stack alignItems="center" sx={{mt: 5, mb: 5}}>
-                        <PuffLoader color={"#00AB55"} size={35} sx={{mt:5, mb:5}}/>
+                      {/*  <PuffLoader color={"#00AB55"} size={35} sx={{mt:5, mb:5}}/> */}
                     </Stack>
                     :
                     <ConnectWalletContainer>
