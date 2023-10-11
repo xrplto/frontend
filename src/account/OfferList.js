@@ -47,6 +47,7 @@ import QRDialog from 'src/components/QRDialog';
 import ListToolbar from './ListToolbar';
 
 // ----------------------------------------------------------------------
+
 const StackStyle = styled(Stack)(({ theme }) => ({
     //boxShadow: theme.customShadows.z0,
     //backdropFilter: 'blur(2px)',
@@ -97,8 +98,9 @@ function truncateAccount(str) {
     return str.slice(0, 9) + '...' + str.slice(-9);
 };
 
+
 export default function OfferList({account}) {
-    const BASE_URL = process.env.API_URL;
+    const BASE_URL = 'https://api.xrpl.to/api';
     
     const { accountProfile, openSnackbar, sync, setSync, darkMode } = useContext(AppContext);
     const isLoggedIn = accountProfile && accountProfile.account;
@@ -114,7 +116,7 @@ export default function OfferList({account}) {
     const [rows, setRows] = useState(10);
     const [total, setTotal] = useState(0);
     const [offers, setOffers] = useState([]);
-
+    
     useEffect(() => {
         function getOffers() {
             setLoading(true);
@@ -245,7 +247,7 @@ export default function OfferList({account}) {
     }, []);
 
     // https://api.sologenic.org/api/v1/trades?symbol=534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz%2FXRP&account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
-
+    
     return (
         <Container maxWidth="xl" sx={{pl: 0, pr: 0}}>
             <Backdrop
@@ -273,13 +275,13 @@ export default function OfferList({account}) {
 
             {loading ? (
                 <Stack alignItems="center">
-                    <PulseLoader color='#00AB55' size={10} />
+                    <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
                 </Stack>
             ) : (
                 offers && offers.length === 0 &&
                 <Stack alignItems="center" sx={{ mt: 2, mb: 1 }}>
                     <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
-                    <Typography variant="s6" color='#2de370'>[ No Offers ]</Typography>
+                    <Typography variant="s6" color='primary'>[ No Offers ]</Typography>
                 </Stack>
             )
             }
@@ -453,7 +455,7 @@ export default function OfferList({account}) {
                                                 href={`https://bithomp.com/explorer/${account}`}
                                                 rel="noreferrer noopener nofollow"
                                             >
-                                                <Typography variant="s6" noWrap>{truncateAccount(account)}</Typography>
+                                                <Typography variant="s6" color="primary" noWrap>{truncateAccount(account)}</Typography>
                                             </Link>
                                         </TableCell>
 
@@ -480,7 +482,9 @@ export default function OfferList({account}) {
                                                         rel="noreferrer noopener nofollow"
                                                     >
                                                         <Stack direction="row" alignItems='center'>
+                                                        <Typography variant="s6" noWrap color="primary">
                                                             {truncate(chash, 16)}
+                                                            </Typography>
                                                             <IconButton edge="end" aria-label="bithomp">
                                                                 <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
                                                             </IconButton>
