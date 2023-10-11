@@ -38,6 +38,11 @@ import AnimationIcon from '@mui/icons-material/Animation';
 import PaymentIcon from '@mui/icons-material/Payment';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
 
+
+// Context
+import { useContext } from 'react'
+import { AppContext } from 'src/AppContext'
+
 // Utils
 import { formatDateTime } from 'src/utils/formatTime';
 import { Activity } from 'src/utils/extra';
@@ -57,7 +62,7 @@ export default function ActivityList({account}) {
     const [rows, setRows] = useState(10);
     const [total, setTotal] = useState(0);
     const [acts, setActs] = useState([]);
-
+    const { darkMode } = useContext(AppContext);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -84,7 +89,7 @@ export default function ActivityList({account}) {
         <Container maxWidth="xl" sx={{pl: 0, pr: 0}}>
             {loading ? (
                 <Stack alignItems="center">
-                    <PulseLoader color='#00AB55' size={10} />
+                    <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
                 </Stack>
             ):(
                 acts && acts.length === 0 &&
