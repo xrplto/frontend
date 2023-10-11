@@ -71,7 +71,7 @@ export default function ExtraButtons({ token }) {
             size="small"
             disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
           >
-            TrustSet
+            Set Trustline
           </Button>
         </Grid>
 
