@@ -14,6 +14,11 @@ import {
   Pagination
 } from '@mui/material';
 
+
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -60,6 +65,7 @@ const Sitemap = ({ tokens, slug }) => {
       });
     }
   };
+  const { darkMode } = useContext(AppContext);
 
   useEffect(() => {
     const startIndex = (page - 1) * perPage;
@@ -104,7 +110,7 @@ const Sitemap = ({ tokens, slug }) => {
                   rel="noreferrer noopener nofollow"
                   sx={{
                     fontSize: 15,
-                    color: 'rgb(56, 97, 251) !important',
+                    color: darkMode ? '#007B55 !important  ' : '#5569FF !important',
                     '&:hover': {
                       color: 'rgb(152, 202, 255) !important'
                     }
@@ -137,7 +143,7 @@ const Sitemap = ({ tokens, slug }) => {
               rel="noreferrer noopener nofollow"
               sx={{
                 fontSize: 15,
-                color: 'rgb(56, 97, 251) !important',
+                color: darkMode ? '#007B55 !important  ' : '#5569FF !important',
                 '&:hover': {
                   color: 'rgb(152, 202, 255) !important'
                 }
@@ -153,7 +159,7 @@ const Sitemap = ({ tokens, slug }) => {
               rel="noreferrer noopener nofollow"
               sx={{
                 fontSize: 15,
-                color: 'rgb(56, 97, 251) !important',
+                color: darkMode ? '#007B55 !important  ' : '#5569FF !important',
                 '&:hover': {
                   color: 'rgb(152, 202, 255) !important'
                 }
