@@ -63,7 +63,7 @@ function Status404() {
                 It's on us, we moved the content to a different page. The search
                 below should help!
               </Typography> */}
-              <Button href="/" variant="outlined">
+              <Button href="/" variant="contained">
                 Go to homepage
               </Button>
             </Box>
