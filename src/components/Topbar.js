@@ -59,18 +59,7 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
   '::-webkit-scrollbar': { display: 'none' }
 }));
 
-const H24Style = styled('div')(({ theme }) => ({
-  cursor: 'pointer',
-  paddingLeft: theme.spacing(0.5),
-  paddingRight: theme.spacing(0.5),
-  paddingTop: theme.spacing(0.07),
-  paddingBottom: theme.spacing(0.07),
-  backgroundColor: '#0C53B7',
-  borderRadius: 8,
-  transition: theme.transitions.create('opacity'),
-  opacity: 1,
-  '&:hover': { opacity: 1 }
-}));
+
 
 const Separator = styled('span')(({ theme }) => ({
   fontSize: '0.4rem'
@@ -127,6 +116,19 @@ const iconColor = darkMode ? '#FFFFFF' : '#000000';
 const iconStyle = {
   marginRight: '5px', // Adjust the value as needed
 };
+
+const H24Style = styled('div')(({ theme }) => ({
+  cursor: 'pointer',
+  paddingLeft: theme.spacing(0.5),
+  paddingRight: theme.spacing(0.5),
+  paddingTop: theme.spacing(0.07),
+  paddingBottom: theme.spacing(0.07),
+  backgroundColor: darkMode ? 'green !important  ' : 'blue !important',
+  borderRadius: 8,
+  transition: theme.transitions.create('opacity'),
+  opacity: 1,
+  '&:hover': { opacity: 1 }
+}));
   return (
     <TopWrapper>
       <Container maxWidth="xl">
@@ -153,12 +155,13 @@ const iconStyle = {
               {fIntNumber(metrics.H24.totalTrustLines)}
             </Typography>
             <H24Style>
-              <Tooltip title="Metrics on 24 hours">
+              <Tooltip title="Statistics from the past 24 hours.">
                 <Stack spacing={0} alignItems="center">
                   <Typography
                     align="center"
                     style={{ wordWrap: 'break-word' }}
                     variant="body2"
+                    color="#FFF"
                   >
                     24h
                   </Typography>
