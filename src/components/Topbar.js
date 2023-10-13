@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import Decimal from 'decimal.js';
 
+
+// import i18n (needs to be bundled ;))
+import 'locales/i18n';
+
 // Material-UI
 import {
   alpha,
@@ -27,12 +31,17 @@ import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
+
+// Import Language
+import { useTranslation } from 'react-i18next';
 // Utils
 import {
   fIntNumber,
   fCurrency3,
   fNumber,
   fPercent
+
+  
 } from 'src/utils/formatNumber';
 
 const TopWrapper = styled(Box)(
@@ -45,6 +54,7 @@ const TopWrapper = styled(Box)(
     border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
 `
 );
+
 
 const ContentWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -71,13 +81,25 @@ function Rate(num) {
   return fCurrency3(1 / num);
 }
 
+
+
+  // Set language const
+  const lngs = {
+    en: { nativeName: 'English' },
+    es: { nativeName: 'Spanish' },
+  };
+
+
+
 const currencies = [
   { label: 'USD', value: 'USD' },
   { label: 'EUR', value: 'EUR' },
-  { label: 'JPY', value: 'JPY' }
+  { label: 'JPY', value: 'JPY' },
 ];
 
 const Topbar = () => {
+
+  const { t, i18n } = useTranslation();
   const metrics = useSelector(selectMetrics);
   const dispatch = useDispatch();
 
@@ -137,19 +159,19 @@ const H24Style = styled('div')(({ theme }) => ({
             <Typography variant="body2">Tokens:</Typography>
             <Typography variant="body2">{fIntNumber(metrics.total)}</Typography>
             <Typography variant="body2" noWrap>
-              Addresses:
+            {t('description.part4')}
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.totalAddresses)}
             </Typography>
             <Typography variant="body2" noWrap>
-              Offers:
+            {t('description.part5')}
             </Typography>
             <Typography align="center" color="#FFC107" variant="body2">
               {fIntNumber(metrics.H24.totalOffers)}
             </Typography>
             <Typography variant="body2" noWrap>
-              Trustlines:
+            {t('description.part6')}
             </Typography>
             <Typography align="center" color="#FFA48D" variant="body2">
               {fIntNumber(metrics.H24.totalTrustLines)}
@@ -168,11 +190,11 @@ const H24Style = styled('div')(({ theme }) => ({
                 </Stack>
               </Tooltip>
             </H24Style>
-            <Typography variant="body2">Trades:</Typography>
+            <Typography variant="body2">{t('description.part7')}</Typography>
             <Typography align="center" color="#74CAFF" variant="body2">
               {fIntNumber(metrics.H24.transactions24H)}
             </Typography>
-            <Typography variant="body2">Vol:</Typography>
+            <Typography variant="body2">{t('description.part8')}</Typography>
             <Typography align="center" color="#FF6C40" variant="body2">
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <Icon icon={rippleSolid} color="#FF6C40" />
@@ -182,13 +204,13 @@ const H24Style = styled('div')(({ theme }) => ({
               </Stack>
             </Typography>
             <Typography variant="body2" noWrap>
-              Tokens Traded:
+            {t('description.part9')}
             </Typography>
             <Typography align="center" color="#3366FF" variant="body2">
               {fIntNumber(metrics.H24.tradedTokens24H)}
             </Typography>
             <Typography variant="body2" noWrap>
-              Active Addresses:
+            {t('description.part10')}
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.activeAddresses24H)}
@@ -200,6 +222,23 @@ const H24Style = styled('div')(({ theme }) => ({
             alignItems="center"
             sx={{ ml: 5, mr: 2 }}
           >
+
+<div>
+  <select
+    onChange={(e) => i18n.changeLanguage(e.target.value)}
+    value={i18n.resolvedLanguage}
+  >
+    {Object.keys(lngs).map((lng) => (
+      <option key={lng} value={lng}>
+        {lngs[lng].nativeName}
+      </option>
+    ))}
+  </select>
+</div>
+
+
+
+
             <Button onClick={handleClick}>
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <Icon icon={rippleSolid} width="12" height="12"  color={iconColor} style={iconStyle} />
