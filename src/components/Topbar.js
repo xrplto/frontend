@@ -3,7 +3,7 @@ import Decimal from 'decimal.js';
 
 
 // import i18n (needs to be bundled ;))
-import 'locales/i18n';
+import 'src/utils/i18n';
 
 // Material-UI
 import {
@@ -145,7 +145,7 @@ const H24Style = styled('div')(({ theme }) => ({
   paddingRight: theme.spacing(0.5),
   paddingTop: theme.spacing(0.07),
   paddingBottom: theme.spacing(0.07),
-  backgroundColor: darkMode ? 'green !important  ' : 'blue !important',
+  backgroundColor: darkMode ? '#007B55 !important  ' : '#5569ff !important',
   borderRadius: 8,
   transition: theme.transitions.create('opacity'),
   opacity: 1,
@@ -156,22 +156,22 @@ const H24Style = styled('div')(({ theme }) => ({
       <Container maxWidth="xl">
         <ContentWrapper>
           <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="body2">Tokens:</Typography>
+            <Typography variant="body2">{t("Tokens")}:</Typography>
             <Typography variant="body2">{fIntNumber(metrics.total)}</Typography>
             <Typography variant="body2" noWrap>
-            {t('description.part4')}
+            {t('Addresses')}:
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.totalAddresses)}
             </Typography>
             <Typography variant="body2" noWrap>
-            {t('description.part5')}
+            {t("Offers")}:
             </Typography>
             <Typography align="center" color="#FFC107" variant="body2">
               {fIntNumber(metrics.H24.totalOffers)}
             </Typography>
             <Typography variant="body2" noWrap>
-            {t('description.part6')}
+            {t("Trustlines")}:
             </Typography>
             <Typography align="center" color="#FFA48D" variant="body2">
               {fIntNumber(metrics.H24.totalTrustLines)}
@@ -190,27 +190,27 @@ const H24Style = styled('div')(({ theme }) => ({
                 </Stack>
               </Tooltip>
             </H24Style>
-            <Typography variant="body2">{t('description.part7')}</Typography>
+            <Typography variant="body2">{t('Trades')}:</Typography>
             <Typography align="center" color="#74CAFF" variant="body2">
               {fIntNumber(metrics.H24.transactions24H)}
             </Typography>
-            <Typography variant="body2">{t('description.part8')}</Typography>
+            <Typography variant="body2">{t('Vol')}:</Typography>
             <Typography align="center" color="#FF6C40" variant="body2">
               <Stack direction="row" spacing={0.5} alignItems="center">
-                <Icon icon={rippleSolid} color="#FF6C40" />
+                <Icon icon={rippleSolid} color={ darkMode ? '#FFF': '#000' } />
                 <Typography align="center" color="#FF6C40" variant="body2">
                   {fNumber(metrics.H24.tradedXRP24H)}
                 </Typography>
               </Stack>
             </Typography>
             <Typography variant="body2" noWrap>
-            {t('description.part9')}
+            {t('Tokens Traded:')}
             </Typography>
             <Typography align="center" color="#3366FF" variant="body2">
               {fIntNumber(metrics.H24.tradedTokens24H)}
             </Typography>
             <Typography variant="body2" noWrap>
-            {t('description.part10')}
+            {t("Active Addresses:")}
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.activeAddresses24H)}
