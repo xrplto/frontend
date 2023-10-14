@@ -17,7 +17,7 @@ import Summary from 'src/TokenList/Summary';
 import HowWeWork from 'src/TokenList/HowWeWork';
 
 // import i18n (needs to be bundled ;))
-import 'locales/i18n';
+import 'src/utils/i18n';
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
