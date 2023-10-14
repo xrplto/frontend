@@ -204,13 +204,13 @@ const H24Style = styled('div')(({ theme }) => ({
               </Stack>
             </Typography>
             <Typography variant="body2" noWrap>
-            {t('Tokens Traded:')}
+            {t('Tokens Traded')}:
             </Typography>
             <Typography align="center" color="#3366FF" variant="body2">
               {fIntNumber(metrics.H24.tradedTokens24H)}
             </Typography>
             <Typography variant="body2" noWrap>
-            {t("Active Addresses:")}
+            {t("Active Addresses")}:
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.activeAddresses24H)}
