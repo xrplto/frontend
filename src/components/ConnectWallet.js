@@ -16,6 +16,7 @@ import { AccountBalanceWallet as AccountBalanceWalletIcon } from '@mui/icons-mat
 import LoginDialog from 'src/components/LoginDialog';
 import { AppContext } from 'src/AppContext';
 import { fNumber } from 'src/utils/formatNumber';
+import { useRouter } from "next/router";
 
 const ConnectWallet = () => {
   const BASE_URL = process.env.API_URL;
@@ -121,11 +122,13 @@ const ConnectWallet = () => {
     setOpenLogin(false);
     onCancelLoginXumm(uuid);
   };
+  const router = useRouter();
 
   return (
     <>
       <Button variant="contained" onClick={handleLogin} startIcon={<AccountBalanceWalletIcon />} sx={{ mt: 1.5 }}>
-        Connect Wallet
+        {/* Connect Wallet */}
+        {router.locale === 'en' ? 'Connect Wallet' : router.locale === 'es' ? 'Conectar billetera' : 'Connect Wallet'}
       </Button>
 
       <LoginDialog

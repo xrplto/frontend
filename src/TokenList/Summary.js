@@ -9,12 +9,6 @@ import {
     Typography
 } from '@mui/material';
 
-
-// import i18n (needs to be bundled ;))
-import 'src/utils/i18n';
-// Translations
-import { useTranslation } from 'react-i18next';
-
 // Redux
 import { useSelector } from "react-redux";
 import { selectMetrics } from "src/redux/statusSlice";
@@ -39,7 +33,6 @@ function Rate(num, exch) {
 }
 
 export default function Summary() {
-    const { t } = useTranslation();    // set translation const
     const metrics = useSelector(selectMetrics);
     const [showContent, setShowContent] = useState(false);
 
@@ -58,7 +51,7 @@ export default function Summary() {
 
     return (
         <Stack sx={{mt:2}}>
-            <Typography variant='h1'>{t("Today's Top XRPL Token Prices by Volume")}</Typography>
+            <Typography variant='h1'>Today's Top XRPL Token Prices by Volume</Typography>
 
             <ContentTypography variant='subtitle1' sx={{mt:2}}>The global token market cap stands at <strong>${fNumberWithSuffix(gMarketcap)}</strong>, a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last 24 hours.
             <Link

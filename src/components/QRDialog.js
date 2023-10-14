@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { alpha, styled, useTheme, useMediaQuery, Box, Dialog, DialogContent, DialogTitle, IconButton, Link, Stack, Typography } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
+import { useRouter } from "next/router";
 
 const CustomDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(2px)',
@@ -69,6 +70,7 @@ export default function CustomQRDialog({ open, type, qrUrl, nextUrl, onClose }) 
     setShowQR(true);
     setNotificationClicked(true);
   };
+  const router = useRouter();
 
   return (
     <CustomDialog
@@ -83,7 +85,10 @@ export default function CustomQRDialog({ open, type, qrUrl, nextUrl, onClose }) 
       <DialogContent dividers>
         <Stack alignItems="center" spacing={2}>
           <Typography variant="h3">{type}</Typography>
-          <Typography variant="subtitle1">Sign the transaction on your Xaman App</Typography>
+          <Typography variant="subtitle1">
+            {/* Sign the transaction on your Xaman App */}
+        {router.locale === 'en' ? 'Sign the transaction on your Xaman App' : router.locale === 'es' ? 'Firma la transacción en tu App Xaman' : 'Sign the transaction on your Xaman App'}
+            </Typography>
           {!notificationClicked && (
             <Link
               component="button"
@@ -93,7 +98,8 @@ export default function CustomQRDialog({ open, type, qrUrl, nextUrl, onClose }) 
               onClick={handleQRButtonClick}
             >
               <Typography variant="caption" color="error">
-                Didn't receive a notification? Click here to scan QR!
+                {/* Didn't receive a notification? Click here to scan QR! */}
+        {router.locale === 'en' ? "Didn't receive a notification? Click here to scan QR!" : router.locale === 'es' ? '¿No recibiste una notificación? ¡Haga clic aquí para escanear QR!' : "Didn't receive a notification? Click here to scan QR!"}
               </Typography>
             </Link>
           )}
@@ -118,7 +124,8 @@ export default function CustomQRDialog({ open, type, qrUrl, nextUrl, onClose }) 
             rel="noreferrer noopener nofollow"
           >
             <StyledLinkTypography variant="h4" color="primary">
-              Open in Xaman
+              {/* Open in Xaman */}
+        {router.locale === 'en' ? 'Open in Xaman' : router.locale === 'es' ? 'Abierto en Xaman' : 'Open in Xaman'}
             </StyledLinkTypography>
           </Link>
         </div>

@@ -15,10 +15,6 @@ import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 import HowWeWork from 'src/TokenList/HowWeWork';
-
-// import i18n (needs to be bundled ;))
-import 'src/utils/i18n';
-
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
     overflow: hidden;

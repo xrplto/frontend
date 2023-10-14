@@ -33,6 +33,7 @@ import PayMethod from './PayMethod';
 
 // Utils
 import { fIntNumber, fNumber } from 'src/utils/formatNumber';
+import { useRouter } from "next/router";
 
 function GetNum(amount) {
     let num = 0;
@@ -268,14 +269,21 @@ export default function BuyXRP({fiats, coins}) {
             onProcessOrder();
         }
     }
+    const router = useRouter();
     return (
         <>
             <Stack alignItems="center" sx={{mt:5, mb:3}}>
-                <Typography variant="h2a">Buy XRP with Fiat</Typography>
+                <Typography variant="h2a">
+                    {/* Buy XRP with Fiat */}
+                    {router.locale === 'en' ? 'Buy XRP with Fiat' : router.locale === 'es' ? 'Comprar XRP con Fiat' : 'Buy XRP with Fiat'}
+                    </Typography>
             </Stack>
 
             <Stack sx={{mt:5, mb:3}}>
-                <Typography variant="h4a">I WANT TO SPEND</Typography>
+                <Typography variant="h4a">
+                    {/* I WANT TO SPEND */}
+                    {router.locale === 'en' ? 'I WANT TO SPEND' : router.locale === 'es' ? 'QUIERO GASTAR' : 'I WANT TO SPEND'}
+                    </Typography>
                 <Stack direction="row">
                     <TextField
                         id="input-with-sx1"
@@ -333,7 +341,10 @@ export default function BuyXRP({fiats, coins}) {
             </Stack>
 
             <Stack sx={{mt:3, mb:3}}>
-                <Typography variant="h4a">You will get</Typography>
+                <Typography variant="h4a">
+                    {/* You will get */}
+                    {router.locale === 'en' ? 'You will get' : router.locale === 'es' ? 'Conseguirás' : 'You will get'}
+                    </Typography>
                 <Stack direction="row">
                     <TextField
                         fullWidth
@@ -385,8 +396,14 @@ export default function BuyXRP({fiats, coins}) {
                         spacing={2}
                     >
                         <Stack>
-                            <Typography variant="h4a" sx={{mb:2}}>Payment methods</Typography>
-                            <Typography variant="p2" sx={{mb:2}}>Select a payment method</Typography>
+                            <Typography variant="h4a" sx={{mb:2}}>
+                                {/* Payment methods */}
+                    {router.locale === 'en' ? 'Payment methods' : router.locale === 'es' ? 'Métodos de pago' : 'Payment methods'}
+                                </Typography>
+                            <Typography variant="p2" sx={{mb:2}}>
+                                {/* Select a payment method */}
+                    {router.locale === 'en' ? 'Select a payment method' : router.locale === 'es' ? 'Seleccione un método de pago' : 'Select a payment method'}
+                                </Typography>
                         </Stack>
 
                         {counter > 0 &&
@@ -420,7 +437,10 @@ export default function BuyXRP({fiats, coins}) {
             }
 
             <Stack sx={{mt:5, mb:3}}>
-                <Typography variant="h4a" sx={{mb:2}}>Service Provider Info</Typography>
+                <Typography variant="h4a" sx={{mb:2}}>
+                    {/* Service Provider Info */}
+                    {router.locale === 'en' ? 'Service Provider Info' : router.locale === 'es' ? 'Información del proveedor de servicios' : 'Service Provider Info'}
+                    </Typography>
                 <Card variant="outlined" sx={{p:3}}>
                     <Stack direction="row" spacing={2} sx={{mb: 5}}>
                         <img
@@ -433,13 +453,22 @@ export default function BuyXRP({fiats, coins}) {
                             }}
                         />
                         <Stack sx={{width:'70%'}}>
-                            <Typography variant="p2">You will receive <Typography variant="s15" noWrap> ≈ {fNumber(coinAmount)} XRP</Typography></Typography>
-                            <Typography variant="p3" noWrap>Up to 48 hours</Typography>
+                            <Typography variant="p2">
+                                {/* You will receive */}
+                    {router.locale === 'en' ? 'You will receive' : router.locale === 'es' ? 'Usted recibirá' : 'You will receive'}
+                                 <Typography variant="s15" noWrap> ≈ {fNumber(coinAmount)} 
+                                 XRP
+                                 </Typography></Typography>
+                            <Typography variant="p3" noWrap>
+                                {/* Up to 48 hours */}
+                    {router.locale === 'en' ? 'Up to 48 hours' : router.locale === 'es' ? 'Hasta 48 horas' : 'Up to 48 hours'}
+                                </Typography>
                         </Stack>
                     </Stack>
 
                     <FormControlLabel control={<Checkbox checked={disclaimer} onChange={handleChangeDisclaimer}/>}
-                        label="I understand that I will be purchasing cryptocurrency directly through 3rd party service providers. The XRPL.to is a decentralized platform; hence, will not take responsability for any issues that may affect my transactions through the 3rd party service providers."
+                        // label="I understand that I will be purchasing cryptocurrency directly through 3rd party service providers. The XRPL.to is a decentralized platform; hence, will not take responsability for any issues that may affect my transactions through the 3rd party service providers."
+                        label={router.locale === 'en' ? 'I understand that I will be purchasing cryptocurrency directly through 3rd party service providers. The XRPL.to is a decentralized platform; hence, will not take responsability for any issues that may affect my transactions through the 3rd party service providers.' : router.locale === 'es' ? 'Entiendo que compraré criptomonedas directamente a través de proveedores de servicios externos. XRPL.to es una plataforma descentralizada; por lo tanto, no asumiré responsabilidad por ningún problema que pueda afectar mis transacciones a través de proveedores de servicios externos.' : 'I understand that I will be purchasing cryptocurrency directly through 3rd party service providers. The XRPL.to is a decentralized platform; hence, will not take responsability for any issues that may affect my transactions through the 3rd party service providers.'}
                     />
 
                     <Stack alignItems='flex-end'>
@@ -452,7 +481,8 @@ export default function BuyXRP({fiats, coins}) {
                             color="primary"
                             sx={{mt:3}}
                         >
-                            BUY XRP
+                            {/* BUY XRP */}
+                    {router.locale === 'en' ? 'BUY XRP' : router.locale === 'es' ? 'COMPRAR XRP' : 'BUY XRP'}
                         </LoadingButton>
                     </Stack>
                 </Card>

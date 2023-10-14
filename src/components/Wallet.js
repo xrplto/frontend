@@ -56,6 +56,7 @@ import { getHashIcon } from 'src/utils/extra';
 
 // Components
 import LoginDialog from './LoginDialog';
+import { useRouter } from "next/router";
 
 const pair = {
   '534F4C4F00000000000000000000000000000000': 'SOLO',
@@ -259,6 +260,7 @@ export default function Wallet({ style }) {
     // console.log('account_info')
     getAccountInfo();
   }, [accountProfile, sync]);
+  const router = useRouter();
 
   return (
     <Box style={style}>
@@ -288,7 +290,10 @@ export default function Wallet({ style }) {
           }}
         />
         <Typography variant="s3" fontSize={13} color="#fff">
-          {accountLogin ? truncateAccount(accountLogin, 4) : 'Connect'}
+          {accountLogin ? truncateAccount(accountLogin, 4) : 
+          // 'Connect'
+          `${router.locale === 'en' ? 'Connect' : router.locale === 'es' ? 'Conectar' : 'Connect'}`
+          }
         </Typography>
       </Button>
 
@@ -329,7 +334,9 @@ export default function Wallet({ style }) {
                 </Typography>
                 <Stack direction="row" spacing={1} alignItems="center">
                   <ActiveCircle />
-                  <Typography variant="s7">Active XRPL Account</Typography>
+                  <Typography variant="s7">
+                  {router.locale === 'en' ? 'Active XRPL Account Connect' : router.locale === 'es' ? 'Conectar Cuenta XRPL Activa' : 'Active XRPL Account Connect'}
+                    </Typography>
                 </Stack>
               </Stack>
               <CopyToClipboard
@@ -363,7 +370,9 @@ export default function Wallet({ style }) {
                 marginTop: 2
               }}
             >
-              <Typography variant="caption">Total Balance</Typography>
+              <Typography variant="caption">
+              {router.locale === 'en' ? 'Total Balance Connect' : router.locale === 'es' ? 'Conectar Saldo Total' : 'Connect'}
+                </Typography>
 
               <Box
                 sx={{
@@ -436,10 +445,13 @@ export default function Wallet({ style }) {
                         color: '#878787'
                       }}
                     >
-                      Account Reserve
+                      {router.locale === 'en' ? 'Account Reserve Connect' : router.locale === 'es' ? 'Conectar Reserva de Cuenta' : 'Connect'}
+
                     </Typography>
                     <Tooltip
-                      title={`To activate an XRP wallet, a reserve of 10 XRP is mandatory. Once the XRP address is funded with this amount on the XRP Ledger network, the reserve becomes locked and unable to be retrieved unless either the network decides to reduce the reserve requirement, or the user deletes the wallet. It's possible to pay fees using the reserve funds.`}
+                      // title={`To activate an XRP wallet, a reserve of 10 XRP is mandatory. Once the XRP address is funded with this amount on the XRP Ledger network, the reserve becomes locked and unable to be retrieved unless either the network decides to reduce the reserve requirement, or the user deletes the wallet. It's possible to pay fees using the reserve funds.`}
+                      title={router.locale === 'en' ? 'To activate an XRP wallet, a reserve of 10 XRP is mandatory. Once the XRP address is funded with this amount on the XRP Ledger network, the reserve becomes locked and unable to be retrieved unless either the network decides to reduce the reserve requirement, or the user deletes the wallet. It\'s possible to pay fees using the reserve funds.' : router.locale === 'es' ? 'Para activar una billetera XRP, es obligatoria una reserva de 10 XRP. Una vez que la dirección XRP esté financiada con esta cantidad en la red XRP Ledger, la reserva queda bloqueada y no se puede recuperar a menos que la red decida reducir el requisito de reserva o el usuario elimine la billetera. Es posible pagar tarifas con los fondos de reserva.' : 'To activate an XRP wallet, a reserve of 10 XRP is mandatory. Once the XRP address is funded with this amount on the XRP Ledger network, the reserve becomes locked and unable to be retrieved unless either the network decides to reduce the reserve requirement, or the user deletes the wallet. It\'s possible to pay fees using the reserve funds.'}
+
                     >
                       <HelpIcon
                         sx={{
@@ -484,7 +496,8 @@ export default function Wallet({ style }) {
                     width: '100%'
                   }}
                 >
-                  VIEW WALLET
+                  {/* VIEW WALLET */}
+                  {router.locale === 'en' ? 'VIEW WALLET' : router.locale === 'es' ? 'VER CARTERA' : 'VIEW WALLET'}
                 </Button>
               </Link>
             </Box>
@@ -526,7 +539,8 @@ export default function Wallet({ style }) {
                         {truncateAccount(account)}
                       </Typography>
                       <Typography variant="s7">
-                        Switch to this Account
+                      {router.locale === 'en' ? 'Switch to this Account Connect' : router.locale === 'es' ? 'Cambiar a esta Cuenta' : 'Switch to this Account Connect'}
+
                       </Typography>
                     </Stack>
                     <div onClick={(e) => e.stopPropagation()}>
@@ -570,10 +584,12 @@ export default function Wallet({ style }) {
               >
                 <AddCircleOutlineIcon />
                 <Stack spacing={0} sx={{ ml: 1 }}>
-                  <Typography variant="s6">Add Account</Typography>
+                  <Typography variant="s6">
+                  {router.locale === 'en' ? 'Add Account Connect' : router.locale === 'es' ? 'Agregar Cuenta' : 'Add Account Connect'}
+</Typography>
                   <Typography variant="s7">
-                    Connect multiple accounts
-                  </Typography>
+                  {router.locale === 'en' ? 'Connect multiple accounts Connect' : router.locale === 'es' ? 'Conectar cuentas múltiples' : 'Connect multiple accounts Connect'}
+</Typography>
                 </Stack>
               </Stack>
             </MenuItem>
@@ -591,8 +607,8 @@ export default function Wallet({ style }) {
               >
                 <LogoutIcon />
                 <Typography variant="s6" style={{ marginLeft: '10px' }}>
-                  Logout
-                </Typography>
+                {router.locale === 'en' ? 'Logout Connect' : router.locale === 'es' ? 'Desconectar' : 'Logout Connect'}
+</Typography>
               </Stack>
             </MenuItem>
           </>
