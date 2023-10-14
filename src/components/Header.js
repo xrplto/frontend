@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 // import i18n (needs to be bundled ;))
-import 'locales/i18n';
+import 'src/utils/i18n';
 
 // Material
 import {
@@ -108,13 +108,13 @@ export default function Header(props) {
             {!isTablet && (
               <>
                   <StyledLink underline="none" color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}} href="/">
-                  {t('description.part1')}
+                  {t("Tokens")}
                   </StyledLink>
                   <StyledLink underline="none"  color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}} href="/swap">
-                  {t('description.part2')}
+                  {t("Swap")}
                   </StyledLink>
                   <StyledLink underline="none"  color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}} href="/buy-xrp">
-                  {t('description.part3')}
+                  {t("Fiat")}
                   </StyledLink>
               </>
             )}
