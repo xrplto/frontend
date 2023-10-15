@@ -61,7 +61,6 @@ import { fNumber } from 'src/utils/formatNumber';
 import ConnectWallet from 'src/components/ConnectWallet';
 import QRDialog from 'src/components/QRDialog';
 import QueryToken from './QueryToken';
-import { useRouter } from "next/router";
 
 const Label = withStyles({
   root: {
@@ -642,8 +641,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
         */
   };
-  
-  const router = useRouter();
 
   return (
     <Stack alignItems="center">
@@ -655,8 +652,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <Stack>
               <QueryToken token={token1} onChangeToken={onChangeToken1} />
               <Typography variant="s7">
-                {/* Balance */}{' '}
-                    {router.locale === 'en' ? 'Balance' : router.locale === 'es' ? 'Balance' : 'Balance'}
+                Balance{' '}
                 <Typography variant="s2">
                   {revert
                     ? accountPairBalance?.curr2.value
@@ -695,8 +691,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <Stack>
               <QueryToken token={token2} onChangeToken={onChangeToken2} />
               <Typography variant="s7">
-                {/* Balance */}{' '}
-                    {router.locale === 'en' ? 'Balance' : router.locale === 'es' ? 'Balance' : 'Balance'}
+                Balance{' '}
                 <Typography variant="s2">
                   {revert
                     ? accountPairBalance?.curr1.value
@@ -757,10 +752,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               width: '100%'
             }}
           >
-            <Typography variant="s6">
-              {/* Price impact */}
-              {router.locale === 'en' ? 'Price impact' : router.locale === 'es' ? 'Impacto en el precio' : 'Price impact'}
-              </Typography>
+            <Typography variant="s6">Price impact</Typography>
             {loadingPrice ? (
               <ClipLoader color="#EB5757" size={15} />
             ) : (
@@ -786,8 +778,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               // color={'primary'}
               disabled={!canPlaceOrder}
             >
-              {/* Exchange */}
-                    {router.locale === 'en' ? 'Exchange' : router.locale === 'es' ? 'Intercambio' : 'Exchange'}
+              Exchange
             </ExchangeButton>
           </>
         ) : (

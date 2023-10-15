@@ -14,8 +14,8 @@ function XRPLToApp(props) {
 
     const { Component, pageProps } = props;
 
-    const ogp = (pageProps && pageProps.ogp) || {};
-    const data = pageProps && pageProps.data;
+    const ogp = pageProps.ogp || {};
+    const data = pageProps.data;
 
     return (
         <>

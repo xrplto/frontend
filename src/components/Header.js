@@ -1,5 +1,8 @@
 import { useState } from 'react';
 
+// import i18n (needs to be bundled ;))
+import 'src/utils/i18n';
+
 // Material
 import {
   alpha,
@@ -9,17 +12,14 @@ import {
   Box,
   Container,
   IconButton,
-  Link as MuiLink,
-  Stack,
-  Button, 
-  Menu, 
-  MenuItem
+  Link,
+  Stack
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
-import Link from 'next/link';
-import { useRouter } from "next/router";
 
+// Translations
+import { useTranslation } from 'react-i18next';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -30,6 +30,9 @@ import Wallet from 'src/components/Wallet';
 import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
 import ThemeSwitcher from './ThemeSwitcher';
+
+
+
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -43,7 +46,7 @@ const HeaderWrapper = styled(Box)(
 `
 );
 
-const StyledLink = styled(MuiLink)(
+const StyledLink = styled(Link)(
   ({ darkMode }) => `
     font-weight: 700;
     margin-right: 27px;
@@ -59,24 +62,7 @@ const StyledLink = styled(MuiLink)(
 );
 
 export default function Header(props) {
-  const router = useRouter();
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  const handleOpenMenu = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
-
-  const handleChangeLanguage = (locale) => {
-    router.push(router.asPath, router.asPath, { locale });
-    handleCloseMenu();
-  };
-  const buttonLabel =
-    router.locale === 'en' ? 'English' : router.locale === 'es' ? 'Español' : 'Language';
-
+  const { t } = useTranslation();    // set translation const
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   // const data = props.data;
@@ -92,6 +78,7 @@ export default function Header(props) {
   const toggleDrawer = (isOpen = true) => {
     setOpenDrawer(isOpen);
   };
+
 
   return (
     <HeaderWrapper>
@@ -120,34 +107,24 @@ export default function Header(props) {
 
             {!isTablet && (
               <>
-              <Link href="/" >
-                  <StyledLink underline="none" color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}}>
-                    {/* Tokens */}
-                    {router.locale === 'en' ? 'Tokens' : router.locale === 'es' ? 'Fichas' : 'Tokens'}
+                  <StyledLink underline="none" color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}} href="/">
+                  {t("Tokens")}
                   </StyledLink>
-              </Link>
-              <Link href="/swap" >
-                  <StyledLink underline="none"  color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}}>
-                    {/* Swap */}
-                    {router.locale === 'en' ? 'Swap' : router.locale === 'es' ? 'Intercambio' : 'Swap'}
+                  <StyledLink underline="none"  color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}} href="/swap">
+                  {t("Swap")}
                   </StyledLink>
-              </Link>
-              <Link href="/buy-xrp" >
-                  <StyledLink underline="none"  color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}}>
-                    {/* Fiat */}
-                    {router.locale === 'en' ? 'Fiat' : router.locale === 'es' ? 'Fíat' : 'Fiat'}
+                  <StyledLink underline="none"  color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}} href="/buy-xrp">
+                  {t("Fiat")}
                   </StyledLink>
-              </Link>
-              
               </>
             )}
           </Box>
 
+
           {fullSearch && (
             <NavSearchBar
               id="id_search_tokens"
-              // placeholder="Search XRPL Tokens"
-              placeholder={`${router.locale === 'en' ? 'Search XRPL Tokens' : router.locale === 'es' ? 'Buscar tokens XRPL' : 'Search XRPL Tokens'}`}
+              placeholder="Search XRPL Tokens"
               fullSearch={fullSearch}
               setFullSearch={setFullSearch}
             />
@@ -177,8 +154,7 @@ export default function Header(props) {
               <Stack mr={2}>
                 <NavSearchBar
                   id="id_search_tokens"
-                  // placeholder="Search XRPL Tokens"
-              placeholder={`${router.locale === 'en' ? 'Search XRPL Tokens' : router.locale === 'es' ? 'Buscar tokens XRPL' : 'Search XRPL Tokens'}`}
+                  placeholder="Search XRPL Tokens"
                   fullSearch={fullSearch}
                   setFullSearch={setFullSearch}
                 />
@@ -202,48 +178,6 @@ export default function Header(props) {
                 <MenuIcon />
               </IconButton>
             )}
-            <div>
-                <Button
-                  aria-controls="language-menu"
-                  aria-haspopup="true"
-                  onClick={handleOpenMenu}
-                  color="primary"
-                  variant="contained"
-                  spacing={1}
-                  sx={{
-                    padding: '3px 15px',
-                    backgroundColor: `${darkMode ? '#007B55' : '#5569FF'}`,
-                    transition: '0.5s',
-                    backgroundSize: '200% auto',
-                    '&:hover': {
-                      backgroundColor: `${darkMode ? '#005E46' : '#4455CC'}`,
-                    }
-                  }}
-                  alignItems="center"
-                >
-                  {buttonLabel}
-                </Button>
-                <Menu
-                  id="language-menu"
-                  anchorEl={anchorEl}
-                  keepMounted
-                  open={Boolean(anchorEl)}
-                  onClose={handleCloseMenu}
-                >
-                  <MenuItem
-                    onClick={() => handleChangeLanguage('en')}
-                    selected={router.locale === 'en'}
-                  >
-                    English
-                  </MenuItem>
-                  <MenuItem
-                    onClick={() => handleChangeLanguage('es')}
-                    selected={router.locale === 'es'}
-                  >
-                    Español
-                  </MenuItem>
-                </Menu>
-              </div>
 
             <SidebarDrawer toggleDrawer={toggleDrawer} isOpen={openDrawer} />
           </Box>

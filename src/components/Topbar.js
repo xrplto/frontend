@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import Decimal from 'decimal.js';
 
+
+// import i18n (needs to be bundled ;))
+import 'src/utils/i18n';
+
 // Material-UI
 import {
   alpha,
@@ -27,15 +31,18 @@ import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
+
+// Import Language
+import { useTranslation } from 'react-i18next';
 // Utils
 import {
   fIntNumber,
   fCurrency3,
   fNumber,
   fPercent
-} from 'src/utils/formatNumber';
 
-import { useRouter } from "next/router";
+  
+} from 'src/utils/formatNumber';
 
 const TopWrapper = styled(Box)(
   ({ theme }) => `
@@ -47,6 +54,7 @@ const TopWrapper = styled(Box)(
     border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
 `
 );
+
 
 const ContentWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -61,18 +69,7 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
   '::-webkit-scrollbar': { display: 'none' }
 }));
 
-const H24Style = styled('div')(({ theme }) => ({
-  cursor: 'pointer',
-  paddingLeft: theme.spacing(0.5),
-  paddingRight: theme.spacing(0.5),
-  paddingTop: theme.spacing(0.07),
-  paddingBottom: theme.spacing(0.07),
-  backgroundColor: '#0C53B7',
-  borderRadius: 8,
-  transition: theme.transitions.create('opacity'),
-  opacity: 1,
-  '&:hover': { opacity: 1 }
-}));
+
 
 const Separator = styled('span')(({ theme }) => ({
   fontSize: '0.4rem'
@@ -84,13 +81,25 @@ function Rate(num) {
   return fCurrency3(1 / num);
 }
 
+
+
+  // Set language const
+  const lngs = {
+    en: { nativeName: 'English' },
+    es: { nativeName: 'Spanish' },
+  };
+
+
+
 const currencies = [
   { label: 'USD', value: 'USD' },
   { label: 'EUR', value: 'EUR' },
-  { label: 'JPY', value: 'JPY' }
+  { label: 'JPY', value: 'JPY' },
 ];
 
 const Topbar = () => {
+
+  const { t, i18n } = useTranslation();
   const metrics = useSelector(selectMetrics);
   const dispatch = useDispatch();
 
@@ -130,80 +139,78 @@ const iconStyle = {
   marginRight: '5px', // Adjust the value as needed
 };
 
-const router = useRouter();
+const H24Style = styled('div')(({ theme }) => ({
+  cursor: 'pointer',
+  paddingLeft: theme.spacing(0.5),
+  paddingRight: theme.spacing(0.5),
+  paddingTop: theme.spacing(0.07),
+  paddingBottom: theme.spacing(0.07),
+  backgroundColor: darkMode ? '#007B55 !important  ' : '#5569ff !important',
+  borderRadius: 8,
+  transition: theme.transitions.create('opacity'),
+  opacity: 1,
+  '&:hover': { opacity: 1 }
+}));
   return (
     <TopWrapper>
       <Container maxWidth="xl">
         <ContentWrapper>
           <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="body2">
-              {/* Tokens: */}
-              {router.locale === 'en' ? 'Tokens:' : router.locale === 'es' ? 'Fichas:' : 'Tokens:'}
-              </Typography>
+            <Typography variant="body2">{t("Tokens")}:</Typography>
             <Typography variant="body2">{fIntNumber(metrics.total)}</Typography>
             <Typography variant="body2" noWrap>
-              {/* Addresses: */}
-              {router.locale === 'en' ? 'Addresses:' : router.locale === 'es' ? 'Direcciones:' : 'Addresses:'}
+            {t('Addresses')}:
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.totalAddresses)}
             </Typography>
             <Typography variant="body2" noWrap>
-              {/* Offers: */}
-              {router.locale === 'en' ? 'Offers:' : router.locale === 'es' ? 'Ofertas:' : 'Offers:'}
+            {t("Offers")}:
             </Typography>
             <Typography align="center" color="#FFC107" variant="body2">
               {fIntNumber(metrics.H24.totalOffers)}
             </Typography>
             <Typography variant="body2" noWrap>
-              {/* Trustlines: */}
-              {router.locale === 'en' ? 'Trustlines:' : router.locale === 'es' ? 'Líneas de confianza:' : 'Trustlines:'}
+            {t("Trustlines")}:
             </Typography>
             <Typography align="center" color="#FFA48D" variant="body2">
               {fIntNumber(metrics.H24.totalTrustLines)}
             </Typography>
             <H24Style>
-              <Tooltip title="Metrics on 24 hours">
+              <Tooltip title="Statistics from the past 24 hours.">
                 <Stack spacing={0} alignItems="center">
                   <Typography
                     align="center"
                     style={{ wordWrap: 'break-word' }}
                     variant="body2"
-                    >
+                    color="#FFF"
+                  >
                     24h
                   </Typography>
                 </Stack>
               </Tooltip>
             </H24Style>
-            <Typography variant="body2">
-              {/* Trades: */}
-              {router.locale === 'en' ? 'Trades:' : router.locale === 'es' ? 'Vientos_alisios:' : 'Trades:'}
-              </Typography>
+            <Typography variant="body2">{t('Trades')}:</Typography>
             <Typography align="center" color="#74CAFF" variant="body2">
               {fIntNumber(metrics.H24.transactions24H)}
             </Typography>
-            <Typography variant="body2">
-              {/* Vol: */}
-              {router.locale === 'en' ? 'Vol:' : router.locale === 'es' ? 'volumen:' : 'Vol:'}
-              </Typography>
+            <Typography variant="body2">{t('Vol')}:</Typography>
             <Typography align="center" color="#FF6C40" variant="body2">
               <Stack direction="row" spacing={0.5} alignItems="center">
-                <Icon icon={rippleSolid} color="#FF6C40" />
+                <Icon icon={rippleSolid} color={ darkMode ? '#FFF': '#000' } />
                 <Typography align="center" color="#FF6C40" variant="body2">
                   {fNumber(metrics.H24.tradedXRP24H)}
                 </Typography>
               </Stack>
             </Typography>
             <Typography variant="body2" noWrap>
-              {/* Tokens Traded: */}
-              {router.locale === 'en' ? 'Tokens Traded:' : router.locale === 'es' ? 'Tokens negociados:' : 'Tokens Traded:'}
+            {t('Tokens Traded')}:
             </Typography>
             <Typography align="center" color="#3366FF" variant="body2">
               {fIntNumber(metrics.H24.tradedTokens24H)}
             </Typography>
             <Typography variant="body2" noWrap>
-              {/* Active Addresses: */}
-              {router.locale === 'en' ? 'Active Addresses:' : router.locale === 'es' ? 'Direcciones activas:' : 'Active Addresses:'}
+            {t("Active Addresses")}:
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.activeAddresses24H)}
@@ -215,6 +222,23 @@ const router = useRouter();
             alignItems="center"
             sx={{ ml: 5, mr: 2 }}
           >
+
+<div>
+  <select
+    onChange={(e) => i18n.changeLanguage(e.target.value)}
+    value={i18n.resolvedLanguage}
+  >
+    {Object.keys(lngs).map((lng) => (
+      <option key={lng} value={lng}>
+        {lngs[lng].nativeName}
+      </option>
+    ))}
+  </select>
+</div>
+
+
+
+
             <Button onClick={handleClick}>
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <Icon icon={rippleSolid} width="12" height="12"  color={iconColor} style={iconStyle} />

@@ -7,7 +7,6 @@ import {
   styled
 } from '@mui/material';
 import Head from 'next/head';
-import { useRouter } from "next/router";
 
 const MainContent = styled(Box) (
   () => `
@@ -42,15 +41,10 @@ const ButtonSearch = styled(Button)(
 );
 
 function Status404() {
-  const router = useRouter();
-
   return (
     <>
       <Head>
-        <title>
-          {/* Status - 404 */}
-          {router.locale === 'en' ? 'Status - 404' : router.locale === 'es' ? 'Estado - 404' : 'Status - 404'}
-          </title>
+        <title>Status - 404</title>
       </Head>
       <MainContent>
         <TopWrapper>
@@ -58,8 +52,7 @@ function Status404() {
             <Box textAlign="center">
               <img alt="404" height={180} src="/static/status/404.svg" />
               <Typography variant="h2" sx={{ my: 2 }}>
-                {/* The page you were looking for doesn't exist. */}
-          {router.locale === 'en' ? "The page you were looking for doesn't exist." : router.locale === 'es' ? 'La página que estabas buscando no existe.' : "The page you were looking for doesn't exist."}
+                The page you were looking for doesn't exist.
               </Typography>
               {/* <Typography
                 variant="h4"
@@ -71,8 +64,7 @@ function Status404() {
                 below should help!
               </Typography> */}
               <Button href="/" variant="contained">
-                {/* Go to homepage */}
-          {router.locale === 'en' ? 'Go to homepage' : router.locale === 'es' ? 'Ir a la página de inicio' : 'Go to homepage'}
+                Go to homepage
               </Button>
             </Box>
           </Container>

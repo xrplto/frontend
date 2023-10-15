@@ -22,7 +22,6 @@ const HeaderWrapper = styled(Box)(
     border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
   `
 );
-import { useRouter } from "next/router";
 
 function Footer() {
   const { darkMode } = useContext(AppContext);
@@ -31,7 +30,6 @@ function Footer() {
   const img_white = "/logo/xrpl-to-logo-white.svg";
 
   const img = darkMode ? img_white : img_black;
-  const router = useRouter();
  
 
   return (
@@ -65,21 +63,15 @@ function Footer() {
             <Grid container>
               <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
                 <Stack>
-                  <Typography variant='h2' sx={{ fontWeight: 600 }}>
-                    {/* Products */}
-                    {router.locale === 'en' ? 'Products' : router.locale === 'es' ? 'Productos' : 'Products'}
-                    </Typography>
+                  <Typography variant='h2' sx={{ fontWeight: 600 }}>Products</Typography>
                   <Link
                     href="https://xrpscan.com/"
                     sx={{ mt: 2, display: 'inline-flex' }}
                     underline="none"
                     target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* Explore XRP Ledger */}
-                    {router.locale === 'en' ? 'Explore XRP Ledger' : router.locale === 'es' ? 'Explorar el libro mayor XRP' : 'Explore XRP Ledger'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>Explore XRP Ledger</Typography>
                   </Link>
                   <Link
                     href="/swap"
@@ -88,10 +80,7 @@ function Footer() {
                     // target="_blank"
                     rel="noreferrer noopener"
                   >
-                    <Typography variant='link'>
-                    {/* Token Swap */}
-                    {router.locale === 'en' ? 'Token Swap' : router.locale === 'es' ? 'Intercambio de tokens' : 'Token Swap'}
-                    </Typography>
+                    <Typography variant='link'>Token Swap</Typography>
                   </Link>
                   <Link
                     href="/buy-xrp"
@@ -99,11 +88,8 @@ function Footer() {
                     underline="none"
                     // target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* Buy XRP */}
-                    {router.locale === 'en' ? 'Buy XRP' : router.locale === 'es' ? 'Comprar XRP' : 'Buy XRP'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>Buy XRP</Typography>
                   </Link>
                   <Link
                     href="https://docs.xrpl.to"
@@ -112,10 +98,7 @@ function Footer() {
                     target="_blank"
                     rel="noreferrer noopener"
                   >
-                    <Typography variant='link'>
-                    {/* Token API */}
-                    {router.locale === 'en' ? 'Token API' : router.locale === 'es' ? 'API de tokens' : 'Token API'}
-                    </Typography>
+                    <Typography variant='link'>Token API</Typography>
                   </Link>
 
                   <Link
@@ -124,31 +107,22 @@ function Footer() {
                     underline="none"
                     target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* Sitemap */}
-                    {router.locale === 'en' ? 'Sitemap' : router.locale === 'es' ? 'Mapa del sitio' : 'Sitemap'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>Sitemap</Typography>
                   </Link>
                 </Stack>
               </Grid>
               <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
                 <Stack>
-                  <Typography variant='h2' sx={{ fontWeight: 600 }}>
-                  {/* Company */}
-                    {router.locale === 'en' ? 'Company' : router.locale === 'es' ? 'Compañía' : 'Company'}
-                  </Typography>
+                  <Typography variant='h2' sx={{ fontWeight: 600 }}>Company</Typography>
                   <Link
                     href="/about"
                     sx={{ mt: 2, display: 'inline-flex' }}
                     underline="none"
                     target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* About us */}
-                    {router.locale === 'en' ? 'About us' : router.locale === 'es' ? 'Sobre nosotros' : 'About us'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>About us</Typography>
                   </Link>
                   <Link
                     href="/terms"
@@ -157,10 +131,7 @@ function Footer() {
                     target="_blank"
                     rel="noreferrer noopener"
                   >
-                    <Typography variant='link'>
-                    {/* Terms of use */}
-                    {router.locale === 'en' ? 'Terms of use' : router.locale === 'es' ? 'Condiciones de uso' : 'Terms of use'}
-                    </Typography>
+                    <Typography variant='link'>Terms of use</Typography>
                   </Link>
                   <Link
                     href="/privacy"
@@ -169,10 +140,7 @@ function Footer() {
                     target="_blank"
                     rel="noreferrer noopener"
                   >
-                    <Typography variant='link'>
-                    {/* Privacy Policy */}
-                    {router.locale === 'en' ? 'Privacy Policy' : router.locale === 'es' ? 'política de privacidad' : 'Privacy Policy'}
-                    </Typography>
+                    <Typography variant='link'>Privacy Policy</Typography>
                   </Link>
                   <Link
                     href="/rules"
@@ -181,10 +149,7 @@ function Footer() {
                     target="_blank"
                     rel="noreferrer noopener"
                   >
-                    <Typography variant='link'>
-                    {/* Community Rules */}
-                    {router.locale === 'en' ? 'Community Rules' : router.locale === 'es' ? 'Reglas de la comunidad' : 'Community Rules'}
-                    </Typography>
+                    <Typography variant='link'>Community Rules</Typography>
                   </Link>
                   <Link
                     href="/disclaimer"
@@ -192,11 +157,8 @@ function Footer() {
                     underline="none"
                     target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* Disclaimer */}
-                    {router.locale === 'en' ? 'Disclaimer' : router.locale === 'es' ? 'Descargo de responsabilidad' : 'Disclaimer'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>Disclaimer</Typography>
                   </Link>
                   <Link
                     href="/approach"
@@ -204,11 +166,8 @@ function Footer() {
                     underline="none"
                     target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* Approach */}
-                    {router.locale === 'en' ? 'Approach' : router.locale === 'es' ? 'Acercarse' : 'Approach'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>Approach</Typography>
                   </Link>
                   <Link
                     href="/careers"
@@ -217,30 +176,21 @@ function Footer() {
                     target="_blank"
                     rel="noreferrer noopener"
                   >
-                    <Typography variant='link'>
-                    {/* Careers */}
-                    {router.locale === 'en' ? 'Careers' : router.locale === 'es' ? 'Carreras' : 'Careers'}
-                    </Typography>
+                    <Typography variant='link'>Careers</Typography>
                   </Link>
                 </Stack>
               </Grid>
               <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
                 <Stack>
-                  <Typography variant='h2' sx={{ fontWeight: 600 }}>
-                  {/* Support */}
-                    {router.locale === 'en' ? 'Support' : router.locale === 'es' ? 'Apoyo' : 'Support'}
-                  </Typography>
+                  <Typography variant='h2' sx={{ fontWeight: 600 }}>Support</Typography>
                   <Link
                     href="https://hmc0r1fnxt5.typeform.com/to/jd3HUclQ"
                     sx={{ mt: 2, display: 'inline-flex' }}
                     underline="none"
                     target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* Request Form */}
-                    {router.locale === 'en' ? 'Request Form' : router.locale === 'es' ? 'Request Form' : 'Request Form'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>Request Form</Typography>
                   </Link>
                   <Link
                     href="https://hmc0r1fnxt5.typeform.com/to/jd3HUclQ"
@@ -248,11 +198,8 @@ function Footer() {
                     underline="none"
                     target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* Contact Support */}
-                    {router.locale === 'en' ? 'Contact Support' : router.locale === 'es' ? 'Soporte de contacto' : 'Contact Support'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>Contact Support</Typography>
                   </Link>
                   <Link
                     href="/faq"
@@ -261,10 +208,7 @@ function Footer() {
                     target="_blank"
                     rel="noreferrer noopener"
                   >
-                    <Typography variant='link'>
-                    {/* FAQ */}
-                    {router.locale === 'en' ? 'FAQ' : router.locale === 'es' ? 'FAQ' : 'FAQ'}
-                    </Typography>
+                    <Typography variant='link'>FAQ</Typography>
                   </Link>
                   <Link
                     href="/glossary"
@@ -272,20 +216,14 @@ function Footer() {
                     underline="none"
                     target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* Glossary */}
-                    {router.locale === 'en' ? 'Glossary' : router.locale === 'es' ? 'Glosario' : 'Glossary'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>Glossary</Typography>
                   </Link>
                 </Stack>
               </Grid>
               <Grid item xs={6} sm={6} md={3} lg={3} sx={{ mt: 3 }}>
                 <Stack>
-                  <Typography variant='h2' sx={{ fontWeight: 600 }}>
-                  {/* Socials */}
-                    {router.locale === 'en' ? 'Socials' : router.locale === 'es' ? 'Socials' : 'Socials'}
-                  </Typography>
+                  <Typography variant='h2' sx={{ fontWeight: 600 }}>Socials</Typography>
 
                   <Link
                     href="https://twitter.com/xrplto"
@@ -293,11 +231,8 @@ function Footer() {
                     underline="none"
                     target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* Twitter */}
-                    {router.locale === 'en' ? 'Twitter' : router.locale === 'es' ? 'Gorjeo' : 'Twitter'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>Twitter</Typography>
                   </Link>
                   
                   <Link
@@ -306,11 +241,8 @@ function Footer() {
                     underline="none"
                     target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* Facebook */}
-                    {router.locale === 'en' ? 'Facebook' : router.locale === 'es' ? 'Facebook' : 'Facebook'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>Facebook</Typography>
                   </Link>
                   <Link
                     href="https://t.me/xrplto/"
@@ -318,11 +250,8 @@ function Footer() {
                     underline="none"
                     target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* Telegram */}
-                    {router.locale === 'en' ? 'Telegram' : router.locale === 'es' ? 'Telegrama' : 'Telegram'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>Telegram</Typography>
                   </Link>
                   
                   <Link
@@ -331,11 +260,8 @@ function Footer() {
                     underline="none"
                     target="_blank"
                     rel="noreferrer noopener"
-                    >
-                    <Typography variant='link'>
-                    {/* Reddit */}
-                    {router.locale === 'en' ? 'Reddit' : router.locale === 'es' ? 'Reddit' : 'Reddit'}
-                    </Typography>
+                  >
+                    <Typography variant='link'>Reddit</Typography>
                   </Link>
                   <Link
                     href="https://xrpl.to/discord/"
@@ -344,10 +270,7 @@ function Footer() {
                     target="_blank"
                     rel="noreferrer noopener"
                   >
-                    <Typography variant='link'>
-                    {/* Discord */}
-                    {router.locale === 'en' ? 'Discord' : router.locale === 'es' ? 'Discordia' : 'Discord'}
-                    </Typography>
+                    <Typography variant='link'>Discord</Typography>
                   </Link>
                 </Stack>
               </Grid>
@@ -355,8 +278,7 @@ function Footer() {
           </Grid>
           <Grid item xs={12} sx={{ mt: 3 }}>
                         <Typography textAlign="left" variant="subtitle1">
-                        &copy; {/* &copy; 2023 XRPL.to. All rights reserved */}
-                    {router.locale === 'en' ? '2023 XRPL.to. All rights reserved' : router.locale === 'es' ? '2023 XRPL.a. Reservados todos los derechos' : '2023 XRPL.to. All rights reserved'}
+                            &copy; 2023 XRPL.to. All rights reserved
                         </Typography>
                     </Grid>
         </Grid>

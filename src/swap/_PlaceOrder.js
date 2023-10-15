@@ -15,9 +15,6 @@ import { useDispatch } from 'react-redux';
 
 // Components
 import QRDialog from 'src/components/QRDialog';
-
-
-import { useRouter } from "next/router";
 // ----------------------------------------------------------------------
 const DisabledButton = withStyles({
   root: {
@@ -316,8 +313,6 @@ export default function PlaceOrder({
     //     }, 2000);
     // }
   };
-  
-  const router = useRouter();
 
   return (
     <Stack alignItems="center">
@@ -329,7 +324,7 @@ export default function PlaceOrder({
           onClick={handlePlaceOrder}
           color={buySell === 'BUY' ? 'primary' : 'error'}
         >
-                    {router.locale === 'en' ? 'PLACE ORDER' : router.locale === 'es' ? 'REALIZAR PEDIDO' : 'PLACE ORDER'}
+          PLACE ORDER
         </Button>
       ) : (
         <DisabledButton
@@ -338,7 +333,7 @@ export default function PlaceOrder({
           // onClick={()=>openSnackbar('Please connect wallet!', 'error')}
           disabled
         >
-                    {router.locale === 'en' ? 'PLACE ORDER' : router.locale === 'es' ? 'REALIZAR PEDIDO' : 'PLACE ORDER'}
+          PLACE ORDER
         </DisabledButton>
       )}
 
