@@ -1,23 +1,47 @@
-.reactMarkDown a:link {
+.reactMarkDownlight a:link {
   color: #3366FF;
   background-color: transparent;
   text-decoration: none;
 }
-.reactMarkDown a:visited {
+.reactMarkDownlight a:visited {
   color: #3366FF;
   background-color: transparent;
   text-decoration: none;
 }
-.reactMarkDown a:hover {
+.reactMarkDownlight a:hover {
   color: #3366FF;
   background-color: transparent;
   text-decoration: underline;
 }
-.reactMarkDown a:active {
+.reactMarkDownlight a:active {
   color: #3366FF;
   background-color: transparent;
   text-decoration: underline;
 }
+
+
+
+.reactMarkDowndark a:link {
+  color: #22B14C;
+  background-color: transparent;
+  text-decoration: none;
+}
+.reactMarkDowndark a:visited {
+  color: #22B14C;
+  background-color: transparent;
+  text-decoration: none;
+}
+.reactMarkDowndark a:hover {
+  color: #22B14C;
+  background-color: transparent;
+  text-decoration: underline;
+}
+.reactMarkDowndark a:active {
+  color: #22B14C;
+  background-color: transparent;
+  text-decoration: underline;
+}
+
 
 .reactMarkDown h2 {
   margin: 0;

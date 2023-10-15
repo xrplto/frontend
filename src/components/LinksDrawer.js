@@ -165,7 +165,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
 
         <Typography
           variant="h6"
-          color="textPrimary"
+          color="green"
           sx={{ mt: 2, ml: 2, mb: 1 }}
         >
           Additional Resources

@@ -96,7 +96,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
 
     return (
         <AppContext.Provider
-            value={{ toggleTheme, darkMode, accountProfile, setActiveProfile, profiles, removeProfile, doLogIn, doLogOut, setLoading, openSnackbar, sync, setSync }}
+            value={{ toggleTheme, darkMode, setDarkMode, accountProfile, setActiveProfile, profiles, removeProfile, doLogIn, doLogOut, setLoading, openSnackbar, sync, setSync }}
         >
             
             <Backdrop

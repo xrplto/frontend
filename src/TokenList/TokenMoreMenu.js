@@ -54,7 +54,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                     <SwapHorizIcon sx={{ mr:1, width: 24, height: 24 }} />
                     <ListItemText primary="Trust Set" primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </MenuItem>
-
+{/*
                 <Link
                     underline="none"
                     color="inherit"
@@ -80,6 +80,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                         <ListItemText primary="XRPScan" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
+
                 <Link
                     underline="none"
                     color="inherit"
@@ -92,7 +93,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                         <ListItemText primary="GateHub" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
-                {/* <Link
+                 <Link
                     underline="none"
                     color="inherit"
                     target="_blank"
@@ -104,6 +105,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                         <ListItemText primary="XRPLORER" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link> */}
+                
                 <Link
                     underline="none"
                     color="inherit"
@@ -152,6 +154,19 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="gatehub" src="/static/xpmarket.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="xpmarket DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
+
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://xmagnetic.org/dex/${currency}+${issuer}_XRP+XRP`}
+                    rel="noreferrer noopener nofollow"
+                >
+                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="xumm" src="/static/magnetic.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="Magnetic DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
                 

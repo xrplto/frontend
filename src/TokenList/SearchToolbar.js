@@ -145,7 +145,7 @@ export default function SearchToolbar({
         }
     `
   );
-
+  const { darkMode } = useContext(AppContext);
   return (
     <>
       <Stack
@@ -305,7 +305,7 @@ export default function SearchToolbar({
                 label={'Categories'}
                 onClick={() => setOpenCategoriesDrawer(true)}
                 sx={{
-                  color: 'rgb(97, 136, 255)',
+                  color: darkMode ? 'green !important  ' : 'blue !important',
                   borderRadius: '4px'
                 }}
               />

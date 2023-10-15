@@ -6,7 +6,7 @@ const TradeToken = () => {};
 export default TradeToken;
 
 export async function getServerSideProps(ctx) {
-    const BASE_URL = 'http://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     let data = null;
     try {

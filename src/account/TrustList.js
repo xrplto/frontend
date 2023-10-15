@@ -405,13 +405,13 @@ export default function TrustList({ account }) {
 
       {loading ? (
         <Stack alignItems="center">
-          <PulseLoader color="#00AB55" size={10} />
+          <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
         </Stack>
       ) : (
         lines &&
         lines.length === 0 && (
           <Stack alignItems="center" sx={{ mt: 2, mb: 1 }}>
-            <Typography variant="s6" color="#2de370">
+            <Typography variant="s6" color="primary">
               <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
               [ No TrustLines ]
             </Typography>
@@ -631,7 +631,7 @@ export default function TrustList({ account }) {
                         href={`https://bithomp.com/explorer/${peer.issuer}`}
                         rel="noreferrer noopener nofollow"
                       >
-                        <Typography variant="s6" noWrap>
+                        <Typography variant="s6" noWrap color="primary">
                           {peer.issuer}
                         </Typography>
                       </Link>

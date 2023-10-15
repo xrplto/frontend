@@ -20,7 +20,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import useDebounce from 'src/hooks/useDebounce';
 import { AppContext } from 'src/AppContext';
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = process.env.API_URL;
 
 const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
   borderRadius: '50%',
@@ -94,17 +94,23 @@ const RenderOption = React.memo(
               <Stack>
                 <Typography
                   variant="token"
-                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
+                  color={isOMCF !== 'yes'
+                  ? darkMode
+                    ? '#fff'
+                    : '#222531'
+                  : darkMode
+                    ? '#007B55'
+                    : '#5569ff'}
                   noWrap
                 >
-                  {truncate(name, 8)}
+                  {truncate(user, 8)}
                 </Typography>
                 <Typography
                   variant="caption"
                   color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                   noWrap
                 >
-                  {truncate(user, 13)}
+                  {truncate(name, 13)}
                   {kyc && (
                     <Typography variant="kyc" sx={{ ml: 0.2 }}>
                       KYC

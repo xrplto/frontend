@@ -58,6 +58,7 @@
     "markdown-it": "^13.0.1",
     "moving-median": "^1.0.0",
     "next": "12.2.0",
+    "next-i18next": "^14.0.3",
     "next-images": "1.8.4",
     "next-transpile-modules": "9.1.0",
     "nprogress": "0.2.0",

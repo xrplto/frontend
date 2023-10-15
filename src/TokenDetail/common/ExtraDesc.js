@@ -59,7 +59,7 @@ const TotalSupplyTypography = withStyles({
 })(Typography);
 
 export default function ExtraDesc({token}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const theme = useTheme();
     const metrics = useSelector(selectMetrics);
 
@@ -193,7 +193,7 @@ export default function ExtraDesc({token}) {
                 <Grid item xs={12} md={4} sx={{display: { xs: 'none', md: 'block' }, borderRight: '1px solid', borderRightColor: theme.palette.divider}}>
                     <Stack direction="row" alignItems="center" gap={1} sx={{pl:3}}>
                         <Typography variant="body1">Market Cap</Typography>
-                        <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">The total market value of a token's circulating supply represents its overall worth.<br/>This concept is similar to free-float capitalization in the stock market.<br/>{omcf==='yes'?'Market Capitalization = Price x Circulating Supply':'Market Capitalization = (Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'}.</Typography>}>
+                        <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">The total market value of a token's circulating supply represents its overall worth. This concept is similar to free-float capitalization in the stock market.<br/><br/>{omcf==='yes'?'Market Capitalization = Price x Circulating Supply':'Market Capitalization = (Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'}.</Typography>}>
                             <Icon icon={infoFilled} />
                         </Tooltip>
                         {isAdmin &&
@@ -236,17 +236,22 @@ export default function ExtraDesc({token}) {
 
                 <Grid item xs={12} md={4} sx={{display: { xs: 'none', md: 'block' } }}>
                     <Stack direction="row" alignItems="center" gap={1} sx={{pl:3}}>
+                        
                         <Typography variant="body1">Circulating Supply</Typography>
                         <Tooltip title={<Typography variant="body2">The number of tokens in circulation within the market and held by the public is comparable to the concept of outstanding shares in the stock market.</Typography>}>
                             <Icon icon={infoFilled} />
                         </Tooltip>
                     </Stack>
+
                     <Stack alignItems="center">
-                        <SupplyTypography variant="desc" sx={{mt:3,mb:2}}>{circulatingSupply}</SupplyTypography>
+                        <SupplyTypography color="primary" variant="desc" sx={{mt:3,mb:2}}>{circulatingSupply} </SupplyTypography>
                     </Stack>
 
-                    <Typography variant="body1" sx={{pl:3}}>Total Supply</Typography>
 
+
+
+                    <Typography variant="body1" sx={{pl:3}}>Total Supply</Typography>
+                        
                     <Stack alignItems="center">
                         <TotalSupplyTypography variant="desc" sx={{mt:1,mb:1}}>{totalSupply}</TotalSupplyTypography>
                     </Stack>

@@ -20,6 +20,7 @@ import { tableCellClasses } from "@mui/material/TableCell";
 
 // Components
 import Spread from './Spread';
+import { useRouter } from "next/router";
 
 const LoaderContainer = styled('div')({
     display: 'flex',
@@ -185,6 +186,7 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                 //     MozTransition: "all .3s ease",
                 // }}
 
+                const router = useRouter();
                 return (
                     <Tooltip
                         key={`Tooltip${orderType}${idx}`}
@@ -200,7 +202,10 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                                 <TableBody>
                                     <TableRow>
                                         <TableCell align='right' width='30px' sx={{pt:1, pb:1}}>
-                                            <Typography variant='body2'>Avg Price:</Typography>
+                                            <Typography variant='body2'>
+                                                {/* Avg Price: */}
+                    {router.locale === 'en' ? ' Avg Price:' : router.locale === 'es' ? 'Precio promedio:' : ' Avg Price:'}
+                                                </Typography>
                                         </TableCell>
                                         <TableCell sx={{pt:1, pb:1}}>
                                             <Typography variant='body2'>≈  {avgPrice}</Typography>
@@ -209,7 +214,9 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
 
                                     <TableRow>
                                         <TableCell align='right' sx={{pt:1, pb:1}}>
-                                            <Typography variant='body2' noWrap>Sum {currName1}:</Typography>
+                                            <Typography variant='body2' noWrap>
+                                                {/* Sum */}
+                    {router.locale === 'en' ? 'Sum' : router.locale === 'es' ? 'Suma' : 'Sum'} {currName1}:</Typography>
                                         </TableCell>
                                         <TableCell sx={{pt:1, pb:1}}>
                                             <Typography variant='body2'>{sumAmount}</Typography>
@@ -218,7 +225,9 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
 
                                     <TableRow>
                                         <TableCell sx={{pt:1, pb:1}} align='right'>
-                                            <Typography variant='body2' noWrap>Sum {currName2}:</Typography>
+                                            <Typography variant='body2' noWrap>
+                                                {/* Sum */}
+                    {router.locale === 'en' ? 'Sum' : router.locale === 'es' ? 'Suma' : 'Sum'} {currName2}:</Typography>
                                         </TableCell>
                                         <TableCell sx={{pt:1, pb:1}}>
                                             <Typography variant='body2'>{sumValue}</Typography>
@@ -283,7 +292,9 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
             <Grid container spacing={0} sx={{p:0}}>
                 <Grid item xs={12} md={6} lg={6}>
                     <Stack direction='row' alignItems='center'>
-                        <Typography variant='subtitle1' sx={{color:'#007B55', ml:0, mt:2, mb:1}}>Buy Orders({bids.length})</Typography>
+                        <Typography variant='subtitle1' sx={{color:'#007B55', ml:0, mt:2, mb:1}}>
+                            {/* Buy Orders */}
+                    {router.locale === 'en' ? 'Buy Orders' : router.locale === 'es' ? 'Comprar Órdenes' : 'Buy Orders'}({bids.length})</Typography>
                         <Box sx={{ flexGrow: 1 }} />
                         <Spread bids={bids} asks={asks}/>
                     </Stack>
@@ -307,10 +318,16 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                                     }
                                 }}
                             >
-                                <TableCell align="right" sx={{ p:0 }}>Sum</TableCell>
+                                <TableCell align="right" sx={{ p:0 }}>
+                                    {/* Sum */}
+                    {router.locale === 'en' ? 'Sum' : router.locale === 'es' ? 'Suma' : 'Sum'}</TableCell>
                                 {/* <TableCell align="right" sx={{ p:0 }}>Value</TableCell> */}
-                                <TableCell align="right" sx={{ p:0 }}>Amount ({pair.curr1.name})</TableCell>
-                                <TableCell align="right" sx={{ p:0, pr: 1 }}>Bid ({pair.curr2.name})</TableCell>
+                                <TableCell align="right" sx={{ p:0 }}>
+                                    {/* Amount */}
+                    {router.locale === 'en' ? 'Amount' : router.locale === 'es' ? 'Cantidad' : 'Amount'} ({pair.curr1.name})</TableCell>
+                                <TableCell align="right" sx={{ p:0, pr: 1 }}>
+                                    {/* Bid */}
+                    {router.locale === 'en' ? 'Bid' : router.locale === 'es' ? 'Licitación' : 'Bid'} ({pair.curr2.name})</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -319,7 +336,9 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                     </Table>
                 </Grid>
                 <Grid item xs={12} md={6} lg={6} sx={{p:0}}>
-                    <Typography align='right' variant='subtitle1' sx={{color:'#B72136', ml:2, mt:2, mb:1}}>Sell Orders({asks.length})</Typography>
+                    <Typography align='right' variant='subtitle1' sx={{color:'#B72136', ml:2, mt:2, mb:1}}>
+                        {/* Sell Orders */}
+                    {router.locale === 'en' ? 'Sell Orders' : router.locale === 'es' ? 'Vender Órdenes' : 'Sell Orders'}({asks.length})</Typography>
                     <Table
                         stickyHeader
                         size={'small'}
@@ -340,10 +359,16 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                                     }
                                 }}
                             >
-                                <TableCell align="left" sx={{ p:0, pl: 1 }}>Ask ({pair.curr2.name})</TableCell>
-                                <TableCell align="left" sx={{ p:0 }}>Amount ({pair.curr1.name})</TableCell>
+                                <TableCell align="left" sx={{ p:0, pl: 1 }}>
+                                    {/* Ask */}
+                    {router.locale === 'en' ? 'Ask' : router.locale === 'es' ? 'Preguntar' : 'Ask'} ({pair.curr2.name})</TableCell>
+                                <TableCell align="left" sx={{ p:0 }}>
+                                    {/* Amount */}
+                    {router.locale === 'en' ? 'Amount' : router.locale === 'es' ? 'Cantidad' : 'Amount'} ({pair.curr1.name})</TableCell>
                                 {/* <TableCell align="left" sx={{ p:0 }}>Value</TableCell> */}
-                                <TableCell align="left" sx={{ p:0 }}>Sum</TableCell>
+                                <TableCell align="left" sx={{ p:0 }}>
+                                    {/* Sum */}
+                    {router.locale === 'en' ? 'Sum' : router.locale === 'es' ? 'Suma' : 'Sum'}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>

@@ -90,7 +90,7 @@ const FILE_NEW = 1;
 const FILE_REMOVED = 2;
 
 export default function EditProfile() {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     const fileRef1 = useRef();
     const fileRef2 = useRef();

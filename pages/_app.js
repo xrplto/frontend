@@ -14,8 +14,8 @@ function XRPLToApp(props) {
 
     const { Component, pageProps } = props;
 
-    const ogp = pageProps.ogp || {};
-    const data = pageProps.data;
+    const ogp = (pageProps && pageProps.ogp) || {};
+    const data = pageProps && pageProps.data;
 
     return (
         <>
@@ -47,35 +47,35 @@ function XRPLToApp(props) {
                 <meta name="theme-color" content="#ffffff"/>
                 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
                 <link rel="canonical" href={ogp.canonical}/>
-    <link rel="alternate" hrefLang="ar" href="https://xrpl.to/ar/" />
-    <link rel="alternate" hrefLang="bg" href="https://xrpl.to/bg/" />
-    <link rel="alternate" hrefLang="cs" href="https://xrpl.to/cs/" />
-    <link rel="alternate" hrefLang="da" href="https://xrpl.to/da/" />
-    <link rel="alternate" hrefLang="de" href="https://xrpl.to/de/" />
-    <link rel="alternate" hrefLang="el" href="https://xrpl.to/el/" />
-    <link rel="alternate" hrefLang="en" href="https://xrpl.to/" />
-    <link rel="alternate" hrefLang="es" href="https://xrpl.to/es/" />
-    <link rel="alternate" hrefLang="fi" href="https://xrpl.to/fi/" />
-    <link rel="alternate" hrefLang="fr" href="https://xrpl.to/fr/" />
-    <link rel="alternate" hrefLang="hi" href="https://xrpl.to/hi/" />
-    <link rel="alternate" hrefLang="hu" href="https://xrpl.to/hu/" />
-    <link rel="alternate" hrefLang="id" href="https://xrpl.to/id/" />
-    <link rel="alternate" hrefLang="it" href="https://xrpl.to/it/" />
-    <link rel="alternate" hrefLang="ja" href="https://xrpl.to/ja/" />
-    <link rel="alternate" hrefLang="ko" href="https://xrpl.to/ko/" />
-    <link rel="alternate" hrefLang="nl" href="https://xrpl.to/nl/" />
-    <link rel="alternate" hrefLang="no" href="https://xrpl.to/no/" />
-    <link rel="alternate" hrefLang="pl" href="https://xrpl.to/pl/" />
-    <link rel="alternate" hrefLang="pt-br" href="https://xrpl.to/pt-br/" />
-    <link rel="alternate" hrefLang="ro" href="https://xrpl.to/ro/" />
-    <link rel="alternate" hrefLang="ru" href="https://xrpl.to/ru/" />
-    <link rel="alternate" hrefLang="sk" href="https://xrpl.to/sk/" />
-    <link rel="alternate" hrefLang="sv" href="https://xrpl.to/sv/" />
-    <link rel="alternate" hrefLang="th" href="https://xrpl.to/th/" />
-    <link rel="alternate" hrefLang="tr" href="https://xrpl.to/tr/" />
-    <link rel="alternate" hrefLang="uk" href="https://xrpl.to/uk/" />
-    <link rel="alternate" hrefLang="ur" href="https://xrpl.to/ur/" />
-    <link rel="alternate" hrefLang="vi" href="https://xrpl.to/vi/" />
+				{/*<link rel="alternate" hrefLang="ar" href="https://xrpl.to/ar/" />
+				<link rel="alternate" hrefLang="bg" href="https://xrpl.to/bg/" />
+				<link rel="alternate" hrefLang="cs" href="https://xrpl.to/cs/" />
+				<link rel="alternate" hrefLang="da" href="https://xrpl.to/da/" />
+				<link rel="alternate" hrefLang="de" href="https://xrpl.to/de/" />
+				<link rel="alternate" hrefLang="el" href="https://xrpl.to/el/" />
+				<link rel="alternate" hrefLang="en" href="https://xrpl.to/" />
+				<link rel="alternate" hrefLang="es" href="https://xrpl.to/es/" />
+				<link rel="alternate" hrefLang="fi" href="https://xrpl.to/fi/" />
+				<link rel="alternate" hrefLang="fr" href="https://xrpl.to/fr/" />
+				<link rel="alternate" hrefLang="hi" href="https://xrpl.to/hi/" />
+				<link rel="alternate" hrefLang="hu" href="https://xrpl.to/hu/" />
+				<link rel="alternate" hrefLang="id" href="https://xrpl.to/id/" />
+				<link rel="alternate" hrefLang="it" href="https://xrpl.to/it/" />
+				<link rel="alternate" hrefLang="ja" href="https://xrpl.to/ja/" />
+				<link rel="alternate" hrefLang="ko" href="https://xrpl.to/ko/" />
+				<link rel="alternate" hrefLang="nl" href="https://xrpl.to/nl/" />
+				<link rel="alternate" hrefLang="no" href="https://xrpl.to/no/" />
+				<link rel="alternate" hrefLang="pl" href="https://xrpl.to/pl/" />
+				<link rel="alternate" hrefLang="pt-br" href="https://xrpl.to/pt-br/" />
+				<link rel="alternate" hrefLang="ro" href="https://xrpl.to/ro/" />
+				<link rel="alternate" hrefLang="ru" href="https://xrpl.to/ru/" />
+				<link rel="alternate" hrefLang="sk" href="https://xrpl.to/sk/" />
+				<link rel="alternate" hrefLang="sv" href="https://xrpl.to/sv/" />
+				<link rel="alternate" hrefLang="th" href="https://xrpl.to/th/" />
+				<link rel="alternate" hrefLang="tr" href="https://xrpl.to/tr/" />
+				<link rel="alternate" hrefLang="uk" href="https://xrpl.to/uk/" />
+				<link rel="alternate" hrefLang="ur" href="https://xrpl.to/ur/" />
+				<link rel="alternate" hrefLang="vi" href="https://xrpl.to/vi/" />*/}
 
                 <title>{ogp.title}</title>
                 <meta name="description" content={ogp.desc}/>

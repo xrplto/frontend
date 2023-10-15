@@ -50,7 +50,7 @@ function truncate(str, n){
 };
 
 export default function RichListData({token}) {
-    const BASE_URL = 'https://api.xrpl.to/api';//'http://65.108.4.235:3000/api/';//'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const metrics = useSelector(selectMetrics);
 
     const { accountProfile, setLoading, openSnackbar, darkMode } = useContext(AppContext);
@@ -354,7 +354,7 @@ export default function RichListData({token}) {
                                                 href={`https://bithomp.com/explorer/${account}`}
                                                 rel="noreferrer noopener nofollow"
                                             >
-                                                <Typography variant="subtitle1">{truncate(account, 20)}</Typography>
+                                                <Typography variant="subtitle1" color="primary">{truncate(account, 20)}</Typography>
                                             </Link>
                                         </TableCell>
                                         <TableCell align="left">

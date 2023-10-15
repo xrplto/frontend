@@ -25,3 +25,9 @@ Take a look at some of the screens from the XRPL.to application:
 ![Screen2 ](./docs/screen2.png)
 ![Screen3 ](./docs/screen3.png)
 ![Screen4 ](./docs/screen4.png)
+
+danijelpush@gmail.com
+
+it would be great if you leave your email, skype, tg, etc... address here
+It's more convenient for both of us to discuss about your project
+

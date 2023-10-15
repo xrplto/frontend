@@ -101,7 +101,7 @@ export default function Overview({data}) {
 }
 
 export async function getServerSideProps(ctx) {
-    const BASE_URL = 'http://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     let data = {};
     const params = ctx.params.acct;

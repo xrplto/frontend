@@ -54,7 +54,7 @@ function truncate(str, n) {
 }
 
 export default function QueryToken({ token, onChangeToken }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
   const { darkMode } = useContext(AppContext);
 
   const [loading, setLoading] = useState(false);
@@ -185,7 +185,14 @@ export default function QueryToken({ token, onChangeToken }) {
                     <Typography
                       variant="token"
                       color={
-                        isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
+                        // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
+                        isOMCF !== 'yes'
+                          ? darkMode
+                            ? '#fff'
+                            : '#222531'
+                          : darkMode
+                            ? '#007B55'
+                            : '#4E8DF4'
                       }
                       noWrap
                     >

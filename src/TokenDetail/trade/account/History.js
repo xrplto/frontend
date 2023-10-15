@@ -94,7 +94,7 @@ function getMD5(issuer, currency) {
 }
 
 export default function History({ token }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
 
   const { accountProfile, darkMode } = useContext(AppContext);
   const accountAddress = accountProfile?.account;
@@ -416,8 +416,9 @@ export default function History({ token }) {
       </Box>
       {!accountAddress ? (
         <ConnectWalletContainer>
+          <ErrorOutlineIcon fontSize='small' sx={{ mr: '5px' }} color="error"/>
           <Typography variant="subtitle2" color="error">
-            Connect your wallet to access data
+            Connect your wallet to access data.
           </Typography>
         </ConnectWalletContainer>
       ) : count > 0 ? (
@@ -430,11 +431,12 @@ export default function History({ token }) {
         />
       ) : loading ? (
         <Stack alignItems="center" sx={{ mt: 5, mb: 5 }}>
-          <PuffLoader color={'#00AB55'} size={35} sx={{ mt: 5, mb: 5 }} />
+          <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={35} sx={{ mt: 5, mb: 5 }} />
+
         </Stack>
       ) : (
         <ConnectWalletContainer>
-          <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
+          <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} color="error" />
           <Typography variant="subtitle2" color="error">
             No Trading History
           </Typography>

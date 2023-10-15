@@ -23,6 +23,10 @@ import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
 import { Icon } from '@iconify/react';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 
+// Context
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+
 // Utils
 import {
   fIntNumber,
@@ -30,6 +34,8 @@ import {
   fNumber,
   fPercent
 } from 'src/utils/formatNumber';
+
+import { useRouter } from "next/router";
 
 const TopWrapper = styled(Box)(
   ({ theme }) => `
@@ -79,9 +85,9 @@ function Rate(num) {
 }
 
 const currencies = [
-  { label: '$', value: 'USD' },
-  { label: '€', value: 'EUR' },
-  { label: '¥', value: 'JPY' }
+  { label: 'USD', value: 'USD' },
+  { label: 'EUR', value: 'EUR' },
+  { label: 'JPY', value: 'JPY' }
 ];
 
 const Topbar = () => {
@@ -118,28 +124,40 @@ const Topbar = () => {
   const handleCurrencyClick = (currency) => () => {
     handleCurrencyChange(currency);
   };
+const { darkMode } = useContext(AppContext);
+const iconColor = darkMode ? '#FFFFFF' : '#000000';
+const iconStyle = {
+  marginRight: '5px', // Adjust the value as needed
+};
 
+const router = useRouter();
   return (
     <TopWrapper>
       <Container maxWidth="xl">
         <ContentWrapper>
           <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="body2">Tokens:</Typography>
+            <Typography variant="body2">
+              {/* Tokens: */}
+              {router.locale === 'en' ? 'Tokens:' : router.locale === 'es' ? 'Fichas:' : 'Tokens:'}
+              </Typography>
             <Typography variant="body2">{fIntNumber(metrics.total)}</Typography>
             <Typography variant="body2" noWrap>
-              Addresses:
+              {/* Addresses: */}
+              {router.locale === 'en' ? 'Addresses:' : router.locale === 'es' ? 'Direcciones:' : 'Addresses:'}
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.totalAddresses)}
             </Typography>
             <Typography variant="body2" noWrap>
-              Offers:
+              {/* Offers: */}
+              {router.locale === 'en' ? 'Offers:' : router.locale === 'es' ? 'Ofertas:' : 'Offers:'}
             </Typography>
             <Typography align="center" color="#FFC107" variant="body2">
               {fIntNumber(metrics.H24.totalOffers)}
             </Typography>
             <Typography variant="body2" noWrap>
-              Trustlines:
+              {/* Trustlines: */}
+              {router.locale === 'en' ? 'Trustlines:' : router.locale === 'es' ? 'Líneas de confianza:' : 'Trustlines:'}
             </Typography>
             <Typography align="center" color="#FFA48D" variant="body2">
               {fIntNumber(metrics.H24.totalTrustLines)}
@@ -151,17 +169,23 @@ const Topbar = () => {
                     align="center"
                     style={{ wordWrap: 'break-word' }}
                     variant="body2"
-                  >
+                    >
                     24h
                   </Typography>
                 </Stack>
               </Tooltip>
             </H24Style>
-            <Typography variant="body2">Trades:</Typography>
+            <Typography variant="body2">
+              {/* Trades: */}
+              {router.locale === 'en' ? 'Trades:' : router.locale === 'es' ? 'Vientos_alisios:' : 'Trades:'}
+              </Typography>
             <Typography align="center" color="#74CAFF" variant="body2">
               {fIntNumber(metrics.H24.transactions24H)}
             </Typography>
-            <Typography variant="body2">Vol:</Typography>
+            <Typography variant="body2">
+              {/* Vol: */}
+              {router.locale === 'en' ? 'Vol:' : router.locale === 'es' ? 'volumen:' : 'Vol:'}
+              </Typography>
             <Typography align="center" color="#FF6C40" variant="body2">
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <Icon icon={rippleSolid} color="#FF6C40" />
@@ -171,13 +195,15 @@ const Topbar = () => {
               </Stack>
             </Typography>
             <Typography variant="body2" noWrap>
-              Tokens Traded:
+              {/* Tokens Traded: */}
+              {router.locale === 'en' ? 'Tokens Traded:' : router.locale === 'es' ? 'Tokens negociados:' : 'Tokens Traded:'}
             </Typography>
             <Typography align="center" color="#3366FF" variant="body2">
               {fIntNumber(metrics.H24.tradedTokens24H)}
             </Typography>
             <Typography variant="body2" noWrap>
-              Active Addresses:
+              {/* Active Addresses: */}
+              {router.locale === 'en' ? 'Active Addresses:' : router.locale === 'es' ? 'Direcciones activas:' : 'Active Addresses:'}
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.activeAddresses24H)}
@@ -191,10 +217,10 @@ const Topbar = () => {
           >
             <Button onClick={handleClick}>
               <Stack direction="row" spacing={0.5} alignItems="center">
-                <Icon icon={rippleSolid} width="12" height="12" />
+                <Icon icon={rippleSolid} width="12" height="12"  color={iconColor} style={iconStyle} />
               </Stack>
               <Typography variant="body2" noWrap>
-                {currentCurrency} {Rate(rate)}
+                 {Rate(rate)} {currentCurrency}
               </Typography>
             </Button>
             <Menu
@@ -208,10 +234,10 @@ const Topbar = () => {
                   onClick={handleCurrencyClick(currency.value)}
                 >
                   <Stack direction="row" spacing={0.5} alignItems="center">
-                    <Icon icon={rippleSolid} width="12" height="12" />
+                    <Icon icon={rippleSolid} width="12" height="12"  style={iconStyle}/>
                   </Stack>
                   <Typography variant="body2" noWrap>
-                    {currency.label} {Rate(metrics[currency.value])}
+                     {Rate(metrics[currency.value])} {currency.label}
                   </Typography>
                 </MenuItem>
               ))}

@@ -62,7 +62,7 @@ const Label = withStyles({
 })(Typography);
 
 function TrustLine(props) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
   const QR_BLUR = '/static/blurqr.webp';
 
   const { accountProfile, openSnackbar } = useContext(AppContext);
@@ -708,7 +708,7 @@ function TrustLine(props) {
 export default TrustLine;
 
 export async function getServerSideProps(ctx) {
-  const BASE_URL = 'http://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
 
   let data = null;
   try {

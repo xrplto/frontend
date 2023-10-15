@@ -86,7 +86,7 @@ function convertToOHLC(priceData, interval) {
 }
 
 export default function PriceChart({ token }) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const theme = useTheme();
 
     const [data, setData] = useState([]);
@@ -127,6 +127,7 @@ export default function PriceChart({ token }) {
 
     let user = token.user;
     if (!user) user = token.name;
+    let name = token.name;
 
     let options1 = ChartOptions();
 
@@ -403,7 +404,7 @@ export default function PriceChart({ token }) {
             <Grid container rowSpacing={2} alignItems="center" sx={{mt: 0}}>
                 <Grid container item xs={12} md={6}>
                     <Stack direction="row" spacing={2} alignItems="center">
-                        <Typography variant="h3">{`${user} to USD Chart`}</Typography>
+                        <Typography variant="h3">{`${user} ${name} to USD Chart`}</Typography>
                         {isAdmin && range !== 'OHLC' &&
                             <IconButton onClick={handleDownloadCSV}>
                                 <DownloadIcon fontSize="small" />

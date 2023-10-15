@@ -96,7 +96,7 @@ function truncate(str, n) {
 };
 
 export default function Orders({pair}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     
     const { accountProfile, sync, setSync, darkMode } = useContext(AppContext);
     const accountAddress = accountProfile?.account;
@@ -368,7 +368,7 @@ export default function Orders({pair}) {
                                         key={_id}
                                         sx={{
                                             [`& .${tableCellClasses.root}`]: {
-                                                color: (buy ? '#007B55' : '#B72136')
+                                                color: (buy ? '#007B55' : '#B72136')  // this places color on table items in Open Orders
                                             },
                                             "&:hover": {
                                                 "& .MuiTableCell-root": {
@@ -436,13 +436,13 @@ export default function Orders({pair}) {
                         }}
                     >
                         <ErrorOutlineIcon fontSize='small' sx={{ mr: '5px' }} />
-                        Connect your wallet to access data
+                        Connect your wallet to access data.
                     </Typography>
                 </ConnectWalletContainer>
                 :
                 loading ?
                     <Stack alignItems="center" sx={{mt: 5, mb: 5}}>
-                        <PuffLoader color={"#00AB55"} size={35} sx={{mt:5, mb:5}}/>
+                        <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={35} sx={{ mt: 5, mb: 5 }} />
                     </Stack>
                     :
                     offers.length === 0 ?

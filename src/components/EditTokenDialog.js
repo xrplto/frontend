@@ -61,6 +61,10 @@ const AdminDialog = styled(Dialog)(({ theme }) => ({
     // backgroundColor: alpha("#00AB88", 0.99),
 }));
 
+
+
+
+
 const KYCTypography = withStyles({
     root: {
         color: "#34B60C",
@@ -110,7 +114,7 @@ export default function EditTokenDialog({token, setToken}) {
     const theme = useTheme();
     const fileRef = useRef();
 
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const { accountProfile, openSnackbar } = useContext(AppContext);
     const [loading, setLoading] = useState(false);
 
@@ -381,7 +385,7 @@ export default function EditTokenDialog({token, setToken}) {
                             sx={{ mr: 1, width: 56, height: 56 }}
                             onClick={() => fileRef.current.click()}
                         />
-                        <CoinNameTypography variant="h5" noWrap>
+                        <CoinNameTypography variant="h5" noWrap color="primary">
                             {name}
                         </CoinNameTypography>
                     </Stack>

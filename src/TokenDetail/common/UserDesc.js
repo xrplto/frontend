@@ -314,11 +314,11 @@ export default function UserDesc({ token }) {
           <Avatar alt={user} src={imgUrl} sx={{ width: 56, height: 56 }} />
         )}
         <Stack spacing={0.2}>
-          <Typography variant="h2" color="#22B14C" fontSize="1.1rem">
+          <Typography variant="span" fontWeight="700" color={ darkMode ? '#22B14C': '#3366FF' } alt={user} fontSize="1.1rem">
             {user}
           </Typography>
           <Stack direction="row" alignItems="center" spacing={0.5}>
-            <TokenIcon fontSize="small" color="disabled" />
+          <TokenIcon fontSize="small" color="disabled" />
             <Typography variant="s17">{name}</Typography>
             <Stack>{kyc && <Typography variant="kyc2">KYC</Typography>}</Stack>
           </Stack>

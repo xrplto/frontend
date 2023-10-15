@@ -106,7 +106,7 @@ function getMD5(issuer, currency) {
 }
 
 export default function HistoryData({token}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     const { darkMode } = useContext(AppContext);
 
@@ -400,7 +400,7 @@ export default function HistoryData({token}) {
                                         }}>
                                             <Typography variant="caption">{strDateTime}</Typography>
                                         </TableCell>
-                                        <TableCell align="left"><Typography variant="caption">{fNumber(exch)} {name}</Typography></TableCell>
+                                        <TableCell align="left"><Typography variant="caption" >{fNumber(exch)} {name}</Typography></TableCell>
                                         <TableCell align="left">
                                             {fNumber(paid.value)} <Typography variant="caption">{paidName}</Typography>
                                         </TableCell>
@@ -412,7 +412,7 @@ export default function HistoryData({token}) {
                                         <TableCell align="left">
                                             <Link
                                                 // underline="none"
-                                                // color="inherit"
+                                                color="primary"
                                                 target="_blank"
                                                 href={`https://bithomp.com/explorer/${taker}`}
                                                 rel="noreferrer noopener nofollow"
@@ -424,7 +424,7 @@ export default function HistoryData({token}) {
                                         <TableCell align="left">
                                             <Link
                                                 // underline="none"
-                                                // color="inherit"
+                                                color="primary"
                                                 target="_blank"
                                                 href={`https://bithomp.com/explorer/${maker}`}
                                                 rel="noreferrer noopener nofollow"
@@ -440,12 +440,12 @@ export default function HistoryData({token}) {
                                             <Stack direction="row" alignItems='center'>
                                                 <Link
                                                     // underline="none"
-                                                    // color="inherit"
+                                                    color="primary"
                                                     target="_blank"
                                                     href={`https://bithomp.com/explorer/${hash}`}
                                                     rel="noreferrer noopener nofollow"
                                                 >
-                                                    <Stack direction="row" alignItems='center'>
+                                                    <Stack direction="row" alignItems='center' >
                                                         {truncate(hash, 16)}
                                                         <IconButton edge="end" aria-label="bithomp">
                                                             <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
@@ -489,7 +489,8 @@ export default function HistoryData({token}) {
 			  <Stack direction="row" alignItems="center" spacing={0.5}>
 				  <Avatar alt={user} src={imgUrl} sx={{ width: 28, height: 28 }} />
 				  <Stack direction="row"  alignItems="baseline" spacing={0.5}>
-					  <Typography variant="h2" fontSize="1rem">{user}</Typography>
+					  
+                      <Typography variant="h2" fontSize="1rem" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{user}</Typography>
 					  <Typography variant="s16">{name}</Typography>
 				  </Stack>
 			  </Stack>

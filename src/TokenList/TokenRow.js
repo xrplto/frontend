@@ -121,7 +121,7 @@ function fTokenRow({
   scrollLeft
 }) {
   const theme = useTheme();
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
   const { accountProfile, darkMode } = useContext(AppContext);
   const isAdmin =
     accountProfile && accountProfile.account && accountProfile.admin;
@@ -294,11 +294,13 @@ function fTokenRow({
                 <Typography
                   variant="token"
                   color={
-                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : slug === md5 ? '#B72136' : ''
+                    // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : slug === md5 ? '#B72136' : ''
+                    // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : slug === md5 ? ( darkMode ? 'red' : 'blue') : ''
+                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : (darkMode ? '#007B55' : slug === md5 ? '#B72136' : '') 
                   }
                   noWrap={isMobile ? false : true}
                 >
-                  {truncate(name, 8)}
+                  {truncate(user, 13)}
                 </Typography>
                 <Typography
                   variant="caption"
@@ -306,7 +308,7 @@ function fTokenRow({
                   noWrap={isMobile ? false : true}
                 >
                   {isMobile && <span style={badge24hStyle}>{id}</span>}
-                  {truncate(user, 13)}
+                  {truncate(name, 8)}
                   {kyc && (
                     <Typography variant="kyc" sx={{ ml: 0.2 }}>
                       KYC
@@ -324,10 +326,10 @@ function fTokenRow({
           }}
         >
           <TransitionTypo variant="h4" noWrap={isMobile ? false : true}>
-            $ <NumberTooltip number={fNumber(usd)} />
+          <Icon icon={rippleSolid} width={12} height={12} /> <NumberTooltip number={fNumber(exch)} />
           </TransitionTypo>
           <TransitionTypo variant="h6" noWrap={isMobile ? false : true}>
-            <Icon icon={rippleSolid} width={12} height={12} /> <NumberTooltip prepend='$' number={fNumber(exch)} />
+          <NumberTooltip prepend='$' number={fNumber(usd)} />
           </TransitionTypo>
         </TableCell>
         <TableCell align="right">
@@ -357,11 +359,11 @@ function fTokenRow({
             {/* <Icon icon={outlineToken} color="#0C53B7"/> */}
             <Icon
               icon={arrowsExchange}
-              color="#0C53B7"
+              color= "primary"
               width="16"
               height="16"
             />
-            <Typography variant="h5" color="#0C53B7">
+            <Typography variant="h5" color="primary">
               <NumberTooltip number={fNumber(vol24hx)} />
             </Typography>
           </Stack>

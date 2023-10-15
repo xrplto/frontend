@@ -42,7 +42,7 @@ const badge24hStyle = {
     display: 'inline-block',
     marginLeft: '4px',
     marginRight: '4px',
-    color: '#C4CDD5',
+   // color: '#C4CDD5',
     fontSize: '11px',
     fontWeight: '500',
     lineHeight: '18px',
@@ -56,7 +56,7 @@ const badgeDEXStyle = {
     display: 'inline-block',
     marginLeft: '4px',
     marginRight: '4px',
-    color: '#C4CDD5',
+    //color: '#C4CDD5',
     fontSize: '11px',
     fontWeight: '500',
     lineHeight: '18px',
@@ -73,7 +73,7 @@ function truncate(str, n){
 };
 
 export default function PairsList({token, pairs}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const { darkMode } = useContext(AppContext);
 
     const tableRef = useRef(null);
@@ -188,10 +188,14 @@ export default function PairsList({token, pairs}) {
                             if (curr2.currency !== 'XRP')
                                 gatehubDexURL += `+${curr2.issuer}`;
 
-
-                                let xpmarketDexURL = `https://xpmarket.com/dex/${curr1.currency}+${curr1.issuer}/${curr2.currency}`;
-                                if (curr2.currency !== 'XRP')
-                                    xpmarketDexURL += `+${curr2.issuer}`;
+                            // dex/SOLO-rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz/XRP
+                            let xpmarketDexURL = `https://xpmarket.com/dex/${curr1.name}+${curr1.issuer}/${curr2.currency}`;
+                            if (curr2.currency !== 'XRP')
+                                xpmarketDexURL += `+${curr2.issuer}`;
+                            // /dex/EUR+rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_XRP+XRP
+                            let magneticDexURL = `https://xmagnetic.org/dex/${curr1.name}+${curr1.issuer}_${curr2.currency}+${curr2.currency}`;
+                            if (curr2.currency !== 'XRP')
+                            magneticDexURL += `+${curr2.issuer}`;
 
                             let xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
 
@@ -241,7 +245,8 @@ export default function PairsList({token, pairs}) {
                                         <Stack direction="row" alignItems='center'>
                                             <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
                                             <Icon icon={arrowsExchange} width="16" height="16"/>
-                                            <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{name2}</Typography>
+                                            <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{name2}</Typography>
+
                                         </Stack>
                                     </TableCell>
                                     <TableCell align="left" sx={{p:0.5, pb:0.5}}>
@@ -265,7 +270,9 @@ export default function PairsList({token, pairs}) {
                                                     href={`https://${curr2.domain}`}
                                                     rel="noreferrer noopener nofollow"
                                                 >
-                                                    <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{curr2.domain}</Typography>
+                                                    // Couldn't find where this changes the color at - Yannier
+                                                    <Typography variant="subtitle2" sx={{ color: darkMode ? '#5569ff' : '#007B55' }}>{curr2.domain}</Typography>
+
                                                 </Link>
                                             )}
                                         </Stack>
@@ -287,8 +294,10 @@ export default function PairsList({token, pairs}) {
                                                 <Typography variant="caption" sx={{ color: '#B72136' }}>{name1}</Typography>
                                             </Stack>
                                             <Stack direction="row" spacing={1} alignItems='center'>
-                                                <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{fNumber(curr2.value)}</Typography>
-                                                <Typography variant="caption" sx={{ color: '#007B55' }}>{name2}</Typography>
+                                            <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{fNumber(curr2.value)}</Typography>
+
+                                                <Typography variant="caption" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{name2}</Typography>
+
                                             </Stack>
                                         </Stack>
                                     </TableCell>
@@ -315,7 +324,8 @@ export default function PairsList({token, pairs}) {
                                             )}
                                             {curr2.issuer && curr2.issuer !== 'XRPL' && (
                                                 <Stack direction="row" alignItems='center'>
-                                                    <Typography variant="subtitle2" sx={{ color: '#007B55' }}>{user2}</Typography>
+                                                    <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{user2}</Typography>
+
                                                     <Link
                                                         underline="none"
                                                         color="inherit"
@@ -376,6 +386,18 @@ export default function PairsList({token, pairs}) {
                                             >
                                                 <IconButton edge="end" aria-label="solo">
                                                     <Avatar alt="xpmarket" src="/static/xpmarket.webp" sx={{ width: 24, height: 24 }} />
+                                                </IconButton>
+                                            </Link>
+
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={magneticDexURL}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                <IconButton edge="end" aria-label="solo">
+                                                    <Avatar alt="xpmarket" src="/static/magnetic.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
 

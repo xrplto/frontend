@@ -11,7 +11,7 @@ import PairsList from './PairsList';
 // ----------------------------------------------------------------------
 
 export default function Market({token}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     const [pairs, setPairs] = useState([]);
 

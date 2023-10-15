@@ -12,7 +12,7 @@ import { AppContext } from 'src/AppContext';
 
 // ----------------------------------------------------------------------
 export default function Watch({ token }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
   const theme = useTheme();
   const { accountProfile, openSnackbar, setLoading, darkMode } =
     useContext(AppContext);

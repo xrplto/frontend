@@ -40,7 +40,7 @@ function getSeries(richList) {
     return series;
 }
 export default function Donut({token}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     const [richList, setRichList] = useState([]);
 
     useEffect(() => {
