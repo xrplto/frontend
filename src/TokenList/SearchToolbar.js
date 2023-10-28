@@ -334,7 +334,7 @@ export default function SearchToolbar({
                         size="small"
                         label={tag}
                         onClick={handleDelete}
-                        color={tagName === tag ? 'primary' : undefined}
+                        color={normalizeTag(tagName) === nTag ? 'primary' : undefined}//color={tagName === tag ? 'primary' : undefined}
                         sx={{
                           borderRadius: '4px'
                         }}
