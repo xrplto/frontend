@@ -1,21 +1,25 @@
 import Head from 'next/head';
 import ThemeProvider from 'src/theme/ThemeProvider';
 import CssBaseline from '@mui/material/CssBaseline';
-
 import { ContextProvider } from 'src/AppContext';
-
 import XSnackbar from 'src/components/Snackbar';
 import { useSnackbar } from 'src/components/useSnackbar';
-
 import "./zMain.css";
 
-function XRPLToApp(props) {
-    const { isOpen, msg, variant, openSnackbar, closeSnackbar } = useSnackbar();
+function XRPLToApp({ Component, pageProps, router }) {
+  const isUnderMaintenance = process.env.MAINTENANCE; // Set this variable to enable or disable maintenance mode
 
-    const { Component, pageProps } = props;
+  // Check if we're under maintenance and not already on the maintenance page
+  if (isUnderMaintenance && router.pathname !== '/status/maintenance') {
+    if (typeof window !== 'undefined') {
+      router.push('/status/maintenance');
+    }
+    return null;
+  }
 
-    const ogp = pageProps.ogp || {};
-    const data = pageProps.data;
+  const { isOpen, msg, variant, openSnackbar, closeSnackbar } = useSnackbar();
+  const ogp = pageProps.ogp || {};
+  const data = pageProps.data
 
     return (
         <>

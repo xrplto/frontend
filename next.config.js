@@ -13,5 +13,6 @@ module.exports = {
     assetPrefix: isProd ? 'https://xrpl.to' : '',
 	env: {
 		API_URL: process.env.API_URL,
+		MAINTENANCE: process.env.MAINTENANCE,
 	}
 }
