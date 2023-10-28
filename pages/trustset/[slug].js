@@ -744,7 +744,14 @@ export async function getServerSideProps(ctx) {
     ogp.desc = `Easily set up a ${name} Trustline on the XRPL for secure and streamlined transactions.`;
 
     ret = { data, ogp };
-  }
+  } else {
+        return {
+            redirect: {
+                permanent: false,
+                destination: '/404'
+            }
+        }
+   }
 
   return {
     props: ret // will be passed to the page component as props
