@@ -222,7 +222,7 @@ const H24Style = styled('div')(({ theme }) => ({
             alignItems="center"
             sx={{ ml: 5, mr: 2 }}
           >
-
+{/* Disable before more translated
 <div>
   <select
     onChange={(e) => i18n.changeLanguage(e.target.value)}
@@ -235,7 +235,7 @@ const H24Style = styled('div')(({ theme }) => ({
     ))}
   </select>
 </div>
-
+*/}
 
 
 
