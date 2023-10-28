@@ -298,11 +298,11 @@ function fTokenRow({
             {/* <Icon icon={outlineToken} color="#0C53B7"/> */}
             <Icon
               icon={arrowsExchange}
-              color="#0C53B7"
+              color="#primary"
               width="16"
               height="16"
             />
-            <Typography variant="h5" color="#0C53B7">
+            <Typography variant="h5" color="primary">
               {fNumber(vol24hx)}
             </Typography>
           </Stack>

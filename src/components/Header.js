@@ -1,5 +1,8 @@
 import { useState } from 'react';
 
+// import i18n (needs to be bundled ;))
+import 'src/utils/i18n';
+
 // Material
 import {
   alpha,
@@ -15,8 +18,8 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 
-// Iconify Icons
-
+// Translations
+import { useTranslation } from 'react-i18next';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -27,6 +30,9 @@ import Wallet from 'src/components/Wallet';
 import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
 import ThemeSwitcher from './ThemeSwitcher';
+
+
+
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -56,6 +62,7 @@ const StyledLink = styled(Link)(
 );
 
 export default function Header(props) {
+  const { t } = useTranslation();    // set translation const
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   // const data = props.data;
@@ -101,17 +108,18 @@ export default function Header(props) {
             {!isTablet && (
               <>
                   <StyledLink underline="none" color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}} href="/">
-                    Tokens
+                  {t("Tokens")}
                   </StyledLink>
                   <StyledLink underline="none"  color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}} href="/swap">
-                    Swap
+                  {t("Swap")}
                   </StyledLink>
                   <StyledLink underline="none"  color={ darkMode ? 'white': 'black' } sx={{'&:hover': {color:  darkMode ? '#22B14C !important': '#3366FF !important' ,},}} href="/buy-xrp">
-                    Fiat
+                  {t("Fiat")}
                   </StyledLink>
               </>
             )}
           </Box>
+
 
           {fullSearch && (
             <NavSearchBar

@@ -68,20 +68,20 @@ export default function Summary() {
                 <Typography variant='wallet_h2'>Understanding XRP Ledger Wallets: A Brief Overview</Typography>
                 <Typography variant='p1'>XRPL wallets are software applications designed to store private and public keys, as well as interact with the XRP Ledger. They enable users to send, receive, and monitor the balance of XRPL currencies, functioning similarly to a bank account for viewing, depositing, and withdrawing funds.</Typography>
                 <Typography variant='p1'>XRPL wallets securely store private and public keys, enabling users to send and receive digital currency while monitoring transactions to safeguard against identity theft. The private key authorizes payments, while the public key allows access to received funds.</Typography>
-                <Typography variant='p1'>XRPL wallets can be categorized as hot or cold, depending on their connection to the internet. Hot wallets are connected to the internet, while cold wallets remain offline. When choosing between a <Link href="/status/coming-soon">hot wallet and a cold wallet</Link>, several factors must be considered: hot wallets are generally more user-friendly but come with a higher risk of fund loss due to their internet connection.</Typography>
+                <Typography variant='p1'>XRPL wallets can be categorized as hot or cold, depending on their connection to the internet. Hot wallets are connected to the internet, while cold wallets remain offline. When choosing between a <Link href="/status/coming-soon" color="primary">hot wallet and a cold wallet</Link>, several factors must be considered: hot wallets are generally more user-friendly but come with a higher risk of fund loss due to their internet connection.</Typography>
 
                 <Typography variant='wallet_h2'>Exploring the Main Types of XRPL Wallets: An Overview</Typography>
 
-                <Typography variant='wallet_h2'><Link href="https://bithomp.com/paperwallet/">Paper Wallets</Link></Typography>
+                <Typography variant='wallet_h2'><Link href="https://bithomp.com/paperwallet/" color="primary">Paper Wallets</Link></Typography>
                 <Typography variant='p1'>XRPL paper wallets offer a secure method for holding your cryptocurrencies, functioning as a safe and accessible storage solution. A paper wallet stores both the public and private keys for your wallet, allowing you to receive currencies from others. Additionally, you can send currency to this address, provided it is generated using a genuine random number generator (RNG).</Typography>
                 <Typography variant='p1'>Paper wallets serve as simple, secure, and offline alternatives to digital cryptocurrency wallets. They combine the advantages of traditional paper money with the unique capability to safely cold-store digital currency, eliminating the risk of hackers or malware gaining access to your funds.</Typography>
 
-                <Typography variant='wallet_h2'><Link href="https://gatehub.net/">Hot Wallets</Link></Typography>
+                <Typography variant='wallet_h2'><Link href="https://gatehub.net/" color="primary">Hot Wallets</Link></Typography>
                 <Typography variant='p1'>Currency hot wallets, often referred to as web wallets or online wallets, are ideal for making small, frequent payments with minimal effort from individuals or organizations.</Typography>
-                <Typography variant='p1'>Currency hot wallets are a digital wallet used to store cryptocurrency funds. A hot wallet is an online system and can be accessed from anywhere as it does not require any physical access to the unit. For example, <Link href="https://www.uphold.com/">Uphold</Link> is a popular exchange platform for buying cryptocurrency in the U.S. and Europe, but they also have a web-based digital wallet which allows users to store <Link href="https://xrpl.to/token/xrp/">XRP</Link>, <Link href="https://xrpl.to/token/casinocoin-csc">Casino Coin</Link> and <Link href="https://xrpl.to/token/xpunks-xpunk">XPunks</Link>, among other XRPL tokens.</Typography>
-                <Typography variant='p1'><Link href="https://gatehub.net/">Gatehub</Link> is another popular hot wallet option for storing and managing cryptocurrencies.</Typography>
+                <Typography variant='p1'>Currency hot wallets are a digital wallet used to store cryptocurrency funds. A hot wallet is an online system and can be accessed from anywhere as it does not require any physical access to the unit. For example, <Link href="https://www.uphold.com/" color="primary">Uphold</Link> is a popular exchange platform for buying cryptocurrency in the U.S. and Europe, but they also have a web-based digital wallet which allows users to store <Link href="https://xrpl.to/token/xrp/" color="primary">XRP</Link>, <Link href="https://xrpl.to/token/casinocoin" color="primary">Casino Coin</Link> and <Link href="https://xrpl.to/token/xpunks" color="primary">XPunks</Link>, among other XRPL tokens.</Typography>
+                <Typography variant='p1'><Link href="https://gatehub.net/" color="primary">Gatehub</Link> is another popular hot wallet option for storing and managing cryptocurrencies.</Typography>
 
-                <Typography variant='wallet_h2'><Link href="https://xumm.app/">Cold Wallets</Link></Typography>
+                <Typography variant='wallet_h2'><Link href="https://xumm.app/" color="primary">Cold Wallets</Link></Typography>
                 <Typography variant='p1'>Cold wallets encompass various methods of storing cryptocurrency that keep the private keys of your tokens offline, safeguarding them against hacking, theft, or unauthorized access. Compared to hot storage solutions, paper wallets and other cold wallet options are generally considered more secure due to their offline nature. Ledger Hardware Wallets, such as the Ledger Nano S, serve as an example of a cold wallet, providing a highly secure option for storing your cryptocurrencies offline.</Typography>
 
 
@@ -93,7 +93,7 @@ export default function Summary() {
                 <Typography variant='p1'>5. Send and receive XRP: To send XRP, you'll need the recipient's XRP address. Enter the address and the amount you'd like to send, and confirm the transaction. To receive XRP, simply share your XRP address with the sender.</Typography>
                 <Typography variant='p1'>6. Monitor your balance and transactions: Most XRP wallets provide an overview of your balance and transaction history. Keep track of your funds and ensure that all transactions are processed correctly.</Typography>
                 <Typography variant='p1'>7. Safeguard your wallet: Always remember to back up your wallet's private key or recovery phrase in a secure location. Additionally, enable two-factor authentication (2FA) for hot wallets to enhance security.</Typography>
-                <Typography variant='p1'>XUMM wallet is a prominent XRP Ledger wallet supported by numerous applications. Learn <Link href="https://www.youtube.com/watch?v=dIGDYLffQa8">how to use Xaman (XUMM) XRP wallet in this tutorial</Link>.</Typography>
+                <Typography variant='p1'>XUMM wallet is a prominent XRP Ledger wallet supported by numerous applications. Learn <Link href="https://www.youtube.com/watch?v=dIGDYLffQa8" color="primary">how to use Xaman (XUMM) XRP wallet in this tutorial</Link>.</Typography>
 
                 <Typography variant='para'></Typography>
 
@@ -123,10 +123,10 @@ export default function Summary() {
   right: '-15px',
   top: '30px',
   textAlign: 'center',
-  borderRadius: '25px',
+  borderRadius: '12px',
   transform: 'rotate(20deg)',
 //   backgroundColor: '#3622D4',
-  backgroundColor: `${darkMode ? '#22B14C': '#3366FF'}`,
+  backgroundColor: `${darkMode ? '#007B55': '#5569ff'}`,
   color: 'white',
   fontFamily: 'Monospace', // Add a unique font
   textShadow: '2px 2px 4px #000000', // Add text shadow

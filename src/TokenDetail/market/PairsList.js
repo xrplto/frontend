@@ -188,10 +188,14 @@ export default function PairsList({token, pairs}) {
                             if (curr2.currency !== 'XRP')
                                 gatehubDexURL += `+${curr2.issuer}`;
 
-
-                                let xpmarketDexURL = `https://xpmarket.com/dex/${curr1.currency}+${curr1.issuer}/${curr2.currency}`;
-                                if (curr2.currency !== 'XRP')
-                                    xpmarketDexURL += `+${curr2.issuer}`;
+                            // dex/SOLO-rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz/XRP
+                            let xpmarketDexURL = `https://xpmarket.com/dex/${curr1.name}+${curr1.issuer}/${curr2.currency}`;
+                            if (curr2.currency !== 'XRP')
+                                xpmarketDexURL += `+${curr2.issuer}`;
+                            // /dex/EUR+rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_XRP+XRP
+                            let magneticDexURL = `https://xmagnetic.org/dex/${curr1.name}+${curr1.issuer}_${curr2.currency}+${curr2.currency}`;
+                            if (curr2.currency !== 'XRP')
+                            magneticDexURL += `+${curr2.issuer}`;
 
                             let xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
 
@@ -382,6 +386,18 @@ export default function PairsList({token, pairs}) {
                                             >
                                                 <IconButton edge="end" aria-label="solo">
                                                     <Avatar alt="xpmarket" src="/static/xpmarket.webp" sx={{ width: 24, height: 24 }} />
+                                                </IconButton>
+                                            </Link>
+
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={magneticDexURL}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                <IconButton edge="end" aria-label="solo">
+                                                    <Avatar alt="xpmarket" src="/static/magnetic.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
 
