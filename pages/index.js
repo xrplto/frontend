@@ -96,7 +96,7 @@ export async function getStaticProps() {
         const res = await axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`);
 
         data = res.data;
-        console.log('Response from API:', data);
+        //console.log('Response from API:', data);
 
         const time = Date.now();
         for (var token of data.tokens) {
