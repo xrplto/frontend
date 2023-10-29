@@ -65,7 +65,7 @@ const RenderOption = React.memo(
     isOMCF,
   }) => {
     const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-    const link = `/token/${slug}`;
+    const link = `/token/${slug}?fromSearch=1`;
     const { darkMode } = useContext(AppContext);
 
     return (

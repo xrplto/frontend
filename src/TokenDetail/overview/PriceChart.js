@@ -34,6 +34,8 @@ import { fCurrency5, fNumber } from 'src/utils/formatNumber';
 
 // Components
 import ChartOptions from './ChartOptions';
+
+import { useRouter } from 'next/router'
 // ----------------------------------------------------------------------
 
 function convertToOHLC(priceData, interval) {
@@ -97,11 +99,14 @@ export default function PriceChart({ token }) {
 
     const { accountProfile } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
+    
+	const router = useRouter();
+	const fromSearch = router.query.fromSearch ? '&fromSearch=1' : '';
 
     useEffect(() => {
         function getGraph () {
             // https://api.xrpl.to/api/graph/0527842b8550fce65ff44e913a720037?range=1D
-            axios.get(`${BASE_URL}/graph/${token.md5}?range=${range}`)
+            axios.get(`${BASE_URL}/graph/${token.md5}?range=${range}${fromSearch}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
