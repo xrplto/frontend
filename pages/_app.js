@@ -8,6 +8,7 @@ import "./zMain.css";
 
 function XRPLToApp({ Component, pageProps, router }) {
   const isUnderMaintenance = process.env.MAINTENANCE; // Set this variable to enable or disable maintenance mode
+  const { isOpen, msg, variant, openSnackbar, closeSnackbar } = useSnackbar();
 
   // Check if we're under maintenance and not already on the maintenance page
   if (isUnderMaintenance && router.pathname !== '/status/maintenance') {
@@ -17,7 +18,6 @@ function XRPLToApp({ Component, pageProps, router }) {
     return null;
   }
 
-  const { isOpen, msg, variant, openSnackbar, closeSnackbar } = useSnackbar();
   const ogp = pageProps.ogp || {};
   const data = pageProps.data
 
