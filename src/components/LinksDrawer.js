@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { useMediaQuery } from '@mui/material';
 
 // Material
 import {
@@ -40,10 +41,13 @@ const socialMediaIcons = {
 
 export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
   const { darkMode } = useContext(AppContext);
-
   const { issuer, domain, whitepaper, social } = token;
-
   const isChat = social && (social.telegram || social.discord);
+
+  // Use Media Query for responsive design
+  const isMobile = useMediaQuery('(max-width:600px)');
+  const iconSize = isMobile ? 24 : 16; // larger icons for mobile
+  const iconSpacing = isMobile ? '10px' : '5px'; // more spacing for mobile
 
   const renderLinkItem = (title, icon, link) => (
     <Link
@@ -57,7 +61,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
         <Avatar
           alt={icon.alt}
           src={icon.src}
-          sx={{ mr: '5px', width: 16, height: 16 }}
+          sx={{ mr: iconSpacing, width: iconSize, height: iconSize }}
         />
         <Typography variant="caption">{title}</Typography>
       </MenuItem>
@@ -68,9 +72,9 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
     <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
       <Icon
         icon={icon}
-        width="16"
-        height="16"
-        style={{ marginRight: 5 }}
+        width={iconSize}
+        height={iconSize}
+        style={{ marginRight: iconSpacing }}
       />
       <Typography variant="caption">{title}</Typography>
     </MenuItem>
@@ -165,7 +169,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
 
         <Typography
           variant="h6"
-          color="green"
+          color="textPrimary"
           sx={{ mt: 2, ml: 2, mb: 1 }}
         >
           Additional Resources
