@@ -1,37 +1,16 @@
-import axios from 'axios'
-import { useState, useEffect } from 'react';
-
-// Material
-import {
-    styled,
-    Box,
-    Stack,
-    Table,
-    TableBody,
-    Typography
-} from '@mui/material';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-
-// Loader
-import { PuffLoader } from "react-spinners";
-
-// Context
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
-
-// Redux
+import axios from 'axios';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { useSelector } from "react-redux";
+import { styled, Box, Stack, Table, TableBody, Typography } from '@mui/material';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { PuffLoader } from "react-spinners";
+import { AppContext } from 'src/AppContext';
 import { selectMetrics } from "src/redux/statusSlice";
-
-// Components
 import TokenListHead from './TokenListHead';
-import {TokenRow} from './TokenRow';
+import { TokenRow } from './TokenRow';
 import TokenListToolbar from './TokenListToolbar';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 import TrustSetDialog from 'src/components/TrustSetDialog';
-import { useRef } from 'react';
-
-// ----------------------------------------------------------------------
 
 const ConnectWalletContainer = styled(Box)({
     display: 'flex',
@@ -40,71 +19,68 @@ const ConnectWalletContainer = styled(Box)({
     height: '10vh'
 });
 
-// ----------------------------------------------------------------------
+const StyledTable = styled(Table)(({ theme }) => ({
+    "& .MuiTableCell-root": {
+        borderBottom: "none",
+        boxShadow: theme.palette.mode === 'dark'
+            ? "inset 0 -1px 0 rgba(68, 67, 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
+            : "inset 0 -1px 0 #dadee3",
+    }
+}));
 
 export default function AnalysisData({token}) {
     const metrics = useSelector(selectMetrics);
     const BASE_URL = process.env.API_URL;
-
     const { accountProfile, darkMode } = useContext(AppContext);
-    const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
+    const isAdmin = accountProfile?.account && accountProfile.admin;
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);
     const [count, setCount] = useState(0);
     const [tokens, setTokens] = useState([]);
-
     const [editToken, setEditToken] = useState(null);
     const [trustToken, setTrustToken] = useState(null);
-
     const [loading, setLoading] = useState(false);
-    
-    const {
-        issuer,
-        currency,
-        md5
-    } = token;
-
-    useEffect(() => {
-        function getTokens() {
-            setLoading(true);
-            // https://api.xrpl.to/api/other_tokens?md5=c9ac9a6c44763c1bd9ccc6e47572fd26&issuer=rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B&page=0&limit=10
-            axios.get(`${BASE_URL}/other_tokens?md5=${md5}&issuer=${issuer}&page=${page}&limit=${rows}`)
-                .then(res => {
-                    let ret = res.status === 200 ? res.data : undefined;
-                    if (ret) {
-                        setCount(ret.count);
-                        setTokens(ret.tokens);
-                    }
-                }).catch(err => {
-                    console.log("Error on getting tokens!!!", err);
-                }).then(function () {
-                    // always executed
-                    setLoading(false);
-                });
-        }
-        getTokens();
-    }, [page, rows]);
 
     const tableRef = useRef(null);
+
+    useEffect(() => {
+        async function getTokens() {
+            setLoading(true);
+            try {
+                const response = await axios.get(`${BASE_URL}/other_tokens?md5=${token.md5}&issuer=${token.issuer}&page=${page}&limit=${rows}`);
+                if (response.status === 200) {
+                    setCount(response.data.count);
+                    setTokens(response.data.tokens);
+                }
+            } catch (err) {
+                console.error("Error on getting tokens!!!", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        getTokens();
+    }, [BASE_URL, token.md5, token.issuer, page, rows]);
+
     const [scrollLeft, setScrollLeft] = useState(0);
 
     useEffect(() => {
         const handleScroll = () => {
-            setScrollLeft(tableRef?.current?.scrollLeft > 0);
+            setScrollLeft(tableRef.current?.scrollLeft > 0);
         };
 
-        tableRef?.current?.addEventListener('scroll', handleScroll);
+        const refCurrent = tableRef.current;
+        refCurrent?.addEventListener('scroll', handleScroll);
 
         return () => {
-            tableRef?.current?.removeEventListener('scroll', handleScroll);
+            refCurrent?.removeEventListener('scroll', handleScroll);
         };
     }, []);
 
     return (
         <>
-            {editToken && <EditTokenDialog token={editToken} setToken={setEditToken} /> }
-            {trustToken && <TrustSetDialog token={trustToken} setToken={setTrustToken} /> }
+            {editToken && <EditTokenDialog token={editToken} setToken={setEditToken} />}
+            {trustToken && <TrustSetDialog token={trustToken} setToken={setTrustToken} />}
             <Typography variant="s2">Other tokens by this issuer</Typography>
             <Box
                 sx={{
@@ -120,43 +96,24 @@ export default function AnalysisData({token}) {
                 }}
                 ref={tableRef}
             >
-                <Table sx={{
-                    "& .MuiTableCell-root": {
-                        borderBottom: "none",
-                        boxShadow: darkMode
-                            ? "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
-                            : "inset 0 -1px 0 #dadee3",
-                    }
-                }}>
-                    {count > 0 &&
-                        <TokenListHead scrollLeft={scrollLeft} tokens={tokens} />
-                    }
+                <StyledTable darkMode={darkMode}>
+                    {count > 0 && <TokenListHead scrollLeft={scrollLeft} tokens={tokens} />}
                     <TableBody>
-                        {
-                            tokens.map((row, idx) => {
-                                    return (
-                                        <TokenRow
-                                            key={idx}
-                                            mUSD = {metrics.USD}
-                                            time={row.time}
-                                            token={row}
-                                            admin={isAdmin}
-                                            setEditToken={setEditToken}
-                                            setTrustToken={setTrustToken}
-                                            scrollLeft={scrollLeft}
-                                        />
-                                    );
-                                })
-                        }
-                        {/* {emptyRows > 0 && (
-                                <TableRow style={{ height: 53 * emptyRows }}>
-                                    <TableCell colSpan={6} />
-                                </TableRow>
-                            )} */}
+                        {tokens.map((row, idx) => (
+                            <TokenRow
+                                key={idx}
+                                mUSD={metrics.USD}
+                                token={row}
+                                admin={isAdmin}
+                                setEditToken={setEditToken}
+                                setTrustToken={setTrustToken}
+                                scrollLeft={scrollLeft}
+                            />
+                        ))}
                     </TableBody>
-                </Table>
+                </StyledTable>
             </Box>
-            {count > 0 ?
+            {count > 0 ? (
                 <TokenListToolbar
                     count={count}
                     rows={rows}
@@ -164,26 +121,18 @@ export default function AnalysisData({token}) {
                     page={page}
                     setPage={setPage}
                 />
-                :
-                loading ?
-                    <Stack alignItems="center" sx={{mt: 5, mb: 5}}>
-                      {/*  <PuffLoader color={"#00AB55"} size={35} sx={{mt:5, mb:5}}/> */}
-                    </Stack>
-                    :
-                    <ConnectWalletContainer>
-                        <Typography
-                            variant='subtitle2'
-                            color='error'
-                            sx={{
-                                display: 'flex',
-                                alignItems: 'center'
-                            }}
-                        >
-                            <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
-                            No other tokens by this issuer
-                        </Typography>
-                    </ConnectWalletContainer>
-            }
+            ) : loading ? (
+                <Stack alignItems="center" sx={{ mt: 5, mb: 5 }}>
+                    <PuffLoader color={"#00AB55"} size={35} />
+                </Stack>
+            ) : (
+                <ConnectWalletContainer>
+                    <Typography variant='subtitle2' color='error' sx={{ display: 'flex', alignItems: 'center' }}>
+                        <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
+                        No other tokens by this issuer
+                    </Typography>
+                </ConnectWalletContainer>
+            )}
         </>
     );
 }
