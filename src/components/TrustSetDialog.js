@@ -344,7 +344,7 @@ export default function TrustSetDialog({ token, setToken }) {
           <Stack direction="row" alignItems="center">
             <Avatar alt={name} src={imgUrl} sx={{ mr: 1 }} />
             <Stack>
-              <Typography variant="token">{name}</Typography>
+              <Typography variant="token" color="primary">{name}</Typography>
               <Typography variant="caption">{user}</Typography>
             </Stack>
           </Stack>
