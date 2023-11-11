@@ -48,6 +48,20 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                     <ListItemText primary="Trust Set" primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </MenuItem>
 
+
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://livenet.xrpl.org/accounts/${issuer}`}
+                    rel="noreferrer noopener nofollow"
+                >
+                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="XRPL Explorer" src="/static/xrpl-org.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="XRPL Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
+
                 <Link
                     underline="none"
                     color="inherit"
@@ -84,6 +98,20 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                         <ListItemText primary="GateHub" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
+
+
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://explorer.xrplf.org/${issuer}`}
+                    rel="noreferrer noopener nofollow"
+                >
+                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="XRPL Explorer" src="/static/xrplf_black.svg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="XRPL Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
                 {/* <Link
                     underline="none"
                     color="inherit"
@@ -95,7 +123,7 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                         <Avatar alt="xrplorer" src="/static/xrplorer.svg" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPLORER" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
-                </Link> */}
+                </Link> 
                 <Link
                     underline="none"
                     color="inherit"
@@ -131,7 +159,7 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                         <Avatar alt="gatehub" src="/static/gatehub.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="GateHub DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
-                </Link>
+                </Link>*/}
             </Menu>
         </>
     );
