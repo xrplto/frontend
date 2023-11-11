@@ -192,7 +192,7 @@ export default function ExtraDesc({token}) {
 
                 <Grid item xs={12} md={4} sx={{display: { xs: 'none', md: 'block' }, borderRight: '1px solid', borderRightColor: theme.palette.divider}}>
                     <Stack direction="row" alignItems="center" gap={1} sx={{pl:3}}>
-                        <Typography variant="body1">Market Cap</Typography>
+                        <Typography variant="body1">Market cap</Typography>
                         <Tooltip title={<Typography style={{display: 'inline-block'}} variant="body2">The total market value of {name} token's circulating supply represents its overall worth. This concept is similar to free-float capitalization in the stock market.<br/><br/>{omcf==='yes'?'Price x Circulating Supply':'(Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'}.</Typography>}>
                             <Icon icon={infoFilled} />
                         </Tooltip>
@@ -227,11 +227,16 @@ export default function ExtraDesc({token}) {
                         <VolumeTypography variant="desc" sx={{mt:3,mb:2}}><NumberTooltip number={volume} /> <VolumeTypography variant="small"> {name}</VolumeTypography></VolumeTypography>
                     </Stack>
 
-                    <Typography variant="body1" sx={{pl:3}}>Volume / Marketcap</Typography>
+                    <Stack direction="row" alignItems="center" gap={1} sx={{ pl:3 }}>
+        <Typography variant="body1">Volume / Marketcap</Typography>
+        <Tooltip title={<Typography variant="body2">This metric represents the ratio of trading volume within the past 24 hours to the market capitalization of {name} token. It provides insights into the token's liquidity and trading activity relative to its overall market value.</Typography>}>
+            <Icon icon={infoFilled} />
+        </Tooltip>
+    </Stack>
 
-                    <Stack alignItems="center">
-                        <VolumeTypography variant="subtitle2" sx={{mt:1,mb:1}}>{fNumber(voldivmarket)}</VolumeTypography>
-                    </Stack>
+    <Stack alignItems="center">
+        <VolumeTypography variant="subtitle2" sx={{ mt:1, mb:1 }}>{fNumber(voldivmarket)}</VolumeTypography>
+    </Stack>
                 </Grid>
 
                 <Grid item xs={12} md={4} sx={{display: { xs: 'none', md: 'block' } }}>
@@ -250,11 +255,16 @@ export default function ExtraDesc({token}) {
 
 
 
-                    <Typography variant="body1" sx={{pl:3}}>Total Supply</Typography>
-                        
-                    <Stack alignItems="center">
-                        <TotalSupplyTypography variant="desc" sx={{mt:1,mb:1}}>{totalSupply}</TotalSupplyTypography>
-                    </Stack>
+                    <Stack direction="row" alignItems="center" gap={1} sx={{ pl:3 }}>
+        <Typography variant="body1">Total Supply</Typography>
+        <Tooltip title={<Typography variant="body2">Total number of {name} tokens that have been issued. This includes tokens that are in circulation as well as those that are not currently active in the market.</Typography>}>
+            <Icon icon={infoFilled} />
+        </Tooltip>
+    </Stack>
+
+    <Stack alignItems="center">
+        <TotalSupplyTypography variant="desc" sx={{ mt:1, mb:1 }}>{totalSupply}</TotalSupplyTypography>
+    </Stack>
                 </Grid>
             </Grid>
         </Stack>
