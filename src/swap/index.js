@@ -653,7 +653,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               <QueryToken token={token1} onChangeToken={onChangeToken1} />
               <Typography variant="s7">
                 Balance{' '}
-                <Typography variant="s2" >
+                <Typography variant="s2" color="primary" >
                   {revert
                     ? accountPairBalance?.curr2.value
                     : accountPairBalance?.curr1.value}
@@ -692,7 +692,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               <QueryToken token={token2} onChangeToken={onChangeToken2} />
               <Typography variant="s7">
                 Balance{' '}
-                <Typography variant="s2" >
+                <Typography variant="s2" color="primary" >
                   {revert
                     ? accountPairBalance?.curr1.value
                     : accountPairBalance?.curr2.value}
@@ -745,7 +745,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           style={{ order: 3, backgroundColor: color2 /*theme.currency.background2*/ /* webxtor SEO fix */ }}
         >
           <Stack
-            direction="row"
+            direction="row"    
             alignItems="center"
             justifyContent="space-between"
             sx={{
