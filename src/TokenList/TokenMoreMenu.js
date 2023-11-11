@@ -6,6 +6,7 @@ import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
 
 import EditIcon from '@mui/icons-material/Edit';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import LinkIcon from '@mui/icons-material/Link';
 
 // Material
 import {
@@ -22,6 +23,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
     const ref = useRef(null);
     const {
         issuer,
+        slug,
         currency
     } = token;
 
@@ -51,9 +53,23 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                 )}
 
                 <MenuItem onClick={() => {setIsOpen(false);setTrustToken(token);}} disableRipple sx={{ color: 'text.secondary' }}>
-                    <SwapHorizIcon sx={{ mr:1, width: 24, height: 24 }} />
+                    <LinkIcon sx={{ mr:1, width: 24, height: 24 }} />
                     <ListItemText primary="Trust Set" primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </MenuItem>
+
+
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://xrpl.to/token/${slug}/trade`}
+                    rel="noreferrer noopener nofollow"
+                >
+                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
+                    <SwapHorizIcon sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="DEX Trade" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
 {/*
                 <Link
                     underline="none"
@@ -104,7 +120,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                         <Avatar alt="xrplorer" src="/static/xrplorer.svg" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPLORER" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
-                </Link> */}
+                </Link> 
                 
                 <Link
                     underline="none"
@@ -168,7 +184,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                         <Avatar alt="xumm" src="/static/magnetic.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Magnetic DEX" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
-                </Link>
+                </Link>*/}
                 
             </Menu>
         </>
