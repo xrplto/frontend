@@ -84,6 +84,8 @@ export default function ExplorersMenu({issuer}) {
                 //   sx: { width: 170, maxWidth: '100%' }
                 // }}
             >
+
+                
                 <Link
                     underline="none"
                     color="inherit"
@@ -96,18 +98,7 @@ export default function ExplorersMenu({issuer}) {
                         <ListItemText primary="Bithomp" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
-                <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={issuer==='XRPL'?`https://gatehub.net`:`https://gatehub.net/explorer/${issuer}`}
-                    rel="noreferrer noopener nofollow"
-                >
-                    <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xumm" src="/static/gatehub.webp" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="GateHub" primaryTypographyProps={{ variant: 'subtitle2' }} />
-                    </MenuItem>
-                </Link>
+
                 <Link
                     underline="none"
                     color="inherit"
@@ -120,9 +111,41 @@ export default function ExplorersMenu({issuer}) {
                         <ListItemText primary="XRPScan" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
+
+
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={issuer==='XRPL'?`https://gatehub.net`:`https://gatehub.net/explorer/${issuer}`}
+                    rel="noreferrer noopener nofollow"
+                >
+                    <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="xumm" src="/static/gatehub.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="GateHub" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
+                
                 {/* https://explorer.xrplf.org/r4sHHquyvSxozK5HgCShR7ZqpZE5wzvjHt
                 https://livenet.xrpl.org/accounts/r4sHHquyvSxozK5HgCShR7ZqpZE5wzvjHt
                 https://xrplorer.com/account/r4sHHquyvSxozK5HgCShR7ZqpZE5wzvjHt */}
+
+
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={issuer==='XRPL'?`https://livenet.xrpl.org`:`https://livenet.xrpl.org/accounts/${issuer}`}
+                    rel="noreferrer noopener nofollow"
+                >
+                    <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="xrpl.org" src="/static/xrpl-org.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="XRPL Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
+
+
+
                 <Link
                     underline="none"
                     color="inherit"
@@ -132,21 +155,10 @@ export default function ExplorersMenu({issuer}) {
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="xrplf" src="/static/explorerxrplf.svg" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="XRP Ledger Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        <ListItemText primary="XRPLF Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
-                <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={issuer==='XRPL'?`https://livenet.xrpl.org`:`https://livenet.xrpl.org/accounts/${issuer}`}
-                    rel="noreferrer noopener nofollow"
-                >
-                    <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xrpl" src="/static/livenetxrplorg.webp" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="XRPL Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
-                    </MenuItem>
-                </Link>
+                
                 {/*
                 <Link
                     underline="none"
