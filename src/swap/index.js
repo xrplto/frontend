@@ -653,7 +653,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               <QueryToken token={token1} onChangeToken={onChangeToken1} />
               <Typography variant="s7">
                 Balance{' '}
-                <Typography variant="s2">
+                <Typography variant="s2" >
                   {revert
                     ? accountPairBalance?.curr2.value
                     : accountPairBalance?.curr1.value}
@@ -682,7 +682,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                   }
                 }}
               />
-              <Typography variant="s2">$ {fNumber(tokenPrice1)}</Typography>
+              <Typography variant="s2" color="primary">$ {fNumber(tokenPrice1)}</Typography>
             </InputContent>
           </CurrencyContent>
           <CurrencyContent
@@ -692,7 +692,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               <QueryToken token={token2} onChangeToken={onChangeToken2} />
               <Typography variant="s7">
                 Balance{' '}
-                <Typography variant="s2">
+                <Typography variant="s2" >
                   {revert
                     ? accountPairBalance?.curr1.value
                     : accountPairBalance?.curr2.value}
@@ -721,7 +721,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                   }
                 }}
               />
-              <Typography variant="s2">$ {fNumber(tokenPrice2)}</Typography>
+              <Typography variant="s2" color="primary">$ {fNumber(tokenPrice2)}</Typography>
             </InputContent>
           </CurrencyContent>
           <ToggleContent>
@@ -754,9 +754,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           >
             <Typography variant="s6">Price impact</Typography>
             {loadingPrice ? (
-              <ClipLoader color="#EB5757" size={15} />
+              <ClipLoader color="#FF6C40" size={15} />
             ) : (
-              <Typography variant="s2">{priceImpact} %</Typography>
+              <Typography variant="s2" color="primary">{priceImpact} %</Typography>
             )}
           </Stack>
         </CurrencyContent>
@@ -766,7 +766,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         {accountProfile && accountProfile.account ? (
           <>
             {errMsg && amount1 !== '' && amount2 !== '' && (
-              <Typography variant="s2" sx={{ ml: 2 }}>
+              <Typography variant="s2"  sx={{ ml: 2 }}>
                 {errMsg}
               </Typography>
             )}
