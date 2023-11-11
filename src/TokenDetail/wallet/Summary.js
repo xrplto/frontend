@@ -1,26 +1,13 @@
 import Decimal from 'decimal.js';
-import { useState } from 'react';
-// Material
-import { withStyles } from '@mui/styles';
-import {
-    alpha,
-    Grid,
-    Link,
-    Stack,
-    Typography
-} from '@mui/material';
-
-// Redux
+import React, { useState, useContext } from 'react';
 import { useSelector } from "react-redux";
+import { withStyles } from '@mui/styles';
+import { alpha, Grid, Link, Stack, Typography } from '@mui/material';
 import { selectMetrics } from "src/redux/statusSlice";
-
-// Utils
 import { fNumber } from 'src/utils/formatNumber';
-
-// Components
 import WalletCard from './WalletCard';
+import { AppContext } from 'src/AppContext';
 
-// CBCCD2
 const ContentTypography = withStyles({
     root: {
         color: alpha('#919EAB', 0.99)
@@ -28,40 +15,36 @@ const ContentTypography = withStyles({
 })(Typography);
 
 function Rate(num, exch) {
-    if (num === 0 || exch === 0)
-        return 0;
+    if (num === 0 || exch === 0) return 0;
     return fNumber(num / exch);
 }
-
-
-// Context
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
 
 export default function Summary() {
     const [showContent, setShowContent] = useState(false);
     const { darkMode } = useContext(AppContext);
+
     return (
-        <Stack sx={{pt:2, pl:2.5}}>
+        <Stack sx={{ pt: 2, pl: 2.5 }}>
             <Typography variant='wallet_h3'>Wallets</Typography>
-            <Stack direction="row" sx={{mt:1, mb:6}}>
-                <ContentTypography variant='subtitle1'>We present various wallet provider options, enabling you to make an informed decision on the safest place to store your XRPL tokens and currencies.</ContentTypography>
+            <Stack direction="row" sx={{ mt: 1, mb: 6 }}>
+                <ContentTypography variant='subtitle1'>
+                    We present various wallet provider options, enabling you to make an informed decision on the safest place to store your XRPL tokens and currencies.
+                </ContentTypography>
                 <Link
                     component="button"
                     underline="always"
                     variant="body2"
                     color="#637381"
-                    onClick={() => {
-                        setShowContent(!showContent);
-                    }}
-                >
-                    <ContentTypography variant='subtitle1' sx={{ml:1}}>{showContent?'Read Less':'Read More'}</ContentTypography>
+                    onClick={() => setShowContent(!showContent)}>
+                    <ContentTypography variant='subtitle1' sx={{ ml: 1 }}>
+                        {showContent ? 'Read Less' : 'Read More'}
+                    </ContentTypography>
                 </Link>
             </Stack>
 
             <div
                 style={{
-                    display: showContent?"flex":"none",
+                    display: showContent ? "flex" : "none",
                     flexDirection: "column",
                 }}
             >
@@ -112,32 +95,34 @@ export default function Summary() {
                 </Typography>
             </div>
 
-            <Grid container spacing={3} sx={{p:0}}>
-                <Grid item xs={12} md={6} lg={4} sx={{pl:0, position: 'relative'}}>
+            <Grid container spacing={3} sx={{ p: 0 }}>
+                {/* Grid items for WalletCards */}
+                {/* Example for one Wallet Card */}
+                <Grid item xs={12} md={6} lg={4} sx={{ pl: 0, position: 'relative' }}>
                     <WalletCard name='Xaman' link='https://xumm.app/' imgUrl='/static/xumm.webp'/>
                     <Typography variant='caption' sx={{
-  width: '95px',
-  fontSize: '14px',
-  padding: '4px',
-  position: 'absolute',
-  right: '-15px',
-  top: '30px',
-  textAlign: 'center',
-  borderRadius: '12px',
-  transform: 'rotate(20deg)',
-//   backgroundColor: '#3622D4',
-  backgroundColor: `${darkMode ? '#007B55': '#5569ff'}`,
-  color: 'white',
-  fontFamily: 'Monospace', // Add a unique font
-  textShadow: '2px 2px 4px #000000', // Add text shadow
-  boxShadow: '0 5px 10px rgba(0,0,0,0.3)', // Add box shadow
-  '&:hover': { // Add hover animation
-    transform: 'scale(1.05) rotate(20deg)',
-    transition: 'transform 0.3s ease-in-out',
-  },
-}}>Recommended</Typography>
-
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: 'fit-content',
+                        padding: '4px 8px',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        borderRadius: '12px',
+                        backgroundColor: darkMode ? 'rgba(0, 123, 85, 0.9)' : 'rgba(85, 105, 255, 0.9)',
+                        color: 'white',
+                        letterSpacing: 'normal',
+                        transition: 'all 0.3s ease-in-out',
+                        '&:hover': {
+                            backgroundColor: darkMode ? 'rgba(0, 123, 85, 1)' : 'rgba(85, 105, 255, 1)',
+                            boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
+                        },
+                    }}>Recommended</Typography>
                 </Grid>
+                
                 <Grid item xs={12} md={6} lg={4} sx={{pl:0}}>
                     <WalletCard name='GemWallet' link='https://gemwallet.app/' imgUrl='/static/gemwallet.webp'/>
                 </Grid>
