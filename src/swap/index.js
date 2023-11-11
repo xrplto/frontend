@@ -725,19 +725,22 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             </InputContent>
           </CurrencyContent>
           <ToggleContent>
-            <IconButton size="medium" onClick={onRevertExchange}>
-              <Icon
-                icon={arrowDownOutline}
-                width="36"
-                height="36"
-                style={{
-                  padding: 4,
-                  borderRadius: '50%',
-                  color: '#17171AAA',
-                  background: '#ffffff'
-                }}
-              />
-            </IconButton>
+          <IconButton size="medium" onClick={onRevertExchange}>
+    <Icon 
+        icon={exchangeIcon} 
+        width="28" 
+        height="28" 
+        style={{ 
+            padding: 6, 
+            borderRadius: "50%", 
+            color: "#17171AAA", 
+            background: "#ffffff",
+            transform: 'rotate(90deg)' // Rotates the icon 90 degrees permanently
+        }} 
+    />
+</IconButton>
+
+
           </ToggleContent>
         </ConverterFrame>
 
