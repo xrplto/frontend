@@ -108,6 +108,9 @@ export default function Converter({token}) {
     const { accountProfile } = useContext(AppContext);
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+
+    
+
     // const metrics = useSelector(selectMetrics);
     const {
         id,
@@ -174,13 +177,25 @@ export default function Converter({token}) {
 
     return (
         <Stack>
-            <Typography variant="h3" fontSize='1.1rem' sx={{mt:{xs: 4, md: 0}, mb: 3 }}>{`${name} to XRP Converter`}</Typography>
+            <Typography 
+                variant="h3" 
+                fontSize='1.1rem' 
+                sx={{ mt: { xs: 4, md: 0 }, mb: 3 }}
+            >
+                {`${name} to XRP Converter`}
+            </Typography>
+    
             <ConverterFrame>
-                <CurrencyContent style={{order: revert ? 2:1, backgroundColor: color1}}>
+                <CurrencyContent 
+                    style={{ 
+                        order: revert ? 2 : 1, 
+                        backgroundColor: color1
+                    }}
+                >
                     <Avatar
                         alt={name}
                         src={imgUrl1}
-                        sx={{ mr:1.3, width: 32, height: 32 }}
+                        sx={{ mr: 1.3, width: 32, height: 32 }}
                     />
                     <Stack spacing={0}>
                         <Typography variant="s7">{name}</Typography>
@@ -188,11 +203,10 @@ export default function Converter({token}) {
                     </Stack>
                     <InputContent>
                         <Input
-                            placeholder=''
-                            autoComplete='new-password'
-                            // margin='dense'
+                            autoComplete="new-password"
                             disableUnderline
                             value={amount1}
+                            placeholder="0"
                             onChange={handleChangeAmount1}
                             sx={{
                                 width: '100%',
@@ -200,7 +214,7 @@ export default function Converter({token}) {
                                     autoComplete: 'off',
                                     padding: '10px 0px',
                                     border: 'none',
-                                    fontSize: '18px',
+                                    fontSize: '16px',
                                     textAlign: 'end',
                                     appearance: 'none',
                                     fontWeight: 700,
@@ -209,11 +223,17 @@ export default function Converter({token}) {
                         />
                     </InputContent>
                 </CurrencyContent>
-                <CurrencyContent style={{order: revert ? 1:2, backgroundColor: color2}}>
+    
+                <CurrencyContent 
+                    style={{ 
+                        order: revert ? 1 : 2, 
+                        backgroundColor: color2
+                    }}
+                >
                     <Avatar
-                        alt={name}
+                        alt="XRP"
                         src={imgUrl2}
-                        sx={{ mr:1.3, width: 32, height: 32 }}
+                        sx={{ mr: 1.3, width: 32, height: 32 }}
                     />
                     <Stack spacing={0}>
                         <Typography variant="s7">XRP</Typography>
@@ -221,11 +241,10 @@ export default function Converter({token}) {
                     </Stack>
                     <InputContent>
                         <Input
-                            placeholder=''
-                            autoComplete='new-password'
-                            // margin='dense'
+                            autoComplete="new-password"
                             disableUnderline
                             value={amount2}
+                            placeholder="0"
                             onChange={handleChangeAmount2}
                             sx={{
                                 width: '100%',
@@ -233,7 +252,7 @@ export default function Converter({token}) {
                                     autoComplete: 'off',
                                     padding: '10px 0px',
                                     border: 'none',
-                                    fontSize: '18px',
+                                    fontSize: '16px',
                                     textAlign: 'end',
                                     appearance: 'none',
                                     fontWeight: 700,
@@ -242,12 +261,26 @@ export default function Converter({token}) {
                         />
                     </InputContent>
                 </CurrencyContent>
+    
                 <ToggleContent>
-                    <IconButton size="medium" onClick={()=>{setRevert(!revert)}}>
-                        <Icon icon={exchangeIcon} width="28" height="28" style={{padding: 6, borderRadius: "50%", color: "#17171AAA", background: "#ffffff"}} />
+                    <IconButton 
+                        size="medium" 
+                        onClick={() => setRevert(!revert)}
+                    >
+                        <Icon 
+                            icon={exchangeIcon} 
+                            width="28" 
+                            height="28" 
+                            style={{ 
+                                padding: 6, 
+                                borderRadius: "50%", 
+                                color: "#17171AAA", 
+                                background: "#ffffff"
+                            }} 
+                        />
                     </IconButton>
                 </ToggleContent>
             </ConverterFrame>
         </Stack>
-    );
+    );    
 }
