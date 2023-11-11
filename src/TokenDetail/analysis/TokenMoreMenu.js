@@ -49,18 +49,7 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                 </MenuItem>
 
 
-                <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://livenet.xrpl.org/accounts/${issuer}`}
-                    rel="noreferrer noopener nofollow"
-                >
-                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="XRPL Explorer" src="/static/xrpl-org.webp" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="XRPL Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
-                    </MenuItem>
-                </Link>
+                
 
                 <Link
                     underline="none"
@@ -96,6 +85,20 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
                         <Avatar alt="gatehub" src="/static/gatehub.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="GateHub" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
+
+
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://livenet.xrpl.org/accounts/${issuer}`}
+                    rel="noreferrer noopener nofollow"
+                >
+                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
+                        <Avatar alt="XRPL Explorer" src="/static/xrpl-org.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="XRPL Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
 
