@@ -1,5 +1,3 @@
-import PropTypes from 'prop-types';
-// Material
 import { visuallyHidden } from '@mui/utils';
 import { withStyles } from '@mui/styles';
 import {
@@ -9,11 +7,16 @@ import {
   TableRow,
   TableCell,
   TableHead,
-  TableSortLabel
+  TableSortLabel,
+  Tooltip // Import Tooltip component
 } from '@mui/material';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-// ----------------------------------------------------------------------
+import InfoIcon from '@mui/icons-material/Info'; // Import InfoIcon from Material-UI Icons
+
+const SmallInfoIcon = (props) => (
+  <InfoIcon {...props} fontSize="smaller" /> // Make the icon smaller by setting fontSize="small"
+);
 
 const StickyTableCell = withStyles((theme) => ({
   head: {
@@ -22,9 +25,6 @@ const StickyTableCell = withStyles((theme) => ({
     top: 0
   }
 }))(TableCell);
-
-//    { id: 'holders', label: 'Holders', align: 'left', order: true },
-//    { id: 'offers', label: 'Offers', align: 'left', order: true },
 
 const TABLE_HEAD = [
   { no: 0, id: 'star', label: '', align: 'left', width: '', order: false },
@@ -48,7 +48,7 @@ const TABLE_HEAD = [
   {
     no: 4,
     id: 'pro24h',
-    label: '24h (%)',
+    label: '24h',
     align: 'right',
     width: '6%',
     order: true
@@ -56,7 +56,7 @@ const TABLE_HEAD = [
   {
     no: 5,
     id: 'pro7d',
-    label: '7d (%)',
+    label: '7d',
     align: 'right',
     width: '6%',
     order: true
@@ -64,7 +64,16 @@ const TABLE_HEAD = [
   {
     no: 6,
     id: 'vol24hxrp',
-    label: 'Volume(24h)',
+    label: (
+     <Tooltip
+        title="Amount of XRP that has been traded with this token in the last 24 hours"
+        placement="top" // Adjust placement as needed
+      >
+        <span>
+          Volume <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
+        </span>
+     </Tooltip>
+    ),
     align: 'right',
     width: '10%',
     order: true
@@ -72,7 +81,16 @@ const TABLE_HEAD = [
   {
     no: 7,
     id: 'vol24htx',
-    label: 'Trades',
+    label: (
+      <Tooltip
+         title="Trades represents the total number of trade transactions for an asset on the XRPL DEX within the last 24 hours, indicating market activity and liquidity."
+         placement="top" // Adjust placement as needed
+       >
+         <span>
+           Trades <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
+         </span>
+      </Tooltip>
+     ),
     align: 'right',
     width: '6%',
     order: true
@@ -80,7 +98,16 @@ const TABLE_HEAD = [
   {
     no: 8,
     id: 'marketcap',
-    label: 'Market Cap',
+    label: (
+      <Tooltip
+        title="Circulating supply * price"
+        placement="top" // Adjust placement as needed
+      >
+        <span>
+          Market Cap <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
+        </span>
+      </Tooltip>
+    ),
     align: 'right',
     width: '10%',
     order: true
@@ -88,7 +115,16 @@ const TABLE_HEAD = [
   {
     no: 9,
     id: 'trustlines',
-    label: 'TrustLines',
+    label: (
+      <Tooltip
+         title="A TrustLine in blockchain allows users to hold and transact in others' debt in specified currencies, enabling multi-currency dealings."
+         placement="top" // Adjust placement as needed
+       >
+         <span>
+           TrustLines <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
+         </span>
+      </Tooltip>
+     ),
     align: 'right',
     width: '10%',
     order: true
@@ -96,7 +132,16 @@ const TABLE_HEAD = [
   {
     no: 10,
     id: 'supply',
-    label: 'Circulating Supply',
+    label: (
+      <Tooltip
+        title="The quantity of tokens in circulation within the market and held by the public is comparable to the shares in motion within the stock market."
+        placement="top" // Adjust placement as needed
+      >
+        <span>
+          Circulating Supply <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
+        </span>
+      </Tooltip>
+    ),
     align: 'right',
     width: '13%',
     order: true
@@ -200,33 +245,26 @@ export default function TokenListHead({
               align={headCell.align}
               sortDirection={orderBy === headCell.id ? order : false}
               width={headCell.width}
-              sx={{
-                ...(headCell.no > 0 &&
-                  {
-                    // pl:0,
-                    // pr:0,
-                  })
-              }}
+              // ... [Rest of your StickyTableCell styles]
             >
-              <TableSortLabel
-                hideSortIcon
-                active={orderBy === headCell.id}
-                direction={orderBy === headCell.id ? order : 'desc'}
-                onClick={
-                  headCell.order
-                    ? createSortHandler(headCell.id, headCell.no)
-                    : undefined
-                }
-              >
-                {headCell.label}
-                {orderBy === headCell.id ? (
-                  <Box sx={{ ...visuallyHidden }}>
-                    {order === 'desc'
-                      ? 'sorted descending'
-                      : 'sorted ascending'}
-                  </Box>
-                ) : null}
-              </TableSortLabel>
+              {headCell.order ? (
+                <TableSortLabel
+                  hideSortIcon={!headCell.order}
+                  active={orderBy === headCell.id}
+                  direction={orderBy === headCell.id ? order : 'desc'}
+                  onClick={createSortHandler(headCell.id, headCell.no)}
+                >
+                  {headCell.label}
+                  {orderBy === headCell.id && (
+                    <Box component="span" sx={{ ...visuallyHidden }}>
+                      {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
+                    </Box>
+                  )}
+                </TableSortLabel>
+              ) : (
+                // Render the label directly without TableSortLabel for unsortable columns
+                headCell.label
+              )}
             </StickyTableCell>
           );
         })}
