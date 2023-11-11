@@ -151,7 +151,7 @@ export default function PairsList({token, pairs}) {
                             <TableCell align="left">Domain</TableCell>
                             <TableCell align="left">Last 7 Days</TableCell>
                             <TableCell align="left">Volume<span style={badge24hStyle}>24h</span></TableCell>
-                            <TableCell align="left">Trades</TableCell>
+                            <TableCell align="left">Trades<span style={badge24hStyle}>24h</span></TableCell>
                             <TableCell align="left">Issuer</TableCell>
                             <TableCell align="left"><span style={badgeDEXStyle}>DEX</span></TableCell>
                         </TableRow>
@@ -198,6 +198,8 @@ export default function PairsList({token, pairs}) {
                             magneticDexURL += `+${curr2.issuer}`;
 
                             let xummDexURL = `https://xumm.app/detect/xapp:xumm.dex?issuer=${curr1.issuer}&currency=${curr1.currency}`;
+
+                            let unhostedDexURL = `https://unhosted.exchange/?base=${curr1.currency}_${curr1.issuer}&quote=XRP`;
 
                             let sparkline = '';
                             if (id === 1)
@@ -397,7 +399,20 @@ export default function PairsList({token, pairs}) {
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="xpmarket" src="/static/magnetic.webp" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="Magnetic DEX" src="/static/magnetic.webp" sx={{ width: 24, height: 24 }} />
+                                                </IconButton>
+                                            </Link>
+
+
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={unhostedDexURL}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                <IconButton edge="end" aria-label="solo">
+                                                    <Avatar alt="Unhosted DEX" src="/static/unhosted-dex.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
 
