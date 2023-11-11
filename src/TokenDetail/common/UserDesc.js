@@ -66,6 +66,9 @@ import ExtraButtons from './ExtraButtons';
 
 import Decimal from 'decimal.js';
 
+
+
+
 const IconCover = styled('div')(
   ({ theme }) => `
         width: 56px;
@@ -147,6 +150,8 @@ const AdminImage = styled(LazyLoadImage)(({ theme }) => ({
   }
 }));
 
+
+
 const SupplyTypography = withStyles({
   root: {
     color: '#3366FF'
@@ -170,6 +175,8 @@ const MarketTypography = withStyles({
     color: '#2CD9C5'
   }
 })(Typography);
+
+
 
 function truncate(str, n) {
   if (!str) return '';
@@ -223,6 +230,7 @@ export default function UserDesc({ token }) {
     date,
     marketcap,
     vol24hx,
+    vol24htx,
     vol24hxrp,
     amount,
     supply
@@ -344,61 +352,60 @@ export default function UserDesc({ token }) {
         </Grid>
       </Stack>
       <Box
-        sx={{
-          display: 'flex',
-          gap: 0.5,
-          py: 1,
-          overflow: 'auto',
-          width: '100%',
-          '& > *': {
-            scrollSnapAlign: 'center'
-          },
-          '::-webkit-scrollbar': { display: 'none' },
-          mb: isTablet ? 2 : 0
-        }}
-      >
-        <Tooltip
-          title={
-            <Typography style={{ display: 'inline-block' }} variant="body2">
-              Rank by Volume(24h)
-            </Typography>
-          }
-        >
-          <Chip
-            label={<Typography variant="s16">Rank # {id}</Typography>}
-            color="primary"
-            variant="outlined"
-            size="small"
-          />
-        </Tooltip>
-        <Chip
-          label={
-            <Typography variant="s16">{fIntNumber(holders)} Holders</Typography>
-          }
-          color="error"
-          variant="outlined"
-          size="small"
-        />
-        <Chip
-          label={
-            <Typography variant="s16">{fIntNumber(offers)} Offers</Typography>
-          }
-          color="warning"
-          variant="outlined"
-          size="small"
-        />
-        <Chip
-          label={
-            <Typography variant="s16">
-              {fIntNumber(trustlines)} TrustLines
-            </Typography>
-          }
-          color="info"
-          variant="outlined"
-          size="small"
-        />
-        {/* <Chip label='Sponsored' color="primary" variant={"outlined"} size="small" icon={<Avatar sx={{ width: 16, height: 16 }} src="/static/sponsor.webp"/>}  /> */}
-      </Box>
+  sx={{
+    display: 'flex',
+    flexWrap: 'wrap', // Enable wrapping for smaller screens
+    gap: { xs: 1, sm: 1.5, md: 2 }, // Dynamic gap based on screen size
+    py: 1,
+    overflow: 'auto',
+    width: '100%',
+    '& > *': {
+      scrollSnapAlign: 'center',
+      minWidth: 'fit-content', // Prevent chips from shrinking too much
+    },
+    '::-webkit-scrollbar': { display: 'none' },
+    mb: isTablet ? 2 : 0,
+  }}
+>
+  <Tooltip title={<Typography variant="body2">Rank by 24h Volume.</Typography>}>
+    <Chip
+      label={<Typography variant={isTablet ? "body2" : "s16"}>Rank # {id}</Typography>}
+      color="primary"
+      variant="outlined"
+      size={isTablet ? "small" : "small"}
+      sx={{ borderRadius: '8px' }} // Reduced borderRadius for a more squared shape
+    />
+  </Tooltip>
+  <Chip
+    label={<Typography variant={isTablet ? "body2" : "s16"}>{fIntNumber(holders)} Holders</Typography>}
+    color="error"
+    variant="outlined"
+    size={isTablet ? "small" : "small"}
+    sx={{ borderRadius: '8px' }}
+  />
+  <Chip
+    label={<Typography variant={isTablet ? "body2" : "s16"}>{fIntNumber(offers)} Offers</Typography>}
+    color="warning"
+    variant="outlined"
+    size={isTablet ? "small" : "small"}
+    sx={{ borderRadius: '8px' }}
+  />
+  <Chip
+    label={<Typography variant={isTablet ? "body2" : "s16"}>{fNumber(vol24htx)} Trades</Typography>}
+    color="secondary" // You can choose a suitable color
+    variant="outlined"
+    size={isTablet ? "small" : "small"}
+    sx={{ borderRadius: '8px' }}
+  />
+  <Chip
+    label={<Typography variant={isTablet ? "body2" : "s16"}>{fIntNumber(trustlines)} TrustLines</Typography>}
+    color="info"
+    variant="outlined"
+    size={isTablet ? "small" : "small"}
+    sx={{ borderRadius: '8px' }}
+  />
+</Box>
+
 
       {/* <Box
                 sx={{
@@ -465,8 +472,8 @@ export default function UserDesc({ token }) {
                     stock market.
                     <br />
                     {omcf === 'yes'
-                      ? 'Market Capitalization = Price x Circulating Supply'
-                      : 'Market Capitalization = (Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'}
+                      ? 'Price x Circulating Supply'
+                      : '(Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'}
                     .
                   </Typography>
                 }
@@ -491,8 +498,7 @@ export default function UserDesc({ token }) {
               <Tooltip
                 title={
                   <Typography variant="body2">
-                    A metric representing the trading volume of a token within
-                    the past 24 hours.
+                    Trading volume of {name} within the past 24 hours.
                   </Typography>
                 }
               >
