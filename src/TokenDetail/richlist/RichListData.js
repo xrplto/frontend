@@ -75,6 +75,21 @@ export default function RichListData({token}) {
         exch
     } = token;
 
+    const badge24hStyle = {
+        display: 'inline-block',
+        marginLeft: '4px',
+        marginRight: '4px',
+       // color: '#C4CDD5',
+        fontSize: '11px',
+        fontWeight: '500',
+        lineHeight: '18px',
+        //backgroundColor: '#323546',
+        borderRadius: '4px',
+        border: '1px solid #323546',
+        padding: '1px 4px'
+    };
+
+
     useEffect(() => {
         function getRichList() {
             // https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=100&freeze=false
@@ -297,7 +312,7 @@ export default function RichListData({token}) {
 									}
 								>
                                     <InfoIcon fontSize="smaller" />
-									24h Change
+									Change<span style={badge24hStyle}>24h</span>
 									{orderBy === vars.cellId ? (
 									  <Box sx={{ ...visuallyHidden }}>
 										{order === 'desc'
@@ -459,6 +474,9 @@ export default function RichListData({token}) {
                                                 />
                                             </TableCell>
                                         }
+
+
+                                        
                                         <TableCell align="left">
                                             <Stack direction="row" alignItems='center' spacing={2}>
                                                 <Link
