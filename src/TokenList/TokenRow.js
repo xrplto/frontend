@@ -333,10 +333,10 @@ function fTokenRow({
           </TransitionTypo>
         </TableCell>
         <TableCell align="right">
-          <BearBullLabel value={pro24h} variant="h4" />
+          <BearBullLabel value={pro24h.toFixed(2)} variant="h4" />
         </TableCell>
         <TableCell align="right">
-          <BearBullLabel value={pro7d} variant="h4" />
+          <BearBullLabel value={pro7d.toFixed(2)} variant="h4" />
         </TableCell>
         <TableCell align="right">
           <Stack
