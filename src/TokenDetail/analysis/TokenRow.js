@@ -306,8 +306,7 @@ function fTokenRow({
         {/* <TableCell align="left">{holders}</TableCell>
                 <TableCell align="left">{offers}</TableCell> */}
 
-        <TableCell align="right">{trustlines}</TableCell>
-
+        <TableCell align="right">{fNumber(trustlines)}</TableCell>
         <TableCell align="right">
           {fNumber(supply)}{' '}
           <Typography variant="small" noWrap>
