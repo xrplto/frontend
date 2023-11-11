@@ -38,6 +38,8 @@ const StackStyle = styled(Stack)(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
+
+
 const badge24hStyle = {
     display: 'inline-block',
     marginLeft: '4px',
@@ -78,7 +80,8 @@ export default function PairsList({token, pairs}) {
 
     const tableRef = useRef(null);
     const [scrollLeft, setScrollLeft] = useState(0);
-
+// Destructure slug from token here
+const { slug } = token;
     useEffect(() => {
         const handleScroll = () => {
             setScrollLeft(tableRef?.current?.scrollLeft > 0);
@@ -201,6 +204,8 @@ export default function PairsList({token, pairs}) {
 
                             let unhostedDexURL = `https://unhosted.exchange/?base=${curr1.currency}_${curr1.issuer}&quote=XRP`;
 
+                            let xrpltoDexURL = `https://xrpl.to/token/${slug}/trade`;
+
                             let sparkline = '';
                             if (id === 1)
                                 sparkline = curr1.md5;
@@ -310,7 +315,7 @@ export default function PairsList({token, pairs}) {
                                         <Stack>
                                             {id === 1 && (
                                                 <Stack direction="row" alignItems='center'>
-                                                    <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{user1}</Typography>
+                                                    
                                                     <Link
                                                         underline="none"
                                                         color="inherit"
@@ -318,15 +323,13 @@ export default function PairsList({token, pairs}) {
                                                         href={`https://bithomp.com/explorer/${curr1.issuer}`}
                                                         rel="noreferrer noopener nofollow"
                                                     >
-                                                        <IconButton edge="end" aria-label="bithomp">
-                                                            <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
-                                                        </IconButton>
+                                                        <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{user1}</Typography>
                                                     </Link>
                                                 </Stack>
                                             )}
                                             {curr2.issuer && curr2.issuer !== 'XRPL' && (
                                                 <Stack direction="row" alignItems='center'>
-                                                    <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{user2}</Typography>
+                                                    
 
                                                     <Link
                                                         underline="none"
@@ -335,9 +338,7 @@ export default function PairsList({token, pairs}) {
                                                         href={`https://bithomp.com/explorer/${curr2.issuer}`}
                                                         rel="noreferrer noopener nofollow"
                                                     >
-                                                        <IconButton edge="end" aria-label="bithomp">
-                                                            <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
-                                                        </IconButton>
+                                                        <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{user2}</Typography>
                                                     </Link>
                                                 </Stack>
                                             )}
@@ -345,6 +346,21 @@ export default function PairsList({token, pairs}) {
                                     </TableCell>
                                     <TableCell align="left" sx={{ pt:0.5, pb:0.5 }}>
                                         <Stack direction="row" spacing={1}>
+
+
+                                        <Link
+                                                underline="none"
+                                                color="inherit"
+                                            //    target="_blank"
+                                                href={xrpltoDexURL}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                <IconButton edge="end" aria-label="xrpl.to">
+                                                    <Avatar alt="xrpl.to DEX" src="/static/xrplto.webp" sx={{ width: 24, height: 24 }} />
+                                                </IconButton>
+                                            </Link>
+
+
                                             <Link
                                                 underline="none"
                                                 color="inherit"
@@ -356,17 +372,7 @@ export default function PairsList({token, pairs}) {
                                                     <Avatar alt="Sologenic" src="/static/solo.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
-                                            <Link
-                                                underline="none"
-                                                color="inherit"
-                                                target="_blank"
-                                                href={gatehubDexURL}
-                                                rel="noreferrer noopener nofollow"
-                                            >
-                                                <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="Gatehub" src="/static/gatehub.webp" sx={{ width: 24, height: 24 }} />
-                                                </IconButton>
-                                            </Link>
+
                                             <Link
                                                 underline="none"
                                                 color="inherit"
@@ -378,6 +384,20 @@ export default function PairsList({token, pairs}) {
                                                     <Avatar alt="XUMM" src="/static/xumm.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
+
+                                            
+                                            <Link
+                                                underline="none"
+                                                color="inherit"
+                                                target="_blank"
+                                                href={gatehubDexURL}
+                                                rel="noreferrer noopener nofollow"
+                                            >
+                                                <IconButton edge="end" aria-label="solo">
+                                                    <Avatar alt="Gatehub" src="/static/gatehub.webp" sx={{ width: 24, height: 24 }} />
+                                                </IconButton>
+                                            </Link>
+                                            
 
                                             <Link
                                                 underline="none"
