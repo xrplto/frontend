@@ -1,40 +1,111 @@
-import PropTypes from 'prop-types';
-// Material
 import { visuallyHidden } from '@mui/utils';
 import { withStyles } from '@mui/styles';
 import {
-    Box,
-    TableRow,
-    TableCell,
-    TableHead,
-    TableSortLabel
+  useMediaQuery,
+  useTheme,
+  Box,
+  TableRow,
+  TableCell,
+  TableHead,
+  TableSortLabel,
+  Tooltip // Import Tooltip component
 } from '@mui/material';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-// ----------------------------------------------------------------------
+import InfoIcon from '@mui/icons-material/Info'; // Import InfoIcon from Material-UI Icons
+
+const SmallInfoIcon = (props) => (
+  <InfoIcon {...props} fontSize="smaller" /> // Make the icon smaller by setting fontSize="small"
+);
 
 const StickyTableCell = withStyles((theme) => ({
     head: {
-        position: "sticky",
-        zIndex: 1000,
-        top: 0
+      position: 'sticky',
+      zIndex: 1000,
+      top: 0
     }
-})) (TableCell);
+  }))(TableCell);
 
 const TABLE_HEAD = [
-    { no: 0, id: 'id',            label: '#',                  align: 'left', width: '' },
-    { no: 1, id: 'name',          label: 'Name',               align: 'left', width: '11%'},
-    { no: 2, id: 'exch',          label: 'Price',              align: 'right', width: '8%'},
-    { no: 3, id: 'pro24h',        label: '24h (%)',            align: 'right', width: '6%'},
-    { no: 4, id: 'pro7d',         label: '7d (%)',             align: 'right', width: '6%'},
-    { no: 5, id: 'vol24hxrp',     label: 'Volume(24h)',        align: 'right', width: '10%'},
-    { no: 6, id: 'vol24htx',      label: 'Trades',             align: 'right', width: '6%'},
-    { no: 7, id: 'marketcap',     label: 'Market Cap',         align: 'right', width: '10%'},
-    { no: 8, id: 'trustlines',    label: 'TrustLines',         align: 'right', width: '10%'},
-    { no: 9, id: 'supply',        label: 'Circulating Supply', align: 'right', width: '13%'},
-    { no: 10, id: 'historyGraph', label: 'Last 7 Days',        align: 'right', width: '13%'},
+    { no: 0, id: 'id',            label: '#',                  align: 'left',   width: '' },
+    { no: 1, id: 'name',          label: 'Name',               align: 'left',   width: '11%' },
+    { no: 2, id: 'exch',          label: 'Price',              align: 'right',  width: '8%' },
+    { no: 3, id: 'pro24h',        label: '24h',                align: 'right',  width: '6%' },
+    { no: 4, id: 'pro7d',         label: '7d',                 align: 'right',  width: '6%' },
+    {
+        no: 5,
+        id: 'vol24hxrp',
+        label: (
+            <Tooltip
+                title="Amount of XRP that has been traded with this token in the last 24 hours"
+                placement="top"
+            >
+                <span>Volume <SmallInfoIcon /></span>
+            </Tooltip>
+        ),
+        align: 'right',
+        width: '10%'
+    },
+    {
+        no: 6,
+        id: 'vol24htx',
+        label: (
+            <Tooltip
+                title="Trades represents the total number of trade transactions for an asset on the XRPL DEX within the last 24 hours, indicating market activity and liquidity."
+                placement="top"
+            >
+                <span>Trades <SmallInfoIcon /></span>
+            </Tooltip>
+        ),
+        align: 'right',
+        width: '6%'
+    },
+    {
+        no: 7,
+        id: 'marketcap',
+        label: (
+            <Tooltip
+                title="Circulating supply * price"
+                placement="top"
+            >
+                <span>Market Cap <SmallInfoIcon /></span>
+            </Tooltip>
+        ),
+        align: 'right',
+        width: '10%'
+    },
+    {
+        no: 8,
+        id: 'trustlines',
+        label: (
+            <Tooltip
+                title="A TrustLine in blockchain allows users to hold and transact in others' debt in specified currencies, enabling multi-currency dealings."
+                placement="top"
+            >
+                <span>TrustLines <SmallInfoIcon /></span>
+            </Tooltip>
+        ),
+        align: 'right',
+        width: '10%'
+    },
+    {
+        no: 9,
+        id: 'supply',
+        label: (
+            <Tooltip
+                title="The quantity of tokens in circulation within the market and held by the public is comparable to the shares in motion within the stock market."
+                placement="top"
+            >
+                <span>Circulating Supply <SmallInfoIcon /></span>
+            </Tooltip>
+        ),
+        align: 'right',
+        width: '13%'
+    },
+    { no: 10, id: 'historyGraph', label: 'Last 7 Days',        align: 'right',  width: '13%' },
     { id: '' }
 ];
+
 
 export default function TokenListHead({ scrollLeft, tokens }) {
     const { darkMode } = useContext(AppContext);
