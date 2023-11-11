@@ -206,7 +206,7 @@ export default function Converter({token}) {
                             autoComplete="new-password"
                             disableUnderline
                             value={amount1}
-                            placeholder="0"
+                            placeholder=""
                             onChange={handleChangeAmount1}
                             sx={{
                                 width: '100%',
@@ -231,7 +231,7 @@ export default function Converter({token}) {
                     }}
                 >
                     <Avatar
-                        alt="XRP"
+                        alt={name}
                         src={imgUrl2}
                         sx={{ mr: 1.3, width: 32, height: 32 }}
                     />
@@ -244,7 +244,7 @@ export default function Converter({token}) {
                             autoComplete="new-password"
                             disableUnderline
                             value={amount2}
-                            placeholder="0"
+                            placeholder=""
                             onChange={handleChangeAmount2}
                             sx={{
                                 width: '100%',
