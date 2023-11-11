@@ -1,6 +1,10 @@
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 
+import Tooltip from '@mui/material/Tooltip';
+import InfoIcon from '@mui/icons-material/Info';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'; // Make sure this is imported
+
 // Material
 import {
     Avatar,
@@ -174,7 +178,7 @@ export default function RichListData({token}) {
     }, []);
 
 	const vars = {}
-
+    const [hoveredHeader, setHoveredHeader] = useState(null);
     return (
         <>
             <Box
@@ -200,41 +204,60 @@ export default function RichListData({token}) {
                     }
                 }}>
                     <TableHead>
-                        <TableRow>
-                            <TableCell align="left" sx={{
-                                position: "sticky",
-                                //zIndex: 1001,
-                                left: 0,
-                                background: darkMode ? "#17171A" : '#F2F5F9',
-                                '&:before': (scrollLeft ? {
-                                    content: "''",
-                                    boxShadow: "inset 10px 0 8px -8px #00000026",
-                                    position: "absolute",
-                                    top: "0",
-                                    right: "0",
-                                    bottom: "-1px",
-                                    width: "30px",
-                                    transform: "translate(100%)",
-                                    transition: "box-shadow .3s",
-                                    pointerEvents: "none",
-                                } : {})
-                            }}>#</TableCell>
-                            <TableCell align="left">Address</TableCell>
-                            <TableCell align="left">
-                                <Link
-                                    component="button"
-                                    underline="hover"
-                                    variant="body2"
-                                    color="inherit"
-                                    onClick={onChangeFrozen}
-                                >
-                                    Frozen ({frozen?'YES':'ALL'})
-                                </Link>
+  <TableRow>
+    <TableCell align="left" sx={{
+      position: "sticky",
+      left: 0,
+      background: darkMode ? "#17171A" : '#F2F5F9',
+      '&:before': (scrollLeft ? {
+        content: "''",
+        boxShadow: "inset 10px 0 8px -8px #00000026",
+        position: "absolute",
+        top: "0",
+        right: "0",
+        bottom: "-1px",
+        width: "30px",
+        transform: "translate(100%)",
+        transition: "box-shadow .3s",
+        pointerEvents: "none",
+      } : {})
+    }}>#</TableCell>
+
+    <TableCell align="left">Address</TableCell>
+
+
+
+    
+    
+
+<TableCell align="left">
+    <Tooltip title="Indicates whether the account's tokens are frozen." placement="top">
+ 								{(() => { vars.cellId = 'frozen'; })()}
+								<TableSortLabel
+                                    hideSortIcon
+									active={orderBy === vars.cellId}
+									direction={orderBy === vars.cellId ? order : 'desc'}
+									onClick={onChangeFrozen}
+								>
+                                    <InfoIcon fontSize="smaller" />
+									Frozen ({frozen ? 'YES' : 'ALL'})
+									{orderBy === vars.cellId ? (
+									  <Box sx={{ ...visuallyHidden }}>
+										{order === 'desc'
+										  ? 'sorted descending'
+										  : 'sorted ascending'}
+									  </Box>
+									) : null}
+								</TableSortLabel>
+                                </Tooltip>                           
                             </TableCell>
-                            <TableCell align="left">
+
+
+    <TableCell align="left">
+    <Tooltip title="Total account token balance."  placement="top">
  								{(() => { vars.cellId = 'balance'; })()}
 								<TableSortLabel
-									hideSortIcon
+                                    hideSortIcon
 									active={orderBy === vars.cellId}
 									direction={orderBy === vars.cellId ? order : 'desc'}
 									onClick={
@@ -243,6 +266,7 @@ export default function RichListData({token}) {
 										: undefined
 									}
 								>
+                                    <InfoIcon fontSize="smaller" />
 									Balance({name})
 									{orderBy === vars.cellId ? (
 									  <Box sx={{ ...visuallyHidden }}>
@@ -251,9 +275,16 @@ export default function RichListData({token}) {
 										  : 'sorted ascending'}
 									  </Box>
 									) : null}
-								</TableSortLabel>                           
+								</TableSortLabel>
+                                </Tooltip>                           
                             </TableCell>
+
+
+
+
+    
                             <TableCell align="left">
+                            <Tooltip title="Balance change within 24 hours." placement="top">
 								{(() => { vars.cellId = 'balance24h'; })()}
 								<TableSortLabel
 									hideSortIcon
@@ -265,6 +296,7 @@ export default function RichListData({token}) {
 										: undefined
 									}
 								>
+                                    <InfoIcon fontSize="smaller" />
 									24h Change
 									{orderBy === vars.cellId ? (
 									  <Box sx={{ ...visuallyHidden }}>
@@ -274,15 +306,48 @@ export default function RichListData({token}) {
 									  </Box>
 									) : null}
 								</TableSortLabel>
+                                </Tooltip>
 							</TableCell>
-                            <TableCell align="left">Holding</TableCell>
-                            <TableCell align="left">Value</TableCell>
-                            {isAdmin &&
-                                <TableCell align="left">Team Wallet</TableCell>
-                            }
-                            <TableCell align="left"></TableCell>
-                        </TableRow>
-                    </TableHead>
+
+
+
+
+                            <TableCell align="left">
+                            <Tooltip title="Percent of total token holdings." placement="top">
+								{(() => { vars.cellId = 'holding'; })()}
+								<TableSortLabel
+									hideSortIcon
+									active={orderBy === vars.cellId}
+									direction={orderBy === vars.cellId ? order : 'desc'}
+									onClick={
+									  true
+										? createSortHandler(vars.cellId)
+										: undefined
+									}
+								>
+                                    <InfoIcon fontSize="smaller" />
+									Holding
+									{orderBy === vars.cellId ? (
+									  <Box sx={{ ...visuallyHidden }}>
+										{order === 'desc'
+										  ? 'sorted descending'
+										  : 'sorted ascending'}
+									  </Box>
+									) : null}
+								</TableSortLabel>
+                                </Tooltip>
+							</TableCell>
+
+
+
+
+
+    <TableCell align="left">Value</TableCell>
+    {isAdmin && <TableCell align="left">Team Wallet</TableCell>}
+    <TableCell align="left"></TableCell>
+  </TableRow>
+</TableHead>
+
                     <TableBody>
                     {
                         // exchs.slice(page * rows, page * rows + rows)
@@ -427,6 +492,7 @@ export default function RichListData({token}) {
                     </TableBody>
                 </Table>
             </Box>
+            
             <RichListToolbar
                 count={count}
                 rows={rows}
