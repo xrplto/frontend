@@ -657,44 +657,46 @@ function TrustLine(props) {
               </Stack>
             </Box>
 
-            <Stack spacing={0} sx={{ mt: 2 }}>
-              <Stack direction="row" alignItems="center">
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://bithomp.com/explorer/${issuer}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Stack direction="row" spacing={0.5} alignItems="center">
-                    <PersonIcon style={{ color: '#B72136' }} fontSize="small" />
-                    <Typography variant="s7">{issuer}</Typography>
-                    <IconButton edge="end" aria-label="bithomp">
-                      <Avatar
-                        alt="bithomp"
-                        src="/static/bithomp.ico"
-                        sx={{ width: 18, height: 18 }}
-                      />
-                    </IconButton>
-                  </Stack>
-                </Link>
-              </Stack>
+            <Stack spacing={2} sx={{ mt: 3, width: '98%', justifyContent: 'space-between' }} >
+  <Stack direction="row" alignItems="center" sx={{ width: '100%' }}>
+    <Link
+      underline="none"
+      color="inherit"
+      target="_blank"
+      href={`https://bithomp.com/explorer/${issuer}`}
+      rel="noreferrer noopener nofollow"
+      sx={{ flexGrow: 1 }}
+    >
+      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: '100%', justifyContent: 'space-between' }}>
+        <PersonIcon style={{ color: '#B72136', fontSize: 'medium' }} />
+        <Typography variant="s7" sx={{ flexGrow: 1 }}>{issuer}</Typography>
+        <IconButton edge="end" aria-label="bithomp">
+          <Avatar
+            alt="bithomp"
+            src="/static/bithomp.ico"
+            sx={{ width: 24, height: 24 }}
+          />
+        </IconButton>
+      </Stack>
+    </Link>
+  </Stack>
 
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <LocalAtmIcon style={{ color: '#B72136' }} fontSize="small" />
-                <Typography variant="s7">{currency}</Typography>
-                <CopyToClipboard
-                  text={currency}
-                  onCopy={() => openSnackbar('Copied!', 'success')}
-                >
-                  <Tooltip title={'Click to copy'}>
-                    <IconButton>
-                      <Icon icon={copyIcon} />
-                    </IconButton>
-                  </Tooltip>
-                </CopyToClipboard>
-              </Stack>
-            </Stack>
+  <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
+    <LocalAtmIcon style={{ color: '#B72136', fontSize: 'medium' }} />
+    <Typography variant="s7" sx={{ flexGrow: 1 }}>{currency}</Typography>
+    <CopyToClipboard
+      text={currency}
+      onCopy={() => openSnackbar('Copied!', 'success')}
+    >
+      <Tooltip title={'Click to copy'}>
+        <IconButton>
+          <Icon icon={copyIcon} sx={{ fontSize: 'medium'}} />
+        </IconButton>
+      </Tooltip>
+    </CopyToClipboard>
+  </Stack>
+</Stack>
+
 
             <Grid
               container
