@@ -28,7 +28,9 @@ import BearBull from 'src/components/BearBull';
 // CBCCD2
 const ContentTypography = withStyles({
     root: {
-        color: alpha('#919EAB', 0.99)
+        color: alpha('#919EAB', 0.99),
+        display: 'inline', // Ensure it's displayed inline
+        verticalAlign: 'middle', // Align vertically with surrounding text
     }
 })(Typography);
 
@@ -58,20 +60,22 @@ export default function Summary() {
 
     return (
         <Stack sx={{mt:2}}>
-            <Typography variant='h1'>{t("Today's Top XRPL Token Prices by Volume")}</Typography>
+            <Typography variant='h1'>{t("Today's XRPL Native Asset Market Overview")}</Typography>
 
-            <ContentTypography variant='subtitle1' sx={{mt:2}}>The global token market cap stands at <strong>${fNumberWithSuffix(gMarketcap)}</strong>, a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last 24 hours.
-            <Link
-                component="button"
-                underline="always"
-                variant="body2"
-                color="#637381"
-                onClick={() => {
-                    setShowContent(!showContent);
-                }}
-            >
-                <ContentTypography variant='subtitle1' sx={{ml:1}}>{showContent?'Read Less':'Read More'}</ContentTypography>
-            </Link>
+            <ContentTypography variant='subtitle1' sx={{mt:2}}>
+                The global token market cap stands at <strong>${fNumberWithSuffix(gMarketcap)}</strong>, a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last 24 hours.
+                <Link
+                    component="button"
+                    underline="always"
+                    variant="body2"
+                    color="#637381"
+                    onClick={() => {
+                        setShowContent(!showContent);
+                    }}
+                    sx={{ verticalAlign: 'baseline', ml: 1 }} // Adjust marginLeft here to create space
+                >
+                    {showContent ? 'Read Less' : 'Read More'}
+                </Link>
             </ContentTypography>
 
             <div
@@ -86,21 +90,7 @@ export default function Summary() {
              {/* <ContentTypography variant='subtitle1'>XRP dominance currently stands at ---%, experiencing a decrease of -% over the past 24 hours.</ContentTypography> */}
             </div>
             
-            {/* Today's XRPL Token Prices by Volume
-            The global token market cap is $890.88B, a 1.08% decrease over the last day.Read Less
-            The total XRPL  Dex volume over the last 24 hours is $72.75B, which makes a 29.79% decrease.
-            
-            The total volume in Scams is currently $6.13B, 7.69% of the total crypto market 24-hour volume.
-            
-            The volume of all stable coins is now $64.66B, which is 88.87% of the total token market 24-hour volume.
-            
 
-            XRP price is currently .30c
-            XRP dominance is currently 99.01%, a decrease of 0.42% over the day.
-
-            Might be able to do "The volume of all stable coins is now $64.66B, which is 88.87% of the total token market 24-hour volume."
-
-            */}
         </Stack>
     )
 }
