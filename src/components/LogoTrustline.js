@@ -11,8 +11,8 @@ const LogoTrustline = () => {
 
     // Define the image paths for both dark and light themes
     const imgPaths = {
-        dark: "/logo/xrpl-to-logo-black.svg",
-        light: "/logo/xrpl-to-logo-white.svg",
+        dark: "/logo/xrpl-to-logo-white.svg",
+        light: "/logo/xrpl-to-logo-black.svg",
     };
 
     // Use the current theme to select the appropriate image path
