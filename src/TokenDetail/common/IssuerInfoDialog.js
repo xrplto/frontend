@@ -165,15 +165,17 @@ export default function IssuerInfoDialog({open, setOpen, token}) {
                     <Stack spacing={0} sx={{pl:1, pr:1, pb: 3}}>
                         <Stack direction="row" alignItems="center">
                             <Label variant="subtitle2" noWrap>
-                                {issuer}
+                                
                             </Label>
                             <Link
-                                underline="always"
-                                color="inherit"
+                                underline="none"
+                                color="primary"
                                 target="_blank"
                                 href={`https://bithomp.com/explorer/${issuer}`}
                                 rel="noreferrer noopener nofollow"
+                                
                             >
+                                {issuer}
                                 <IconButton edge="end" aria-label="bithomp">
                                     <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
                                 </IconButton>
