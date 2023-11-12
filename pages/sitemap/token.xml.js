@@ -2,41 +2,28 @@ import React from "react";
 import axios from 'axios';
 import { performance } from 'perf_hooks';
 
-const Sitemap = () => {};
-
 const BASE_URL = process.env.API_URL;
 
+const Sitemap = () => {
+  // This component does not render anything, as it's meant for server-side generation only.
+  return null;
+};
+
 export const getServerSideProps = async ({ res }) => {
-    let slugs = [];
-    let count = 0;
+  try {
+    const startTime = performance.now();
+
+    const response = await axios.get(`${BASE_URL}/slugs`);
+    const count = response.data?.count;
+    const slugs = response.data?.slugs;
+    const endTime = performance.now();
+    const elapsedTime = (endTime - startTime).toFixed(2);
+
+    console.log(`Sitemap generation: ${count} items took ${elapsedTime}ms`);
+
     const time = new Date().toISOString();
-    try {
-        var t1 = performance.now();
 
-        const res = await axios.get(`${BASE_URL}/slugs`);
-
-        count = res.data?.count;
-        slugs = res.data?.slugs;
-
-        var t2 = performance.now();
-        var dt = (t2 - t1).toFixed(2);
-
-        console.log(`3. sitemap/token.xml count: ${count} took: ${dt}ms [${time}]`);
-    } catch (e) {
-        console.log(e);
-    }
-
-    /* =============================
-        // Change freq
-            always = describe documents that change each time they are accessed
-            hourly
-            daily
-            weekly
-            monthly
-            yearly
-            never = describe archived URLs
-    =============================*/
-    
+    // Sitemap generation
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
@@ -44,32 +31,32 @@ export const getServerSideProps = async ({ res }) => {
         <lastmod>${time}</lastmod>
         <changefreq>always</changefreq>
     </url>
-    ${slugs.map((slug) => {
-    return `
+    ${slugs.map((slug) => `
     <url>
         <loc>https://xrpl.to/token/${slug}</loc>
         <lastmod>${time}</lastmod>
         <changefreq>always</changefreq>
-    </url>`}).join('')
-    }
-    ${slugs.map((slug) => {
-    return `
+    </url>`).join('')}
+    ${slugs.map((slug) => `
     <url>
         <loc>https://xrpl.to/trustset/${slug}</loc>
         <lastmod>${time}</lastmod>
         <changefreq>always</changefreq>
-    </url>`}).join('')
-    }
-</urlset>
-    `;
+    </url>`).join('')}
+</urlset>`;
 
     res.setHeader("Content-Type", "text/xml");
     res.write(sitemap);
     res.end();
 
     return {
-        props: {},
+      props: {},
     };
+  } catch (error) {
+    console.error("Error generating sitemap:", error);
+    res.statusCode = 500;
+    res.end();
+  }
 };
 
 export default Sitemap;
