@@ -443,7 +443,7 @@ function fTokenRow({
         </TableCell>
         <TableCell align="right">
           <LazyLoadImage
-            alt=""
+            alt={`${user}-${name}-7d-price-graph`}
             src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
             width={135}
             height={50}
