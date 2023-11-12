@@ -160,11 +160,11 @@ export default function Description({token, showEditor, setShowEditor, descripti
             If you're interested in purchasing {user}, the top XRPL DEX platforms for trading {user} tokens are currently: 
                 <Link color={ darkMode ? '#22B14C': '#3366FF' } underline="none"
                     href={`/token/${slug}/trade`}
-                >{' XRPL.to DEX'}</Link> and
+                >{' XRPL.to DEX'}</Link> {/*and
                 <Link color={ darkMode ? '#22B14C': '#3366FF' } underline="none"
                     href={`https://sologenic.org/trade?network=mainnet&market=${currency}%2B${issuer}%2FXRP`}
                 >{' Sologenic DEX'}</Link>.
-                
+        */}
             </Typography>
 
             {isAdmin &&
