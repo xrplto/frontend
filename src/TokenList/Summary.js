@@ -60,7 +60,7 @@ export default function Summary() {
 
     return (
         <Stack sx={{mt:2}}>
-            <Typography variant='h1'>{t("Today's XRPL Native Asset Market Overview")}</Typography>
+            <Typography variant='h1'>{t("Today's XRPL Native Asset Market")}</Typography>
 
             <ContentTypography variant='subtitle1' sx={{mt:2}}>
                 The global token market cap stands at <strong>${fNumberWithSuffix(gMarketcap)}</strong>, a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last 24 hours.
