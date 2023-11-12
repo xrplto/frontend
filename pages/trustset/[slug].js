@@ -87,8 +87,10 @@ function TrustLine(props) {
     amount,
     date,
     exch,
+    usd,
     name,
     domain,
+    dom,
     whitepaper,
     kyc,
     holders,
@@ -96,7 +98,12 @@ function TrustLine(props) {
     trustlines,
     ext,
     md5,
+    vol24hxrp, // XRP amount with pair token
+    vol24hx, // Token amount with pair XRP
+    vol24htx,
+    supply, // Circulating Supply
     tags,
+    tag,
     social,
     marketcap
   } = token;
@@ -262,6 +269,22 @@ function TrustLine(props) {
     else onTrustSetXumm();
   };
 
+
+  const voldivmarket =
+    marketcap > 0 ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
+
+
+    function normalizeTag(tag) {
+      if (tag && tag.length > 0) {
+        const tag1 = tag.split(' ').join('-'); // Replace space
+        const tag2 = tag1.replace(/&/g, 'and'); // Replace &
+        const tag3 = tag2.toLowerCase(); // Make lowercase
+        const final = tag3.replace(/[^a-zA-Z0-9-]/g, '');
+        return final;
+      }
+      return '';
+    }
+
   // Open in XUMM
   // https://xumm.app/detect/xapp:xumm.dex?issuer=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&currency=534F4C4F00000000000000000000000000000000
 
@@ -285,7 +308,7 @@ function TrustLine(props) {
             >
               <Avatar alt={user} src={imgUrl} sx={{ width: 64, height: 64 }} />
               <Stack spacing={1}>
-                <Typography variant="h2" color="#22B14C" fontSize="1.2rem">
+                <Typography variant="h2" fontSize="1.2rem" color="primary">
                   {user}
                 </Typography>
                 <Stack direction="row">
@@ -295,6 +318,11 @@ function TrustLine(props) {
                     label={name}
                     size="small"
                   />
+                  {kyc && (
+                    <Typography variant="kyc" sx={{ ml: 0.5}}>
+                      KYC
+                    </Typography>
+                  )}
                 </Stack>
               </Stack>
             </Stack>
@@ -346,49 +374,62 @@ function TrustLine(props) {
             </Stack>
 
             <Box
-              sx={{
-                display: 'flex',
-                gap: 1,
-                py: 1,
-                overflow: 'auto',
-                width: '100%',
-                alignItems: 'center',
-                justifyContent: 'center',
-                '& > *': {
-                  scrollSnapAlign: 'center'
-                },
-                '::-webkit-scrollbar': { display: 'none' }
-              }}
-            >
-              <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                <Chip
-                  label={fIntNumber(holders) + ' Holders'}
-                  color="error"
-                  variant="outlined"
-                  size="small"
-                />
-                <Chip
-                  label={fIntNumber(offers) + ' Offers'}
-                  color="warning"
-                  variant="outlined"
-                  size="small"
-                />
-                <Chip
-                  label={fIntNumber(trustlines) + ' TrustLines'}
-                  color="info"
-                  variant="outlined"
-                  size="small"
-                />
-                {kyc && (
-                  <Chip
-                    label={'KYC'}
-                    color="primary"
-                    variant="outlined"
-                    size="small"
-                  />
-                )}
-              </Stack>
-            </Box>
+  sx={{
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap', // Allow chips to wrap to the next row
+    gap: 1,
+    py: 1,
+    overflowX: 'auto', // Horizontal scrolling for small screens
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    '& > *': {
+      scrollSnapAlign: 'center',
+    },
+    '::-webkit-scrollbar': { display: 'none' },
+  }}
+>
+  <Tooltip title={<Typography variant="body2">Rank by 24h Volume.</Typography>}>
+    <Chip
+      label={<Typography variant="s16">Rank # {id}</Typography>}
+      color="primary"
+      variant="outlined"
+      size="small"
+      sx={{ borderRadius: '8px', mr: 1, mb: 1 }} // Added margin-right for spacing
+    />
+  </Tooltip>
+  <Chip
+    label={<Typography variant="s16">{fIntNumber(holders)} Holders</Typography>}
+    color="error"
+    variant="outlined"
+    size="small"
+    sx={{ borderRadius: '8px', mr: 1, mb: 1 }} // Added margin-right for spacing
+  />
+  <Chip
+    label={<Typography variant="s16">{fIntNumber(offers)} Offers</Typography>}
+    color="warning"
+    variant="outlined"
+    size="small"
+    sx={{ borderRadius: '8px', mr: 1, mb: 1 }} // Added margin-right for spacing
+  />
+  <Chip
+    label={<Typography variant="s16">{fNumber(vol24htx)} Trades</Typography>}
+    color="secondary"
+    variant="outlined"
+    size="small"
+    sx={{ borderRadius: '8px', mr: 1, mb: 1 }} // Added margin-right for spacing
+  />
+  <Chip
+    label={<Typography variant="s16">{fIntNumber(trustlines)} TrustLines</Typography>}
+    color="info"
+    variant="outlined"
+    size="small"
+    sx={{ borderRadius: '8px', mb: 1 }} // Added margin-bottom for spacing
+  />
+</Box>
+
+
 
             <Box
               sx={{
@@ -403,7 +444,7 @@ function TrustLine(props) {
                 '::-webkit-scrollbar': { display: 'none' }
               }}
             >
-              <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+              <Stack direction="row" spacing={{ xs: .5, sm: 2 }} sx={{ mt: 3 }}>
                 {social && social.telegram && (
                   <Link
                     underline="none"
@@ -415,7 +456,11 @@ function TrustLine(props) {
                     <Avatar
                       alt="telegram"
                       src="/static/telegram.webp"
-                      sx={{ mr: 1, width: 24, height: 24 }}
+                      sx={{
+                        width: { xs: 20, sm: 24 }, // Adjust width for different screen sizes
+                        height: { xs: 20, sm: 24 }, // Adjust height for different screen sizes
+                        mr: { xs: 1, sm: 2 }, // Adjust margin for different screen sizes
+                      }}
                     />
                   </Link>
                 )}
@@ -430,7 +475,11 @@ function TrustLine(props) {
                     <Avatar
                       alt="discord"
                       src="/static/discord.webp"
-                      sx={{ mr: 1, width: 24, height: 24 }}
+                      sx={{
+                        width: { xs: 20, sm: 24 }, // Adjust width for different screen sizes
+                        height: { xs: 20, sm: 24 }, // Adjust height for different screen sizes
+                        mr: { xs: 1, sm: 2 }, // Adjust margin for different screen sizes
+                      }}
                     />
                   </Link>
                 )}
@@ -445,7 +494,11 @@ function TrustLine(props) {
                     <Avatar
                       alt="twitter"
                       src="/static/twitter.webp"
-                      sx={{ mr: 1, width: 24, height: 24 }}
+                      sx={{
+                        width: { xs: 20, sm: 24 }, 
+                        height: { xs: 20, sm: 24 }, 
+                        mr: { xs: 1, sm: 2 }, 
+                      }}
                     />
                   </Link>
                 )}
@@ -460,7 +513,11 @@ function TrustLine(props) {
                     <Avatar
                       alt="facebook"
                       src="/static/facebook.webp"
-                      sx={{ mr: 1, width: 24, height: 24 }}
+                      sx={{
+                        width: { xs: 20, sm: 24 }, 
+                        height: { xs: 20, sm: 24 }, 
+                        mr: { xs: 1, sm: 2 }, 
+                      }}
                     />
                   </Link>
                 )}
@@ -475,7 +532,11 @@ function TrustLine(props) {
                     <Avatar
                       alt="linkedin"
                       src="/static/linkedin.webp"
-                      sx={{ mr: 1, width: 24, height: 24 }}
+                      sx={{
+                        width: { xs: 20, sm: 24 }, 
+                        height: { xs: 20, sm: 24 }, 
+                        mr: { xs: 1, sm: 2 }, 
+                      }}
                     />
                   </Link>
                 )}
@@ -490,7 +551,11 @@ function TrustLine(props) {
                     <Avatar
                       alt="instagram"
                       src="/static/instagram.webp"
-                      sx={{ mr: 1, width: 24, height: 24 }}
+                      sx={{
+                        width: { xs: 20, sm: 24 }, 
+                        height: { xs: 20, sm: 24 }, 
+                        mr: { xs: 1, sm: 2 }, 
+                      }}
                     />
                   </Link>
                 )}
@@ -505,7 +570,11 @@ function TrustLine(props) {
                     <Avatar
                       alt="youtube"
                       src="/static/youtube.webp"
-                      sx={{ mr: 1, width: 24, height: 24 }}
+                      sx={{
+                        width: { xs: 20, sm: 24 }, 
+                        height: { xs: 20, sm: 24 }, 
+                        mr: { xs: 1, sm: 2 }, 
+                      }}
                     />
                   </Link>
                 )}
@@ -520,7 +589,11 @@ function TrustLine(props) {
                     <Avatar
                       alt="medium"
                       src="/static/medium.webp"
-                      sx={{ mr: 1, width: 24, height: 24 }}
+                      sx={{
+                        width: { xs: 20, sm: 24 }, 
+                        height: { xs: 20, sm: 24 }, 
+                        mr: { xs: 1, sm: 2 }, 
+                      }}
                     />
                   </Link>
                 )}
@@ -535,7 +608,11 @@ function TrustLine(props) {
                     <Avatar
                       alt="twitch"
                       src="/static/twitch.webp"
-                      sx={{ mr: 1, width: 24, height: 24 }}
+                      sx={{
+                        width: { xs: 20, sm: 24 }, 
+                        height: { xs: 20, sm: 24 }, 
+                        mr: { xs: 1, sm: 2 }, 
+                      }}
                     />
                   </Link>
                 )}
@@ -550,7 +627,11 @@ function TrustLine(props) {
                     <Avatar
                       alt="tiktok"
                       src="/static/tiktok.webp"
-                      sx={{ mr: 1, width: 24, height: 24 }}
+                      sx={{
+                        width: { xs: 20, sm: 24 }, 
+                        height: { xs: 20, sm: 24 }, 
+                        mr: { xs: 1, sm: 2 }, 
+                      }}
                     />
                   </Link>
                 )}
@@ -565,7 +646,11 @@ function TrustLine(props) {
                     <Avatar
                       alt="reddit"
                       src="/static/reddit.svg"
-                      sx={{ mr: 1, width: 24, height: 24 }}
+                      sx={{
+                        width: { xs: 20, sm: 24 }, 
+                        height: { xs: 20, sm: 24 }, 
+                        mr: { xs: 1, sm: 2 }, 
+                      }}
                     />
                   </Link>
                 )}
@@ -622,36 +707,41 @@ function TrustLine(props) {
                 <Stack alignItems="center">
                   <Box
                     component="img"
-                    alt="QR"
+                    alt="XUMM QR"
                     src={qrUrl}
                     sx={{ width: 200, height: 200 }}
                   />
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <LoadingButton
-                      size="small"
-                      onClick={handleTrustSet}
-                      loading={loading}
-                      variant="outlined"
-                      color={uuid ? 'error' : 'success'}
-                      sx={{ mt: 1 }}
-                    >
-                      {uuid ? `Cancel (${counter})` : `Generate QR`}
-                    </LoadingButton>
+                  <Stack
+  direction={{ xs: 'column', sm: 'row' }} // Adjust the direction based on the screen size
+  spacing={1}
+  alignItems="center"
+>
+  <LoadingButton
+    size="small"
+    onClick={handleTrustSet}
+    loading={loading}
+    variant="contained"
+    color={uuid ? 'error' : 'success'}
+    sx={{ mt: 1, mb: { xs: 1, sm: 0 } }} // Adjust margin-bottom for smaller screens
+  >
+    {uuid ? `Cancel (${counter})` : `Generate QR`}
+  </LoadingButton>
 
-                    {nextUrl && (
-                      <Link
-                        underline="none"
-                        color="inherit"
-                        target="_blank"
-                        href={nextUrl}
-                        rel="noreferrer noopener nofollow"
-                      >
-                        <Button size="small" variant="outlined" sx={{ mt: 1 }}>
-                          Open in XUMM
-                        </Button>
-                      </Link>
-                    )}
-                  </Stack>
+  {nextUrl && (
+    <Link
+      underline="none"
+      color="inherit"
+      target="_blank"
+      href={nextUrl}
+      rel="noreferrer noopener nofollow"
+    >
+      <Button size="small" variant="outlined" sx={{ mt: 1 }}>
+        Open in XUMM
+      </Button>
+    </Link>
+  )}
+</Stack>
+
                 </Stack>
               </Grid>
 
@@ -665,14 +755,7 @@ function TrustLine(props) {
                   >
                     {date}
                   </Typography>
-                  <Label>TOTAL SUPPLY</Label>
-                  <Typography
-                    variant="subtitle1"
-                    color="primary"
-                    sx={{ mb: 1 }}
-                  >
-                    {fNumber(amount)}
-                  </Typography>
+
                   <Label>MARKET CAP</Label>
                   <Typography
                     variant="subtitle1"
@@ -681,6 +764,65 @@ function TrustLine(props) {
                   >
                     ${fNumber(marketcap)}
                   </Typography>
+
+                  <Label>24H  VOLUME</Label>
+                  <Typography
+                    variant="subtitle1"
+                    color="primary"
+                    sx={{ mb: -.3 }}
+                  >
+                    {fNumber(vol24hxrp)} XRP
+                  </Typography>
+
+
+                  <Typography
+                    variant="subtitle1"
+                    color="primary"
+                    sx={{ mb: 1 }}
+                  >
+                    {fNumber(vol24hx)} {name}
+                  </Typography>
+
+
+                  <Label>VOLUME / MARKETCAP</Label>
+                  <Typography
+                    variant="subtitle1"
+                    color="primary"
+                    sx={{ mb: 1 }}
+                  >
+                    {fNumber(voldivmarket)}
+                  </Typography>
+
+
+
+                  <Label>MARKET DOMINANCE</Label>
+                  <Typography
+                    variant="subtitle1"
+                    color="primary"
+                    sx={{ mb: 1 }}
+                  >
+                    {fNumber(dom)} %
+                  </Typography>
+
+
+                  <Label>CIRCULATING SUPPLY</Label>
+                  <Typography
+                    variant="subtitle1"
+                    color="primary"
+                    sx={{ mb: 1 }}
+                  >
+                    {fNumber(supply)}
+                  </Typography>
+                  
+                  <Label>TOTAL SUPPLY</Label>
+                  <Typography
+                    variant="subtitle1"
+                    color="primary"
+                    sx={{ mb: 1 }}
+                  >
+                    {fNumber(amount)}
+                  </Typography>
+                  
                   <Label>BLACKHOLED</Label>
                   <Typography
                     variant="subtitle1"
@@ -694,14 +836,39 @@ function TrustLine(props) {
             </Grid>
           </Stack>
         </Card>
-      </Container>
+        <Label>TAGS</Label>
+<Box
+  sx={{
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 1,
+    mt: 1,
+    mb: 2
+  }}
+>
+  {tags && tags.map((tag, index) => (
+    <Link 
+      key={index} 
+      href={`/view/${normalizeTag(tag)}`}
+      underline="none" 
+      target="_blank" 
+      rel="noreferrer noopener"
+    >
+      <Chip
+        label={tag}
+        variant="outlined"
+        size="small"
+        sx={{ mb: 1 }}
+        clickable
+      />
+    </Link>
+  ))}
+</Box>
 
-      {/* <Container maxWidth="xl" sx={{ ml:5, mr: 3, mt: 2, mb: 8 }}>
-                <Typography textAlign="left" variant="subtitle1">
-                    &copy; 2022 XRPL.TO
-                </Typography>
-            </Container> */}
+        
+      </Container>
     </OverviewWrapper>
+    
   );
 }
 
