@@ -7,13 +7,17 @@ import { useTheme } from '@mui/material/styles';
 
 const LogoTrustline = () => {
     const { darkMode } = useContext(AppContext);
-
-    const img_black = "/logo/xrpl-to-logo-black.svg";
-    const img_white = "/logo/xrpl-to-logo-white.svg";
-
-    const img = darkMode ? img_white : img_black;
     const theme = useTheme();
-    
+
+    // Define the image paths for both dark and light themes
+    const imgPaths = {
+        dark: "/logo/xrpl-to-logo-black.svg",
+        light: "/logo/xrpl-to-logo-white.svg",
+    };
+
+    // Use the current theme to select the appropriate image path
+    const img = darkMode ? imgPaths.dark : imgPaths.light;
+
     return (
         <Link
             href="/"
