@@ -90,7 +90,7 @@ const badge24hStyle = {
   fontWeight: '500',
   lineHeight: '18px',
   backgroundColor: '#323546',
-  borderRadius: '4px',
+  borderRadius: '5px',
   padding: '0.5px 4px'
 };
 
@@ -269,17 +269,19 @@ function fTokenRow({
               {isAdmin ? (
                 <AdminImage
                   src={imgUrl} // use normal <img> attributes as props
-                  width={isMobile ? 25 : 46}
-                  height={isMobile ? 25 : 46}
+                  width={isMobile ? 24 : 24}
+                  height={isMobile ? 24 : 24}
                   onClick={() => setEditToken(token)}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
+                  alt={`${name}-logo`}
                 />
               ) : (
                 <TokenImage
                   src={imgUrl} // use normal <img> attributes as props
-                  width={isMobile ? 25 : 46}
-                  height={isMobile ? 25 : 46}
+                  width={isMobile ? 24 : 24}
+                  height={isMobile ? 24 : 24}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
+                  alt={`${name}-logo`}
                 />
               )}
             </Box>
@@ -306,11 +308,12 @@ function fTokenRow({
                   variant="caption"
                   color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                   noWrap={isMobile ? false : true}
+                 
                 >
                   {isMobile && <span style={badge24hStyle}>{id}</span>}
                   {truncate(name, 8)}
                   {kyc && (
-                    <Typography variant="kyc" sx={{ ml: 0.2 }}>
+                    <Typography variant="kyc" sx={{ ml: 0.5}}>
                       KYC
                     </Typography>
                   )}
@@ -326,10 +329,10 @@ function fTokenRow({
           }}
         >
           <TransitionTypo variant="h4" noWrap={isMobile ? false : true}>
-          <Icon icon={rippleSolid} width={12} height={12} /> <NumberTooltip number={fNumber(exch)} />
+          <NumberTooltip prepend='$' number={fNumber(usd)} />
           </TransitionTypo>
           <TransitionTypo variant="h6" noWrap={isMobile ? false : true}>
-          <NumberTooltip prepend='$' number={fNumber(usd)} />
+          <Icon icon={rippleSolid} width={12} height={12} /> <NumberTooltip number={fNumber(exch)} />
           </TransitionTypo>
         </TableCell>
         <TableCell align="right">
