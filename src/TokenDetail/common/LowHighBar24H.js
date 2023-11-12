@@ -24,7 +24,7 @@ import { fNumber } from 'src/utils/formatNumber';
 import NumberTooltip from 'src/components/NumberTooltip';
 
 // ----------------------------------------------------------------------
-const LowhighBarSlider = styled(Slider)(({ theme, darkMode }) => ({
+const LowhighBarSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-track': {
     border: 'none'
   },
@@ -48,7 +48,7 @@ const LowhighBarSlider = styled(Slider)(({ theme, darkMode }) => ({
     width: 13,
     height: 13,
     borderRadius: '0 50% 50% 50%',
-    backgroundColor: darkMode ? '#fff' : '#007B55', // Set background color based on darkMode
+    backgroundColor: theme.palette.primary.main,
     transformOrigin: 'bottom left',
     transform: 'translate(-20%, 180%) rotate(45deg) scale(0)',
     '&:before': { display: 'none' },
@@ -61,7 +61,7 @@ const LowhighBarSlider = styled(Slider)(({ theme, darkMode }) => ({
   }
 }));
 
-export default function LowHighBar24H({ token, darkMode }) {
+export default function LowHighBar24H({ token }) {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const metrics = useSelector(selectMetrics);
@@ -87,7 +87,6 @@ export default function LowHighBar24H({ token, darkMode }) {
           aria-label="Low High Bar Slider"
           value={percent}
           sx={{ mt: 1 }}
-          darkMode={darkMode} // Pass darkMode as a prop
         />
       </Box>
       <Typography variant="caption">High: <NumberTooltip prepend='$' number={fNumber(max)}/></Typography>
