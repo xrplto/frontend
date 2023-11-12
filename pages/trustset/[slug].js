@@ -290,7 +290,7 @@ function TrustLine(props) {
 
   return (
     <OverviewWrapper>
-      <Container maxWidth="sm">
+      <Container maxWidth="md">
         <Stack alignItems="center" spacing={2} sx={{ mt: 2 }}>
           <LogoTrustline />
           <Typography variant="h1_trustline" sx={{ mt: 1 }}>
@@ -657,8 +657,8 @@ function TrustLine(props) {
               </Stack>
             </Box>
 
-            <Stack spacing={2} sx={{ mt: 3, width: '98%', justifyContent: 'space-between' }} >
-  <Stack direction="row" alignItems="center" sx={{ width: '100%' }}>
+            <Stack spacing={4} sx={{ mt: 3, justifyContent: 'center' }} >
+  <Stack direction="row" alignItems="center">
     <Link
       underline="none"
       color="inherit"
@@ -667,7 +667,7 @@ function TrustLine(props) {
       rel="noreferrer noopener nofollow"
       sx={{ flexGrow: 1 }}
     >
-      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: '100%', justifyContent: 'space-between' }}>
+      <Stack direction="row" spacing={1.5} alignItems="center">
         <PersonIcon style={{ color: '#B72136', fontSize: 'medium' }} />
         <Typography variant="s7" sx={{ flexGrow: 1 }}>{issuer}</Typography>
         <IconButton edge="end" aria-label="bithomp">
