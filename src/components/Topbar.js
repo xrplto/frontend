@@ -156,24 +156,24 @@ const H24Style = styled('div')(({ theme }) => ({
       <Container maxWidth="xl">
         <ContentWrapper>
           <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="body2">{t("Tokens")}:</Typography>
+            <Typography variant="body2" color="#a1a7bb" sx={{ fontWeight: 500 }}>{t("Tokens")}:</Typography>
             <Typography variant="body2">{fIntNumber(metrics.total)}</Typography>
-            <Typography variant="body2" noWrap>
+            <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
             {t('Addresses')}:
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.totalAddresses)}
             </Typography>
-            <Typography variant="body2" noWrap>
+            <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
             {t("Offers")}:
             </Typography>
             <Typography align="center" color="#FFC107" variant="body2">
               {fIntNumber(metrics.H24.totalOffers)}
             </Typography>
-            <Typography variant="body2" noWrap>
+            <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
             {t("Trustlines")}:
             </Typography>
-            <Typography align="center" color="#FFA48D" variant="body2">
+            <Typography align="center" color="#FFA48D" variant="body2" >
               {fIntNumber(metrics.H24.totalTrustLines)}
             </Typography>
             <H24Style>
@@ -183,36 +183,36 @@ const H24Style = styled('div')(({ theme }) => ({
                     align="center"
                     style={{ wordWrap: 'break-word' }}
                     variant="body2"
-                    color="#FFF"
+                    color="#ececec"
                   >
                     24h
                   </Typography>
                 </Stack>
               </Tooltip>
             </H24Style>
-            <Typography variant="body2">{t('Trades')}:</Typography>
+            <Typography variant="body2" color="#a1a7bb" sx={{ fontWeight: 500 }}>{t('Trades')}:</Typography>
             <Typography align="center" color="#74CAFF" variant="body2">
               {fIntNumber(metrics.H24.transactions24H)}
             </Typography>
-            <Typography variant="body2">{t('Vol')}:</Typography>
+            <Typography variant="body2" color="#a1a7bb" sx={{ fontWeight: 500 }}>{t('Vol')}:</Typography>
             <Typography align="center" color="#FF6C40" variant="body2">
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <Icon icon={rippleSolid} color={ darkMode ? '#FFF': '#000' } />
-                <Typography align="center" color="#FF6C40" variant="body2">
+                <Typography align="center" color="#FF6C40" variant="body2" >
                   {fNumber(metrics.H24.tradedXRP24H)}
                 </Typography>
               </Stack>
             </Typography>
-            <Typography variant="body2" noWrap>
+            <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
             {t('Tokens Traded')}:
             </Typography>
             <Typography align="center" color="#3366FF" variant="body2">
               {fIntNumber(metrics.H24.tradedTokens24H)}
             </Typography>
-            <Typography variant="body2" noWrap>
+            <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
             {t("Active Addresses")}:
             </Typography>
-            <Typography align="center" color="#54D62C" variant="body2">
+            <Typography align="center" color="#54D62C" variant="body2" >
               {fIntNumber(metrics.H24.activeAddresses24H)}
             </Typography>
           </Stack>
