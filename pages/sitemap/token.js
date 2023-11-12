@@ -112,7 +112,7 @@ const Sitemap = ({ tokens, slug }) => {
                     fontSize: 15,
                     color: darkMode ? '#007B55 !important  ' : '#5569FF !important',
                     '&:hover': {
-                      color: 'rgb(152, 202, 255) !important'
+                      color: 'rgb(160, 160, 160) !important'
                     }
                   }}
                 >
@@ -136,36 +136,20 @@ const Sitemap = ({ tokens, slug }) => {
         />
 
         <Grid container sx={{ mt: 3 }}>
-          <Grid item xs={12} mb={1}>
-            <Link
-              href={`/sitemap/token`}
-              underline="none"
-              rel="noreferrer noopener nofollow"
-              sx={{
-                fontSize: 15,
-                color: darkMode ? '#007B55 !important  ' : '#5569FF !important',
-                '&:hover': {
-                  color: 'rgb(152, 202, 255) !important'
-                }
-              }}
-            >
-              Tokens
-            </Link>
-          </Grid>
           <Grid item xs={12}>
             <Link
-              href={`/sitemap/trustset`}
+              href={`/sitemap/trustline`}
               underline="none"
               rel="noreferrer noopener nofollow"
               sx={{
                 fontSize: 15,
                 color: darkMode ? '#007B55 !important  ' : '#5569FF !important',
                 '&:hover': {
-                  color: 'rgb(152, 202, 255) !important'
+                  color: 'rgb(160, 160, 160) !important'
                 }
               }}
             >
-              Trustset
+              Trustlines Sitemap
             </Link>
           </Grid>
         </Grid>
@@ -210,7 +194,7 @@ export const getServerSideProps = async (ctx) => {
     ogp.title = slug.charAt(0).toUpperCase() + slug.substr(1) + ' Sitemap';
     ogp.url = 'https://xrpl.to/';
     ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
-    //ogp.desc = 'Meta description here';
+    ogp.desc = 'Discover XRPL tokens with ease! XRPL.to's Tokens Sitemap provides a streamlined overview of all available tokens on the XRP Ledger for easy access and exploration.';
 
     console.log(`3. sitemap/token.xml count: ${count} took: ${dt}ms [${time}]`);
     return {
