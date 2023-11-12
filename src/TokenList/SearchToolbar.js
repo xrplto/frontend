@@ -305,7 +305,7 @@ export default function SearchToolbar({
                 label={'Categories'}
                 onClick={() => setOpenCategoriesDrawer(true)}
                 sx={{
-                  color: darkMode ? 'green !important  ' : 'blue !important',
+                  color: darkMode ? '#007B55 !important  ' : '#5569ff !important',
                   borderRadius: '4px'
                 }}
               />
@@ -332,9 +332,9 @@ export default function SearchToolbar({
                     >
                       <Chip
                         size="small"
-                        label={tag}
+                        label={`🔥 ${tag}`} // Prepend the fire emoji
                         onClick={handleDelete}
-                        color={normalizeTag(tagName) === nTag ? 'primary' : undefined}//color={tagName === tag ? 'primary' : undefined}
+                        color={normalizeTag(tagName) === nTag ? 'primary' : undefined}
                         sx={{
                           borderRadius: '4px'
                         }}
