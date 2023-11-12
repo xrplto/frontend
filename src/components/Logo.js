@@ -11,10 +11,19 @@ function Logo({ style }) {
   const img_white = "/logo/xrpl-to-logo-white.svg";
   const img = darkMode ? img_white : img_black;
 
+  const logoStyle = {
+    paddingLeft: 0,
+    paddingRight: 0,
+    paddingTop: 3,
+    display: 'inline-flex',
+    transition: 'opacity 0.3s', // Add a transition for smooth theme change
+    ...style,
+  };
+
   return (
     <Link
       href="/"
-      style={{ paddingLeft: 0, paddingRight: 0, paddingTop: 3, display: 'inline-flex', ...style }}
+      style={logoStyle}
       underline="none"
       rel="noreferrer noopener nofollow"
     >
