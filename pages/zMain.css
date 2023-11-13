@@ -1,60 +1,38 @@
-.reactMarkDownlight a:link {
-  color: #3366FF;
-  background-color: transparent;
-  text-decoration: none;
+/* Define CSS variables for colors */
+:root {
+  --link-color-light: #3366FF; /* Color for light theme links */
+  --link-color-dark: #22B14C;  /* Color for dark theme links */
 }
-.reactMarkDownlight a:visited {
-  color: #3366FF;
-  background-color: transparent;
-  text-decoration: none;
-}
-.reactMarkDownlight a:hover {
-  color: #3366FF;
-  background-color: transparent;
-  text-decoration: underline;
-}
+
+/* Light theme */
+.reactMarkDownlight a:link,
+.reactMarkDownlight a:visited,
+.reactMarkDownlight a:hover,
 .reactMarkDownlight a:active {
-  color: #3366FF;
+  color: var(--link-color-light);
   background-color: transparent;
-  text-decoration: underline;
+  text-decoration: none; /* No underline for all states */
 }
 
-
-
-.reactMarkDowndark a:link {
-  color: #22B14C;
-  background-color: transparent;
-  text-decoration: none;
-}
-.reactMarkDowndark a:visited {
-  color: #22B14C;
-  background-color: transparent;
-  text-decoration: none;
-}
-.reactMarkDowndark a:hover {
-  color: #22B14C;
-  background-color: transparent;
-  text-decoration: underline;
-}
+/* Dark theme */
+.reactMarkDowndark a:link,
+.reactMarkDowndark a:visited,
+.reactMarkDowndark a:hover,
 .reactMarkDowndark a:active {
-  color: #22B14C;
+  color: var(--link-color-dark);
   background-color: transparent;
-  text-decoration: underline;
+  text-decoration: none; /* No underline for all states */
 }
 
-
+/* Headings */
 .reactMarkDown h2 {
   margin: 0;
   font-weight: 700;
-  font-size: 1rem;
-  /* font-family: "Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji"; */
-  line-height: 1.2;
   font-size: 1.1rem;
+  line-height: 1.2;
 }
 
-/*
- *  webxtor: token trade tab bid/ask chart small/big numbers fitting
- */
+/* Additional styles for webxtor: token trade tab bid/ask chart */
 .apexcharts-xaxis-label-infini:last-child {
-  transform: translateX(-40px)
+  transform: translateX(-40px);
 }
