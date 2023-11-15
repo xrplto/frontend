@@ -102,7 +102,7 @@ function Footer() {
                   </Link>
 
                   <Link
-                    href="/sitemap/token"
+                    href="/sitemap/tokens"
                     sx={{ mt: 1.5, display: 'inline-flex' }}
                     underline="none"
                     target="_blank"
