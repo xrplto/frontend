@@ -269,8 +269,8 @@ function fTokenRow({
               {isAdmin ? (
                 <AdminImage
                   src={imgUrl} // use normal <img> attributes as props
-                  width={isMobile ? 24 : 24}
-                  height={isMobile ? 24 : 24}
+                  width={isMobile ? 26 : 46}
+                  height={isMobile ? 26 : 46}
                   onClick={() => setEditToken(token)}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
                   alt={`${name}-logo`}
@@ -278,8 +278,8 @@ function fTokenRow({
               ) : (
                 <TokenImage
                   src={imgUrl} // use normal <img> attributes as props
-                  width={isMobile ? 24 : 24}
-                  height={isMobile ? 24 : 24}
+                  width={isMobile ? 26 : 46}
+                  height={isMobile ? 26 : 46}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
                   alt={`${name}-logo`}
                 />
