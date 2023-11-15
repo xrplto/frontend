@@ -14,7 +14,8 @@ const MDEditor = dynamic(() => import("react-markdown-editor-lite"), {
 // Material
 import {
     Grid,
-    Stack
+    Stack,
+    useTheme, useMediaQuery,
 } from '@mui/material';
 
 // Context
@@ -25,10 +26,14 @@ import { AppContext } from 'src/AppContext';
 import PriceChart from './PriceChart';
 import PriceStatistics from './PriceStatistics';
 import Description from './Description';
+import TrendingTokens from './TrendingTokens';
 
 // ----------------------------------------------------------------------
 
 export default function Overview({token}) {
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+	const isTablet = useMediaQuery(theme.breakpoints.down('md'));
     const BASE_URL = process.env.API_URL;
     const { accountProfile, setLoading, openSnackbar } = useContext(AppContext);
 
@@ -83,30 +88,50 @@ export default function Overview({token}) {
     return (
         <Grid container spacing={{ xs: 0, md: 3 }}>
             <Grid item xs={12} md={12} lg={8}>
-                <PriceChart token={token} />
+				<PriceChart token={token} />
+				{(!isMobile && !isTablet) && (
+					<>
+					<Description
+							token={token}
+							showEditor={showEditor}
+							setShowEditor={setShowEditor}
+							description={description}
+							onApplyDescription={onApplyDescription}
+					/>
+
+					{showEditor &&
+						<MDEditor value={description} renderHTML={text => mdParser.render(text)} onChange={handleEditorChange} style={{ height: '500px' }} />
+					}
+
+					{/* <MDEditor value={description} renderHTML={text => <ReactMarkdown children={text} />} onChange={handleEditorChange} style={{ height: '500px' }} /> */}
+					</>
+				)}
             </Grid>
 
             <Grid item xs={12} md={12} lg={4}>
                 <PriceStatistics token={token} />
+                
+				<TrendingTokens />
             </Grid>
+            
+			{(isMobile || isTablet) && (
+				<>
+				<Description
+						token={token}
+						showEditor={showEditor}
+						setShowEditor={setShowEditor}
+						description={description}
+						onApplyDescription={onApplyDescription}
+				/>
 
-            <Grid item xs={12} md={12} lg={8}>
-                <Description
-                    token={token}
-                    showEditor={showEditor}
-                    setShowEditor={setShowEditor}
-                    description={description}
-                    onApplyDescription={onApplyDescription}
-                />
-            </Grid>
+				{showEditor &&
+					<MDEditor value={description} renderHTML={text => mdParser.render(text)} onChange={handleEditorChange} style={{ height: '500px' }} />
+				}
 
-            <Grid item xs={12} md={12} lg={12}>
-                {showEditor &&
-                    <MDEditor value={description} renderHTML={text => mdParser.render(text)} onChange={handleEditorChange} style={{ height: '500px' }} />
-                }
-
-                {/* <MDEditor value={description} renderHTML={text => <ReactMarkdown children={text} />} onChange={handleEditorChange} style={{ height: '500px' }} /> */}
-            </Grid>
+				{/* <MDEditor value={description} renderHTML={text => <ReactMarkdown children={text} />} onChange={handleEditorChange} style={{ height: '500px' }} /> */}
+				</>
+			)}
         </Grid>
+
     );
 }

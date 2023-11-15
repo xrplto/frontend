@@ -69,7 +69,7 @@ export function fNumberWithSuffix(number) {
     let suffix = "";
     let formattedNumber = "";
 
-    //if (typeof number === 'number' && !isNaN(number)) {
+    if (typeof number === 'number' && !isNaN(number)) {
         if (Math.abs(number) >= 1e12) {
             // Trillion
             suffix = "T";
@@ -90,10 +90,10 @@ export function fNumberWithSuffix(number) {
             // Less than 1000
             formattedNumber = number.toFixed(0);//toFixed(2);
         }
-    /*} else {
+    /**/} else {
         // Handle the case when 'number' is not a valid number
-        formattedNumber = '0';
-    }*/
+        formattedNumber = number;//'0';
+    }/**/
 
     return formattedNumber + suffix;
 };

@@ -85,15 +85,7 @@ import { AppContext } from 'src/AppContext';
 // ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
-const StackStyle = styled(Stack)(({ theme }) => ({
-    //boxShadow: theme.customShadows.z0,
-    backdropFilter: 'blur(2px)',
-    WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
-    //backgroundColor: alpha(theme.palette.background.default, 0.0),
-    borderRadius: '13px',
-    padding: '0em 0.5em 1.5em 0.5em',
-    backgroundColor: alpha("#919EAB", 0.03),
-}));
+import StackStyle from 'src/components/StackStyle';
 
 function truncate(str, n){
     if (!str) return '';
@@ -477,7 +469,7 @@ export default function HistoryData({token}) {
             
             {/* Timeline */}
             
-            <Grid item xs={12}  md={2.5} lg={2.5} sx={{ order: { xs: 1, lg: 2 } }}>
+            <Grid item xs={12}  md={2.5} lg={2.5} sx={{ order: { xs: 1, md: 2, lg: 2 } }}>
             <Typography variant="h2" fontSize="1.1rem">On This Day</Typography>
             <Typography variant="s7" noWrap sx={{paddingBottom: '20px'}}>
              {new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'})}

@@ -25,16 +25,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // ----------------------------------------------------------------------
-const StackStyle = styled(Stack)(({ theme }) => ({
-    //boxShadow: theme.customShadows.z0,
-    //backdropFilter: 'blur(2px)',
-    //WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
-    //backgroundColor: alpha(theme.palette.background.default, 0.0),
-    // borderRadius: '1px',
-    // border: '1px solid #323546',
-    //padding: '0em 0.5em 1.5em 0.5em',
-    //backgroundColor: alpha("#919EAB", 0.03),
-}));
+import StackStyle from 'src/components/StackStyle'; //Maybe need to disable?
 
 // ----------------------------------------------------------------------
 
@@ -101,7 +92,7 @@ const { slug } = token;
     // } = token;
     // https://api.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
     return (
-        <StackStyle>
+        <Stack>{/*<StackStyle>*/}
             <Typography variant="h5" sx={{ pl: 2, pt: 2 }}>Pairs<span style={badge24hStyle}>24h</span></Typography>
             <Box
                 sx={{
@@ -446,6 +437,6 @@ const { slug } = token;
                     </TableBody>
                 </Table>
             </Box>
-        </StackStyle>
+        </Stack>
     );
 }

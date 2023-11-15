@@ -14,5 +14,29 @@ module.exports = {
 	env: {
 		API_URL: process.env.API_URL,
 		MAINTENANCE: process.env.MAINTENANCE,
-	}
+	},
+	async rewrites() {
+		return [
+			{
+				source: '/token-ratings',
+				destination: '/rankings/token-ratings',
+			},
+			{
+				source: '/trending-tokens',
+				destination: '/rankings/trending-tokens',
+			},
+			{
+				source: '/gainers-losers',
+				destination: '/rankings/gainers-losers',
+			},
+			{
+				source: '/most-viewed-pages',
+				destination: '/rankings/most-viewed-pages',
+			},
+			{
+				source: '/new',
+				destination: '/rankings/new',
+			},
+		]
+	},
 }

@@ -25,15 +25,7 @@ import { fNumber } from 'src/utils/formatNumber';
 import NumberTooltip from 'src/components/NumberTooltip';
 
 // ----------------------------------------------------------------------
-const StackStyle = styled(Stack)(({ theme }) => ({
-    //boxShadow: theme.customShadows.z0,
-    backdropFilter: 'blur(2px)',
-    WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
-    //backgroundColor: alpha(theme.palette.background.default, 0.0),
-    borderRadius: '13px',
-    padding: '0em 0.5em 1.5em 0.5em',
-    backgroundColor: alpha("#919EAB", 0.03),
-}));
+import StackStyle from 'src/components/StackStyle';
 
 const badge24hStyle = {
     display: 'inline-block',

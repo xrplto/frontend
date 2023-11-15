@@ -13,15 +13,7 @@ import {
 import { Chart } from 'src/components/Chart';
 
 // ----------------------------------------------------------------------
-const StackStyle = styled(Stack)(({ theme }) => ({
-    //boxShadow: theme.customShadows.z0,
-    backdropFilter: 'blur(2px)',
-    WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
-    //backgroundColor: alpha(theme.palette.background.default, 0.0),
-    borderRadius: '13px',
-    padding: '0em 0.5em 1.5em 0.5em',
-    // backgroundColor: alpha("#919EAB", 0.03),
-}));
+import StackStyle from 'src/components/StackStyle';
 
 function getSeries(richList) {
     let series = [];

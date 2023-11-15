@@ -27,7 +27,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Components
-import TokenMoreMenu from './TokenMoreMenu';
+import TokenMoreMenu from 'src/TokenDetail/analysis/TokenMoreMenu';
 import BearBullLabel from 'src/components/BearBullLabel';
 
 // Utils
@@ -85,7 +85,36 @@ function getPriceColor(token) {
   return color;
 }
 
-export const TokenRow = React.memo(fTokenRow);
+function timeAgo(dateInMilliseconds) {
+    const currentDate = new Date();
+    const inputDate = new Date(dateInMilliseconds);
+
+    const timeDifference = currentDate - inputDate;
+    const seconds = Math.floor(timeDifference / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (seconds < 60) {
+        return formatTime(seconds, 'second');
+    } else if (minutes < 60) {
+        return formatTime(minutes, 'minute');
+    } else if (hours < 24) {
+        return formatTime(hours, 'hour');
+    } else {
+        return formatTime(days, 'day');
+    }
+}
+
+function formatTime(value, unit) {
+    if (value === 1) {
+        return `${value} ${unit} ago`;
+    } else {
+        return `${value} ${unit}s ago`;
+    }
+}
+
+export const GainersLosersTokenRow = React.memo(fTokenRow);
 
 function fTokenRow({
   mUSD,
@@ -108,6 +137,7 @@ function fTokenRow({
     name,
     // currency,
     date,
+    dateon,
     amount, // Total Supply
     supply, // Circulating Supply
     trustlines,
@@ -220,7 +250,13 @@ function fTokenRow({
                 <Typography
                   variant="token"
                   color={
-                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : (darkMode ? '#007B55' : slug === md5 ? '#B72136' : '') 
+                    isOMCF !== 'yes'
+                      ? darkMode
+                        ? '#fff'
+                        : '#222531'
+                      : slug === md5
+                      ? '#B72136'
+                      : ''
                   }
                   noWrap
                 >
@@ -266,11 +302,11 @@ function fTokenRow({
           </TransitionTypo>
         </TableCell>
         <TableCell align="right">
-          <BearBullLabel value={pro24h.toFixed(2)} variant="h4" />
+          <BearBullLabel value={pro24h} variant="h4" />
         </TableCell>
-        <TableCell align="right">
-          <BearBullLabel value={pro7d.toFixed(2)} variant="h4" />
-        </TableCell>
+        {/*<TableCell align="right">
+          <BearBullLabel value={pro7d} variant="h4" />
+        </TableCell>*/}
         <TableCell align="right">
           <Stack
             direction="row"
@@ -301,12 +337,13 @@ function fTokenRow({
             </Typography>
           </Stack>
         </TableCell>
-        <TableCell align="right">{fNumber(vol24htx)}</TableCell>
-        <TableCell align="right">${fNumber(usdMarketCap)}</TableCell>
+        {/*<TableCell align="right">{fNumber(vol24htx)}</TableCell>
+        <TableCell align="right">${fNumber(usdMarketCap)}</TableCell>*/}
         {/* <TableCell align="left">{holders}</TableCell>
                 <TableCell align="left">{offers}</TableCell> */}
 
-        <TableCell align="right">{fNumber(trustlines)}</TableCell>
+        {/*<TableCell align="right">{trustlines}</TableCell>
+
         <TableCell align="right">
           {fNumber(supply)}{' '}
           <Typography variant="small" noWrap>
@@ -314,13 +351,16 @@ function fTokenRow({
           </Typography>
         </TableCell>
         <TableCell align="right">
+          {timeAgo(dateon)}
+        </TableCell>*/}
+        {/*<TableCell align="right">
           <LazyLoadImage
             alt=""
             src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
             width={135}
             height={50}
           />
-        </TableCell>
+        </TableCell>*/}
 
         <TableCell align="right">
           <TokenMoreMenu token={token} setTrustToken={setTrustToken} />

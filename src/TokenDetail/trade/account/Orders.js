@@ -43,15 +43,7 @@ import QRDialog from 'src/components/QRDialog';
 import { useRef } from 'react';
 
 // ----------------------------------------------------------------------
-const StackStyle = styled(Stack)(({ theme }) => ({
-    //boxShadow: theme.customShadows.z0,
-    //backdropFilter: 'blur(2px)',
-    //WebkitBackdropFilter: 'blur(2px)', // Fix on Mobile
-    //backgroundColor: alpha(theme.palette.background.default, 0.0),
-    //borderRadius: '13px',
-    //padding: '0em 0.5em 1.5em 0.5em',
-    //backgroundColor: alpha("#919EAB", 0.03),
-}));
+import StackStyle from 'src/components/StackStyle'; //Maybe need to disable?
 // ----------------------------------------------------------------------
 
 const BuyTypography = withStyles({
@@ -253,7 +245,7 @@ export default function Orders({pair}) {
     // https://api.sologenic.org/api/v1/trades?symbol=534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz%2FXRP&account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
 
     return (
-        <StackStyle>
+        <Stack>{/*<StackStyle>*/}
             <QRDialog
                 open={openScanQR}
                 type="OfferCancel"
@@ -460,6 +452,6 @@ export default function Orders({pair}) {
                         :
                         <></>
             }
-        </StackStyle>
+        </Stack>
     );
 }
