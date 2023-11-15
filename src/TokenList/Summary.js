@@ -58,12 +58,19 @@ export default function Summary() {
     const gXRPdominance = new Decimal(metrics.global.gXRPdominance).toNumber();
     const gXRPdominancePro = new Decimal(metrics.global.gXRPdominancePro).toNumber();
 
+    // Format number with commas
+    function formatNumberWithCommas(number) {
+        return number.toLocaleString('en-US', {
+          maximumFractionDigits: 0, // Removes the decimal part
+        });
+      }
+      
     return (
         <Stack sx={{mt:2}}>
             <Typography variant='h1'>{t("Today's Top XRPL Token Prices by Volume")}</Typography>
 
             <ContentTypography variant='subtitle1' sx={{mt:2}}>
-                The global token market cap stands at <strong>${fNumberWithSuffix(gMarketcap)}</strong>, a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last 24 hours.
+                The global token market cap stands at <strong>{formatNumberWithCommas(Number(gMarketcap))}</strong> marking a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last 24 hours.
                 <Link
                     component="button"
                     underline="always"
