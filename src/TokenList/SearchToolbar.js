@@ -25,6 +25,7 @@ import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
+import WhatshotIcon from '@mui/icons-material/Whatshot';
 
 import FiberNewIcon from '@mui/icons-material/FiberNew';
 import DoNotTouchIcon from '@mui/icons-material/DoNotTouch';
@@ -330,15 +331,23 @@ export default function SearchToolbar({
                       underline="none"
                       rel="noreferrer noopener nofollow"
                     >
-                      <Chip
-                        size="small"
-                        label={`🔥 ${tag}`} // Prepend the fire emoji
-                        onClick={handleDelete}
-                        color={normalizeTag(tagName) === nTag ? 'primary' : undefined}
-                        sx={{
-                          borderRadius: '4px'
-                        }}
-                      />
+                      
+<Chip
+  size="small"
+  label={
+    <span style={{ display: 'flex', alignItems: 'center' }}>
+      <WhatshotIcon fontSize="small" style={{ marginRight: 4, color: 'orange' }} />
+      {tag}
+    </span>
+  }
+  onClick={handleDelete}
+  color={normalizeTag(tagName) === nTag ? 'primary' : undefined}
+  sx={{
+    borderRadius: '4px',
+    // Additional styling here if needed
+  }}
+/>
+
                     </Link>
                   }
                   style={{
