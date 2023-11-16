@@ -138,7 +138,7 @@ const Sitemap = ({ tokens, slug }) => {
         <Grid container sx={{ mt: 3 }}>
           <Grid item xs={12}>
             <Link
-              href={`/sitemap/trustline`}
+              href={`/sitemap/trustlines`}
               underline="none"
               rel="noreferrer noopener nofollow"
               sx={{
