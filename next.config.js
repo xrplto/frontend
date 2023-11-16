@@ -18,8 +18,12 @@ module.exports = {
 	async rewrites() {
 		return [
 			{
-				source: '/token-ratings',
-				destination: '/rankings/token-ratings',
+				source: '/most-viewed-pages',
+				destination: '/rankings/most-viewed-pages',
+			},
+			{
+				source: '/best-tokens',
+				destination: '/rankings/best-tokens',
 			},
 			{
 				source: '/trending-tokens',
@@ -28,10 +32,6 @@ module.exports = {
 			{
 				source: '/gainers-losers',
 				destination: '/rankings/gainers-losers',
-			},
-			{
-				source: '/most-viewed-pages',
-				destination: '/rankings/most-viewed-tokens',
 			},
 			{
 				source: '/new',
