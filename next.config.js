@@ -18,8 +18,8 @@ module.exports = {
 	async rewrites() {
 		return [
 			{
-				source: '/most-viewed-pages',
-				destination: '/rankings/most-viewed-pages',
+				source: '/most-viewed-tokens',
+				destination: '/rankings/most-viewed-tokens',
 			},
 			{
 				source: '/best-tokens',
