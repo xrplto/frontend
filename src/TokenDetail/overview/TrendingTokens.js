@@ -33,7 +33,7 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
 }));
 
 const TrendingTokens = () => {
-	const BASE_URL = 'http://65.108.4.235:3000/api';//process.env.API_URL;
+	const BASE_URL = process.env.API_URL;//'http://65.108.4.235:3000/api';//process.env.API_URL;
     const theme = useTheme();
     const { darkMode } = useContext(AppContext);
     
