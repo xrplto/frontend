@@ -31,7 +31,7 @@ module.exports = {
 			},
 			{
 				source: '/most-viewed-pages',
-				destination: '/rankings/most-viewed-pages',
+				destination: '/rankings/most-viewed-tokens',
 			},
 			{
 				source: '/new',
