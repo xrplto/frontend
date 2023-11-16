@@ -274,7 +274,7 @@ Nonetheless, popularity should not be the only criterion when considering engage
           <Typography variant="h3">### Which are the top tokens to watch?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h4">
+          <Typography variant="s4">
           In the ever-evolving landscape of XRP Ledger tokens, a few have garnered significant interest from both enthusiasts and investors. One such token stands out for its rapid transaction speeds and scalability, commonly employed in the banking sector and boasting collaborations with several top tech firms.
 Another token to keep an eye on aims to offer a decentralized environment for developing and executing smart contracts. Its novel approach to addressing the scalability challenges faced by many blockchain platforms has been gaining momentum.
 Furthermore, there is a token gaining popularity for its emphasis on privacy and security. This token employs a technology that renders transactions untraceable, offering a degree of privacy rare in other digital currencies. As with any investment, conducting personal research is crucial before engaging with these tokens.
@@ -292,7 +292,7 @@ Furthermore, there is a token gaining popularity for its emphasis on privacy and
           <Typography variant="h3">### Which tokens have the most potential?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h4">
+          <Typography variant="s4">
           Selecting tokens with high potential in the crowded XRPL market can be daunting. Nonetheless, a few tokens have distinguished themselves with their innovative features and technology.
 One notable token offers a platform for building the internet of value. Celebrated for its scalability and adaptability, it has become a top choice among developers.
 Another promising token focuses on decentralized stock trading. This token is drawing attention for its ambitious aim and the cutting-edge technology deployed to realize this goal.
@@ -311,7 +311,7 @@ Additionally, there's a token gaining prominence for its emphasis on interoperab
           <Typography variant="h3">### What is a good token to buy?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h4">
+          <Typography variant="s4">
           When deciding which token to purchase, consider your investment objectives, risk tolerance, and familiarity with the token market. A few tokens on the XRPL have shown consistent potential.
 One such token, the largest by market cap, is broadly recognized and has a solid track record, making it a popular choice for both beginners and seasoned investors.
 Another notable token supports the creation of decentralized applications. Its cutting-edge technology and robust developer community have earned it acclaim.
@@ -351,7 +351,7 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
           <Typography variant="h3">### Who are the top XRPL token gainers today?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h4">
+          <Typography variant="s4">
           Today's leading token gainers in the XRP Ledger DEX are those that have experienced the largest percentage uptick in price over the past 24 hours. This upward movement can stem from several influences, such as encouraging news about the token, promotions by social media influencers, a surge in investor interest, or beneficial market trends. Nonetheless, it's crucial to recognize the high volatility of many of these tokens and understand that previous performance doesn't necessarily predict future outcomes, with prices capable of rapid shifts. Hence, conducting personal research and taking into account various aspects before investing is always advisable.
           </Typography>
         </AccordionDetails>
@@ -366,7 +366,7 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
           <Typography variant="h3">### Which is the best performing XRPL token today?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h4">
+          <Typography variant="s4">
           Today's top-performing XRP Ledger token is distinguished by the greatest percentage rise in its value over a specific timeframe. Its success can be attributed to various elements, such as endorsements by social media influencers, prevailing market attitudes, technological advancements, and broad economic trends. Nevertheless, one must bear in mind the extreme volatility of the token market, where prices can fluctuate swiftly. Therefore, keeping abreast of the latest market movements and engaging in comprehensive research is essential before making any investment decisions.
           </Typography>
         </AccordionDetails>
@@ -382,7 +382,7 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
           <Typography variant="h3">### Who are the top losers today in the XRPL token market?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h4">
+          <Typography variant="s4">
           Today's most notable decliners in the XRP Ledger token market are those that have witnessed the steepest percentage drop in price over the past day. Such downturns can result from diverse causes like adverse news, waning investor enthusiasm, or challenging market dynamics. Nonetheless, it's crucial to acknowledge the inherent volatility of the XRPL token market, where prices can rapidly recover. Consequently, it's advisable to conduct thorough research and weigh various considerations before proceeding with any investment choices.
           </Typography>
         </AccordionDetails>
@@ -418,7 +418,7 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
           <Typography variant="h3">### Which trending tokens are making waves in the market?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h4">
+          <Typography variant="s4">
           Many tokens on the XRP Ledger are attracting interest for their distinctive attributes and growth prospects. Understanding the technology underpinning these tokens and their possible applications is essential.
           </Typography>
         </AccordionDetails>
@@ -484,7 +484,7 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
           <Typography variant="h3">### Which XRPL tokens are the most viewed on xrpl.to?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h4">
+          <Typography variant="s4">
           xrpl.to is a platform offering up-to-the-minute information on trading volumes, prices, and market capitalizations of various tokens on the XRP Ledger. The tokens that attract the most views on this platform can shift, influenced by prevailing market trends and investor interest. Typically, these tokens experience substantial trading volumes and notable price fluctuations. However, it's important to understand that a token's high visibility doesn't automatically signify it as an optimal investment choice; it merely indicates that it's garnering significant attention at the moment.
           </Typography>
         </AccordionDetails>
@@ -498,7 +498,7 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
           <Typography variant="h3">### What are the most popular XRPL tokens right now?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h4">
+          <Typography variant="s4">
           In the token market, the popularity of tokens can shift quickly due to influences like market trends, technological developments, and regulatory updates. Currently, the most popular tokens are usually those with large market capitalizations and significant trading volumes. These tokens often enjoy robust community backing and broad acceptance for transactions. Nevertheless, it's crucial to note that a token's popularity doesn't necessarily assure its profitability or stability in the market.
           </Typography>
         </AccordionDetails>
@@ -513,7 +513,7 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
           <Typography variant="h3">### What are the top searched XRPL tokens?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h4">
+          <Typography variant="s4">
           The most frequently searched tokens on the XRP Ledger typically reflect current market trends. These might include newly released tokens, those undergoing notable price changes, or ones announcing significant developments. The search popularity of these tokens can offer a glimpse into the current interests of traders and investors. However, it's crucial to understand that a high search volume doesn't automatically suggest a sound investment. Thorough research is always essential prior to making any investment choices.
           </Typography>
         </AccordionDetails>
@@ -550,7 +550,7 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
           <Typography variant="h3">### What are the new tokens to watch out for?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h4">
+          <Typography variant="s4">
           The XRP Ledger is continuously seeing the arrival of new tokens. These vary from projects introducing groundbreaking technologies to ones targeting specific challenges in various sectors. Monitoring these new tokens is advisable, as they might present intriguing opportunities. Nonetheless, like any investment, it's vital to conduct your own research and comprehend the project associated with the token before deciding. It's also important to remember that token values can be extremely volatile, necessitating preparedness for potential substantial price changes.
           </Typography>
         </AccordionDetails>
@@ -565,7 +565,7 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
           <Typography variant="h3">### Which new token should I consider investing in?</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography variant="h4">
+          <Typography variant="s4">
           Regularly, new tokens are added to the XRP Ledger, each offering distinct characteristics and potential advantages. However, it's essential to be aware that investing in any token, whether new or established, carries inherent risks. Token values can fluctuate greatly, and there's also the possibility that the project associated with a token might not be successful. Thus, conducting your own research to fully understand the project behind a token is critical before investing. Additionally, it's wise to align your token investments with your personal risk tolerance and investment objectives.
           </Typography>
         </AccordionDetails>
