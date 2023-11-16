@@ -12,6 +12,8 @@ import {
   styled,
   Link,
   Stack,
+  useTheme,
+  useMediaQuery,
   TableCell,
   TableRow,
   Typography
@@ -129,7 +131,9 @@ function fTokenRow({
   const { accountProfile, darkMode } = useContext(AppContext);
   const isAdmin =
     accountProfile && accountProfile.account && accountProfile.admin;
-
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    
   const [priceColor, setPriceColor] = useState('');
   const {
     id,
@@ -225,16 +229,16 @@ function fTokenRow({
             {admin ? (
               <AdminImage
                 src={imgUrl} // use normal <img> attributes as props
-                width={56}
-                height={56}
+                width={isMobile ? 26 : 46}
+                height={isMobile ? 26 : 46}
                 onClick={() => setEditToken(token)}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
               />
             ) : (
               <TokenImage
                 src={imgUrl} // use normal <img> attributes as props
-                width={56}
-                height={56}
+                width={isMobile ? 26 : 46}
+                height={isMobile ? 26 : 46}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
               />
             )}
