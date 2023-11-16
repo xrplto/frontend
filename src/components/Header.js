@@ -54,7 +54,6 @@ const StyledLink = styled(Link)(
     padding: 6px 6px; 
     border-radius: 8px; 
     &:hover {
-      background-color: ${darkMode ? 'rgba(229, 232, 255, 0.4) !important' : 'rgba(217, 220, 224, .4)'}; 
       color: ${darkMode ? '#005E46' : '#4455CC'};
       cursor: pointer;
     }
