@@ -25,14 +25,7 @@ import { fNumber, fNumberWithSuffix } from 'src/utils/formatNumber';
 // Components
 import BearBull from 'src/components/BearBull';
 
-// CBCCD2
-const ContentTypography = withStyles({
-    root: {
-        color: alpha('#919EAB', 0.99),
-        display: 'inline', // Ensure it's displayed inline
-        verticalAlign: 'middle', // Align vertically with surrounding text
-    }
-})(Typography);
+
 
 function Rate(num, exch) {
     if (num === 0 || exch === 0)
@@ -69,13 +62,13 @@ export default function Summary() {
         <Stack sx={{mt:2}}>
             <Typography variant='h1'>{t("Today's Top XRPL Token Prices by Volume")}</Typography>
 
-            <ContentTypography variant='subtitle1' sx={{mt:2}}>
+            <Typography variant='s17' sx={{mt:2}}>
                 The global token market cap stands at <strong>{formatNumberWithCommas(Number(gMarketcap))}</strong> marking a <BearBull value={gMarketcapPro} sx={{pl:1, pr:1}}/> {gMarketcapPro < 0 ? 'decrease':'increase'} over the last 24 hours.
                 <Link
                     component="button"
                     underline="always"
                     variant="body2"
-                    color="#637381"
+                    color="#8B8B8D"
                     onClick={() => {
                         setShowContent(!showContent);
                     }}
@@ -83,7 +76,7 @@ export default function Summary() {
                 >
                     {showContent ? 'Read Less' : 'Read More'}
                 </Link>
-            </ContentTypography>
+            </Typography>
 
             <div
                 style={{
@@ -92,9 +85,9 @@ export default function Summary() {
                 }}
                 
             >
-                <ContentTypography variant='subtitle1' sx={{mt:2}} gutterBottom>The total XRPL DEX volume in the past 24 hours is <strong>${fNumberWithSuffix(gDexVolume)}</strong>, marking a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. Currently, the total volume in Collectibles & NFTs is <strong>${fNumberWithSuffix(gNFTIOUVolume)}</strong>, accounting for <strong>{gNFTIOUVolumePro}%</strong> of the total XRPL token market's 24-hour volume. The volume of all stablecoins currently stands at <strong>${fNumberWithSuffix(gStableVolume)}</strong>, representing <strong>{gStableVolumePro}%</strong> of the total token market's 24-hour volume.</ContentTypography>
-                <ContentTypography variant='subtitle1' gutterBottom>The current XRP price is <strong>${Rate(1, metrics.USD)}</strong>.</ContentTypography>
-             {/* <ContentTypography variant='subtitle1'>XRP dominance currently stands at ---%, experiencing a decrease of -% over the past 24 hours.</ContentTypography> */}
+                <Typography variant='s17' sx={{mt:2}} gutterBottom>The total XRPL DEX volume in the past 24 hours is <strong>${fNumberWithSuffix(gDexVolume)}</strong>, marking a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. Currently, the total volume in Collectibles & NFTs is <strong>${fNumberWithSuffix(gNFTIOUVolume)}</strong>, accounting for <strong>{gNFTIOUVolumePro}%</strong> of the total XRPL token market's 24-hour volume. The volume of all stablecoins currently stands at <strong>${fNumberWithSuffix(gStableVolume)}</strong>, representing <strong>{gStableVolumePro}%</strong> of the total token market's 24-hour volume.</Typography>
+                <Typography variant='s17' gutterBottom>The current XRP price is <strong>${Rate(1, metrics.USD)}</strong>.</Typography>
+             {/* <Typography variant='subtitle1'>XRP dominance currently stands at ---%, experiencing a decrease of -% over the past 24 hours.</Typography> */}
             </div>
             
 
