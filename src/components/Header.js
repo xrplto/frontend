@@ -172,7 +172,7 @@ export default function Header(props) {
   </MenuItem>
   
   <MenuItem onClick={handleMenuClose}>
-    <MuiLink href="/most-viewed-pages" color="inherit" underline="none" sx={{ display: 'flex', alignItems: 'center' }}>
+    <MuiLink href="/most-viewed-tokens" color="inherit" underline="none" sx={{ display: 'flex', alignItems: 'center' }}>
       <VisibilityIcon sx={{ marginRight: theme.spacing(1) }} />
       Most Viewed
     </MuiLink>
