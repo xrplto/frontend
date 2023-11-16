@@ -11,6 +11,8 @@ import { withStyles } from '@mui/styles';
 import {
   styled,
   Link,
+  useTheme,
+  useMediaQuery,
   Stack,
   TableCell,
   TableRow,
@@ -32,6 +34,8 @@ import BearBullLabel from 'src/components/BearBullLabel';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
+
+
 
 const StickyTableCell = withStyles((theme) => ({
   head: {
@@ -129,7 +133,8 @@ function fTokenRow({
   const { accountProfile, darkMode } = useContext(AppContext);
   const isAdmin =
     accountProfile && accountProfile.account && accountProfile.admin;
-
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [priceColor, setPriceColor] = useState('');
   const {
     id,
@@ -171,7 +176,7 @@ function fTokenRow({
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
   const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
-
+  
   return (
     <TableRow
       key={id}
@@ -225,16 +230,16 @@ function fTokenRow({
             {admin ? (
               <AdminImage
                 src={imgUrl} // use normal <img> attributes as props
-                width={56}
-                height={56}
+                width={isMobile ? 26 : 46}
+                height={isMobile ? 26 : 46}
                 onClick={() => setEditToken(token)}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
               />
             ) : (
               <TokenImage
                 src={imgUrl} // use normal <img> attributes as props
-                width={56}
-                height={56}
+                width={isMobile ? 26 : 46}
+                height={isMobile ? 26 : 46}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
               />
             )}
