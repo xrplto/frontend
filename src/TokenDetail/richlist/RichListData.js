@@ -246,7 +246,7 @@ export default function RichListData({token}) {
     
 
 <TableCell align="left">
-    <Tooltip title="Indicates whether the account's tokens are frozen." placement="top">
+    {/*<Tooltip title="Indicates whether the account's tokens are frozen." placement="top">*/}
  								{(() => { vars.cellId = 'frozen'; })()}
 								<TableSortLabel
                                     hideSortIcon
@@ -264,12 +264,12 @@ export default function RichListData({token}) {
 									  </Box>
 									) : null}
 								</TableSortLabel>
-                                </Tooltip>                           
+                                {/*</Tooltip>                           */}
                             </TableCell>
 
 
     <TableCell align="left">
-    <Tooltip title="Total account token balance."  placement="top">
+    {/*<Tooltip title="Total account token balance."  placement="top">*/}
  								{(() => { vars.cellId = 'balance'; })()}
 								<TableSortLabel
                                     hideSortIcon
@@ -291,7 +291,7 @@ export default function RichListData({token}) {
 									  </Box>
 									) : null}
 								</TableSortLabel>
-                                </Tooltip>                           
+                                {/*</Tooltip>                           */}
                             </TableCell>
 
 
@@ -299,7 +299,7 @@ export default function RichListData({token}) {
 
     
                             <TableCell align="left">
-                            <Tooltip title="Balance change within 24 hours." placement="top">
+                            {/*<Tooltip title="Balance change within 24 hours." placement="top">*/}
 								{(() => { vars.cellId = 'balance24h'; })()}
 								<TableSortLabel
 									hideSortIcon
@@ -321,14 +321,14 @@ export default function RichListData({token}) {
 									  </Box>
 									) : null}
 								</TableSortLabel>
-                                </Tooltip>
+                                {/*</Tooltip>*/}
 							</TableCell>
 
 
 
 
                             <TableCell align="left">
-                            <Tooltip title="Percent of total token holdings." placement="top">
+                            {/*<Tooltip title="Percent of total token holdings." placement="top">*/}
 								{(() => { vars.cellId = 'holding'; })()}
 								<TableSortLabel
 									hideSortIcon
@@ -350,7 +350,7 @@ export default function RichListData({token}) {
 									  </Box>
 									) : null}
 								</TableSortLabel>
-                                </Tooltip>
+                                {/*</Tooltip>*/}
 							</TableCell>
 
 
