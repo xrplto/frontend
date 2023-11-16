@@ -80,16 +80,16 @@ function a11yProps(index) {
 }
 
 const tabValues = [
-  'token-ratings',//token-ratings
+  'best-tokens',//token-ratings
   'trending-tokens',
   'gainers-losers',
-  'most-viewed-pages',
+  'most-viewed-tokens',
   'new',
 ];
 const tabLabels = [
   'Spotlight',
-  'Gainers & Losers',
   'Trending',
+  'Gainers & Losers',
   'Most Viewed',
   'Recently Added',
 ];
