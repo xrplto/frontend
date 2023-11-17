@@ -1,4 +1,5 @@
 import Decimal from 'decimal.js';
+import { useTheme } from '@mui/material/styles';
 import { useState, useEffect } from 'react';
 import React from 'react';
 import {
@@ -13,6 +14,7 @@ import {
   Link,
   Stack,
   TableCell,
+  useMediaQuery,
   TableRow,
   Typography
 } from '@mui/material';
@@ -32,6 +34,7 @@ import BearBullLabel from 'src/components/BearBullLabel';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
+
 
 const StickyTableCell = withStyles((theme) => ({
   head: {
@@ -141,6 +144,8 @@ function fTokenRow({
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
   const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
     <TableRow
@@ -195,17 +200,19 @@ function fTokenRow({
             {admin ? (
               <AdminImage
                 src={imgUrl} // use normal <img> attributes as props
-                width={56}
-                height={56}
+                width={46}
+                height={46}
                 onClick={() => setEditToken(token)}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
+                alt={`${name}-logo`}
               />
             ) : (
-              <TokenImage
+              <TokenImage 
                 src={imgUrl} // use normal <img> attributes as props
-                width={56}
-                height={56}
+                width={isMobile ? 26 : 46}
+                height={isMobile ? 26 : 46}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
+                alt={`${name}-logo`}
               />
             )}
 
@@ -315,7 +322,7 @@ function fTokenRow({
         </TableCell>
         <TableCell align="right">
           <LazyLoadImage
-            alt=""
+            alt={`${user}-${name}-7d-price-graph`}
             src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
             width={135}
             height={50}
