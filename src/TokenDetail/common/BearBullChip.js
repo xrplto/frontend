@@ -8,8 +8,9 @@ import { fPercent } from 'src/utils/formatNumber';
 
 const BearBullChip = ({ value, tooltip }) => {
   const pro = fPercent(value);
-  const isBearish = pro < 0;
-  const strPro = `${isBearish ? -pro : pro} %`;
+  const formattedPro = parseFloat(pro).toFixed(2); // Format to two decimal places
+  const isBearish = formattedPro < 0;
+  const strPro = `${isBearish ? -formattedPro : formattedPro} %`;
 
   const ChipComponent = isBearish ? BearishChip : BullishChip;
 
