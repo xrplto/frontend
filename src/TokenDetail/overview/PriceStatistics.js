@@ -77,6 +77,9 @@ export default function PriceStatistics({token}) {
     let strPc24h = fNumber(p24h < 0 ? -p24h : p24h);
     let strPc24hPrep = (p24h < 0 ? '-' : '') + '$';
 
+    // Format pro24h to two decimal places
+    const formattedPro24h = pro24h.toFixed(2);
+
     return (
         <StackStyle>
             <CardHeader title={`${name} Price Statistics`} subheader='' sx={{p:2}}/>
@@ -100,7 +103,7 @@ export default function PriceStatistics({token}) {
                         <TableCell align="left">
                             <Stack>
                             <NumberTooltip prepend={strPc24hPrep} number={strPc24h} />
-                            <BearBullLabel value={pro24h} variant="small"/>
+                            <BearBullLabel value={formattedPro24h} variant="small"/>
                             </Stack>
                         </TableCell>
                     </TableRow>
