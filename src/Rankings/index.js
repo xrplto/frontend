@@ -180,20 +180,20 @@ const ogpImage = `https://xrpl.to/static/ogp.webp`; // URL of the image for the 
         </>
       )}
 
-      {tabID === 1 && (
-        <>
-          <Typography variant="h1"  sx={{mt:{xs: 4, md: 4}, mb: 3 }}>Top XRPL Token Gainers And Losers Today</Typography>
-          <Typography variant="s17"   sx={{mt:{xs: 4, md: 0}, mb: 3 }}>Which tokens on the XRP Ledger have experienced the largest gains or declines in the past 24 hours?</Typography>
-        </>
-      )}
 
-      {tabID === 2 && (
+{tabID === 1 && (
         <>
           <Typography variant="h1"  sx={{mt:{xs: 4, md: 4}, mb: 3 }}>What Are The Trending XRPL Tokens</Typography>
           <Typography variant="s17"   sx={{mt:{xs: 4, md: 0}, mb: 3 }}>Here's a compilation of the currently trending XRP Ledger Tokens that are being frequently searched for on xrpl.to.</Typography>
         </>
       )}
 
+      {tabID === 2 && (
+        <>
+          <Typography variant="h1"  sx={{mt:{xs: 4, md: 4}, mb: 3 }}>Top XRPL Token Gainers And Losers Today</Typography>
+          <Typography variant="s17"   sx={{mt:{xs: 4, md: 0}, mb: 3 }}>Which tokens on the XRP Ledger have experienced the largest gains or declines in the past 24 hours?</Typography>
+        </>
+      )}
 
 {tabID === 3 && (
         <>
