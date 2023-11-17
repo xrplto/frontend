@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import Head from 'next/head';
 import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
 import { useState, useEffect, useRef, useContext } from 'react';
@@ -111,6 +112,12 @@ export default function RankingsTabs({ tab }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
+
+  const ogpTitle = `XRPL Tokens - ${tabLabels[tabID]}`;
+const ogpDescription = `Explore the ${tabLabels[tabID]} on the XRP Ledger.`;
+const ogpImage = `https://xrpl.to/static/ogp.webp`; // URL of the image for the current tab
+
+
   const [isFixed, setIsFixed] = useState(false);
   const tabRef = useRef(null);
 
@@ -169,7 +176,7 @@ export default function RankingsTabs({ tab }) {
       {tabID === 0 && (
         <>
           <Typography variant="h1"  sx={{mt:{xs: 4, md: 4}, mb: 3 }}>The Best XRPL Tokens Based On The Latest Data</Typography>
-          <Typography variant="s17"   sx={{mt:{xs: 4, md: 0}, mb: 3 }}>Our list for XRP Ledger tokens are created using the latest XRPL data, focusing directly on prices and user behavior.</Typography>
+          <Typography variant="s17"   sx={{mt:{xs: 4, md: 0}, mb: 3 }}>Our list for XRP Ledger tokens are created using the latest XRPL data, focusing directly on prices and on-chain metrics.</Typography>
         </>
       )}
 
@@ -199,7 +206,7 @@ export default function RankingsTabs({ tab }) {
 {tabID === 4 && (
         <>
           <Typography variant="h1"  sx={{mt:{xs: 4, md: 4}, mb: 3 }}>New XRPL Tokens</Typography>
-          <Typography variant="s17"   sx={{mt:{xs: 4, md: 0}, mb: 3 }}>Check out the new tokens added to the XRPL DEX in the last 30 days.</Typography>
+          <Typography variant="s17"   sx={{mt:{xs: 4, md: 0}, mb: 3 }}>Check out the new tokens added to the XRPL DEX in the last 7 days.</Typography>
         </>
       )}
 
@@ -278,7 +285,7 @@ Nonetheless, popularity should not be the only criterion when considering engage
           <Typography variant="s17" > 
           In the ever-evolving landscape of XRP Ledger tokens, a few have garnered significant interest from both enthusiasts and investors. One such token stands out for its rapid transaction speeds and scalability, commonly employed in the banking sector and boasting collaborations with several top tech firms.
 Another token to keep an eye on aims to offer a decentralized environment for developing and executing smart contracts. Its novel approach to addressing the scalability challenges faced by many blockchain platforms has been gaining momentum.
-Furthermore, there is a token gaining popularity for its emphasis on privacy and security. This token employs a technology that renders transactions untraceable, offering a degree of privacy rare in other digital currencies. As with any investment, conducting personal research is crucial before engaging with these tokens.
+Furthermore, there is a token gaining popularity for its emphasis on being an innovator in traditional finance. This token employs an ecosystem of multiple applications, offering a degree of interoperability between traditional assets and currencies. As with any investment, conducting personal research is crucial before engaging with these tokens.
           </Typography>
           
         </AccordionDetails>
@@ -335,73 +342,6 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
           aria-controls="panel1a-content"
           id="panel1a-header"
         >
-          <Typography variant="h3">### What are the top XRPL token movers today?</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography variant="s17" >
-          Today's standout tokens on the XRP Ledger DEX are those that have shown notable price fluctuations over a certain timeframe. These shifts may result from a range of factors, including endorsements by social media influencers, prevailing market trends, investor attitudes, technological progress, or updates in regulations. It's essential to be aware that the token market is characterized by high volatility, with prices capable of quick changes. As such, keeping informed about recent market developments and engaging in extensive research is vital prior to making investment choices.
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel2a-content"
-          id="panel2a-header"
-        >
-          <Typography variant="h3">### Who are the top XRPL token gainers today?</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography variant="s17" >
-          Today's leading token gainers in the XRP Ledger DEX are those that have experienced the largest percentage uptick in price over the past 24 hours. This upward movement can stem from several influences, such as encouraging news about the token, promotions by social media influencers, a surge in investor interest, or beneficial market trends. Nonetheless, it's crucial to recognize the high volatility of many of these tokens and understand that previous performance doesn't necessarily predict future outcomes, with prices capable of rapid shifts. Hence, conducting personal research and taking into account various aspects before investing is always advisable.
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
-
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel2a-content"
-          id="panel2a-header"
-        >
-          <Typography variant="h3">### Which is the best performing XRPL token today?</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography variant="s17" >
-          Today's top-performing XRP Ledger token is distinguished by the greatest percentage rise in its value over a specific timeframe. Its success can be attributed to various elements, such as endorsements by social media influencers, prevailing market attitudes, technological advancements, and broad economic trends. Nevertheless, one must bear in mind the extreme volatility of the token market, where prices can fluctuate swiftly. Therefore, keeping abreast of the latest market movements and engaging in comprehensive research is essential before making any investment decisions.
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
-
-
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel2a-content"
-          id="panel2a-header"
-        >
-          <Typography variant="h3">### Who are the top losers today in the XRPL token market?</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography variant="s17" >
-          Today's most notable decliners in the XRP Ledger token market are those that have witnessed the steepest percentage drop in price over the past day. Such downturns can result from diverse causes like adverse news, waning investor enthusiasm, or challenging market dynamics. Nonetheless, it's crucial to acknowledge the inherent volatility of the XRPL token market, where prices can rapidly recover. Consequently, it's advisable to conduct thorough research and weigh various considerations before proceeding with any investment choices.
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
-        </>
-      )}
-        <TabPanel value={tabID} id={2}>
-          <GainersLosersTokenList />
-        </TabPanel>
-        {tabID === 2 && (
-        <>
-          <Typography variant="h2"  sx={{mt:{xs: 4, md: 4}, mb: 3 }}>Frequently asked questions (FAQs)</Typography>
-          <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
           <Typography variant="h3">### What are the trending tokens to watch out for?</Typography>
         </AccordionSummary>
         <AccordionDetails>
@@ -425,6 +365,7 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
         </AccordionDetails>
       </Accordion>
 
+
       <Accordion>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
@@ -439,7 +380,6 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
           </Typography>
         </AccordionDetails>
       </Accordion>
-
       <Accordion>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
@@ -451,6 +391,71 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
         <AccordionDetails>
           <Typography variant="s17" >
           The XRP Ledger is gaining traction across multiple industries, ranging from finance to the realm of monkey-themed NFTs. This trend demonstrates the increasing adoption of the XRP Ledger and its potential to revolutionize conventional business practices.
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
+        </>
+      )}
+        <TabPanel value={tabID} id={2}>
+          <GainersLosersTokenList />
+        </TabPanel>
+        {tabID === 2 && (
+        <>
+          <Typography variant="h2"  sx={{mt:{xs: 4, md: 4}, mb: 3 }}>Frequently asked questions (FAQs)</Typography>
+          
+          <Accordion>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel1a-content"
+          id="panel1a-header"
+        >
+          <Typography variant="h3">### What are the top XRPL token movers today?</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography variant="s17" >
+          Today's standout tokens on the XRP Ledger DEX are those that have shown notable price fluctuations over a certain timeframe. These shifts may result from a range of factors, including endorsements by social media influencers, prevailing market trends, investor attitudes, technological progress, or updates in regulations. It's essential to be aware that the token market is characterized by high volatility, with prices capable of quick changes. As such, keeping informed about recent market developments and engaging in extensive research is vital prior to making investment choices.
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel2a-content"
+          id="panel2a-header"
+        >
+          <Typography variant="h3">### Who are the top XRPL token gainers today?</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography variant="s17" >
+          Today's leading token gainers in the XRP Ledger DEX are those that have experienced the largest percentage uptick in price over the past 24 hours. This upward movement can stem from several influences, such as encouraging news about the token, promotions by social media influencers, a surge in investor interest, or beneficial market trends. Nonetheless, it's crucial to recognize the high volatility of many of these tokens and understand that previous performance doesn't necessarily predict future outcomes, with prices capable of rapid shifts. Hence, conducting personal research and taking into account various aspects before investing is always advisable.
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
+      <Accordion>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel2a-content"
+          id="panel2a-header"
+        >
+          <Typography variant="h3">### Which is the best performing XRPL token today?</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography variant="s17" >
+          Today's top-performing XRP Ledger token is distinguished by the greatest percentage rise in its value over a specific timeframe. Its success can be attributed to various elements, such as endorsements by social media influencers, prevailing market attitudes, technological advancements, and broad economic trends. Nevertheless, one must bear in mind the extreme volatility of the token market, where prices can fluctuate swiftly. Therefore, keeping abreast of the latest market movements and engaging in comprehensive research is essential before making any investment decisions.
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
+<Accordion>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel2a-content"
+          id="panel2a-header"
+        >
+          <Typography variant="h3">### Who are the top losers today in the XRPL token market?</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography variant="s17" >
+          Today's most notable decliners in the XRP Ledger token market are those that have witnessed the steepest percentage drop in price over the past day. Such downturns can result from diverse causes like adverse news, waning investor enthusiasm, or challenging market dynamics. Nonetheless, it's crucial to acknowledge the inherent volatility of the XRPL token market, where prices can rapidly recover. Consequently, it's advisable to conduct thorough research and weigh various considerations before proceeding with any investment choices.
           </Typography>
         </AccordionDetails>
       </Accordion>
@@ -486,7 +491,7 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
         </AccordionSummary>
         <AccordionDetails>
           <Typography variant="s17" >
-          xrpl.to is a platform offering up-to-the-minute information on trading volumes, prices, and market capitalizations of various tokens on the XRP Ledger. The tokens that attract the most views on this platform can shift, influenced by prevailing market trends and investor interest. Typically, these tokens experience substantial trading volumes and notable price fluctuations. However, it's important to understand that a token's high visibility doesn't automatically signify it as an optimal investment choice; it merely indicates that it's garnering significant attention at the moment.
+          xrpl.to is a platform offering real-time information on trading volumes, prices, and market capitalizations of various tokens on the XRP Ledger. The tokens that attract the most views on this platform can shift, influenced by prevailing market trends and investor interest. Typically, these tokens experience substantial trading volumes and notable price fluctuations. However, it's important to understand that a token's high visibility doesn't automatically signify it as an optimal investment choice; it merely indicates that it's garnering significant attention at the moment.
           </Typography>
         </AccordionDetails>
       </Accordion>
@@ -580,6 +585,14 @@ Additionally, a token focused on the metaverse has been attracting interest. Thi
           <Wallet />
         </TabPanel>*/}
       </Box>
+      <Head>
+      <title>{ogpTitle}</title>
+      <meta property="og:title" content={ogpTitle} />
+      <meta property="og:description" content={ogpDescription} />
+      <meta property="og:image" content={ogpImage} />
+      <meta property="og:type" content="website" />
+      {/* Add other OGP tags as needed */}
+    </Head>
     </>
   );
 }
