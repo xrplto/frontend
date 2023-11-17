@@ -253,14 +253,9 @@ function fTokenRow({
               <Stack>
                 <Typography
                   variant="token"
+
                   color={
-                    isOMCF !== 'yes'
-                      ? darkMode
-                        ? '#fff'
-                        : '#222531'
-                      : slug === md5
-                      ? '#B72136'
-                      : ''
+                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : (darkMode ? '#007B55' : slug === md5 ? '#B72136' : '') 
                   }
                   noWrap
                 >
