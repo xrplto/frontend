@@ -35,18 +35,25 @@ import BearBullLabel from 'src/components/BearBullLabel';
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
 
+// This style will ensure the sticky cell content does not overflow its container
+const StyledTableRow = withStyles((theme) => ({
+  root: {
+    // Added overflow hidden here to prevent x-axis overflow on scroll
+    overflow: 'hidden',
+  },
+}))(TableRow);
 
 const StickyTableCell = withStyles((theme) => ({
   head: {
     position: 'sticky',
     zIndex: 100,
     top: 0,
-    left: 24
+    left: 0, // Changed from 24 to 0
   },
   body: {
     position: 'sticky',
     zIndex: 100,
-    left: 24
+    left: 0, // Changed from 24 to 0
   }
 }))(TableCell);
 
@@ -107,19 +114,14 @@ function fTokenRow({
   const [priceColor, setPriceColor] = useState('');
   const {
     id,
-    // issuer,
     name,
-    // currency,
     date,
-    amount, // Total Supply
-    supply, // Circulating Supply
+    amount,
+    supply,
     trustlines,
-    vol24hxrp, // XRP amount with pair token
-    vol24hx, // Token amount with pair XRP
-    //vol24h,
+    vol24hxrp,
+    vol24hx,
     vol24htx,
-    //holders,
-    //offers,
     kyc,
     md5,
     slug,
@@ -140,15 +142,13 @@ function fTokenRow({
     }, 3000);
   }, [time]);
 
-  // const imgUrl = `/static/tokens/${md5}.${ext}`;
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-
-  const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
-    <TableRow
+    <StyledTableRow
       key={id}
       sx={{
         '&:hover': {
@@ -160,25 +160,26 @@ function fTokenRow({
         }
       }}
     >
-      <TableCell
+      <StickyTableCell
         align="left"
         style={{
           position: 'sticky',
-          //zIndex: 1001,
+          overflow: 'hidden',
+         
           left: 0,
           background: darkMode ? '#17171A' : '#F2F5F9'
         }}
       >
         {id}
-      </TableCell>
+      </StickyTableCell>
       <LazyLoadComponent visibleByDefault={true}>
         <TableCell
           align="left"
           sx={{
             p: 0,
             position: 'sticky',
-            //zIndex: 1003,
-            left: 67,
+         
+            left: 0, // Changed from 67 to 0
             background: darkMode ? '#17171A' : '#F2F5F9',
             '&:before': scrollLeft
               ? {
@@ -199,7 +200,7 @@ function fTokenRow({
           <Stack direction="row" alignItems="center" spacing={2} sx={{ p: 0 }}>
             {admin ? (
               <AdminImage
-                src={imgUrl} // use normal <img> attributes as props
+                src={imgUrl}
                 width={46}
                 height={46}
                 onClick={() => setEditToken(token)}
@@ -208,7 +209,7 @@ function fTokenRow({
               />
             ) : (
               <TokenImage 
-                src={imgUrl} // use normal <img> attributes as props
+                src={imgUrl}
                 width={isMobile ? 26 : 46}
                 height={isMobile ? 26 : 46}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
@@ -221,7 +222,6 @@ function fTokenRow({
               color="inherit"
               href={`/token/${slug}`}
               rel="noreferrer noopener nofollow"
-              // style={{textDecoration: "none"}}
             >
               <Stack>
                 <Typography
@@ -296,7 +296,6 @@ function fTokenRow({
             justifyContent="flex-end"
             alignItems="center"
           >
-            {/* <Icon icon={outlineToken} color="#0C53B7"/> */}
             <Icon
               icon={arrowsExchange}
               color="#primary"
@@ -310,9 +309,6 @@ function fTokenRow({
         </TableCell>
         <TableCell align="right">{fNumber(vol24htx)}</TableCell>
         <TableCell align="right">${fNumber(usdMarketCap)}</TableCell>
-        {/* <TableCell align="left">{holders}</TableCell>
-                <TableCell align="left">{offers}</TableCell> */}
-
         <TableCell align="right">{fNumber(trustlines)}</TableCell>
         <TableCell align="right">
           {fNumber(supply)}{' '}
@@ -328,11 +324,10 @@ function fTokenRow({
             height={50}
           />
         </TableCell>
-
         <TableCell align="right">
           <TokenMoreMenu token={token} setTrustToken={setTrustToken} />
         </TableCell>
       </LazyLoadComponent>
-    </TableRow>
+    </StyledTableRow>
   );
 }
