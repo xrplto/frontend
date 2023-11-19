@@ -215,7 +215,7 @@ export default function TradeList({account}) {
                                                     <Stack direction="row" alignItems='center'>
                                                         {truncate(hash, 16)}
                                                         <IconButton edge="end" aria-label="bithomp">
-                                                            <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                                            <Avatar alt="Bithomp Explorer" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
                                                         </IconButton>
                                                     </Stack>
                                                 </Link>
@@ -228,7 +228,7 @@ export default function TradeList({account}) {
                                                     rel="noreferrer noopener nofollow"
                                                 >
                                                     <IconButton edge="end" aria-label="bithomp">
-                                                        <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
+                                                        <Avatar alt="livenet.xrpl.org Explorer" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
                                                     </IconButton>
                                                 </Link>
                                             </Stack>
