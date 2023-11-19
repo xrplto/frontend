@@ -319,7 +319,7 @@ export default function UserDesc({ token }) {
             </IconCover>
           </div>
         ) : (
-          <Avatar alt={user} src={imgUrl} sx={{ width: 56, height: 56 }} />
+          <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ width: 56, height: 56 }} />
         )}
         <Stack spacing={0.2}>
           <Typography variant="span" fontWeight="700" color={ darkMode ? '#22B14C': '#3366FF' } alt={user} fontSize="1.1rem">
@@ -853,7 +853,7 @@ export default function UserDesc({ token }) {
               onClick={handleOpenIssuerInfo}
               icon={
                 <Avatar
-                  alt="xrpl"
+                  alt="XRP Logo"
                   src="/static/xrp.webp"
                   sx={{ mr: 1, width: 20, height: 20 }}
                 />
