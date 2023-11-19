@@ -487,7 +487,7 @@ export default function RichListData({token}) {
                                                     rel="noreferrer noopener nofollow"
                                                 >
                                                     <IconButton edge="end" aria-label="bithomp">
-                                                        <Avatar alt="livenetxrplorg" src="/static/bithomp.ico" sx={{ width: 20, height: 20 }} />
+                                                        <Avatar alt="livenet.xrpl.org Explorer" src="/static/bithomp.ico" sx={{ width: 20, height: 20 }} />
                                                     </IconButton>
                                                 </Link>
 
@@ -499,7 +499,7 @@ export default function RichListData({token}) {
                                                     rel="noreferrer noopener nofollow"
                                                 >
                                                     <IconButton edge="end" aria-label="livenetxrplorg">
-                                                        <Avatar alt="livenetxrplorg" src="/static/livenetxrplorg.ico" sx={{ width: 20, height: 20 }} />
+                                                        <Avatar alt="livenet.xrpl.org Explorer" src="/static/livenetxrplorg.ico" sx={{ width: 20, height: 20 }} />
                                                     </IconButton>
                                                 </Link>
                                             </Stack>
