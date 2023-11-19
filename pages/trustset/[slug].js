@@ -306,7 +306,7 @@ function TrustLine(props) {
               alignItems="center"
               sx={{ mt: 2 }}
             >
-              <Avatar alt={user} src={imgUrl} sx={{ width: 64, height: 64 }} />
+              <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ width: 64, height: 64 }} />
               <Stack spacing={1}>
                 <Typography variant="h2" fontSize="1.2rem" color="primary">
                   {user}
@@ -454,7 +454,7 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                      alt="telegram"
+                      alt={`${user} ${name} Telegram Channel`}
                       src="/static/telegram.webp"
                       sx={{
                         width: { xs: 20, sm: 24 }, // Adjust width for different screen sizes
@@ -473,7 +473,7 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                      alt="discord"
+                      alt={`${user} ${name} Discord Server`}
                       src="/static/discord.webp"
                       sx={{
                         width: { xs: 20, sm: 24 }, // Adjust width for different screen sizes
@@ -492,7 +492,7 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                      alt="twitter"
+                      alt={`${user} ${name} Twitter Profile`}
                       src="/static/twitter.webp"
                       sx={{
                         width: { xs: 20, sm: 24 }, 
@@ -511,7 +511,7 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                      alt="facebook"
+                      alt={`${user} ${name} Facebook Page`}
                       src="/static/facebook.webp"
                       sx={{
                         width: { xs: 20, sm: 24 }, 
@@ -530,7 +530,7 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                      alt="linkedin"
+                    alt={`${user} ${name} LinkedIn Profile`}
                       src="/static/linkedin.webp"
                       sx={{
                         width: { xs: 20, sm: 24 }, 
@@ -549,7 +549,7 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                      alt="instagram"
+                      alt={`${user} ${name} Instagram Profile`}
                       src="/static/instagram.webp"
                       sx={{
                         width: { xs: 20, sm: 24 }, 
@@ -568,7 +568,7 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                      alt="youtube"
+                      alt={`${user} ${name} Youtube Channel`}
                       src="/static/youtube.webp"
                       sx={{
                         width: { xs: 20, sm: 24 }, 
@@ -587,7 +587,7 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                      alt="medium"
+                    alt={`${user} ${name} Medium Publication`}
                       src="/static/medium.webp"
                       sx={{
                         width: { xs: 20, sm: 24 }, 
@@ -606,7 +606,7 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                      alt="twitch"
+                      alt={`${user} ${name} Twitch Channel`}
                       src="/static/twitch.webp"
                       sx={{
                         width: { xs: 20, sm: 24 }, 
@@ -625,7 +625,7 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                      alt="tiktok"
+                    alt={`${user} ${name} Tiktok Profile`}
                       src="/static/tiktok.webp"
                       sx={{
                         width: { xs: 20, sm: 24 }, 
@@ -644,7 +644,7 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                      alt="reddit"
+                      alt={`${user} ${name} Reddit Community`}
                       src="/static/reddit.svg"
                       sx={{
                         width: { xs: 20, sm: 24 }, 
@@ -672,7 +672,7 @@ function TrustLine(props) {
         <Typography variant="s7" sx={{ flexGrow: 1 }}>{issuer}</Typography>
         <IconButton edge="end" aria-label="bithomp">
           <Avatar
-            alt="bithomp"
+          alt={`${user} ${name} Bithomp Explorer`}
             src="/static/bithomp.ico"
             sx={{ width: 24, height: 24 }}
           />
@@ -711,7 +711,7 @@ function TrustLine(props) {
                     component="img"
                     alt="XUMM QR"
                     src={qrUrl}
-                    sx={{ width: 200, height: 200 }}
+                    sx={{ width: 300, height: 300, mb: 6 }}
                   />
                   <Stack
   direction={{ xs: 'column', sm: 'row' }} // Adjust the direction based on the screen size
