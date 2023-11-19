@@ -134,7 +134,7 @@ export default function Account({ profile, setProfile, tab }) {
             backgroundColor: '#00000000',
           }}
         >
-          <img src={logoImage} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={logoImage}   alt={`${name} Avatar`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           {accountLogin === account && (
             <Link href={`/setting`} underline='none'>
               <Box
