@@ -234,7 +234,7 @@ function fTokenRow({
                 height={isMobile ? 26 : 46}
                 onClick={() => setEditToken(token)}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
-                alt={`${name}-logo`}
+                alt={`${user} ${name} Logo`}
               />
             ) : (
               <TokenImage
@@ -242,7 +242,7 @@ function fTokenRow({
                 width={isMobile ? 26 : 46}
                 height={isMobile ? 26 : 46}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
-                alt={`${name}-logo`}
+                alt={`${user} ${name} Logo`}
               />
             )}
 
