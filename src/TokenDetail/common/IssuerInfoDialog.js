@@ -178,7 +178,7 @@ export default function IssuerInfoDialog({open, setOpen, token}) {
                             >
                                 {issuer}
                                 <IconButton edge="end" aria-label="bithomp">
-                                    <Avatar alt="Bithomp Logo" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                    <Avatar alt="Bithomp Explorer Logo" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
                                 </IconButton>
                             </Link>
                         </Stack>
