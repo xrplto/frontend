@@ -84,7 +84,7 @@ export default function LoginDialog(props) {
         <Typography variant="subtitle1" align="center"> Scan the QR code from your Xaman app </Typography>
       <StyledDialogContent>
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <StyledQRImage alt="QR" src={qrUrl} />
+          <StyledQRImage alt="Xaman QR" src={qrUrl} />
         </Box>
         <Link
           underline="none"
