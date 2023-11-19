@@ -53,7 +53,7 @@ export default function PriceDesc({ token }) {
       24h (%)
       <Box
         component="img"
-        alt=""
+        alt={`${user} ${name} 24H Price Graph`}
         sx={{ width: 135, height: 50, mt: 2 }}
         src={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`}
       />
@@ -69,7 +69,7 @@ export default function PriceDesc({ token }) {
               7d (%)
               <Box
                 component="img"
-                alt=""
+                alt={`${user} ${name} 7D Price Graph`}
                 sx={{ width: 135, height: 50, mt: 2 }}
                 src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
               />
