@@ -153,7 +153,7 @@ export default function IssuerInfoDialog({open, setOpen, token}) {
             >
                 <IssuerInfoDialogTitle id="customized-dialog-title" onClose={handleClose}>
                     <Stack direction='row' alignItems='center'>
-                        <Avatar alt={`${user}-${name}-Logo`} src={imgUrl} sx={{ mr: 1 }} />
+                        <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ mr: 1 }} />
 
                         <Stack>
                             <Typography variant="token" color="primary">{name}</Typography>
