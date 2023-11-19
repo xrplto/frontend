@@ -153,7 +153,8 @@ export default function IssuerInfoDialog({open, setOpen, token}) {
             >
                 <IssuerInfoDialogTitle id="customized-dialog-title" onClose={handleClose}>
                     <Stack direction='row' alignItems='center'>
-                        <Avatar alt={name} src={imgUrl} sx={{ mr: 1 }} />
+                        <Avatar alt={`${user}-${name}-Logo`} src={imgUrl} sx={{ mr: 1 }} />
+
                         <Stack>
                             <Typography variant="token" color="primary">{name}</Typography>
                             <Typography variant="caption">{user}</Typography>
@@ -177,7 +178,7 @@ export default function IssuerInfoDialog({open, setOpen, token}) {
                             >
                                 {issuer}
                                 <IconButton edge="end" aria-label="bithomp">
-                                    <Avatar alt="bithomp" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
+                                    <Avatar alt="Bithomp Logo" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
                                 </IconButton>
                             </Link>
                         </Stack>
