@@ -360,7 +360,7 @@ const { slug } = token;
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="Sologenic" src="/static/solo.webp" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="Sologenic DEX" src="/static/solo.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
 
@@ -372,7 +372,7 @@ const { slug } = token;
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="XUMM" src="/static/xumm.webp" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="XUMM DEX" src="/static/xumm.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
 
@@ -385,7 +385,7 @@ const { slug } = token;
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="Gatehub" src="/static/gatehub.webp" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="Gatehub DEX" src="/static/gatehub.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
                                             
@@ -398,7 +398,7 @@ const { slug } = token;
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="solo">
-                                                    <Avatar alt="xpmarket" src="/static/xpmarket.webp" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="xpmarket DEX" src="/static/xpmarket.webp" sx={{ width: 24, height: 24 }} />
                                                 </IconButton>
                                             </Link>
 
