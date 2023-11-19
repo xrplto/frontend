@@ -193,7 +193,7 @@ export default function Converter({token}) {
                     }}
                 >
                     <Avatar
-                        alt={name}
+                        alt={`${user} ${name}`}
                         src={imgUrl1}
                         sx={{ mr: 1.3, width: 32, height: 32 }}
                     />
@@ -231,7 +231,7 @@ export default function Converter({token}) {
                     }}
                 >
                     <Avatar
-                        alt={name}
+                        alt="XRP"
                         src={imgUrl2}
                         sx={{ mr: 1.3, width: 32, height: 32 }}
                     />
