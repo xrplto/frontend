@@ -34,7 +34,8 @@ export default function CommunityMenu({token}) {
     const [open, setOpen] = useState(false);
 
     const {
-        // name,
+        name,
+        user,
         // domain,
         // whitepaper,
         social,
@@ -101,7 +102,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="twitter" src="/static/twitter.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt={`${user} ${name} Twitter Profile`} src="/static/twitter.webp" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="Twitter" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>
@@ -115,7 +116,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="facebook" src="/static/facebook.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt={`${user} ${name} Facebook Page`} src="/static/facebook.webp" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="Facebook" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>
@@ -129,7 +130,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="linkedin" src="/static/linkedin.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt={`${user} ${name} LinkedIn Profile`} src="/static/linkedin.webp" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="LinkedIn" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>
@@ -143,7 +144,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="instagram" src="/static/instagram.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt={`${user} ${name} Instagram Profile`} src="/static/instagram.webp" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="Instagram" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>
@@ -157,7 +158,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="youtube" src="/static/youtube.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt={`${user} ${name} Youtube Channel`} src="/static/youtube.webp" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="Youtube" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>
@@ -171,7 +172,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="medium" src="/static/medium.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt={`${user} ${name} Medium Publication`} src="/static/medium.webp" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="Medium" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>
@@ -185,7 +186,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="twitch" src="/static/twitch.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt={`${user} ${name} Twitch Channel`} src="/static/twitch.webp" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="Twitch" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>
@@ -199,7 +200,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="tiktok" src="/static/tiktok.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt={`${user} ${name} Tiktok Profile`} src="/static/tiktok.webp" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="Tiktok" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>
@@ -213,7 +214,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="reddit" src="/static/reddit.svg" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt={`${user} ${name} Reddit Community`} src="/static/reddit.svg" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="Reddit" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>
@@ -226,7 +227,7 @@ export default function CommunityMenu({token}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xrpchat" src="/static/xrpchat.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="XRP Chat Forum" src="/static/xrpchat.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRP Chat" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
