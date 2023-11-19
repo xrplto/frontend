@@ -108,7 +108,7 @@ export default function CustomQRDialog({ open, type, qrUrl, nextUrl, onClose }) 
             marginTop: 50,
           }}
         >
-          <Box component="img" alt="QR" src={qrUrl} sx={{ mb: 2 }} />
+          <Box component="img" alt=" Xaman QR" src={qrUrl} sx={{ mb: 2 }} />
 
           <Link
             underline="none"
