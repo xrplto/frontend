@@ -424,7 +424,7 @@ export default function BuyXRP({fiats, coins}) {
                 <Card variant="outlined" sx={{p:3}}>
                     <Stack direction="row" spacing={2} sx={{mb: 5}}>
                         <img
-                            alt={'banxa'}
+                            alt={'Banxa Logo'}
                             src={banxa_img}
                             style={{
                                 width:'30%',
