@@ -121,7 +121,7 @@ const RenderOption = React.memo(
             </Stack>
 
             <LazyLoadImage
-              alt=""
+              alt={`${user} ${name} 7D Price Graph`}
               src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
               width={108}
               height={36}
