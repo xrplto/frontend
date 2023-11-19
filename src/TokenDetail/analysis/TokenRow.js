@@ -205,7 +205,7 @@ function fTokenRow({
                 height={46}
                 onClick={() => setEditToken(token)}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
-                alt={`${name} ${user} Logo`}
+                alt={`${user} ${name} Logo`}
               />
             ) : (
               <TokenImage 
