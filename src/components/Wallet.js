@@ -319,7 +319,7 @@ export default function Wallet({ style }) {
             >
               <Avatar
                 variant={accountLogo ? '' : 'square'}
-                alt="user"
+                alt="User"
                 src={logoImageUrl}
                 sx={{ width: 32, height: 32 }}
               />
@@ -517,7 +517,7 @@ export default function Wallet({ style }) {
                   >
                     <Avatar
                       variant={accountLogo ? '' : 'square'}
-                      alt="user"
+                      alt="User"
                       src={logoImageUrl}
                       sx={{ width: 32, height: 32 }}
                     />
