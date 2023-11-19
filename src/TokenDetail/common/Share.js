@@ -149,7 +149,7 @@ export default function Share({ token }) {
       >
         <DialogContent>
           <Stack alignItems="center">
-            <Avatar alt={user} src={imgUrl} sx={{ width: 64, height: 64, mt: 2 }} />
+          <Avatar alt={`${user}${name} Logo`} src={imgUrl} sx={{ width: 64, height: 64, mt: 2 }} />
 
             <Typography variant="desc" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>
               {user} {name}
