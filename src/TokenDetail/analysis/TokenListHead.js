@@ -21,17 +21,19 @@ const SmallInfoIcon = (props) => (
 const StickyTableCell = withStyles((theme) => ({
     head: {
       position: 'sticky',
-      zIndex: 1000,
+     //zIndex: 1000,
       top: 0
     }
   }))(TableCell);
 
-const TABLE_HEAD = [
+  const TABLE_HEAD = [
     { no: 0, id: 'id',            label: '#',                  align: 'left',   width: '' },
     { no: 1, id: 'name',          label: 'Name',               align: 'left',   width: '11%' },
     { no: 2, id: 'exch',          label: 'Price',              align: 'right',  width: '8%' },
     { no: 3, id: 'pro24h',        label: '24h',                align: 'right',  width: '6%' },
     { no: 4, id: 'pro7d',         label: '7d',                 align: 'right',  width: '6%' },
+
+
     {
         no: 5,
         id: 'vol24hxrp',
@@ -114,13 +116,13 @@ export default function TokenListHead({ scrollLeft, tokens }) {
         <TableHead sx={{
             '& .MuiTableCell-root:nth-child(1)': {
                 position: "sticky",
-                zIndex: 1001,
+               // zIndex: 1001,
                 left: 0,
                 background: darkMode ? "#17171A" : '#F2F5F9'
             },
             '& .MuiTableCell-root:nth-child(2)': {
                 position: "sticky",
-                zIndex: 1002,
+               // zIndex: 1002,
                 left: tokens.length > 0 ? 67 : 40,
                 background: darkMode ? "#17171A" : '#F2F5F9',
                 '&:before': (scrollLeft ? {
