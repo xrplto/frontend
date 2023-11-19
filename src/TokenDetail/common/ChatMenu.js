@@ -35,7 +35,8 @@ export default function CommunityMenu({token}) {
     const [open, setOpen] = useState(false);
 
     const {
-        // name,
+        name,
+        user,
         // domain,
         // whitepaper,
         // issuer,
@@ -102,7 +103,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="telegram" src="/static/telegram.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt={`${user} ${name} Telegram Channel`} src="/static/telegram.webp" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="Telegram" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>
@@ -116,7 +117,7 @@ export default function CommunityMenu({token}) {
                         rel="noreferrer noopener nofollow"
                     >
                         <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt="discord" src="/static/discord.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                            <Avatar alt={`${user} ${name} Discord Server`} src="/static/discord.webp" sx={{ mr:1, width: 24, height: 24 }} />
                             <ListItemText primary="Discord" primaryTypographyProps={{ variant: 'subtitle2' }} />
                         </MenuItem>
                     </Link>
