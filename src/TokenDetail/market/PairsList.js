@@ -30,7 +30,6 @@ import StackStyle from 'src/components/StackStyle'; //Maybe need to disable?
 // ----------------------------------------------------------------------
 
 
-
 const badge24hStyle = {
     display: 'inline-block',
     marginLeft: '4px',
@@ -68,6 +67,9 @@ function truncate(str, n){
 export default function PairsList({token, pairs}) {
     const BASE_URL = process.env.API_URL;
     const { darkMode } = useContext(AppContext);
+    const { name, exch, usd, pro7d, pro24h, md5 } = token;
+    let user = token.user;
+    if (!user) user = name;
 
     const tableRef = useRef(null);
     const [scrollLeft, setScrollLeft] = useState(0);
@@ -202,6 +204,8 @@ const { slug } = token;
                                 sparkline = curr1.md5;
                             else if (curr2.issuer)
                                 sparkline = curr2.md5;
+
+                            
                             
                             return (
                                 <TableRow
@@ -279,7 +283,7 @@ const { slug } = token;
                                         {sparkline && (
                                             <Box
                                                 component="img"
-                                                alt=""
+                                                alt={`${user} ${name} 7D Price Graph`}
                                                 sx={{ maxWidth: 'none' }}
                                                 src={`${BASE_URL}/sparkline/${sparkline}`}
                                             />
