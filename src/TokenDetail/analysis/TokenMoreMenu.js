@@ -3,7 +3,7 @@ import { AppContext } from 'src/AppContext';
 import { Icon } from '@iconify/react';
 import { useRef, useState } from 'react';
 import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
-
+import LinkIcon from '@mui/icons-material/Link';
 import EditIcon from '@mui/icons-material/Edit';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 
@@ -18,10 +18,11 @@ import {
 } from '@mui/material';
 // ----------------------------------------------------------------------
 
-export default function TokenMoreMenu({token, setTrustToken}) {
+export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken}) {
     const ref = useRef(null);
     const {
         issuer,
+        slug,
         currency
     } = token;
 
@@ -44,13 +45,27 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
                 <MenuItem onClick={() => {setIsOpen(false);setTrustToken(token);}} disableRipple sx={{ color: 'text.secondary' }}>
-                    <SwapHorizIcon sx={{ mr:1, width: 24, height: 24 }} />
+                    <LinkIcon sx={{ mr:1, width: 24, height: 24 }} />
                     <ListItemText primary="Trust Set" primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </MenuItem>
 
 
-                
+                <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={`https://xrpl.to/token/${slug}/trade`}
+                    rel="noreferrer noopener nofollow"
+                >
+                    <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
+                    <SwapHorizIcon sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="DEX Trade" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                    </MenuItem>
+                </Link>
 
+
+                
+{/*
                 <Link
                     underline="none"
                     color="inherit"
@@ -59,7 +74,7 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="bithomp" src="/static/bithomp.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="Bithomp Explorer" src="/static/bithomp.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="Bithomp" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -71,7 +86,7 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="xrpscan" src="/static/xrpscan.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="XRPSCAN Explorer" src="/static/xrpscan.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="XRPScan" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -83,7 +98,7 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="gatehub" src="/static/gatehub.webp" sx={{ mr:1, width: 24, height: 24 }} />
+                        <Avatar alt="Gatehub Explorer" src="/static/gatehub.webp" sx={{ mr:1, width: 24, height: 24 }} />
                         <ListItemText primary="GateHub" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
@@ -111,10 +126,12 @@ export default function TokenMoreMenu({token, setTrustToken}) {
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
-                        <Avatar alt="XRPL Explorer" src="/static/xrplf_black.svg" sx={{ mr:1, width: 24, height: 24 }} />
-                        <ListItemText primary="XRPL Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
+                        <Avatar alt="XRPL Foundation Explorer" src="/static/xrplf_black.svg" sx={{ mr:1, width: 24, height: 24 }} />
+                        <ListItemText primary="XRPLF Explorer" primaryTypographyProps={{ variant: 'subtitle2' }} />
                     </MenuItem>
                 </Link>
+
+            */}
                 {/* <Link
                     underline="none"
                     color="inherit"
