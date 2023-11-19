@@ -205,7 +205,7 @@ function fTokenRow({
                 height={46}
                 onClick={() => setEditToken(token)}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
-                alt={`${name}-logo`}
+                alt={`${name} ${user} Logo`}
               />
             ) : (
               <TokenImage 
@@ -213,7 +213,7 @@ function fTokenRow({
                 width={isMobile ? 26 : 46}
                 height={isMobile ? 26 : 46}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
-                alt={`${name}-logo`}
+                alt={`${user} ${name} Logo`}
               />
             )}
 
@@ -318,7 +318,7 @@ function fTokenRow({
         </TableCell>
         <TableCell align="right">
           <LazyLoadImage
-            alt={`${user}-${name}-7d-price-graph`}
+            alt={`${user}-${name} 7D Price Graph`}
             src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
             width={135}
             height={50}
