@@ -342,7 +342,7 @@ export default function TrustSetDialog({ token, setToken }) {
       >
         <TrustDialogTitle id="customized-dialog-title" onClose={handleClose}>
           <Stack direction="row" alignItems="center">
-            <Avatar alt={name} src={imgUrl} sx={{ mr: 1 }} />
+          <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ mr: 1 }} />
             <Stack>
               <Typography variant="token" color="primary">{name}</Typography>
               <Typography variant="caption">{user}</Typography>
@@ -365,7 +365,7 @@ export default function TrustSetDialog({ token, setToken }) {
               >
                 <IconButton edge="end" aria-label="bithomp">
                   <Avatar
-                    alt="bithomp"
+                    alt="Bithomp Explorer"
                     src="/static/bithomp.ico"
                     sx={{ width: 16, height: 16 }}
                   />
