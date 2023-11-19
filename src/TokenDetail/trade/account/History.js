@@ -382,7 +382,7 @@ export default function History({ token }) {
                             {truncate(hash, 16)}
                             <IconButton edge="end" aria-label="bithomp">
                               <Avatar
-                                alt="bithomp"
+                                alt="Bithomp Explorer"
                                 src="/static/bithomp.ico"
                                 sx={{ width: 16, height: 16 }}
                               />
@@ -399,7 +399,7 @@ export default function History({ token }) {
                         >
                           <IconButton edge="end" aria-label="bithomp">
                             <Avatar
-                              alt="livenetxrplorg"
+                              alt="livenet.xrpl.org Explorer"
                               src="/static/livenetxrplorg.ico"
                               sx={{ width: 16, height: 16 }}
                             />
