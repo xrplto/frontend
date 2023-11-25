@@ -21,12 +21,20 @@ import { CURRENCY_ISSUERS } from 'src/utils/constants';
 // Components
 import TrustSetDialog from 'src/components/TrustSetDialog';
 
+// Step 1: Import the necessary dependencies
+import { useContext } from 'react';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { AppContext } from 'src/AppContext';
+
 // ----------------------------------------------------------------------
 export default function ExtraButtons({ token }) {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const [trustToken, setTrustToken] = useState(null);
   const [lines, setLines] = useState([]);
+
+  // Step 2: Access the darkMode variable from AppContext
+  const { darkMode } = useContext(AppContext);
 
   const {
     id,
@@ -96,7 +104,12 @@ export default function ExtraButtons({ token }) {
         sx={{ mt: 1, width: isTablet ? '100%' : 'auto' }}
         justifyContent={isTablet ? 'flex-end' : 'flex-start'}
       >
-        <Avatar sx={{ width: 24, height: 24 }} src="/static/sponsor.webp" />
+        {/* Step 4: Use darkMode to select the appropriate image */}
+        <LazyLoadImage
+          src={darkMode ? "/static/sponsor-dark-theme.svg" : "/static/sponsor-light-theme.svg"}
+          width={24}
+          height={24}
+        />
         <Typography variant="sponsored">Sponsored</Typography>
       </Stack>
     </Stack>
