@@ -351,7 +351,8 @@ const { slug } = token;
                                                 rel="noreferrer noopener nofollow"
                                             >
                                                 <IconButton edge="end" aria-label="xrpl.to">
-                                                    <Avatar alt="xrpl.to DEX" src="/static/xrplto.webp" sx={{ width: 24, height: 24 }} />
+                                                    <Avatar alt="xrpl.to DEX" src={darkMode ? "/static/sponsor-dark-theme.svg" : "/static/sponsor-light-theme.svg"} sx={{ width: 24, height: 24 }} />
+                                                    
                                                 </IconButton>
                                             </Link>
 
