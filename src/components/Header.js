@@ -16,14 +16,13 @@ import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
 import ThemeSwitcher from './ThemeSwitcher';
 
-
 // Icon Imports
 import BarChartIcon from '@mui/icons-material/BarChart';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import WhatshotIcon from '@mui/icons-material/Whatshot'; // Example icon for Gainers & Losers
-import VisibilityIcon from '@mui/icons-material/Visibility'; // Example icon for Most Viewed
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'; // Example icon for Recently Added
-
+import WhatshotIcon from '@mui/icons-material/Whatshot'; // Gainers & Losers
+import VisibilityIcon from '@mui/icons-material/Visibility'; // Most Viewed
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'; // Recently Added
+import StarIcon from '@mui/icons-material/Star'; // Spotlight
 
 const HeaderWrapper = styled(Box)(({ theme }) => `
     width: 100%;
@@ -48,6 +47,10 @@ const StyledLink = styled(Link)(({ darkMode }) => `
     }
 `);
 
+const MenuContainer = styled('div')({
+  position: 'relative',
+  display: 'inline-block', // Make sure this is an inline-block to properly wrap content
+});
 
 export default function Header(props) {
   const { t } = useTranslation();    // set translation const
@@ -77,13 +80,6 @@ export default function Header(props) {
     setAnchorEl(null);
   };
 
-  const LinkWrapper = styled(Box)({
-    display: 'inline-flex',
-    alignItems: 'center',
-    position: 'relative',
-    marginRight: 27,
-  });
-
   return (
     <HeaderWrapper>
       <Container maxWidth="xl">
@@ -106,40 +102,42 @@ export default function Header(props) {
 
             {!isTablet && (
               <>
-                <StyledLink 
-      underline="none" 
-      color={darkMode ? 'white' : 'black'} 
-      sx={{'&:hover': {color: darkMode ? '#22B14C !important' : '#3366FF !important'}}}
-      href="/" // Hyperlink for Tokens
-      onMouseEnter={handleMenuOpen} // Reintroduced for submenu
-      
-    >
-      {t("Tokens")}
-      <Menu
-  id="menu-appbar"
-  anchorEl={anchorEl}
-  anchorOrigin={{
-    vertical: 'bottom',
-    horizontal: 'left',
-  }}
-  transformOrigin={{
-    vertical: 'top',
-    horizontal: 'left',
-  }}
-  open={open}
-  onClose={handleMenuClose}
-  sx={{ 
-    display: { xs: 'block', md: 'block' }, // Visible on all screen sizes
-    width: { xs: '100%', sm: 'auto' }, // Responsive width
-    maxWidth: { sm: 300 } // Max width on small devices
-  }}
->
-  <MenuItem onClick={handleMenuClose}>
-    <MuiLink href="/" color="inherit" underline="none" sx={{ display: 'flex', alignItems: 'center' }}>
-      <BarChartIcon sx={{ marginRight: theme.spacing(1) }} />
-      Ranking
-    </MuiLink>
-  </MenuItem>
+                <MenuContainer
+                  onMouseEnter={handleMenuOpen}
+                  onMouseLeave={handleMenuClose}
+                >
+                  <StyledLink 
+                    underline="none" 
+                    color={darkMode ? 'white' : 'black'} 
+                    sx={{'&:hover': {color: darkMode ? '#22B14C !important' : '#3366FF !important'}}}
+                    href="/"
+                  >
+                    {t("Tokens")}
+                    <Menu
+                      id="menu-appbar"
+                      anchorEl={anchorEl}
+                      anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'left',
+                      }}
+                      transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                      }}
+                      open={open}
+                      onClose={handleMenuClose}
+                      sx={{ 
+                        display: { xs: 'block', md: 'block' }, // Visible on all screen sizes
+                        width: { xs: '100%', sm: 'auto' }, // Responsive width
+                        maxWidth: { sm: 300 } // Max width on small devices
+                      }}
+                    >
+                      <MenuItem onClick={handleMenuClose}>
+                        <MuiLink href="/" color="inherit" underline="none" sx={{ display: 'flex', alignItems: 'center' }}>
+                          <BarChartIcon sx={{ marginRight: theme.spacing(1) }} />
+                          Ranking
+                        </MuiLink>
+                      </MenuItem>
 
 
   
@@ -152,11 +150,11 @@ export default function Header(props) {
   </MenuItem>
 
   <MenuItem onClick={handleMenuClose}>
-    <MuiLink href="/best-tokens" color="inherit" underline="none" sx={{ display: 'flex', alignItems: 'center' }}>
-      <TrendingUpIcon sx={{ marginRight: theme.spacing(1) }} />
-      Spotlight
-    </MuiLink>
-  </MenuItem>
+  <MuiLink href="/best-tokens" color="inherit" underline="none" sx={{ display: 'flex', alignItems: 'center' }}>
+    <StarIcon sx={{ marginRight: theme.spacing(1) }} /> 
+    Spotlight
+  </MuiLink>
+</MenuItem>
 
   <MenuItem onClick={handleMenuClose}>
     <MuiLink href="/trending-tokens" color="inherit" underline="none" sx={{ display: 'flex', alignItems: 'center' }}>
@@ -181,6 +179,7 @@ export default function Header(props) {
   {/* Add more menu items here */}
 </Menu>
     </StyledLink>
+    </MenuContainer>
     <StyledLink underline="none" color={darkMode ? 'white' : 'black'} sx={{'&:hover': {color: darkMode ? '#22B14C !important' : '#3366FF !important'}}} href="/swap">
       {t("Swap")}
     </StyledLink>
