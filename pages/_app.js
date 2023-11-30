@@ -23,7 +23,7 @@ function XRPLToApp({ Component, pageProps, router }) {
 
   const jsonLdSchema = {
     "@context": "http://schema.org/",
-    "@type": "XRP Ledger",
+    "@type": "Organization",
     "name": "xrpl.to",
     "logo": "https://xrpl.to/logo/xrpl-to-logo-white.svg",
     "url": "https://xrpl.to/",
