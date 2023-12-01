@@ -96,7 +96,7 @@ function XRPLToApp({ Component, pageProps, router }) {
         <meta property="og:image:height" content="315" />
 
         {/* Twitter Meta Tags */}
-        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:card" content="summary" />
         <meta property="twitter:domain" content="xrpl.to" />
         <meta property="twitter:url" content={ogp.url} />
         <meta name="twitter:title" content={`${ogp.title} | xrpl.to`} />
