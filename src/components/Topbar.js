@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Decimal from 'decimal.js';
 
-
 // import i18n (needs to be bundled ;))
 import 'src/utils/i18n';
 
@@ -31,7 +30,6 @@ import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-
 // Import Language
 import { useTranslation } from 'react-i18next';
 // Utils
@@ -40,9 +38,8 @@ import {
   fCurrency3,
   fNumber,
   fPercent
-
-  
 } from 'src/utils/formatNumber';
+import CurrencySwithcer from './CurrencySwitcher';
 
 const TopWrapper = styled(Box)(
   ({ theme }) => `
@@ -54,7 +51,6 @@ const TopWrapper = styled(Box)(
     border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
 `
 );
-
 
 const ContentWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -69,8 +65,6 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
   '::-webkit-scrollbar': { display: 'none' }
 }));
 
-
-
 const Separator = styled('span')(({ theme }) => ({
   fontSize: '0.4rem'
 }));
@@ -81,24 +75,19 @@ function Rate(num) {
   return fCurrency3(1 / num);
 }
 
-
-
-  // Set language const
-  const lngs = {
-    en: { nativeName: 'English' },
-    es: { nativeName: 'Spanish' },
-  };
-
-
+// Set language const
+const lngs = {
+  en: { nativeName: 'English' },
+  es: { nativeName: 'Spanish' }
+};
 
 const currencies = [
   { label: 'USD', value: 'USD' },
   { label: 'EUR', value: 'EUR' },
-  { label: 'JPY', value: 'JPY' },
+  { label: 'JPY', value: 'JPY' }
 ];
 
 const Topbar = () => {
-
   const { t, i18n } = useTranslation();
   const metrics = useSelector(selectMetrics);
   const dispatch = useDispatch();
@@ -133,47 +122,69 @@ const Topbar = () => {
   const handleCurrencyClick = (currency) => () => {
     handleCurrencyChange(currency);
   };
-const { darkMode } = useContext(AppContext);
-const iconColor = darkMode ? '#FFFFFF' : '#000000';
-const iconStyle = {
-  marginRight: '5px', // Adjust the value as needed
-};
+  const { darkMode } = useContext(AppContext);
+  const iconColor = darkMode ? '#FFFFFF' : '#000000';
+  const iconStyle = {
+    marginRight: '5px' // Adjust the value as needed
+  };
 
-const H24Style = styled('div')(({ theme }) => ({
-  cursor: 'pointer',
-  paddingLeft: theme.spacing(0.5),
-  paddingRight: theme.spacing(0.5),
-  paddingTop: theme.spacing(0.07),
-  paddingBottom: theme.spacing(0.07),
-  backgroundColor: darkMode ? '#007B55 !important  ' : '#5569ff !important',
-  borderRadius: 8,
-  transition: theme.transitions.create('opacity'),
-  opacity: 1,
-  '&:hover': { opacity: 1 }
-}));
+  const H24Style = styled('div')(({ theme }) => ({
+    cursor: 'pointer',
+    paddingLeft: theme.spacing(0.5),
+    paddingRight: theme.spacing(0.5),
+    paddingTop: theme.spacing(0.07),
+    paddingBottom: theme.spacing(0.07),
+    backgroundColor: darkMode ? '#007B55 !important  ' : '#5569ff !important',
+    borderRadius: 8,
+    transition: theme.transitions.create('opacity'),
+    opacity: 1,
+    '&:hover': { opacity: 1 }
+  }));
   return (
     <TopWrapper>
       <Container maxWidth="xl">
         <ContentWrapper>
+          <CurrencySwithcer />
           <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="body2" color="#a1a7bb" sx={{ fontWeight: 500 }}>{t("Tokens")}:</Typography>
+            <Typography
+              variant="body2"
+              color="#a1a7bb"
+              sx={{ fontWeight: 500 }}
+            >
+              {t('Tokens')}:
+            </Typography>
             <Typography variant="body2">{fIntNumber(metrics.total)}</Typography>
-            <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
-            {t('Addresses')}:
+            <Typography
+              variant="body2"
+              noWrap
+              color="#a1a7bb"
+              sx={{ fontWeight: 500 }}
+            >
+              {t('Addresses')}:
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.totalAddresses)}
             </Typography>
-            <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
-            {t("Offers")}:
+            <Typography
+              variant="body2"
+              noWrap
+              color="#a1a7bb"
+              sx={{ fontWeight: 500 }}
+            >
+              {t('Offers')}:
             </Typography>
             <Typography align="center" color="#FFC107" variant="body2">
               {fIntNumber(metrics.H24.totalOffers)}
             </Typography>
-            <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
-            {t("Trustlines")}:
+            <Typography
+              variant="body2"
+              noWrap
+              color="#a1a7bb"
+              sx={{ fontWeight: 500 }}
+            >
+              {t('Trustlines')}:
             </Typography>
-            <Typography align="center" color="#FFA48D" variant="body2" >
+            <Typography align="center" color="#FFA48D" variant="body2">
               {fIntNumber(metrics.H24.totalTrustLines)}
             </Typography>
             <H24Style>
@@ -190,39 +201,61 @@ const H24Style = styled('div')(({ theme }) => ({
                 </Stack>
               </Tooltip>
             </H24Style>
-            <Typography variant="body2" color="#a1a7bb" sx={{ fontWeight: 500 }}>{t('Trades')}:</Typography>
+            <Typography
+              variant="body2"
+              color="#a1a7bb"
+              sx={{ fontWeight: 500 }}
+            >
+              {t('Trades')}:
+            </Typography>
             <Typography align="center" color="#74CAFF" variant="body2">
               {fIntNumber(metrics.H24.transactions24H)}
             </Typography>
-            <Typography variant="body2" color="#a1a7bb" sx={{ fontWeight: 500 }}>{t('Vol')}:</Typography>
+            <Typography
+              variant="body2"
+              color="#a1a7bb"
+              sx={{ fontWeight: 500 }}
+            >
+              {t('Vol')}:
+            </Typography>
             <Typography align="center" color="#FF6C40" variant="body2">
               <Stack direction="row" spacing={0.5} alignItems="center">
-                <Icon icon={rippleSolid} color={ darkMode ? '#FFF': '#000' } />
-                <Typography align="center" color="#FF6C40" variant="body2" >
+                <Icon icon={rippleSolid} color={darkMode ? '#FFF' : '#000'} />
+                <Typography align="center" color="#FF6C40" variant="body2">
                   {fNumber(metrics.H24.tradedXRP24H)}
                 </Typography>
               </Stack>
             </Typography>
-            <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
-            {t('Tokens Traded')}:
+            <Typography
+              variant="body2"
+              noWrap
+              color="#a1a7bb"
+              sx={{ fontWeight: 500 }}
+            >
+              {t('Tokens Traded')}:
             </Typography>
             <Typography align="center" color="#3366FF" variant="body2">
               {fIntNumber(metrics.H24.tradedTokens24H)}
             </Typography>
-            <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
-            {t("Active Addresses")}:
+            <Typography
+              variant="body2"
+              noWrap
+              color="#a1a7bb"
+              sx={{ fontWeight: 500 }}
+            >
+              {t('Active Addresses')}:
             </Typography>
-            <Typography align="center" color="#54D62C" variant="body2" >
+            <Typography align="center" color="#54D62C" variant="body2">
               {fIntNumber(metrics.H24.activeAddresses24H)}
             </Typography>
           </Stack>
-          <Stack
+          {/* <Stack
             direction="row"
             spacing={2}
             alignItems="center"
             sx={{ ml: 5, mr: 2 }}
           >
-{/* Disable before more translated
+Disable before more translated
 <div>
   <select
     onChange={(e) => i18n.changeLanguage(e.target.value)}
@@ -235,7 +268,7 @@ const H24Style = styled('div')(({ theme }) => ({
     ))}
   </select>
 </div>
-*/}
+
 
 
 
@@ -266,7 +299,7 @@ const H24Style = styled('div')(({ theme }) => ({
                 </MenuItem>
               ))}
             </Menu>
-          </Stack>
+          </Stack> */}
         </ContentWrapper>
       </Container>
     </TopWrapper>
