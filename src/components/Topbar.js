@@ -149,7 +149,7 @@ const Topbar = () => {
     <TopWrapper>
       <Container maxWidth="xl">
         <ContentWrapper>
-          {!isMobile && (<CurrencySwithcer />)}
+          
           <Stack direction="row" spacing={2} alignItems="center">
             <Typography
               variant="body2"
@@ -254,6 +254,7 @@ const Topbar = () => {
               {fIntNumber(metrics.H24.activeAddresses24H)}
             </Typography>
           </Stack>
+          {!isMobile && (<CurrencySwithcer />)}
           {/* <Stack
             direction="row"
             spacing={2}
