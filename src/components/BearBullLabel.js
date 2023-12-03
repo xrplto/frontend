@@ -7,9 +7,6 @@ import {
     Typography
 } from '@mui/material';
 
-// Utils
-import { fPercent } from 'src/utils/formatNumber';
-
 // Iconify
 import { Icon } from '@iconify/react';
 import caretDown from '@iconify/icons-bx/caret-down';
@@ -40,21 +37,14 @@ function abs(num) {
     return num;
 }
 
-export default function BearBullLabel({value, variant}) {
-    let pro = fPercent(value);
+export default function BearBullLabel({ value, variant }) {
+    const formattedValue = parseFloat(value).toFixed(2); // Format to two decimal places
+    const isBearish = formattedValue < 0;
+    const strPro = `${isBearish ? -formattedValue : formattedValue} %`;
 
-    if (abs(pro) < 0.0001) pro = 0;
-
-    let strPro = 0;
-    if (pro < 0) {
-        strPro = -pro;
-        strPro = strPro + ' %';
-    } else {
-        strPro = pro + ' %';
-    }
     return (
         <>
-            {pro < 0 ? (
+            {isBearish ? (
                 <Stack direction="row" spacing={0.1} justifyContent="flex-end" alignItems='center'>
                     <Icon icon={caretDown} color="#FF6C40"/>
                     <BearishTypography variant={variant} noWrap>{strPro}</BearishTypography>
@@ -68,4 +58,3 @@ export default function BearBullLabel({value, variant}) {
         </>
     );
 }
-
