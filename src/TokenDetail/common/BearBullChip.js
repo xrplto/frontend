@@ -7,8 +7,7 @@ import caretUp from '@iconify/icons-bx/caret-up';
 import { fPercent } from 'src/utils/formatNumber';
 
 const BearBullChip = ({ value, tooltip }) => {
-  const pro = fPercent(value);
-  const formattedPro = parseFloat(pro).toFixed(2); // Format to two decimal places
+  const formattedPro = parseFloat(value).toFixed(2); // Format to two decimal places
   const isBearish = formattedPro < 0;
   const strPro = `${isBearish ? -formattedPro : formattedPro} %`;
 
