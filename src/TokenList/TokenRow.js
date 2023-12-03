@@ -181,7 +181,7 @@ function fTokenRow({
   return (
     <TableRow
       key={id}
-      sx={{z
+      sx={{
         '&:hover': {
           '& .MuiTableCell-root': {
             backgroundColor: darkMode

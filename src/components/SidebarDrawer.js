@@ -6,6 +6,7 @@ import Wallet from './Wallet';
 import ThemeSwitcher from './ThemeSwitcher';
 
 import Drawer from './Drawer';
+import CurrencySwithcer from './CurrencySwitcher';
 
 export default function SidebarDrawer({ toggleDrawer, isOpen }) {
   return (
@@ -60,6 +61,7 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
       >
         <Wallet />
         <ThemeSwitcher />
+        <CurrencySwithcer/>
       </Stack>
     </Drawer>
   );

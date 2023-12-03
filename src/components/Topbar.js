@@ -15,7 +15,9 @@ import {
   Typography,
   Button,
   Menu,
-  MenuItem
+  MenuItem,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 
 // Redux
@@ -40,6 +42,7 @@ import {
   fPercent
 } from 'src/utils/formatNumber';
 import CurrencySwithcer from './CurrencySwitcher';
+
 
 const TopWrapper = styled(Box)(
   ({ theme }) => `
@@ -104,6 +107,8 @@ const Topbar = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [rate, setRate] = useState(metrics.USD);
   const [currentCurrency, setCurrentCurrency] = useState('USD');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -144,7 +149,7 @@ const Topbar = () => {
     <TopWrapper>
       <Container maxWidth="xl">
         <ContentWrapper>
-          <CurrencySwithcer />
+          {!isMobile && (<CurrencySwithcer />)}
           <Stack direction="row" spacing={2} alignItems="center">
             <Typography
               variant="body2"
