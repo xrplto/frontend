@@ -21,7 +21,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   update_metrics,
   update_filteredCount,
-  selectMetrics
+  selectMetrics,
+  selectActiveFiatCurrency
 } from 'src/redux/statusSlice';
 
 // Components
@@ -46,6 +47,8 @@ export default function TokenList({
   const theme = useTheme();
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
+  const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
+  const exchRate = metrics[activeFiatCurrency];
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // const WSS_URL = 'wss://ws.xrpl.to';
@@ -395,6 +398,8 @@ export default function TokenList({
                   watchList={watchList}
                   onChangeWatchList={onChangeWatchList}
                   scrollLeft={scrollLeft}
+                  activeFiatCurrency={activeFiatCurrency}
+                  exchRate={exchRate}
                 />
               );
             })}

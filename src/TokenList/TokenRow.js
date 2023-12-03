@@ -40,9 +40,14 @@ import TokenMoreMenu from './TokenMoreMenu';
 import BearBullLabel from 'src/components/BearBullLabel';
 
 // Utils
-import { fNumber, fIntNumber } from 'src/utils/formatNumber';
+import {
+  fNumber,
+  fIntNumber,
+  fNumberWithCurreny
+} from 'src/utils/formatNumber';
 
 import NumberTooltip from 'src/components/NumberTooltip';
+import { currencySymbols } from 'src/utils/constants';
 
 const StickyTableCell = withStyles((theme) => ({
   head: {
@@ -118,7 +123,9 @@ function fTokenRow({
   setTrustToken,
   watchList,
   onChangeWatchList,
-  scrollLeft
+  scrollLeft,
+  exchRate,
+  activeFiatCurrency
 }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
@@ -167,14 +174,14 @@ function fTokenRow({
   // const imgUrl = `/static/tokens/${md5}.${ext}`;
   //const imgUrl = `/static/tokens/${md5}.webp`;
 
-  const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
-  
-  const supplyRate = Decimal.div(supply, amount).toNumber()*100;
+  const convertedMarketCap = Decimal.div(marketcap, exchRate).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+
+  const supplyRate = Decimal.div(supply, amount).toNumber() * 100;
 
   return (
     <TableRow
       key={id}
-      sx={{
+      sx={{z
         '&:hover': {
           '& .MuiTableCell-root': {
             backgroundColor: darkMode
@@ -298,7 +305,15 @@ function fTokenRow({
                   color={
                     // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : slug === md5 ? '#B72136' : ''
                     // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : slug === md5 ? ( darkMode ? 'red' : 'blue') : ''
-                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : (darkMode ? '#007B55' : slug === md5 ? '#B72136' : '') 
+                    isOMCF !== 'yes'
+                      ? darkMode
+                        ? '#fff'
+                        : '#222531'
+                      : darkMode
+                      ? '#007B55'
+                      : slug === md5
+                      ? '#B72136'
+                      : ''
                   }
                   noWrap={isMobile ? false : true}
                 >
@@ -306,14 +321,15 @@ function fTokenRow({
                 </Typography>
                 <Typography
                   variant="caption"
-                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
+                  color={
+                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
+                  }
                   noWrap={isMobile ? false : true}
-                 
                 >
                   {isMobile && <span style={badge24hStyle}>{id}</span>}
                   {truncate(name, 8)}
                   {kyc && (
-                    <Typography variant="kyc" sx={{ ml: 0.5}}>
+                    <Typography variant="kyc" sx={{ ml: 0.5 }}>
                       KYC
                     </Typography>
                   )}
@@ -329,10 +345,14 @@ function fTokenRow({
           }}
         >
           <TransitionTypo variant="h4" noWrap={isMobile ? false : true}>
-          <NumberTooltip prepend='$' number={fNumber(usd)} />
+            <NumberTooltip
+              prepend={currencySymbols[activeFiatCurrency]}
+              number={fNumberWithCurreny(exch, exchRate)}
+            />
           </TransitionTypo>
           <TransitionTypo variant="h6" noWrap={isMobile ? false : true}>
-          <Icon icon={rippleSolid} width={12} height={12} /> <NumberTooltip number={fNumber(exch)} />
+            <Icon icon={rippleSolid} width={12} height={12} />{' '}
+            <NumberTooltip number={fNumber(exch)} />
           </TransitionTypo>
         </TableCell>
         <TableCell align="right">
@@ -362,7 +382,7 @@ function fTokenRow({
             {/* <Icon icon={outlineToken} color="#0C53B7"/> */}
             <Icon
               icon={arrowsExchange}
-              color= "primary"
+              color="primary"
               width="16"
               height="16"
             />
@@ -372,7 +392,10 @@ function fTokenRow({
           </Stack>
         </TableCell>
         <TableCell align="right">{fNumber(vol24htx)}</TableCell>
-        <TableCell align="right">${fNumber(usdMarketCap)}</TableCell>
+        <TableCell align="right">
+          {currencySymbols[activeFiatCurrency]}
+          {fNumber(convertedMarketCap)}
+        </TableCell>
         {/* <TableCell align="left">{holders}</TableCell>
                 <TableCell align="left">{offers}</TableCell> */}
         <TableCell align="right">{fIntNumber(trustlines)}</TableCell>
@@ -382,67 +405,107 @@ function fTokenRow({
           <Typography variant="small" noWrap={isMobile ? false : true}>
             {name}
           </Typography>
-			<Box display="flex" alignItems="center" pt={1}>
-			  <Box width="100%" sx={{ color: 'darkgrey'}}>
-                    <Tooltip
-                        title={
-                            <Table
-                            sx={{
-								'& .MuiTableCell-root': {
-								  borderBottom: 'none'
-								}
-							  }}
-                            >
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell align='right' width='100%' sx={{pt:0, pb:0}}>
-                                            <Typography variant='small' noWrap sx={{ fontWeight: 'bold', m: 1 }}>Percentage:</Typography>
-                                        </TableCell>
-                                        <TableCell  sx={{pt:0, pb:0}}>
-                                            <Typography variant='small'>{fNumber(supplyRate)}%</Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell  colSpan={2}>
-											<Box sx={{ color: 'darkgrey'}}>
-												<LinearProgress variant="determinate" value={supplyRate}  color='inherit'/>
-											</Box>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align='right' width='100%' sx={{pt:0, pb:0}}>
-											<Typography variant='small' noWrap sx={{ fontWeight: 'bold', m: 1 }}>Circulating supply:</Typography>
-                                        </TableCell>
-                                        <TableCell  sx={{pt:0, pb:0}}>
-                                            <Typography variant='small' noWrap>{fNumber(supply)} {name}</Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell align='right' sx={{pt:0, pb:0}}>
-                                            <Typography variant='small' noWrap sx={{ fontWeight: 'bold', m: 1 }}>Total supply:</Typography>
-                                        </TableCell>
-                                        <TableCell  sx={{pt:0, pb:0}}>
-                                            <Typography variant='small' noWrap>{fNumber(amount)} {name}</Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
-                        }
-                        placement='bottom-end' arrow
-                        fontSize="small"
-
-						componentsProps={{
-						  tooltip: {
-							sx: {
-							  maxWidth: "500px"
-							},
-						  },
-						}}
-                    >
-					<LinearProgress variant="determinate" value={supplyRate}  color='inherit'/>
-                    </Tooltip>
-			  </Box>
-			</Box>
+          <Box display="flex" alignItems="center" pt={1}>
+            <Box width="100%" sx={{ color: 'darkgrey' }}>
+              <Tooltip
+                title={
+                  <Table
+                    sx={{
+                      '& .MuiTableCell-root': {
+                        borderBottom: 'none'
+                      }
+                    }}
+                  >
+                    <TableBody>
+                      <TableRow>
+                        <TableCell
+                          align="right"
+                          width="100%"
+                          sx={{ pt: 0, pb: 0 }}
+                        >
+                          <Typography
+                            variant="small"
+                            noWrap
+                            sx={{ fontWeight: 'bold', m: 1 }}
+                          >
+                            Percentage:
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ pt: 0, pb: 0 }}>
+                          <Typography variant="small">
+                            {fNumber(supplyRate)}%
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell colSpan={2}>
+                          <Box sx={{ color: 'darkgrey' }}>
+                            <LinearProgress
+                              variant="determinate"
+                              value={supplyRate}
+                              color="inherit"
+                            />
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell
+                          align="right"
+                          width="100%"
+                          sx={{ pt: 0, pb: 0 }}
+                        >
+                          <Typography
+                            variant="small"
+                            noWrap
+                            sx={{ fontWeight: 'bold', m: 1 }}
+                          >
+                            Circulating supply:
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ pt: 0, pb: 0 }}>
+                          <Typography variant="small" noWrap>
+                            {fNumber(supply)} {name}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
+                          <Typography
+                            variant="small"
+                            noWrap
+                            sx={{ fontWeight: 'bold', m: 1 }}
+                          >
+                            Total supply:
+                          </Typography>
+                        </TableCell>
+                        <TableCell sx={{ pt: 0, pb: 0 }}>
+                          <Typography variant="small" noWrap>
+                            {fNumber(amount)} {name}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                }
+                placement="bottom-end"
+                arrow
+                fontSize="small"
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      maxWidth: '500px'
+                    }
+                  }
+                }}
+              >
+                <LinearProgress
+                  variant="determinate"
+                  value={supplyRate}
+                  color="inherit"
+                />
+              </Tooltip>
+            </Box>
+          </Box>
         </TableCell>
         <TableCell align="right">
           <LazyLoadImage
