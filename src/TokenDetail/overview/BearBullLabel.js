@@ -34,19 +34,18 @@ BearBullLabel.propTypes = {
     variant: PropTypes.string
 };
 
-export default function BearBullLabel({value, variant}) {
-    const pro = fPercent(value);
+export default function BearBullLabel({ value, variant }) {
+    const formattedValue = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(value);
 
-    let strPro = 0;
-    if (pro < 0) {
-        strPro = -pro;
-        strPro = strPro + ' %';
-    } else {
-        strPro = pro + ' %';
-    }
+    const isBearish = value < 0;
+    const strPro = `${isBearish ? '-' : ''}${formattedValue} %`;
+
     return (
         <>
-            {pro < 0 ? (
+            {isBearish ? (
                 <Stack direction="row" spacing={0.1} justifyContent="flex-start" alignItems='center'>
                     <Icon icon={caretDown} color="#FF6C40"/>
                     <BearishTypography variant={variant} noWrap>{strPro}</BearishTypography>
@@ -60,4 +59,3 @@ export default function BearBullLabel({value, variant}) {
         </>
     );
 }
-
