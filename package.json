@@ -42,6 +42,7 @@
     "@mui/base": "5.0.0-alpha.87",
     "@mui/icons-material": "5.11.11",
     "@mui/lab": "^5.0.0-alpha.88",
+    "@mui/material": "^5.10.11",
     "@mui/styles": "5.8.6",
     "@reduxjs/toolkit": "^1.8.2",
     "apexcharts": "3.37.1",
@@ -56,6 +57,7 @@
     "i18next": "^23.5.1",
     "i18next-browser-languagedetector": "^7.1.0",
     "json-to-csv-export": "^2.1.1",
+    "jsonwebtoken": "8.5.1",
     "markdown-it": "^13.0.1",
     "moving-median": "^1.0.0",
     "next": "12.2.0",
@@ -78,9 +80,9 @@
     "react-share": "^4.4.0",
     "react-spinners": "^0.13.2",
     "react-use-websocket": "^3.0.0",
-    "@mui/material": "^5.10.11",
+    "redux-persist": "^6.0.0",
+    "redux-persist-cookie-storage": "^1.0.0",
     "ripple-keypairs": "^1.1.5"
-    
   },
   "scripts": {
     "dev": "next",

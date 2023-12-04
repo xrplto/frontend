@@ -422,3 +422,5 @@ export const currencyConfig = {
   availableFiatCurrencies: ['USD', 'EUR', 'JPY', 'CNY'],
   activeFiatCurrency: 'USD'
 };
+
+export const persistJWT = 'UDnaYthx9EJaulSkvfH5qE0q98tp3twQ'

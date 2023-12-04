@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 
 // Redux
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { update_metrics } from "src/redux/statusSlice";
 
 // Components

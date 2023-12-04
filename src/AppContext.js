@@ -4,10 +4,11 @@ import { Backdrop } from "@mui/material";
 
 // Redux
 import { Provider } from "react-redux";
-import {configureRedux} from "src/redux/statusSlice";
+import {store , persistor} from "src/redux/store";
 
 // Loader
 import { PuffLoader } from "react-spinners";
+import { PersistGate } from "redux-persist/integration/react";
 
 export const AppContext = createContext({});
 
@@ -18,7 +19,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
     const [accountProfile, setAccountProfile] = useState(null);
     const [profiles, setProfiles] = useState([]);
 
-    const [store, setStore] = useState(configureRedux(data));
+    // const [store, setStore] = useState(configureRedux(data));
 
     const KEY_ACCOUNT_PROFILE = "account_profile_2";
     const KEY_ACCOUNT_PROFILES = "account_profiles_2";
@@ -107,7 +108,9 @@ export function ContextProvider({ children, data, openSnackbar }) {
             </Backdrop>
             
             <Provider store={store}>
+                <PersistGate loading={null} persistor={persistor}>
                 {children}
+                </PersistGate>
             </Provider>
         </AppContext.Provider>
     );

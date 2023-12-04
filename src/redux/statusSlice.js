@@ -71,30 +71,37 @@ export const selectFilteredCount = (state) => state.status.filteredCount;
 export const selectActiveFiatCurrency = (state) =>
   state.status.activeFiatCurrency;
 
-export function configureRedux(data) {
-  let defaultState = initialState;
-  if (data) {
-    defaultState = {
-      metrics: {
-        total: data.total,
-        USD: data.exch.USD,
-        EUR: data.exch.EUR,
-        JPY: data.exch.JPY,
-        CNY: data.exch.CNY,
-        H24: data.H24,
-        global: data.global
-      },
-      filteredCount: data.count,
-      activeFiatCurrency: defaultState.activeFiatCurrency
-    };
-  }
+export default statusSlice.reducer;
 
-  const store = configureStore({
-    reducer: {
-      status: statusSlice.reducer
-    },
-    preloadedState: { status: defaultState }
-  });
+// export function configureRedux(data) {
+//   let defaultState = initialState;
+//   if (data) {
+//     defaultState = {
+//       metrics: {
+//         total: data.total,
+//         USD: data.exch.USD,
+//         EUR: data.exch.EUR,
+//         JPY: data.exch.JPY,
+//         CNY: data.exch.CNY,
+//         H24: data.H24,
+//         global: data.global
+//       },
+//       filteredCount: data.count,
+//       activeFiatCurrency: defaultState.activeFiatCurrency
+//     };
+//   }
 
-  return store;
-}
+//   const persistedReducer = persistReducer(persistConfig, combineReducers({
+//     status: statusSlice.reducer
+//   }));
+
+//   const store = configureStore({
+//     reducer: persistedReducer,
+//     preloadedState: { status: defaultState },
+//     devTools: process.env.NODE_ENV !== "production",
+//     middleware: [thunk],
+//   });
+
+//   return store;
+// }
+
