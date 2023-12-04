@@ -20,13 +20,20 @@ export function fNumber(num) {
 }
 
 export function fNumberWithCurreny(num, exchRate) {
+  // Add validation checks
   if (num === undefined || exchRate === undefined) {
     console.error('Invalid input: num or exchRate is undefined');
-    return 0; // or handle the error as appropriate
+    return 'Error: Invalid input'; // Return an error message or a default value
+  }
+
+  if (typeof num !== 'number' || typeof exchRate !== 'number') {
+    console.error('Invalid input: num or exchRate is not a number');
+    return 'Error: Invalid input'; // Return an error message or a default value
   }
 
   return fCurrency5(Decimal.div(num, exchRate).toNumber());
 }
+
 
 
 // Trims x numbers after zeroes, ie from 456.000000000027213246546 to 456.00000000002721 when the threshold is 4
