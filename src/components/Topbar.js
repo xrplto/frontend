@@ -254,7 +254,11 @@ const Topbar = () => {
               {fIntNumber(metrics.H24.activeAddresses24H)}
             </Typography>
           </Stack>
-          {!isMobile && (<CurrencySwithcer />)}
+          {!isMobile && (<Box sx={{
+            paddingLeft : 2
+          }}>
+            <CurrencySwithcer />
+          </Box>)}
           {/* <Stack
             direction="row"
             spacing={2}

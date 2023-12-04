@@ -116,7 +116,6 @@ function getPriceColor(token) {
 export const TokenRow = React.memo(fTokenRow);
 
 function fTokenRow({
-  mUSD,
   time,
   token,
   setEditToken,

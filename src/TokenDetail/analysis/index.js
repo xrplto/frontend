@@ -5,7 +5,7 @@ import { styled, Box, Stack, Table, TableBody, Typography } from '@mui/material'
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { PuffLoader } from "react-spinners";
 import { AppContext } from 'src/AppContext';
-import { selectMetrics } from "src/redux/statusSlice";
+import { selectActiveFiatCurrency, selectMetrics } from "src/redux/statusSlice";
 import TokenListHead from './TokenListHead';
 import { TokenRow } from './TokenRow';
 import TokenListToolbar from './TokenListToolbar';
@@ -30,6 +30,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
 export default function AnalysisData({token}) {
     const metrics = useSelector(selectMetrics);
+    const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
     const BASE_URL = process.env.API_URL;
     const { accountProfile, darkMode } = useContext(AppContext);
     const isAdmin = accountProfile?.account && accountProfile.admin;
@@ -102,12 +103,13 @@ export default function AnalysisData({token}) {
                         {tokens.map((row, idx) => (
                             <TokenRow
                                 key={idx}
-                                mUSD={metrics.USD}
                                 token={row}
                                 admin={isAdmin}
                                 setEditToken={setEditToken}
                                 setTrustToken={setTrustToken}
                                 scrollLeft={scrollLeft}
+                                activeFiatCurrency={activeFiatCurrency}
+                                exchRate={metrics[activeFiatCurrency]}
                             />
                         ))}
                     </TableBody>

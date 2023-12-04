@@ -33,7 +33,8 @@ import TokenMoreMenu from 'src/TokenDetail/analysis/TokenMoreMenu';
 import BearBullLabel from 'src/components/BearBullLabel';
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
+import { currencySymbols } from 'src/utils/constants';
 
 
 
@@ -121,13 +122,14 @@ function formatTime(value, unit) {
 export const RecentTokenRow = React.memo(fTokenRow);
 
 function fTokenRow({
-  mUSD,
   time,
   token,
   admin,
   setEditToken,
   setTrustToken,
-  scrollLeft
+  scrollLeft,
+  activeFiatCurrency,
+  exchRate
 }) {
   const BASE_URL = process.env.API_URL;
   const { accountProfile, darkMode } = useContext(AppContext);
@@ -175,7 +177,7 @@ function fTokenRow({
   // const imgUrl = `/static/tokens/${md5}.${ext}`;
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
-  const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const convertedMarketCap = Decimal.div(marketcap, exchRate).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
   
   return (
     <TableRow
@@ -302,7 +304,7 @@ function fTokenRow({
           }}
         >
           <TransitionTypo variant="h4" noWrap>
-            $ {fNumber(usd)}
+            {currencySymbols[activeFiatCurrency]} {fNumberWithCurreny(exch,exchRate)}
           </TransitionTypo>
           <TransitionTypo variant="h6" noWrap>
             <Icon icon={rippleSolid} width={12} height={12} /> {fNumber(exch)}
@@ -345,7 +347,7 @@ function fTokenRow({
           </Stack>
         </TableCell>
         <TableCell align="right">{fNumber(vol24htx)}</TableCell>
-        <TableCell align="right">${fNumber(usdMarketCap)}</TableCell>
+        <TableCell align="right">${fNumber(convertedMarketCap)}</TableCell>
         {/* <TableCell align="left">{holders}</TableCell>
                 <TableCell align="left">{offers}</TableCell> */}
 

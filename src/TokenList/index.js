@@ -390,7 +390,6 @@ export default function TokenList({
               return (
                 <TokenRow
                   key={idx}
-                  mUSD={metrics.USD}
                   time={row.time}
                   token={row}
                   setEditToken={setEditToken}

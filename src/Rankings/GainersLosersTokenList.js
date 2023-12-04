@@ -34,7 +34,7 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
 
 // Redux
 import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
+import { selectActiveFiatCurrency, selectMetrics } from "src/redux/statusSlice";
 
 // Components
 import TokenListHead from 'src/TokenDetail/analysis/TokenListHead';
@@ -46,6 +46,7 @@ import { useRef } from 'react';
 
 export default function GainersLosersTTokenList({}) {
     const metrics = useSelector(selectMetrics);
+    const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 	const BASE_URL = process.env.API_URL;//'http://65.108.4.235:3000/api';//process.env.API_URL;
 	
     const { accountProfile, darkMode } = useContext(AppContext);
@@ -142,13 +143,14 @@ export default function GainersLosersTTokenList({}) {
                                     return (
                                         <TokenRowComponent
                                             key={idx}
-                                            mUSD = {metrics.USD}
                                             time={row.time}
                                             token={row}
                                             admin={isAdmin}
                                             setEditToken={setEditToken}
                                             setTrustToken={setTrustToken}
                                             scrollLeft={scrollLeft}
+                                            activeFiatCurrency={activeFiatCurrency}
+                                            exchRate={metrics[activeFiatCurrency]}
                                         />
                                     );
                                 })
@@ -173,13 +175,14 @@ export default function GainersLosersTTokenList({}) {
                                     return (
                                         <TokenRowComponent
                                             key={idx}
-                                            mUSD = {metrics.USD}
                                             time={row.time}
                                             token={row}
                                             admin={isAdmin}
                                             setEditToken={setEditToken}
                                             setTrustToken={setTrustToken}
                                             scrollLeft={scrollLeft}
+                                            activeFiatCurrency={activeFiatCurrency}
+                                            exchRate={metrics[activeFiatCurrency]}
                                         />
                                     );
                                 })

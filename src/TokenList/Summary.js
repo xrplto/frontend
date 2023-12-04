@@ -17,13 +17,14 @@ import { useTranslation } from 'react-i18next';
 
 // Redux
 import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
+import { selectActiveFiatCurrency, selectMetrics } from "src/redux/statusSlice";
 
 // Utils
 import { fNumber, fNumberWithSuffix } from 'src/utils/formatNumber';
 
 // Components
 import BearBull from 'src/components/BearBull';
+import { currencySymbols } from 'src/utils/constants';
 
 // CBCCD2
 const ContentTypography = withStyles({
@@ -43,9 +44,10 @@ function Rate(num, exch) {
 export default function Summary() {
     const { t } = useTranslation();    // set translation const
     const metrics = useSelector(selectMetrics);
+    const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
     const [showContent, setShowContent] = useState(false);
 
-    const gMarketcap = new Decimal(metrics.global.gMarketcap).div(metrics.USD).toFixed(2, Decimal.ROUND_DOWN);
+    const gMarketcap = new Decimal(metrics.global.gMarketcap).div(metrics[activeFiatCurrency]).toFixed(2, Decimal.ROUND_DOWN);
     const gMarketcapPro = new Decimal(metrics.global.gMarketcapPro).toNumber();
     const gDexVolume = new Decimal(metrics.global.gDexVolume).div(metrics.USD).toNumber();
     const gDexVolumePro = new Decimal(metrics.global.gDexVolumePro).toNumber();
@@ -78,7 +80,7 @@ const formatAsPercentage = (value) => {
       <Typography variant='h1'>{t("Today's Top XRPL Token Prices by Volume")}</Typography>
   
       <ContentTypography variant='subtitle1' sx={{ mt: 2 }}>
-        The global token market cap stands at <strong>${formatNumberWithCommas(Number(gMarketcap))}</strong> marking a <BearBull value={gMarketcapPro} sx={{ pl: 1, pr: 1 }} /> {gMarketcapPro < 0 ? 'decrease' : 'increase'} over the last 24 hours.
+        The global token market cap stands at <strong>{currencySymbols[activeFiatCurrency]}{formatNumberWithCommas(Number(gMarketcap))}</strong> marking a <BearBull value={gMarketcapPro} sx={{ pl: 1, pr: 1 }} /> {gMarketcapPro < 0 ? 'decrease' : 'increase'} over the last 24 hours.
         <Link
           component="button"
           underline="always"

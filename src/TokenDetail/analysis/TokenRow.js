@@ -33,7 +33,8 @@ import TokenMoreMenu from './TokenMoreMenu';
 import BearBullLabel from 'src/components/BearBullLabel';
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
+import { currencySymbols } from 'src/utils/constants';
 
 // This style will ensure the sticky cell content does not overflow its container
 const StyledTableRow = withStyles((theme) => ({
@@ -98,13 +99,14 @@ function getPriceColor(token) {
 export const TokenRow = React.memo(fTokenRow);
 
 function fTokenRow({
-  mUSD,
   time,
   token,
   admin,
   setEditToken,
   setTrustToken,
-  scrollLeft
+  scrollLeft,
+  activeFiatCurrency,
+  exchRate
 }) {
   const BASE_URL = process.env.API_URL;
   const { accountProfile, darkMode } = useContext(AppContext);
@@ -143,7 +145,7 @@ function fTokenRow({
   }, [time]);
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-  const usdMarketCap = Decimal.div(marketcap, mUSD).toNumber();
+  const convertedMarketCap = Decimal.div(marketcap, exchRate).toNumber();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -266,7 +268,7 @@ function fTokenRow({
           }}
         >
           <TransitionTypo variant="h4" noWrap>
-            $ {fNumber(usd)}
+            {currencySymbols[activeFiatCurrency]} {fNumberWithCurreny(exch,exchRate)}
           </TransitionTypo>
           <TransitionTypo variant="h6" noWrap>
             <Icon icon={rippleSolid} width={12} height={12} /> {fNumber(exch)}
@@ -308,7 +310,7 @@ function fTokenRow({
           </Stack>
         </TableCell>
         <TableCell align="right">{fNumber(vol24htx)}</TableCell>
-        <TableCell align="right">${fNumber(usdMarketCap)}</TableCell>
+        <TableCell align="right">${fNumber(convertedMarketCap)}</TableCell>
         <TableCell align="right">{fNumber(trustlines)}</TableCell>
         <TableCell align="right">
           {fNumber(supply)}{' '}
