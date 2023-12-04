@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js'; // maybe change to smaller big.js+toFormat from the same family
-import Decimal from 'decimal.js';
 
 export function fNumber(num) {
   //console.log('fNumber... ', num);
@@ -20,21 +19,9 @@ export function fNumber(num) {
 }
 
 export function fNumberWithCurreny(num, exchRate) {
-  // Add validation checks
-  if (num === undefined || exchRate === undefined) {
-    console.error('Invalid input: num or exchRate is undefined');
-    return 'Error: Invalid input'; // Return an error message or a default value
-  }
 
-  if (typeof num !== 'number' || typeof exchRate !== 'number') {
-    console.error('Invalid input: num or exchRate is not a number');
-    return 'Error: Invalid input'; // Return an error message or a default value
-  }
-
-  return fCurrency5(Decimal.div(num, exchRate).toNumber());
+  return fCurrency5(fNumber(num) / exchRate);
 }
-
-
 
 // Trims x numbers after zeroes, ie from 456.000000000027213246546 to 456.00000000002721 when the threshold is 4
 // TODO: Make round, not trim
