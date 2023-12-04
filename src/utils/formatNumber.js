@@ -20,9 +20,14 @@ export function fNumber(num) {
 }
 
 export function fNumberWithCurreny(num, exchRate) {
+  if (num === undefined || exchRate === undefined) {
+    console.error('Invalid input: num or exchRate is undefined');
+    return 0; // or handle the error as appropriate
+  }
 
-  return fCurrency5(Decimal.div(num,exchRate).toNumber());
+  return fCurrency5(Decimal.div(num, exchRate).toNumber());
 }
+
 
 // Trims x numbers after zeroes, ie from 456.000000000027213246546 to 456.00000000002721 when the threshold is 4
 // TODO: Make round, not trim
