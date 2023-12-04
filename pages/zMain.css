@@ -36,3 +36,47 @@
 .apexcharts-xaxis-label-infini:last-child {
   transform: translateX(-40px);
 }
+
+
+/* dropdown menu css */
+#dropdown_menu{
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  position: relative;
+}
+ul#dropItems {
+  list-style: none;
+  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  border-radius: 10px;
+  box-shadow: none;
+  position: absolute;
+  overflow: hidden auto;
+  outline: 0px;
+  padding: 12px;
+  width: 230px;
+  z-index: 1010;
+  top:35px;
+  transform-origin:left top;
+  opacity: 0;
+  transform:scale(0.7);
+  transition: all 0.1s;
+}
+ul#dropItems li {
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin: 3px 15px;
+  transition: all 0.3s;
+
+}
+#darkItem:hover{
+  background: #2a2a2a !important;
+}
+#lightItem:hover{
+  background: #dfdfdf !important;
+}
+#dropdown_menu li a:hover ul#dropItems{
+  transform:scale(1);
+  opacity: 1;
+}
+
