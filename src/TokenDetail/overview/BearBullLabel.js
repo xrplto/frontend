@@ -41,7 +41,7 @@ export default function BearBullLabel({ value, variant }) {
     }).format(value);
 
     const isBearish = value < 0;
-    const strPro = `${isBearish ? '-' : ''}${formattedValue} %`;
+    const strPro = `${isBearish ? '' : ''}${formattedValue} %`;
 
     return (
         <>

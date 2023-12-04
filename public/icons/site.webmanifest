@@ -1,16 +1,16 @@
 {
-    "name": "xrpl.to",
-    "short_name": "xrpl.to",
+    "name": "",
+    "short_name": "",
     "icons": [
         {
-            "src": "/icons/android-chrome-192x192.webp",
+            "src": "/android-chrome-192x192.png",
             "sizes": "192x192",
-            "type": "image/webp"
+            "type": "image/png"
         },
         {
-            "src": "/icons/android-chrome-512x512.webp",
+            "src": "/android-chrome-512x512.png",
             "sizes": "512x512",
-            "type": "image/webp"
+            "type": "image/png"
         }
     ],
     "theme_color": "#ffffff",
