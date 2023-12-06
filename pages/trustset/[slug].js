@@ -44,6 +44,9 @@ import { fNumber, fIntNumber } from 'src/utils/formatNumber';
 
 // Components
 import LogoTrustline from 'src/components/LogoTrustline';
+import { useSelector } from 'react-redux';
+import {selectMetrics, selectActiveFiatCurrency} from 'src/redux/statusSlice';
+import {currencySymbols} from 'src/utils/constants';
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
@@ -268,21 +271,23 @@ function TrustLine(props) {
     else onTrustSetXumm();
   };
 
+  const metrics = useSelector(selectMetrics);
+  const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
+
 
   const voldivmarket =
     marketcap > 0 ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
 
-
-    function normalizeTag(tag) {
-      if (tag && tag.length > 0) {
-        const tag1 = tag.split(' ').join('-'); // Replace space
-        const tag2 = tag1.replace(/&/g, 'and'); // Replace &
-        const tag3 = tag2.toLowerCase(); // Make lowercase
-        const final = tag3.replace(/[^a-zA-Z0-9-]/g, '');
-        return final;
-      }
-      return '';
+  function normalizeTag(tag) {
+    if (tag && tag.length > 0) {
+      const tag1 = tag.split(' ').join('-'); // Replace space
+      const tag2 = tag1.replace(/&/g, 'and'); // Replace &
+      const tag3 = tag2.toLowerCase(); // Make lowercase
+      const final = tag3.replace(/[^a-zA-Z0-9-]/g, '');
+      return final;
     }
+    return '';
+  }
 
   // Open in XUMM
   // https://xumm.app/detect/xapp:xumm.dex?issuer=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&currency=534F4C4F00000000000000000000000000000000
@@ -305,7 +310,11 @@ function TrustLine(props) {
               alignItems="center"
               sx={{ mt: 2 }}
             >
-              <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ width: 64, height: 64 }} />
+              <Avatar
+                alt={`${user} ${name} Logo`}
+                src={imgUrl}
+                sx={{ width: 64, height: 64 }}
+              />
               <Stack spacing={1}>
                 <Typography variant="h2" fontSize="1.2rem" color="primary">
                   {user}
@@ -318,7 +327,7 @@ function TrustLine(props) {
                     size="small"
                   />
                   {kyc && (
-                    <Typography variant="kyc" sx={{ ml: 0.5}}>
+                    <Typography variant="kyc" sx={{ ml: 0.5 }}>
                       KYC
                     </Typography>
                   )}
@@ -373,62 +382,80 @@ function TrustLine(props) {
             </Stack>
 
             <Box
-  sx={{
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap', // Allow chips to wrap to the next row
-    gap: 1,
-    py: 1,
-    overflowX: 'auto', // Horizontal scrolling for small screens
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    '& > *': {
-      scrollSnapAlign: 'center',
-    },
-    '::-webkit-scrollbar': { display: 'none' },
-  }}
->
-  <Tooltip title={<Typography variant="body2">Rank by 24h Volume.</Typography>}>
-    <Chip
-      label={<Typography variant="s16">Rank # {id}</Typography>}
-      color="primary"
-      variant="outlined"
-      size="small"
-      sx={{ borderRadius: '8px', mr: 1, mb: 1 }} // Added margin-right for spacing
-    />
-  </Tooltip>
-  <Chip
-    label={<Typography variant="s16">{fIntNumber(holders)} Holders</Typography>}
-    color="error"
-    variant="outlined"
-    size="small"
-    sx={{ borderRadius: '8px', mr: 1, mb: 1 }} // Added margin-right for spacing
-  />
-  <Chip
-    label={<Typography variant="s16">{fIntNumber(offers)} Offers</Typography>}
-    color="warning"
-    variant="outlined"
-    size="small"
-    sx={{ borderRadius: '8px', mr: 1, mb: 1 }} // Added margin-right for spacing
-  />
-  <Chip
-    label={<Typography variant="s16">{fNumber(vol24htx)} Trades</Typography>}
-    color="secondary"
-    variant="outlined"
-    size="small"
-    sx={{ borderRadius: '8px', mr: 1, mb: 1 }} // Added margin-right for spacing
-  />
-  <Chip
-    label={<Typography variant="s16">{fIntNumber(trustlines)} TrustLines</Typography>}
-    color="info"
-    variant="outlined"
-    size="small"
-    sx={{ borderRadius: '8px', mb: 1 }} // Added margin-bottom for spacing
-  />
-</Box>
-
-
+              sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                flexWrap: 'wrap', // Allow chips to wrap to the next row
+                gap: 1,
+                py: 1,
+                overflowX: 'auto', // Horizontal scrolling for small screens
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'center',
+                '& > *': {
+                  scrollSnapAlign: 'center'
+                },
+                '::-webkit-scrollbar': { display: 'none' }
+              }}
+            >
+              <Tooltip
+                title={
+                  <Typography variant="body2">Rank by 24h Volume.</Typography>
+                }
+              >
+                <Chip
+                  label={<Typography variant="s16">Rank # {id}</Typography>}
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                  sx={{ borderRadius: '8px', mr: 1, mb: 1 }} // Added margin-right for spacing
+                />
+              </Tooltip>
+              <Chip
+                label={
+                  <Typography variant="s16">
+                    {fIntNumber(holders)} Holders
+                  </Typography>
+                }
+                color="error"
+                variant="outlined"
+                size="small"
+                sx={{ borderRadius: '8px', mr: 1, mb: 1 }} // Added margin-right for spacing
+              />
+              <Chip
+                label={
+                  <Typography variant="s16">
+                    {fIntNumber(offers)} Offers
+                  </Typography>
+                }
+                color="warning"
+                variant="outlined"
+                size="small"
+                sx={{ borderRadius: '8px', mr: 1, mb: 1 }} // Added margin-right for spacing
+              />
+              <Chip
+                label={
+                  <Typography variant="s16">
+                    {fNumber(vol24htx)} Trades
+                  </Typography>
+                }
+                color="secondary"
+                variant="outlined"
+                size="small"
+                sx={{ borderRadius: '8px', mr: 1, mb: 1 }} // Added margin-right for spacing
+              />
+              <Chip
+                label={
+                  <Typography variant="s16">
+                    {fIntNumber(trustlines)} TrustLines
+                  </Typography>
+                }
+                color="info"
+                variant="outlined"
+                size="small"
+                sx={{ borderRadius: '8px', mb: 1 }} // Added margin-bottom for spacing
+              />
+            </Box>
 
             <Box
               sx={{
@@ -443,7 +470,11 @@ function TrustLine(props) {
                 '::-webkit-scrollbar': { display: 'none' }
               }}
             >
-              <Stack direction="row" spacing={{ xs: .5, sm: 2 }} sx={{ mt: 3 }}>
+              <Stack
+                direction="row"
+                spacing={{ xs: 0.5, sm: 2 }}
+                sx={{ mt: 3 }}
+              >
                 {social && social.telegram && (
                   <Link
                     underline="none"
@@ -458,7 +489,7 @@ function TrustLine(props) {
                       sx={{
                         width: { xs: 20, sm: 24 }, // Adjust width for different screen sizes
                         height: { xs: 20, sm: 24 }, // Adjust height for different screen sizes
-                        mr: { xs: 1, sm: 2 }, // Adjust margin for different screen sizes
+                        mr: { xs: 1, sm: 2 } // Adjust margin for different screen sizes
                       }}
                     />
                   </Link>
@@ -477,7 +508,7 @@ function TrustLine(props) {
                       sx={{
                         width: { xs: 20, sm: 24 }, // Adjust width for different screen sizes
                         height: { xs: 20, sm: 24 }, // Adjust height for different screen sizes
-                        mr: { xs: 1, sm: 2 }, // Adjust margin for different screen sizes
+                        mr: { xs: 1, sm: 2 } // Adjust margin for different screen sizes
                       }}
                     />
                   </Link>
@@ -494,9 +525,9 @@ function TrustLine(props) {
                       alt={`${user} ${name} Twitter Profile`}
                       src="/static/twitter.webp"
                       sx={{
-                        width: { xs: 20, sm: 24 }, 
-                        height: { xs: 20, sm: 24 }, 
-                        mr: { xs: 1, sm: 2 }, 
+                        width: { xs: 20, sm: 24 },
+                        height: { xs: 20, sm: 24 },
+                        mr: { xs: 1, sm: 2 }
                       }}
                     />
                   </Link>
@@ -513,9 +544,9 @@ function TrustLine(props) {
                       alt={`${user} ${name} Facebook Page`}
                       src="/static/facebook.webp"
                       sx={{
-                        width: { xs: 20, sm: 24 }, 
-                        height: { xs: 20, sm: 24 }, 
-                        mr: { xs: 1, sm: 2 }, 
+                        width: { xs: 20, sm: 24 },
+                        height: { xs: 20, sm: 24 },
+                        mr: { xs: 1, sm: 2 }
                       }}
                     />
                   </Link>
@@ -529,12 +560,12 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                    alt={`${user} ${name} LinkedIn Profile`}
+                      alt={`${user} ${name} LinkedIn Profile`}
                       src="/static/linkedin.webp"
                       sx={{
-                        width: { xs: 20, sm: 24 }, 
-                        height: { xs: 20, sm: 24 }, 
-                        mr: { xs: 1, sm: 2 }, 
+                        width: { xs: 20, sm: 24 },
+                        height: { xs: 20, sm: 24 },
+                        mr: { xs: 1, sm: 2 }
                       }}
                     />
                   </Link>
@@ -551,9 +582,9 @@ function TrustLine(props) {
                       alt={`${user} ${name} Instagram Profile`}
                       src="/static/instagram.webp"
                       sx={{
-                        width: { xs: 20, sm: 24 }, 
-                        height: { xs: 20, sm: 24 }, 
-                        mr: { xs: 1, sm: 2 }, 
+                        width: { xs: 20, sm: 24 },
+                        height: { xs: 20, sm: 24 },
+                        mr: { xs: 1, sm: 2 }
                       }}
                     />
                   </Link>
@@ -570,9 +601,9 @@ function TrustLine(props) {
                       alt={`${user} ${name} Youtube Channel`}
                       src="/static/youtube.webp"
                       sx={{
-                        width: { xs: 20, sm: 24 }, 
-                        height: { xs: 20, sm: 24 }, 
-                        mr: { xs: 1, sm: 2 }, 
+                        width: { xs: 20, sm: 24 },
+                        height: { xs: 20, sm: 24 },
+                        mr: { xs: 1, sm: 2 }
                       }}
                     />
                   </Link>
@@ -586,12 +617,12 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                    alt={`${user} ${name} Medium Publication`}
+                      alt={`${user} ${name} Medium Publication`}
                       src="/static/medium.webp"
                       sx={{
-                        width: { xs: 20, sm: 24 }, 
-                        height: { xs: 20, sm: 24 }, 
-                        mr: { xs: 1, sm: 2 }, 
+                        width: { xs: 20, sm: 24 },
+                        height: { xs: 20, sm: 24 },
+                        mr: { xs: 1, sm: 2 }
                       }}
                     />
                   </Link>
@@ -608,9 +639,9 @@ function TrustLine(props) {
                       alt={`${user} ${name} Twitch Channel`}
                       src="/static/twitch.webp"
                       sx={{
-                        width: { xs: 20, sm: 24 }, 
-                        height: { xs: 20, sm: 24 }, 
-                        mr: { xs: 1, sm: 2 }, 
+                        width: { xs: 20, sm: 24 },
+                        height: { xs: 20, sm: 24 },
+                        mr: { xs: 1, sm: 2 }
                       }}
                     />
                   </Link>
@@ -624,12 +655,12 @@ function TrustLine(props) {
                     rel="noreferrer noopener nofollow"
                   >
                     <Avatar
-                    alt={`${user} ${name} Tiktok Profile`}
+                      alt={`${user} ${name} Tiktok Profile`}
                       src="/static/tiktok.webp"
                       sx={{
-                        width: { xs: 20, sm: 24 }, 
-                        height: { xs: 20, sm: 24 }, 
-                        mr: { xs: 1, sm: 2 }, 
+                        width: { xs: 20, sm: 24 },
+                        height: { xs: 20, sm: 24 },
+                        mr: { xs: 1, sm: 2 }
                       }}
                     />
                   </Link>
@@ -646,9 +677,9 @@ function TrustLine(props) {
                       alt={`${user} ${name} Reddit Community`}
                       src="/static/reddit.svg"
                       sx={{
-                        width: { xs: 20, sm: 24 }, 
-                        height: { xs: 20, sm: 24 }, 
-                        mr: { xs: 1, sm: 2 }, 
+                        width: { xs: 20, sm: 24 },
+                        height: { xs: 20, sm: 24 },
+                        mr: { xs: 1, sm: 2 }
                       }}
                     />
                   </Link>
@@ -656,46 +687,58 @@ function TrustLine(props) {
               </Stack>
             </Box>
 
-            <Stack spacing={4} sx={{ mt: 3, justifyContent: 'center' }} >
-  <Stack direction="row" alignItems="center">
-    <Link
-      underline="none"
-      color="inherit"
-      target="_blank"
-      href={`https://bithomp.com/explorer/${issuer}`}
-      rel="noreferrer noopener nofollow"
-      sx={{ flexGrow: 1 }}
-    >
-      <Stack direction="row" spacing={1.5} alignItems="center">
-        <PersonIcon style={{ color: '#B72136', fontSize: 'medium' }} />
-        <Typography variant="s7" sx={{ flexGrow: 1 }}>{issuer}</Typography>
-        <IconButton edge="end" aria-label="bithomp">
-          <Avatar
-          alt={`${user} ${name} Bithomp Explorer`}
-            src="/static/bithomp.ico"
-            sx={{ width: 24, height: 24 }}
-          />
-        </IconButton>
-      </Stack>
-    </Link>
-  </Stack>
+            <Stack spacing={4} sx={{ mt: 3, justifyContent: 'center' }}>
+              <Stack direction="row" alignItems="center">
+                <Link
+                  underline="none"
+                  color="inherit"
+                  target="_blank"
+                  href={`https://bithomp.com/explorer/${issuer}`}
+                  rel="noreferrer noopener nofollow"
+                  sx={{ flexGrow: 1 }}
+                >
+                  <Stack direction="row" spacing={1.5} alignItems="center">
+                    <PersonIcon
+                      style={{ color: '#B72136', fontSize: 'medium' }}
+                    />
+                    <Typography variant="s7" sx={{ flexGrow: 1 }}>
+                      {issuer}
+                    </Typography>
+                    <IconButton edge="end" aria-label="bithomp">
+                      <Avatar
+                        alt={`${user} ${name} Bithomp Explorer`}
+                        src="/static/bithomp.ico"
+                        sx={{ width: 24, height: 24 }}
+                      />
+                    </IconButton>
+                  </Stack>
+                </Link>
+              </Stack>
 
-  <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
-    <LocalAtmIcon style={{ color: '#B72136', fontSize: 'medium' }} />
-    <Typography variant="s7" sx={{ flexGrow: 1 }}>{currency}</Typography>
-    <CopyToClipboard
-      text={currency}
-      onCopy={() => openSnackbar('Copied!', 'success')}
-    >
-      <Tooltip title={'Click to copy'}>
-        <IconButton>
-          <Icon icon={copyIcon} sx={{ fontSize: 'medium'}} />
-        </IconButton>
-      </Tooltip>
-    </CopyToClipboard>
-  </Stack>
-</Stack>
-
+              <Stack
+                direction="row"
+                spacing={1.5}
+                alignItems="center"
+                sx={{ width: '100%' }}
+              >
+                <LocalAtmIcon
+                  style={{ color: '#B72136', fontSize: 'medium' }}
+                />
+                <Typography variant="s7" sx={{ flexGrow: 1 }}>
+                  {currency}
+                </Typography>
+                <CopyToClipboard
+                  text={currency}
+                  onCopy={() => openSnackbar('Copied!', 'success')}
+                >
+                  <Tooltip title={'Click to copy'}>
+                    <IconButton>
+                      <Icon icon={copyIcon} sx={{ fontSize: 'medium' }} />
+                    </IconButton>
+                  </Tooltip>
+                </CopyToClipboard>
+              </Stack>
+            </Stack>
 
             <Grid
               container
@@ -713,36 +756,35 @@ function TrustLine(props) {
                     sx={{ width: 300, height: 300, mb: 6 }}
                   />
                   <Stack
-  direction={{ xs: 'column', sm: 'row' }} // Adjust the direction based on the screen size
-  spacing={1}
-  alignItems="center"
->
-  <LoadingButton
-    size="small"
-    onClick={handleTrustSet}
-    loading={loading}
-    variant="contained"
-    color={uuid ? 'error' : 'success'}
-    sx={{ mt: 1, mb: { xs: 1, sm: 0 } }} // Adjust margin-bottom for smaller screens
-  >
-    {uuid ? `Cancel (${counter})` : `Generate QR`}
-  </LoadingButton>
+                    direction={{ xs: 'column', sm: 'row' }} // Adjust the direction based on the screen size
+                    spacing={1}
+                    alignItems="center"
+                  >
+                    <LoadingButton
+                      size="small"
+                      onClick={handleTrustSet}
+                      loading={loading}
+                      variant="contained"
+                      color={uuid ? 'error' : 'success'}
+                      sx={{ mt: 1, mb: { xs: 1, sm: 0 } }} // Adjust margin-bottom for smaller screens
+                    >
+                      {uuid ? `Cancel (${counter})` : `Generate QR`}
+                    </LoadingButton>
 
-  {nextUrl && (
-    <Link
-      underline="none"
-      color="inherit"
-      target="_blank"
-      href={nextUrl}
-      rel="noreferrer noopener nofollow"
-    >
-      <Button size="small" variant="outlined" sx={{ mt: 1 }}>
-        Open in XUMM
-      </Button>
-    </Link>
-  )}
-</Stack>
-
+                    {nextUrl && (
+                      <Link
+                        underline="none"
+                        color="inherit"
+                        target="_blank"
+                        href={nextUrl}
+                        rel="noreferrer noopener nofollow"
+                      >
+                        <Button size="small" variant="outlined" sx={{ mt: 1 }}>
+                          Open in XUMM
+                        </Button>
+                      </Link>
+                    )}
+                  </Stack>
                 </Stack>
               </Grid>
 
@@ -763,18 +805,17 @@ function TrustLine(props) {
                     color="primary"
                     sx={{ mb: 1 }}
                   >
-                    ${fNumber(marketcap)}
+                    {currencySymbols[activeFiatCurrency]}{fNumber(Decimal.mul(Decimal.div(metrics.USD,metrics[activeFiatCurrency]).toNumber(), marketcap).toNumber())}
                   </Typography>
 
-                  <Label>24H  VOLUME</Label>
+                  <Label>24H VOLUME</Label>
                   <Typography
                     variant="subtitle1"
                     color="primary"
-                    sx={{ mb: -.3 }}
+                    sx={{ mb: -0.3 }}
                   >
                     {fNumber(vol24hxrp)} XRP
                   </Typography>
-
 
                   <Typography
                     variant="subtitle1"
@@ -783,7 +824,6 @@ function TrustLine(props) {
                   >
                     {fNumber(vol24hx)} {name}
                   </Typography>
-
 
                   <Label>VOLUME / MARKETCAP</Label>
                   <Typography
@@ -794,8 +834,6 @@ function TrustLine(props) {
                     {fNumber(voldivmarket)}
                   </Typography>
 
-
-
                   <Label>MARKET DOMINANCE</Label>
                   <Typography
                     variant="subtitle1"
@@ -805,7 +843,6 @@ function TrustLine(props) {
                     {fNumber(dom)} %
                   </Typography>
 
-
                   <Label>CIRCULATING SUPPLY</Label>
                   <Typography
                     variant="subtitle1"
@@ -814,7 +851,7 @@ function TrustLine(props) {
                   >
                     {fNumber(supply)}
                   </Typography>
-                  
+
                   <Label>TOTAL SUPPLY</Label>
                   <Typography
                     variant="subtitle1"
@@ -823,7 +860,7 @@ function TrustLine(props) {
                   >
                     {fNumber(amount)}
                   </Typography>
-                  
+
                   <Label>BLACKHOLED</Label>
                   <Typography
                     variant="subtitle1"
@@ -838,38 +875,36 @@ function TrustLine(props) {
           </Stack>
         </Card>
         <Label>TAGS</Label>
-<Box
-  sx={{
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: 1,
-    mt: 1,
-    mb: 2
-  }}
->
-  {tags && tags.map((tag, index) => (
-    <Link 
-      key={index} 
-      href={`/view/${normalizeTag(tag)}`}
-      underline="none" 
-      target="_blank" 
-      rel="noreferrer noopener"
-    >
-      <Chip
-        label={tag}
-        variant="outlined"
-        size="small"
-        sx={{ mb: 1 }}
-        clickable
-      />
-    </Link>
-  ))}
-</Box>
-
-        
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 1,
+            mt: 1,
+            mb: 2
+          }}
+        >
+          {tags &&
+            tags.map((tag, index) => (
+              <Link
+                key={index}
+                href={`/view/${normalizeTag(tag)}`}
+                underline="none"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <Chip
+                  label={tag}
+                  variant="outlined"
+                  size="small"
+                  sx={{ mb: 1 }}
+                  clickable
+                />
+              </Link>
+            ))}
+        </Box>
       </Container>
     </OverviewWrapper>
-    
   );
 }
 
@@ -913,13 +948,13 @@ export async function getServerSideProps(ctx) {
 
     ret = { data, ogp };
   } else {
-        return {
-            redirect: {
-                permanent: false,
-                destination: '/404'
-            }
-        }
-   }
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/404'
+      }
+    };
+  }
 
   return {
     props: ret // will be passed to the page component as props

@@ -30,14 +30,14 @@ import { AppContext } from 'src/AppContext';
 import { Chart } from 'src/components/Chart';
 
 // Utils
-import { fCurrency5, fNumber } from 'src/utils/formatNumber';
+import { fCurrency5, fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 
 // Components
 import ChartOptions from './ChartOptions';
 
 import { useRouter } from 'next/router'
 import { useSelector } from 'react-redux';
-import { selectActiveFiatCurrency } from 'src/redux/statusSlice';
+import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
 import { currencySymbols } from 'src/utils/constants';
 // ----------------------------------------------------------------------
 
@@ -45,6 +45,7 @@ function PriceChart({ token }) {
   const BASE_URL = process.env.API_URL;
   const theme = useTheme();
   const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
+  const metrics = useSelector(selectMetrics);
 
   const [data, setData] = useState([]);
   const [range, setRange] = useState('1D');
@@ -75,6 +76,28 @@ function PriceChart({ token }) {
       max: maxTime || 0,
     },
   });
+
+  const parseBaseData = ({data}) => {
+    let res = [];
+    data.map((item) => {
+      res.push([
+        item[0], Decimal.div(Decimal.mul(fNumber(item[1]),metrics.USD).toNumber() ,metrics[activeFiatCurrency]).toNumber()
+      ])
+    });
+
+    return res;
+  };
+
+  const parseData = ({data}) => {
+    let res = [];
+    data.map((item) => {
+      res.push([
+        item[0], Decimal.div(item[1] ,metrics[activeFiatCurrency]).toNumber()
+      ])
+    });
+
+    return res;
+  }
 
   useEffect(() => {
     function getGraph() {
@@ -130,12 +153,12 @@ function PriceChart({ token }) {
       {
         name: 'XRP',
         type: 'area',
-        data: data
+        data: token?.currency && token?.currency === 'XRP' ? parseBaseData({data}) : parseData({data})
       },
       {
         //name: 'XRP',
         type: 'line',
-        data: data
+        data: token?.currency && token?.currency === 'XRP' ? parseBaseData({data}) : parseData({data})
       },
     ],
     stroke: {
@@ -263,7 +286,7 @@ function PriceChart({ token }) {
       {
         name: '',
         type: 'area',
-        data: data
+        data: token?.currency && token?.currency === 'XRP' ? parseBaseData({data}) : parseData({data})
       }
     ],
 

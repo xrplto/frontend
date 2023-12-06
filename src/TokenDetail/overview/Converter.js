@@ -128,13 +128,12 @@ export default function Converter({token}) {
         trustlines,
         holders,
         offers,
-        ext
+        ext,
+        exch
     } = token;
 
     let user = token.user;
     if (!user) user = name;
-
-    const price = fNumberWithCurreny(exch || 0, metrics[activeFiatCurrency]);
 
     // const imgUrl1 = `/static/tokens/${md5}.${ext}`;
     const imgUrl1 = `https://s1.xrpl.to/token/${md5}`;

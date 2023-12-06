@@ -21,6 +21,8 @@ export function fNumber(num) {
 
 export function fNumberWithCurreny(num, exchRate) {
 
+  if(!num || !exchRate) return 0
+
   return fCurrency5(Decimal.div(num,exchRate).toNumber());
 }
 

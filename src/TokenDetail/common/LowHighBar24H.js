@@ -19,10 +19,11 @@ import { useSelector } from 'react-redux';
 import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
+import Decimal from 'decimal.js';
 
 // ----------------------------------------------------------------------
 const LowhighBarSlider = styled(Slider)(({ theme }) => ({
@@ -67,13 +68,12 @@ export default function LowHighBar24H({ token }) {
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const metrics = useSelector(selectMetrics);
   const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
-  const { exch, maxMin24h } = token;
-  const price = fNumber(exch / metrics[activeFiatCurrency]);
+  const {  maxMin24h, usd } = token;
   const min = maxMin24h[1];
   const max = maxMin24h[0];
   const delta = max - min;
   let percent = 0;
-  if (delta > 0) percent = ((price - min) / delta) * 100;
+  if (delta > 0) percent = ((usd - min) / delta) * 100;
 
   return (
     <Stack
@@ -82,7 +82,7 @@ export default function LowHighBar24H({ token }) {
       spacing={1}
       justifyContent={isTablet ? 'space-between' : 'flex-start'}
     >
-      <Typography variant="caption">Low: <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumber(min)}/></Typography>
+      <Typography variant="caption">Low: <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumberWithCurreny(Decimal.mul(min, metrics.USD).toNumber(), metrics[activeFiatCurrency])}/></Typography>
       <Box sx={{ width: isTablet ? 360 : 160 }}>
         <LowhighBarSlider
           valueLabelDisplay="on"
@@ -91,7 +91,7 @@ export default function LowHighBar24H({ token }) {
           sx={{ mt: 1 }}
         />
       </Box>
-      <Typography variant="caption">High: <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumber(max)}/></Typography>
+      <Typography variant="caption">High: <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumberWithCurreny(Decimal.mul(max, metrics.USD).toNumber(), metrics[activeFiatCurrency])}/></Typography>
     </Stack>
   );
 }

@@ -52,7 +52,7 @@ import { AppContext } from 'src/AppContext';
 
 // Redux
 import { useSelector, useDispatch } from 'react-redux';
-import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
+import { selectActiveFiatCurrency, selectMetrics, update_metrics } from 'src/redux/statusSlice';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
@@ -185,7 +185,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const QR_BLUR = '/static/blurqr.webp';
 
   const metrics = useSelector(selectMetrics);
-  const activeFiatCurrency = useSelector(activeFiatCurrency);
+  const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 
   const curr1 = pair?.curr1;
   const curr2 = pair?.curr2;

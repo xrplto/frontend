@@ -4,7 +4,7 @@ import { Backdrop } from "@mui/material";
 
 // Redux
 import { Provider } from "react-redux";
-import { persistor, configureRedux} from "src/redux/store";
+import { persistor, store} from "src/redux/store";
 
 // Loader
 import { PuffLoader } from "react-spinners";
@@ -19,7 +19,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
     const [accountProfile, setAccountProfile] = useState(null);
     const [profiles, setProfiles] = useState([]);
 
-    const [store, setStore] = useState(configureRedux(data));
+    // const [store, setStore] = useState(configureRedux(data));
 
     const KEY_ACCOUNT_PROFILE = "account_profile_2";
     const KEY_ACCOUNT_PROFILES = "account_profiles_2";

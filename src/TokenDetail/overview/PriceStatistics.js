@@ -20,7 +20,7 @@ import { useSelector/*, useDispatch*/ } from "react-redux";
 import { selectActiveFiatCurrency, selectMetrics } from "src/redux/statusSlice";
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 
 import NumberTooltip from 'src/components/NumberTooltip';
 
@@ -96,7 +96,7 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >{user} Price</Typography></TableCell>
-                        <TableCell align="left"><NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumber(exch / metrics[activeFiatCurrency])} /></TableCell>
+                        <TableCell align="left"><NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumberWithCurreny(exch,metrics[activeFiatCurrency])} /></TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Price Change<span style={badge24hStyle}>24h</span></Typography></TableCell>
