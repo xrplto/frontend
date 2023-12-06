@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import { useSelector } from 'react-redux';
-import { selectMetrics } from 'src/redux/statusSlice';
+import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
 
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
@@ -65,6 +65,7 @@ import PriceDesc from './PriceDesc';
 import ExtraButtons from './ExtraButtons';
 
 import Decimal from 'decimal.js';
+import { currencySymbols } from 'src/utils/constants';
 
 
 
@@ -238,9 +239,10 @@ export default function UserDesc({ token }) {
 
   const [showStat, setShowStat] = useState(false);
   const metrics = useSelector(selectMetrics);
+  const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 
   const [omcf, setOMCF] = useState(token.isOMCF || 'no'); // is Old Market Cap Formula
-  const usdMarketCap = Decimal.div(marketcap, metrics.USD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
   const volume = fNumber(vol24hx);
   const voldivmarket =
     marketcap > 0 ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
@@ -483,7 +485,7 @@ export default function UserDesc({ token }) {
             </Stack>
 
             <MarketTypography variant="body1">
-              $ {fNumber(usdMarketCap)}
+              {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
             </MarketTypography>
           </Stack>
 

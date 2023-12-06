@@ -86,6 +86,9 @@ import { AppContext } from 'src/AppContext';
 
 // ----------------------------------------------------------------------
 import StackStyle from 'src/components/StackStyle';
+import { useSelector } from 'react-redux';
+import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
+import { currencySymbols } from 'src/utils/constants';
 
 function truncate(str, n){
     if (!str) return '';
@@ -101,6 +104,9 @@ export default function HistoryData({token}) {
     const BASE_URL = process.env.API_URL;
 
     const { darkMode } = useContext(AppContext);
+    const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
+    const metrics = useSelector(selectMetrics);
+
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(10);
@@ -190,7 +196,7 @@ export default function HistoryData({token}) {
                     if (ret) {
 						const currentDate = new Date();
 						const history = ret.history.reverse(); 
-						const yearlyValues = [token.usd];
+						const yearlyValues = [Decimal.div(token.exch , metrics[activeFiatCurrency]).toNumber()];
 						let startIndex = 0;
 
 						for (let yearsAgo = 1; ; yearsAgo++) {
@@ -228,7 +234,7 @@ export default function HistoryData({token}) {
 	const classes = useStyles();
 	
 	// From Share.js
-    const title = `${user} price today: ${name} to USD conversion, live rates, trading volume, historical data, and interactive chart`;
+    const title = `${user} price today: ${name} to ${activeFiatCurrency} conversion, live rates, trading volume, historical data, and interactive chart`;
     const desc = `Access up-to-date ${user} prices, ${name} market cap, trading pairs, interactive charts, and comprehensive data from the leading XRP Ledger token price-tracking platform.`;
     const url = typeof window !== 'undefined' && window.location.href ? window.location.href : '';//webxtor SEO fix
 
@@ -499,7 +505,7 @@ export default function HistoryData({token}) {
 						<DateRangeIcon className={classes.icon} />
 						<span className={classes.yearsAgo}>{yearsAgoText}</span>
 						<span className={`${classes.price} ${isToday ? classes.priceToday : ""}`} style={{ textAlign: 'right' }}>
-						  ${fNumber(value)}
+						  {currencySymbols[activeFiatCurrency]}{fNumber(value)}
 						</span>
 				  </div>,
 				  index < histsPrices.length - 1 && (

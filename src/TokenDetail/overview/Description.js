@@ -25,15 +25,16 @@ import { AppContext } from 'src/AppContext';
 
 // Redux
 import { useSelector/*, useDispatch*/ } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
+import { selectActiveFiatCurrency, selectMetrics } from "src/redux/statusSlice";
 
 // Utils
-import { fPercent, fNumber } from 'src/utils/formatNumber';
+import { fPercent, fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 
 // Components
 import Converter from './Converter';
 
 import NumberTooltip from 'src/components/NumberTooltip';
+import { currencySymbols } from 'src/utils/constants';
 
 const ReadMore = ({ children }) => {
     const [showFullContent, setShowFullContent] = useState(false);
@@ -107,24 +108,24 @@ export default function Description({token, showEditor, setShowEditor, descripti
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     const metrics = useSelector(selectMetrics);
+    const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
     const {
         id,
         name,
-        usd,
         pro24h,
         supply,
         issuer,
-        currency,
         vol24hx,
         slug,
         marketcap,
+        exch
     } = token;
 
     let user = token.user;
     if (!user) user = name;
 
-    const price = fNumber(usd || 0);
-    const usdMarketCap = Decimal.div(marketcap, metrics.USD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+    const price = fNumberWithCurreny(exch || 0, metrics[activeFiatCurrency]);
+    const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
     //const vpro7d = fPercent(pro7d);
     const vpro24h = fPercent(pro24h);
@@ -153,7 +154,7 @@ export default function Description({token, showEditor, setShowEditor, descripti
             <Typography variant="h2" fontSize='1.1rem' sx={{ mt:4 }}>{`${name} Price Live Data`}</Typography>
 
             <Typography sx={{mt:3}}>
-                Today's live {user} price is <NumberTooltip prepend='$' number={price} /> USD, accompanied by a 24-hour trading volume of  {fNumber(vol24hx)} {name}. Our {name} to USD price is updated in real-time. In the last 24 hours, {user} has experienced a {strPro24h} change. XRPL.to currently ranks it at  #{id}, with a live market cap of ${fNumber(usdMarketCap)} USD and a circulating supply of {fNumber(supply)} {name} tokens.
+                Today's live {user} price is <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={price} /> {activeFiatCurrency}, accompanied by a 24-hour trading volume of  {fNumber(vol24hx)} {name}. Our {name} to {activeFiatCurrency} price is updated in real-time. In the last 24 hours, {user} has experienced a {strPro24h} change. XRPL.to currently ranks it at  #{id}, with a live market cap of {currencySymbols[activeFiatCurrency]}{fNumber(convertedMarketCap)} {activeFiatCurrency} and a circulating supply of {fNumber(supply)} {name} tokens.
             </Typography>
 
             <Typography sx={{mt:2, mb: 3}}>

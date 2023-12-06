@@ -17,7 +17,7 @@ import BearBullLabel from './BearBullLabel';
 
 // Redux
 import { useSelector/*, useDispatch*/ } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
+import { selectActiveFiatCurrency, selectMetrics } from "src/redux/statusSlice";
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
@@ -26,6 +26,7 @@ import NumberTooltip from 'src/components/NumberTooltip';
 
 // ----------------------------------------------------------------------
 import StackStyle from 'src/components/StackStyle';
+import { currencySymbols } from 'src/utils/constants';
 
 const badge24hStyle = {
     display: 'inline-block',
@@ -43,6 +44,7 @@ const badge24hStyle = {
 export default function PriceStatistics({token}) {
     const theme = useTheme();
     const metrics = useSelector(selectMetrics);
+    const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 
     const {
         id,
@@ -72,10 +74,10 @@ export default function PriceStatistics({token}) {
     if (!user) user = name;
 
     const voldivmarket = marketcap>0?Decimal.div(vol24hxrp, marketcap).toNumber():0; // .toFixed(5, Decimal.ROUND_DOWN)
-    const usdMarketCap = Decimal.div(marketcap, metrics.USD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+    const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
     let strPc24h = fNumber(p24h < 0 ? -p24h : p24h);
-    let strPc24hPrep = (p24h < 0 ? '-' : '') + '$';
+    let strPc24hPrep = (p24h < 0 ? '-' : '') + currencySymbols[activeFiatCurrency];
 
 
     return (
@@ -94,7 +96,7 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >{user} Price</Typography></TableCell>
-                        <TableCell align="left"><NumberTooltip prepend='$' number={fNumber(exch / metrics.USD)} /></TableCell>
+                        <TableCell align="left"><NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumber(exch / metrics[activeFiatCurrency])} /></TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Price Change<span style={badge24hStyle}>24h</span></Typography></TableCell>
@@ -108,12 +110,12 @@ export default function PriceStatistics({token}) {
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >24h Low / 24h High</Typography></TableCell>
                         <TableCell align="left">
-                            <NumberTooltip prepend='$' number={fNumber(maxMin24h[1])} /> / <NumberTooltip prepend='$' number={fNumber(maxMin24h[0])} />
+                            <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumber(maxMin24h[1])} /> / <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumber(maxMin24h[0])} />
                         </TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Trading Volume<span style={badge24hStyle}>24h</span></Typography></TableCell>
-                        <TableCell align="left">${fNumber(vol24hxrp / metrics.USD)}</TableCell>
+                        <TableCell align="left">{currencySymbols[activeFiatCurrency]}{fNumber(vol24hxrp / metrics[activeFiatCurrency])}</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Volume / Market Cap</Typography></TableCell>
@@ -129,11 +131,11 @@ export default function PriceStatistics({token}) {
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Market Cap</Typography></TableCell>
-                        <TableCell align="left">$ {fNumber(usdMarketCap)}</TableCell>
+                        <TableCell align="left">{currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell align="left" sx={{pr:0}}><Typography variant="label1" noWrap >Diluted Market Cap</Typography></TableCell>
-                        <TableCell align="left">$ {fNumber(amount*(exch / metrics.USD))}</TableCell>
+                        <TableCell align="left">{currencySymbols[activeFiatCurrency]} {fNumber(amount*(exch / metrics[activeFiatCurrency]))}</TableCell>
                     </TableRow>
                 </TableBody>
             </Table>

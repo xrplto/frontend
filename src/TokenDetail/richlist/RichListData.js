@@ -29,7 +29,7 @@ import { AppContext } from 'src/AppContext';
 
 // Redux
 import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
+import { selectActiveFiatCurrency, selectMetrics } from "src/redux/statusSlice";
 
 // Components
 import RichListToolbar from './RichListToolbar';
@@ -45,6 +45,7 @@ import caretUp from '@iconify/icons-bx/caret-up';
 import { fNumber, fPercent } from 'src/utils/formatNumber';
 
 import NumberTooltip from 'src/components/NumberTooltip';
+import { currencySymbols } from 'src/utils/constants';
 
 // ----------------------------------------------------------------------
 function truncate(str, n){
@@ -56,6 +57,7 @@ function truncate(str, n){
 export default function RichListData({token}) {
     const BASE_URL = process.env.API_URL;
     const metrics = useSelector(selectMetrics);
+    const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 
     const { accountProfile, setLoading, openSnackbar, darkMode } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
@@ -456,7 +458,7 @@ export default function RichListData({token}) {
                                         </TableCell>
                                         <TableCell align="left">
                                             <Stack>
-                                                <Typography variant="h4" noWrap>$ {fNumber(exch * balance / metrics.USD)}</Typography>
+                                                <Typography variant="h4" noWrap>{currencySymbols[activeFiatCurrency]} {fNumber(exch * balance / metrics[activeFiatCurrency])}</Typography>
                                                 <Stack direction="row" spacing={0.5} alignItems='center'>
                                                     <Icon icon={rippleSolid} width='12' height='12'/>
                                                     <Typography variant="subtitle1" noWrap>{fNumber(exch * balance)}</Typography>

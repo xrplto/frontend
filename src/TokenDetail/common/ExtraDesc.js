@@ -29,9 +29,10 @@ import { fNumber } from 'src/utils/formatNumber';
 
 // Redux
 import { useSelector } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
+import { selectActiveFiatCurrency, selectMetrics } from "src/redux/statusSlice";
 
 import NumberTooltip from 'src/components/NumberTooltip';
+import { currencySymbols } from 'src/utils/constants';
 
 // ----------------------------------------------------------------------
 const MarketTypography = withStyles({
@@ -62,6 +63,7 @@ export default function ExtraDesc({token}) {
     const BASE_URL = process.env.API_URL;
     const theme = useTheme();
     const metrics = useSelector(selectMetrics);
+    const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 
     const { accountProfile, setLoading, openSnackbar } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
@@ -95,7 +97,7 @@ export default function ExtraDesc({token}) {
     const totalSupply = fNumber(amount);
     const volume = fNumber(vol24hx);
     const voldivmarket = marketcap>0?Decimal.div(vol24hxrp, marketcap).toNumber():0; // .toFixed(5, Decimal.ROUND_DOWN)
-    const usdMarketCap = Decimal.div(marketcap, metrics.USD).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+    const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
     const onChangeMarketCalculation = async () => {
         setLoading(true);
@@ -212,7 +214,7 @@ export default function ExtraDesc({token}) {
                         }
                     </Stack>
                     <Stack alignItems="center">
-                        <MarketTypography variant="desc" sx={{mt:3,mb:3}}>$ {fNumber(usdMarketCap)}</MarketTypography>
+                        <MarketTypography variant="desc" sx={{mt:3,mb:3}}>{currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}</MarketTypography>
                     </Stack>
                 </Grid>
 

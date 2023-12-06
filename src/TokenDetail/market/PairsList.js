@@ -67,7 +67,7 @@ function truncate(str, n){
 export default function PairsList({token, pairs}) {
     const BASE_URL = process.env.API_URL;
     const { darkMode } = useContext(AppContext);
-    const { name, exch, usd, pro7d, pro24h, md5 } = token;
+    const { name, exch, pro7d, pro24h, md5 } = token;
     let user = token.user;
     if (!user) user = name;
 
@@ -272,7 +272,7 @@ const { slug } = token;
                                                     href={`https://${curr2.domain}`}
                                                     rel="noreferrer noopener nofollow"
                                                 >
-                                                    // Couldn't find where this changes the color at - Yannier
+                                                     {/* Couldn't find where this changes the color at - Yannier */}
                                                     <Typography variant="subtitle2" sx={{ color: darkMode ? '#5569ff' : '#007B55' }}>{curr2.domain}</Typography>
 
                                                 </Link>

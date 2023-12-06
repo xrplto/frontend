@@ -61,6 +61,7 @@ import { fNumber } from 'src/utils/formatNumber';
 import ConnectWallet from 'src/components/ConnectWallet';
 import QRDialog from 'src/components/QRDialog';
 import QueryToken from './QueryToken';
+import { currencySymbols } from 'src/utils/constants';
 
 const Label = withStyles({
   root: {
@@ -184,6 +185,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const QR_BLUR = '/static/blurqr.webp';
 
   const metrics = useSelector(selectMetrics);
+  const activeFiatCurrency = useSelector(activeFiatCurrency);
 
   const curr1 = pair?.curr1;
   const curr2 = pair?.curr2;
@@ -217,11 +219,11 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const setValue = revert ? setAmount1 : setAmount2;
   const tokenPrice1 = new Decimal(tokenExch1 || 0)
     .mul(amount1 || 0)
-    .div(metrics.USD || 1)
+    .div(metrics[activeFiatCurrency] || 1)
     .toNumber();
   const tokenPrice2 = new Decimal(tokenExch2 || 0)
     .mul(amount2 || 0)
-    .div(metrics.USD || 1)
+    .div(metrics[activeFiatCurrency] || 1)
     .toNumber();
 
   const inputPrice = revert ? tokenPrice2 : tokenPrice1;
@@ -682,7 +684,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                   }
                 }}
               />
-              <Typography variant="s2" color="primary">$ {fNumber(tokenPrice1)}</Typography>
+              <Typography variant="s2" color="primary">{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}</Typography>
             </InputContent>
           </CurrencyContent>
           <CurrencyContent
@@ -721,7 +723,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                   }
                 }}
               />
-              <Typography variant="s2" color="primary">$ {fNumber(tokenPrice2)}</Typography>
+              <Typography variant="s2" color="primary">{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}</Typography>
             </InputContent>
           </CurrencyContent>
           <ToggleContent>

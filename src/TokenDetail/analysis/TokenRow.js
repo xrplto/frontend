@@ -96,9 +96,9 @@ function getPriceColor(token) {
   return color;
 }
 
-export const TokenRow = React.memo(fTokenRow);
+export const TokenRow = React.memo(FTokenRow);
 
-function fTokenRow({
+function FTokenRow({
   time,
   token,
   admin,
@@ -131,7 +131,6 @@ function fTokenRow({
     pro7d,
     pro24h,
     exch,
-    usd,
     ext,
     marketcap,
     isOMCF
@@ -310,7 +309,7 @@ function fTokenRow({
           </Stack>
         </TableCell>
         <TableCell align="right">{fNumber(vol24htx)}</TableCell>
-        <TableCell align="right">${fNumber(convertedMarketCap)}</TableCell>
+        <TableCell align="right">{currencySymbols[activeFiatCurrency]}{fNumber(convertedMarketCap)}</TableCell>
         <TableCell align="right">{fNumber(trustlines)}</TableCell>
         <TableCell align="right">
           {fNumber(supply)}{' '}

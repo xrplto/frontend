@@ -13,9 +13,12 @@ import BearBullChip from './BearBullChip';
 import LowHighBar24H from './LowHighBar24H';
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 
 import NumberTooltip from 'src/components/NumberTooltip';
+import { useSelector } from 'react-redux';
+import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
+import { currencySymbols } from 'src/utils/constants';
 
 // ----------------------------------------------------------------------
 export default function PriceDesc({ token }) {
@@ -23,7 +26,10 @@ export default function PriceDesc({ token }) {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
-  const { name, exch, usd, pro7d, pro24h, md5 } = token;
+  const metrics = useSelector(selectMetrics);
+  const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
+
+  const { name, exch, pro7d, pro24h, md5 } = token;
 
   let user = token.user;
   if (!user) user = name;
@@ -36,7 +42,7 @@ export default function PriceDesc({ token }) {
       <Stack direction="row" spacing={2} sx={{ mt: 0 }} alignItems="center">
         <Stack direction="row" spacing={1} alignItems="center">
           <Typography variant="price" noWrap>
-            <NumberTooltip prepend='$' number={fNumber(usd)}/>
+            <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}/>
           </Typography>
           <Typography variant="subtitle1" style={{ marginTop: 8 }}>
             <NumberTooltip number={fNumber(exch)}/> XRP

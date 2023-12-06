@@ -31,10 +31,10 @@ import { AppContext } from 'src/AppContext';
 
 // Redux
 import { useSelector/*, useDispatch*/ } from "react-redux";
-import { selectMetrics } from "src/redux/statusSlice";
+import { selectActiveFiatCurrency, selectMetrics } from "src/redux/statusSlice";
 
 // Utils
-import { fPercent, fNumber } from 'src/utils/formatNumber';
+import { fPercent, fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 
 const CurrencyContent = styled('div')(
     ({ theme }) => `
@@ -107,16 +107,12 @@ export default function Converter({token}) {
     const theme = useTheme();
     const { accountProfile } = useContext(AppContext);
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
+    const metrics = useSelector(selectMetrics);
 
-
-    
-
-    // const metrics = useSelector(selectMetrics);
     const {
         id,
         name,
-        exch,
-        usd,
         pro24h,
         amount,
         supply,
@@ -138,7 +134,7 @@ export default function Converter({token}) {
     let user = token.user;
     if (!user) user = name;
 
-    const price = fNumber(usd || 0);
+    const price = fNumberWithCurreny(exch || 0, metrics[activeFiatCurrency]);
 
     // const imgUrl1 = `/static/tokens/${md5}.${ext}`;
     const imgUrl1 = `https://s1.xrpl.to/token/${md5}`;

@@ -87,7 +87,6 @@ function TrustLine(props) {
     amount,
     date,
     exch,
-    usd,
     name,
     domain,
     dom,

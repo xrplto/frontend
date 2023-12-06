@@ -49,13 +49,13 @@ export default function Summary() {
 
     const gMarketcap = new Decimal(metrics.global.gMarketcap).div(metrics[activeFiatCurrency]).toFixed(2, Decimal.ROUND_DOWN);
     const gMarketcapPro = new Decimal(metrics.global.gMarketcapPro).toNumber();
-    const gDexVolume = new Decimal(metrics.global.gDexVolume).div(metrics.USD).toNumber();
+    const gDexVolume = new Decimal(metrics.global.gDexVolume).div(metrics[activeFiatCurrency]).toNumber();
     const gDexVolumePro = new Decimal(metrics.global.gDexVolumePro).toNumber();
-    const gScamVolume = new Decimal(metrics.global.gScamVolume).div(metrics.USD).toNumber();
+    const gScamVolume = new Decimal(metrics.global.gScamVolume).div(metrics[activeFiatCurrency]).toNumber();
     const gScamVolumePro = new Decimal(metrics.global.gScamVolumePro).toFixed(2, Decimal.ROUND_DOWN);
-    const gNFTIOUVolume = new Decimal(metrics.global.gNFTIOUVolume || 0).div(metrics.USD).toNumber();
+    const gNFTIOUVolume = new Decimal(metrics.global.gNFTIOUVolume || 0).div(metrics[activeFiatCurrency]).toNumber();
     const gNFTIOUVolumePro = new Decimal(metrics.global.gNFTIOUVolumePro || 0).toFixed(2, Decimal.ROUND_DOWN);
-    const gStableVolume = new Decimal(metrics.global.gStableVolume).div(metrics.USD).toNumber();
+    const gStableVolume = new Decimal(metrics.global.gStableVolume).div(metrics[activeFiatCurrency]).toNumber();
     const gStableVolumePro = new Decimal(metrics.global.gStableVolumePro).toFixed(2, Decimal.ROUND_DOWN);
     const gXRPdominance = new Decimal(metrics.global.gXRPdominance).toNumber();
     const gXRPdominancePro = new Decimal(metrics.global.gXRPdominancePro).toNumber();
@@ -101,8 +101,8 @@ const formatAsPercentage = (value) => {
           flexDirection: "column",
         }}
       >
-        <ContentTypography variant='subtitle1' sx={{mt:2}} gutterBottom>The total XRPL DEX volume in the past 24 hours is <strong>${fNumberWithSuffix(gDexVolume)}</strong>, marking a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. Currently, the total volume in Collectibles & NFTs is <strong>${fNumberWithSuffix(gNFTIOUVolume)}</strong>, accounting for <strong>{gNFTIOUVolumePro}%</strong> of the total XRPL token market's 24-hour volume. The volume of all stablecoins currently stands at <strong>${fNumberWithSuffix(gStableVolume)}</strong>, representing <strong>{gStableVolumePro}%</strong> of the total token market's 24-hour volume.</ContentTypography>
-        <ContentTypography variant='subtitle1' gutterBottom>The current XRP price is <strong>${Rate(1, metrics.USD)}</strong>.</ContentTypography>
+        <ContentTypography variant='subtitle1' sx={{mt:2}} gutterBottom>The total XRPL DEX volume in the past 24 hours is <strong>{currencySymbols[activeFiatCurrency]}{fNumberWithSuffix(gDexVolume)}</strong>, marking a <BearBull value={gDexVolumePro} sx={{pl:1, pr:1}}/> {gDexVolumePro < 0 ? 'decrease':'increase'}. Currently, the total volume in Collectibles & NFTs is <strong>{currencySymbols[activeFiatCurrency]}{fNumberWithSuffix(gNFTIOUVolume)}</strong>, accounting for <strong>{gNFTIOUVolumePro}%</strong> of the total XRPL token market's 24-hour volume. The volume of all stablecoins currently stands at <strong>{currencySymbols[activeFiatCurrency]}{fNumberWithSuffix(gStableVolume)}</strong>, representing <strong>{gStableVolumePro}%</strong> of the total token market's 24-hour volume.</ContentTypography>
+        <ContentTypography variant='subtitle1' gutterBottom>The current XRP price is <strong>{currencySymbols[activeFiatCurrency]}{Rate(1, metrics[activeFiatCurrency])}</strong>.</ContentTypography>
         {/* <ContentTypography variant='subtitle1'>XRP dominance currently stands at ---%, experiencing a decrease of -% over the past 24 hours.</ContentTypography> */}
       </div>
     </Stack>

@@ -16,12 +16,13 @@ import {
 
 // Redux
 import { useSelector } from 'react-redux';
-import { selectMetrics } from 'src/redux/statusSlice';
+import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
 
 import NumberTooltip from 'src/components/NumberTooltip';
+import { currencySymbols } from 'src/utils/constants';
 
 // ----------------------------------------------------------------------
 const LowhighBarSlider = styled(Slider)(({ theme }) => ({
@@ -65,8 +66,9 @@ export default function LowHighBar24H({ token }) {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const metrics = useSelector(selectMetrics);
+  const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
   const { exch, maxMin24h } = token;
-  const price = fNumber(exch / metrics.USD);
+  const price = fNumber(exch / metrics[activeFiatCurrency]);
   const min = maxMin24h[1];
   const max = maxMin24h[0];
   const delta = max - min;
@@ -80,7 +82,7 @@ export default function LowHighBar24H({ token }) {
       spacing={1}
       justifyContent={isTablet ? 'space-between' : 'flex-start'}
     >
-      <Typography variant="caption">Low: <NumberTooltip prepend='$' number={fNumber(min)}/></Typography>
+      <Typography variant="caption">Low: <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumber(min)}/></Typography>
       <Box sx={{ width: isTablet ? 360 : 160 }}>
         <LowhighBarSlider
           valueLabelDisplay="on"
@@ -89,7 +91,7 @@ export default function LowHighBar24H({ token }) {
           sx={{ mt: 1 }}
         />
       </Box>
-      <Typography variant="caption">High: <NumberTooltip prepend='$' number={fNumber(max)}/></Typography>
+      <Typography variant="caption">High: <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumber(max)}/></Typography>
     </Stack>
   );
 }

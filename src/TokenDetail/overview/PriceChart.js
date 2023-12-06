@@ -36,11 +36,15 @@ import { fCurrency5, fNumber } from 'src/utils/formatNumber';
 import ChartOptions from './ChartOptions';
 
 import { useRouter } from 'next/router'
+import { useSelector } from 'react-redux';
+import { selectActiveFiatCurrency } from 'src/redux/statusSlice';
+import { currencySymbols } from 'src/utils/constants';
 // ----------------------------------------------------------------------
 
 function PriceChart({ token }) {
   const BASE_URL = process.env.API_URL;
   const theme = useTheme();
+  const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 
   const [data, setData] = useState([]);
   const [range, setRange] = useState('1D');
@@ -197,7 +201,7 @@ function PriceChart({ token }) {
       },
       y: {
         formatter: function (value, { series, seriesIndex, dataPointIndex, w }) {
-          return `$ ${fCurrency5(value)}`;
+          return `${currencySymbols[activeFiatCurrency]} ${fCurrency5(value)}`;
         },
         title: {
           formatter: (seriesName) => {
@@ -344,7 +348,7 @@ function PriceChart({ token }) {
       <Grid container rowSpacing={2} alignItems="center" sx={{ mt: 0 }}>
         <Grid container item xs={12} md={6}>
           <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="h3">{`${user} ${name} to USD Chart`}</Typography>
+            <Typography variant="h3">{`${user} ${name} to ${activeFiatCurrency} Chart`}</Typography>
             {isAdmin && range !== 'OHLC' &&
               <IconButton onClick={handleDownloadCSV}>
                 <DownloadIcon fontSize="small" />

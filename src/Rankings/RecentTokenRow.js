@@ -119,9 +119,9 @@ function formatTime(value, unit) {
     }
 }
 
-export const RecentTokenRow = React.memo(fTokenRow);
+export const RecentTokenRow = React.memo(FTokenRow);
 
-function fTokenRow({
+function FTokenRow({
   time,
   token,
   admin,
@@ -347,7 +347,7 @@ function fTokenRow({
           </Stack>
         </TableCell>
         <TableCell align="right">{fNumber(vol24htx)}</TableCell>
-        <TableCell align="right">${fNumber(convertedMarketCap)}</TableCell>
+        <TableCell align="right">{currencySymbols[activeFiatCurrency]}{fNumber(convertedMarketCap)}</TableCell>
         {/* <TableCell align="left">{holders}</TableCell>
                 <TableCell align="left">{offers}</TableCell> */}
 

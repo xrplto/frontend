@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { configureStore } from '@reduxjs/toolkit';
 import { currencyConfig } from 'src/utils/constants';
 
 const initialState = {
