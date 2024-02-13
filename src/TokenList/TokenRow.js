@@ -124,11 +124,12 @@ function FTokenRow({
   onChangeWatchList,
   scrollLeft,
   exchRate,
-  activeFiatCurrency
+  idx
 }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
-  const { accountProfile, darkMode } = useContext(AppContext);
+  const { accountProfile, darkMode, activeFiatCurrency } =
+    useContext(AppContext);
   const isAdmin =
     accountProfile && accountProfile.account && accountProfile.admin;
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -243,7 +244,7 @@ function FTokenRow({
               background: darkMode ? '#17171A' : '#F2F5F9'
             }}
           >
-            {id}
+            {idx + 1}
           </TableCell>
         )}
         <TableCell

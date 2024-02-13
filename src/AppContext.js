@@ -1,117 +1,144 @@
 import { useState, createContext, useEffect } from 'react';
 
-import { Backdrop } from "@mui/material";
+import { Backdrop } from '@mui/material';
 
 // Redux
-import { Provider } from "react-redux";
-import { persistor, store} from "src/redux/store";
+import { Provider } from 'react-redux';
+import { configureRedux } from 'src/redux/store';
 
 // Loader
-import { PuffLoader } from "react-spinners";
-import { PersistGate } from "redux-persist/integration/react";
+import { PuffLoader } from 'react-spinners';
+import { PersistGate } from 'redux-persist/integration/react';
 
 export const AppContext = createContext({});
 
 export function ContextProvider({ children, data, openSnackbar }) {
-    const [sync, setSync] = useState(0);
-    const [loading, setLoading] = useState(false);
-    const [darkMode, setDarkMode] = useState(true);
-    const [accountProfile, setAccountProfile] = useState(null);
-    const [profiles, setProfiles] = useState([]);
+  const [sync, setSync] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
+  const [activeFiatCurrency, setActiveFiatCurrency] = useState('USD');
+  const [accountProfile, setAccountProfile] = useState(null);
+  const [profiles, setProfiles] = useState([]);
 
-    // const [store, setStore] = useState(configureRedux(data));
+  const [store, setStore] = useState(configureRedux(data));
 
-    const KEY_ACCOUNT_PROFILE = "account_profile_2";
-    const KEY_ACCOUNT_PROFILES = "account_profiles_2";
+  const KEY_ACCOUNT_PROFILE = 'account_profile_2';
+  const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
 
-    const toggleTheme = () => {
-        window.localStorage.setItem('appTheme', !darkMode);
-        setDarkMode(!darkMode);
+  const toggleTheme = () => {
+    window.localStorage.setItem('appTheme', !darkMode);
+    setDarkMode(!darkMode);
+  };
+
+  const toggleFiatCurrency = (newValue) => {
+    window.localStorage.setItem('appFiatCurrency', newValue);
+    setActiveFiatCurrency(newValue);
+  };
+
+  useEffect(() => {
+    const isDarkMode = window.localStorage.getItem('appTheme');
+    const fiatCurrency = window.localStorage.getItem('appFiatCurrency');
+    if (fiatCurrency) {
+      setActiveFiatCurrency(fiatCurrency);
     }
 
-    useEffect(() => {
-        const isDarkMode = window.localStorage.getItem('appTheme');
-        if (isDarkMode) {
-            // convert to boolean
-            setDarkMode(isDarkMode === 'true')
-        }
-    }, []);
+    if (isDarkMode) {
+      // convert to boolean
+      setDarkMode(isDarkMode === 'true');
+    }
+  }, []);
 
-    useEffect(() => {
-        const profile = window.localStorage.getItem(KEY_ACCOUNT_PROFILE);
-        //const profile = '{"account":"rDsRQWRTRrtzAgK8HH7rcCAZnWeCsJm28K","uuid":"4a3eb58c-aa97-4d48-9ab2-92d90df9a75f"}';
-        if (profile) {
-            setAccountProfile(JSON.parse(profile));
-        }
-
-        const profiles = window.localStorage.getItem(KEY_ACCOUNT_PROFILES);
-        if (profiles) {
-            setProfiles(JSON.parse(profiles));
-        }
-    }, [])
-
-    const setActiveProfile = (account) => {
-        const profile = profiles.find(x => x.account === account);
-        if (!profile) return;
-        setAccountProfile(profile);
-        window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
-    };
-
-    const doLogIn = (profile) => {
-        setAccountProfile(profile);
-        window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
-
-        // const old = profiles.find(x => x.account === profile.account);
-        let exist = false;
-        const newProfiles = [];
-        for (const p of profiles) {
-            if (p.account === profile.account) {
-                newProfiles.push(profile);
-                exist = true;
-            } else
-                newProfiles.push(p);
-        }
-
-        if (!exist) {
-            newProfiles.push(profile);
-        }
-
-        window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(newProfiles));
-        setProfiles(newProfiles);
-    };
-
-    const doLogOut = () => {
-        window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(null));
-        window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify([]));
-        setAccountProfile(null);
-        setProfiles([])
+  useEffect(() => {
+    const profile = window.localStorage.getItem(KEY_ACCOUNT_PROFILE);
+    //const profile = '{"account":"rDsRQWRTRrtzAgK8HH7rcCAZnWeCsJm28K","uuid":"4a3eb58c-aa97-4d48-9ab2-92d90df9a75f"}';
+    if (profile) {
+      setAccountProfile(JSON.parse(profile));
     }
 
-    const removeProfile = (account) => {
-        const newProfiles = profiles.filter(function( obj ) {
-            return obj.account !== account;
-        });
-        window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(newProfiles));
-        setProfiles(newProfiles);
+    const profiles = window.localStorage.getItem(KEY_ACCOUNT_PROFILES);
+    if (profiles) {
+      setProfiles(JSON.parse(profiles));
+    }
+  }, []);
+
+  const setActiveProfile = (account) => {
+    const profile = profiles.find((x) => x.account === account);
+    if (!profile) return;
+    setAccountProfile(profile);
+    window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
+  };
+
+  const doLogIn = (profile) => {
+    setAccountProfile(profile);
+    window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
+
+    // const old = profiles.find(x => x.account === profile.account);
+    let exist = false;
+    const newProfiles = [];
+    for (const p of profiles) {
+      if (p.account === profile.account) {
+        newProfiles.push(profile);
+        exist = true;
+      } else newProfiles.push(p);
     }
 
-    return (
-        <AppContext.Provider
-            value={{ toggleTheme, darkMode, setDarkMode, accountProfile, setActiveProfile, profiles, removeProfile, doLogIn, doLogOut, setLoading, openSnackbar, sync, setSync }}
-        >
-            
-            <Backdrop
-                sx={{ color: "#000", zIndex: (theme) => theme.zIndex.drawer + 202 }}
-                open={loading}
-            >
-                <PuffLoader color={"#00AB55"} size={50} />
-            </Backdrop>
-            
-            <Provider store={store}>
-                <PersistGate loading={null} persistor={persistor}>
-                {children}
-                </PersistGate>
-            </Provider>
-        </AppContext.Provider>
+    if (!exist) {
+      newProfiles.push(profile);
+    }
+
+    window.localStorage.setItem(
+      KEY_ACCOUNT_PROFILES,
+      JSON.stringify(newProfiles)
     );
+    setProfiles(newProfiles);
+  };
+
+  const doLogOut = () => {
+    window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(null));
+    window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify([]));
+    setAccountProfile(null);
+    setProfiles([]);
+  };
+
+  const removeProfile = (account) => {
+    const newProfiles = profiles.filter(function (obj) {
+      return obj.account !== account;
+    });
+    window.localStorage.setItem(
+      KEY_ACCOUNT_PROFILES,
+      JSON.stringify(newProfiles)
+    );
+    setProfiles(newProfiles);
+  };
+
+  return (
+    <AppContext.Provider
+      value={{
+        toggleTheme,
+        darkMode,
+        setDarkMode,
+        accountProfile,
+        setActiveProfile,
+        profiles,
+        removeProfile,
+        doLogIn,
+        doLogOut,
+        setLoading,
+        openSnackbar,
+        sync,
+        setSync,
+        activeFiatCurrency,
+        toggleFiatCurrency
+      }}
+    >
+      <Backdrop
+        sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 202 }}
+        open={loading}
+      >
+        <PuffLoader color={'#00AB55'} size={50} />
+      </Backdrop>
+
+      <Provider store={store}>{children}</Provider>
+    </AppContext.Provider>
+  );
 }

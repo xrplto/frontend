@@ -1,6 +1,6 @@
 import { useState, useContext } from 'react';
 import { useSelector } from 'react-redux';
-import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
+import { selectMetrics } from 'src/redux/statusSlice';
 
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
@@ -66,9 +66,6 @@ import ExtraButtons from './ExtraButtons';
 
 import Decimal from 'decimal.js';
 import { currencySymbols } from 'src/utils/constants';
-
-
-
 
 const IconCover = styled('div')(
   ({ theme }) => `
@@ -151,8 +148,6 @@ const AdminImage = styled(LazyLoadImage)(({ theme }) => ({
   }
 }));
 
-
-
 const SupplyTypography = withStyles({
   root: {
     color: '#3366FF'
@@ -177,8 +172,6 @@ const MarketTypography = withStyles({
   }
 })(Typography);
 
-
-
 function truncate(str, n) {
   if (!str) return '';
   //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
@@ -200,7 +193,8 @@ function normalizeTag(tag) {
 export default function UserDesc({ token }) {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-  const { darkMode, accountProfile, openSnackbar } = useContext(AppContext);
+  const { darkMode, accountProfile, openSnackbar, activeFiatCurrency } =
+    useContext(AppContext);
   const isAdmin =
     accountProfile && accountProfile.account && accountProfile.admin;
   const [rating, setRating] = useState(2);
@@ -239,10 +233,12 @@ export default function UserDesc({ token }) {
 
   const [showStat, setShowStat] = useState(false);
   const metrics = useSelector(selectMetrics);
-  const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 
   const [omcf, setOMCF] = useState(token.isOMCF || 'no'); // is Old Market Cap Formula
-  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const convertedMarketCap = Decimal.div(
+    marketcap,
+    metrics[activeFiatCurrency]
+  ).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
   const volume = fNumber(vol24hx);
   const voldivmarket =
     marketcap > 0 ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
@@ -321,14 +317,24 @@ export default function UserDesc({ token }) {
             </IconCover>
           </div>
         ) : (
-          <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ width: 56, height: 56 }} />
+          <Avatar
+            alt={`${user} ${name} Logo`}
+            src={imgUrl}
+            sx={{ width: 56, height: 56 }}
+          />
         )}
         <Stack spacing={0.2}>
-          <Typography variant="span" fontWeight="700" color={ darkMode ? '#22B14C': '#3366FF' } alt={user} fontSize="1.1rem">
+          <Typography
+            variant="span"
+            fontWeight="700"
+            color={darkMode ? '#22B14C' : '#3366FF'}
+            alt={user}
+            fontSize="1.1rem"
+          >
             {user}
           </Typography>
           <Stack direction="row" alignItems="center" spacing={0.5}>
-          <TokenIcon fontSize="small" color="disabled" />
+            <TokenIcon fontSize="small" color="disabled" />
             <Typography variant="s17">{name}</Typography>
             <Stack>{kyc && <Typography variant="kyc2">KYC</Typography>}</Stack>
           </Stack>
@@ -354,60 +360,81 @@ export default function UserDesc({ token }) {
         </Grid>
       </Stack>
       <Box
-  sx={{
-    display: 'flex',
-    flexWrap: 'wrap', // Enable wrapping for smaller screens
-    gap: { xs: 1, sm: 1.5, md: 2 }, // Dynamic gap based on screen size
-    py: 1,
-    overflow: 'auto',
-    width: '100%',
-    '& > *': {
-      scrollSnapAlign: 'center',
-      minWidth: 'fit-content', // Prevent chips from shrinking too much
-    },
-    '::-webkit-scrollbar': { display: 'none' },
-    mb: isTablet ? 2 : 0,
-  }}
->
-  <Tooltip title={<Typography variant="body2">Rank by 24h Volume.</Typography>}>
-    <Chip
-      label={<Typography variant={isTablet ? "body2" : "s16"}>Rank # {id}</Typography>}
-      color="primary"
-      variant="outlined"
-      size={isTablet ? "small" : "small"}
-      sx={{ borderRadius: '8px' }} // Reduced borderRadius for a more squared shape
-    />
-  </Tooltip>
-  <Chip
-    label={<Typography variant={isTablet ? "body2" : "s16"}>{fIntNumber(holders)} Holders</Typography>}
-    color="error"
-    variant="outlined"
-    size={isTablet ? "small" : "small"}
-    sx={{ borderRadius: '8px' }}
-  />
-  <Chip
-    label={<Typography variant={isTablet ? "body2" : "s16"}>{fIntNumber(offers)} Offers</Typography>}
-    color="warning"
-    variant="outlined"
-    size={isTablet ? "small" : "small"}
-    sx={{ borderRadius: '8px' }}
-  />
-  <Chip
-    label={<Typography variant={isTablet ? "body2" : "s16"}>{fNumber(vol24htx)} Trades</Typography>}
-    color="secondary" // You can choose a suitable color
-    variant="outlined"
-    size={isTablet ? "small" : "small"}
-    sx={{ borderRadius: '8px' }}
-  />
-  <Chip
-    label={<Typography variant={isTablet ? "body2" : "s16"}>{fIntNumber(trustlines)} TrustLines</Typography>}
-    color="info"
-    variant="outlined"
-    size={isTablet ? "small" : "small"}
-    sx={{ borderRadius: '8px' }}
-  />
-</Box>
-
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap', // Enable wrapping for smaller screens
+          gap: { xs: 1, sm: 1.5, md: 2 }, // Dynamic gap based on screen size
+          py: 1,
+          overflow: 'auto',
+          width: '100%',
+          '& > *': {
+            scrollSnapAlign: 'center',
+            minWidth: 'fit-content' // Prevent chips from shrinking too much
+          },
+          '::-webkit-scrollbar': { display: 'none' },
+          mb: isTablet ? 2 : 0
+        }}
+      >
+        <Tooltip
+          title={<Typography variant="body2">Rank by 24h Volume.</Typography>}
+        >
+          <Chip
+            label={
+              <Typography variant={isTablet ? 'body2' : 's16'}>
+                Rank # {id}
+              </Typography>
+            }
+            color="primary"
+            variant="outlined"
+            size={isTablet ? 'small' : 'small'}
+            sx={{ borderRadius: '8px' }} // Reduced borderRadius for a more squared shape
+          />
+        </Tooltip>
+        <Chip
+          label={
+            <Typography variant={isTablet ? 'body2' : 's16'}>
+              {fIntNumber(holders)} Holders
+            </Typography>
+          }
+          color="error"
+          variant="outlined"
+          size={isTablet ? 'small' : 'small'}
+          sx={{ borderRadius: '8px' }}
+        />
+        <Chip
+          label={
+            <Typography variant={isTablet ? 'body2' : 's16'}>
+              {fIntNumber(offers)} Offers
+            </Typography>
+          }
+          color="warning"
+          variant="outlined"
+          size={isTablet ? 'small' : 'small'}
+          sx={{ borderRadius: '8px' }}
+        />
+        <Chip
+          label={
+            <Typography variant={isTablet ? 'body2' : 's16'}>
+              {fNumber(vol24htx)} Trades
+            </Typography>
+          }
+          color="secondary" // You can choose a suitable color
+          variant="outlined"
+          size={isTablet ? 'small' : 'small'}
+          sx={{ borderRadius: '8px' }}
+        />
+        <Chip
+          label={
+            <Typography variant={isTablet ? 'body2' : 's16'}>
+              {fIntNumber(trustlines)} TrustLines
+            </Typography>
+          }
+          color="info"
+          variant="outlined"
+          size={isTablet ? 'small' : 'small'}
+          sx={{ borderRadius: '8px' }}
+        />
+      </Box>
 
       {/* <Box
                 sx={{
@@ -485,7 +512,8 @@ export default function UserDesc({ token }) {
             </Stack>
 
             <MarketTypography variant="body1">
-              {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
+              {currencySymbols[activeFiatCurrency]}{' '}
+              {fNumber(convertedMarketCap)}
             </MarketTypography>
           </Stack>
 
@@ -616,32 +644,33 @@ export default function UserDesc({ token }) {
             <Typography variant="body1">Tags</Typography>
 
             <Box display="flex" alignItems="center">
-              {tags && tags.slice(0, 2).map((tag, idx) => (
-                <Link
-                  key={md5 + idx + tag}
-                  href={`/view/${normalizeTag(tag)}`}
-                  sx={{
-                    pl: 0,
-                    pr: 0,
-                    display: 'inline-flex',
-                    marginLeft: '-6px'
-                  }}
-                  underline="none"
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Chip
-                    label={tag}
-                    size="small"
+              {tags &&
+                tags.slice(0, 2).map((tag, idx) => (
+                  <Link
+                    key={md5 + idx + tag}
+                    href={`/view/${normalizeTag(tag)}`}
                     sx={{
-                      borderInlineStart: `3px solid ${
-                        darkMode ? '#17171a' : '#fff'
-                      }`,
-                      cursor: 'pointer',
-                      fontSize: '12px'
+                      pl: 0,
+                      pr: 0,
+                      display: 'inline-flex',
+                      marginLeft: '-6px'
                     }}
-                  />
-                </Link>
-              ))}
+                    underline="none"
+                    rel="noreferrer noopener nofollow"
+                  >
+                    <Chip
+                      label={tag}
+                      size="small"
+                      sx={{
+                        borderInlineStart: `3px solid ${
+                          darkMode ? '#17171a' : '#fff'
+                        }`,
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    />
+                  </Link>
+                ))}
               {tags && tags.length > 2 && (
                 <Chip
                   label={`+${tags.slice(2).length}`}
@@ -691,9 +720,7 @@ export default function UserDesc({ token }) {
                 >
                   <Chip
                     label={domain}
-                    sx={{ pl: 0.5, pr: 0.5,
-                      borderRadius: '6px'
-                    }}
+                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px' }}
                     deleteIcon={
                       <Icon icon={linkExternal} width="16" height="16" />
                     }
@@ -715,9 +742,7 @@ export default function UserDesc({ token }) {
                 >
                   <Chip
                     label={'Whitepaper'}
-                    sx={{ pl: 0.5, pr: 0.5,
-                      borderRadius: '6px'
-                    }}
+                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px' }}
                     deleteIcon={
                       <Icon icon={linkExternal} width="16" height="16" />
                     }
@@ -805,9 +830,7 @@ export default function UserDesc({ token }) {
                 </Typography>
               }
               size={isTablet ? 'small' : 'medium'}
-              sx={{ pl: 0.5, pr: 0,
-                borderRadius: '6px'
-              }}
+              sx={{ pl: 0.5, pr: 0, borderRadius: '6px' }}
               deleteIcon={
                 <Stack direction="row" spacing={0} alignItems="center">
                   <Tooltip title={'Copy Address'}>

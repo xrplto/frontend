@@ -46,10 +46,9 @@ import { useRef } from 'react';
 
 export default function GainersLosersTTokenList({}) {
     const metrics = useSelector(selectMetrics);
-    const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 	const BASE_URL = process.env.API_URL;//'http://65.108.4.235:3000/api';//process.env.API_URL;
 	
-    const { accountProfile, darkMode } = useContext(AppContext);
+    const { accountProfile, darkMode, activeFiatCurrency } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 	
     const theme = useTheme();

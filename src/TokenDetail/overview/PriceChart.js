@@ -35,8 +35,17 @@ import { fCurrency5, fNumber } from 'src/utils/formatNumber';
 // Components
 import ChartOptions from './ChartOptions';
 
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/router';
+import { currencySymbols } from 'src/utils/constants';
 // ----------------------------------------------------------------------
+
+const fiatMapping = {
+  USD: 'USD',
+  EUR: 'EUR',
+  JPY: 'JPY',
+  CNY: 'CNH',
+  XRP: 'XRP',
+};
 
 function PriceChart({ token }) {
   const BASE_URL = process.env.API_URL;
@@ -48,8 +57,9 @@ function PriceChart({ token }) {
   const [minTime, setMinTime] = useState(0);
   const [maxTime, setMaxTime] = useState(0);
 
-  const { accountProfile } = useContext(AppContext);
-  const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
+  const { accountProfile, activeFiatCurrency } = useContext(AppContext);
+  const isAdmin =
+    accountProfile && accountProfile.account && accountProfile.admin;
 
   const router = useRouter();
   const fromSearch = router.query.fromSearch ? '&fromSearch=1' : '';
@@ -64,19 +74,22 @@ function PriceChart({ token }) {
       width: 1,
       dashArray: 3,
       color: theme.palette.divider1,
-      opacity: 0.8,
+      opacity: 0.8
     },
     selectionXaxis: {
       min: minTime || 0,
-      max: maxTime || 0,
-    },
+      max: maxTime || 0
+    }
   });
 
   useEffect(() => {
     function getGraph() {
       // https://api.xrpl.to/api/graph/0527842b8550fce65ff44e913a720037?range=1D
-      axios.get(`${BASE_URL}/graph/${token.md5}?range=${range}${fromSearch}`)
-        .then(res => {
+      axios
+        .get(
+          `${BASE_URL}/graph-with-metrics/${token.md5}?range=${range}&vs_currency=${fiatMapping[activeFiatCurrency]}${fromSearch}`
+        )
+        .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
           if (ret) {
             const items = ret.history;
@@ -88,15 +101,17 @@ function PriceChart({ token }) {
 
             setData(items);
           }
-        }).catch(err => {
-          console.log("Error on getting graph data.", err);
-        }).then(function () {
+        })
+        .catch((err) => {
+          console.log('Error on getting graph data.', err);
+        })
+        .then(function () {
           // always executed
         });
     }
 
     getGraph();
-  }, [range]);
+  }, [range, activeFiatCurrency]);
 
   let user = token.user;
   if (!user) user = token.name;
@@ -132,7 +147,7 @@ function PriceChart({ token }) {
         //name: 'XRP',
         type: 'line',
         data: data
-      },
+      }
     ],
     stroke: {
       width: [0, 2]
@@ -161,7 +176,7 @@ function PriceChart({ token }) {
         opacityTo: [0.4, 1],
         gradientToColors: ['#B72136', '#B72136'],
         stops: [50, 70]
-      },
+      }
     },
     legend: { show: false },
 
@@ -193,11 +208,14 @@ function PriceChart({ token }) {
       },
       x: {
         show: false,
-        format: 'MM/dd/yyyy, h:mm:ss TT',
+        format: 'MM/dd/yyyy, h:mm:ss TT'
       },
       y: {
-        formatter: function (value, { series, seriesIndex, dataPointIndex, w }) {
-          return `$ ${fCurrency5(value)}`;
+        formatter: function (
+          value,
+          { series, seriesIndex, dataPointIndex, w }
+        ) {
+          return `${activeFiatCurrency} ${fCurrency5(value)}`;
         },
         title: {
           formatter: (seriesName) => {
@@ -206,11 +224,10 @@ function PriceChart({ token }) {
         }
       },
       marker: {
-        show: true,
+        show: true
       },
       enabledOnSeries: [0]
-    },
-
+    }
   });
 
   useEffect(() => {
@@ -219,8 +236,8 @@ function PriceChart({ token }) {
       ...prevControls,
       selectionXaxis: {
         min: minTime || 0,
-        max: maxTime || 0,
-      },
+        max: maxTime || 0
+      }
     }));
   }, [minTime, maxTime]);
 
@@ -233,27 +250,26 @@ function PriceChart({ token }) {
       brush: {
         target: 'chart2',
         enabled: chartControls.brushEnabled,
-        autoScaleYaxis: chartControls.autoScaleYaxis,
+        autoScaleYaxis: chartControls.autoScaleYaxis
       },
       selection: {
         enabled: chartControls.selectionEnabled,
         fill: {
           color: chartControls.selectionFill,
-          opacity: 0.05,
+          opacity: 0.05
         },
         stroke: {
           width: 1,
           dashArray: 3,
           color: chartControls.selectionStroke.color,
-          opacity: chartControls.selectionStroke.opacity,
+          opacity: chartControls.selectionStroke.opacity
         },
         xaxis: {
           min: chartControls.selectionXaxis.min,
-          max: chartControls.selectionXaxis.max,
-        },
-      },
+          max: chartControls.selectionXaxis.max
+        }
+      }
     },
-
 
     series: [
       {
@@ -269,7 +285,7 @@ function PriceChart({ token }) {
       gradient: {
         type: 'vertical',
         opacityFrom: 0.91,
-        opacityTo: 0.1,
+        opacityTo: 0.1
       }
     },
 
@@ -287,7 +303,7 @@ function PriceChart({ token }) {
         lines: {
           show: false
         }
-      },
+      }
     },
 
     xaxis: {
@@ -301,7 +317,7 @@ function PriceChart({ token }) {
       tickAmount: 2,
       labels: {
         style: {
-          colors: ['#008FFB00'],
+          colors: ['#008FFB00']
         },
         formatter: function (val, index) {
           return fNumber(val);
@@ -311,8 +327,7 @@ function PriceChart({ token }) {
   };
 
   const handleChange = (event, newRange) => {
-    if (newRange)
-      setRange(newRange);
+    if (newRange) setRange(newRange);
   };
 
   const handleDownloadCSV = (event) => {
@@ -334,38 +349,50 @@ function PriceChart({ token }) {
       data: csvData,
       filename: 'filter_report',
       delimiter: ',',
-      headers: ['Original', "Median_1", "Median_2", "Time"]
-    }
+      headers: ['Original', 'Median_1', 'Median_2', 'Time']
+    };
     csvDownload(dataToConvert);
-  }
+  };
 
   return (
     <>
       <Grid container rowSpacing={2} alignItems="center" sx={{ mt: 0 }}>
         <Grid container item xs={12} md={6}>
           <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="h3">{`${user} ${name} to USD Chart`}</Typography>
-            {isAdmin && range !== 'OHLC' &&
+            <Typography variant="h3">{`${user} ${name} to ${activeFiatCurrency}(${currencySymbols[activeFiatCurrency]}) Chart`}</Typography>
+            {isAdmin && range !== 'OHLC' && (
               <IconButton onClick={handleDownloadCSV}>
                 <DownloadIcon fontSize="small" />
               </IconButton>
-            }
+            )}
           </Stack>
         </Grid>
 
-        <Grid container item xs={12} md={6} justifyContent="flex-end" >
+        <Grid container item xs={12} md={6} justifyContent="flex-end">
           <ToggleButtonGroup
             color="primary"
             value={range}
             exclusive
             onChange={handleChange}
           >
-            <ToggleButton sx={{ pt: 0, pb: 0 }} value="1D">1D</ToggleButton>
-            <ToggleButton sx={{ pt: 0, pb: 0 }} value="7D">7D</ToggleButton>
-            <ToggleButton sx={{ pt: 0, pb: 0 }} value="1M">1M</ToggleButton>
-            <ToggleButton sx={{ pt: 0, pb: 0 }} value="3M">3M</ToggleButton>
-            <ToggleButton sx={{ pt: 0, pb: 0 }} value="1Y">1Y</ToggleButton>
-            <ToggleButton sx={{ pt: 0, pb: 0 }} value="ALL">ALL</ToggleButton>
+            <ToggleButton sx={{ pt: 0, pb: 0 }} value="1D">
+              1D
+            </ToggleButton>
+            <ToggleButton sx={{ pt: 0, pb: 0 }} value="7D">
+              7D
+            </ToggleButton>
+            <ToggleButton sx={{ pt: 0, pb: 0 }} value="1M">
+              1M
+            </ToggleButton>
+            <ToggleButton sx={{ pt: 0, pb: 0 }} value="3M">
+              3M
+            </ToggleButton>
+            <ToggleButton sx={{ pt: 0, pb: 0 }} value="1Y">
+              1Y
+            </ToggleButton>
+            <ToggleButton sx={{ pt: 0, pb: 0 }} value="ALL">
+              ALL
+            </ToggleButton>
           </ToggleButtonGroup>
         </Grid>
       </Grid>

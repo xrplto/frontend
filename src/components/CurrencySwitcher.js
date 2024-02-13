@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Box from '@mui/material/Box';
-import { useDispatch, useSelector } from 'react-redux';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import { currencyConfig, currencyIcons } from 'src/utils/constants';
 import { InputAdornment } from '@mui/material';
-import { update_activeCurrency } from 'src/redux/statusSlice';
+import { AppContext } from 'src/AppContext';
 
 export default function CurrencySwithcer() {
-  const [activeCurrency, setActiveCurrency] = useState(null);
-  const { activeFiatCurrency } = useSelector((state) => state.status);
+  const { activeFiatCurrency, toggleFiatCurrency } = useContext(AppContext);
+  const [activeCurrency, setActiveCurrency] = useState(activeFiatCurrency);
   const { availableFiatCurrencies } = currencyConfig;
-  const dispatch = useDispatch();
 
   useEffect(() => {
     const defaultIndex = availableFiatCurrencies?.indexOf(activeFiatCurrency);
@@ -21,12 +19,12 @@ export default function CurrencySwithcer() {
   }, [activeFiatCurrency]);
 
   const handleChange = (_, newValue) => {
-    dispatch(update_activeCurrency({ activeFiatCurrency: newValue }));
+    toggleFiatCurrency(newValue);
     setActiveCurrency(newValue);
   };
 
   return (
-    <Box sx={{ minWidth: 120, mr:1 }}>
+    <Box sx={{ minWidth: 120, mr: 1 }}>
       <Autocomplete
         autoHighlight
         openOnFocus

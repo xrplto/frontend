@@ -17,8 +17,11 @@ import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 
 import NumberTooltip from 'src/components/NumberTooltip';
 import { useSelector } from 'react-redux';
-import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
+import { selectMetrics } from 'src/redux/statusSlice';
 import { currencySymbols } from 'src/utils/constants';
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+import Decimal from 'decimal.js';
 
 // ----------------------------------------------------------------------
 export default function PriceDesc({ token }) {
@@ -27,7 +30,7 @@ export default function PriceDesc({ token }) {
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   const metrics = useSelector(selectMetrics);
-  const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
+  const { activeFiatCurrency } = useContext(AppContext);
 
   const { name, exch, pro7d, pro24h, md5 } = token;
 
@@ -42,32 +45,33 @@ export default function PriceDesc({ token }) {
       <Stack direction="row" spacing={2} sx={{ mt: 0 }} alignItems="center">
         <Stack direction="row" spacing={1} alignItems="center">
           <Typography variant="price" noWrap>
-            <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}/>
+            <NumberTooltip
+              prepend={currencySymbols[activeFiatCurrency]}
+              number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+            />
           </Typography>
           <Typography variant="subtitle1" style={{ marginTop: 8 }}>
-            <NumberTooltip number={fNumber(exch)}/> XRP
+            <NumberTooltip number={fNumber(exch)} /> XRP
           </Typography>
         </Stack>
       </Stack>
 
       <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-       
-      <BearBullChip
-  value={pro24h}
-  tooltip={
-    <Stack alignItems="center">
-      24h (%)
-      <Box
-        component="img"
-        alt={`${user} ${name} 24H Price Graph`}
-        sx={{ width: 135, height: 50, mt: 2 }}
-        src={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`}
-      />
-    </Stack>
-  }
-/>
+        <BearBullChip
+          value={pro24h}
+          tooltip={
+            <Stack alignItems="center">
+              24h (%)
+              <Box
+                component="img"
+                alt={`${user} ${name} 24H Price Graph`}
+                sx={{ width: 135, height: 50, mt: 2 }}
+                src={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`}
+              />
+            </Stack>
+          }
+        />
 
-        
         <BearBullChip
           value={pro7d}
           tooltip={

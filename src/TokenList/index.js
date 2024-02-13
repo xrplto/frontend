@@ -21,8 +21,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   update_metrics,
   update_filteredCount,
-  selectMetrics,
-  selectActiveFiatCurrency
+  selectMetrics
 } from 'src/redux/statusSlice';
 
 // Components
@@ -44,10 +43,16 @@ export default function TokenList({
   setTokens,
   tMap
 }) {
+  const {
+    accountProfile,
+    openSnackbar,
+    setLoading,
+    darkMode,
+    activeFiatCurrency
+  } = useContext(AppContext);
   const theme = useTheme();
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
-  const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
   const exchRate = metrics[activeFiatCurrency];
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -105,9 +110,6 @@ export default function TokenList({
       window.removeEventListener('scroll', handleScrollY);
     };
   }, []);
-
-  const { accountProfile, openSnackbar, setLoading, darkMode } =
-    useContext(AppContext);
 
   const [watchList, setWatchList] = useState([]);
 
@@ -391,6 +393,7 @@ export default function TokenList({
                 <TokenRow
                   key={idx}
                   time={row.time}
+                  idx={idx}
                   token={row}
                   setEditToken={setEditToken}
                   setTrustToken={setTrustToken}

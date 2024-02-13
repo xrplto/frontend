@@ -29,7 +29,7 @@ import { fNumber } from 'src/utils/formatNumber';
 
 // Redux
 import { useSelector } from "react-redux";
-import { selectActiveFiatCurrency, selectMetrics } from "src/redux/statusSlice";
+import { selectMetrics } from "src/redux/statusSlice";
 
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
@@ -63,9 +63,8 @@ export default function ExtraDesc({token}) {
     const BASE_URL = process.env.API_URL;
     const theme = useTheme();
     const metrics = useSelector(selectMetrics);
-    const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 
-    const { accountProfile, setLoading, openSnackbar } = useContext(AppContext);
+    const { accountProfile, setLoading, openSnackbar, activeFiatCurrency } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
     const {

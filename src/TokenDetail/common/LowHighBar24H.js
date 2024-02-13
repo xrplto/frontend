@@ -16,7 +16,7 @@ import {
 
 // Redux
 import { useSelector } from 'react-redux';
-import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
+import { selectMetrics } from 'src/redux/statusSlice';
 
 // Utils
 import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
@@ -24,6 +24,7 @@ import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
 import Decimal from 'decimal.js';
+import { AppContext } from 'src/AppContext';
 
 // ----------------------------------------------------------------------
 const LowhighBarSlider = styled(Slider)(({ theme }) => ({
@@ -67,8 +68,8 @@ export default function LowHighBar24H({ token }) {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const metrics = useSelector(selectMetrics);
-  const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
-  const {  maxMin24h, usd } = token;
+  const { activeFiatCurrency } = React.useContext(AppContext);
+  const { maxMin24h, usd } = token;
   const min = maxMin24h[1];
   const max = maxMin24h[0];
   const delta = max - min;
@@ -82,7 +83,18 @@ export default function LowHighBar24H({ token }) {
       spacing={1}
       justifyContent={isTablet ? 'space-between' : 'flex-start'}
     >
-      <Typography variant="caption">Low: <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumberWithCurreny(Decimal.mul(min, metrics.USD).toNumber(), metrics[activeFiatCurrency])}/></Typography>
+      <Typography variant="caption">
+        Low:{' '}
+        <NumberTooltip
+          prepend={currencySymbols[activeFiatCurrency]}
+          number={fNumber(
+            Decimal.mul(
+              Decimal.mul(min, metrics.USD),
+              1 / metrics[activeFiatCurrency]
+            )
+          )}
+        />
+      </Typography>
       <Box sx={{ width: isTablet ? 360 : 160 }}>
         <LowhighBarSlider
           valueLabelDisplay="on"
@@ -91,7 +103,18 @@ export default function LowHighBar24H({ token }) {
           sx={{ mt: 1 }}
         />
       </Box>
-      <Typography variant="caption">High: <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={fNumberWithCurreny(Decimal.mul(max, metrics.USD).toNumber(), metrics[activeFiatCurrency])}/></Typography>
+      <Typography variant="caption">
+        High:{' '}
+        <NumberTooltip
+          prepend={currencySymbols[activeFiatCurrency]}
+          number={fNumber(
+            Decimal.mul(
+              Decimal.mul(max, metrics.USD),
+              1 / metrics[activeFiatCurrency]
+            )
+          )}
+        />
+      </Typography>
     </Stack>
   );
 }
