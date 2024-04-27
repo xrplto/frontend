@@ -1,37 +1,37 @@
 import { visuallyHidden } from '@mui/utils';
 import { withStyles } from '@mui/styles';
 import {
-  useMediaQuery,
-  useTheme,
-  Box,
-  TableRow,
-  TableCell,
-  TableHead,
-  TableSortLabel,
-  Tooltip // Import Tooltip component
+    useMediaQuery,
+    useTheme,
+    Box,
+    TableRow,
+    TableCell,
+    TableHead,
+    TableSortLabel,
+    Tooltip // Import Tooltip component
 } from '@mui/material';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import InfoIcon from '@mui/icons-material/Info'; // Import InfoIcon from Material-UI Icons
 
 const SmallInfoIcon = (props) => (
-  <InfoIcon {...props} fontSize="smaller" /> // Make the icon smaller by setting fontSize="small"
+    <InfoIcon {...props} fontSize="smaller" /> // Make the icon smaller by setting fontSize="small"
 );
 
 const StickyTableCell = withStyles((theme) => ({
     head: {
-      position: 'sticky',
-     //zIndex: 1000,
-      top: 0
+        position: 'sticky',
+        //zIndex: 1000,
+        top: 0
     }
-  }))(TableCell);
+}))(TableCell);
 
-  const TABLE_HEAD = [
-    { no: 0, id: 'id',            label: '#',                  align: 'left',   width: '' },
-    { no: 1, id: 'name',          label: 'Name',               align: 'left',   width: '11%' },
-    { no: 2, id: 'exch',          label: 'Price',              align: 'right',  width: '8%' },
-    { no: 3, id: 'pro24h',        label: '24h',                align: 'right',  width: '6%' },
-    { no: 4, id: 'pro7d',         label: '7d',                 align: 'right',  width: '6%' },
+const TABLE_HEAD = [
+    { no: 0, id: 'id', label: '#', align: 'left', width: '' },
+    { no: 1, id: 'name', label: 'Name', align: 'left', width: '20%' },
+    { no: 2, id: 'exch', label: 'Price', align: 'right', width: '8%' },
+    { no: 3, id: 'pro24h', label: '24h', align: 'right', width: '6%' },
+    { no: 4, id: 'pro7d', label: '7d', align: 'right', width: '6%' },
 
 
     {
@@ -104,26 +104,29 @@ const StickyTableCell = withStyles((theme) => ({
         align: 'right',
         width: '13%'
     },
-    { no: 10, id: 'historyGraph', label: 'Last 7 Days',        align: 'right',  width: '13%' },
+    { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'right', width: '13%' },
     { id: '' }
 ];
 
 
 export default function TokenListHead({ scrollLeft, tokens }) {
+    console.log("spotlight---->", scrollLeft)
     const { darkMode } = useContext(AppContext);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     return (
         <TableHead sx={{
             '& .MuiTableCell-root:nth-child(1)': {
                 position: "sticky",
-               // zIndex: 1001,
+                zIndex: 1001,
                 left: 0,
                 background: darkMode ? "#17171A" : '#F2F5F9'
             },
             '& .MuiTableCell-root:nth-child(2)': {
                 position: "sticky",
-               // zIndex: 1002,
-                left: tokens.length > 0 ? 67 : 40,
+                zIndex: 1002,
+                left: tokens.length > 0 ? 55 : 40,
                 background: darkMode ? "#17171A" : '#F2F5F9',
                 '&:before': (scrollLeft ? {
                     content: "''",
