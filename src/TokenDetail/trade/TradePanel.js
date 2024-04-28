@@ -148,6 +148,8 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
     const handleChangeAmount = (e) => {
         const amt = e.target.value;
         
+        if (amt == '.') amt = 0;
+        
         if (isNaN(Number(amt))) return;
 
         setAmount(amt);
