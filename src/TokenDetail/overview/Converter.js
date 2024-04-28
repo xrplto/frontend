@@ -26,6 +26,7 @@ import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 // Iconify
 import { Icon } from '@iconify/react';
 import exchangeIcon from '@iconify/icons-uil/exchange';
+import arrowExchangeIcon from '@iconify/icons-gg/arrows-exchange-v';
 
 // Context
 import { useContext } from 'react';
@@ -79,12 +80,11 @@ const ConverterFrame = styled('div')(
     position: relative;
     border-radius: 16px;
     display: flex;
-    border: ${border} /*$000{theme.currency.border};*/
 
     @media (max-width: 700px) {
         flex-direction: column;
         overflow: hidden;
-        margin: auto -16px;
+        margin: auto 0px;
         border-right: none;
         border-left: none;
         border-image: initial;
@@ -92,6 +92,8 @@ const ConverterFrame = styled('div')(
         border-top: ${border}; /*$000{theme.currency.border};*/
         border-bottom: ${border}; /*$000{theme.currency.border};*/
     }
+
+    border: ${border} /*$000{theme.currency.border};*/
 `
 );
 
@@ -266,7 +268,7 @@ export default function Converter({ token }) {
         <ToggleContent>
           <IconButton size="medium" onClick={() => setRevert(!revert)}>
             <Icon
-              icon={exchangeIcon}
+              icon={isMobile ? arrowExchangeIcon : exchangeIcon}
               width="28"
               height="28"
               style={{
