@@ -48,6 +48,7 @@ import {
 
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
+import LoadChart from 'src/components/LoadChart';
 
 const StickyTableCell = withStyles((theme) => ({
   head: {
@@ -508,12 +509,14 @@ function FTokenRow({
           </Box>
         </TableCell>
         <TableCell align="right">
-          <LazyLoadImage
+          {/* <LazyLoadImage
             alt={`${user} ${name} 7D Price Graph`}
             src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
             width={135}
             height={50}
-          />
+          /> */}
+
+          <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}/>
         </TableCell>
 
         <TableCell align="right">
