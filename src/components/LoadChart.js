@@ -1,45 +1,46 @@
-import { styled } from "@mui/material";
 import axios from "axios";
 import { useEffect, useState } from "react";
-
-const VolumeChart = styled("div")(() => `
-    position: relative;
-    height: 50px;
-    overflow: hidden;
-
-    & svg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        user-select: none;
-    }
-
-    @keyframes chartEffect {
-        0% {
-            width: 0%;
-        }
-
-        100% {
-            width: 100%;
-        }
-    }
-
-    &.animated {
-        animation: chartEffect 3s linear 2;
-    }
-`);
-
+import ReactECharts from 'echarts-for-react';
 const LoadChart = ({ url }) => {
-    
-    const [chartText, setChartText] = useState('');
+
+    const [chartOption, setChartOption] = useState('');
 
     useEffect(() => {
         if (url) {
-            function getChart() {
-                axios.get(url).then(res => {
-                    setChartText(res.data);
-                }).catch(err => {
+            async function getChart() {
+                await axios.get(url).then(res => {
 
+                    const { coodinate, chartColor } = res.data;
+
+                    console.log(res.data);
+                    const option = {
+
+                        tooltip: {},
+                        xAxis: {
+                            // data: xAxis,
+                            show: false
+                        },
+                        yAxis: {
+                            type: 'value',
+                            show: false
+                        },
+                        series: [{
+                            data: coodinate,
+                            type: 'line',
+                            color: chartColor,
+                            showSymbol: false,
+                            lineStyle: {
+                                width: 2.5
+                            },
+                            smooth: true
+                        }]
+                    };
+
+
+                    setChartOption(option);
+
+                }).catch(err => {
+                    console.log(err);
                 })
             }
 
@@ -49,7 +50,13 @@ const LoadChart = ({ url }) => {
 
     return (
         <>
-            { chartText ? <VolumeChart className={chartText ? "animated" : "" } dangerouslySetInnerHTML={{ __html: chartText }}/> : ""}
+            {chartOption ? (
+                <ReactECharts
+                    option={chartOption}
+                    style={{ height: 80, width: 168 }}
+                    opts={{ renderer: "svg", }}
+                />
+            ) : ""}
         </>
     )
 }

@@ -53,6 +53,8 @@
     "crypto-js": "^4.1.1",
     "date-fns": "2.28.0",
     "decimal.js": "^10.3.1",
+    "echarts": "^5.5.0",
+    "echarts-for-react": "^3.0.2",
     "hashicon": "^0.3.0",
     "i18next": "^23.5.1",
     "i18next-browser-languagedetector": "^7.1.0",
