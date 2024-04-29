@@ -12,7 +12,6 @@ const LoadChart = ({ url }) => {
 
                     const { coodinate, chartColor } = res.data;
 
-                    console.log(res.data);
                     const option = {
 
                         tooltip: {},

@@ -154,7 +154,7 @@ const NavSearchBar = React.memo(
       };
 
       axios
-        .post(`${BASE_URL}/ `, body)
+        .post(`${BASE_URL}/search`, body)
         .then((res) => {
           try {
             if (res.status === 200 && res.data) {
