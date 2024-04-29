@@ -19,6 +19,7 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import useDebounce from 'src/hooks/useDebounce';
 import { AppContext } from 'src/AppContext';
+import LoadChart from './LoadChart';
 
 const BASE_URL = process.env.API_URL;
 
@@ -120,11 +121,8 @@ const RenderOption = React.memo(
               </Stack>
             </Stack>
 
-            <LazyLoadImage
-              alt={`${user} ${name} 7D Price Graph`}
-              src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
-              width={108}
-              height={36}
+            <LoadChart
+              url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
             />
           </Box>
         </MenuItem>
@@ -156,7 +154,7 @@ const NavSearchBar = React.memo(
       };
 
       axios
-        .post(`${BASE_URL}/search`, body)
+        .post(`${BASE_URL}/ `, body)
         .then((res) => {
           try {
             if (res.status === 200 && res.data) {

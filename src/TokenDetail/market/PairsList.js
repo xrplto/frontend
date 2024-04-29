@@ -26,6 +26,7 @@ import { AppContext } from 'src/AppContext';
 
 // ----------------------------------------------------------------------
 import StackStyle from 'src/components/StackStyle'; //Maybe need to disable?
+import LoadChart from 'src/components/LoadChart';
 
 // ----------------------------------------------------------------------
 
@@ -281,11 +282,8 @@ const { slug } = token;
                                     </TableCell>
                                     <TableCell align="left" sx={{p:0.5, pb:0.5}}>
                                         {sparkline && (
-                                            <Box
-                                                component="img"
-                                                alt={`${user} ${name} 7D Price Graph`}
-                                                sx={{ maxWidth: 'none' }}
-                                                src={`${BASE_URL}/sparkline/${sparkline}`}
+                                            <LoadChart
+                                                url={`${BASE_URL}/sparkline/${sparkline}`}
                                             />
                                         )}
                                     </TableCell>

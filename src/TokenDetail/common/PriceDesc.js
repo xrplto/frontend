@@ -22,6 +22,7 @@ import { currencySymbols } from 'src/utils/constants';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import Decimal from 'decimal.js';
+import LoadChart from 'src/components/LoadChart';
 
 // ----------------------------------------------------------------------
 export default function PriceDesc({ token }) {
@@ -62,11 +63,8 @@ export default function PriceDesc({ token }) {
           tooltip={
             <Stack alignItems="center">
               24h (%)
-              <Box
-                component="img"
-                alt={`${user} ${name} 24H Price Graph`}
-                sx={{ width: 135, height: 50, mt: 2 }}
-                src={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`}
+              <LoadChart
+                url={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`}
               />
             </Stack>
           }
@@ -77,11 +75,8 @@ export default function PriceDesc({ token }) {
           tooltip={
             <Stack alignItems="center">
               7d (%)
-              <Box
-                component="img"
-                alt={`${user} ${name} 7D Price Graph`}
-                sx={{ width: 135, height: 50, mt: 2 }}
-                src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
+              <LoadChart
+                url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
               />
             </Stack>
           }

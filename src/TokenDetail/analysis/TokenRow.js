@@ -35,6 +35,7 @@ import BearBullLabel from 'src/components/BearBullLabel';
 // Utils
 import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 import { currencySymbols } from 'src/utils/constants';
+import LoadChart from 'src/components/LoadChart';
 
 // This style will ensure the sticky cell content does not overflow its container
 const StyledTableRow = withStyles((theme) => ({
@@ -318,11 +319,8 @@ function FTokenRow({
           </Typography>
         </TableCell>
         <TableCell align="right">
-          <LazyLoadImage
-            alt={`${user}-${name} 7D Price Graph`}
-            src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
-            width={135}
-            height={50}
+          <LoadChart
+            url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
           />
         </TableCell>
         <TableCell align="right">
