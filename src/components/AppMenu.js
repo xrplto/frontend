@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import BottomNavigation from '@mui/material/BottomNavigation';
@@ -8,11 +8,30 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import StarRateIcon from '@mui/icons-material/StarBorderPurple500Outlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
-
 import Paper from '@mui/material/Paper';
+import { useRouter } from 'next/router';
 
 export default function AppMenu() {
-  const [value, setValue] = React.useState(0);
+  const router = useRouter();
+  const [value, setValue] = useState("market");
+
+  useEffect(() => {
+    switch (value) {
+      case "market":
+        router.push("/");
+        break;
+      case "watchlist":
+        router.push("/watchlist");
+        break;
+      case "swap":
+        router.push("/swap");
+        break;
+      case "login":
+        router.push("/model");
+        break;
+    }
+  }, [value])
+
   return (
     <Box sx={{ pb: 7 }}>
       <CssBaseline />
@@ -24,10 +43,10 @@ export default function AppMenu() {
             setValue(newValue);
           }}
         >
-          <BottomNavigationAction label="Markets" icon={<ShowChartIcon />} />
-          <BottomNavigationAction label="Watchlist" icon={<StarRateIcon  />} />
-          <BottomNavigationAction label="Swap" icon={<CurrencyExchangeIcon />} />
-          <BottomNavigationAction label="Login" icon={<AccountCircleOutlinedIcon />} />
+          <BottomNavigationAction label="Markets" value="market" icon={<ShowChartIcon />} />
+          <BottomNavigationAction label="Watchlist" value="watchlist" icon={<StarRateIcon />} />
+          <BottomNavigationAction label="Swap" value="swap" icon={<CurrencyExchangeIcon />} />
+          <BottomNavigationAction label="Login" value="login" icon={<AccountCircleOutlinedIcon />} />
         </BottomNavigation>
       </Paper>
     </Box>
