@@ -87,7 +87,6 @@ export default function PriceStatistics({ token }) {
   let strPc24h = fNumber(p24h < 0 ? -p24h : p24h);
   let strPc24hPrep =
     (p24h < 0 ? '-' : '') + currencySymbols[activeFiatCurrency];
-
   return (
     <StackStyle>
       <CardHeader
@@ -133,7 +132,7 @@ export default function PriceStatistics({ token }) {
             </TableCell>
             <TableCell align="left">
               <Stack>
-                <NumberTooltip prepend={strPc24hPrep} number={fNumberWithCurreny(strPc24h, metrics[activeFiatCurrency])} />
+                <NumberTooltip prepend={strPc24hPrep} number={fNumberWithCurreny(Number(strPc24h), metrics[activeFiatCurrency])} />
                 <BearBullLabel value={pro24h} variant="small" />
               </Stack>
             </TableCell>
