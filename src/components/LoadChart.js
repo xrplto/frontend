@@ -29,7 +29,7 @@ const LoadChart = ({ url }) => {
                             color: chartColor,
                             showSymbol: false,
                             lineStyle: {
-                                width: 2.5
+                                width: 1.5
                             },
                             smooth: true
                         }]

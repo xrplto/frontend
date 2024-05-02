@@ -508,7 +508,12 @@ function FTokenRow({
             </Box>
           </Box>
         </TableCell>
-        <TableCell align="right">
+        <TableCell
+          align="right"
+          sx={{
+            px: '0 !important',
+          }}
+        >
           {/* <LazyLoadImage
             alt={`${user} ${name} 7D Price Graph`}
             src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
