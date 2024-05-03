@@ -179,7 +179,7 @@ export default function TokenList({
       // https://api.xrpl.to/api/tokens/-1
       // https://github.com/WietseWind/fetch-xrpl-transactions
       // https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc
-      const start = page * rows;
+      const start = page * rows + 1;
 
       let ntag = '';
       if (tag) ntag = tag;
@@ -393,7 +393,7 @@ export default function TokenList({
                 <TokenRow
                   key={idx}
                   time={row.time}
-                  idx={idx}
+                  idx={idx + page * rows}
                   token={row}
                   setEditToken={setEditToken}
                   setTrustToken={setTrustToken}

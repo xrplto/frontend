@@ -381,7 +381,7 @@ export default function UserDesc({ token }) {
           <Chip
             label={
               <Typography variant={isTablet ? 'body2' : 's16'}>
-                Rank # {id - 1}
+                Rank # {id}
               </Typography>
             }
             color="primary"
