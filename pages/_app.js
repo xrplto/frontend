@@ -50,7 +50,8 @@ function XRPLToApp({ Component, pageProps, router }) {
       <Head>
         {/* <!-- HTML Meta Tags --> */}
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        {/* <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" /> */}
+        <meta name="viewport" content="width=device-width, height=device-height,  initial-scale=1.0, user-scalable=no;user-scalable=0;"/>
         <meta name="robots" content="index, follow" />
         <meta name="language" content="en" />
         <meta content="xrpl.to" name="author" />
