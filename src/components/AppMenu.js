@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import BottomNavigation from '@mui/material/BottomNavigation';
@@ -10,10 +10,14 @@ import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import Paper from '@mui/material/Paper';
 import { useRouter } from 'next/router';
+import { AppContext } from 'src/AppContext';
 
 export default function AppMenu() {
   const router = useRouter();
   const [value, setValue] = useState("market");
+  const {
+    setTriggerWallet,
+  } = useContext(AppContext);
 
   useEffect(() => {
     switch (value) {
@@ -27,7 +31,7 @@ export default function AppMenu() {
         router.push("/swap");
         break;
       case "login":
-        router.push("/model");
+        setTriggerWallet(true);
         break;
     }
   }, [value])

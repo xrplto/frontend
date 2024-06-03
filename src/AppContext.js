@@ -1,4 +1,5 @@
 import { useState, createContext, useEffect } from 'react';
+import axios from 'axios';
 
 import { Backdrop } from '@mui/material';
 
@@ -13,14 +14,25 @@ import { PersistGate } from 'redux-persist/integration/react';
 export const AppContext = createContext({});
 
 export function ContextProvider({ children, data, openSnackbar }) {
+  
+  const BASE_URL = 'https://api.xrpl.to/api';
+
   const [sync, setSync] = useState(0);
   const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [activeFiatCurrency, setActiveFiatCurrency] = useState('USD');
   const [accountProfile, setAccountProfile] = useState(null);
   const [profiles, setProfiles] = useState([]);
+  const [triggerWallet, setTriggerWallet] = useState(false);
 
   const [store, setStore] = useState(configureRedux(data));
+
+  const [open, setOpen] = useState(false);
+  const [openLogin, setOpenLogin] = useState(false);
+  const [uuid, setUuid] = useState(null);
+  const [qrUrl, setQrUrl] = useState(null);
+  const [nextUrl, setNextUrl] = useState(null);
+  const [accountBalance, setAccountBalance] = useState(null);
 
   const KEY_ACCOUNT_PROFILE = 'account_profile_2';
   const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
@@ -111,6 +123,150 @@ export function ContextProvider({ children, data, openSnackbar }) {
     setProfiles(newProfiles);
   };
 
+
+  useEffect(() => {
+    var timer = null;
+    var isRunning = false;
+    var counter = 150;
+    if (openLogin) {
+      timer = setInterval(async () => {
+        // console.log(counter + " " + isRunning, uuid);
+        if (isRunning) return;
+        isRunning = true;
+        try {
+          const res = await axios.get(`${BASE_URL}/account/login/${uuid}`);
+          const ret = res?.data;
+          if (ret?.profile) {
+            const profile = ret.profile;
+            // setOpen(true);
+            setOpenLogin(false);
+            doLogIn(profile);
+            return;
+          }
+        } catch (err) {}
+        isRunning = false;
+        counter--;
+        if (counter <= 0) {
+          setOpenLogin(false);
+        }
+      }, 2000);
+    }
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [openLogin, uuid, doLogIn]);
+
+  useEffect(() => {
+    if (triggerWallet) {
+      handleLogin();
+    }
+  }, [triggerWallet]);
+
+  const onConnectXumm = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.post(`${BASE_URL}/account/login`);
+      if (res.status === 200) {
+        const uuid = res.data.data.uuid;
+        const qrlink = res.data.data.qrUrl;
+        const nextlink = res.data.data.next;
+
+        setUuid(uuid);
+        setQrUrl(qrlink);
+        setNextUrl(nextlink);
+        setOpenLogin(true);
+      }
+    } catch (err) {
+      alert(err);
+    }
+    setLoading(false);
+  };
+
+  const onCancelLoginXumm = async (xuuid) => {
+    setLoading(true);
+    try {
+      const res = await axios.delete(
+        `${BASE_URL}/account/cancellogin/${xuuid}`
+      );
+      if (res.status === 200) {
+      }
+    } catch (err) {}
+    setUuid(null);
+    setLoading(false);
+  };
+
+  const onLogoutXumm = async () => {
+    setLoading(true);
+    try {
+      const accountToken = accountProfile?.token;
+      const accountUuid = accountProfile?.xuuid;
+      const res = await axios.delete(
+        `${BASE_URL}/account/logout/${accountLogin}/${accountUuid}`,
+        { headers: { 'x-access-token': accountToken } }
+      );
+      if (res.status === 200) {
+      }
+    } catch (err) {}
+    doLogOut();
+    setUuid(null);
+    setLoading(false);
+  };
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleLogin = () => {
+    setOpen(false);
+    onConnectXumm();
+  };
+
+  const handleLogout = () => {
+    setOpen(false);
+    onLogoutXumm();
+  };
+
+  const handleLoginClose = () => {
+    setOpenLogin(false);
+    onCancelLoginXumm(uuid);
+    setTriggerWallet(false);
+  };
+
+  useEffect(() => {
+    function getAccountInfo() {
+      if (!accountProfile || !accountProfile.account) {
+        return;
+      }
+
+      const account = accountProfile.account;
+      // https://api.xrpl.to/api/account/info/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=XRPL
+      axios
+        .get(
+          `${BASE_URL}/account/info/${account}?curr1=XRP&issuer1=XRPL&curr2=534F4C4F00000000000000000000000000000000&issuer2=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz`
+        )
+        .then((res) => {
+          let ret = res.status === 200 ? res.data : undefined;
+          if (ret) {
+            setAccountBalance(ret.pair);
+          }
+        })
+        .catch((err) => {
+          console.log('Error on getting account pair balance info.', err);
+        })
+        .then(function () {
+          // always executed
+        });
+    }
+    // console.log('account_info')
+    getAccountInfo();
+  }, [accountProfile, sync]);
+
   return (
     <AppContext.Provider
       value={{
@@ -128,7 +284,29 @@ export function ContextProvider({ children, data, openSnackbar }) {
         sync,
         setSync,
         activeFiatCurrency,
-        toggleFiatCurrency
+        toggleFiatCurrency,
+        triggerWallet,
+        setTriggerWallet,
+        open,
+        setOpen,
+        openLogin,
+        setOpenLogin,
+        uuid,
+        setUuid,
+        qrUrl,
+        setQrUrl,
+        nextUrl,
+        setNextUrl,
+        accountBalance,
+        setAccountBalance,
+        onConnectXumm, 
+        onCancelLoginXumm, 
+        onLogoutXumm, 
+        handleOpen,
+        handleClose ,
+        handleLogin ,
+        handleLogout,
+        handleLoginClose
       }}
     >
       <Backdrop

@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { useRef, useState, useEffect } from 'react';
+import { useRef } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
@@ -8,7 +7,7 @@ import {
   alpha,
   styled,
   Avatar,
-  Badge,
+  // Badge,
   Box,
   Button,
   Divider,
@@ -20,19 +19,19 @@ import {
   Tooltip,
   Typography,
   useTheme,
-  useMediaQuery
+  // useMediaQuery
 } from '@mui/material';
-import GridOnIcon from '@mui/icons-material/GridOn';
-import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import AccountBoxIcon from '@mui/icons-material/AccountBox';
+// import GridOnIcon from '@mui/icons-material/GridOn';
+// import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
+// import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+// import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import SettingsIcon from '@mui/icons-material/Settings';
-import AssignmentReturnedIcon from '@mui/icons-material/AssignmentReturned';
-import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
-import ImportExportIcon from '@mui/icons-material/ImportExport';
+// import AssignmentReturnedIcon from '@mui/icons-material/AssignmentReturned';
+// import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+// import ImportExportIcon from '@mui/icons-material/ImportExport';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import LogoutIcon from '@mui/icons-material/Logout';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+// import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CloseIcon from '@mui/icons-material/Close';
 import HelpIcon from '@mui/icons-material/Help';
@@ -43,24 +42,21 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Iconify
-import { Icon } from '@iconify/react';
-import userLock from '@iconify/icons-fa-solid/user-lock';
-import link45deg from '@iconify/icons-bi/link-45deg';
-import linkExternal from '@iconify/icons-charm/link-external';
-import externalLinkLine from '@iconify/icons-ri/external-link-line';
-import paperIcon from '@iconify/icons-akar-icons/paper';
-import copyIcon from '@iconify/icons-fad/copy';
+// import { Icon } from '@iconify/react';
+// import userLock from '@iconify/icons-fa-solid/user-lock';
+// import link45deg from '@iconify/icons-bi/link-45deg';
+// import linkExternal from '@iconify/icons-charm/link-external';
+// import externalLinkLine from '@iconify/icons-ri/external-link-line';
+// import paperIcon from '@iconify/icons-akar-icons/paper';
+// import copyIcon from '@iconify/icons-fad/copy';
 
 // Utils
 import { getHashIcon } from 'src/utils/extra';
 
-// Components
-import LoginDialog from './LoginDialog';
-
-const pair = {
-  '534F4C4F00000000000000000000000000000000': 'SOLO',
-  XRP: 'XRP'
-};
+// const pair = {
+//   '534F4C4F00000000000000000000000000000000': 'SOLO',
+//   XRP: 'XRP'
+// };
 
 const ActiveCircle = styled(Box)(
   () => `
@@ -77,11 +73,11 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
   overflow: 'hidden'
 }));
 
-function truncate(str, n) {
-  if (!str) return '';
-  //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
-  return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
-}
+// function truncate(str, n) {
+//   if (!str) return '';
+//   //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
+//   return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
+// }
 
 function truncateAccount(str, length = 9) {
   if (!str) return '';
@@ -90,34 +86,24 @@ function truncateAccount(str, length = 9) {
 
 export default function Wallet({ style }) {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const BASE_URL = 'https://api.xrpl.to/api';
+  // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const anchorRef = useRef(null);
   const {
     setActiveProfile,
     accountProfile,
-    doLogIn,
     profiles,
     removeProfile,
-    doLogOut,
     openSnackbar,
-    setLoading,
-    sync,
-    darkMode
+    darkMode,
+    setTriggerWallet,
+    open,
+    setOpen,
+    accountBalance,
   } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
-  const accountToken = accountProfile?.token;
   const accountLogo = accountProfile?.logo;
-  const accountUuid = accountProfile?.xuuid;
   const accountTotalXrp = accountProfile?.xrp;
-  const isAdmin = accountProfile?.admin;
-
-  const [open, setOpen] = useState(false);
-  const [openLogin, setOpenLogin] = useState(false);
-  const [uuid, setUuid] = useState(null);
-  const [qrUrl, setQrUrl] = useState(null);
-  const [nextUrl, setNextUrl] = useState(null);
-  const [accountBalance, setAccountBalance] = useState(null);
+  // const isAdmin = accountProfile?.admin;
 
   let logoImageUrl = null;
   if (accountProfile) {
@@ -125,140 +111,6 @@ export default function Wallet({ style }) {
       ? `https://s1.xrpl.to/profile/${accountLogo}`
       : getHashIcon(accountLogin);
   }
-
-  useEffect(() => {
-    var timer = null;
-    var isRunning = false;
-    var counter = 150;
-    if (openLogin) {
-      timer = setInterval(async () => {
-        // console.log(counter + " " + isRunning, uuid);
-        if (isRunning) return;
-        isRunning = true;
-        try {
-          const res = await axios.get(`${BASE_URL}/account/login/${uuid}`);
-          const ret = res?.data;
-          if (ret?.profile) {
-            const profile = ret.profile;
-            // setOpen(true);
-            setOpenLogin(false);
-            doLogIn(profile);
-            return;
-          }
-        } catch (err) {}
-        isRunning = false;
-        counter--;
-        if (counter <= 0) {
-          setOpenLogin(false);
-        }
-      }, 2000);
-    }
-    return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
-    };
-  }, [openLogin, uuid, doLogIn]);
-
-  const onConnectXumm = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.post(`${BASE_URL}/account/login`);
-      if (res.status === 200) {
-        const uuid = res.data.data.uuid;
-        const qrlink = res.data.data.qrUrl;
-        const nextlink = res.data.data.next;
-
-        setUuid(uuid);
-        setQrUrl(qrlink);
-        setNextUrl(nextlink);
-        setOpenLogin(true);
-      }
-    } catch (err) {
-      alert(err);
-    }
-    setLoading(false);
-  };
-
-  const onCancelLoginXumm = async (xuuid) => {
-    setLoading(true);
-    try {
-      const res = await axios.delete(
-        `${BASE_URL}/account/cancellogin/${xuuid}`
-      );
-      if (res.status === 200) {
-      }
-    } catch (err) {}
-    setUuid(null);
-    setLoading(false);
-  };
-
-  const onLogoutXumm = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.delete(
-        `${BASE_URL}/account/logout/${accountLogin}/${accountUuid}`,
-        { headers: { 'x-access-token': accountToken } }
-      );
-      if (res.status === 200) {
-      }
-    } catch (err) {}
-    doLogOut();
-    setUuid(null);
-    setLoading(false);
-  };
-
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleLogin = () => {
-    setOpen(false);
-    onConnectXumm();
-  };
-
-  const handleLogout = () => {
-    setOpen(false);
-    onLogoutXumm();
-  };
-
-  const handleLoginClose = () => {
-    setOpenLogin(false);
-    onCancelLoginXumm(uuid);
-  };
-
-  useEffect(() => {
-    function getAccountInfo() {
-      if (!accountProfile || !accountProfile.account) {
-        return;
-      }
-
-      const account = accountProfile.account;
-      // https://api.xrpl.to/api/account/info/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=XRPL
-      axios
-        .get(
-          `${BASE_URL}/account/info/${account}?curr1=XRP&issuer1=XRPL&curr2=534F4C4F00000000000000000000000000000000&issuer2=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz`
-        )
-        .then((res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            setAccountBalance(ret.pair);
-          }
-        })
-        .catch((err) => {
-          console.log('Error on getting account pair balance info.', err);
-        })
-        .then(function () {
-          // always executed
-        });
-    }
-    // console.log('account_info')
-    getAccountInfo();
-  }, [accountProfile, sync]);
 
   return (
     <Box style={style}>
@@ -277,7 +129,7 @@ export default function Wallet({ style }) {
         }}
         alignItems="center"
         ref={anchorRef}
-        onClick={accountLogin ? handleOpen : handleLogin}
+        onClick={accountLogin ? handleOpen : () => setTriggerWallet(true)}
 
       >
         <AccountBalanceWalletIcon
@@ -599,12 +451,12 @@ export default function Wallet({ style }) {
         </Popover>
       )}
 
-      <LoginDialog
+      {/* <LoginDialog
         open={openLogin}
         handleClose={handleLoginClose}
         qrUrl={qrUrl}
         nextUrl={nextUrl}
-      />
+      /> */}
     </Box>
   );
 }

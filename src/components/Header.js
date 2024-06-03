@@ -11,12 +11,12 @@ import {
   IconButton,
   Link,
   Stack,
-  Menu,
-  MenuItem
+  // Menu,
+  // MenuItem
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Link as MuiLink } from '@mui/material'; // Importing MUI Link
+// import { Link as MuiLink } from '@mui/material'; // Importing MUI Link
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -28,6 +28,7 @@ import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
 import ThemeSwitcher from './ThemeSwitcher';
 import DropDownMenu from './DropDownMenu';
+import LoginDialog from './LoginDialog';
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -67,7 +68,14 @@ export default function Header(props) {
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const [fullSearch, setFullSearch] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
-  const { darkMode, setDarkMode } = useContext(AppContext);
+  const {
+    darkMode,
+    setDarkMode,
+    openLogin,
+    qrUrl,
+    nextUrl,
+    handleLoginClose
+  } = useContext(AppContext);
 
   const handleFullSearch = (e) => {
     setFullSearch(true);
@@ -144,6 +152,12 @@ export default function Header(props) {
                 </StyledLink>
               </>
             )}
+            <LoginDialog
+              open={openLogin}
+              handleClose={handleLoginClose}
+              qrUrl={qrUrl}
+              nextUrl={nextUrl}
+            />
           </Box>
 
           {fullSearch && (
