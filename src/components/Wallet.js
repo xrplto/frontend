@@ -99,6 +99,7 @@ export default function Wallet({ style }) {
     open,
     setOpen,
     accountBalance,
+    handleOpen
   } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
   const accountLogo = accountProfile?.logo;
