@@ -8,6 +8,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import StarRateIcon from '@mui/icons-material/StarBorderPurple500Outlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import Paper from '@mui/material/Paper';
 import { useRouter } from 'next/router';
 import { AppContext } from 'src/AppContext';
@@ -17,6 +18,7 @@ export default function AppMenu() {
   const [value, setValue] = useState("market");
   const {
     setTriggerWallet,
+    accountProfile
   } = useContext(AppContext);
 
   useEffect(() => {
@@ -32,6 +34,8 @@ export default function AppMenu() {
         break;
       case "login":
         setTriggerWallet(true);
+      case "portfolio":
+        router.push("/portfolio");
         break;
     }
   }, [value])
@@ -50,7 +54,11 @@ export default function AppMenu() {
           <BottomNavigationAction label="Markets" value="market" icon={<ShowChartIcon />} />
           <BottomNavigationAction label="Watchlist" value="watchlist" icon={<StarRateIcon />} />
           <BottomNavigationAction label="Swap" value="swap" icon={<CurrencyExchangeIcon />} />
-          <BottomNavigationAction label="Login" value="login" icon={<AccountCircleOutlinedIcon />} />
+          {
+            accountProfile?.account ?
+              <BottomNavigationAction label="Portfolio" value="portfolio" icon={<BusinessCenterIcon />} />
+              : <BottomNavigationAction label="Login" value="login" icon={<AccountCircleOutlinedIcon />} />
+          }
         </BottomNavigation>
       </Paper>
     </Box>
