@@ -34,6 +34,7 @@ export default function AppMenu() {
         break;
       case "login":
         setTriggerWallet(true);
+        break;
       case "portfolio":
         router.push("/portfolio");
         break;
