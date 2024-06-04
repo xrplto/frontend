@@ -99,7 +99,8 @@ export default function Wallet({ style }) {
     open,
     setOpen,
     accountBalance,
-    handleOpen
+    handleOpen,
+    handleClose
   } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
   const accountLogo = accountProfile?.logo;
@@ -451,13 +452,6 @@ export default function Wallet({ style }) {
           </>
         </Popover>
       )}
-
-      {/* <LoginDialog
-        open={openLogin}
-        handleClose={handleLoginClose}
-        qrUrl={qrUrl}
-        nextUrl={nextUrl}
-      /> */}
     </Box>
   );
 }
