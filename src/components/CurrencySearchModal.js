@@ -16,8 +16,12 @@ import { theme } from './styles/theme';
 import { AppContext } from 'src/AppContext';
 import { XRP_TOKEN, USD_TOKEN } from 'src/utils/constants';
 import axios from 'axios';
-import { Stack, Typography } from '@mui/material';
+import { Icon } from '@iconify/react';
+import { Box, InputAdornment, Stack, TextField, Typography } from '@mui/material';
+
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import searchFill from '@iconify/icons-eva/search-fill';
+
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import Backdrop from '@mui/material/Backdrop';
 
@@ -151,7 +155,7 @@ export default function CurrencySearchModal({
       >
         <StyledModalContainer
           ref={wrapperRef}
-          onClick={(event) => event.stopPropagation() }
+          onClick={(event) => event.stopPropagation()}
         >
           <ModalHeader>
             <ModalTitle>
@@ -161,13 +165,26 @@ export default function CurrencySearchModal({
             <ModalCloseButton onDismiss={onDismiss} />
           </ModalHeader>
           <StyledModalBody>
-            <Input
-              id="token-search-input"
-              placeholder={'Search name or paste address'}
-              scale="lg"
-              autoComplete="off"
+            <TextField
+              placeholder="Search name or paste address"
+              autoComplete="new-password"
               value={filter}
               onChange={handleChangeFilter}
+              size="small"
+              InputProps={{
+                autoComplete: 'off',
+                type: 'search',
+                startAdornment: (
+                  <InputAdornment position="start" sx={{ mr: 0.7 }}>
+                    <Box
+                      component={Icon}
+                      icon={searchFill}
+                      sx={{ color: 'text.disabled' }}
+                    />
+                  </InputAdornment>
+                ),
+                endAdornment: <InputAdornment position="end" />,
+              }}
             />
 
             <Stack sx={{ mt: 4 }} spacing={0.5}>
@@ -177,73 +194,73 @@ export default function CurrencySearchModal({
                 const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
                 return (
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    sx={{
+                      p: 1,
+                      '&:hover': {
+                        backgroundColor: darkMode ? "#08060b70" : "#FAF9FA",
+                        cursor: "pointer"
+                      }
+                    }}
+                    key={md5 + '_token1'}
+                    onClick={() => handleChangetoken(row)}
+                  >
                     <Stack
                       direction="row"
+                      spacing={1}
                       alignItems="center"
-                      justifyContent="space-between"
-                      sx={{
-                        p: 1,
-                        '&:hover': {
-                          backgroundColor: darkMode ? "#08060b70" : "#FAF9FA",
-                          cursor: "pointer"
-                        }
-                      }}
-                      key={md5 + '_token1'}
-                      onClick={() => handleChangetoken(row)}
                     >
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        alignItems="center"
-                      >
-                        <TokenImage
-                          src={imgUrl} // use normal <img> attributes as props
-                          width={32}
-                          height={32}
-                          onError={(event) => (event.target.src = '/static/alt.webp')}
-                        />
-                        <Stack>
-                          <Typography
-                            variant="token"
-                            color={
-                              // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-                              isOMCF !== 'yes'
-                                ? darkMode
-                                  ? '#fff'
-                                  : '#222531'
-                                : darkMode
-                                  ? '#007B55'
-                                  : '#4E8DF4'
-                            }
-                            noWrap
-                          >
-                            {truncate(name, 8)}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            color={
-                              isOMCF !== 'yes'
-                                ? darkMode
-                                  ? '#fff'
-                                  : '#222531'
-                                : darkMode
-                                  ? '#007B55'
-                                  : '#4E8DF4'
-                            }
-                            noWrap
-                          >
-                            {truncate(user, 13)}
-                            {kyc && (
-                              <Typography variant="kyc" sx={{ ml: 0.2 }}>
-                                KYC
-                              </Typography>
-                            )}
-                          </Typography>
-                          {/* <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography> */}
-                        </Stack>
+                      <TokenImage
+                        src={imgUrl} // use normal <img> attributes as props
+                        width={32}
+                        height={32}
+                        onError={(event) => (event.target.src = '/static/alt.webp')}
+                      />
+                      <Stack>
+                        <Typography
+                          variant="token"
+                          color={
+                            // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
+                            isOMCF !== 'yes'
+                              ? darkMode
+                                ? '#fff'
+                                : '#222531'
+                              : darkMode
+                                ? '#007B55'
+                                : '#4E8DF4'
+                          }
+                          noWrap
+                        >
+                          {truncate(name, 8)}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color={
+                            isOMCF !== 'yes'
+                              ? darkMode
+                                ? '#fff'
+                                : '#000'
+                              : darkMode
+                                ? '#fff'
+                                : '#000'
+                          }
+                          noWrap
+                        >
+                          {truncate(user, 13)}
+                          {kyc && (
+                            <Typography variant="kyc" sx={{ ml: 0.2 }}>
+                              KYC
+                            </Typography>
+                          )}
+                        </Typography>
+                        {/* <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography> */}
                       </Stack>
-                      <ArrowForwardIcon color="primary"/>
                     </Stack>
+                    <ArrowForwardIcon color="primary" />
+                  </Stack>
                 );
               })}
             </Stack>
