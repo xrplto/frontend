@@ -45,6 +45,7 @@
     "@mui/material": "^5.10.11",
     "@mui/styles": "5.8.6",
     "@reduxjs/toolkit": "^1.8.2",
+    "@styled-system/should-forward-prop": "^5.1.5",
     "apexcharts": "3.37.1",
     "axios": "^0.27.2",
     "bignumber.js": "^9.1.1",
@@ -55,6 +56,7 @@
     "decimal.js": "^10.3.1",
     "echarts": "^5.5.0",
     "echarts-for-react": "^3.0.2",
+    "framer-motion": "^4.1.7",
     "hashicon": "^0.3.0",
     "i18next": "^23.5.1",
     "i18next-browser-languagedetector": "^7.1.0",
@@ -84,7 +86,9 @@
     "react-use-websocket": "^3.0.0",
     "redux-persist": "^6.0.0",
     "redux-persist-cookie-storage": "^1.0.0",
-    "ripple-keypairs": "^1.1.5"
+    "ripple-keypairs": "^1.1.5",
+    "styled-components": "^6.1.11",
+    "styled-system": "^5.1.5"
   },
   "scripts": {
     "dev": "next",

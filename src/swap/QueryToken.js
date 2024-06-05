@@ -161,7 +161,7 @@ export default function QueryToken({ token, onChangeToken }) {
               )
             }}
           />
-          {tokens.map((row, idx) => {
+          {tokens.map((row) => {
             const { md5, name, user, kyc, isOMCF } = row;
 
             const imgUrl = `https://s1.xrpl.to/token/${md5}`;
