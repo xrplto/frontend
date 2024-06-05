@@ -71,7 +71,6 @@ export default function CurrencySearchModal({
   //   commonBasesType,
 }) {
   const [modalView, setModalView] = useState(CurrencyModalView.search)
-
   // for token import view
   const prevView = undefined;
 
@@ -144,7 +143,7 @@ export default function CurrencySearchModal({
   const wrapperRef = useRef(null)
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={() => theme(darkMode)}>
       <Backdrop
         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={open}
@@ -185,7 +184,7 @@ export default function CurrencySearchModal({
                       sx={{
                         p: 1,
                         '&:hover': {
-                          backgroundColor: "#edeced",
+                          backgroundColor: darkMode ? "#08060b70" : "#FAF9FA",
                           cursor: "pointer"
                         }
                       }}
@@ -222,7 +221,15 @@ export default function CurrencySearchModal({
                           </Typography>
                           <Typography
                             variant="caption"
-                            color="#222531"
+                            color={
+                              isOMCF !== 'yes'
+                                ? darkMode
+                                  ? '#fff'
+                                  : '#222531'
+                                : darkMode
+                                  ? '#007B55'
+                                  : '#4E8DF4'
+                            }
                             noWrap
                           >
                             {truncate(user, 13)}

@@ -51,7 +51,7 @@ const shadows = {
     tooltip: "0px 0px 2px rgba(0, 0, 0, 0.2), 0px 4px 12px -8px rgba(14, 14, 44, 0.1)",
 };
 
-const lightColors = {
+export const lightColors = {
     ...baseColors,
     ...additionalColors,
     secondary: "#7645D9",
@@ -84,16 +84,52 @@ const lightColors = {
     gradientBold: "linear-gradient(#53DEE9, #7645D9)",
 };
 
-export const theme = {
-    siteWidth: 1200,
-    breakpoints: Object.values(breakpoints).map((bp) => `${bp}px`),
-    mediaQueries,
-    // spacing: vars.space,
-    // radii: vars.radii,
-    zIndices: { ribbon: 9, dropdown: 10, modal: 100 },
-    modal: {
-        background: "#fff"
-    },
-    colors: lightColors,
-    shadows,
+export const darkColors = {
+    ...baseColors,
+    ...additionalColors,
+    secondary: "#A881FC",
+    secondary80: "#A881FC80",
+    background: "#08060B",
+    backgroundDisabled: "#3c3742",
+    backgroundAlt: "#27262c",
+    backgroundAlt2: "rgba(39, 38, 44, 0.7)",
+    cardBorder: "#383241",
+    contrast: "#FFFFFF",
+    dropdown: "#1E1D20",
+    dropdownDeep: "#100C18",
+    invertedContrast: "#191326",
+    input: "#372F47",
+    inputSecondary: "#262130",
+    primaryDark: "#0098A1",
+    tertiary: "#353547",
+    text: "#F4EEFF",
+    text99: "#F4EEFF99",
+    textDisabled: "#666171",
+    textSubtle: "#B8ADD2",
+    disabled: "#524B63",
+    gradientPrimary: "linear-gradient(228.54deg, #1FC7D4 -13.69%, #9A6AFF 91.33%)",
+    gradientBubblegum: "linear-gradient(139.73deg, #313D5C 0%, #3D2A54 100%)",
+    gradientInverseBubblegum: "linear-gradient(139.73deg, #3D2A54 0%, #313D5C 100%)",
+    gradientCardHeader: "linear-gradient(166.77deg, #3B4155 0%, #3A3045 100%)",
+    gradientBlue: "linear-gradient(180deg, #00707F 0%, #19778C 100%)",
+    gradientViolet: "linear-gradient(180deg, #6C4999 0%, #6D4DB2 100%)",
+    gradientVioletAlt: "linear-gradient(180deg, #434575 0%, #66578D 100%)",
+    gradientGold: "linear-gradient(180deg, #FFD800 0%, #FDAB32 100%)",
+    gradientBold: "linear-gradient(#53DEE9, #9A6AFF)",
+};
+
+export const theme = (darkMode) => {
+    return {
+        siteWidth: 1200,
+        breakpoints: Object.values(breakpoints).map((bp) => `${bp}px`),
+        mediaQueries,
+        // spacing: vars.space,
+        // radii: vars.radii,
+        zIndices: { ribbon: 9, dropdown: 10, modal: 100 },
+        modal: {
+            background: darkMode ? darkColors.backgroundAlt : lightColors.backgroundAlt
+        },
+        colors: darkMode ? darkColors : lightColors,
+        shadows,
+    }
 }

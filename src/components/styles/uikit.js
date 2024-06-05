@@ -136,7 +136,7 @@ export const ModalContainer = styled(MotionBox)`
 export const Heading = styled.span.withConfig({
     shouldForwardProp,
 })`
-  color: #280d5f;
+  color: ${({ theme }) => theme.colors.text};
   font-weight: 600;
   line-height: 1.5;
   font-size: 20px;
