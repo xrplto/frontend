@@ -10,7 +10,7 @@ import {
   Stack,
   Typography
 } from '@mui/material';
-
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CurrencySearchModal from 'src/components/CurrencySearchModal';
 
 // Context
@@ -44,7 +44,7 @@ export default function QueryToken({ token, onChangeToken }) {
       <Stack
         direction="row"
         alignItems="center"
-        spacing={1}
+        spacing={0.5}
         sx={{ p: 0, cursor: "pointer", '&:hover': { opacity: 0.8} }}
         onClick={() => setOpen(true)}
       >
@@ -87,6 +87,7 @@ export default function QueryToken({ token, onChangeToken }) {
           </Typography>
           {/* <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography> */}
         </Stack>
+        <ArrowDropDownIcon/>
       </Stack>
 
       <CurrencySearchModal token={token} open={open} onDismiss={onDismiss} onChangeToken={onChangeToken} />
