@@ -7,7 +7,6 @@ import {
   ModalCloseButton,
   ModalBody,
   Heading,
-  MODAL_SWIPE_TO_CLOSE_VELOCITY,
   Input,
 } from './styles/uikit'
 
@@ -17,7 +16,7 @@ import { theme } from './styles/theme';
 import { AppContext } from 'src/AppContext';
 import { XRP_TOKEN, USD_TOKEN } from 'src/utils/constants';
 import axios from 'axios';
-import { Stack, Typography, MenuItem } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import Backdrop from '@mui/material/Backdrop';
@@ -73,23 +72,8 @@ export default function CurrencySearchModal({
 }) {
   const [modalView, setModalView] = useState(CurrencyModalView.search)
 
-  //   const handleCurrencySelect = useCallback(
-  //     (currency) => {
-  //       onDismiss?.()
-  //       onCurrencySelect(currency)
-  //     },
-  //     [onDismiss, onCurrencySelect],
-  //   )
-
   // for token import view
   const prevView = undefined;
-
-  // used for import token flow
-  const [importToken, setImportToken] = useState()
-
-  // used for import list
-  const [importList, setImportList] = useState()
-  const [listURL, setListUrl] = useState()
 
   const BASE_URL = process.env.API_URL;
   const { darkMode } = useContext(AppContext);
@@ -138,18 +122,14 @@ export default function CurrencySearchModal({
     loadTokens();
   }, [filter]);
 
-  const handleChangeToken = (e) => {
-    const value = e.target.value;
-
-    const newToken = tokens.find((t) => t.md5 === value);
-    if (newToken) {
-      onChangeToken(newToken);
-    }
-  };
-
   const handleChangeFilter = (e) => {
     setFilter(e.target.value);
   };
+
+  const handleChangetoken = (_token) => {
+    onChangeToken(_token);
+    onDismiss();
+  }
 
   const config = {
     [CurrencyModalView.search]: { title: 'Select a Token', onBack: undefined },
@@ -161,37 +141,7 @@ export default function CurrencySearchModal({
     },
     [CurrencyModalView.importList]: { title: 'Import List', onBack: () => setModalView(CurrencyModalView.search) },
   }
-  const isMobile = true;
   const wrapperRef = useRef(null)
-  const [height, setHeight] = useState(undefined)
-  useEffect(() => {
-    if (!wrapperRef.current) return
-    setHeight(wrapperRef.current.offsetHeight - 330)
-  }, [])
-
-  //   const [, dispatch] = useListState()
-  //   const lists = useAllLists()
-  const adding = Boolean(listURL && lists[listURL]?.loadingRequestId)
-
-  //   const fetchList = useFetchListCallback(dispatch)
-
-  const [addError, setAddError] = useState(null)
-
-  //   const handleAddList = useCallback(() => {
-  //     if (adding) return
-  //     setAddError(null)
-  //     if (listURL) {
-  //       fetchList(listURL)
-  //         .then(() => {
-  //           dispatch(enableList(listURL))
-  //           setModalView(CurrencyModalView.manage)
-  //         })
-  //         .catch((error) => {
-  //           setAddError(error.message)
-  //           dispatch(removeList(listURL))
-  //         })
-  //     }
-  //   }, [adding, dispatch, fetchList, listURL])
 
   return (
     <ThemeProvider theme={theme}>
@@ -202,6 +152,7 @@ export default function CurrencySearchModal({
       >
         <StyledModalContainer
           ref={wrapperRef}
+          onClick={(event) => event.stopPropagation() }
         >
           <ModalHeader>
             <ModalTitle>
@@ -216,6 +167,8 @@ export default function CurrencySearchModal({
               placeholder={'Search name or paste address'}
               scale="lg"
               autoComplete="off"
+              value={filter}
+              onChange={handleChangeFilter}
             />
 
             <Stack sx={{ mt: 4 }} spacing={0.5}>
@@ -223,7 +176,6 @@ export default function CurrencySearchModal({
                 const { md5, name, user, kyc, isOMCF } = row;
 
                 const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-                // const imgUrl = `/static/tokens/${md5}.${ext}`;
 
                 return (
                     <Stack
@@ -238,7 +190,7 @@ export default function CurrencySearchModal({
                         }
                       }}
                       key={md5 + '_token1'}
-                      value={md5}
+                      onClick={() => handleChangetoken(row)}
                     >
                       <Stack
                         direction="row"

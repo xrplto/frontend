@@ -621,11 +621,19 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     if (token.md5 !== token2.md5) {
       setToken1(token);
     }
+
+    else {
+      onRevertExchange();
+    }
   };
 
   const onChangeToken2 = (token) => {
     if (token.md5 !== token1.md5) {
       setToken2(token);
+    }
+
+    else {
+      onRevertExchange();
     }
   };
 
