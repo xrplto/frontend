@@ -62,7 +62,6 @@ import ConnectWallet from 'src/components/ConnectWallet';
 import QRDialog from 'src/components/QRDialog';
 import QueryToken from './QueryToken';
 import { currencySymbols } from 'src/utils/constants';
-import CurrencySearchModal from 'src/components/CurrencySearchModal';
 
 const Label = withStyles({
   root: {
@@ -644,9 +643,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         */
   };
 
+
   return (
     <Stack alignItems="center">
-      {/* <CurrencySearchModal token={token1} onChangeToken={onChangeToken1}/> */}
       <OverviewWrapper>
         <ConverterFrame>
           <CurrencyContent

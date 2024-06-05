@@ -20,6 +20,7 @@ import axios from 'axios';
 import { Stack, Typography, MenuItem } from '@mui/material';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import Backdrop from '@mui/material/Backdrop';
 
 const CurrencyModalView = {
   search: "search",
@@ -63,6 +64,7 @@ export default function CurrencySearchModal({
   onDismiss = () => null,
   token,
   onChangeToken,
+  open
   //   onCurrencySelect,
   //   selectedCurrency,
   //   otherSelectedCurrency,
@@ -193,107 +195,102 @@ export default function CurrencySearchModal({
 
   return (
     <ThemeProvider theme={theme}>
-      <StyledModalContainer
-        drag={false}
-        dragConstraints={{ top: 0, bottom: 600 }}
-        dragElastic={{ top: 0 }}
-        dragSnapToOrigin
-        onDragStart={() => {
-          if (wrapperRef.current) wrapperRef.current.style.animation = 'none'
-        }}
-        // @ts-ignore
-        onDragEnd={(e, info) => {
-          if (info.velocity.y > MODAL_SWIPE_TO_CLOSE_VELOCITY && onDismiss) onDismiss()
-        }}
-        ref={wrapperRef}
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={open}
+        onClick={onDismiss}
       >
-        <ModalHeader>
-          <ModalTitle>
-            {config[modalView].onBack && <ModalBackButton onBack={config[modalView].onBack} />}
-            <Heading>{config[modalView].title}</Heading>
-          </ModalTitle>
-          <ModalCloseButton onDismiss={onDismiss} />
-        </ModalHeader>
-        <StyledModalBody>
-          <Input
-            id="token-search-input"
-            placeholder={'Search name or paste address'}
-            scale="lg"
-            autoComplete="off"
-          />
+        <StyledModalContainer
+          ref={wrapperRef}
+        >
+          <ModalHeader>
+            <ModalTitle>
+              {config[modalView].onBack && <ModalBackButton onBack={config[modalView].onBack} />}
+              <Heading>{config[modalView].title}</Heading>
+            </ModalTitle>
+            <ModalCloseButton onDismiss={onDismiss} />
+          </ModalHeader>
+          <StyledModalBody>
+            <Input
+              id="token-search-input"
+              placeholder={'Search name or paste address'}
+              scale="lg"
+              autoComplete="off"
+            />
 
-          <Stack sx={{ mt: 4 }} spacing={0.5}>
-            {tokens.map((row) => {
-              const { md5, name, user, kyc, isOMCF } = row;
+            <Stack sx={{ mt: 4 }} spacing={0.5}>
+              {tokens.map((row) => {
+                const { md5, name, user, kyc, isOMCF } = row;
 
-              const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-              // const imgUrl = `/static/tokens/${md5}.${ext}`;
+                const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+                // const imgUrl = `/static/tokens/${md5}.${ext}`;
 
-              return (
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    sx={{
-                      p: 1,
-                      '&:hover': {
-                        backgroundColor: "#edeced",
-                        cursor: "pointer"
-                      }
-                    }}
-                    key={md5 + '_token1'}
-                    value={md5}
-                  >
+                return (
                     <Stack
                       direction="row"
-                      spacing={1}
                       alignItems="center"
+                      justifyContent="space-between"
+                      sx={{
+                        p: 1,
+                        '&:hover': {
+                          backgroundColor: "#edeced",
+                          cursor: "pointer"
+                        }
+                      }}
+                      key={md5 + '_token1'}
+                      value={md5}
                     >
-                      <TokenImage
-                        src={imgUrl} // use normal <img> attributes as props
-                        width={32}
-                        height={32}
-                        onError={(event) => (event.target.src = '/static/alt.webp')}
-                      />
-                      <Stack>
-                        <Typography
-                          variant="token"
-                          color={
-                            // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-                            isOMCF !== 'yes'
-                              ? darkMode
-                                ? '#fff'
-                                : '#222531'
-                              : darkMode
-                                ? '#007B55'
-                                : '#4E8DF4'
-                          }
-                          noWrap
-                        >
-                          {truncate(name, 8)}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="#222531"
-                          noWrap
-                        >
-                          {truncate(user, 13)}
-                          {kyc && (
-                            <Typography variant="kyc" sx={{ ml: 0.2 }}>
-                              KYC
-                            </Typography>
-                          )}
-                        </Typography>
-                        {/* <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography> */}
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                      >
+                        <TokenImage
+                          src={imgUrl} // use normal <img> attributes as props
+                          width={32}
+                          height={32}
+                          onError={(event) => (event.target.src = '/static/alt.webp')}
+                        />
+                        <Stack>
+                          <Typography
+                            variant="token"
+                            color={
+                              // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
+                              isOMCF !== 'yes'
+                                ? darkMode
+                                  ? '#fff'
+                                  : '#222531'
+                                : darkMode
+                                  ? '#007B55'
+                                  : '#4E8DF4'
+                            }
+                            noWrap
+                          >
+                            {truncate(name, 8)}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            color="#222531"
+                            noWrap
+                          >
+                            {truncate(user, 13)}
+                            {kyc && (
+                              <Typography variant="kyc" sx={{ ml: 0.2 }}>
+                                KYC
+                              </Typography>
+                            )}
+                          </Typography>
+                          {/* <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography> */}
+                        </Stack>
                       </Stack>
+                      <ArrowForwardIcon color="primary"/>
                     </Stack>
-                    <ArrowForwardIcon color="primary"/>
-                  </Stack>
-              );
-            })}
-          </Stack>
-        </StyledModalBody>
-      </StyledModalContainer>
+                );
+              })}
+            </Stack>
+          </StyledModalBody>
+        </StyledModalContainer>
+      </Backdrop>
     </ThemeProvider>
   )
 }

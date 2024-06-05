@@ -30,6 +30,7 @@ import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 import { fNumber } from 'src/utils/formatNumber';
 import { XRP_TOKEN, USD_TOKEN } from 'src/utils/constants';
 import { AppContext } from 'src/AppContext';
+import CurrencySearchModal from 'src/components/CurrencySearchModal';
 
 const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
   borderRadius: '50%',
@@ -58,9 +59,14 @@ export default function QueryToken({ token, onChangeToken }) {
   const { darkMode } = useContext(AppContext);
 
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const [tokens, setTokens] = useState([XRP_TOKEN, USD_TOKEN]);
   const [filter, setFilter] = useState('');
+
+  const onDismiss = () => {
+    setOpen(false);
+  }
 
   const loadTokens = () => {
     setLoading(true);
@@ -113,113 +119,60 @@ export default function QueryToken({ token, onChangeToken }) {
     setFilter(e.target.value);
   };
 
+  const { md5, name, user, kyc, isOMCF } = token;
+  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+
   return (
-    <Stack spacing={2}>
-      <Stack spacing={2}>
-        <CustomSelect
-          id="select_token"
-          value={token.md5}
-          onChange={handleChangeToken}
-          MenuProps={{ disableScrollLock: true }}
-          // renderValue={(idx) => (
-          //     <>
-          //     {(collections.length > 0 && idx > -1 && collections.length > idx) &&
-          //         <Stack direction='row' alignItems="center">
-          //             <Avatar alt="C" src={`https://s1.xrpnft.com/collection/${collections[idx].logoImage}`} sx={{ mr:2, width: 32, height: 32 }} />
-          //             <Typography variant='d4'>{collections[idx].name}</Typography>
-          //         </Stack>
-          //     }
-          //     </>
-          // )}
-        >
-          <TextField
-            id="textFilter"
-            // autoFocus
-            fullWidth
-            variant="standard"
-            placeholder="Filter"
-            margin="dense"
-            onChange={handleChangeFilter}
-            autoComplete="new-password"
-            inputProps={{ autoComplete: 'off' }}
-            value={filter}
-            onFocus={(event) => {
-              event.target.select();
-            }}
-            sx={{
-              pl: 2,
-              pr: 2,
-              pb: 2,
-              pt: 2.5
-            }}
-            onKeyDown={(e) => e.stopPropagation()}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="start">
-                  {loading && <ClipLoader color="#ff0000" size={15} />}
-                </InputAdornment>
-              )
-            }}
-          />
-          {tokens.map((row) => {
-            const { md5, name, user, kyc, isOMCF } = row;
-
-            const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-            // const imgUrl = `/static/tokens/${md5}.${ext}`;
-
-            return (
-              <MenuItem key={md5 + '_token1'} value={md5}>
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  spacing={1}
-                  sx={{ p: 0 }}
-                >
-                  <TokenImage
-                    src={imgUrl} // use normal <img> attributes as props
-                    width={48}
-                    height={48}
-                    onError={(event) => (event.target.src = '/static/alt.webp')}
-                  />
-                  <Stack>
-                    <Typography
-                      variant="token"
-                      color={
-                        // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-                        isOMCF !== 'yes'
-                          ? darkMode
-                            ? '#fff'
-                            : '#222531'
-                          : darkMode
-                            ? '#007B55'
-                            : '#4E8DF4'
-                      }
-                      noWrap
-                    >
-                      {truncate(name, 8)}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color={
-                        isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-                      }
-                      noWrap
-                    >
-                      {truncate(user, 13)}
-                      {kyc && (
-                        <Typography variant="kyc" sx={{ ml: 0.2 }}>
-                          KYC
-                        </Typography>
-                      )}
-                    </Typography>
-                    {/* <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography> */}
-                  </Stack>
-                </Stack>
-              </MenuItem>
-            );
-          })}
-        </CustomSelect>
+    <>
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1}
+        sx={{ p: 0, cursor: "pointer", '&:hover': { opacity: 0.8} }}
+        onClick={() => setOpen(true)}
+      >
+        <TokenImage
+          src={imgUrl} // use normal <img> attributes as props
+          width={48}
+          height={48}
+          onError={(event) => (event.target.src = '/static/alt.webp')}
+        />
+        <Stack>
+          <Typography
+            variant="token"
+            color={
+              // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
+              isOMCF !== 'yes'
+                ? darkMode
+                  ? '#fff'
+                  : '#222531'
+                : darkMode
+                  ? '#007B55'
+                  : '#4E8DF4'
+            }
+            noWrap
+          >
+            {truncate(name, 8)}
+          </Typography>
+          <Typography
+            variant="caption"
+            color={
+              isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
+            }
+            noWrap
+          >
+            {truncate(user, 13)}
+            {kyc && (
+              <Typography variant="kyc" sx={{ ml: 0.2 }}>
+                KYC
+              </Typography>
+            )}
+          </Typography>
+          {/* <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography> */}
+        </Stack>
       </Stack>
-    </Stack>
+
+      <CurrencySearchModal token={token} open={open} onDismiss={onDismiss} onChangeToken={onChangeToken} />
+    </>
   );
 }
