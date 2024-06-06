@@ -19,6 +19,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
 
   const [sync, setSync] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [activeFiatCurrency, setActiveFiatCurrency] = useState('USD');
   const [accountProfile, setAccountProfile] = useState(null);
@@ -28,6 +29,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
   const [store, setStore] = useState(configureRedux(data));
 
   const [open, setOpen] = useState(false);
+  const [openWalletModal, setOpenWalletModal] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
@@ -165,7 +167,8 @@ export function ContextProvider({ children, data, openSnackbar }) {
   }, [triggerWallet]);
 
   const onConnectXumm = async () => {
-    setLoading(true);
+    setOpenLogin(true);
+    setConnecting(true);
     try {
       const res = await axios.post(`${BASE_URL}/account/login`);
       if (res.status === 200) {
@@ -176,16 +179,15 @@ export function ContextProvider({ children, data, openSnackbar }) {
         setUuid(uuid);
         setQrUrl(qrlink);
         setNextUrl(nextlink);
-        setOpenLogin(true);
       }
     } catch (err) {
       alert(err);
     }
-    setLoading(false);
+    setConnecting(false);
   };
 
   const onCancelLoginXumm = async (xuuid) => {
-    setLoading(true);
+    setConnecting(true);
     try {
       const res = await axios.delete(
         `${BASE_URL}/account/cancellogin/${xuuid}`
@@ -194,11 +196,12 @@ export function ContextProvider({ children, data, openSnackbar }) {
       }
     } catch (err) {}
     setUuid(null);
-    setLoading(false);
+    setConnecting(false);
   };
 
   const onLogoutXumm = async () => {
-    setLoading(true);
+    setConnecting(true);
+    setOpenLogin(false);
     try {
       const accountToken = accountProfile?.token;
       const accountUuid = accountProfile?.xuuid;
@@ -211,7 +214,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
     } catch (err) {}
     doLogOut();
     setUuid(null);
-    setLoading(false);
+    setConnecting(false);
   };
 
   const handleOpen = () => {
@@ -291,6 +294,8 @@ export function ContextProvider({ children, data, openSnackbar }) {
         setOpen,
         openLogin,
         setOpenLogin,
+        openWalletModal,
+        setOpenWalletModal,
         uuid,
         setUuid,
         qrUrl,
@@ -306,7 +311,9 @@ export function ContextProvider({ children, data, openSnackbar }) {
         handleClose ,
         handleLogin ,
         handleLogout,
-        handleLoginClose
+        handleLoginClose,
+        connecting,
+        setConnecting
       }}
     >
       <Backdrop

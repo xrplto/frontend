@@ -95,7 +95,7 @@ export default function Wallet({ style }) {
     removeProfile,
     openSnackbar,
     darkMode,
-    setTriggerWallet,
+    setOpenWalletModal,
     open,
     setOpen,
     accountBalance,
@@ -133,7 +133,7 @@ export default function Wallet({ style }) {
         }}
         alignItems="center"
         ref={anchorRef}
-        onClick={accountLogin ? handleOpen : () => setTriggerWallet(true)}
+        onClick={accountLogin ? handleOpen : () => setOpenWalletModal(true)}
 
       >
         <AccountBalanceWalletIcon

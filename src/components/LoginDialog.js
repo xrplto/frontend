@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -8,9 +8,12 @@ import {
   Link,
   Typography,
   CircularProgress,
-  styled
+  styled,
+  Stack,
+  Skeleton
 } from '@mui/material';
 import { isMobile } from 'react-device-detect';
+import { AppContext } from 'src/AppContext';
 
 const QRDialog = styled(Dialog)(({ theme }) => ({
   zIndex: 1302
@@ -43,6 +46,7 @@ const StyledLinkTypography = styled(Typography)(({ theme }) => ({
 
 export default function LoginDialog(props) {
   const { qrUrl, nextUrl, open, handleClose } = props;
+  const { connecting } = useContext(AppContext);
   const [openDialog, setOpenDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -74,17 +78,23 @@ export default function LoginDialog(props) {
     }, 1500);
   };
 
+  
+
   return (
-    <QRDialog onClose={handleClose} open={open}>
+    <Stack onClose={handleClose} open={open}>
       <DialogTitle>
-      <Typography variant="h3" align="center" gutterBottom>
-          Connect Wallet
+        <Typography variant="modal" align="center" gutterBottom>
+          Xaman Wallet
         </Typography>
         </DialogTitle>
-        <Typography variant="subtitle1" align="center"> Scan the QR code from your Xaman app </Typography>
+        <Typography variant="h3" align="center">Please log in with your Xaman (Xumm) app</Typography>
       <StyledDialogContent>
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <StyledQRImage alt="Xaman QR" src={qrUrl} />
+        <Box sx={{ display: 'flex', justifyContent: 'center', width: "194px", height: "194px" }}>
+          {
+            connecting ? 
+              <Skeleton variant="rectangular" width={194} height={194}/>
+              : <StyledQRImage alt="Xaman QR" src={qrUrl} />
+          }
         </Box>
         <Link
           underline="none"
@@ -128,6 +138,6 @@ export default function LoginDialog(props) {
           )}
         </StyledDialogContent>
       </Dialog>
-    </QRDialog>
+    </Stack>
   );
 }

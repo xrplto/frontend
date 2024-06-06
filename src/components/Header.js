@@ -29,6 +29,7 @@ import SidebarDrawer from './SidebarDrawer';
 import ThemeSwitcher from './ThemeSwitcher';
 import DropDownMenu from './DropDownMenu';
 import LoginDialog from './LoginDialog';
+import WalletConnectModal from './WalletConnectModal';
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -71,10 +72,6 @@ export default function Header(props) {
   const {
     darkMode,
     setDarkMode,
-    openLogin,
-    qrUrl,
-    nextUrl,
-    handleLoginClose
   } = useContext(AppContext);
 
   const handleFullSearch = (e) => {
@@ -152,12 +149,9 @@ export default function Header(props) {
                 </StyledLink>
               </>
             )}
-            <LoginDialog
-              open={openLogin}
-              handleClose={handleLoginClose}
-              qrUrl={qrUrl}
-              nextUrl={nextUrl}
-            />
+            
+
+            <WalletConnectModal/>
           </Box>
 
           {fullSearch && (

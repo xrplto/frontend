@@ -5,6 +5,7 @@ import { ContextProvider } from 'src/AppContext';
 import XSnackbar from 'src/components/Snackbar';
 import { useSnackbar } from 'src/components/useSnackbar';
 import "./zMain.css";
+import { SnackbarProvider } from 'notistack';
 
 function XRPLToApp({ Component, pageProps, router }) {
   const isUnderMaintenance = process.env.MAINTENANCE; // Set this variable to enable or disable maintenance mode
@@ -118,9 +119,17 @@ function XRPLToApp({ Component, pageProps, router }) {
 
       <ContextProvider data={data} openSnackbar={openSnackbar}>
         <ThemeProvider>
+        <SnackbarProvider
+          maxSnack={2}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+        >
           <CssBaseline />
           <Component {...pageProps} />
           <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
+        </SnackbarProvider>
         </ThemeProvider>
       </ContextProvider>
     </>
