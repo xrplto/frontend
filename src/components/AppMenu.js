@@ -17,7 +17,7 @@ export default function AppMenu() {
   const router = useRouter();
   const [value, setValue] = useState("market");
   const {
-    setTriggerWallet,
+    setOpenWalletModal,
     accountProfile
   } = useContext(AppContext);
 
@@ -33,7 +33,7 @@ export default function AppMenu() {
         router.push("/swap");
         break;
       case "login":
-        setTriggerWallet(true);
+        setOpenWalletModal(true);
         break;
       case "portfolio":
         router.push("/portfolio");

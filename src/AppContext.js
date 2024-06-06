@@ -24,8 +24,6 @@ export function ContextProvider({ children, data, openSnackbar }) {
   const [activeFiatCurrency, setActiveFiatCurrency] = useState('USD');
   const [accountProfile, setAccountProfile] = useState(null);
   const [profiles, setProfiles] = useState([]);
-  const [triggerWallet, setTriggerWallet] = useState(false);
-
   const [store, setStore] = useState(configureRedux(data));
 
   const [open, setOpen] = useState(false);
@@ -142,6 +140,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
             const profile = ret.profile;
             // setOpen(true);
             setOpenLogin(false);
+            setOpenWalletModal(false);
             doLogIn(profile);
             return;
           }
@@ -150,6 +149,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
         counter--;
         if (counter <= 0) {
           setOpenLogin(false);
+          setOpenWalletModal(false);
         }
       }, 2000);
     }
@@ -159,12 +159,6 @@ export function ContextProvider({ children, data, openSnackbar }) {
       }
     };
   }, [openLogin, uuid, doLogIn]);
-
-  useEffect(() => {
-    if (triggerWallet) {
-      handleLogin();
-    }
-  }, [triggerWallet]);
 
   const onConnectXumm = async () => {
     setOpenLogin(true);
@@ -237,8 +231,9 @@ export function ContextProvider({ children, data, openSnackbar }) {
 
   const handleLoginClose = () => {
     setOpenLogin(false);
+    setOpenWalletModal(false);
     onCancelLoginXumm(uuid);
-    setTriggerWallet(false);
+    setOpenWalletModal(false);
   };
 
   useEffect(() => {
@@ -288,8 +283,6 @@ export function ContextProvider({ children, data, openSnackbar }) {
         setSync,
         activeFiatCurrency,
         toggleFiatCurrency,
-        triggerWallet,
-        setTriggerWallet,
         open,
         setOpen,
         openLogin,
