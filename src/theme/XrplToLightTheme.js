@@ -235,7 +235,8 @@ export const XrplToLightTheme = createTheme({
     borderRadiusSm: '6px',
     borderRadius: '10px',
     borderRadiusLg: '12px',
-    borderRadiusXl: '16px'
+    borderRadiusXl: '16px',
+    backgroundAlt: "#FAF9FA"
   },
   sidebar: {
     background: colors.layout.sidebar.background,
@@ -1212,7 +1213,8 @@ export const XrplToLightTheme = createTheme({
           s15: 'span',
           s16: 'span',
           s17: 'span',
-          s18: 'span'
+          s18: 'span',
+          modal: "h1"
         }
       },
       styleOverrides: {
@@ -1557,6 +1559,10 @@ export const XrplToLightTheme = createTheme({
       fontSize: 14,
       color: colors.alpha.black[100]
     },
+    modal: {
+      fontSize: "2em",
+      display: "block"
+    }
   },
   shadows: [
     'none',
