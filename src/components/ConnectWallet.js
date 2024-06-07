@@ -7,12 +7,12 @@ import { AppContext } from 'src/AppContext';
 
 const ConnectWallet = () => {
   const {
-    handleLogin
+    setOpenWalletModal
   } = useContext(AppContext);
 
   return (
     <>
-      <Button variant="contained" onClick={handleLogin} startIcon={<AccountBalanceWalletIcon />} sx={{ mt: 1.5 }}>
+      <Button variant="contained" onClick={() => setOpenWalletModal(true)} startIcon={<AccountBalanceWalletIcon />} sx={{ mt: 1.5 }}>
         Connect Wallet
       </Button>
     </>

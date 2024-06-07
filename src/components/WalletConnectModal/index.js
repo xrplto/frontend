@@ -72,6 +72,7 @@ const WalletConnectModal = () => {
                     .then((res) => {
                       const { profile } = res.data;
                       doLogIn(profile);
+                      setOpenWalletModal(false);
                     });
                 }
               });
@@ -114,6 +115,7 @@ const WalletConnectModal = () => {
         ).then((res) => {
           const { profile } = res.data;
           doLogIn(profile);
+          setOpenWalletModal(false);
         }).catch(err => {
 
         });
