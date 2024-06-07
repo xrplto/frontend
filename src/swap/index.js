@@ -49,6 +49,8 @@ import arrowDownOutline from '@iconify/icons-basil/arrow-down-outline';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
+import { createOffer } from "@gemwallet/api";
+import sdk from "@crossmarkio/sdk";
 
 // Redux
 import { useSelector, useDispatch } from 'react-redux';
@@ -101,8 +103,8 @@ const InputContent = styled('div')(
 );
 
 let border; // webxtor SEO fix
-if (typeof theme !== 'undefined' && theme.currency ) {
-	border = theme.currency.border;
+if (typeof theme !== 'undefined' && theme.currency) {
+  border = theme.currency.border;
 }
 const OverviewWrapper = styled('div')(
   ({ theme }) => `
@@ -230,17 +232,17 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const priceImpact =
     inputPrice > 0
       ? new Decimal(outputPrice)
-          .sub(inputPrice)
-          .mul(100)
-          .div(inputPrice)
-          .toDP(2, Decimal.ROUND_DOWN)
-          .toNumber()
+        .sub(inputPrice)
+        .mul(100)
+        .div(inputPrice)
+        .toDP(2, Decimal.ROUND_DOWN)
+        .toNumber()
       : 0;
 
   // const color1 = revert?theme.currency.background2:theme.currency.background1;
   // const color2 = revert?theme.currency.background1:theme.currency.background2;
   var color1, color2;
-  if(typeof theme.currency !== "undefined") // webxtor SEO fix
+  if (typeof theme.currency !== "undefined") // webxtor SEO fix
   {
     /*const */color1 = theme.currency.background2;
     /*const */color2 = theme.currency.background2;
@@ -385,7 +387,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         const dispatched_result = res.dispatched_result;
 
         return dispatched_result;
-      } catch (err) {}
+      } catch (err) { }
     }
 
     const startInterval = () => {
@@ -432,7 +434,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           startInterval();
           return;
         }
-      } catch (err) {}
+      } catch (err) { }
       isRunning = false;
       counter--;
       if (counter <= 0) {
@@ -458,6 +460,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       const curr2 = pair.curr2;
       // const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
+      const wallet_type = accountProfile.wallet_type;
       let TakerGets, TakerPays;
       /*if (buySell === 'BUY') {
                 // BUY logic
@@ -489,18 +492,33 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
       const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
 
-      const res = await axios.post(`${BASE_URL}/offer/create`, body);
+      switch(wallet_type) {
+        case "xaman":
+          const res = await axios.post(`${BASE_URL}/offer/create`, body);
+    
+          if (res.status === 200) {
+            const uuid = res.data.data.uuid;
+            const qrlink = res.data.data.qrUrl;
+            const nextlink = res.data.data.next;
+    
+            setUuid(uuid);
+            setQrUrl(qrlink);
+            setNextUrl(nextlink);
+            setOpenScanQR(true);
+          }
 
-      if (res.status === 200) {
-        const uuid = res.data.data.uuid;
-        const qrlink = res.data.data.qrUrl;
-        const nextlink = res.data.data.next;
-
-        setUuid(uuid);
-        setQrUrl(qrlink);
-        setNextUrl(nextlink);
-        setOpenScanQR(true);
+          break;
+        case "gem":
+          createOffer(body);
+          break;
+        case "crossmark":
+          await sdk.methods.signAndSubmitAndWait({
+            ...body,
+            TransactionType: 'OfferCreate'
+          });
+          break;
       }
+
     } catch (err) {
       alert(err);
     }
@@ -514,7 +532,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       if (res.status === 200) {
         setUuid(null);
       }
-    } catch (err) {}
+    } catch (err) { }
     setLoading(false);
   };
 
@@ -528,7 +546,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
          */
     try {
       amt = new Decimal(amount).toNumber();
-    } catch (e) {}
+    } catch (e) { }
 
     if (amt === 0) return 0;
 
@@ -555,7 +573,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         }
       }
       return new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
-    } catch (e) {}
+    } catch (e) { }
 
     return 0;
   };
@@ -735,20 +753,20 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             </InputContent>
           </CurrencyContent>
           <ToggleContent>
-          <IconButton size="medium" onClick={onRevertExchange}>
-    <Icon 
-        icon={exchangeIcon} 
-        width="28" 
-        height="28" 
-        style={{ 
-            padding: 6, 
-            borderRadius: "50%", 
-            color: "#17171AAA", 
-            background: "#ffffff",
-            transform: 'rotate(90deg)' // Rotates the icon 90 degrees permanently
-        }} 
-    />
-</IconButton>
+            <IconButton size="medium" onClick={onRevertExchange}>
+              <Icon
+                icon={exchangeIcon}
+                width="28"
+                height="28"
+                style={{
+                  padding: 6,
+                  borderRadius: "50%",
+                  color: "#17171AAA",
+                  background: "#ffffff",
+                  transform: 'rotate(90deg)' // Rotates the icon 90 degrees permanently
+                }}
+              />
+            </IconButton>
 
 
           </ToggleContent>
@@ -758,7 +776,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           style={{ order: 3, backgroundColor: color2 /*theme.currency.background2*/ /* webxtor SEO fix */ }}
         >
           <Stack
-            direction="row"    
+            direction="row"
             alignItems="center"
             justifyContent="space-between"
             sx={{
@@ -779,7 +797,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         {accountProfile && accountProfile.account ? (
           <>
             {errMsg && amount1 !== '' && amount2 !== '' && (
-              <Typography variant="s2"  sx={{ ml: 2 }}>
+              <Typography variant="s2" sx={{ ml: 2 }}>
                 {errMsg}
               </Typography>
             )}

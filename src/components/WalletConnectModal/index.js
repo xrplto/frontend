@@ -71,7 +71,7 @@ const WalletConnectModal = () => {
                   await axios.post(`${BASE_URL}/account/auth/gem/check-sign?signature=${signedMessage}`, {}, opts)
                     .then((res) => {
                       const { profile } = res.data;
-                      doLogIn(profile);
+                      doLogIn({ ...profile, wallet_type: "gem" });
                       setOpenWalletModal(false);
                     });
                 }
@@ -114,7 +114,7 @@ const WalletConnectModal = () => {
           }
         ).then((res) => {
           const { profile } = res.data;
-          doLogIn(profile);
+          doLogIn({ ...profile, wallet_type: "crossmark" });
           setOpenWalletModal(false);
         }).catch(err => {
 

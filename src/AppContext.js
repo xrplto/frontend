@@ -141,7 +141,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
             // setOpen(true);
             setOpenLogin(false);
             setOpenWalletModal(false);
-            doLogIn(profile);
+            doLogIn({...profile, wallet_type: "xaman"});
             return;
           }
         } catch (err) {}
