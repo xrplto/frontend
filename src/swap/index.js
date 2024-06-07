@@ -49,7 +49,7 @@ import arrowDownOutline from '@iconify/icons-basil/arrow-down-outline';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { createOffer } from "@gemwallet/api";
+import { createOffer, isInstalled } from "@gemwallet/api";
 import sdk from "@crossmarkio/sdk";
 
 // Redux
@@ -64,6 +64,7 @@ import ConnectWallet from 'src/components/ConnectWallet';
 import QRDialog from 'src/components/QRDialog';
 import QueryToken from './QueryToken';
 import { currencySymbols } from 'src/utils/constants';
+import { enqueueSnackbar } from 'notistack';
 
 const Label = withStyles({
   root: {
@@ -509,13 +510,28 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
           break;
         case "gem":
-          createOffer(body);
+          isInstalled().then(async(response) => {
+            if (response.result.isInstalled) {
+              const { response } = await createOffer(body);
+            }
+
+            else {
+              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
+            }
+          })
           break;
         case "crossmark":
-          await sdk.methods.signAndSubmitAndWait({
-            ...body,
-            TransactionType: 'OfferCreate'
-          });
+          if (!window.xrpl) {
+            enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
+            return;
+          }
+          const { isCrossmark } = window.xrpl;
+          if (isCrossmark) {
+            await sdk.methods.signAndSubmitAndWait({
+              ...body,
+              TransactionType: 'OfferCreate'
+            });
+          }
           break;
       }
 
