@@ -416,7 +416,7 @@ export default function Wallet({ style }) {
             <MenuItem
               key="add_account"
               sx={{ typography: 'body2', py: 1.2, px: 3 }}
-              onClick={handleLogin}
+              onClick={() => setOpenWalletModal(true)}
             >
               <Stack
                 direction="row"
