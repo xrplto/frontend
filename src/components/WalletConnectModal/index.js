@@ -14,6 +14,7 @@ import sdk from "@crossmarkio/sdk";
 
 import LoginDialog from '../LoginDialog';
 import { AppContext } from 'src/AppContext';
+import axios from 'axios';
 
 const WalletItem = styled(Stack)(({ theme }) => ({
   padding: "15px",
@@ -26,6 +27,7 @@ const WalletItem = styled(Stack)(({ theme }) => ({
 
 
 const WalletConnectModal = () => {
+  const BASE_URL = 'https://api.xrpl.to/api';
 
   const {
     darkMode,
@@ -36,7 +38,8 @@ const WalletConnectModal = () => {
     nextUrl,
     handleLoginClose,
     handleLogin,
-    onLogoutXumm
+    onLogoutXumm,
+    doLogIn
   } = useContext(AppContext);
 
 
@@ -47,40 +50,28 @@ const WalletConnectModal = () => {
   const handleConnectGem = () => {
     isInstalled().then((response) => {
       if (response.result.isInstalled) {
-        getPublicKey().then((response) => {
+        getPublicKey().then(async (response) => {
           // console.log(`${response.result?.address} - ${response.result?.publicKey}`);
           const pubkey = response.result?.publicKey;
           //fetch nonce from /api/gem/nonce?pubkey=pubkey
-          fetch(
-            `/api/auth/gem/nonce?pubkey=${pubkey}&address=${response.result?.address}`
+          await axios.get(
+            `${BASE_URL}/account/auth/gem/nonce?pubkey=${pubkey}&address=${response.result?.address}`
           )
-            .then((response) => response.json())
-            .then((data) => {
-              const nonceToken = data.token;
+            .then((res) => {
+              const nonceToken = res.data.token;
               const opts = {
-                method: "POST",
                 headers: {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${nonceToken}`,
                 },
               };
-              signMessage(nonceToken).then((response) => {
+              signMessage(nonceToken).then(async (response) => {
                 const signedMessage = response.result?.signedMessage;
                 if (signedMessage !== undefined) {
-                  //post at /api/gem/checksign?signature=signature
-                  fetch(`/api/auth/gem/checksign?signature=${signedMessage}`, opts)
-                    .then((response) => response.json())
-                    .then((data) => {
-                      const { token, address } = data;
-                      if (token === undefined) {
-                        console.log("error");
-                        return;
-                      }
-                      setXrpAddress(address);
-                      setOpen(false);
-                      if (enableJwt) {
-                        setCookie("jwt", token, { path: "/" });
-                      }
+                  await axios.post(`${BASE_URL}/account/auth/gem/check-sign?signature=${signedMessage}`, {}, opts)
+                    .then((res) => {
+                      const { profile } = res.data;
+                      doLogIn(profile);
                     });
                 }
               });
@@ -101,7 +92,31 @@ const WalletConnectModal = () => {
       }
       const { isCrossmark } = window.xrpl;
       if (isCrossmark) {
-        let { request, response, createdAt, resolvedAt } = await sdk.methods.signInAndWait();
+        const hashR = await axios.get(`${BASE_URL}/account/auth/crossmark/hash`);
+        const hashJson = hashR.data;
+        const hash = hashJson.hash;
+        const id = await sdk.methods.signInAndWait(hash)
+        const address = id.response.data.address;
+        const pubkey = id.response.data.publicKey;
+        const signature = id.response.data.signature;
+        await axios.post(
+          `${BASE_URL}/account/auth/crossmark/check-sign?signature=${signature}`,
+          {
+            pubkey: pubkey,
+            address: address,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${hash}`,
+            },
+          }
+        ).then((res) => {
+          const { profile } = res.data;
+          doLogIn(profile);
+        }).catch(err => {
+
+        });
       }
     } catch (err) {
       console.log(err);
