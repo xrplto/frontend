@@ -512,7 +512,12 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         case "gem":
           isInstalled().then(async(response) => {
             if (response.result.isInstalled) {
-              const { response } = await createOffer(body);
+              const offer = {
+                flags: Flags,
+                takerGets: TakerGets,
+                takerPays: TakerPays
+              }
+              const { response } = await createOffer(offer);
             }
 
             else {
