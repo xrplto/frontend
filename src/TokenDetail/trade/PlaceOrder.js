@@ -12,10 +12,13 @@ import { AppContext } from 'src/AppContext';
 
 // Redux
 import { useDispatch } from 'react-redux';
+import { createOffer, isInstalled } from "@gemwallet/api";
+import sdk from "@crossmarkio/sdk";
 
 // Components
 import ConnectWallet from 'src/components/ConnectWallet';
 import QRDialog from 'src/components/QRDialog';
+import { enqueueSnackbar } from 'notistack';
 // ----------------------------------------------------------------------
 const DisabledButton = withStyles({
   root: {
@@ -247,17 +250,51 @@ export default function PlaceOrder({
       }
       const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
 
-      const res = await axios.post(`${BASE_URL}/offer/create`, body);
+      switch(wallet_type) {
+        case "xaman":
+          const res = await axios.post(`${BASE_URL}/offer/create`, body);
+    
+          if (res.status === 200) {
+            const uuid = res.data.data.uuid;
+            const qrlink = res.data.data.qrUrl;
+            const nextlink = res.data.data.next;
+    
+            setUuid(uuid);
+            setQrUrl(qrlink);
+            setNextUrl(nextlink);
+            setOpenScanQR(true);
+          }
 
-      if (res.status === 200) {
-        const uuid = res.data.data.uuid;
-        const qrlink = res.data.data.qrUrl;
-        const nextlink = res.data.data.next;
+          break;
+        case "gem":
+          isInstalled().then(async(response) => {
+            if (response.result.isInstalled) {
+              const offer = {
+                flags: Flags,
+                takerGets: TakerGets,
+                takerPays: TakerPays
+              }
+              const { response } = await createOffer(offer);
+            }
 
-        setUuid(uuid);
-        setQrUrl(qrlink);
-        setNextUrl(nextlink);
-        setOpenScanQR(true);
+            else {
+              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
+            }
+          })
+          break;
+        case "crossmark":
+          if (!window.xrpl) {
+            enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
+            return;
+          }
+          const { isCrossmark } = window.xrpl;
+          if (isCrossmark) {
+            await sdk.methods.signAndSubmitAndWait({
+              ...body,
+              TransactionType: 'OfferCreate'
+            });
+          }
+          break;
       }
     } catch (err) {
       alert(err);

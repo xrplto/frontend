@@ -46,6 +46,8 @@ import Decimal from 'decimal.js';
 import { Icon } from '@iconify/react';
 import copyIcon from '@iconify/icons-fad/copy';
 import Wallet from './Wallet';
+import { setTrustline } from '@gemwallet/api';
+import { enqueueSnackbar } from 'notistack';
 // ----------------------------------------------------------------------
 const TrustDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(1px)',
@@ -247,6 +249,7 @@ export default function TrustSetDialog({ token, setToken }) {
     setLoading(true);
     try {
       const { issuer, currency } = token;
+      const wallet_type = accountProfile.wallet_type;
       const user_token = accountProfile?.user_token;
 
       const Flags = 0x00020000;
@@ -258,18 +261,52 @@ export default function TrustSetDialog({ token, setToken }) {
 
       const body = { LimitAmount, Flags, user_token };
 
-      const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
+      switch(wallet_type) {
+        case "xaman":
+          const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
 
-      if (res.status === 200) {
-        const uuid = res.data.data.uuid;
-        const qrlink = res.data.data.qrUrl;
-        const nextlink = res.data.data.next;
+          if (res.status === 200) {
+            const uuid = res.data.data.uuid;
+            const qrlink = res.data.data.qrUrl;
+            const nextlink = res.data.data.next;
 
-        setUuid(uuid);
-        setQrUrl(qrlink);
-        setNextUrl(nextlink);
-        setOpenScanQR(true);
+            setUuid(uuid);
+            setQrUrl(qrlink);
+            setNextUrl(nextlink);
+            setOpenScanQR(true);
+          }
+          break;
+        case "gem":
+          isInstalled().then(async(response) => {
+            if (response.result.isInstalled) {
+              const trustSet = {
+                flags: Flags,
+                limitAmount: LimitAmount,
+              }
+              const { response } = await setTrustline(trustSet);
+            }
+
+            else {
+              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
+            }
+          })
+          break;
+        case "crossmark":
+          if (!window.xrpl) {
+            enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
+            return;
+          }
+          const { isCrossmark } = window.xrpl;
+          if (isCrossmark) {
+            await sdk.methods.signAndSubmitAndWait({
+              ...body,
+              TransactionType: 'TrustSet'
+            });
+          }
+          break;
       }
+
+      
     } catch (err) {
       openSnackbar('Network error!', 'error');
     }
