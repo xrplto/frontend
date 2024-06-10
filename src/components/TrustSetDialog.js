@@ -46,7 +46,7 @@ import Decimal from 'decimal.js';
 import { Icon } from '@iconify/react';
 import copyIcon from '@iconify/icons-fad/copy';
 import Wallet from './Wallet';
-import { setTrustline } from '@gemwallet/api';
+import { isInstalled, setTrustline } from '@gemwallet/api';
 import { enqueueSnackbar } from 'notistack';
 // ----------------------------------------------------------------------
 const TrustDialog = styled(Dialog)(({ theme }) => ({
@@ -257,7 +257,7 @@ export default function TrustSetDialog({ token, setToken }) {
       let LimitAmount = {};
       LimitAmount.issuer = issuer;
       LimitAmount.currency = currency;
-      LimitAmount.value = value;
+      LimitAmount.value = value.toString();
 
       const body = { LimitAmount, Flags, user_token };
 
@@ -283,7 +283,8 @@ export default function TrustSetDialog({ token, setToken }) {
                 flags: Flags,
                 limitAmount: LimitAmount,
               }
-              const { response } = await setTrustline(trustSet);
+
+              const trustlinex = await setTrustline(trustSet);
             }
 
             else {
@@ -298,8 +299,12 @@ export default function TrustSetDialog({ token, setToken }) {
           }
           const { isCrossmark } = window.xrpl;
           if (isCrossmark) {
+            const trustSet = {
+              Flags: Flags,
+              LimitAmount: LimitAmount,
+            }
             await sdk.methods.signAndSubmitAndWait({
-              ...body,
+              ...trustSet,
               TransactionType: 'TrustSet'
             });
           }
@@ -308,6 +313,7 @@ export default function TrustSetDialog({ token, setToken }) {
 
       
     } catch (err) {
+      console.log(err);
       openSnackbar('Network error!', 'error');
     }
     setLoading(false);

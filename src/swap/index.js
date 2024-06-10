@@ -468,19 +468,19 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 TakerGets = {currency:curr2.currency, issuer:curr2.issuer, value: value.toString()};
                 TakerPays = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
             } else */
-      {
-        // SELL logic
-        TakerGets = {
-          currency: curr1.currency,
-          issuer: curr1.issuer,
-          value: amount.toString()
-        };
-        TakerPays = {
-          currency: curr2.currency,
-          issuer: curr2.issuer,
-          value: value.toString()
-        };
-      }
+      // {
+      // SELL logic
+      TakerGets = {
+        currency: curr1.currency,
+        issuer: curr1.issuer,
+        value: amount.toString()
+      };
+      TakerPays = {
+        currency: curr2.currency,
+        issuer: curr2.issuer,
+        value: value.toString()
+      };
+      // }
 
       const OfferCreate = {
         tfPassive: 0x00010000,
@@ -493,15 +493,15 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
       const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
 
-      switch(wallet_type) {
+      switch (wallet_type) {
         case "xaman":
           const res = await axios.post(`${BASE_URL}/offer/create`, body);
-    
+
           if (res.status === 200) {
             const uuid = res.data.data.uuid;
             const qrlink = res.data.data.qrUrl;
             const nextlink = res.data.data.next;
-    
+
             setUuid(uuid);
             setQrUrl(qrlink);
             setNextUrl(nextlink);
@@ -510,8 +510,15 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
           break;
         case "gem":
-          isInstalled().then(async(response) => {
+          isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
+              if (TakerGets.currency === 'XRP') {
+                TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
+              }
+
+              if (TakerPays.currency === 'XRP') {
+                TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+              }
               const offer = {
                 flags: Flags,
                 takerGets: TakerGets,
@@ -532,8 +539,20 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           }
           const { isCrossmark } = window.xrpl;
           if (isCrossmark) {
+            if (TakerGets.currency === 'XRP') {
+              TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
+            }
+
+            if (TakerPays.currency === 'XRP') {
+              TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+            }
+            const offer = {
+              Flags: Flags,
+              TakerGets: TakerGets,
+              TakerPays: TakerPays
+            }
             await sdk.methods.signAndSubmitAndWait({
-              ...body,
+              ...offer,
               TransactionType: 'OfferCreate'
             });
           }

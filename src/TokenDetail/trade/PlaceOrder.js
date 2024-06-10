@@ -118,7 +118,7 @@ export default function PlaceOrder({
         const dispatched_result = res.dispatched_result;
 
         return dispatched_result;
-      } catch (err) {}
+      } catch (err) { }
     }
 
     const startInterval = () => {
@@ -163,7 +163,7 @@ export default function PlaceOrder({
           startInterval();
           return;
         }
-      } catch (err) {}
+      } catch (err) { }
       isRunning = false;
       counter--;
       if (counter <= 0) {
@@ -185,8 +185,10 @@ export default function PlaceOrder({
     try {
       const curr1 = pair.curr1;
       const curr2 = pair.curr2;
+      console.log(curr1, curr2)
       // const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
+      const wallet_type = accountProfile.wallet_type;
       let TakerGets, TakerPays;
       if (buySell === 'BUY') {
         // BUY logic
@@ -250,15 +252,15 @@ export default function PlaceOrder({
       }
       const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
 
-      switch(wallet_type) {
+      switch (wallet_type) {
         case "xaman":
           const res = await axios.post(`${BASE_URL}/offer/create`, body);
-    
+
           if (res.status === 200) {
             const uuid = res.data.data.uuid;
             const qrlink = res.data.data.qrUrl;
             const nextlink = res.data.data.next;
-    
+
             setUuid(uuid);
             setQrUrl(qrlink);
             setNextUrl(nextlink);
@@ -267,8 +269,15 @@ export default function PlaceOrder({
 
           break;
         case "gem":
-          isInstalled().then(async(response) => {
+          isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
+              if (TakerGets.currency === 'XRP') {
+                TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
+              }
+
+              if (TakerPays.currency === 'XRP') {
+                TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+              }
               const offer = {
                 flags: Flags,
                 takerGets: TakerGets,
@@ -289,8 +298,20 @@ export default function PlaceOrder({
           }
           const { isCrossmark } = window.xrpl;
           if (isCrossmark) {
+            if (TakerGets.currency === 'XRP') {
+              TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
+            }
+
+            if (TakerPays.currency === 'XRP') {
+              TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+            }
+            const offer = {
+              Flags: Flags,
+              TakerGets: TakerGets,
+              TakerPays: TakerPays
+            }
             await sdk.methods.signAndSubmitAndWait({
-              ...body,
+              ...offer,
               TransactionType: 'OfferCreate'
             });
           }
@@ -309,7 +330,7 @@ export default function PlaceOrder({
       if (res.status === 200) {
         setUuid(null);
       }
-    } catch (err) {}
+    } catch (err) { }
     setLoading(false);
   };
 
