@@ -188,13 +188,13 @@ export default function TokenListHead({
             fontSize: isMobile && 12,
             fontWeight: '700'
           },
-          '& .MuiTableCell-root:nth-child(1)': {
+          '& .MuiTableCell-root:nth-of-type(1)': {
             position: 'sticky',
             zIndex: 1001,
             left: 0,
             background: darkMode ? '#17171A' : '#F2F5F9'
           },
-          '& .MuiTableCell-root:nth-child(2)': {
+          '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
             zIndex: 1001,
             left: tokens.length > 0 ? (isMobile ? 28 : 52) : isMobile ? 8 : 32,
@@ -215,7 +215,7 @@ export default function TokenListHead({
                   }
                 : {}
           },
-          '& .MuiTableCell-root:nth-child(3)': !isMobile && {
+          '& .MuiTableCell-root:nth-of-type(3)': !isMobile && {
             position: 'sticky',
             zIndex: 1001,
             left: tokens.length > 0 ? 99 : 72,

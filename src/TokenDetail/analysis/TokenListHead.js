@@ -117,13 +117,13 @@ export default function TokenListHead({ scrollLeft, tokens }) {
 
     return (
         <TableHead sx={{
-            '& .MuiTableCell-root:nth-child(1)': {
+            '& .MuiTableCell-root:nth-of-type(1)': {
                 position: "sticky",
                 zIndex: 1001,
                 left: 0,
                 background: darkMode ? "#17171A" : '#F2F5F9'
             },
-            '& .MuiTableCell-root:nth-child(2)': {
+            '& .MuiTableCell-root:nth-of-type(2)': {
                 position: "sticky",
                 zIndex: 1002,
                 left: tokens.length > 0 ? 55 : 40,
