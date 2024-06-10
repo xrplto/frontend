@@ -131,7 +131,6 @@ export default function Wallet({ style }) {
             backgroundColor: `${darkMode ? '#005E46' : '#4455CC'}`,
           }
         }}
-        alignItems="center"
         ref={anchorRef}
         onClick={accountLogin ? handleOpen : () => setOpenWalletModal(true)}
 

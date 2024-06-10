@@ -1,7 +1,6 @@
 import { Link as MuiLink } from '@mui/material';
 import {
   styled,
-  Link,
   Menu,
   useTheme,
   MenuItem
@@ -17,18 +16,15 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import { useTranslation } from 'react-i18next';
 
-const StyledLink = styled(Link)(
-  ({ darkMode }) => `
+const StyledLink = styled("div")(
+  () => `
       font-weight: 700;
       margin-right: 27px;
       padding: 8px 10px; // Increased padding
       border-radius: 8px;
       transition: background-color 0.3s;
       display: inline-block; // Ensure it's not inline
-      &:hover {
-        color: ${darkMode ? '#005E46' : '#4455CC'};
-        cursor: pointer;
-      }
+      cursor: pointer;
   `
 );
 
@@ -36,21 +32,19 @@ const StyledLink = styled(Link)(
 const DropDownMenu = () => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { darkMode, setDarkMode } = useContext(AppContext);
+  const { darkMode } = useContext(AppContext);
 
   return (
     <>
       <ul id="dropdown_menu">
         <li>
           <StyledLink
-            underline="none"
-            color={darkMode ? 'white' : 'black'}
             sx={{
+              color: darkMode ? 'white' : 'black',
               '&:hover': {
-                color: darkMode ? '#22B14C !important' : '#3366FF !important'
+                color: darkMode ? '#22B14C' : '#3366FF'
               }
             }}
-            href="/"
           >
             {t('Tokens')}
 
@@ -58,74 +52,74 @@ const DropDownMenu = () => {
               background: darkMode ? 'rgb(23, 23, 26)' : 'rgb(244, 245, 251)',
               border: darkMode ? '1px solid rgb(33, 37, 43)' : '1px solid rgb(220, 220, 220)',
               color: darkMode ? 'white' : '#343434',
-              }}>
+            }}>
               <li id={darkMode ? 'darkItem' : 'lightItem'}>
-                  <MuiLink 
-                    href="/"
-                    color="inherit"
-                    underline="none"
-                    sx={{ display: 'flex', alignItems: 'center' }}
-                  >
-                      <BarChartIcon sx={{ marginRight: theme.spacing(1) }} />
-                      Ranking
-                  </MuiLink>
+                <MuiLink
+                  href="/"
+                  color="inherit"
+                  underline="none"
+                  sx={{ display: 'flex', alignItems: 'center' }}
+                >
+                  <BarChartIcon sx={{ marginRight: theme.spacing(1) }} />
+                  Ranking
+                </MuiLink>
               </li>
               <li id={darkMode ? 'darkItem' : 'lightItem'}>
-                  <MuiLink
-                    href="/new"
-                    color="inherit"
-                    underline="none"
-                    sx={{ display: 'flex', alignItems: 'center' }}
-                  >
-                    <AddCircleOutlineIcon
-                      sx={{ marginRight: theme.spacing(1) }}
-                    />
-                    Recently Added
-                  </MuiLink>
+                <MuiLink
+                  href="/new"
+                  color="inherit"
+                  underline="none"
+                  sx={{ display: 'flex', alignItems: 'center' }}
+                >
+                  <AddCircleOutlineIcon
+                    sx={{ marginRight: theme.spacing(1) }}
+                  />
+                  Recently Added
+                </MuiLink>
               </li>
               <li id={darkMode ? 'darkItem' : 'lightItem'}>
-                  <MuiLink
-                    href="/best-tokens"
-                    color="inherit"
-                    underline="none"
-                    sx={{ display: 'flex', alignItems: 'center' }}
-                  >
-                    <StarIcon sx={{ marginRight: theme.spacing(1) }} />
-                    Spotlight
-                  </MuiLink>
+                <MuiLink
+                  href="/best-tokens"
+                  color="inherit"
+                  underline="none"
+                  sx={{ display: 'flex', alignItems: 'center' }}
+                >
+                  <StarIcon sx={{ marginRight: theme.spacing(1) }} />
+                  Spotlight
+                </MuiLink>
               </li>
               <li id={darkMode ? 'darkItem' : 'lightItem'}>
-                  <MuiLink
-                    href="/trending-tokens"
-                    color="inherit"
-                    underline="none"
-                    sx={{ display: 'flex', alignItems: 'center' }}
-                  >
-                    <TrendingUpIcon sx={{ marginRight: theme.spacing(1) }} />
-                    Trending
-                  </MuiLink>
+                <MuiLink
+                  href="/trending-tokens"
+                  color="inherit"
+                  underline="none"
+                  sx={{ display: 'flex', alignItems: 'center' }}
+                >
+                  <TrendingUpIcon sx={{ marginRight: theme.spacing(1) }} />
+                  Trending
+                </MuiLink>
               </li>
               <li id={darkMode ? 'darkItem' : 'lightItem'}>
-                  <MuiLink
-                    href="/gainers-losers"
-                    color="inherit"
-                    underline="none"
-                    sx={{ display: 'flex', alignItems: 'center' }}
-                  >
-                    <WhatshotIcon sx={{ marginRight: theme.spacing(1) }} />
-                    Gainers & Losers
-                  </MuiLink>
+                <MuiLink
+                  href="/gainers-losers"
+                  color="inherit"
+                  underline="none"
+                  sx={{ display: 'flex', alignItems: 'center' }}
+                >
+                  <WhatshotIcon sx={{ marginRight: theme.spacing(1) }} />
+                  Gainers & Losers
+                </MuiLink>
               </li>
               <li id={darkMode ? 'darkItem' : 'lightItem'}>
-                  <MuiLink
-                    href="/most-viewed-tokens"
-                    color="inherit"
-                    underline="none"
-                    sx={{ display: 'flex', alignItems: 'center' }}
-                  >
-                    <VisibilityIcon sx={{ marginRight: theme.spacing(1) }} />
-                    Most Viewed
-                  </MuiLink>
+                <MuiLink
+                  href="/most-viewed-tokens"
+                  color="inherit"
+                  underline="none"
+                  sx={{ display: 'flex', alignItems: 'center' }}
+                >
+                  <VisibilityIcon sx={{ marginRight: theme.spacing(1) }} />
+                  Most Viewed
+                </MuiLink>
               </li>
             </ul>
           </StyledLink>

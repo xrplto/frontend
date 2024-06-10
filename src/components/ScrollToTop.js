@@ -39,8 +39,6 @@ const FabStyle = styled(Fab)(({ theme, darkMode }) => ({
         threshold: 100,
     });
 
-    const { darkMode } = useContext(AppContext);
-  
     const handleClick = (event) => {
       const anchor = (event.target.ownerDocument || document).querySelector(
         '#back-to-top-anchor',
@@ -61,7 +59,7 @@ const FabStyle = styled(Fab)(({ theme, darkMode }) => ({
                 role="presentation"
                 sx={{ position: 'fixed', bottom: 16, right: 16 }}
             >
-                <FabStyle size="small" aria-label="scroll back to top" darkMode={darkMode}>
+                <FabStyle size="small" aria-label="scroll back to top">
                     <KeyboardArrowUpIcon />
                 </FabStyle>
             </Box>
