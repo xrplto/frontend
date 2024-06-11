@@ -236,7 +236,8 @@ export const XrplToLightTheme = createTheme({
     borderRadius: '10px',
     borderRadiusLg: '12px',
     borderRadiusXl: '16px',
-    backgroundAlt: "#FAF9FA"
+    backgroundAlt: "#FAF9FA",
+    backgroundAsset: "#f1f5f9"
   },
   sidebar: {
     background: colors.layout.sidebar.background,
