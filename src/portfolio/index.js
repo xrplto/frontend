@@ -13,13 +13,17 @@ import {
     Chip,
     Avatar,
     Typography,
-    Button
+    Button,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import styled from '@emotion/styled';
 import { getHashIcon } from 'src/utils/extra';
 import TrustLines from "./TrustLines";
+import Offer from "./Offer";
 import { TabContext, TabPanel } from "@mui/lab";
-
 
 const OverviewWrapper = styled(Box)(({ theme }) => `
     // overflow: hidden;
@@ -28,6 +32,7 @@ const OverviewWrapper = styled(Box)(({ theme }) => `
 
 const Balance = styled("div")(() => `
     font-size: 20px;
+    color: #fff;
 `);
 
 const ButtonFollow = styled(Button)(({ theme }) => ({
@@ -61,47 +66,74 @@ export default function Portfolio() {
                 mt: 4
             }}>
                 <Grid container spacing={2}>
-                    <Grid item xs={4}>
-                        <Stack
-                            sx={{
-                                backgroundImage: "linear-gradient(to left, #3b82f6, #1e3a8a)",
-                                borderRadius: "10px",
-                                p: 2
-                            }}
+                    <Grid item md={4} xs={12}>
+                        <Stack>
+                            <Stack
+                                sx={{
+                                    backgroundImage: "linear-gradient(to left, #3b82f6, #1e3a8a)",
+                                    borderRadius: "10px",
+                                    p: 2
+                                }}
 
-                            spacing={2}
-                        >
+                                spacing={2}
+                            >
 
-                            <Stack spacing={1} direction="row">
-                                <Chip
-                                    avatar={<Avatar src={getHashIcon("rf8NFCN8U5grHbvnAvAwihwubudCMBiM93")}/>}
-                                    label={truncateAccount("rf8NFCN8U5grHbvnAvAwihwubudCMBiM93")}
-                                    color="info"
+                                <Stack spacing={1} direction="row">
+                                    <Chip
+                                        avatar={<Avatar src={getHashIcon("rf8NFCN8U5grHbvnAvAwihwubudCMBiM93")}/>}
+                                        label={truncateAccount("rf8NFCN8U5grHbvnAvAwihwubudCMBiM93")}
+                                        color="info"
+                                        sx={{
+                                            fontSize: "1rem"
+                                        }}
+                                    />                                
+                                </Stack>
+
+                                <Stack>
+                                    <Typography sx={{ color: "#fff" }} variant="h6">Estimated Value</Typography>
+                                    <Balance>215,438.97897 <span>XRP</span></Balance>
+                                    <Typography sx={{ color: "#fff" }} variant="h4">Estimated Value</Typography>
+                                </Stack>
+
+                                <ButtonFollow variant="outlined">Follow</ButtonFollow>
+                            </Stack>
+
+                            <Accordion
+                                sx={{
+                                    mt: 3,
+                                    borderRadius: "10px",
+                                    '&.Mui-expanded': {
+                                        mt: 3
+                                    }
+                                }}
+                            >
+                                <AccordionSummary
+                                    expandIcon={<ExpandMoreIcon/>}
+                                    aria-controls="panel1d-content" id="panel1d-header"
                                     sx={{
-                                        fontSize: "1rem"
+                                        fontWeight: "bold"
                                     }}
-                                />                                
-                            </Stack>
+                                >
+                                    Following
+                                </AccordionSummary>
+                                <AccordionDetails>
 
-                            <Stack>
-                                <Typography variant="h6">Estimated Value</Typography>
-                                <Balance>215,438.97897 <span>XRP</span></Balance>
-                                <Typography variant="h4">Estimated Value</Typography>
-                            </Stack>
+                                </AccordionDetails>
+                            </Accordion>
 
-                            <ButtonFollow variant="outlined">Follow</ButtonFollow>
+                            <Offer/>
+
                         </Stack>
                     </Grid>
 
-                    <Grid item xs={8}>
-                        <Card sx={{ height: "520px"}}>
+                    <Grid item md={8} xs={12}>
+                        <Card sx={{ minHeight: "520px", height: "100%"}}>
                             <CardContent sx={{ px: 0 }}>
                                 <TabContext value={activeTab}>
                                     <Box>
                                         <Tabs value={activeTab} onChange={handleChange} aria-label="wrapped label tabs example">
                                             <Tab label="Tokens" value="0"/>
                                             <Tab label="NFTs" value="1"/>
-                                            <Tab label="Offers" value="2"/>
                                         </Tabs>
                                     </Box>
 
