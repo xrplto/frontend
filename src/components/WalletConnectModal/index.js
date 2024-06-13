@@ -10,7 +10,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { enqueueSnackbar } from 'notistack';
 
 import { isInstalled, getPublicKey, signMessage } from "@gemwallet/api";
-// import sdk from "@crossmarkio/sdk";
+import sdk from "@crossmarkio/sdk";
 
 import LoginDialog from '../LoginDialog';
 import { AppContext } from 'src/AppContext';
@@ -85,45 +85,45 @@ const WalletConnectModal = () => {
     })
   };
 
-  // const handleConnectCrossmark = async () => {
-  //   try {
-  //     if (!window.xrpl) {
-  //       enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
-  //       return;
-  //     }
-  //     const { isCrossmark } = window.xrpl;
-  //     if (isCrossmark) {
-  //       const hashR = await axios.get(`${BASE_URL}/account/auth/crossmark/hash`);
-  //       const hashJson = hashR.data;
-  //       const hash = hashJson.hash;
-  //       const id = await sdk.methods.signInAndWait(hash)
-  //       const address = id.response.data.address;
-  //       const pubkey = id.response.data.publicKey;
-  //       const signature = id.response.data.signature;
-  //       await axios.post(
-  //         `${BASE_URL}/account/auth/crossmark/check-sign?signature=${signature}`,
-  //         {
-  //           pubkey: pubkey,
-  //           address: address,
-  //         },
-  //         {
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //             Authorization: `Bearer ${hash}`,
-  //           },
-  //         }
-  //       ).then((res) => {
-  //         const { profile } = res.data;
-  //         doLogIn({ ...profile, wallet_type: "crossmark" });
-  //         setOpenWalletModal(false);
-  //       }).catch(err => {
+  const handleConnectCrossmark = async () => {
+    try {
+      // if (!window.xrpl) {
+      //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
+      //   return;
+      // }
+      // const { isCrossmark } = window.xrpl;
+      // if (isCrossmark) {
+        const hashR = await axios.get(`${BASE_URL}/account/auth/crossmark/hash`);
+        const hashJson = hashR.data;
+        const hash = hashJson.hash;
+        const id = await sdk.methods.signInAndWait(hash);
+        const address = id.response.data.address;
+        const pubkey = id.response.data.publicKey;
+        const signature = id.response.data.signature;
+        await axios.post(
+          `${BASE_URL}/account/auth/crossmark/check-sign?signature=${signature}`,
+          {
+            pubkey: pubkey,
+            address: address,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${hash}`,
+            },
+          }
+        ).then((res) => {
+          const { profile } = res.data;
+          doLogIn({ ...profile, wallet_type: "crossmark" });
+          setOpenWalletModal(false);
+        }).catch(err => {
 
-  //       });
-  //     }
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // };
+        });
+      // }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <Dialog
@@ -177,11 +177,11 @@ const WalletConnectModal = () => {
                   <Typography variant="h3">GemWallet</Typography>
                 </WalletItem>
                 <Divider />
-{/* 
+
                 <WalletItem direction="row" spacing={2} alignItems="center" onClick={handleConnectCrossmark}>
                   <img src="/icons/crossmark.png" />
                   <Typography variant="h3">CrossMark</Typography>
-                </WalletItem> */}
+                </WalletItem>
               </Stack>
             </>
         }
