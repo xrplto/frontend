@@ -17,6 +17,8 @@ import {
 } from '@mui/material';
 import styled from '@emotion/styled';
 import { getHashIcon } from 'src/utils/extra';
+import TrustLines from "./TrustLines";
+import { TabContext, TabPanel } from "@mui/lab";
 
 
 const OverviewWrapper = styled(Box)(({ theme }) => `
@@ -46,13 +48,11 @@ export default function Portfolio() {
 
     const theme = useTheme();
 
-    const [activeTab, setActiveTab] = useState(0);
+    const [activeTab, setActiveTab] = useState("0");
 
     const handleChange = (_, newValue) => {
         setActiveTab(newValue);
-    };
-
-    
+    };    
 
     return (
         <OverviewWrapper>
@@ -95,14 +95,20 @@ export default function Portfolio() {
 
                     <Grid item xs={8}>
                         <Card sx={{ height: "520px"}}>
-                            <CardContent>
-                                <Box>
-                                    <Tabs value={activeTab} onChange={handleChange} aria-label="wrapped label tabs example">
-                                        <Tab label="Tokens" value={0}/>
-                                        <Tab label="NFTs" value={1}/>
-                                        <Tab label="Offers" value={2}/>
-                                    </Tabs>
-                                </Box>
+                            <CardContent sx={{ px: 0 }}>
+                                <TabContext value={activeTab}>
+                                    <Box>
+                                        <Tabs value={activeTab} onChange={handleChange} aria-label="wrapped label tabs example">
+                                            <Tab label="Tokens" value="0"/>
+                                            <Tab label="NFTs" value="1"/>
+                                            <Tab label="Offers" value="2"/>
+                                        </Tabs>
+                                    </Box>
+
+                                    <TabPanel sx={{ p: 0 }} value="0">
+                                        <TrustLines account="rBRAD8Qd3E6fzgFQKpnA4C1JhgnwgbJ6Cs"/>
+                                    </TabPanel>
+                                </TabContext>
 
                             </CardContent>
                         </Card>
