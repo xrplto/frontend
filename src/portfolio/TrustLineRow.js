@@ -1,4 +1,4 @@
-import { Avatar, Stack, TableCell, TableRow, Typography } from "@mui/material";
+import { Avatar, Stack, TableCell, TableRow, Typography, useMediaQuery } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "src/AppContext";
 import { fNumberWithCurreny } from "src/utils/formatNumber";
@@ -10,9 +10,10 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate }) => {
 
     const BASE_URL = 'https://api.xrpl.to/api';
 
-    const { darkMode } = useContext(AppContext);
+    const { darkMode, activeFiatCurrency } = useContext(AppContext);
+    const isMobile = useMediaQuery('(max-width:600px)');
+
     const [token, setToken] = useState({});
-    const { activeFiatCurrency } = useContext(AppContext);
 
     useEffect(() => {
         if (md5) {
@@ -56,7 +57,7 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate }) => {
                 </Stack>
             </TableCell>
 
-            <TableCell align="left">
+            <TableCell align="left" sx={{ display: isMobile ? "none" : "table-cell" }}>
                 <Typography variant="s6" noWrap>
                     <CountUp
                         end={balance}

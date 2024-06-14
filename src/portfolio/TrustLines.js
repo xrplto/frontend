@@ -1,41 +1,27 @@
 import axios from 'axios';
-import PropTypes from 'prop-types';
 import { useState, useEffect, useRef } from 'react';
 import Decimal from 'decimal.js';
 import CryptoJS from 'crypto-js';
 // Material
 import { withStyles } from '@mui/styles';
-import { styled } from '@mui/material';
 
 import {
-  Avatar,
-  Backdrop,
   Box,
-  Container,
-  IconButton,
-  Link,
   Stack,
-  Tab,
-  Tabs,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
-  Tooltip,
-  Typography
+  Typography,
+  useMediaQuery
 } from '@mui/material';
-import CancelIcon from '@mui/icons-material/Cancel';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 // Loader
-import { PuffLoader, PulseLoader } from 'react-spinners';
-import { ProgressBar, Discuss } from 'react-loader-spinner';
+import { PulseLoader } from 'react-spinners';
 
 // Utils
-import { checkExpiration } from 'src/utils/extra';
-import { formatDateTime } from 'src/utils/formatTime';
-import { fNumber } from 'src/utils/formatNumber';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 
 // Context
@@ -43,67 +29,11 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Components
-import QRDialog from 'src/components/QRDialog';
 import ListToolbar from 'src/account/ListToolbar';
 import TrustLineRow from './TrustLineRow';
 import useWebSocket from 'react-use-websocket';
 import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
 import { useDispatch, useSelector } from 'react-redux';
-
-// ----------------------------------------------------------------------
-//import StackStyle from 'src/components/StackStyle';
-
-const noRipplingStyle = {
-  display: 'inline-block',
-  marginLeft: '4px',
-  color: '#C4CDD5',
-  fontSize: '11px',
-  fontWeight: '500',
-  lineHeight: '18px',
-  backgroundColor: '#323546',
-  borderRadius: '4px',
-  padding: '2px 4px'
-};
-
-const ripplingStyle = {
-  display: 'inline-block',
-  marginLeft: '4px',
-  color: '#FFFFFF',
-  fontSize: '11px',
-  fontWeight: '500',
-  lineHeight: '18px',
-  backgroundColor: '#007B55',
-  borderRadius: '4px',
-  padding: '2px 4px'
-};
-
-const BuyTypography = withStyles({
-  root: {
-    color: '#007B55',
-    borderRadius: '5px',
-    border: '0.05em solid #007B55',
-    fontSize: '0.7rem',
-    lineHeight: '1',
-    paddingLeft: '8px',
-    paddingRight: '8px',
-    paddingTop: '3px',
-    paddingBottom: '3px'
-  }
-})(Typography);
-
-const SellTypography = withStyles({
-  root: {
-    color: '#B72136',
-    borderRadius: '5px',
-    border: '0.05em solid #B72136',
-    fontSize: '0.7rem',
-    lineHeight: '1',
-    paddingLeft: '6px',
-    paddingRight: '6px',
-    paddingTop: '3px',
-    paddingBottom: '3px'
-  }
-})(Typography);
 
 function truncate(str, n) {
   if (!str) return '';
@@ -134,6 +64,7 @@ export default function TrustLines({ account }) {
   const { accountProfile, openSnackbar, sync, activeFiatCurrency, darkMode } =
     useContext(AppContext);
   const isLoggedIn = accountProfile && accountProfile.account;
+  const isMobile = useMediaQuery('(max-width:600px)');
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency];
@@ -251,7 +182,7 @@ export default function TrustLines({ account }) {
                   #
                 </TableCell>
                 <TableCell align="left">Currency</TableCell>
-                <TableCell align="left">Balance</TableCell>
+                <TableCell align="left" sx={{ display: isMobile ? "none" : "table-cell" }}>Balance</TableCell>
                 <TableCell align="right">Estimated Value</TableCell>
               </TableRow>
             </TableHead>
