@@ -23,6 +23,7 @@ import { getHashIcon } from 'src/utils/extra';
 import TrustLines from "./TrustLines";
 import Offer from "./Offer";
 import { TabContext, TabPanel } from "@mui/lab";
+import NFTs from "./NFTs";
 
 const OverviewWrapper = styled(Box)(({ theme }) => `
     // overflow: hidden;
@@ -66,7 +67,7 @@ export default function Portfolio() {
             }}>
                 <Grid container spacing={2}>
                     <Grid item md={4} xs={12}>
-                        <Stack>
+                        <Stack sx={{ height: "100%" }}>
                             <Stack
                                 sx={{
                                     backgroundImage: "linear-gradient(to left, #3b82f6, #1e3a8a)",
@@ -126,7 +127,7 @@ export default function Portfolio() {
                     </Grid>
 
                     <Grid item md={8} xs={12}>
-                        <Card sx={{ minHeight: "520px", height: "100%"}}>
+                        <Card sx={{ height: "100%"}}>
                             <CardContent sx={{ px: 0 }}>
                                 <TabContext value={activeTab}>
                                     <Box>
@@ -138,6 +139,9 @@ export default function Portfolio() {
 
                                     <TabPanel sx={{ p: 0 }} value="0">
                                         <TrustLines account="rBRAD8Qd3E6fzgFQKpnA4C1JhgnwgbJ6Cs"/>
+                                    </TabPanel>
+                                    <TabPanel sx={{ p: 0 }} value="1">
+                                        <NFTs account="rBRAD8Qd3E6fzgFQKpnA4C1JhgnwgbJ6Cs"/>
                                     </TabPanel>
                                 </TabContext>
 
