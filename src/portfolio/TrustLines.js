@@ -46,6 +46,9 @@ import { AppContext } from 'src/AppContext';
 import QRDialog from 'src/components/QRDialog';
 import ListToolbar from 'src/account/ListToolbar';
 import TrustLineRow from './TrustLineRow';
+import useWebSocket from 'react-use-websocket';
+import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 // ----------------------------------------------------------------------
 //import StackStyle from 'src/components/StackStyle';
@@ -128,9 +131,13 @@ const trustlineFlags = {
 export default function TrustLines({ account }) {
   const BASE_URL = 'https://api.xrpl.to/api';
 
-  const { accountProfile, openSnackbar, sync, setSync, darkMode } =
+  const { accountProfile, openSnackbar, sync, activeFiatCurrency, darkMode } =
     useContext(AppContext);
   const isLoggedIn = accountProfile && accountProfile.account;
+  const dispatch = useDispatch();
+  const metrics = useSelector(selectMetrics);
+  const exchRate = metrics[activeFiatCurrency];
+
 
   const [loading, setLoading] = useState(false);
 
@@ -138,6 +145,30 @@ export default function TrustLines({ account }) {
   const [rows, setRows] = useState(10);
   const [total, setTotal] = useState(0);
   const [lines, setLines] = useState([]);
+
+  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
+
+  const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
+        onOpen: () => {},
+        onClose: () => {},
+        shouldReconnect: (closeEvent) => true,
+        onMessage: (event) =>  processMessages(event),
+        // reconnectAttempts: 10,
+        // reconnectInterval: 3000,
+    });
+
+    const processMessages = (event) => {
+        try {
+            var t1 = Date.now();
+
+            const json = JSON.parse(event.data);
+
+            dispatch(update_metrics(json));
+            // console.log(`${dt} ms`);
+        } catch(err) {
+            console.error(err);
+        }
+    };
 
   const getLines = () => {
     setLoading(true);
@@ -274,6 +305,7 @@ export default function TrustLines({ account }) {
                     currencyName={currencyName}
                     balance={balance}
                     md5={md5}
+                    exchRate={exchRate}
                   />
                 );
               })}

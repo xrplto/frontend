@@ -1,42 +1,30 @@
 import { Avatar, Stack, TableCell, TableRow, Typography } from "@mui/material";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AppContext } from "src/AppContext";
 import { fNumberWithCurreny } from "src/utils/formatNumber";
 import CountUp from 'react-countup';
-import useWebSocket from "react-use-websocket";
 import { currencyIcons } from "src/utils/constants";
+import axios from "axios";
 
-const TrustLineRow = ({ idx, currencyName, balance, md5 }) => {
+const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate }) => {
 
-    const WSS_FEED_URL = `wss://api.xrpl.to/ws/token/${md5}`;
+    const BASE_URL = 'https://api.xrpl.to/api';
 
     const { darkMode } = useContext(AppContext);
     const [token, setToken] = useState({});
-    const [metrics, setMetrics] = useState({});
     const { activeFiatCurrency } = useContext(AppContext);
 
-    const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-        onOpen: () => {},
-        onClose: () => {},
-        shouldReconnect: (closeEvent) => true,
-        onMessage: (event) =>  processMessages(event),
-        // reconnectAttempts: 10,
-        // reconnectInterval: 3000,
-    });
-
-    const processMessages = (event) => {
-        try {
-            var t1 = Date.now();
-
-            const json = JSON.parse(event.data);
-
-            setMetrics(json.exch);
-            setToken(json.token);
-            // console.log(`${dt} ms`);
-        } catch(err) {
-            console.error(err);
+    useEffect(() => {
+        if (md5) {
+            getToken();
         }
-    };
+    }, [md5]);
+
+    const getToken = async() => {
+        await axios.get(`${BASE_URL}/token/get-by-hash/${md5}`).then(res => {
+            setToken(res.data.token);
+        })
+    }
 
     return (
         <TableRow
@@ -83,7 +71,7 @@ const TrustLineRow = ({ idx, currencyName, balance, md5 }) => {
                     {currencyIcons[activeFiatCurrency]}
                     <CountUp
                         end={
-                            token.exch ? balance * fNumberWithCurreny(token.exch, metrics[activeFiatCurrency]) : 0
+                            token.exch ? balance * fNumberWithCurreny(token.exch, exchRate) : 0
                         }
                         duration={3.5}
                         decimals={2}
