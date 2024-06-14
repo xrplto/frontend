@@ -16,7 +16,7 @@ const NFTs = ({ account }) => {
 
     }, [account])
 
-    const getNFTs = async() => {
+    const getNFTs = async () => {
 
         await axios.get(`${BASE_URL}/xrpnft/filter-by-account/${account}`).then((res) => {
 
@@ -28,12 +28,26 @@ const NFTs = ({ account }) => {
     }
 
     return (
-        <Box sx={{ padding: "10px", height: "500px", overflow: "auto" }}>
+        <Box
+            sx={{
+                padding: "10px",
+                height: "500px",
+                overflow: "auto",
+                mt: 2,
+                "&::-webkit-scrollbar": {
+                    width: "6px !important"
+                },
+                "&::-webkit-scrollbar-thumb": {
+                    borderRadius: "10px",
+                    boxShadow: "inset 0 0 6px rgba(0,0,0,.7)",
+                }
+            }}
+        >
             <Grid container spacing={3}>
                 {
                     nfts.map((nft, index) => (
                         <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                            <NFTCard nft={nft}/>
+                            <NFTCard nft={nft} />
                         </Grid>
                     ))
                 }
