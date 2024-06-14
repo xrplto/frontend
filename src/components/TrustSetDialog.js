@@ -293,12 +293,12 @@ export default function TrustSetDialog({ token, setToken }) {
           })
           break;
         case "crossmark":
-          if (!window.xrpl) {
-            enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
-            return;
-          }
-          const { isCrossmark } = window.xrpl;
-          if (isCrossmark) {
+          // if (!window.xrpl) {
+          //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
+          //   return;
+          // }
+          // const { isCrossmark } = window.xrpl;
+          // if (isCrossmark) {
             const trustSet = {
               Flags: Flags,
               LimitAmount: LimitAmount,
@@ -307,7 +307,7 @@ export default function TrustSetDialog({ token, setToken }) {
               ...trustSet,
               TransactionType: 'TrustSet'
             });
-          }
+          // }
           break;
       }
 

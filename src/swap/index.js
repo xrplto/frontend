@@ -533,12 +533,12 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           })
           break;
         case "crossmark":
-          if (!window.xrpl) {
-            enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
-            return;
-          }
-          const { isCrossmark } = window.xrpl;
-          if (isCrossmark) {
+          // if (!window.xrpl) {
+          //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
+          //   return;
+          // }
+          // const { isCrossmark } = window.xrpl;
+          // if (isCrossmark) {
             if (TakerGets.currency === 'XRP') {
               TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
             }
@@ -555,7 +555,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               ...offer,
               TransactionType: 'OfferCreate'
             });
-          }
+          // }
           break;
       }
 

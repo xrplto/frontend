@@ -283,17 +283,17 @@ export default function PlaceOrder({
           })
           break;
         case "crossmark":
-          if (!window.xrpl) {
-            enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
-            return;
-          }
-          const { isCrossmark } = window.xrpl;
-          if (isCrossmark) {
+          // if (!window.xrpl) {
+          //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
+          //   return;
+          // }
+          // const { isCrossmark } = window.xrpl;
+          // if (isCrossmark) {
             await sdk.methods.signAndSubmitAndWait({
               ...body,
               TransactionType: 'OfferCreate'
             });
-          }
+          // }
           break;
       }
     } catch (err) {
