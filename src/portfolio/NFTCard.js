@@ -9,7 +9,6 @@ const NFTCard = ({ nft }) => {
 
     useEffect(() => {
         if (nft) {
-            console.log(nft.NFTokenID)
             getMetadata();
         }
     }, [nft]);
