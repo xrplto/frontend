@@ -7,7 +7,6 @@ import {
     Grid,
     Card,
     CardContent,
-    CardHeader,
     Tabs,
     Tab,
     Chip,
@@ -90,9 +89,9 @@ export default function Portfolio() {
                                 </Stack>
 
                                 <Stack>
-                                    <Typography sx={{ color: "#fff" }} variant="h6">Estimated Value</Typography>
+                                    <Typography sx={{ color: "#fff" }} variant="h6">Total Balance</Typography>
                                     <Balance>215,438.97897 <span>XRP</span></Balance>
-                                    <Typography sx={{ color: "#fff" }} variant="h4">Estimated Value</Typography>
+                                    <Typography sx={{ color: "#fff" }} variant="h4">$109,325.8132</Typography>
                                 </Stack>
 
                                 <ButtonFollow variant="outlined">Follow</ButtonFollow>

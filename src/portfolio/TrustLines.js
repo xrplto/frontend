@@ -221,6 +221,7 @@ export default function TrustLines({ account }) {
                 </TableCell>
                 <TableCell align="left">Currency</TableCell>
                 <TableCell align="left">Balance</TableCell>
+                <TableCell align="right">Estimated Value</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -271,7 +272,7 @@ export default function TrustLines({ account }) {
                     key={_id}
                     idx={idx + page * rows + 1}
                     currencyName={currencyName}
-                    balance={fNumber(balance)}
+                    balance={balance}
                     md5={md5}
                   />
                 );
