@@ -442,7 +442,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         tfSell: 0x00080000
       };
 
-      const Flags = OfferCreate.tfSell | OfferCreate.tfImmediateOrCancel;
+      //const Flags = OfferCreate.tfSell | OfferCreate.tfImmediateOrCancel;
+      const Flags = OfferCreate.tfImmediateOrCancel;
 
       const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
       
