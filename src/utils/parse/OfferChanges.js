@@ -190,3 +190,40 @@ function parseDeleteOfferNode(affectedNode) {
 
     changes.push(data);
 }
+
+function convertStringToHex(string) {
+    let ret = "";
+    try {
+        ret = Buffer.from(string, "utf8").toString("hex").toUpperCase();
+    } catch (err) { }
+    return ret;
+}
+
+function configureMemos(type, format, data) {
+    /*
+    
+      [
+          {
+            type: 'XRPL.to-accept-offer',
+            data: 'https://xrpl.to'
+          }
+      ]
+    
+      */
+
+    const Memo = {};
+
+    if (type) Memo.MemoType = convertStringToHex(type);
+    if (format) Memo.MemoFormat = convertStringToHex(format);
+    if (data) Memo.MemoData = convertStringToHex(data);
+
+    const Memos = [
+        {
+            Memo,
+        },
+    ];
+
+    return Memos;
+}
+
+module.exports.configureMemos = configureMemos;

@@ -2,10 +2,8 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
 import { ClipLoader } from 'react-spinners';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import {
   LazyLoadImage,
-  LazyLoadComponent
 } from 'react-lazy-load-image-component';
 
 // Material
@@ -14,37 +12,17 @@ import {
   alpha,
   styled,
   useTheme,
-  Avatar,
-  Box,
   Button,
-  Card,
-  Chip,
-  Container,
-  FormControl,
-  Grid,
   IconButton,
   Input,
-  Link,
-  MenuItem,
-  Select,
   Stack,
-  Tooltip,
   Typography
 } from '@mui/material';
-import LoadingButton from '@mui/lab/LoadingButton';
-import PersonIcon from '@mui/icons-material/Person';
-import TokenIcon from '@mui/icons-material/Token';
-import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import link45deg from '@iconify/icons-bi/link-45deg';
-import linkExternal from '@iconify/icons-charm/link-external';
-import paperIcon from '@iconify/icons-akar-icons/paper';
-import copyIcon from '@iconify/icons-fad/copy';
 import exchangeIcon from '@iconify/icons-uil/exchange';
-import arrowDownOutline from '@iconify/icons-basil/arrow-down-outline';
 
 // Context
 import { useContext } from 'react';
@@ -53,8 +31,8 @@ import { isInstalled, submitTransaction } from "@gemwallet/api";
 import sdk from "@crossmarkio/sdk";
 
 // Redux
-import { useSelector, useDispatch } from 'react-redux';
-import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
+import { useSelector } from 'react-redux';
+import { selectMetrics } from 'src/redux/statusSlice';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
@@ -65,12 +43,7 @@ import QRDialog from 'src/components/QRDialog';
 import QueryToken from './QueryToken';
 import { currencySymbols } from 'src/utils/constants';
 import { enqueueSnackbar } from 'notistack';
-
-const Label = withStyles({
-  root: {
-    color: alpha('#637381', 0.99)
-  }
-})(Typography);
+import { configureMemos } from 'src/utils/parse/OfferChanges';
 
 const CurrencyContent = styled('div')(
   ({ theme }) => `
@@ -152,20 +125,6 @@ const ToggleContent = styled('div')(
 `
 );
 
-const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
-  borderRadius: '50%',
-  overflow: 'hidden'
-}));
-
-const DisabledButton = withStyles({
-  root: {
-    '&.Mui-disabled': {
-      pointerEvents: 'unset', // allow :hover styles to be triggered
-      cursor: 'not-allowed' // and custom cursor can be defined without :hover state
-    }
-  }
-})(Button);
-
 const ExchangeButton = styled(Button)(
   ({ theme }) => `
     @media (max-width: 600px) {
@@ -175,12 +134,6 @@ const ExchangeButton = styled(Button)(
     }
 `
 );
-
-function truncate(str, n) {
-  if (!str) return '';
-  //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
-  return str.length > n ? str.substr(0, n - 1) + '... ' : str;
-}
 
 export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const theme = useTheme();
@@ -492,6 +445,11 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       const Flags = OfferCreate.tfSell | OfferCreate.tfImmediateOrCancel;
 
       const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
+      
+      let memoData = `Create offer via https://xrpl.to`;
+      if (Flags & OfferCreate.tfImmediateOrCancel) {
+          memoData = `Token Exchange via https://xrpl.to`;
+      }
 
       switch (wallet_type) {
         case "xaman":
@@ -512,73 +470,23 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         case "gem":
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
-              let swapTxData;
-
-              if (curr1.currency === "XRP") {
-                // XRP > other token
-                swapTxData = {
-                  TransactionType: "Payment",
-                  Account: Account || "",
-                  Destination: Account || "",
-                  SourceTag: 20221212,
-                  Fee: "12",
-                  DeliverMin: {
-                    currency: curr2.currency,
-                    value: value.toString(),
-                    issuer: curr2.issuer
-                  },
-                  Amount: {
-                    currency: curr2.currency,
-                    value: "100000000000000000",
-                    issuer: curr2.issuer
-                  },
-                  SendMax: (amount * 1000000).toString(),
-                  Flags: 131072
-                };
-              } else if (curr2.currency === "XRP") {
-                // other token > XRP
-                swapTxData = {
-                  TransactionType: "Payment",
-                  Account: Account || "",
-                  Destination: Account || "",
-                  SourceTag: 20221212,
-                  Fee: "12",
-                  Amount: "100000000000000000",
-                  DeliverMin: (value * 1000000).toString(),
-                  SendMax: {
-                    currency: curr1.currency,
-                    value: amount.toString(),
-                    issuer: curr1.issuer
-                  },
-                  Flags: 131072
-                };
-              } else {
-                swapTxData = {
-                  TransactionType: "Payment",
-                  Account: Account || "",
-                  Destination: Account || "",
-                  SourceTag: 20221212,
-                  Fee: "12",
-                  Amount: {
-                    currency: curr2.currency,
-                    value: "100000000000000000",
-                    issuer: curr2.issuer
-                  },
-                  DeliverMin: {
-                    currency: curr2.currency,
-                    value: value.toString(),
-                    issuer: curr2.issuer
-                  },
-                  SendMax: {
-                    currency: curr1.currency,
-                    value: (amount * 1000000).toString(),
-                    issuer: curr1.issuer
-                  },
-                  Flags: 131072
-                };
+              if (TakerGets.currency === 'XRP') {
+                TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
               }
+          
+              if (TakerPays.currency === 'XRP') {
+                  TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+              }
+              let offerTxData = {
+                TransactionType: "OfferCreate",
+                Account,
+                Flags,
+                TakerGets,
+                TakerPays,
+                Memos: configureMemos('', '', memoData)
+              };
               const { response } = await submitTransaction({
-                transaction: swapTxData
+                transaction: offerTxData
               });
             }
 
@@ -589,73 +497,23 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           break;
         case "crossmark":
 
-          let swapTxData;
+        if (TakerGets.currency === 'XRP') {
+          TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
+        }
+    
+        if (TakerPays.currency === 'XRP') {
+            TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+        }
+        let offerTxData = {
+          TransactionType: "OfferCreate",
+          Account,
+          Flags,
+          TakerGets,
+          TakerPays,
+          Memos: configureMemos('', '', memoData)
+        };
 
-          if (curr1.currency === "XRP") {
-            // XRP > other token
-            swapTxData = {
-              TransactionType: "Payment",
-              Account: Account || "",
-              Destination: Account || "",
-              SourceTag: 20221212,
-              Fee: "12",
-              DeliverMin: {
-                currency: curr2.currency,
-                value: value.toString(),
-                issuer: curr2.issuer
-              },
-              Amount: {
-                currency: curr2.currency,
-                value: "100000000000000000",
-                issuer: curr2.issuer
-              },
-              SendMax: (amount * 1000000).toString(),
-              Flags: 131072
-            };
-          } else if (curr2.currency === "XRP") {
-            // other token > XRP
-            swapTxData = {
-              TransactionType: "Payment",
-              Account: Account || "",
-              Destination: Account || "",
-              SourceTag: 20221212,
-              Fee: "12",
-              Amount: "100000000000000000",
-              DeliverMin: (value * 1000000).toString(),
-              SendMax: {
-                currency: curr1.currency,
-                value: amount.toString(),
-                issuer: curr1.issuer
-              },
-              Flags: 131072
-            };
-          } else {
-            swapTxData = {
-              TransactionType: "Payment",
-              Account: Account || "",
-              Destination: Account || "",
-              SourceTag: 20221212,
-              Fee: "12",
-              Amount: {
-                currency: curr2.currency,
-                value: "100000000000000000",
-                issuer: curr2.issuer
-              },
-              DeliverMin: {
-                currency: curr2.currency,
-                value: value.toString(),
-                issuer: curr2.issuer
-              },
-              SendMax: {
-                currency: curr1.currency,
-                value: (amount * 1000000).toString(),
-                issuer: curr1.issuer
-              },
-              Flags: 131072
-            };
-          }
-
-          await sdk.methods.signAndSubmitAndWait(swapTxData);
+          await sdk.methods.signAndSubmitAndWait(offerTxData);
           // }
           break;
       }
