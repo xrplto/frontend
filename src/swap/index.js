@@ -49,7 +49,7 @@ import arrowDownOutline from '@iconify/icons-basil/arrow-down-outline';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { createOffer, isInstalled } from "@gemwallet/api";
+import { isInstalled, submitTransaction } from "@gemwallet/api";
 import sdk from "@crossmarkio/sdk";
 
 // Redux
@@ -459,7 +459,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       // const curr2 = revert?pair.curr1:pair.curr2;
       const curr1 = pair.curr1;
       const curr2 = pair.curr2;
-      // const Account = accountProfile.account;
+      const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
       let TakerGets, TakerPays;
@@ -512,19 +512,74 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         case "gem":
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
-              if (TakerGets.currency === 'XRP') {
-                TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
-              }
+              let swapTxData;
 
-              if (TakerPays.currency === 'XRP') {
-                TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+              if (curr1.currency === "XRP") {
+                // XRP > other token
+                swapTxData = {
+                  TransactionType: "Payment",
+                  Account: Account || "",
+                  Destination: Account || "",
+                  SourceTag: 20221212,
+                  Fee: "12",
+                  DeliverMin: {
+                    currency: curr2.currency,
+                    value: value.toString(),
+                    issuer: curr2.issuer
+                  },
+                  Amount: {
+                    currency: curr2.currency,
+                    value: "100000000000000000",
+                    issuer: curr2.issuer
+                  },
+                  SendMax: (amount * 1000000).toString(),
+                  Flags: 131072
+                };
+              } else if (curr2.currency === "XRP") {
+                // other token > XRP
+                swapTxData = {
+                  TransactionType: "Payment",
+                  Account: Account || "",
+                  Destination: Account || "",
+                  SourceTag: 20221212,
+                  Fee: "12",
+                  Amount: "100000000000000000",
+                  DeliverMin: (value * 1000000).toString(),
+                  SendMax: {
+                    currency: curr1.currency,
+                    value: amount.toString(),
+                    issuer: curr1.issuer
+                  },
+                  Flags: 131072
+                };
+              } else {
+                swapTxData = {
+                  TransactionType: "Payment",
+                  Account: Account || "",
+                  Destination: Account || "",
+                  SourceTag: 20221212,
+                  Fee: "12",
+                  Amount: {
+                    currency: curr2.currency,
+                    value: "100000000000000000",
+                    issuer: curr2.issuer
+                  },
+                  DeliverMin: {
+                    currency: curr2.currency,
+                    value: value.toString(),
+                    issuer: curr2.issuer
+                  },
+                  SendMax: {
+                    currency: curr1.currency,
+                    value: (amount * 1000000).toString(),
+                    issuer: curr1.issuer
+                  },
+                  Flags: 131072
+                };
               }
-              const offer = {
-                flags: Flags,
-                takerGets: TakerGets,
-                takerPays: TakerPays
-              }
-              const { response } = await createOffer(offer);
+              const { response } = await submitTransaction({
+                transaction: swapTxData
+              });
             }
 
             else {
@@ -533,34 +588,80 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           })
           break;
         case "crossmark":
-          // if (!window.xrpl) {
-          //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
-          //   return;
-          // }
-          // const { isCrossmark } = window.xrpl;
-          // if (isCrossmark) {
-            if (TakerGets.currency === 'XRP') {
-              TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
-            }
 
-            if (TakerPays.currency === 'XRP') {
-              TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
-            }
-            const offer = {
-              Flags: Flags,
-              TakerGets: TakerGets,
-              TakerPays: TakerPays
-            }
-            await sdk.methods.signAndSubmitAndWait({
-              ...offer,
-              TransactionType: 'OfferCreate'
-            });
+          let swapTxData;
+
+          if (curr1.currency === "XRP") {
+            // XRP > other token
+            swapTxData = {
+              TransactionType: "Payment",
+              Account: Account || "",
+              Destination: Account || "",
+              SourceTag: 20221212,
+              Fee: "12",
+              DeliverMin: {
+                currency: curr2.currency,
+                value: value.toString(),
+                issuer: curr2.issuer
+              },
+              Amount: {
+                currency: curr2.currency,
+                value: "100000000000000000",
+                issuer: curr2.issuer
+              },
+              SendMax: (amount * 1000000).toString(),
+              Flags: 131072
+            };
+          } else if (curr2.currency === "XRP") {
+            // other token > XRP
+            swapTxData = {
+              TransactionType: "Payment",
+              Account: Account || "",
+              Destination: Account || "",
+              SourceTag: 20221212,
+              Fee: "12",
+              Amount: "100000000000000000",
+              DeliverMin: (value * 1000000).toString(),
+              SendMax: {
+                currency: curr1.currency,
+                value: amount.toString(),
+                issuer: curr1.issuer
+              },
+              Flags: 131072
+            };
+          } else {
+            swapTxData = {
+              TransactionType: "Payment",
+              Account: Account || "",
+              Destination: Account || "",
+              SourceTag: 20221212,
+              Fee: "12",
+              Amount: {
+                currency: curr2.currency,
+                value: "100000000000000000",
+                issuer: curr2.issuer
+              },
+              DeliverMin: {
+                currency: curr2.currency,
+                value: value.toString(),
+                issuer: curr2.issuer
+              },
+              SendMax: {
+                currency: curr1.currency,
+                value: (amount * 1000000).toString(),
+                issuer: curr1.issuer
+              },
+              Flags: 131072
+            };
+          }
+
+          await sdk.methods.signAndSubmitAndWait(swapTxData);
           // }
           break;
       }
 
     } catch (err) {
-      alert(err);
+      console.log(err);
     }
     setLoading(false);
   };
