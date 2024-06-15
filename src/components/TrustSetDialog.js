@@ -48,6 +48,8 @@ import copyIcon from '@iconify/icons-fad/copy';
 import Wallet from './Wallet';
 import { isInstalled, setTrustline } from '@gemwallet/api';
 import { enqueueSnackbar } from 'notistack';
+import sdk from "@crossmarkio/sdk";
+
 // ----------------------------------------------------------------------
 const TrustDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(1px)',
