@@ -29,6 +29,8 @@ import PlaceOrder from './PlaceOrder';
 // Context
 import { useContext } from 'react'
 import { AppContext } from 'src/AppContext'
+import scientificToDecimal from 'scientific-to-decimal';
+import millify from "millify";
 
 // Utils
 
@@ -77,9 +79,9 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
         const sumValue = fmNumber(bid.sumValue, 5);
         const price = fmNumber(bid.price, 5);
 
-        setAmount(sumAmount);
-        setPrice(price);
-        setValue(sumValue);
+        setAmount(scientificToDecimal(sumAmount));
+        setPrice(scientificToDecimal(price));
+        setValue(scientificToDecimal(sumValue));
     }, [bidId]);
 
     useEffect(() => {
@@ -93,9 +95,9 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
         const sumValue = fmNumber(ask.sumValue, 5);
         const price = fmNumber(ask.price, 5);
 
-        setAmount(sumAmount);
-        setPrice(price);
-        setValue(sumValue);
+        setAmount(scientificToDecimal(sumAmount));
+        setPrice(scientificToDecimal(price));
+        setValue(scientificToDecimal(sumValue));
     }, [askId]);
 
     useEffect(() => {
@@ -250,7 +252,7 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
                     <Typography>Total</Typography>
                     <Box sx={{ flexGrow: 1 }} />
                     <Typography sx={{mr:1}}>≈</Typography>
-                    <Typography alignItems='right' sx={{mr:2}}>{value} <Typography variant="caption"> {curr2.name}</Typography></Typography>
+                    <Typography alignItems='right' sx={{mr:2}}>{millify(value)} <Typography variant="caption"> {curr2.name}</Typography></Typography>
                 </Box>
 
                 <PlaceOrder marketLimit={marketLimit} buySell={buySell} pair={pair} amount={amount} value={value} accountPairBalance={accountPairBalance} />
