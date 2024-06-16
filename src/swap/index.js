@@ -498,21 +498,21 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           break;
         case "crossmark":
 
-        if (TakerGets.currency === 'XRP') {
-          TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
-        }
-    
-        if (TakerPays.currency === 'XRP') {
-            TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
-        }
-        let offerTxData = {
-          TransactionType: "OfferCreate",
-          Account,
-          Flags,
-          TakerGets,
-          TakerPays,
-          Memos: configureMemos('', '', memoData)
-        };
+          if (TakerGets.currency === 'XRP') {
+            TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
+          }
+      
+          if (TakerPays.currency === 'XRP') {
+              TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+          }
+          let offerTxData = {
+            TransactionType: "OfferCreate",
+            Account,
+            Flags,
+            TakerGets,
+            TakerPays,
+            Memos: configureMemos('', '', memoData)
+          };
 
           await sdk.methods.signAndSubmitAndWait(offerTxData);
           // }

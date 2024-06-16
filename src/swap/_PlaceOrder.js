@@ -10,7 +10,7 @@ import { Button, Stack, Typography } from '@mui/material';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-import { createOffer, isInstalled } from "@gemwallet/api";
+import { createOffer, isInstalled, submitTransaction } from "@gemwallet/api";
 import sdk from "@crossmarkio/sdk";
 
 // Redux
@@ -19,6 +19,7 @@ import { useDispatch } from 'react-redux';
 // Components
 import QRDialog from 'src/components/QRDialog';
 import { enqueueSnackbar } from 'notistack';
+import { configureMemos } from 'src/utils/parse/OfferChanges';
 // ----------------------------------------------------------------------
 const DisabledButton = withStyles({
   root: {
@@ -249,6 +250,10 @@ export default function PlaceOrder({
         else Flags = OfferCreate.tfSell | OfferCreate.tfImmediateOrCancel;
       }
       const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
+      let memoData = `Create offer via https://xrpl.to`;
+      if (Flags & OfferCreate.tfImmediateOrCancel) {
+          memoData = `Token Exchange via https://xrpl.to`;
+      }
 
       switch(wallet_type) {
         case "xaman":
@@ -269,12 +274,18 @@ export default function PlaceOrder({
         case "gem":
           isInstalled().then(async(response) => {
             if (response.result.isInstalled) {
-              const offer = {
-                flags: Flags,
-                takerGets: TakerGets,
-                takerPays: TakerPays
-              }
-              const { response } = await createOffer(offer);
+              
+              let offerTxData = {
+                TransactionType: "OfferCreate",
+                Account,
+                Flags,
+                TakerGets,
+                TakerPays,
+                Memos: configureMemos('', '', memoData)
+              };
+              const { response } = await submitTransaction({
+                transaction: offerTxData
+              });
             }
 
             else {
@@ -283,17 +294,17 @@ export default function PlaceOrder({
           })
           break;
         case "crossmark":
-          // if (!window.xrpl) {
-          //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
-          //   return;
-          // }
-          // const { isCrossmark } = window.xrpl;
-          // if (isCrossmark) {
-            await sdk.methods.signAndSubmitAndWait({
-              ...body,
-              TransactionType: 'OfferCreate'
-            });
-          // }
+          
+          let offerTxData = {
+            TransactionType: "OfferCreate",
+            Account,
+            Flags,
+            TakerGets,
+            TakerPays,
+            Memos: configureMemos('', '', memoData)
+          };
+
+          await sdk.methods.signAndSubmitAndWait(offerTxData);
           break;
       }
     } catch (err) {
