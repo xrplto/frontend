@@ -16,9 +16,14 @@ import {
   IconButton,
   Input,
   Stack,
-  Typography
+  Typography,
+  Snackbar,
+  Alert,
+  AlertTitle,
+  CircularProgress
 } from '@mui/material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -27,7 +32,7 @@ import exchangeIcon from '@iconify/icons-uil/exchange';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { isInstalled, submitTransaction } from "@gemwallet/api";
+import { isInstalled, on, submitTransaction } from "@gemwallet/api";
 import sdk from "@crossmarkio/sdk";
 
 // Redux
@@ -168,6 +173,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
   const [tokenExch1, setTokenExch1] = useState(0);
   const [tokenExch2, setTokenExch2] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(0);
+  const [txHash, setTxHash] = useState("");
 
   const [active, setActive] = useState('AMOUNT');
 
@@ -453,10 +460,10 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       const Flags = OfferCreate.tfImmediateOrCancel;
 
       const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
-      
+
       let memoData = `Create offer via https://xrpl.to`;
       if (Flags & OfferCreate.tfImmediateOrCancel) {
-          memoData = `Token Exchange via https://xrpl.to`;
+        memoData = `Token Exchange via https://xrpl.to`;
       }
 
       switch (wallet_type) {
@@ -481,9 +488,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               if (TakerGets.currency === 'XRP') {
                 TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
               }
-          
+
               if (TakerPays.currency === 'XRP') {
-                  TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+                TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
               }
               let offerTxData = {
                 TransactionType: "OfferCreate",
@@ -493,8 +500,14 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 TakerPays,
                 Memos: configureMemos('', '', memoData)
               };
-              const { response } = await submitTransaction({
+              setIsProcessing(2);
+              await submitTransaction({
                 transaction: offerTxData
+              }).then((result) => {
+                setIsProcessing(2);
+                setTxHash(result?.hash);
+              }).catch(err => {
+                setIsProcessing(0);
               });
             }
 
@@ -508,9 +521,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           if (TakerGets.currency === 'XRP') {
             TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
           }
-      
+
           if (TakerPays.currency === 'XRP') {
-              TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+            TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
           }
           let offerTxData = {
             TransactionType: "OfferCreate",
@@ -521,13 +534,21 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             Memos: configureMemos('', '', memoData)
           };
 
-          await sdk.methods.signAndSubmitAndWait(offerTxData);
+          setIsProcessing(1);
+          await sdk.methods.signAndSubmitAndWait(offerTxData)
+          .then(({ response }) => {
+            setIsProcessing(2);
+            setTxHash(response.data.resp.result?.hash);
+          }).catch(err => {
+            setIsProcessing(0);
+          });
           // }
           break;
       }
 
     } catch (err) {
       console.log(err);
+      setIsProcessing(0);
     }
     setLoading(false);
   };
@@ -700,6 +721,10 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     }
   }
 
+  const handleClose = () => {
+    setIsProcessing(0);
+  }
+
   return (
     <Stack alignItems="center">
       <OverviewWrapper>
@@ -841,7 +866,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               sx={{ mt: 1.5 }}
               onClick={handlePlaceOrder}
               // color={'primary'}
-              disabled={!canPlaceOrder}
+              disabled={!canPlaceOrder || isProcessing == 1}
             >
               Exchange
             </ExchangeButton>
@@ -858,6 +883,42 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         qrUrl={qrUrl}
         nextUrl={nextUrl}
       />
+
+      <Snackbar
+        open={isProcessing > 0}
+        autoHideDuration={isProcessing == 2 ? 2000 : 0}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        key="key_self_snackbar"
+      >
+        <Alert
+          severity="info"
+          sx={{ width: '100%' }}
+          icon={
+            isProcessing == 1 ? 
+            <CircularProgress
+              disableShrink
+              size={20}
+              color="info"
+            /> : <TaskAltIcon/>
+          }
+        >
+          <AlertTitle sx={{ textTransform: "capitalize" }}>
+            {
+              isProcessing == 1 ? "waiting for wallet to sign transaction" : "Transaction Confirmed"
+            }
+          </AlertTitle>
+
+          <Stack mt={1} direction="row" spacing={1} alignItems="center">
+            {
+              isProcessing == 1 ? <Typography sx={{ textTransform: "capitalize" }}>pending wallet to sign</Typography>
+                : <a href={`https://bithomp.com/explorer/${txHash}`} target="_blank" rel="noreferrer"><Typography sx={{ textTransform: "capitalize" }}>view transaction</Typography></a>
+            }
+          </Stack>
+
+        </Alert>
+      </Snackbar>
+
     </Stack>
   );
 }

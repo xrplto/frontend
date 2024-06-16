@@ -92,7 +92,6 @@ export default function CurrencySearchModal({
     axios
       .get(`${BASE_URL}/xrpnft/tokens?filter=${filter}`)
       .then((res) => {
-        console.log(res.data);
         try {
           if (res.status === 200 && res.data) {
             const ret = res.data;
