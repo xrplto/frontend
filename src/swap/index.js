@@ -135,6 +135,13 @@ const ExchangeButton = styled(Button)(
 `
 );
 
+const AllowButton = styled(Button)(() => `
+  padding: 2px;
+  border-radius: 24px;
+  font-size: 12px;
+  min-width: 48px;
+`);
+
 export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
@@ -669,11 +676,38 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         */
   };
 
+  const onFillHalf = () => {
+    if (revert) {
+      if (accountPairBalance?.curr1.value > 0)
+        setAmount2(accountPairBalance?.curr1.value / 2);
+    }
+
+    else {
+      if (accountPairBalance?.curr1.value > 0)
+        setAmount1(accountPairBalance?.curr1.value / 2);
+    }
+  }
+
+  const onFillMax = () => {
+    if (revert) {
+      if (accountPairBalance?.curr1.value > 0)
+        setAmount2(accountPairBalance?.curr1.value);
+    }
+
+    else {
+      if (accountPairBalance?.curr1.value > 0)
+        setAmount1(accountPairBalance?.curr1.value);
+    }
+  }
 
   return (
     <Stack alignItems="center">
       <OverviewWrapper>
         <ConverterFrame>
+          <Stack direction="row" justifyContent="end" spacing={1} siz="small" sx={{ px: 1.2 }}>
+            <AllowButton variant="outlined" onClick={onFillHalf}>Half</AllowButton>
+            <AllowButton variant="outlined" onClick={onFillMax}>Max</AllowButton>
+          </Stack>
           <CurrencyContent
             style={{ order: revert ? 2 : 1, backgroundColor: color1 }}
           >
