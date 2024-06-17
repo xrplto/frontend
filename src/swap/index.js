@@ -175,6 +175,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const [tokenExch2, setTokenExch2] = useState(0);
   const [isProcessing, setIsProcessing] = useState(0);
   const [txHash, setTxHash] = useState("");
+  const [isSwapped, setSwapped] = useState(false);
 
   const [active, setActive] = useState('AMOUNT');
 
@@ -297,7 +298,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     }
     // console.log('account_info')
     getAccountInfo();
-  }, [accountProfile, curr1, curr2, sync]);
+  }, [accountProfile, curr1, curr2, sync, isSwapped]);
 
   useEffect(() => {
     function getTokenPrice() {
@@ -514,7 +515,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 else {
                   setIsProcessing(0);
                 }
-              })
+
+                setSwapped(!isSwapped);
+              });
             }
 
             else {
@@ -550,6 +553,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             } else {
               setIsProcessing(0);
             }
+            setSwapped(!isSwapped);
           });
           // }
           break;
