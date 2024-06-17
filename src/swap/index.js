@@ -738,27 +738,34 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     setIsProcessing(0);
   }
 
+  console.log("tokenPrice2", tokenPrice2 > 0);
   return (
     <Stack alignItems="center">
       <OverviewWrapper>
         <ConverterFrame>
-          <Stack direction="row" justifyContent="end" spacing={1} siz="small" sx={{ px: 1.2 }}>
-            <AllowButton variant="outlined" onClick={onFillHalf}>Half</AllowButton>
-            <AllowButton variant="outlined" onClick={onFillMax}>Max</AllowButton>
-          </Stack>
+          {
+            isLoggedIn &&
+              <Stack direction="row" justifyContent="end" spacing={1} siz="small" sx={{ px: 1.2 }}>
+                <AllowButton variant="outlined" onClick={onFillHalf}>Half</AllowButton>
+                <AllowButton variant="outlined" onClick={onFillMax}>Max</AllowButton>
+              </Stack>
+          }
           <CurrencyContent
             style={{ order: revert ? 2 : 1, backgroundColor: color1 }}
           >
             <Stack>
               <QueryToken token={token1} onChangeToken={onChangeToken1} />
-              <Typography variant="s7">
-                Balance{' '}
-                <Typography variant="s2" color="primary" >
-                  {revert
-                    ? accountPairBalance?.curr2.value
-                    : accountPairBalance?.curr1.value}
-                </Typography>
-              </Typography>
+              {
+                isLoggedIn && 
+                  <Typography variant="s7">
+                    Balance{' '}
+                    <Typography variant="s2" color="primary" >
+                      {revert
+                        ? accountPairBalance?.curr2.value
+                        : accountPairBalance?.curr1.value}
+                    </Typography>
+                  </Typography>
+              }
             </Stack>
             <InputContent>
               <Input
@@ -782,7 +789,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                   }
                 }}
               />
-              <Typography variant="s2" color="primary">{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}</Typography>
+              <Typography variant="s2" color="primary" sx={{ visibility: tokenPrice1 > 0 ? "visible" : "hidden" }}>{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}</Typography>
             </InputContent>
           </CurrencyContent>
           <CurrencyContent
@@ -790,14 +797,17 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           >
             <Stack>
               <QueryToken token={token2} onChangeToken={onChangeToken2} />
-              <Typography variant="s7">
-                Balance{' '}
-                <Typography variant="s2" color="primary" >
-                  {revert
-                    ? accountPairBalance?.curr1.value
-                    : accountPairBalance?.curr2.value}
-                </Typography>
-              </Typography>
+              {
+                isLoggedIn && 
+                  <Typography variant="s7">
+                    Balance{' '}
+                    <Typography variant="s2" color="primary" >
+                      {revert
+                        ? accountPairBalance?.curr1.value
+                        : accountPairBalance?.curr2.value}
+                    </Typography>
+                  </Typography>
+              }
             </Stack>
             <InputContent>
               <Input
@@ -821,7 +831,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                   }
                 }}
               />
-              <Typography variant="s2" color="primary">{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}</Typography>
+              <Typography variant="s2" color="primary" sx={{ visibility: tokenPrice2 > 0 ? "visible" : "hidden" }}>{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}</Typography>
             </InputContent>
           </CurrencyContent>
           <ToggleContent>
@@ -905,18 +915,18 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         key="key_self_snackbar"
       >
         <Alert
-          severity="info"
+          severity="main"
           sx={{ width: '100%' }}
           icon={
             isProcessing == 1 ? 
             <CircularProgress
               disableShrink
               size={20}
-              color="info"
-            /> : <TaskAltIcon/>
+              color="primary"
+            /> : <TaskAltIcon color="primary"/>
           }
         >
-          <AlertTitle sx={{ textTransform: "capitalize" }}>
+          <AlertTitle sx={{ textTransform: "capitalize" }} color="primary">
             {
               isProcessing == 1 ? "waiting for wallet to sign transaction" : "Transaction Confirmed"
             }
@@ -924,7 +934,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
           <Stack mt={1} direction="row" spacing={1} alignItems="center">
             {
-              isProcessing == 1 ? <Typography sx={{ textTransform: "capitalize" }}>pending wallet to sign</Typography>
+              isProcessing == 1 ? <Typography color="primary" sx={{ textTransform: "capitalize" }}>pending wallet to sign</Typography>
                 : <a href={`https://bithomp.com/explorer/${txHash}`} target="_blank" rel="noreferrer"><Typography sx={{ textTransform: "capitalize" }}>view transaction</Typography></a>
             }
           </Stack>
