@@ -659,10 +659,11 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   };
 
   const handleChangeAmount1 = (e) => {
-    const value = e.target.value;
+    let value = e.target.value;
 
+    if (value == ".") value = "0.";
     if (isNaN(Number(value))) return;
-
+    
     setAmount1(value);
     setActive(revert ? 'VALUE' : 'AMOUNT');
   };
@@ -670,6 +671,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const handleChangeAmount2 = (e) => {
     const value = e.target.value;
 
+    if (value == ".") value = "0.";
     if (isNaN(Number(value))) return;
 
     setAmount2(value);
