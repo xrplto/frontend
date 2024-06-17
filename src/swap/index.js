@@ -500,15 +500,21 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 TakerPays,
                 Memos: configureMemos('', '', memoData)
               };
-              setIsProcessing(2);
+
+              setIsProcessing(1);
+              
               await submitTransaction({
                 transaction: offerTxData
-              }).then((result) => {
-                setIsProcessing(2);
-                setTxHash(result?.hash);
-              }).catch(err => {
-                setIsProcessing(0);
-              });
+              }).then(({ type, result }) => {
+                if (type == "response") {
+                  setIsProcessing(2);
+                  setTxHash(result?.hash);
+                }
+
+                else {
+                  setIsProcessing(0);
+                }
+              })
             }
 
             else {
@@ -533,14 +539,17 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             TakerPays,
             Memos: configureMemos('', '', memoData)
           };
-
+          
           setIsProcessing(1);
           await sdk.methods.signAndSubmitAndWait(offerTxData)
           .then(({ response }) => {
-            setIsProcessing(2);
-            setTxHash(response.data.resp.result?.hash);
-          }).catch(err => {
-            setIsProcessing(0);
+            if (response.data.meta.isSuccess) {
+              setIsProcessing(2);
+              setTxHash(response.data.resp.result?.hash);
+
+            } else {
+              setIsProcessing(0);
+            }
           });
           // }
           break;
@@ -725,6 +734,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     setIsProcessing(0);
   }
 
+  console.log("isProcessing===>", isProcessing);
+
   return (
     <Stack alignItems="center">
       <OverviewWrapper>
@@ -886,7 +897,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
       <Snackbar
         open={isProcessing > 0}
-        autoHideDuration={isProcessing == 2 ? 2000 : 0}
+        autoHideDuration={isProcessing == 2 ? 2000 : null}
         onClose={handleClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         key="key_self_snackbar"
