@@ -870,11 +870,11 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       <Stack sx={{ width: '100%', mt: 2 }}>
         {accountProfile && accountProfile.account ? (
           <>
-            {errMsg && amount1 !== '' && amount2 !== '' && (
+            {/* {errMsg && amount1 !== '' && amount2 !== '' && (
               <Typography variant="s2" sx={{ ml: 2 }}>
                 {errMsg}
               </Typography>
-            )}
+            )} */}
 
             <ExchangeButton
               variant="contained"
@@ -883,7 +883,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               // color={'primary'}
               disabled={!canPlaceOrder || isProcessing == 1}
             >
-              Exchange
+              {(!amount1 || !amount2) ? "Enter an Amount" : (errMsg && amount1 !== '' && amount2 !== '' ? errMsg : "Exchange")} 
             </ExchangeButton>
           </>
         ) : (
