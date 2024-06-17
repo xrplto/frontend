@@ -1,6 +1,7 @@
 // src/redux/store.js
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import statusReducer from './statusSlice';
+import transactionReducer from './transactionSlice';
 import { CookieStorage } from 'redux-persist-cookie-storage';
 import Cookies from './customCookiesParser';
 import { persistReducer } from 'redux-persist';
@@ -47,7 +48,8 @@ const persistConfig = {
 const persistedReducer = persistReducer(
   persistConfig,
   combineReducers({
-    status: statusReducer
+    status: statusReducer,
+    transaction: transactionReducer,
   })
 );
 
@@ -78,7 +80,8 @@ export function configureRedux(data) {
 
   const _store = configureStore({
     reducer: {
-      status: statusReducer
+      status: statusReducer,
+      transaction: transactionReducer
     },
     preloadedState: { status: defaultState },
     devTools: process.env.NODE_ENV !== 'production'

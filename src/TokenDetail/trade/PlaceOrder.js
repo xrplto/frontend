@@ -19,6 +19,7 @@ import sdk from "@crossmarkio/sdk";
 import ConnectWallet from 'src/components/ConnectWallet';
 import QRDialog from 'src/components/QRDialog';
 import { enqueueSnackbar } from 'notistack';
+import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 // ----------------------------------------------------------------------
 const DisabledButton = withStyles({
   root: {
@@ -181,11 +182,9 @@ export default function PlaceOrder({
   }, [dispatch, openScanQR, uuid]);
 
   const onOfferCreateXumm = async () => {
-    setLoading(true);
     try {
       const curr1 = pair.curr1;
       const curr2 = pair.curr2;
-      console.log(curr1, curr2)
       // const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
@@ -254,6 +253,7 @@ export default function PlaceOrder({
 
       switch (wallet_type) {
         case "xaman":
+          setLoading(true);
           const res = await axios.post(`${BASE_URL}/offer/create`, body);
 
           if (res.status === 200) {
@@ -283,7 +283,19 @@ export default function PlaceOrder({
                 takerGets: TakerGets,
                 takerPays: TakerPays
               }
-              const { response } = await createOffer(offer);
+
+              dispatch(updateProcess(1));
+
+              await createOffer(offer).then(({ type, result }) => {
+                if (type == "response") {
+                  dispatch(updateProcess(2));
+                  dispatch(updateTxHash(result?.hash));
+                }
+
+                else {
+                  dispatch(updateProcess(0));
+                }
+              });
             }
 
             else {
@@ -310,15 +322,26 @@ export default function PlaceOrder({
               TakerGets: TakerGets,
               TakerPays: TakerPays
             }
+  
+            dispatch(updateProcess(1));
             await sdk.methods.signAndSubmitAndWait({
               ...offer,
               TransactionType: 'OfferCreate'
+            }).then(({ response }) => {
+              if (response.data.meta.isSuccess) {
+                dispatch(updateProcess(2));
+                dispatch(updateTxHash(response.data.resp.result?.hash));
+
+              } else {
+                dispatch(updateProcess(0));
+              }
             });
           // }
           break;
       }
     } catch (err) {
       alert(err);
+      dispatch(updateProcess(0));
     }
     setLoading(false);
   };

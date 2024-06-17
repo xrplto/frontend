@@ -3,6 +3,7 @@ import ThemeProvider from 'src/theme/ThemeProvider';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ContextProvider } from 'src/AppContext';
 import XSnackbar from 'src/components/Snackbar';
+import TransactionAlert from 'src/components/TransactionAlert';
 import { useSnackbar } from 'src/components/useSnackbar';
 import "./zMain.css";
 import { SnackbarProvider } from 'notistack';
@@ -112,7 +113,7 @@ function XRPLToApp({ Component, pageProps, router }) {
           {/* <!-- <ThemeProvider> --> */}
           {/* <!-- <CssBaseline /> --> */}
           <Component {...pageProps} />
-          <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
+          <TransactionAlert isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
           {/* <!-- </ThemeProvider> --> */}
         </ContextProvider>
       </noscript>
@@ -129,6 +130,7 @@ function XRPLToApp({ Component, pageProps, router }) {
             <CssBaseline />
             <Component {...pageProps} />
             <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
+            <TransactionAlert/>
           </SnackbarProvider>
         </ThemeProvider>
       </ContextProvider>

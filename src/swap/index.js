@@ -36,7 +36,7 @@ import { isInstalled, on, submitTransaction } from "@gemwallet/api";
 import sdk from "@crossmarkio/sdk";
 
 // Redux
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 
 // Utils
@@ -49,6 +49,7 @@ import QueryToken from './QueryToken';
 import { currencySymbols } from 'src/utils/constants';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
+import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 
 const CurrencyContent = styled('div')(
   ({ theme }) => `
@@ -152,7 +153,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const BASE_URL = process.env.API_URL;
   const QR_BLUR = '/static/blurqr.webp';
 
+  const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
+  const isProcessing = useSelector(selectProcess);
 
   const curr1 = pair?.curr1;
   const curr2 = pair?.curr2;
@@ -173,8 +176,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
   const [tokenExch1, setTokenExch1] = useState(0);
   const [tokenExch2, setTokenExch2] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(0);
-  const [txHash, setTxHash] = useState("");
   const [isSwapped, setSwapped] = useState(false);
 
   const [active, setActive] = useState('AMOUNT');
@@ -502,18 +503,18 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 Memos: configureMemos('', '', memoData)
               };
 
-              setIsProcessing(1);
+              dispatch(updateProcess(1));
 
               await submitTransaction({
                 transaction: offerTxData
               }).then(({ type, result }) => {
                 if (type == "response") {
-                  setIsProcessing(2);
-                  setTxHash(result?.hash);
+                  dispatch(updateProcess(2));
+                  dispatch(updateTxHash(result?.hash));
                 }
 
                 else {
-                  setIsProcessing(0);
+                  dispatch(updateProcess(0));
                 }
 
                 setSwapped(!isSwapped);
@@ -543,15 +544,15 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             Memos: configureMemos('', '', memoData)
           };
 
-          setIsProcessing(1);
+          dispatch(updateProcess(1));
           await sdk.methods.signAndSubmitAndWait(offerTxData)
             .then(({ response }) => {
               if (response.data.meta.isSuccess) {
-                setIsProcessing(2);
-                setTxHash(response.data.resp.result?.hash);
+                dispatch(updateProcess(2));
+                dispatch(updateTxHash(response.data.resp.result?.hash));
 
               } else {
-                setIsProcessing(0);
+                dispatch(updateProcess(0));
               }
               setSwapped(!isSwapped);
             });
@@ -560,8 +561,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       }
 
     } catch (err) {
-      console.log(err);
-      setIsProcessing(0);
+      console.log("err", err);
+      dispatch(updateProcess(0));
     }
     setLoading(false);
   };
@@ -734,10 +735,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       if (accountPairBalance?.curr1.value > 0)
         setAmount1(accountPairBalance?.curr1.value);
     }
-  }
-
-  const handleClose = () => {
-    setIsProcessing(0);
   }
 
   const handleMsg = () => {
@@ -914,42 +911,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         qrUrl={qrUrl}
         nextUrl={nextUrl}
       />
-
-      <Snackbar
-        open={isProcessing > 0}
-        autoHideDuration={isProcessing == 2 ? 2000 : null}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        key="key_self_snackbar"
-      >
-        <Alert
-          severity="main"
-          sx={{ width: '100%' }}
-          icon={
-            isProcessing == 1 ?
-              <CircularProgress
-                disableShrink
-                size={20}
-                color="primary"
-              /> : <TaskAltIcon color="primary" />
-          }
-        >
-          <AlertTitle sx={{ textTransform: "capitalize" }} color="primary">
-            {
-              isProcessing == 1 ? "waiting for wallet to sign transaction" : "Transaction Confirmed"
-            }
-          </AlertTitle>
-
-          <Stack mt={1} direction="row" spacing={1} alignItems="center">
-            {
-              isProcessing == 1 ? <Typography color="primary" sx={{ textTransform: "capitalize" }}>pending wallet to sign</Typography>
-                : <a href={`https://bithomp.com/explorer/${txHash}`} target="_blank" rel="noreferrer"><Typography sx={{ textTransform: "capitalize" }}>view transaction</Typography></a>
-            }
-          </Stack>
-
-        </Alert>
-      </Snackbar>
-
     </Stack>
   );
 }

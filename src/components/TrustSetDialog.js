@@ -49,6 +49,7 @@ import Wallet from './Wallet';
 import { isInstalled, setTrustline } from '@gemwallet/api';
 import { enqueueSnackbar } from 'notistack';
 import sdk from "@crossmarkio/sdk";
+import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 
 // ----------------------------------------------------------------------
 const TrustDialog = styled(Dialog)(({ theme }) => ({
@@ -94,6 +95,7 @@ const Label = withStyles({
 
 export default function TrustSetDialog({ token, setToken }) {
   const theme = useTheme();
+  const dispatch = useDispatch();
   const BASE_URL = 'https://api.xrpl.to/api';
   const { accountProfile, openSnackbar } = useContext(AppContext);
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -248,7 +250,6 @@ export default function TrustSetDialog({ token, setToken }) {
             },
             "Sequence": 12
         }*/
-    setLoading(true);
     try {
       const { issuer, currency } = token;
       const wallet_type = accountProfile.wallet_type;
@@ -265,6 +266,7 @@ export default function TrustSetDialog({ token, setToken }) {
 
       switch(wallet_type) {
         case "xaman":
+          setLoading(true);
           const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
 
           if (res.status === 200) {
@@ -286,7 +288,17 @@ export default function TrustSetDialog({ token, setToken }) {
                 limitAmount: LimitAmount,
               }
 
-              const trustlinex = await setTrustline(trustSet);
+              dispatch(updateProcess(1));
+              await setTrustline(trustSet).then(({ type, result }) => {
+                if (type == "response") {
+                  dispatch(updateProcess(2));
+                  dispatch(updateTxHash(result?.hash));
+                }
+
+                else {
+                  dispatch(updateProcess(0));
+                }
+              });
             }
 
             else {
@@ -305,9 +317,19 @@ export default function TrustSetDialog({ token, setToken }) {
               Flags: Flags,
               LimitAmount: LimitAmount,
             }
+
+            dispatch(updateProcess(1));
             await sdk.methods.signAndSubmitAndWait({
               ...trustSet,
               TransactionType: 'TrustSet'
+            }).then(({ response }) => {
+              if (response.data.meta.isSuccess) {
+                dispatch(updateProcess(2));
+                dispatch(updateTxHash(response.data.resp.result?.hash));
+
+              } else {
+                dispatch(updateProcess(0));
+              }
             });
           // }
           break;
@@ -316,6 +338,7 @@ export default function TrustSetDialog({ token, setToken }) {
       
     } catch (err) {
       console.log(err);
+      dispatch(updateProcess(0));
       openSnackbar('Network error!', 'error');
     }
     setLoading(false);

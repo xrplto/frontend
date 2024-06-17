@@ -252,7 +252,7 @@ export default function TradePanel({pair, bids, asks, bidId, askId}) {
                     <Typography>Total</Typography>
                     <Box sx={{ flexGrow: 1 }} />
                     <Typography sx={{mr:1}}>≈</Typography>
-                    <Typography alignItems='right' sx={{mr:2}}>{millify(value)} <Typography variant="caption"> {curr2.name}</Typography></Typography>
+                    <Typography alignItems='right' sx={{mr:2}}>{value < 1 ? value : millify(value)} <Typography variant="caption"> {curr2.name}</Typography></Typography>
                 </Box>
 
                 <PlaceOrder marketLimit={marketLimit} buySell={buySell} pair={pair} amount={amount} value={value} accountPairBalance={accountPairBalance} />

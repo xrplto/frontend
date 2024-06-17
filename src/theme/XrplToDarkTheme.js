@@ -377,6 +377,11 @@ export const XrplToDarkTheme = createTheme({
       focus: colors.alpha.black[10],
       focusOpacity: 0.05,
       activatedOpacity: 0.12
+    },
+    tx: {
+      light: "#fff",
+      main: "#252525",
+      dark: "#0f0f0f"
     }
   },
   breakpoints: {
