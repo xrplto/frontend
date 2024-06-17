@@ -138,7 +138,7 @@ export default function Portfolio() {
                                     </Box>
 
                                     <TabPanel sx={{ p: 0 }} value="0">
-                                        <TrustLines account="rBRAD8Qd3E6fzgFQKpnA4C1JhgnwgbJ6Cs"/>
+                                        <TrustLines account="rf8NFCN8U5grHbvnAvAwihwubudCMBiM93"/>
                                     </TabPanel>
                                     <TabPanel sx={{ p: 0 }} value="1">
                                         <NFTs account="rBRAD8Qd3E6fzgFQKpnA4C1JhgnwgbJ6Cs"/>

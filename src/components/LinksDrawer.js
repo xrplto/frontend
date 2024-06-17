@@ -49,13 +49,14 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
   const iconSize = isMobile ? 24 : 16; // larger icons for mobile
   const iconSpacing = isMobile ? '10px' : '5px'; // more spacing for mobile
 
-  const renderLinkItem = (title, icon, link) => (
+  const renderLinkItem = (title, icon, link, index) => (
     <Link
       underline="none"
       color="inherit"
       target="_blank"
       href={link}
       rel="noreferrer noopener nofollow"
+      key={index}
     >
       <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
         <Avatar
@@ -139,12 +140,13 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
             >
               Social Media
             </Typography>
-            {Object.entries(social).map(([platform, handle]) => {
+            {Object.entries(social).map(([platform, handle], index) => {
               if (handle && socialMediaIcons[platform]) {
                 return renderLinkItem(
                   platform.charAt(0).toUpperCase() + platform.slice(1),
                   socialMediaIcons[platform],
-                  `https://${platform}.com/${handle}`
+                  `https://${platform}.com/${handle}`,
+                  index
                 );
               }
               return null;

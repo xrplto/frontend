@@ -3,7 +3,7 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import statusReducer from './statusSlice';
 import { CookieStorage } from 'redux-persist-cookie-storage';
 import Cookies from './customCookiesParser';
-import { persistReducer, persistStore } from 'redux-persist';
+import { persistReducer } from 'redux-persist';
 import { currencyConfig } from 'src/utils/constants';
 
 const initialState = {
@@ -56,7 +56,7 @@ export const store = configureStore({
   devTools: process.env.NODE_ENV !== 'production'
 });
 
-export const persistor = globalThis.window ? persistStore(store) : store;
+// export const persistor = globalThis.window ? persistStore(store) : store;
 
 export function configureRedux(data) {
   let defaultState = initialState;

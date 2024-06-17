@@ -31,7 +31,6 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
           expandIcon={<ExpandMoreIcon />}
           id="panel-header"
           aria-controls="panel-content"
-          ico
         >
           <Typography variant="s6">Tokens</Typography>
         </AccordionSummary>

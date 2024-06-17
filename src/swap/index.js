@@ -738,7 +738,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     setIsProcessing(0);
   }
 
-  console.log("tokenPrice2", tokenPrice2 > 0);
   return (
     <Stack alignItems="center">
       <OverviewWrapper>

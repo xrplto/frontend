@@ -101,6 +101,7 @@ import {
 						}
 					  }
 					}}
+					key={index}
 				  >
 					<TableCell align="left">
 					  <Link
