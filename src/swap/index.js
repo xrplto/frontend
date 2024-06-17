@@ -738,8 +738,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     setIsProcessing(0);
   }
 
-  console.log("isProcessing===>", isProcessing);
-
   return (
     <Stack alignItems="center">
       <OverviewWrapper>
