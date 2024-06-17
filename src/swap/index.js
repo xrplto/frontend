@@ -421,7 +421,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   }, [openScanQR, uuid]);
 
   const onOfferCreateXumm = async () => {
-    setLoading(true);
     try {
       // const curr1 = revert?pair.curr2:pair.curr1;
       // const curr2 = revert?pair.curr1:pair.curr2;
@@ -469,6 +468,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
       switch (wallet_type) {
         case "xaman":
+          setLoading(true);
           const res = await axios.post(`${BASE_URL}/offer/create`, body);
 
           if (res.status === 200) {
@@ -503,7 +503,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               };
 
               setIsProcessing(1);
-              
+
               await submitTransaction({
                 transaction: offerTxData
               }).then(({ type, result }) => {
@@ -542,19 +542,19 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             TakerPays,
             Memos: configureMemos('', '', memoData)
           };
-          
+
           setIsProcessing(1);
           await sdk.methods.signAndSubmitAndWait(offerTxData)
-          .then(({ response }) => {
-            if (response.data.meta.isSuccess) {
-              setIsProcessing(2);
-              setTxHash(response.data.resp.result?.hash);
+            .then(({ response }) => {
+              if (response.data.meta.isSuccess) {
+                setIsProcessing(2);
+                setTxHash(response.data.resp.result?.hash);
 
-            } else {
-              setIsProcessing(0);
-            }
-            setSwapped(!isSwapped);
-          });
+              } else {
+                setIsProcessing(0);
+              }
+              setSwapped(!isSwapped);
+            });
           // }
           break;
       }
@@ -663,7 +663,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
     if (value == ".") value = "0.";
     if (isNaN(Number(value))) return;
-    
+
     setAmount1(value);
     setActive(revert ? 'VALUE' : 'AMOUNT');
   };
@@ -740,16 +740,23 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     setIsProcessing(0);
   }
 
+  const handleMsg = () => {
+     if (isProcessing == 1) return "Pending Exchanging";
+    if (!amount1 || !amount2) return "Enter an Amount";
+    else if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
+    else return "Exchange";
+  }
+
   return (
     <Stack alignItems="center">
       <OverviewWrapper>
         <ConverterFrame>
           {
             isLoggedIn &&
-              <Stack direction="row" justifyContent="end" spacing={1} siz="small" sx={{ px: 1.2 }}>
-                <AllowButton variant="outlined" onClick={onFillHalf}>Half</AllowButton>
-                <AllowButton variant="outlined" onClick={onFillMax}>Max</AllowButton>
-              </Stack>
+            <Stack direction="row" justifyContent="end" spacing={1} siz="small" sx={{ px: 1.2 }}>
+              <AllowButton variant="outlined" onClick={onFillHalf}>Half</AllowButton>
+              <AllowButton variant="outlined" onClick={onFillMax}>Max</AllowButton>
+            </Stack>
           }
           <CurrencyContent
             style={{ order: revert ? 2 : 1, backgroundColor: color1 }}
@@ -757,15 +764,15 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <Stack>
               <QueryToken token={token1} onChangeToken={onChangeToken1} />
               {
-                isLoggedIn && 
-                  <Typography variant="s7">
-                    Balance{' '}
-                    <Typography variant="s2" color="primary" >
-                      {revert
-                        ? accountPairBalance?.curr2.value
-                        : accountPairBalance?.curr1.value}
-                    </Typography>
+                isLoggedIn &&
+                <Typography variant="s7">
+                  Balance{' '}
+                  <Typography variant="s2" color="primary" >
+                    {revert
+                      ? accountPairBalance?.curr2.value
+                      : accountPairBalance?.curr1.value}
                   </Typography>
+                </Typography>
               }
             </Stack>
             <InputContent>
@@ -799,15 +806,15 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <Stack>
               <QueryToken token={token2} onChangeToken={onChangeToken2} />
               {
-                isLoggedIn && 
-                  <Typography variant="s7">
-                    Balance{' '}
-                    <Typography variant="s2" color="primary" >
-                      {revert
-                        ? accountPairBalance?.curr1.value
-                        : accountPairBalance?.curr2.value}
-                    </Typography>
+                isLoggedIn &&
+                <Typography variant="s7">
+                  Balance{' '}
+                  <Typography variant="s2" color="primary" >
+                    {revert
+                      ? accountPairBalance?.curr1.value
+                      : accountPairBalance?.curr2.value}
                   </Typography>
+                </Typography>
               }
             </Stack>
             <InputContent>
@@ -892,7 +899,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               // color={'primary'}
               disabled={!canPlaceOrder || isProcessing == 1}
             >
-              {(!amount1 || !amount2) ? "Enter an Amount" : (errMsg && amount1 !== '' && amount2 !== '' ? errMsg : "Exchange")} 
+              {handleMsg()}
             </ExchangeButton>
           </>
         ) : (
@@ -919,12 +926,12 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           severity="main"
           sx={{ width: '100%' }}
           icon={
-            isProcessing == 1 ? 
-            <CircularProgress
-              disableShrink
-              size={20}
-              color="primary"
-            /> : <TaskAltIcon color="primary"/>
+            isProcessing == 1 ?
+              <CircularProgress
+                disableShrink
+                size={20}
+                color="primary"
+              /> : <TaskAltIcon color="primary" />
           }
         >
           <AlertTitle sx={{ textTransform: "capitalize" }} color="primary">
