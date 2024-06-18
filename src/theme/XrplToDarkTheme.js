@@ -277,7 +277,7 @@ export const XrplToDarkTheme = createTheme({
     }
   },
   general: {
-    reactFrameworkColor: '#00D8FF',
+    reactFrameworkColor: '#007b5580',
     borderRadiusSm: '6px',
     borderRadius: '10px',
     borderRadiusLg: '12px',

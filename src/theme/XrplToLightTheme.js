@@ -231,7 +231,7 @@ export const XrplToLightTheme = createTheme({
     }
   },
   general: {
-    reactFrameworkColor: '#00D8FF',
+    reactFrameworkColor: '#5569ff80',
     borderRadiusSm: '6px',
     borderRadius: '10px',
     borderRadiusLg: '12px',
