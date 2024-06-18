@@ -191,7 +191,8 @@ export default function Portfolio() {
                                     <Line data={volumeData} options={volumeOptions} />
                                 </Box>
 
-                                <ButtonFollow variant="outlined" sx={{ mt: 2 }}>Follow</ButtonFollow>
+                                <ButtonFollow variant="outlined" sx={{ mt: 2 }}>Send</ButtonFollow>
+                                <ButtonWatch variant="outlined" sx={{ mt: 2 }}>Receive</ButtonWatch>
                                 <ButtonWatch variant="outlined" sx={{ mt: 2 }}>Watch</ButtonWatch>
                             </Stack>
 
@@ -266,7 +267,6 @@ export default function Portfolio() {
                                             <Table>
                                                 <TableHead>
                                                     <TableRow>
-                                                        <TableCell sx={{ color: theme.palette.text.primary }}>#</TableCell>
                                                         <TableCell sx={{ color: theme.palette.text.primary }}>Asset</TableCell>
                                                         <TableCell sx={{ color: theme.palette.text.primary }}>Amount</TableCell>
                                                         <TableCell sx={{ color: theme.palette.text.primary }}>Estimated Value</TableCell>
