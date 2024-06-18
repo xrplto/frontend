@@ -49,6 +49,7 @@ import {
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
 import LoadChart from 'src/components/LoadChart';
+import { useRouter } from 'next/router';
 
 const StickyTableCell = withStyles((theme) => ({
   head: {
@@ -134,6 +135,7 @@ function FTokenRow({
   const isAdmin =
     accountProfile && accountProfile.account && accountProfile.admin;
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const router = useRouter();
 
   const [priceColor, setPriceColor] = useState('');
   const {
@@ -188,12 +190,14 @@ function FTokenRow({
             backgroundColor: darkMode
               ? '#232326 !important'
               : '#D9DCE0 !important'
-          }
+          },
+          cursor: "pointer"
         },
         '& .MuiTypography-root': {
           fontSize: isMobile && '14px'
         }
       }}
+      onClick={() => router.replace(`/token/${slug}`) }
     >
       <TableCell
         align="left"
