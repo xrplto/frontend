@@ -516,7 +516,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 }
 
                 else {
-                  dispatch(updateProcess(0));
+                  dispatch(updateProcess(3));
                 }
 
                 setSwapped(!isSwapped);
@@ -554,7 +554,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 dispatch(updateTxHash(response.data.resp.result?.hash));
 
               } else {
-                dispatch(updateProcess(0));
+                dispatch(updateProcess(3));
               }
               setSwapped(!isSwapped);
             });

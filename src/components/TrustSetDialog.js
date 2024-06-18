@@ -296,7 +296,7 @@ export default function TrustSetDialog({ token, setToken }) {
                 }
 
                 else {
-                  dispatch(updateProcess(0));
+                  dispatch(updateProcess(3));
                 }
               });
             }
@@ -328,7 +328,7 @@ export default function TrustSetDialog({ token, setToken }) {
                 dispatch(updateTxHash(response.data.resp.result?.hash));
 
               } else {
-                dispatch(updateProcess(0));
+                dispatch(updateProcess(3));
               }
             });
           // }
