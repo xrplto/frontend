@@ -42,7 +42,7 @@ const TransactionAlert = () => {
                 <a href={`https://bithomp.com/explorer/${txHash}`} target="_blank" rel="noreferrer"><Typography sx={{ textTransform: "capitalize" }}>view transaction</Typography></a>
                 break;
             case 3:
-                return <Typography color="primary" sx={{ textTransform: "capitalize" }}>Transaction is cancelled</Typography>;
+                return <Typography color="error" sx={{ textTransform: "capitalize" }}>Transaction is cancelled</Typography>;
                 break;
         }
     }
@@ -60,7 +60,7 @@ const TransactionAlert = () => {
                 return <TaskAltIcon color="primary" />
                 break;
             case 3:
-                return <WarningAmberIcon color="primary" />
+                return <WarningAmberIcon color="error" />
                 break;
         }
     }
@@ -68,7 +68,7 @@ const TransactionAlert = () => {
     return (
         <Snackbar
             open={isProcessing > 0}
-            autoHideDuration={6000}
+            autoHideDuration={5000}
             onClose={handleClose}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             key="key_self_snackbar"
@@ -80,7 +80,7 @@ const TransactionAlert = () => {
                 onClose={isProcessing == 2 ? handleClose : null}
                 variant="filled"
             >
-                <AlertTitle sx={{ textTransform: "capitalize" }} color="primary">
+                <AlertTitle sx={{ textTransform: "capitalize" }} color={isProcessing == 3 ? "error" : "primary"}>
                     {handleTitle()}
                 </AlertTitle>
 

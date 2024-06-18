@@ -32,7 +32,7 @@ import exchangeIcon from '@iconify/icons-uil/exchange';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { isInstalled, on, submitTransaction } from "@gemwallet/api";
+import { isInstalled, submitTransaction } from "@gemwallet/api";
 import sdk from "@crossmarkio/sdk";
 
 // Redux

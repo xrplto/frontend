@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import 'src/utils/i18n';
 import { useTranslation } from 'react-i18next';
 import {
@@ -30,6 +30,9 @@ import ThemeSwitcher from './ThemeSwitcher';
 import DropDownMenu from './DropDownMenu';
 import LoginDialog from './LoginDialog';
 import WalletConnectModal from './WalletConnectModal';
+import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import sdk from "@crossmarkio/sdk";
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -66,6 +69,8 @@ const MenuContainer = styled('div')({
 export default function Header(props) {
   const { t } = useTranslation(); // set translation const
   const theme = useTheme();
+  const dispatch = useDispatch();
+  const isProcessing = useSelector(selectProcess);
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const [fullSearch, setFullSearch] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -93,6 +98,14 @@ export default function Header(props) {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+
+  useEffect(() => {
+    sdk.on("close", () => {
+      if (isProcessing == 1) {
+        dispatch(updateProcess(3));
+      }
+    });
+  }, [isProcessing]);
 
   return (
     <HeaderWrapper>
