@@ -36,6 +36,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 function truncate(str, n) {
   if (!str) return '';
+  // return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
   return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
 }
 
@@ -45,14 +46,15 @@ function truncateAccount(str) {
 }
 
 const trustlineFlags = {
-  lsfLowReserve: 0x00010000,
-  lsfHighReserve: 0x00020000,
-  lsfLowAuth: 0x00040000,
-  lsfHighAuth: 0x00080000,
-  lsfLowNoRipple: 0x00100000,
-  lsfHighNoRipple: 0x00200000,
-  lsfLowFreeze: 0x00400000,
-  lsfHighFreeze: 0x00800000
+  // Flag Name	Hex Value	Corresponding TrustSet Flag	Description
+  lsfLowReserve: 0x00010000, // [NONE], This RippleState object contributes to the low account's owner reserve.
+  lsfHighReserve: 0x00020000, // [NONE], This RippleState object contributes to the high account's owner reserve.
+  lsfLowAuth: 0x00040000, // tfSetAuth, The low account has authorized the high account to hold tokens issued by the low account.
+  lsfHighAuth: 0x00080000, // tfSetAuth, The high account has authorized the low account to hold tokens issued by the high account.
+  lsfLowNoRipple: 0x00100000, // tfSetNoRipple, The low account has disabled rippling from this trust line.
+  lsfHighNoRipple: 0x00200000, // tfSetNoRipple, The high account has disabled rippling from this trust line.
+  lsfLowFreeze: 0x00400000, // tfSetFreeze, The low account has frozen the trust line, preventing the high account from transferring the asset.
+  lsfHighFreeze: 0x00800000 // tfSetFreeze, The high account has frozen the trust line, preventing the low account from transferring the asset.
 };
 
 export default function TrustLines({ account }) {
@@ -92,6 +94,7 @@ export default function TrustLines({ account }) {
 
   const getLines = () => {
     setLoading(true);
+    // https://api.xrpl.to/api/account/lines/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
     axios
       .get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=${rows}`)
       .then((res) => {
