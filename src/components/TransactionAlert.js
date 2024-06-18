@@ -68,7 +68,7 @@ const TransactionAlert = () => {
     return (
         <Snackbar
             open={isProcessing > 0}
-            autoHideDuration={isProcessing == 2 ? 15000 : null}
+            autoHideDuration={6000}
             onClose={handleClose}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             key="key_self_snackbar"
