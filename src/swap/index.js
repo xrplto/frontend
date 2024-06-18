@@ -160,7 +160,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const curr1 = pair?.curr1;
   const curr2 = pair?.curr2;
 
-  const { accountProfile, doLogIn, setLoading, sync, setSync, openSnackbar, activeFiatCurrency } =
+  const { accountProfile, darkMode, setLoading, sync, setSync, openSnackbar, activeFiatCurrency } =
     useContext(AppContext);
 
   const [openScanQR, setOpenScanQR] = useState(false);
@@ -183,6 +183,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const [accountPairBalance, setAccountPairBalance] = useState(null);
 
   const [loadingPrice, setLoadingPrice] = useState(false);
+  const [focusTop, setFocusTop] = useState(false);
+  const [focusBottom, setFocusBottom] = useState(false);
 
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
@@ -756,7 +758,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             </Stack>
           }
           <CurrencyContent
-            style={{ order: revert ? 2 : 1, backgroundColor: color1 }}
+            style={{ order: revert ? 2 : 1, backgroundColor: color1, border: focusTop ? `1px solid ${theme?.general?.reactFrameworkColor}` : "none" }}
           >
             <Stack>
               <QueryToken token={token1} onChangeToken={onChangeToken1} />
@@ -793,12 +795,14 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                     fontWeight: 700
                   }
                 }}
+                onFocus={() => setFocusTop(true)}
+                onBlur={() => setFocusTop(false)}
               />
               <Typography variant="s2" color="primary" sx={{ visibility: tokenPrice1 > 0 ? "visible" : "hidden" }}>{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}</Typography>
             </InputContent>
           </CurrencyContent>
           <CurrencyContent
-            style={{ order: revert ? 1 : 2, backgroundColor: color2 }}
+            style={{ order: revert ? 1 : 2, backgroundColor: color2, border: focusBottom ? `1px solid ${theme?.general?.reactFrameworkColor}` : "none" }}
           >
             <Stack>
               <QueryToken token={token2} onChangeToken={onChangeToken2} />
@@ -835,6 +839,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                     fontWeight: 700
                   }
                 }}
+                onFocus={() => setFocusBottom(true)}
+                onBlur={() => setFocusBottom(false)}
               />
               <Typography variant="s2" color="primary" sx={{ visibility: tokenPrice2 > 0 ? "visible" : "hidden" }}>{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}</Typography>
             </InputContent>
