@@ -352,7 +352,7 @@ function FTokenRow({
             />
           </TransitionTypo>
           <TransitionTypo variant="h6" noWrap={isMobile ? false : true}>
-            <Icon icon={rippleSolid} width={12} height={12} />{' '}
+            ✕{' '}
             <NumberTooltip number={fNumber(exch)} />
           </TransitionTypo>
         </TableCell>
@@ -369,7 +369,7 @@ function FTokenRow({
             justifyContent="flex-end"
             alignItems="center"
           >
-            <Icon icon={rippleSolid} />
+            <Typography>✕</Typography>
             <Typography variant="h4" noWrap={isMobile ? false : true}>
               {fNumber(vol24hxrp)}
             </Typography>
