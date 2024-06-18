@@ -11,6 +11,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableHead,
   TableRow,
   Typography,
   useMediaQuery
@@ -36,7 +37,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 function truncate(str, n) {
   if (!str) return '';
-  // return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
+  //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
   return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
 }
 
@@ -46,15 +47,15 @@ function truncateAccount(str) {
 }
 
 const trustlineFlags = {
-  // Flag Name	Hex Value	Corresponding TrustSet Flag	Description
-  lsfLowReserve: 0x00010000, // [NONE], This RippleState object contributes to the low account's owner reserve.
-  lsfHighReserve: 0x00020000, // [NONE], This RippleState object contributes to the high account's owner reserve.
-  lsfLowAuth: 0x00040000, // tfSetAuth, The low account has authorized the high account to hold tokens issued by the low account.
-  lsfHighAuth: 0x00080000, // tfSetAuth, The high account has authorized the low account to hold tokens issued by the high account.
-  lsfLowNoRipple: 0x00100000, // tfSetNoRipple, The low account has disabled rippling from this trust line.
-  lsfHighNoRipple: 0x00200000, // tfSetNoRipple, The high account has disabled rippling from this trust line.
-  lsfLowFreeze: 0x00400000, // tfSetFreeze, The low account has frozen the trust line, preventing the high account from transferring the asset.
-  lsfHighFreeze: 0x00800000 // tfSetFreeze, The high account has frozen the trust line, preventing the low account from transferring the asset.
+  // Flag Name	 Hex Value	Corresponding TrustSet Flag	Description
+  lsfLowReserve: 0x00010000, // [NONE],         This RippleState object contributes to the low account's owner reserve.
+  lsfHighReserve: 0x00020000, // [NONE],         This RippleState object contributes to the high account's owner reserve.
+  lsfLowAuth: 0x00040000, // tfSetAuth,      The low account has authorized the high account to hold tokens issued by the low account.
+  lsfHighAuth: 0x00080000, // tfSetAuth,      The high account has authorized the low account to hold tokens issued by the high account.
+  lsfLowNoRipple: 0x00100000, // tfSetNoRipple,	The low account has disabled rippling from this trust line.
+  lsfHighNoRipple: 0x00200000, // tfSetNoRipple,	The high account has disabled rippling from this trust line.
+  lsfLowFreeze: 0x00400000, // tfSetFreeze,	The low account has frozen the trust line, preventing the high account from transferring the asset.
+  lsfHighFreeze: 0x00800000 // tfSetFreeze,	The high account has frozen the trust line, preventing the low account from transferring the asset.
 };
 
 export default function TrustLines({ account }) {
@@ -68,7 +69,9 @@ export default function TrustLines({ account }) {
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency];
 
+
   const [loading, setLoading] = useState(false);
+
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(10);
   const [total, setTotal] = useState(0);
@@ -77,20 +80,26 @@ export default function TrustLines({ account }) {
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
 
   const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-    onOpen: () => {},
-    onClose: () => {},
-    shouldReconnect: (closeEvent) => true,
-    onMessage: (event) => processMessages(event),
-  });
+        onOpen: () => {},
+        onClose: () => {},
+        shouldReconnect: (closeEvent) => true,
+        onMessage: (event) =>  processMessages(event),
+        // reconnectAttempts: 10,
+        // reconnectInterval: 3000,
+    });
 
-  const processMessages = (event) => {
-    try {
-      const json = JSON.parse(event.data);
-      dispatch(update_metrics(json));
-    } catch (err) {
-      console.error(err);
-    }
-  };
+    const processMessages = (event) => {
+        try {
+            var t1 = Date.now();
+
+            const json = JSON.parse(event.data);
+
+            dispatch(update_metrics(json));
+            // console.log(`${dt} ms`);
+        } catch(err) {
+            console.error(err);
+        }
+    };
 
   const getLines = () => {
     setLoading(true);
@@ -107,7 +116,8 @@ export default function TrustLines({ account }) {
       .catch((err) => {
         console.log('Error on getting account lines!!!', err);
       })
-      .finally(() => {
+      .then(function () {
+        // always executed
         setLoading(false);
       });
   };
@@ -119,7 +129,7 @@ export default function TrustLines({ account }) {
   const tableRef = useRef(null);
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box>
       {loading ? (
         <Stack alignItems="center">
           <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
@@ -156,7 +166,6 @@ export default function TrustLines({ account }) {
             stickyHeader
             size={'small'}
             sx={{
-              width: '100%',
               '& .MuiTableCell-root': {
                 borderBottom: 'none',
                 boxShadow: darkMode
@@ -165,6 +174,7 @@ export default function TrustLines({ account }) {
               }
             }}
           >
+         
             <TableBody>
               {lines.map((row, idx) => {
                 const { _id, Balance, HighLimit, LowLimit } = row;
@@ -177,6 +187,8 @@ export default function TrustLines({ account }) {
                   balance = Balance.value;
                 }
 
+                // const strCreatedTime = formatDateTime(ctime);
+                // peer, currency, peer limit, owner limit, balance, rippling
                 let issuer = null;
                 let _balance = Number.parseFloat(Balance.value);
                 let highLimit = Number.parseFloat(HighLimit.value);
@@ -188,13 +200,15 @@ export default function TrustLines({ account }) {
                   issuer = LowLimit.issuer;
                   account = HighLimit.issuer;
                 } else {
-                  if (highLimit > 0 && lowLimit === 0) {
+                  // balance is zero. check who has a limit set
+                  if (highLimit > 0 && lowLimit == 0) {
                     issuer = LowLimit.issuer;
                     account = HighLimit.issuer;
-                  } else if (lowLimit > 0 && highLimit === 0) {
+                  } else if (lowLimit > 0 && highLimit == 0) {
                     issuer = HighLimit.issuer;
                     account = LowLimit.issuer;
                   } else {
+                    // can not determine issuer!
                     issuer = null;
                     account = null;
                   }
@@ -207,7 +221,6 @@ export default function TrustLines({ account }) {
                 return (
                   <TrustLineRow
                     key={_id}
-                    idx={idx + page * rows + 1}
                     currencyName={currencyName}
                     balance={balance}
                     md5={md5}
