@@ -53,7 +53,7 @@ function XRPLToApp({ Component, pageProps, router }) {
         {/* <!-- HTML Meta Tags --> */}
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         {/* <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" /> */}
-        <meta name="viewport" content="width=device-width, height=device-height,  initial-scale=1.0, user-scalable=no, user-scalable=0" />
+        <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, user-scalable=0" />
         <meta name="robots" content="index, follow" />
         <meta name="language" content="en" />
         <meta content="xrpl.to" name="author" />
@@ -66,7 +66,6 @@ function XRPLToApp({ Component, pageProps, router }) {
         <meta httpEquiv="Pragma" content="no-cache" />
         <meta httpEquiv="Cache-Control" content="no-cache" />
         <meta name="google-site-verification" content="hh6F1f8GQ-_d3L7eGAcBc9G020PM2jSDzIjT12_I-Mc" />
-
 
         {/* <!-- iOS / MS Meta Tags and favicon --> */}
         <meta name="msapplication-TileColor" content="#000000" />
@@ -130,7 +129,7 @@ function XRPLToApp({ Component, pageProps, router }) {
             <CssBaseline />
             <Component {...pageProps} />
             <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
-            <TransactionAlert/>
+            <TransactionAlert />
           </SnackbarProvider>
         </ThemeProvider>
       </ContextProvider>

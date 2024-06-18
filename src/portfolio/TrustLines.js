@@ -174,18 +174,7 @@ export default function TrustLines({ account }) {
               }
             }}
           >
-            <TableHead>
-              <TableRow>
-                <TableCell
-                  align="left"
-                >
-                  #
-                </TableCell>
-                <TableCell align="left">Currency</TableCell>
-                <TableCell align="left" sx={{ display: isMobile ? "none" : "table-cell" }}>Balance</TableCell>
-                <TableCell align="right">Estimated Value</TableCell>
-              </TableRow>
-            </TableHead>
+         
             <TableBody>
               {lines.map((row, idx) => {
                 const { _id, Balance, HighLimit, LowLimit } = row;
@@ -232,7 +221,6 @@ export default function TrustLines({ account }) {
                 return (
                   <TrustLineRow
                     key={_id}
-                    idx={idx + page * rows + 1}
                     currencyName={currencyName}
                     balance={balance}
                     md5={md5}
