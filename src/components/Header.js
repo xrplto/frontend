@@ -74,6 +74,7 @@ export default function Header(props) {
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const [fullSearch, setFullSearch] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
+  const [isClosed, setClosed] = useState(false);
   const {
     darkMode,
     setDarkMode,
@@ -99,11 +100,21 @@ export default function Header(props) {
     setAnchorEl(null);
   };
   
-  sdk.on("close", () => {
-    if (isProcessing == 1) {
+  useEffect(() => {
+    if (isProcessing == 1 && isClosed) {
       dispatch(updateProcess(3));
     }
-  });
+    
+    if (isClosed) {
+      setClosed(false);
+    }
+  }, [isProcessing, isClosed])
+
+  useEffect(() => {
+    sdk.on("close", () => {
+      setClosed(true);
+    });
+  }, [])
 
   return (
     <HeaderWrapper>
