@@ -69,7 +69,7 @@ const TransactionAlert = () => {
         <Snackbar
             open={isProcessing > 0}
             autoHideDuration={5000}
-            onClose={handleClose}
+            onClose={isProcessing > 1 ? handleClose : null}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
             key="key_self_snackbar"
         >
@@ -77,7 +77,7 @@ const TransactionAlert = () => {
                 severity="tx"
                 sx={{ width: '100%' }}
                 icon={handleIcon()}
-                onClose={isProcessing == 2 ? handleClose : null}
+                onClose={isProcessing > 1 ? handleClose : null}
                 variant="filled"
             >
                 <AlertTitle sx={{ textTransform: "capitalize" }} color={isProcessing == 3 ? "error" : "primary"}>
