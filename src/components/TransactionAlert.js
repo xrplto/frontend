@@ -1,6 +1,5 @@
-import { Alert, AlertTitle, CircularProgress, IconButton, Snackbar, Stack, Typography } from "@mui/material";
+import { Alert, AlertTitle, CircularProgress, Snackbar, Stack, Typography } from "@mui/material";
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
-import CloseIcon from '@mui/icons-material/Close';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 import { useDispatch, useSelector } from "react-redux";
@@ -13,6 +12,7 @@ const TransactionAlert = () => {
     const txHash = useSelector(selectTxHash);
 
     const handleClose = (_, reason) => {
+
         if (reason === 'clickaway') {
             return;
         }
@@ -69,9 +69,9 @@ const TransactionAlert = () => {
         <Snackbar
             open={isProcessing > 0}
             autoHideDuration={5000}
+            key={isProcessing}
             onClose={isProcessing > 1 ? handleClose : null}
             anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-            key="key_self_snackbar"
         >
             <Alert
                 severity="tx"
