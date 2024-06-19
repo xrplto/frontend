@@ -39,7 +39,7 @@ const TransactionAlert = () => {
                 return <Typography color="primary" sx={{ textTransform: "capitalize" }}>pending wallet to sign</Typography>;
                 break;
             case 2:
-                <a href={`https://bithomp.com/explorer/${txHash}`} target="_blank" rel="noreferrer"><Typography sx={{ textTransform: "capitalize" }}>view transaction</Typography></a>
+                return <a href={`https://bithomp.com/explorer/${txHash}`} target="_blank" rel="noreferrer"><Typography sx={{ textTransform: "capitalize" }}>view transaction</Typography></a>
                 break;
             case 3:
                 return <Typography color="error" sx={{ textTransform: "capitalize" }}>Transaction is cancelled</Typography>;
