@@ -321,6 +321,7 @@ export default function TrustSetDialog({ token, setToken }) {
             dispatch(updateProcess(1));
             await sdk.methods.signAndSubmitAndWait({
               ...trustSet,
+              Account: accountProfile.account,
               TransactionType: 'TrustSet'
             }).then(({ response }) => {
               if (response.data.meta.isSuccess) {
