@@ -98,14 +98,12 @@ export default function Header(props) {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-
-  useEffect(() => {
-    sdk.on("close", () => {
-      if (isProcessing == 1) {
-        dispatch(updateProcess(3));
-      }
-    });
-  }, [isProcessing]);
+  
+  sdk.on("close", () => {
+    if (isProcessing == 1) {
+      dispatch(updateProcess(3));
+    }
+  });
 
   return (
     <HeaderWrapper>
