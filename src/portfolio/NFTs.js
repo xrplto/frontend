@@ -1,13 +1,18 @@
-import { Box, Grid } from "@mui/material";
+import { Box, Grid, Stack } from "@mui/material";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import NFTCard from "./NFTCard";
 import CollectionCard from "./CollectionCard";
+import { PulseLoader } from "react-spinners";
+import { AppContext } from "src/AppContext";
 
 const NFTs = ({ account, collection = false }) => {
 
     const BASE_URL = 'https://api.xrpnft.com/api';
+    const { darkMode } = useContext(AppContext);
+
     const [nfts, setNFTs] = useState([]);
+    const [loading, setLoading] = useState(false);
     const type = "collected";
 
     useEffect(() => {
@@ -30,10 +35,15 @@ const NFTs = ({ account, collection = false }) => {
             type: "collected",
         };
 
+        setLoading(true);
         await axios.post(`${BASE_URL}/account/collectedCreated`, body).then((res) => {
             const newNfts = res.data.nfts;
             setNFTs(newNfts);
+            setLoading(false);
+        }).catch(err => {
+            setLoading(false);
         });
+
 
     }
 
@@ -53,6 +63,13 @@ const NFTs = ({ account, collection = false }) => {
                 }
             }}
         >
+            {
+                loading && (
+                    <Stack alignItems="center">
+                        <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
+                    </Stack>
+                )
+            }
             <Grid container spacing={3}>
                 {
                     nfts.map((nft, index) => (

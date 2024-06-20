@@ -64,29 +64,29 @@ const OverviewItem = styled(Box)({
 });
 
 const ButtonSend = styled(Button)(({ theme }) => ({
-   // border: `1px solid ${theme.palette.success.main}`,
-   // color: theme.palette.success.main,
+    // border: `1px solid ${theme.palette.success.main}`,
+    // color: theme.palette.success.main,
     '&:hover': {
-      //  backgroundColor: theme.palette.success.light,
-      //  borderColor: theme.palette.success.light,
+        //  backgroundColor: theme.palette.success.light,
+        //  borderColor: theme.palette.success.light,
     }
 }));
 
 const ButtonReceive = styled(Button)(({ theme }) => ({
-  //  border: `1px solid ${theme.palette.info.main}`,
-   // color: theme.palette.info.main,
+    //  border: `1px solid ${theme.palette.info.main}`,
+    // color: theme.palette.info.main,
     '&:hover': {
-    //    backgroundColor: theme.palette.info.light,
-     //   borderColor: theme.palette.info.light,
+        //    backgroundColor: theme.palette.info.light,
+        //   borderColor: theme.palette.info.light,
     }
 }));
 
 const ButtonWatch = styled(Button)(({ theme }) => ({
-   // border: `1px solid ${theme.palette.warning.main}`,
-   // color: theme.palette.warning.main,
+    // border: `1px solid ${theme.palette.warning.main}`,
+    // color: theme.palette.warning.main,
     '&:hover': {
-      //  backgroundColor: theme.palette.warning.light,
-     //   borderColor: theme.palette.warning.light,
+        //  backgroundColor: theme.palette.warning.light,
+        //   borderColor: theme.palette.warning.light,
     }
 }));
 
@@ -234,14 +234,14 @@ export default function Portfolio() {
                                 <ButtonWatch variant="outlined" sx={{ mt: 2 }}>Watch</ButtonWatch>
 
                                 <Box sx={{ mt: 2 }}>
-    <Grid container spacing={0} sx={{ maxWidth: 400 }}>
-        {nftIcons.map((icon, index) => (
-            <Grid item key={index} sx={{ p: '4px', flexBasis: '10%', maxWidth: '10%' }}>
-                <Avatar src={icon} variant="rounded" sx={{ width: 28, height: 28 }} />
-            </Grid>
-        ))}
-    </Grid>
-</Box>
+                                    <Grid container spacing={0} sx={{ maxWidth: 400 }}>
+                                        {nftIcons.map((icon, index) => (
+                                            <Grid item key={index} sx={{ p: '4px', flexBasis: '10%', maxWidth: '10%' }}>
+                                                <Avatar src={icon} variant="rounded" sx={{ width: 28, height: 28 }} />
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                </Box>
 
 
 
