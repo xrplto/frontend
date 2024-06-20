@@ -126,7 +126,7 @@ export default function CollectionCard({ collectionData, type, account, handleRe
     const collectionType = type.charAt(0).toUpperCase() + type.slice(1)
 
     return (
-        <Link href={`/account/${account}/collection${collectionType}/${collectionData.collection.id/*slug*/}`} underline='none' sx={{ position: 'relative' }}>
+        <Link href={`/portfolio/collection/${account}/collection${collectionType}/${collectionData.collection.id/*slug*/}`} underline='none' sx={{ position: 'relative' }}>
             <CardWrapper
                 sx={{
                     marginLeft: 'auto',
