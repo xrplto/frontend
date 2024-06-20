@@ -2,11 +2,13 @@ import { Box, Grid } from "@mui/material";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import NFTCard from "./NFTCard";
+import CollectionCard from "./CollectionCard";
 
-const NFTs = ({ account }) => {
+const NFTs = ({ account, collection = false }) => {
 
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = 'https://api.xrpnft.com/api';
     const [nfts, setNFTs] = useState([]);
+    const type = "collected";
 
     useEffect(() => {
 
@@ -18,11 +20,19 @@ const NFTs = ({ account }) => {
 
     const getNFTs = async () => {
 
-        await axios.get(`${BASE_URL}/xrpnft/filter-by-account/${account}`).then((res) => {
+        const body = {
+            account: account,
+            filter: 0,
+            limit: "32",
+            page: 0,
+            search: "",
+            subFilter: "pricexrpasc",
+            type: "collected",
+        };
 
-            const { account_nfts } = res.data.nfts.result;
-            setNFTs(account_nfts);
-
+        await axios.post(`${BASE_URL}/account/collectedCreated`, body).then((res) => {
+            const newNfts = res.data.nfts;
+            setNFTs(newNfts);
         });
 
     }
@@ -47,7 +57,11 @@ const NFTs = ({ account }) => {
                 {
                     nfts.map((nft, index) => (
                         <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
-                            <NFTCard nft={nft} />
+                            {collection ? (
+                                <NFTCard nft={nft} />
+                            ) : (
+                                <CollectionCard collectionData={nft} type={type} account={account} />
+                            )}
                         </Grid>
                     ))
                 }

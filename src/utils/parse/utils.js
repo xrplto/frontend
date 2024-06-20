@@ -407,6 +407,36 @@ function parseFlags(value, keys, options = {}) {
     return flags;
 }
 
+export const getNftCoverUrl = (nft, size = 'big', type = '') => {
+    console.log(nft, size)
+    if (!nft) return '';
+    
+    const fileTypes = type ? [type] : ['video', 'animation', 'image']; // order is important
+    const files = nft.files?.filter(file => fileTypes.includes(file.type)/* && file.thumbnail?.[size]*/);
+    
+    if (files?.length) {
+        for (const type of fileTypes) {
+            const file = files.find(f => f.type === type);
+            if (file) {
+                // return big thumbnail if requied size fail
+                const thumbnail = file.thumbnail?.[size] || file.thumbnail?.big || file.convertedFile || ((!file.isIPFS && file.dfile) ? file.dfile : '');
+                if (thumbnail) {
+                    return `https://s2.xrpnft.com/d1/${thumbnail}`
+                } else if (file.dfile && file.isIPFS && file.IPFSPath){
+                    return `https://gateway.xrpnft.com/ipfs/${file.IPFSPath}`
+                }
+            }
+        }
+    }
+
+    // type is usually requested at page for og:*, so if no type requested showing no image
+    if (!type) {
+        return '/static/nft_no_image.webp';
+    }
+    
+    return '';
+}
+
 module.exports = {
   parseQuality,
   hexToString,
@@ -425,5 +455,6 @@ module.exports = {
   normalizeNodes,
   normalizeCurrencyCode,
   parseFlags,
-  BLACKHOLE_ACCOUNTS
+  BLACKHOLE_ACCOUNTS,
+  getNftCoverUrl
 }
