@@ -18,13 +18,13 @@ const OverviewWrapper = styled(Box)(
 const OverView = () => {
 
     const { accountProfile, openSnackbar } = useContext(AppContext);
-    
+
     return (
         <OverviewWrapper>
             <Toolbar id="back-to-top-anchor" />
             <Topbar />
-            <Header/>
-            <Container>
+            <Header />
+            <Container maxWidth="xl">
                 <Stack
                     direction="row"
                     justifyContent="center"
@@ -36,8 +36,8 @@ const OverView = () => {
                         minHeight: '100vh'
                     }}
                 >
-                <Portfolio />
-            </Stack>
+                    <Portfolio />
+                </Stack>
             </Container>
 
             <ScrollToTop />

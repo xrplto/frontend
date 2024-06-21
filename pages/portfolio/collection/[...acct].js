@@ -155,7 +155,7 @@ export default function CollectedCreatedNFTs({ type, account, limit, collection 
             <Toolbar id="back-to-top-anchor" />
             <Topbar />
             <Header />
-            <Container>
+            <Container maxWidth="xl">
                 {collection && (
                     <Box display="flex" justifyContent="start" mt={4}>
                         <IconButton onClick={handleBack}>

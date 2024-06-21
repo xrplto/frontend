@@ -185,7 +185,7 @@ export default function Portfolio() {
 
     return (
         <OverviewWrapper>
-            <Container maxWidth="lg" sx={{ mt: 4 }}>
+            <Container maxWidth="xl" sx={{ mt: 4 }}>
                 <Grid container spacing={2}>
                     <Grid item md={4} xs={12}>
                         <Stack sx={{ height: "100%", justifyContent: "space-between" }}>
