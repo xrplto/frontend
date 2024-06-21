@@ -14,6 +14,8 @@ import { PersistGate } from 'redux-persist/integration/react';
 export const AppContext = createContext({});
 
 export function ContextProvider({ children, data, openSnackbar }) {
+
+  console.log("data", data);
   
   const BASE_URL = 'https://api.xrpl.to/api';
 

@@ -1,3 +1,6 @@
+import Decimal from "decimal.js";
+import { encodeAccountID } from 'ripple-address-codec';
+
 const lodash = require("lodash");
 const BigNumber = require('bignumber.js');
 const {deriveKeypair} = require('ripple-keypairs');
@@ -408,7 +411,6 @@ function parseFlags(value, keys, options = {}) {
 }
 
 export const getNftCoverUrl = (nft, size = 'big', type = '') => {
-    console.log(nft, size)
     if (!nft) return '';
     
     const fileTypes = type ? [type] : ['video', 'animation', 'image']; // order is important
@@ -437,6 +439,79 @@ export const getNftCoverUrl = (nft, size = 'big', type = '') => {
     return '';
 }
 
+export const getNftFilesUrls = (nft, type = 'image') => {
+    if (!nft) return '';
+    const files = nft.files?.filter(file => file.type === type);
+    if (files?.length) {
+        for (const file of files) {
+            // Now serving convertedFile whever possible
+            if (!file.isIPFS && file.dfile) {
+                const fileName = file.convertedFile ?? file.dfile;
+                file.cachedUrl = `https://s2.xrpnft.com/d1/${fileName}`;
+            } else if (file.isIPFS && file.IPFSPath) {
+                file.cachedUrl = file.convertedFile ? `https://s2.xrpnft.com/d1/${file.convertedFile}` : `https://gateway.xrpnft.com/ipfs/${file.IPFSPath}`;
+            } else {
+                file.cachedUrl = null;
+            }
+        }
+        return files;
+    }
+}
+
+export function convertHexToString(hex, encoding = 'utf8') {
+    let ret = '';
+    try {
+        ret = Buffer.from(hex, 'hex').toString(encoding);
+    } catch (err) {
+    }
+    return ret;
+}
+
+export function cipheredTaxon(tokenSeq, taxon) {
+    // An issuer may issue several NFTs with the same taxon; to ensure that NFTs
+    // are spread across multiple pages we lightly mix the taxon up by using the
+    // sequence (which is not under the issuer's direct control) as the seed for
+    // a simple linear congruential generator.
+    //
+    // From the Hull-Dobell theorem we know that f(x)=(m*x+c) mod n will yield a
+    // permutation of [0, n) when n is a power of 2 if m is congruent to 1 mod 4
+    // and c is odd.
+    //
+    // Here we use m = 384160001 and c = 2459. The modulo is implicit because we
+    // use 2^32 for n and the arithmetic gives it to us for "free".
+    //
+    // Note that the scramble value we calculate is not cryptographically secure
+    // but that's fine since all we're looking for is some dispersion.
+    //
+    // **IMPORTANT** Changing these numbers would be a breaking change requiring
+    //               an amendment along with a way to distinguish token IDs that
+    //               were generated with the old code.
+    // tslint:disable-next-line:no-bitwise
+    return taxon ^ (384160001 * tokenSeq + 2459);
+}
+
+export function parseNFTokenID(NFTokenID) {
+    //   A   B                      C                        D        E
+    // 0008 1388 2177B00DF84CA4B8DD59778594F472EF0F56E435 99AE2184 00000DEA
+    if (!NFTokenID || NFTokenID.length !== 64) return { flag: 0, royalty: 0, issuer: '', taxon: 0 };
+    const flag = new Decimal('0x' + NFTokenID.slice(0, 4)).toNumber();
+    const royalty = new Decimal('0x' + NFTokenID.slice(4, 8)).toNumber();
+    const issuer = encodeAccountID(Buffer.from(NFTokenID.slice(8, 48), "hex"));
+    const scrambledTaxon = new Decimal('0x' + NFTokenID.slice(48, 56)).toNumber();
+    const tokenSeq = new Decimal('0x' + NFTokenID.slice(56, 64)).toNumber();
+
+    const taxon = cipheredTaxon(tokenSeq, scrambledTaxon);
+
+    let transferFee = 0;
+    try {
+        if (royalty)
+            transferFee = Decimal.div(royalty, '1000').toDP(3, Decimal.ROUND_DOWN).toNumber();
+    } catch (e) { }
+
+    return { flag, royalty, issuer, taxon, transferFee };
+}
+
+
 module.exports = {
   parseQuality,
   hexToString,
@@ -456,5 +531,8 @@ module.exports = {
   normalizeCurrencyCode,
   parseFlags,
   BLACKHOLE_ACCOUNTS,
-  getNftCoverUrl
+  getNftCoverUrl,
+  getNftFilesUrls,
+  convertHexToString,
+  parseNFTokenID
 }
