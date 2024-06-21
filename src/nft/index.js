@@ -23,13 +23,11 @@ export default function Detail({nft}) {
         costs
     } = nft;
 
-    console.log("isMobile", isMobile)
-
     return (
         isMobile && status !== NFToken.SELL_WITH_MINT_BULK ?
             <NFTDetailsMobile nft={nft} />
             :
-            <Grid container spacing={2} justifyContent='center'>
+            <Grid container spacing={3} justifyContent='center'>
                 <Grid item xs={12} md={5.16}>{/* trying to fit 480px image, was 5/7 */}
                     <NFTDetails nft={nft} />
                 </Grid>

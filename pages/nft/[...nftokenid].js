@@ -40,7 +40,7 @@ export default function Overview({ nft }) {
             <Topbar />
             <Header />
 
-            <Container maxWidth="lg">
+            <Container maxWidth="xl">
                 <TokenDetail nft={nft.nft} />
             </Container>
 

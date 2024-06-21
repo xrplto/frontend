@@ -260,7 +260,7 @@ export default function NFTPreview({ nft }) {
         component="button"
         underline="none"
         onClick={() => handleOpenImage(file.cachedUrl)}
-        
+        width="100%"
       >
         {loadingImage(nft)}
         <img
