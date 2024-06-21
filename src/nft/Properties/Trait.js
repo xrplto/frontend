@@ -4,9 +4,13 @@ import {
     Paper,
     Stack,
     Typography,
+    useTheme,
 } from '@mui/material';
 
 export default function Trait({ prop, total }) {
+
+    const theme = useTheme();
+
     const type = prop.type || prop.trait_type;
     const value = prop.value;
     const count = prop.count || 0;
@@ -15,6 +19,7 @@ export default function Trait({ prop, total }) {
     if (total > 0 && count > 0)
         rarity = new Decimal(count).mul(100).div(total).toDP(2, Decimal.ROUND_DOWN).toNumber();
 
+    console.log(theme)
     return (
         <Paper
             sx={{
@@ -23,18 +28,18 @@ export default function Trait({ prop, total }) {
                 // maxWidth
                 height: "100%",
                 borderRadius: '6px',
-                border: '1px solid #00ff7f',
+                border: `1px solid ${theme.general?.borderTrait}`,
                 padding: 1,
                 // margin: 1,
                 textAlign: 'center',
-                background: '#00ff7f10'
+                background: theme.general?.backgroundTrait
             }}
         >
             <Stack>
-                <Typography sx={{ overflowWrap: 'break-word', textTransform: 'uppercase', color: 'springgreen', fontWeight: 700, fontSize: 11 }}>
+                <Typography sx={{ overflowWrap: 'break-word', textTransform: 'uppercase', color: 'springgreen', fontWeight: 700, fontSize: 11, color: theme.general?.borderTrait }}>
                     {type}
                 </Typography>
-                <Typography variant='s15'>
+                <Typography variant='h3'>
                     {value}
                 </Typography>
                 {total > 0 &&

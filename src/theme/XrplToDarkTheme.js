@@ -283,7 +283,9 @@ export const XrplToDarkTheme = createTheme({
     borderRadiusLg: '12px',
     borderRadiusXl: '16px',
     backgroundAlt: "#08060b70",
-    backgroundAsset: "#17171A"
+    backgroundAsset: "#17171A",
+    backgroundTrait: "#00ff7f10",
+    borderTrait: "#00ff7f"
   },
   sidebar: {
     background: colors.layout.sidebar.background,
