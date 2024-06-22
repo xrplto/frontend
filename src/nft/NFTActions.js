@@ -57,6 +57,7 @@ import { fNumber, fIntNumber } from 'src/utils/formatNumber';
 import { getHashIcon } from 'src/utils/extra';
 
 // Components
+import CreateOfferDialog from './CreateOfferDialog';
 import QRDialog from 'src/components/QRDialog';
 import ConfirmAcceptOfferDialog from './ConfirmAcceptOfferDialog';
 // import TimePeriods from './TimePeriodsDropdown';
@@ -527,7 +528,13 @@ export default function NFTActions({ nft }) {
                 qrUrl={qrUrl}
                 nextUrl={nextUrl}
             />
-            
+
+            <CreateOfferDialog
+                open={openCreateOffer}
+                setOpen={setOpenCreateOffer}
+                nft={nft}
+                isSellOffer={isSellOffer}
+            />
             <TransferDialog
                 open={openTransfer}
                 setOpen={setOpenTransfer}
