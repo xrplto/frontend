@@ -7,6 +7,7 @@ import ScrollToTop from 'src/components/ScrollToTop';
 import Portfolio from "src/portfolio";
 import { useContext } from "react";
 import { AppContext } from 'src/AppContext'
+import { isValidClassicAddress } from 'ripple-address-codec';
 
 const OverviewWrapper = styled(Box)(
     ({ theme }) => `
@@ -15,7 +16,7 @@ const OverviewWrapper = styled(Box)(
     `
 );
 
-const OverView = () => {
+const OverView = ({ account }) => {
 
     const { accountProfile, openSnackbar } = useContext(AppContext);
 
@@ -36,7 +37,7 @@ const OverView = () => {
                         minHeight: '100vh'
                     }}
                 >
-                    <Portfolio />
+                    <Portfolio account={account}/>
                 </Stack>
             </Container>
 
@@ -48,3 +49,34 @@ const OverView = () => {
 }
 
 export default OverView;
+
+export function getServerSideProps(ctx) {
+
+    try {
+
+        const account = ctx.params.account;
+        const isValid = isValidClassicAddress(account);
+
+        if (isValid) {
+            return {
+                props: { account }
+            }
+        } else {
+            return {
+                redirect: {
+                    destination: "/404",
+                    permanent: false
+                }
+            }
+        }
+
+    } catch(err) {
+        return {
+            redirect: {
+                destination: "/404",
+                permanent: false
+            }
+        }
+    }
+
+}

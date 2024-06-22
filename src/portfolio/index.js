@@ -143,7 +143,7 @@ function truncateAccount(str, length = 5) {
     return str.slice(0, length) + '...' + str.slice(length * -1);
 }
 
-export default function Portfolio() {
+export default function Portfolio({ account }) {
     const theme = useTheme();
     const [activeTab, setActiveTab] = useState("0");
     const [filter, setFilter] = useState('All');
@@ -212,8 +212,8 @@ export default function Portfolio() {
                                     }}
                                 >
                                     <Chip
-                                        avatar={<Avatar src={getHashIcon("rf8NFCN8U5grHbvnAvAwihwubudCMBiM93")} />}
-                                        label={("rf8NFCN8U5grHbvnAvAwihwubudCMBiM93")}
+                                        avatar={<Avatar src={getHashIcon(account)} />}
+                                        label={account}
                                         color="secondary"
                                         sx={{ fontSize: "1rem", color: theme.palette.text.primary }}
                                     />
@@ -242,9 +242,6 @@ export default function Portfolio() {
                                         ))}
                                     </Grid>
                                 </Box>
-
-
-
 
                             </Stack>
 
@@ -327,7 +324,7 @@ export default function Portfolio() {
                                                 <TableBody>
                                                     <TableRow>
                                                         <TableCell sx={{ color: theme.palette.text.primary, width: '100%' }} colSpan={4}>
-                                                            <TrustLines account="rf8NFCN8U5grHbvnAvAwihwubudCMBiM93" />
+                                                            <TrustLines account={account} />
                                                         </TableCell>
                                                     </TableRow>
                                                 </TableBody>
@@ -344,7 +341,7 @@ export default function Portfolio() {
                                                 <TableBody>
                                                     <TableRow>
                                                         <TableCell sx={{ width: '100%' }} colSpan={4}>
-                                                            <NFTs account="rBRAD8Qd3E6fzgFQKpnA4C1JhgnwgbJ6Cs" />
+                                                            <NFTs account={account} />
                                                         </TableCell>
                                                     </TableRow>
                                                 </TableBody>
