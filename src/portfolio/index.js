@@ -143,9 +143,9 @@ function truncateAccount(str, length = 5) {
     return str.slice(0, length) + '...' + str.slice(length * -1);
 }
 
-export default function Portfolio({ account }) {
+export default function Portfolio({ account, limit, collection, type }) {
     const theme = useTheme();
-    const [activeTab, setActiveTab] = useState("0");
+    const [activeTab, setActiveTab] = useState(collection ? "1" : "0");
     const [filter, setFilter] = useState('All');
 
     const handleChange = (_, newValue) => {
@@ -341,7 +341,7 @@ export default function Portfolio({ account }) {
                                                 <TableBody>
                                                     <TableRow>
                                                         <TableCell sx={{ width: '100%' }} colSpan={4}>
-                                                            <NFTs account={account} />
+                                                            <NFTs account={account} limit={limit} collection={collection} type={type} />
                                                         </TableCell>
                                                     </TableRow>
                                                 </TableBody>

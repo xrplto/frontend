@@ -16,7 +16,7 @@ const OverviewWrapper = styled(Box)(
     `
 );
 
-const OverView = ({ account }) => {
+const OverView = ({ account, limit, collection, type }) => {
 
     const { accountProfile, openSnackbar } = useContext(AppContext);
 
@@ -37,7 +37,7 @@ const OverView = ({ account }) => {
                         minHeight: '100vh'
                     }}
                 >
-                    <Portfolio account={account}/>
+                    <Portfolio account={account} limit={limit} collection={collection} type={type} />
                 </Stack>
             </Container>
 
@@ -54,12 +54,24 @@ export function getServerSideProps(ctx) {
 
     try {
 
-        const account = ctx.params.account;
-        const isValid = isValidClassicAddress(account);
+        let data = {};
+        const params = ctx.params.acct;
+        const account = params[0];
+        const tab = params[1];
 
+        const isValid = isValidClassicAddress(account);
+        data.account = account;
+        if (tab) data.tab = tab;
+
+        if (tab?.includes('collection')) {
+            data.collection = params[2];
+            data.type = tab.replace('collection', '').toLowerCase();
+        }
+
+        data.limit = 32;
         if (isValid) {
             return {
-                props: { account }
+                props: data
             }
         } else {
             return {
@@ -70,7 +82,8 @@ export function getServerSideProps(ctx) {
             }
         }
 
-    } catch(err) {
+    } catch (err) {
+        console.log(err);
         return {
             redirect: {
                 destination: "/404",

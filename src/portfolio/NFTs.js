@@ -1,4 +1,5 @@
-import { Box, Grid, Stack } from "@mui/material";
+import { Box, Button, Grid, IconButton, Stack, Typography } from "@mui/material";
+import ArrowBackIcon from '@mui/icons-material/KeyboardBackspace';
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import NFTCard from "./NFTCard";
@@ -6,14 +7,13 @@ import CollectionCard from "./CollectionCard";
 import { PulseLoader } from "react-spinners";
 import { AppContext } from "src/AppContext";
 
-const NFTs = ({ account, collection = false }) => {
+const NFTs = ({ account, collection, type = "collected", limit }) => {
 
     const BASE_URL = 'https://api.xrpnft.com/api';
     const { darkMode } = useContext(AppContext);
 
     const [nfts, setNFTs] = useState([]);
     const [loading, setLoading] = useState(false);
-    const type = "collected";
 
     useEffect(() => {
 
@@ -26,13 +26,14 @@ const NFTs = ({ account, collection = false }) => {
     const getNFTs = async () => {
 
         const body = {
-            account: account,
+            account,
             filter: 0,
-            limit: "32",
+            limit,
             page: 0,
             search: "",
             subFilter: "pricexrpasc",
-            type: "collected",
+            type,
+            collection
         };
 
         setLoading(true);
@@ -44,16 +45,19 @@ const NFTs = ({ account, collection = false }) => {
             setLoading(false);
         });
 
-
     }
+
+    const handleBack = () => {
+        window.location.href = `/profile/${account}`;
+    };
 
     return (
         <Box
             sx={{
                 padding: "10px",
+                pt: 0,
                 height: "500px",
                 overflow: "auto",
-                mt: 2,
                 "&::-webkit-scrollbar": {
                     width: "6px !important"
                 },
@@ -70,6 +74,14 @@ const NFTs = ({ account, collection = false }) => {
                     </Stack>
                 )
             }
+            {collection && (
+                <Box display="flex" justifyContent="start" mb={1}>
+                    <Button size="small" onClick={handleBack}>
+                        <ArrowBackIcon fontSize="large" />
+                        <Typography variant="s3" fontSize="medium">Go back</Typography>
+                    </Button>
+                </Box>
+            )}
             <Grid container spacing={3}>
                 {
                     nfts.map((nft, index) => (
