@@ -1,7 +1,7 @@
 import { Box, Button, Grid, IconButton, Stack, Typography } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/KeyboardBackspace';
 import axios from "axios";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import NFTCard from "./NFTCard";
 import CollectionCard from "./CollectionCard";
 import { PulseLoader } from "react-spinners";
@@ -12,6 +12,7 @@ const NFTs = ({ account, collection, type = "collected", limit }) => {
 
     const BASE_URL = 'https://api.xrpnft.com/api';
     const router = useRouter();
+    const scrollRef = useRef(null);
     const { darkMode } = useContext(AppContext);
 
     const [nfts, setNFTs] = useState([]);
@@ -21,7 +22,11 @@ const NFTs = ({ account, collection, type = "collected", limit }) => {
 
         if (account) {
             getNFTs();
+            if (scrollRef.current) {
+                scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
+
 
     }, [account, collection, type])
 
@@ -66,7 +71,7 @@ const NFTs = ({ account, collection, type = "collected", limit }) => {
                 "&::-webkit-scrollbar-thumb": {
                     borderRadius: "10px",
                     boxShadow: "inset 0 0 6px rgba(0,0,0,.7)",
-                }
+                },
             }}
         >
             {
@@ -77,7 +82,7 @@ const NFTs = ({ account, collection, type = "collected", limit }) => {
                 )
             }
             {collection && (
-                <Box display="flex" justifyContent="start" mb={1}>
+                <Box display="flex" justifyContent="start" mb={1} ref={scrollRef}>
                     <Button size="small" onClick={handleBack}>
                         <ArrowBackIcon fontSize="large" />
                         <Typography variant="s3" fontSize="medium">Go back</Typography>
