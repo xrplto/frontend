@@ -58,6 +58,7 @@ const CardWrapper = styled(Card)(
 
 export default function CollectionCard({ collectionData, type, account, handleRemove }) {
     const collection = collectionData.collection;
+    if (!collection) return "";
     //console.log(`CollectionCard: ${JSON.stringify(collection)}`);
     const theme = useTheme();
 
@@ -75,7 +76,7 @@ export default function CollectionCard({ collectionData, type, account, handleRe
     // const like = () => setIsLike(!isLike);
 
     const {
-        uuid,
+        id: uuid,
         // name,
         // flag,
         //account,
