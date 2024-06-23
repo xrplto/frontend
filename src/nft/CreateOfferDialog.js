@@ -38,7 +38,7 @@ import QRDialog from 'src/components/QRDialog';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { isInstalled, submitTransaction } from '@gemwallet/api';
 import sdk from "@crossmarkio/sdk";
-import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
+import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 // ----------------------------------------------------------------------
@@ -270,11 +270,8 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer }) {
                                 TransactionType: "NFTokenCreateOffer",
                                 Account: account,
                                 NFTokenID,
-                                // Expiration:
+                                Owner: owner,
                                 Amount,
-                                // Flags: isSellOffer ? 1 : undefined,
-                                // Owner: isSellOffer ? undefined : owner,
-                                // Destination: destination,
                                 Memos: configureMemos(isSellOffer ? 'XRPNFT-nft-create-sell-offer' : 'XRPNFT-nft-create-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`)
                             }
 
@@ -296,6 +293,24 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer }) {
                     });
                     break;
                 case "crossmark":
+
+                    let Amount = {};
+                    if (currency === 'XRP') {
+                        Amount = new Decimal(amount).mul(1000000).toString();
+                    } else {
+                        Amount.issuer = issuer;
+                        Amount.currency = currency;
+                        Amount.value = new Decimal(amount).toString();
+                    }
+
+                    const offerTxData = {
+                        TransactionType: "NFTokenCreateOffer",
+                        Account: account,
+                        NFTokenID,
+                        Owner: owner,
+                        Amount,
+                        Memos: configureMemos(isSellOffer ? 'XRPNFT-nft-create-sell-offer' : 'XRPNFT-nft-create-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`)
+                    };
                     dispatch(updateProcess(1));
                     await sdk.methods.signAndSubmitAndWait(offerTxData)
                         .then(({ response }) => {
