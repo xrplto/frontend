@@ -67,6 +67,11 @@ import SelectPriceDialog from './SelectPriceDialog';
 import BurnNFT from './BurnNFT';
 import TransferDialog from './TransferDialog';
 import HistoryList from './HistoryList';
+import { isInstalled, submitTransaction } from '@gemwallet/api';
+import sdk from "@crossmarkio/sdk";
+import { configureMemos } from 'src/utils/parse/OfferChanges';
+import { useDispatch } from 'react-redux';
+import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 
 // const NFT_FLAGS = {
 //     0x00000001: 'lsfBurnable',
@@ -126,7 +131,7 @@ function getCostFromOffers(nftOwner, offers, isSellOffer) {
 function truncate(str, n) {
     if (!str) return '';
     //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
-    return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
+    return (str.length > n) ? str.substr(0, n - 1) + ' ...' : str;
 };
 
 export default function NFTActions({ nft }) {
@@ -139,6 +144,7 @@ export default function NFTActions({ nft }) {
     // const theme = useTheme();
     // const largescreen = useMediaQuery(theme => theme.breakpoints.up('md'));
 
+    const dispatch = useDispatch();
     const {
         uuid,
         name,
@@ -237,43 +243,43 @@ export default function NFTActions({ nft }) {
         var dispatchTimer = null;
 
         async function getDispatchResult() {
-          try {
-            const ret = await axios.get(`${BASE_URL}/offers/acceptcancel/${xummUuid}`);
-            const res = ret.data.data.response;
-            // const account = res.account;
-            const dispatched_result = res.dispatched_result;
-    
-            return dispatched_result;
-          } catch (err) {}
+            try {
+                const ret = await axios.get(`${BASE_URL}/offers/acceptcancel/${xummUuid}`);
+                const res = ret.data.data.response;
+                // const account = res.account;
+                const dispatched_result = res.dispatched_result;
+
+                return dispatched_result;
+            } catch (err) { }
         }
 
         const startInterval = () => {
-          let times = 0;
-    
-          dispatchTimer = setInterval(async () => {
-            const dispatched_result = await getDispatchResult();
-    
-            if (dispatched_result && dispatched_result === 'tesSUCCESS') {
-              setSync(sync + 1);
-              openSnackbar('Successful!', 'success');
-              stopInterval();
-              return;
-            }
-    
-            times++;
-    
-            if (times >= 15) {
-              openSnackbar('Rejected!', 'error');
-              stopInterval();
-              return;
-            }
-          }, 1200);
+            let times = 0;
+
+            dispatchTimer = setInterval(async () => {
+                const dispatched_result = await getDispatchResult();
+
+                if (dispatched_result && dispatched_result === 'tesSUCCESS') {
+                    setSync(sync + 1);
+                    openSnackbar('Successful!', 'success');
+                    stopInterval();
+                    return;
+                }
+
+                times++;
+
+                if (times >= 15) {
+                    openSnackbar('Rejected!', 'error');
+                    stopInterval();
+                    return;
+                }
+            }, 1200);
         };
-    
+
         // Stop the interval
         const stopInterval = () => {
-          clearInterval(dispatchTimer);
-          handleScanQRClose();
+            clearInterval(dispatchTimer);
+            handleScanQRClose();
         };
 
         async function getPayload() {
@@ -340,39 +346,87 @@ export default function NFTActions({ nft }) {
             } = nft;
 
             const user_token = accountProfile.user_token;
+            const wallet_type = accountProfile.wallet_type;
 
-            const body = {
-                account: accountLogin,
-                uuid,
-                NFTokenID,
-                index,
-                destination,
-                accept: isAcceptOrCancel ? "yes" : "no",
-                sell: isSell ? "yes" : "no",
-                user_token
+            let offerTxData = {
+                TransactionType: isAcceptOrCancel ? "NFTokenAcceptOffer" : "NFTokenCancelOffer",
+                Memos: isAcceptOrCancel ? configureMemos(isSell ? 'XRPNFT-nft-accept-sell-offer' : 'XRPNFT-nft-accept-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`) : configureMemos(isSell ? 'XRPNFT-nft-cancel-sell-offer' : 'XRPNFT-nft-cancel-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`),
+                NFTokenSellOffer: isSell ? index : undefined,
+                NFTokenBuyOffer: !isSell ? index : undefined,
+                NFTokenOffers: !isAcceptOrCancel ? [index] : undefined,
             };
 
-            const res = await axios.post(`${BASE_URL}/offers/acceptcancel`, body, { headers: { 'x-access-token': accountToken } });
+            switch (wallet_type) {
+                case "xaman":
+                    const body = {
+                        account: accountLogin,
+                        uuid,
+                        NFTokenID,
+                        index,
+                        destination,
+                        accept: isAcceptOrCancel ? "yes" : "no",
+                        sell: isSell ? "yes" : "no",
+                        user_token
+                    };
 
-            if (res.status === 200) {
-                const newUuid = res.data.data.uuid;
-                const qrlink = res.data.data.qrUrl;
-                const nextlink = res.data.data.next;
 
-                let newQrType = isAcceptOrCancel ? "NFTokenAcceptOffer" : "NFTokenCancelOffer";
-                if (isSell)
-                    newQrType += " [Sell Offer]";
-                else
-                    newQrType += " [Buy Offer]";
+                    const res = await axios.post(`${BASE_URL}/offers/acceptcancel`, body, { headers: { 'x-access-token': accountToken } });
 
-                setQrType(newQrType);
-                setXummUuid(newUuid);
-                setQrUrl(qrlink);
-                setNextUrl(nextlink);
-                setOpenScanQR(true);
+                    if (res.status === 200) {
+                        const newUuid = res.data.data.uuid;
+                        const qrlink = res.data.data.qrUrl;
+                        const nextlink = res.data.data.next;
+
+                        let newQrType = isAcceptOrCancel ? "NFTokenAcceptOffer" : "NFTokenCancelOffer";
+                        if (isSell)
+                            newQrType += " [Sell Offer]";
+                        else
+                            newQrType += " [Buy Offer]";
+
+                        setQrType(newQrType);
+                        setXummUuid(newUuid);
+                        setQrUrl(qrlink);
+                        setNextUrl(nextlink);
+                        setOpenScanQR(true);
+                    }
+                    break;
+                case "gem":
+                    isInstalled().then(async (response) => {
+                        if (response.result.isInstalled) {
+
+                            await submitTransaction({
+                                transaction: offerTxData
+                            }).then(({ type, result }) => {
+                                if (type == "response") {
+                                    dispatch(updateProcess(2));
+                                    dispatch(updateTxHash(result?.hash));
+                                }
+
+                                else {
+                                    dispatch(updateProcess(3));
+                                }
+                            });
+                        }
+                    });
+                    break;
+                case "crossmark":
+                    dispatch(updateProcess(1));
+                    await sdk.methods.signAndSubmitAndWait(offerTxData)
+                        .then(({ response }) => {
+                            if (response.data.meta.isSuccess) {
+                                dispatch(updateProcess(2));
+                                dispatch(updateTxHash(response.data.resp.result?.hash));
+
+                            } else {
+                                dispatch(updateProcess(3));
+                            }
+                        });
+                    break;
             }
+
         } catch (err) {
             console.error(err);
+            dispatch(updateProcess(0));
         }
         setPageLoading(false);
     };
@@ -553,11 +607,11 @@ export default function NFTActions({ nft }) {
                     <Stack>
                         <Stack direction="row" spacing={1}>
                             <Link href={`/collection/${cslug}`} underline='none'>
-                                <Typography variant="s5" sx={{pl:0}}>{collectionName}</Typography>
+                                <Typography variant="s5" sx={{ pl: 0 }}>{collectionName}</Typography>
                             </Link>
                             {cverified === 'yes' &&
                                 <Tooltip title='Verified'>
-                                    <VerifiedIcon fontSize="small" style={{color: "#4589ff"}} />
+                                    <VerifiedIcon fontSize="small" style={{ color: "#4589ff" }} />
                                 </Tooltip>
                             }
                         </Stack>
@@ -596,7 +650,7 @@ export default function NFTActions({ nft }) {
                                 }
                             }}
                         >
-                            <Stack direction="row" spacing={2} sx={{pt: 1.5, pl: 1, pr: 1, pb: 1}}>
+                            <Stack direction="row" spacing={2} sx={{ pt: 1.5, pl: 1, pr: 1, pb: 1 }}>
                                 <FacebookShareButton
                                     url={shareUrl}
                                     quote={shareTitle}
@@ -635,7 +689,7 @@ export default function NFTActions({ nft }) {
                 <Stack direction="row" >
                     <Tooltip title={`Rarity Rank #${fIntNumber(rarity_rank)} / ${fIntNumber(citems)}`}>
                         <Stack direction="row" spacing={1} alignItems="center" >
-                            <LeaderboardOutlinedIcon sx={{width: '14px'}} width="auto" style={{color: '#B2B2B2'}}/>
+                            <LeaderboardOutlinedIcon sx={{ width: '14px' }} width="auto" style={{ color: '#B2B2B2' }} />
                             <Typography variant="s7"><Typography variant="s14">{fIntNumber(rarity_rank)}</Typography> / {fIntNumber(citems)}</Typography>
                         </Stack>
                     </Tooltip>
@@ -643,19 +697,19 @@ export default function NFTActions({ nft }) {
             }
 
             <Stack direction="row" spacing={1} alignItems="center">
-                <Avatar alt="C" src={accountLogo} variant="square" style={{width: '32px', height: '32px'}} />
+                <Avatar alt="C" src={accountLogo} variant="square" style={{ width: '32px', height: '32px' }} />
                 <Stack spacing={0}>
                     <Typography variant="s7">Owner</Typography>
                     <Link
                         // color="inherit"
                         // target="_blank"
                         href={`/account/${account}`}
-                        // rel="noreferrer noopener nofollow"
+                    // rel="noreferrer noopener nofollow"
                     >
                         <Typography variant='s15' noWrap> {truncate(account, 16)}</Typography>
                     </Link>
                 </Stack>
-             {/*   <Tooltip title="Contact owner via XRPNFT chat"> 
+                {/*   <Tooltip title="Contact owner via XRPNFT chat"> 
                     <IconButton size='small' sx={{ padding: 1 }}
                         onClick={() => {
                         }}

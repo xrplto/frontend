@@ -289,6 +289,8 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer }) {
                                     dispatch(updateProcess(3));
                                 }
                             });
+
+                            handleClose();
                         }
                     });
                     break;
@@ -322,12 +324,14 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer }) {
                                 dispatch(updateProcess(3));
                             }
                         });
+                    handleClose();
                     break;
             }
 
         } catch (err) {
             console.error(err);
             openSnackbar('Network error!', 'error');
+            dispatch(updateProcess(0));
         }
         setLoading(false);
     };
