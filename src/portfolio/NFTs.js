@@ -6,10 +6,12 @@ import NFTCard from "./NFTCard";
 import CollectionCard from "./CollectionCard";
 import { PulseLoader } from "react-spinners";
 import { AppContext } from "src/AppContext";
+import { useRouter } from "next/router";
 
 const NFTs = ({ account, collection, type = "collected", limit }) => {
 
     const BASE_URL = 'https://api.xrpnft.com/api';
+    const router = useRouter();
     const { darkMode } = useContext(AppContext);
 
     const [nfts, setNFTs] = useState([]);
@@ -21,7 +23,7 @@ const NFTs = ({ account, collection, type = "collected", limit }) => {
             getNFTs();
         }
 
-    }, [account])
+    }, [account, collection, type])
 
     const getNFTs = async () => {
 
@@ -48,7 +50,7 @@ const NFTs = ({ account, collection, type = "collected", limit }) => {
     }
 
     const handleBack = () => {
-        window.location.href = `/profile/${account}`;
+        router.push(`/profile/${account}`);
     };
 
     return (
