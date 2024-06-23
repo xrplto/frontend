@@ -24,7 +24,8 @@ import { PuffLoader, PulseLoader } from "react-spinners";
 import { ProgressBar, Discuss } from 'react-loader-spinner';
 
 // Utils
-import { checkExpiration, getUnixTimeEpochFromRippleEpoch } from 'src/utils/parse';
+// import { checkExpiration, getUnixTimeEpochFromRippleEpoch } from 'src/utils/parse';
+import { checkExpiration } from 'src/utils/extra';
 import { formatDateTime } from 'src/utils/formatTime';
 import { normalizeAmount } from 'src/utils/normalizers';
 
