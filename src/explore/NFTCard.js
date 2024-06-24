@@ -35,7 +35,6 @@ import { getNftCoverUrl } from 'src/utils/parse/utils';
 // import FlagsContainer from 'src/components/Flags';
 import Label from './Label';
 import { AppContext } from "src/AppContext";
-import { useRouter } from "next/router";
 
 const CardWrapper = styled(Card)(
     ({ theme }) => `
@@ -56,13 +55,9 @@ const CardWrapper = styled(Card)(
   `
 );
 
-export default function CollectionCard({ collectionData, type, account, handleRemove }) {
-    const collection = collectionData.collection;
-    if (!collection) return "";
-    //console.log(`CollectionCard: ${JSON.stringify(collection)}`);
+export default function NFTCard({ nft, handleRemove }) {
     const theme = useTheme();
 
-    const router = useRouter();
     const { accountProfile } = useContext(AppContext);
     const isAdmin = accountProfile?.admin;
 
@@ -76,10 +71,10 @@ export default function CollectionCard({ collectionData, type, account, handleRe
     // const like = () => setIsLike(!isLike);
 
     const {
-        id: uuid,
+        uuid,
         // name,
         // flag,
-        //account,
+        account,
         // minter,
         cost,
         costb,
@@ -92,19 +87,20 @@ export default function CollectionCard({ collectionData, type, account, handleRe
         // status,
         destination,
         rarity,
-        rarity_rank
-    } = collection;
+        rarity_rank,
+        updateEvent,
+    } = nft;
 
     const isSold = false;
 
     // const imgUrl = '/static/nft.png';
-    const imgUrl = `https://s1.xrpnft.com/collection/${collection.logoImage}`//getNftCoverUrl(nft, 'small');//get..ImgUrl(nft, 300);
+    const imgUrl = getNftCoverUrl(nft, 'small');// , 300);
 
     const isVideo = /*meta?.video ? true : */false; // disabling for  now video as showing animated thumbnails
 
     const [loadingImg, setLoadingImg] = useState(true)
 
-    const name = collection.name || 'No Name';
+    const name = nft.meta?.name || meta?.Name || 'No Name';
 
     const getColors = colors => {
         setColors(c => [...c, ...colors]);
@@ -126,14 +122,8 @@ export default function CollectionCard({ collectionData, type, account, handleRe
         handleRemove(NFTokenID);
     }
 
-    const collectionType = type.charAt(0).toUpperCase() + type.slice(1)
-
-    const redirectToDetail = () => {
-        router.push(`/profile/${account}/collection${collectionType}/${collectionData.collection.id/*slug*/}`)
-    }
-
     return (
-        <Stack onClick={redirectToDetail}>
+        <Link href={`/nft/${NFTokenID}`} underline='none' sx={{ position: 'relative' }}>
             <CardWrapper
                 sx={{
                     marginLeft: 'auto',
@@ -141,7 +131,7 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                     width: '100%',
                     maxWidth: 280,
                     // height: 250,
-                    aspectRatio: '9 / 15',//9 / 14
+                    aspectRatio: '9 / 15',// 9 / 14
                     // minHeight: 250,
                     // background: `radial-gradient(
                     //         circle,
@@ -197,9 +187,14 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                     // loop={isVideo}
                     sx={{
                         width: '100%',
-                        height: '75%',
-                        maxWidth: 280,
-                        // maxHeight: 250,
+                        height: '76.1%',// 75
+                        //maxWidth: 280,
+                        maxHeight: 240, // 250
+                        /*width: 'auto',
+                        maxHeight: 240,
+                        position: 'relative',
+                        left: '50%',
+                        transform: 'translateX(-50%)',*/
                         marginTop: 0,
                         // borderTopLeftRadius: 20,
                         // borderTopRightRadius: 20,
@@ -341,7 +336,18 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                             <Grid container alignItems='center' spacing={0.1}>
                                 <Grid item xs={12}>
                                     <Stack direction="row" alignItems='center' justifyContent='space-between' sx={{mt:0, pl:0, pr:0}}>
-                                        <Typography variant='s7'>{collectionData.nftCount} item(s)</Typography>
+                                        {cost ? (
+                                            cost.currency === "XRP" ?
+                                                <Stack direction="row" spacing={0.5} alignItems="center">
+                                                    <Icon icon={rippleSolid} width="14" height="14" />
+                                                    <Typography variant="s15">{fNumber(cost.amount)}</Typography>
+                                                </Stack>
+                                                :
+                                                <Typography variant="s15">{fNumber(cost.amount)} {normalizeCurrencyCodeXummImpl(cost.currency)}</Typography>
+
+                                        ) : (
+                                            <Typography variant='s7'>Unlisted</Typography>
+                                        )}
 
                                         {rarity_rank > 0 &&
                                             <Chip
@@ -358,7 +364,23 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                                     </Stack>
                                 </Grid>
                                 <Grid item xs={12}>
-                                       <Typography variant='s7'>{collectionData.nftsForSale} listed</Typography>
+                                    {
+                                        costb ?
+                                            <>
+                                                {costb.currency === "XRP" ?
+                                                    <Stack direction="row" spacing={0.5} alignItems="center">
+                                                        <Typography variant='s7'>Offer</Typography>
+                                                        <Icon icon={rippleSolid} color="#00AB55" width="12" height="12" />
+                                                        <Typography variant='s15' color="#00AB55">{fNumber(costb.amount)}</Typography>
+                                                    </Stack>
+                                                    :
+                                                    <Stack direction="row" spacing={0.5} alignItems="center">
+                                                        <Typography variant='s7'>Offer</Typography>
+                                                        <Typography variant='s15' color="#00AB55">{fNumber(costb.amount)} {normalizeCurrencyCodeXummImpl(costb.currency)}</Typography>
+                                                    </Stack>
+                                                }
+                                            </> : <Typography variant='s7'>No Offer</Typography>
+                                    }
                                 </Grid>
                             </Grid>
                             // <Stack alignItems="left">
@@ -393,6 +415,7 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                             //     }
                             // </Stack>
                         )}
+                        <Typography variant='s7'>Event: {updateEvent}</Typography>
                     </Box>
                 </CardContent>
                 {/* <Divider sx={{mt:0.8, mb:0.3}}/>
@@ -402,6 +425,6 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                 </Stack> */}
 
             </CardWrapper>
-        </Stack >
+        </Link >
     );
 };

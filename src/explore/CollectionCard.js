@@ -35,7 +35,6 @@ import { getNftCoverUrl } from 'src/utils/parse/utils';
 // import FlagsContainer from 'src/components/Flags';
 import Label from './Label';
 import { AppContext } from "src/AppContext";
-import { useRouter } from "next/router";
 
 const CardWrapper = styled(Card)(
     ({ theme }) => `
@@ -58,11 +57,9 @@ const CardWrapper = styled(Card)(
 
 export default function CollectionCard({ collectionData, type, account, handleRemove }) {
     const collection = collectionData.collection;
-    if (!collection) return "";
     //console.log(`CollectionCard: ${JSON.stringify(collection)}`);
     const theme = useTheme();
 
-    const router = useRouter();
     const { accountProfile } = useContext(AppContext);
     const isAdmin = accountProfile?.admin;
 
@@ -76,7 +73,7 @@ export default function CollectionCard({ collectionData, type, account, handleRe
     // const like = () => setIsLike(!isLike);
 
     const {
-        id: uuid,
+        uuid,
         // name,
         // flag,
         //account,
@@ -128,12 +125,8 @@ export default function CollectionCard({ collectionData, type, account, handleRe
 
     const collectionType = type.charAt(0).toUpperCase() + type.slice(1)
 
-    const redirectToDetail = () => {
-        router.push(`/profile/${account}/collection${collectionType}/${collectionData.collection.id/*slug*/}`)
-    }
-
     return (
-        <Stack onClick={redirectToDetail}>
+        <Link href={`/account/${account}/collection${collectionType}/${collectionData.collection.id/*slug*/}`} underline='none' sx={{ position: 'relative' }}>
             <CardWrapper
                 sx={{
                     marginLeft: 'auto',
@@ -402,6 +395,6 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                 </Stack> */}
 
             </CardWrapper>
-        </Stack >
+        </Link >
     );
 };

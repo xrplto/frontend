@@ -55,10 +55,10 @@ const IconCover = styled('div')(
             height: 192px;
             margin-top: -156px;
         }
-        border: 6px solid ${theme.colors.alpha.black[50]};
+        border: 6px solid ${theme.colors?.alpha.black[50]};
         border-radius: 10px;
         box-shadow: rgb(0 0 0 / 8%) 0px 5px 10px;
-        background-color: ${theme.colors.alpha.white[70]};
+        background-color: ${theme.colors?.alpha.white[70]};
         position: relative;
         overflow: hidden;
     `

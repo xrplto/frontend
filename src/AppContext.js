@@ -26,6 +26,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
   const [activeFiatCurrency, setActiveFiatCurrency] = useState('USD');
   const [accountProfile, setAccountProfile] = useState(null);
   const [profiles, setProfiles] = useState([]);
+  const [deletingNfts, setDeletingNfts] = useState([]);
   const [store, setStore] = useState(configureRedux(data));
 
   const [open, setOpen] = useState(false);
@@ -308,7 +309,9 @@ export function ContextProvider({ children, data, openSnackbar }) {
         handleLogout,
         handleLoginClose,
         connecting,
-        setConnecting
+        setConnecting,
+        deletingNfts,
+        setDeletingNfts
       }}
     >
       <Backdrop
