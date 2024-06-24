@@ -352,6 +352,7 @@ export default function NFTActions({ nft }) {
                 TransactionType: isAcceptOrCancel ? "NFTokenAcceptOffer" : "NFTokenCancelOffer",
                 Memos: isAcceptOrCancel ? configureMemos(isSell ? 'XRPNFT-nft-accept-sell-offer' : 'XRPNFT-nft-accept-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`) : configureMemos(isSell ? 'XRPNFT-nft-cancel-sell-offer' : 'XRPNFT-nft-cancel-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`),
                 NFTokenOffers: !isAcceptOrCancel ? [index] : undefined,
+                Account: accountLogin
             };
 
             if (isAcceptOrCancel) {
