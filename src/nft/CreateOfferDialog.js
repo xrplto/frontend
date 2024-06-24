@@ -408,7 +408,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer }) {
                         {/* <Typography variant="p6" sx={{mt: 2}}></Typography> */}
                         <QueryToken
                             token={token}
-                            setToken={setToken}
+                            onChangeToken={setToken}
                         />
 
                         <Stack spacing={2} sx={{ mt: 3 }}>
