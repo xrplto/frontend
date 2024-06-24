@@ -45,7 +45,7 @@ import { fNumber } from 'src/utils/formatNumber';
 // Components
 import ConnectWallet from 'src/components/ConnectWallet';
 import QRDialog from 'src/components/QRDialog';
-import QueryToken from './QueryToken';
+import QueryToken from 'src/components/QueryToken';
 import { currencySymbols } from 'src/utils/constants';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parse/OfferChanges';

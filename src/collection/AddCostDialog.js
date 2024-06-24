@@ -133,7 +133,7 @@ export default function AddCostDialog({open, setOpen, openSnackbar, onAddCost}) 
                         {/* <Typography variant="p6" sx={{mt: 2}}></Typography> */}
                         <QueryToken
                             token={token}
-                            setToken={setToken}
+                            onChangeToken={setToken}
                         />
 
                         <Stack spacing={2} sx={{mt: 3}}>

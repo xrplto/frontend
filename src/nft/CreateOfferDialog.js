@@ -33,7 +33,7 @@ import { PulseLoader } from "react-spinners";
 import { XRP_TOKEN } from 'src/utils/constants';
 
 // Components
-import QueryToken from 'src/swap/QueryToken';
+import QueryToken from 'src/components/QueryToken';
 import QRDialog from 'src/components/QRDialog';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { isInstalled, submitTransaction } from '@gemwallet/api';
