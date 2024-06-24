@@ -351,10 +351,17 @@ export default function NFTActions({ nft }) {
             let offerTxData = {
                 TransactionType: isAcceptOrCancel ? "NFTokenAcceptOffer" : "NFTokenCancelOffer",
                 Memos: isAcceptOrCancel ? configureMemos(isSell ? 'XRPNFT-nft-accept-sell-offer' : 'XRPNFT-nft-accept-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`) : configureMemos(isSell ? 'XRPNFT-nft-cancel-sell-offer' : 'XRPNFT-nft-cancel-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`),
-                NFTokenSellOffer: isSell ? index : undefined,
-                NFTokenBuyOffer: !isSell ? index : undefined,
                 NFTokenOffers: !isAcceptOrCancel ? [index] : undefined,
             };
+
+            if (isAcceptOrCancel) {
+                if (isSell) {
+                    offerTxData["NFTokenSellOffer"] = index;
+                }
+                else {
+                    offerTxData["NFTokenBuyOffer"] = index;
+                }
+            }
 
             switch (wallet_type) {
                 case "xaman":
@@ -393,7 +400,7 @@ export default function NFTActions({ nft }) {
                 case "gem":
                     isInstalled().then(async (response) => {
                         if (response.result.isInstalled) {
-
+                            dispatch(updateProcess(1));
                             await submitTransaction({
                                 transaction: offerTxData
                             }).then(({ type, result }) => {
