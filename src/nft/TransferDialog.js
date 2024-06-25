@@ -16,7 +16,8 @@ import {
     Select,
     Stack,
     Typography,
-    TextField
+    TextField,
+    CircularProgress
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
@@ -33,6 +34,11 @@ import { XRP_TOKEN } from 'src/utils/constants';
 // Components
 import QRDialog from 'src/components/QRDialog';
 import { isValidClassicAddress } from 'ripple-address-codec';
+import { configureMemos } from 'src/utils/parse/OfferChanges';
+import { isInstalled, submitTransaction } from '@gemwallet/api';
+import sdk from "@crossmarkio/sdk";
+import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 // ----------------------------------------------------------------------
 const OfferDialog = styled(Dialog)(({ theme }) => ({
@@ -75,6 +81,9 @@ export default function TransferDialog({ open, setOpen, nft }) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpnft.com/api';
     const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+
+    const dispatch = useDispatch();
+    const isProcessing = useSelector(selectProcess);
 
     const { accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
     const account = accountProfile?.account;
@@ -176,30 +185,79 @@ export default function TransferDialog({ open, setOpen, nft }) {
         setLoading(true);
         try {
             const user_token = accountProfile?.user_token;
+            const wallet_type = accountProfile?.wallet_type;
             
             const uuid = nft.uuid;
 
             const NFTokenID = nft.NFTokenID;
             const owner = nft.account;
 
+            const transferTxData = {
+                TransactionType: "NFTokenCreateOffer",
+                Account: account,
+                NFTokenID,
+                // Expiration:
+                Amount: "0",
+                Flags: 1,
+                Destination: destination,
+                Memos: configureMemos('XRPNFT-nft-create-sell-offer', '', `https://xrpnft.com/nft/${NFTokenID}`)
+            };
 
-            const body = { account, NFTokenID, owner, user_token, destination };
+            switch(wallet_type) {
+                case "xaman":
+                    const body = { account, NFTokenID, owner, user_token, destination };
+        
+                    const res = await axios.post(`${BASE_URL}/offers/transfer`, body, { headers: { 'x-access-token': accountToken } });
+        
+                    if (res.status === 200) {
+                        const uuid = res.data.data.uuid;
+                        const qrlink = res.data.data.qrUrl;
+                        const nextlink = res.data.data.next;
+        
+                        setUuid(uuid);
+                        setQrUrl(qrlink);
+                        setNextUrl(nextlink);
+                        setOpenScanQR(true);
+                    }
+                    break;
+                case "gem":
+                    isInstalled().then(async (response) => {
+                        if (response.result.isInstalled) {
+                            
+                            dispatch(updateProcess(1));
+                            await submitTransaction({
+                                transaction: transferTxData
+                            }).then(({ type, result }) => {
+                                if (type == "response") {
+                                    dispatch(updateProcess(2));
+                                    dispatch(updateTxHash(result?.hash));
+                                }
 
-            const res = await axios.post(`${BASE_URL}/offers/transfer`, body, { headers: { 'x-access-token': accountToken } });
+                                else {
+                                    dispatch(updateProcess(3));
+                                }
+                            });
+                        }
+                    });
+                    break;
+                case "crossmark":
+                    dispatch(updateProcess(1));
+                    await sdk.methods.signAndSubmitAndWait(transferTxData)
+                        .then(({ response }) => {
+                            if (response.data.meta.isSuccess) {
+                                dispatch(updateProcess(2));
+                                dispatch(updateTxHash(response.data.resp.result?.hash));
 
-            if (res.status === 200) {
-                const uuid = res.data.data.uuid;
-                const qrlink = res.data.data.qrUrl;
-                const nextlink = res.data.data.next;
-
-                setUuid(uuid);
-                setQrUrl(qrlink);
-                setNextUrl(nextlink);
-                setOpenScanQR(true);
+                            } else {
+                                dispatch(updateProcess(3));
+                            }
+                        });
+                    break;
             }
         } catch (err) {
             console.error(err);
             openSnackbar('Network error!', 'error');
+            dispatch(updateProcess(0));
         }
         setLoading(false);
     };
@@ -237,6 +295,12 @@ export default function TransferDialog({ open, setOpen, nft }) {
         } else {
             openSnackbar('Invalid value!', 'error');
         }
+    }
+
+    const handleMsg = () => {
+        if (isProcessing == 1) return "Pending Transferring";
+        if (!destination) return "Enter an Account";
+        else return "Transfer";
     }
 
     return (
@@ -286,11 +350,17 @@ export default function TransferDialog({ open, setOpen, nft }) {
                     <Stack direction='row' spacing={2} justifyContent="center" sx={{ mt: 3, mb: 3 }}>
                         <Button
                             variant="outlined"
-                            startIcon={<SendIcon />}
+                            startIcon={
+                                isProcessing == 1 ? <CircularProgress
+                                    disableShrink
+                                    size={20}
+                                    color="primary"
+                                /> : <SendIcon />}
                             // size="small"
                             onClick={handleTransferNFT}
+                            disabled={isProcessing == 1}
                         >
-                            Transfer
+                            {handleMsg()}
                         </Button>
                     </Stack>
                     {/* </Stack> */}
