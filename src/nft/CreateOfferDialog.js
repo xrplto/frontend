@@ -238,6 +238,29 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer }) {
 
             const body = { account, issuer, currency, amount, isSellOffer, NFTokenID, owner, user_token };
 
+            let Amount = {};
+            if (currency === 'XRP') {
+                Amount = new Decimal(amount).mul(1000000).toString();
+            } else {
+                Amount.issuer = issuer;
+                Amount.currency = currency;
+                Amount.value = new Decimal(amount).toString();
+            }
+
+            let offerTxData = {
+                TransactionType: "NFTokenCreateOffer",
+                Account: account,
+                NFTokenID,
+                Amount,
+                Memos: configureMemos(isSellOffer ? 'XRPNFT-nft-create-sell-offer' : 'XRPNFT-nft-create-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`)
+            }
+
+            if (isSellOffer) {
+                offerTxData.Flags = 1;
+            } else {
+                offerTxData.Owner = owner;
+            }
+            
             switch (wallet_type) {
                 case "xaman":
                     setLoading(true);
@@ -257,26 +280,8 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer }) {
                 case "gem":
                     isInstalled().then(async (response) => {
                         if (response.result.isInstalled) {
-                            let Amount = {};
-                            if (currency === 'XRP') {
-                                Amount = new Decimal(amount).mul(1000000).toString();
-                            } else {
-                                Amount.issuer = issuer;
-                                Amount.currency = currency;
-                                Amount.value = new Decimal(amount).toString();
-                            }
-
-                            const offerTxData = {
-                                TransactionType: "NFTokenCreateOffer",
-                                Account: account,
-                                NFTokenID,
-                                Owner: owner,
-                                Amount,
-                                Memos: configureMemos(isSellOffer ? 'XRPNFT-nft-create-sell-offer' : 'XRPNFT-nft-create-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`)
-                            }
 
                             dispatch(updateProcess(1));
-
                             await submitTransaction({
                                 transaction: offerTxData
                             }).then(({ type, result }) => {
@@ -295,24 +300,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer }) {
                     });
                     break;
                 case "crossmark":
-
-                    let Amount = {};
-                    if (currency === 'XRP') {
-                        Amount = new Decimal(amount).mul(1000000).toString();
-                    } else {
-                        Amount.issuer = issuer;
-                        Amount.currency = currency;
-                        Amount.value = new Decimal(amount).toString();
-                    }
-
-                    const offerTxData = {
-                        TransactionType: "NFTokenCreateOffer",
-                        Account: account,
-                        NFTokenID,
-                        Owner: owner,
-                        Amount,
-                        Memos: configureMemos(isSellOffer ? 'XRPNFT-nft-create-sell-offer' : 'XRPNFT-nft-create-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`)
-                    };
+                    
                     dispatch(updateProcess(1));
                     await sdk.methods.signAndSubmitAndWait(offerTxData)
                         .then(({ response }) => {
