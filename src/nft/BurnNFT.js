@@ -21,12 +21,18 @@ import { PulseLoader } from "react-spinners";
 // Components
 import QRDialog from 'src/components/QRDialog';
 import ConfirmBurnDialog from './ConfirmBurnDialog';
+import { isInstalled, submitTransaction } from '@gemwallet/api';
+import sdk from "@crossmarkio/sdk";
+import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
+import { useDispatch } from 'react-redux';
+import { configureMemos } from 'src/utils/parse/OfferChanges';
 
 // ----------------------------------------------------------------------
 export default function BurnNFT({ nft, onHandleBurn }) {
     const theme = useTheme();
     const BASE_URL = 'https://api.xrpnft.com/api';
 
+    const dispatch = useDispatch();
     const { accountProfile, openSnackbar } = useContext(AppContext);
     const accountLogin = accountProfile?.account;
     const accountToken = accountProfile?.token;
@@ -102,24 +108,70 @@ export default function BurnNFT({ nft, onHandleBurn }) {
         setLoading(true);
         try {
             const user_token = accountProfile?.user_token;
+            const wallet_type = accountProfile?.wallet_type;
 
-            const body = { account: accountLogin, NFTokenID, owner: account, user_token };
+            const burnTxData = {
+                TransactionType: "NFTokenBurn",
+                Account: accountLogin,
+                Owner: account,
+                NFTokenID,
+                Memos: configureMemos('XRPNFT-nft-burn', '', `https://xrpnft.com`)
+            };
 
-            const res = await axios.post(`${BASE_URL}/burn/one`, body, { headers: { 'x-access-token': accountToken } });
+            switch (wallet_type) {
+                case "xaman":
+                    const body = { account: accountLogin, NFTokenID, owner: account, user_token };
 
-            if (res.status === 200) {
-                const uuid = res.data.data.uuid;
-                const qrlink = res.data.data.qrUrl;
-                const nextlink = res.data.data.next;
+                    const res = await axios.post(`${BASE_URL}/burn/one`, body, { headers: { 'x-access-token': accountToken } });
 
-                setXummUuid(uuid);
-                setQrUrl(qrlink);
-                setNextUrl(nextlink);
-                setOpenScanQR(true);
+                    if (res.status === 200) {
+                        const uuid = res.data.data.uuid;
+                        const qrlink = res.data.data.qrUrl;
+                        const nextlink = res.data.data.next;
+
+                        setXummUuid(uuid);
+                        setQrUrl(qrlink);
+                        setNextUrl(nextlink);
+                        setOpenScanQR(true);
+                    }
+                    break;
+                case "gem":
+                    isInstalled().then(async (response) => {
+                        if (response.result.isInstalled) {
+                            dispatch(updateProcess(1));
+                            await submitTransaction({
+                                transaction: burnTxData
+                            }).then(({ type, result }) => {
+                                if (type == "response") {
+                                    dispatch(updateProcess(2));
+                                    dispatch(updateTxHash(result?.hash));
+                                }
+
+                                else {
+                                    dispatch(updateProcess(3));
+                                }
+                            });
+                        }
+                    });
+                    break;
+                case "crossmark":
+                    dispatch(updateProcess(1));
+                    await sdk.methods.signAndSubmitAndWait(burnTxData)
+                        .then(({ response }) => {
+                            if (response.data.meta.isSuccess) {
+                                dispatch(updateProcess(2));
+                                dispatch(updateTxHash(response.data.resp.result?.hash));
+
+                            } else {
+                                dispatch(updateProcess(3));
+                            }
+                        });
+                    break;
             }
         } catch (err) {
             console.error(err);
             openSnackbar('Network error!', 'error');
+            dispatch(updateProcess(0));
         }
         setLoading(false);
     };
