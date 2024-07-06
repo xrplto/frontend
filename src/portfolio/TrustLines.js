@@ -3,31 +3,15 @@ import { useState, useEffect, useRef } from 'react';
 import Decimal from 'decimal.js';
 import CryptoJS from 'crypto-js';
 // Material
-import { withStyles } from '@mui/styles';
-
-import {
-  Box,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-  useMediaQuery
-} from '@mui/material';
+import { Box, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography, useMediaQuery } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-
 // Loader
 import { PulseLoader } from 'react-spinners';
-
 // Utils
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
-
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-
 // Components
 import ListToolbar from 'src/account/ListToolbar';
 import TrustLineRow from './TrustLineRow';
@@ -37,7 +21,6 @@ import { useDispatch, useSelector } from 'react-redux';
 
 function truncate(str, n) {
   if (!str) return '';
-  //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
   return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
 }
 
@@ -47,31 +30,27 @@ function truncateAccount(str) {
 }
 
 const trustlineFlags = {
-  // Flag Name	 Hex Value	Corresponding TrustSet Flag	Description
-  lsfLowReserve: 0x00010000, // [NONE],         This RippleState object contributes to the low account's owner reserve.
-  lsfHighReserve: 0x00020000, // [NONE],         This RippleState object contributes to the high account's owner reserve.
-  lsfLowAuth: 0x00040000, // tfSetAuth,      The low account has authorized the high account to hold tokens issued by the low account.
-  lsfHighAuth: 0x00080000, // tfSetAuth,      The high account has authorized the low account to hold tokens issued by the high account.
-  lsfLowNoRipple: 0x00100000, // tfSetNoRipple,	The low account has disabled rippling from this trust line.
-  lsfHighNoRipple: 0x00200000, // tfSetNoRipple,	The high account has disabled rippling from this trust line.
-  lsfLowFreeze: 0x00400000, // tfSetFreeze,	The low account has frozen the trust line, preventing the high account from transferring the asset.
-  lsfHighFreeze: 0x00800000 // tfSetFreeze,	The high account has frozen the trust line, preventing the low account from transferring the asset.
+  lsfLowReserve: 0x00010000,
+  lsfHighReserve: 0x00020000,
+  lsfLowAuth: 0x00040000,
+  lsfHighAuth: 0x00080000,
+  lsfLowNoRipple: 0x00100000,
+  lsfHighNoRipple: 0x00200000,
+  lsfLowFreeze: 0x00400000,
+  lsfHighFreeze: 0x00800000,
 };
 
 export default function TrustLines({ account }) {
   const BASE_URL = 'https://api.xrpl.to/api';
 
-  const { accountProfile, openSnackbar, sync, activeFiatCurrency, darkMode } =
-    useContext(AppContext);
+  const { accountProfile, openSnackbar, sync, activeFiatCurrency, darkMode } = useContext(AppContext);
   const isLoggedIn = accountProfile && accountProfile.account;
   const isMobile = useMediaQuery('(max-width:600px)');
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency];
 
-
   const [loading, setLoading] = useState(false);
-
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(10);
   const [total, setTotal] = useState(0);
@@ -80,30 +59,24 @@ export default function TrustLines({ account }) {
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
 
   const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-        onOpen: () => {},
-        onClose: () => {},
-        shouldReconnect: (closeEvent) => true,
-        onMessage: (event) =>  processMessages(event),
-        // reconnectAttempts: 10,
-        // reconnectInterval: 3000,
-    });
+    onOpen: () => {},
+    onClose: () => {},
+    shouldReconnect: (closeEvent) => true,
+    onMessage: (event) => processMessages(event),
+  });
 
-    const processMessages = (event) => {
-        try {
-            var t1 = Date.now();
-
-            const json = JSON.parse(event.data);
-
-            dispatch(update_metrics(json));
-            // console.log(`${dt} ms`);
-        } catch(err) {
-            console.error(err);
-        }
-    };
+  const processMessages = (event) => {
+    try {
+      var t1 = Date.now();
+      const json = JSON.parse(event.data);
+      dispatch(update_metrics(json));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const getLines = () => {
     setLoading(true);
-    // https://api.xrpl.to/api/account/lines/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
     axios
       .get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=${rows}`)
       .then((res) => {
@@ -117,7 +90,6 @@ export default function TrustLines({ account }) {
         console.log('Error on getting account lines!!!', err);
       })
       .then(function () {
-        // always executed
         setLoading(false);
       });
   };
@@ -170,11 +142,12 @@ export default function TrustLines({ account }) {
                 borderBottom: 'none',
                 boxShadow: darkMode
                   ? 'inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)'
-                  : 'inset 0 -1px 0 #dadee3'
+                  : 'inset 0 -1px 0 #dadee3',
+                paddingLeft: 0, // Remove padding for all cells
+                marginLeft: 0 // Remove margin for all cells
               }
             }}
           >
-         
             <TableBody>
               {lines.map((row, idx) => {
                 const { _id, Balance, HighLimit, LowLimit } = row;
@@ -187,8 +160,6 @@ export default function TrustLines({ account }) {
                   balance = Balance.value;
                 }
 
-                // const strCreatedTime = formatDateTime(ctime);
-                // peer, currency, peer limit, owner limit, balance, rippling
                 let issuer = null;
                 let _balance = Number.parseFloat(Balance.value);
                 let highLimit = Number.parseFloat(HighLimit.value);
@@ -200,7 +171,6 @@ export default function TrustLines({ account }) {
                   issuer = LowLimit.issuer;
                   account = HighLimit.issuer;
                 } else {
-                  // balance is zero. check who has a limit set
                   if (highLimit > 0 && lowLimit == 0) {
                     issuer = LowLimit.issuer;
                     account = HighLimit.issuer;
@@ -208,16 +178,13 @@ export default function TrustLines({ account }) {
                     issuer = HighLimit.issuer;
                     account = LowLimit.issuer;
                   } else {
-                    // can not determine issuer!
                     issuer = null;
                     account = null;
                   }
                 }
 
                 let md5 = null;
-
-                if (issuer && currency)
-                  md5 = CryptoJS.MD5(issuer + "_" + currency).toString();
+                if (issuer && currency) md5 = CryptoJS.MD5(issuer + "_" + currency).toString();
                 return (
                   <TrustLineRow
                     key={_id}

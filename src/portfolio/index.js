@@ -41,7 +41,6 @@ import NFTs from "./NFTs";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const OverviewWrapper = styled(Box)(({ theme }) => `
-    // overflow: hidden;
     flex: 1;
 `);
 
@@ -64,29 +63,17 @@ const OverviewItem = styled(Box)({
 });
 
 const ButtonSend = styled(Button)(({ theme }) => ({
-    // border: `1px solid ${theme.palette.success.main}`,
-    // color: theme.palette.success.main,
     '&:hover': {
-        //  backgroundColor: theme.palette.success.light,
-        //  borderColor: theme.palette.success.light,
     }
 }));
 
 const ButtonReceive = styled(Button)(({ theme }) => ({
-    //  border: `1px solid ${theme.palette.info.main}`,
-    // color: theme.palette.info.main,
     '&:hover': {
-        //    backgroundColor: theme.palette.info.light,
-        //   borderColor: theme.palette.info.light,
     }
 }));
 
 const ButtonWatch = styled(Button)(({ theme }) => ({
-    // border: `1px solid ${theme.palette.warning.main}`,
-    // color: theme.palette.warning.main,
     '&:hover': {
-        //  backgroundColor: theme.palette.warning.light,
-        //   borderColor: theme.palette.warning.light,
     }
 }));
 
@@ -145,12 +132,24 @@ function truncateAccount(str, length = 5) {
 
 export default function Portfolio({ account, limit, collection, type }) {
     const theme = useTheme();
+    console.log('Theme:', theme); // Debugging line
+
+    // Fallback value for theme.palette.divider
+    const dividerColor = theme?.palette?.divider || '#ccc';
+
     const [activeTab, setActiveTab] = useState(collection ? "1" : "0");
     const [filter, setFilter] = useState('All');
 
     const handleChange = (_, newValue) => {
         setActiveTab(newValue);
     };
+
+    const OuterBorderContainer = styled(Box)(({ theme }) => ({
+        padding: '16px',
+        borderRadius: '10px',
+        border: `1px solid ${dividerColor}`,
+        marginBottom: '16px',
+    }));
 
     const handleFilterChange = (event) => {
         setFilter(event.target.value);
@@ -188,89 +187,86 @@ export default function Portfolio({ account, limit, collection, type }) {
             <Container maxWidth="xl" sx={{ mt: 4 }}>
                 <Grid container spacing={2}>
                     <Grid item md={4} xs={12}>
-                        <Stack sx={{ height: "100%", justifyContent: "space-between" }}>
-                            <Stack
-                                sx={{
-                                    borderRadius: "10px",
-                                    p: 2,
-                                    bgcolor: theme.palette.background.paper,
-                                    color: theme.palette.text.primary,
-                                    flex: "1 1 auto",
-                                    mb: 2
-                                }}
-                                spacing={2}
-                            >
-                                <Box
+                        <OuterBorderContainer>
+                            <Stack sx={{ height: "100%", justifyContent: "space-between" }}>
+                                <Stack
                                     sx={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        bgcolor: theme.palette.background.default,
-                                        p: 1,
-                                        borderRadius: '8px',
-                                        border: `1px solid ${theme.palette.divider}`
+                                        borderRadius: "10px",
+                                        p: 2,
+                                        color: theme.palette.text.primary,
+                                        flex: "1 1 auto",
+                                        mb: 2
+                                    }}
+                                    spacing={2}
+                                >
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            p: 1,
+                                            borderRadius: '8px',
+                                            border: `1px solid ${dividerColor}`
+                                        }}
+                                    >
+                                        <Chip
+                                            avatar={<Avatar src={getHashIcon(account)} />}
+                                            label={account}
+                                            color="secondary"
+                                            sx={{ fontSize: "1rem", color: theme.palette.text.primary }}
+                                        />
+                                    </Box>
+
+                                    <Box sx={{ textAlign: 'center' }}>
+                                        <Typography sx={{ color: theme.palette.text.primary, mb: 1 }} variant="h6">Total Balance</Typography>
+                                        <Balance>215,438.97897 <span>XRP</span></Balance>
+                                        <Typography sx={{ color: theme.palette.text.primary, mt: 1 }} variant="h4">$109,325.8132</Typography>
+                                    </Box>
+
+                                    <Box sx={{ mt: 2 }}>
+                                        <Line data={volumeData} options={volumeOptions} />
+                                    </Box>
+
+                                    <ButtonSend variant="outlined" sx={{ mt: 2 }}>Send</ButtonSend>
+                                    <ButtonReceive variant="outlined" sx={{ mt: 2 }}>Receive</ButtonReceive>
+
+                                    <Box sx={{ mt: 2 }}>
+                                        <Grid container spacing={0} sx={{ maxWidth: 400 }}>
+                                            {nftIcons.map((icon, index) => (
+                                                <Grid item key={index} sx={{ p: '4px', flexBasis: '10%', maxWidth: '10%' }}>
+                                                    <Avatar src={icon} variant="rounded" sx={{ width: 28, height: 28 }} />
+                                                </Grid>
+                                            ))}
+                                        </Grid>
+                                    </Box>
+                                </Stack>
+
+                                <Accordion
+                                    sx={{
+                                        borderRadius: "10px",
+                                        '&.Mui-expanded': {
+                                            mt: 3
+                                        },
+                                        flex: "0 0 auto",
+                                        color: theme.palette.text.primary,
+                                        border: `1px solid ${dividerColor}`
                                     }}
                                 >
-                                    <Chip
-                                        avatar={<Avatar src={getHashIcon(account)} />}
-                                        label={account}
-                                        color="secondary"
-                                        sx={{ fontSize: "1rem", color: theme.palette.text.primary }}
-                                    />
-                                </Box>
+                                    <AccordionSummary
+                                        expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.text.primary }} />}
+                                        aria-controls="panel1d-content" id="panel1d-header"
+                                        sx={{ fontWeight: "bold", color: theme.palette.text.primary }}
+                                    >
+                                        WatchList
+                                    </AccordionSummary>
+                                    <AccordionDetails sx={{ color: theme.palette.text.primary }}>
 
-                                <Box sx={{ textAlign: 'center' }}>
-                                    <Typography sx={{ color: theme.palette.text.primary, mb: 1 }} variant="h6">Total Balance</Typography>
-                                    <Balance>215,438.97897 <span>XRP</span></Balance>
-                                    <Typography sx={{ color: theme.palette.text.primary, mt: 1 }} variant="h4">$109,325.8132</Typography>
-                                </Box>
+                                    </AccordionDetails>
+                                </Accordion>
 
-                                <Box sx={{ mt: 2 }}>
-                                    <Line data={volumeData} options={volumeOptions} />
-                                </Box>
-
-                                <ButtonSend variant="outlined" sx={{ mt: 2 }}>Send</ButtonSend>
-                                <ButtonReceive variant="outlined" sx={{ mt: 2 }}>Receive</ButtonReceive>
-                                <ButtonWatch variant="outlined" sx={{ mt: 2 }}>Watch</ButtonWatch>
-
-                                <Box sx={{ mt: 2 }}>
-                                    <Grid container spacing={0} sx={{ maxWidth: 400 }}>
-                                        {nftIcons.map((icon, index) => (
-                                            <Grid item key={index} sx={{ p: '4px', flexBasis: '10%', maxWidth: '10%' }}>
-                                                <Avatar src={icon} variant="rounded" sx={{ width: 28, height: 28 }} />
-                                            </Grid>
-                                        ))}
-                                    </Grid>
-                                </Box>
-
+                                <Offer />
                             </Stack>
-
-                            <Accordion
-                                sx={{
-                                    borderRadius: "10px",
-                                    '&.Mui-expanded': {
-                                        mt: 3
-                                    },
-                                    flex: "0 0 auto",
-                                    bgcolor: theme.palette.background.paper,
-                                    color: theme.palette.text.primary,
-                                    border: `1px solid ${theme.palette.divider}`
-                                }}
-                            >
-                                <AccordionSummary
-                                    expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.text.primary }} />}
-                                    aria-controls="panel1d-content" id="panel1d-header"
-                                    sx={{ fontWeight: "bold", color: theme.palette.text.primary }}
-                                >
-                                    WatchList
-                                </AccordionSummary>
-                                <AccordionDetails sx={{ color: theme.palette.text.primary }}>
-
-                                </AccordionDetails>
-                            </Accordion>
-
-                            <Offer />
-                        </Stack>
+                        </OuterBorderContainer>
                     </Grid>
 
                     <Grid item md={8} xs={12}>
@@ -301,7 +297,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                             </Grid>
                         </Grid>
 
-                        <Card sx={{ flex: 1, mt: 2, mb: 2, bgcolor: theme.palette.background.paper, color: theme.palette.text.primary }}>
+                        <Card sx={{ flex: 1, mt: 2, mb: 2, color: theme.palette.text.primary }}>
                             <CardContent sx={{ px: 0 }}>
                                 <TabContext value={activeTab}>
                                     <Box>
@@ -312,7 +308,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                     </Box>
 
                                     <TabPanel sx={{ p: 0 }} value="0">
-                                        <Paper sx={{ width: '100%', overflow: 'hidden', bgcolor: theme.palette.background.paper, color: theme.palette.text.primary }}>
+                                        <Paper sx={{ width: '100%', overflow: 'hidden', color: theme.palette.text.primary }}>
                                             <Table>
                                                 <TableHead>
                                                     <TableRow>
@@ -323,7 +319,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                                 </TableHead>
                                                 <TableBody>
                                                     <TableRow>
-                                                        <TableCell sx={{ color: theme.palette.text.primary, width: '100%' }} colSpan={4}>
+                                                        <TableCell sx={{ color: theme.palette.text.primary, width: '160%' }} colSpan={4}>
                                                             <TrustLines account={account} />
                                                         </TableCell>
                                                     </TableRow>
@@ -332,7 +328,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                         </Paper>
                                     </TabPanel>
                                     <TabPanel sx={{ p: 0 }} value="1">
-                                        <Paper sx={{ width: '100%', overflow: 'hidden', bgcolor: theme.palette.background.paper, color: theme.palette.text.primary }}>
+                                        <Paper sx={{ width: '100%', overflow: 'hidden', color: theme.palette.text.primary }}>
                                             <Table>
                                                 <TableHead>
                                                     <TableRow>
@@ -364,7 +360,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 <FormControlLabel value="Tokens" control={<Radio sx={{ color: theme.palette.text.primary }} />} label="Tokens" />
                                 <FormControlLabel value="NFTs" control={<Radio sx={{ color: theme.palette.text.primary }} />} label="NFTs" />
                             </RadioGroup>
-                            <Paper sx={{ width: '100%', overflow: 'hidden', bgcolor: theme.palette.background.paper, color: theme.palette.text.primary }}>
+                            <Paper sx={{ width: '100%', overflow: 'hidden', color: theme.palette.text.primary }}>
                                 <Table>
                                     <TableHead>
                                         <TableRow>

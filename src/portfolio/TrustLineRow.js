@@ -37,18 +37,26 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate }) => {
                             : '#D9DCE0 !important'
                     }
                 },
+                '& .MuiTableCell-root': {
+                    paddingLeft: '0px !important', // Ensure no padding
+                    marginLeft: '0px !important' // Ensure no margin
+                }
             }}
         >
 
             <TableCell
                 align="left"
+                sx={{ paddingLeft: 0, marginLeft: 0 }} // Ensure no padding or margin
             >
                 <Typography variant="s6" noWrap>
                     {idx}
                 </Typography>
             </TableCell>
 
-            <TableCell align="left" sx={{ py: 1 }}>
+            <TableCell
+                align="left"
+                sx={{ py: 1, paddingLeft: 0, marginLeft: 0 }} // Ensure no padding or margin
+            >
                 <Stack direction="row" spacing={1} alignItems="center">
                     <Avatar src={`https://s1.xrpl.to/token/${md5}`} sx={{ width: 32, height: 32 }} />
                     <Typography variant="s6" noWrap>
@@ -57,7 +65,10 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate }) => {
                 </Stack>
             </TableCell>
 
-            <TableCell align="left" sx={{ display: isMobile ? "none" : "table-cell" }}>
+            <TableCell
+                align="left"
+                sx={{ display: isMobile ? "none" : "table-cell", paddingLeft: 0, marginLeft: 0 }} // Ensure no padding or margin
+            >
                 <Typography variant="s6" noWrap>
                     <CountUp
                         end={balance}
@@ -67,7 +78,10 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate }) => {
                 </Typography>
             </TableCell>
 
-            <TableCell align="right">
+            <TableCell
+                align="right"
+                sx={{ paddingLeft: 0, marginLeft: 0 }} // Ensure no padding or margin
+            >
                 <Stack direction="row" alignItems="center" justifyContent="end" spacing={1}>
                     {currencyIcons[activeFiatCurrency]}
                     <CountUp
