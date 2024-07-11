@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 // Material
@@ -28,18 +28,21 @@ import { AppContext } from 'src/AppContext';
 
 // ----------------------------------------------------------------------
 export default function ExtraButtons({ token }) {
+  const BASE_URL = 'https://api.xrpl.to/api';
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const [trustToken, setTrustToken] = useState(null);
   const [lines, setLines] = useState([]);
+  const [isRemove, setIsRemove] = useState(false);
 
   // Step 2: Access the darkMode variable from AppContext
-  const { darkMode } = useContext(AppContext);
+  const { darkMode, accountProfile } = useContext(AppContext);
 
   const {
     id,
     issuer,
     name,
+    currency,
     domain,
     whitepaper,
     kyc,
@@ -54,6 +57,31 @@ export default function ExtraButtons({ token }) {
 
   let user = token.user;
   if (!user) user = name;
+
+  useEffect(() => {
+    axios
+    .get(`${BASE_URL}/account/lines/${accountProfile.account}`)
+    .then((res) => {
+      let ret = res.status === 200 ? res.data : undefined;
+      if (ret) {
+        const trustlines = ret.lines;
+
+        const trustlineToRemove = trustlines.find((trustline) => {
+          return (
+            (trustline.LowLimit.issuer === issuer ||
+              trustline.HighLimit.issuer) &&
+            trustline.LowLimit.currency === currency
+          );
+        });
+
+        setIsRemove(trustlineToRemove);
+
+      }
+    })
+    .catch((err) => {
+      console.log('Error on getting account lines!!!', err);
+    })
+  }, [trustToken])
 
   const handleSetTrust = (e) => {
     setTrustToken(token);
@@ -75,11 +103,11 @@ export default function ExtraButtons({ token }) {
           <Button
             variant="contained"
             onClick={handleSetTrust}
-            color="primary"
+            color={`${isRemove ? 'error' : 'primary'}`}
             size="small"
             disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
           >
-            Set Trustline
+            {`${isRemove ? 'Remove' : 'Set'} Trustline`}
           </Button>
         </Grid>
 
