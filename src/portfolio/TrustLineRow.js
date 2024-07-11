@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { AppContext } from "src/AppContext";
 import { fNumberWithCurreny } from "src/utils/formatNumber";
 import CountUp from 'react-countup';
-import { currencyIcons } from "src/utils/constants";
+import { currencySymbols } from "src/utils/constants";
 import axios from "axios";
 
 const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate }) => {
@@ -44,20 +44,20 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate }) => {
             }}
         >
 
-            <TableCell
+            {/* <TableCell
                 align="left"
                 sx={{ paddingLeft: 0, marginLeft: 0 }} // Ensure no padding or margin
             >
                 <Typography variant="s6" noWrap>
                     {idx}
                 </Typography>
-            </TableCell>
+            </TableCell> */}
 
             <TableCell
                 align="left"
-                sx={{ py: 1, paddingLeft: 0, marginLeft: 0 }} // Ensure no padding or margin
+                sx={{ py: 1 }} // Ensure no padding or margin
             >
-                <Stack direction="row" spacing={1} alignItems="center">
+                <Stack direction="row" spacing={1} alignItems="center" paddingLeft={1}>
                     <Avatar src={`https://s1.xrpl.to/token/${md5}`} sx={{ width: 32, height: 32 }} />
                     <Typography variant="s6" noWrap>
                         {currencyName}
@@ -82,8 +82,8 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate }) => {
                 align="right"
                 sx={{ paddingLeft: 0, marginLeft: 0 }} // Ensure no padding or margin
             >
-                <Stack direction="row" alignItems="center" justifyContent="end" spacing={1}>
-                    {currencyIcons[activeFiatCurrency]}
+                <Stack direction="row" alignItems="center" justifyContent="end" spacing={0.5}>
+                    <span>{currencySymbols[activeFiatCurrency]}</span>
                     <CountUp
                         end={
                             token.exch ? balance * fNumberWithCurreny(token.exch, exchRate) : 0

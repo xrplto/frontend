@@ -309,7 +309,8 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                                     <TabPanel sx={{ p: 0 }} value="0">
                                         <Paper sx={{ width: '100%', overflow: 'hidden', color: theme.palette.text.primary }}>
-                                            <Table>
+                                            <TrustLines account={account} />
+                                            {/* <Table>
                                                 <TableHead>
                                                     <TableRow>
                                                         <TableCell sx={{ color: theme.palette.text.primary }}>Asset</TableCell>
@@ -324,7 +325,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                                         </TableCell>
                                                     </TableRow>
                                                 </TableBody>
-                                            </Table>
+                                            </Table> */}
                                         </Paper>
                                     </TabPanel>
                                     <TabPanel sx={{ p: 0 }} value="1">

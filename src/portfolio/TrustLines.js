@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import Decimal from 'decimal.js';
 import CryptoJS from 'crypto-js';
 // Material
-import { Box, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography, useMediaQuery } from '@mui/material';
+import { Box, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography, useMediaQuery, useTheme } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 // Loader
 import { PulseLoader } from 'react-spinners';
@@ -43,6 +43,7 @@ const trustlineFlags = {
 export default function TrustLines({ account }) {
   const BASE_URL = 'https://api.xrpl.to/api';
 
+  const theme = useTheme();
   const { accountProfile, openSnackbar, sync, activeFiatCurrency, darkMode } = useContext(AppContext);
   const isLoggedIn = accountProfile && accountProfile.account;
   const isMobile = useMediaQuery('(max-width:600px)');
@@ -134,20 +135,14 @@ export default function TrustLines({ account }) {
           }}
           ref={tableRef}
         >
-          <Table
-            stickyHeader
-            size={'small'}
-            sx={{
-              '& .MuiTableCell-root': {
-                borderBottom: 'none',
-                boxShadow: darkMode
-                  ? 'inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)'
-                  : 'inset 0 -1px 0 #dadee3',
-                paddingLeft: 0, // Remove padding for all cells
-                marginLeft: 0 // Remove margin for all cells
-              }
-            }}
-          >
+          <Table>
+            <TableHead>
+                <TableRow>
+                    <TableCell sx={{ color: theme.palette.text.primary }}>Asset</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary, pl: 0 }}>Amount</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.primary }} align="right">Estimated Value</TableCell>
+                </TableRow>
+            </TableHead>
             <TableBody>
               {lines.map((row, idx) => {
                 const { _id, Balance, HighLimit, LowLimit } = row;
