@@ -59,8 +59,9 @@ export default function ExtraButtons({ token }) {
   if (!user) user = name;
 
   useEffect(() => {
+    if (!accountProfile) return;
     axios
-    .get(`${BASE_URL}/account/lines/${accountProfile.account}`)
+    .get(`${BASE_URL}/account/lines/${accountProfile?.account}`)
     .then((res) => {
       let ret = res.status === 200 ? res.data : undefined;
       if (ret) {
@@ -69,7 +70,7 @@ export default function ExtraButtons({ token }) {
         const trustlineToRemove = trustlines.find((trustline) => {
           return (
             (trustline.LowLimit.issuer === issuer ||
-              trustline.HighLimit.issuer) &&
+              trustline.HighLimit.issuer === issuer) &&
             trustline.LowLimit.currency === currency
           );
         });
@@ -81,7 +82,7 @@ export default function ExtraButtons({ token }) {
     .catch((err) => {
       console.log('Error on getting account lines!!!', err);
     })
-  }, [trustToken])
+  }, [trustToken, accountProfile])
 
   const handleSetTrust = (e) => {
     setTrustToken(token);
