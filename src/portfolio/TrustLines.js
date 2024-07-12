@@ -60,8 +60,8 @@ export default function TrustLines({ account }) {
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
 
   const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-    onOpen: () => {},
-    onClose: () => {},
+    onOpen: () => { },
+    onClose: () => { },
     shouldReconnect: (closeEvent) => true,
     onMessage: (event) => processMessages(event),
   });
@@ -137,11 +137,12 @@ export default function TrustLines({ account }) {
         >
           <Table>
             <TableHead>
-                <TableRow>
-                    <TableCell sx={{ color: theme.palette.text.primary }}>Asset</TableCell>
-                    <TableCell sx={{ color: theme.palette.text.primary, pl: 0 }}>Amount</TableCell>
-                    <TableCell sx={{ color: theme.palette.text.primary }} align="right">Estimated Value</TableCell>
-                </TableRow>
+              <TableRow>
+                <TableCell sx={{ color: theme.palette.text.primary }}>Asset</TableCell>
+                <TableCell sx={{ color: theme.palette.text.primary, pl: 0 }}>Amount</TableCell>
+                <TableCell sx={{ color: theme.palette.text.primary }} align="right">Estimated Value</TableCell>
+                {isLoggedIn && accountProfile?.account === account ? <TableCell /> : ""}
+              </TableRow>
             </TableHead>
             <TableBody>
               {lines.map((row, idx) => {
@@ -187,6 +188,8 @@ export default function TrustLines({ account }) {
                     balance={balance}
                     md5={md5}
                     exchRate={exchRate}
+                    issuer={issuer}
+                    account={account}
                   />
                 );
               })}
