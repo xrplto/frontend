@@ -64,13 +64,13 @@ export function ContextProvider({ children, data, openSnackbar }) {
   }, []);
 
   useEffect(() => {
-    const profile = window.sessionStorage.getItem(KEY_ACCOUNT_PROFILE);
+    const profile = window.localStorage.getItem(KEY_ACCOUNT_PROFILE);
     //const profile = '{"account":"rDsRQWRTRrtzAgK8HH7rcCAZnWeCsJm28K","uuid":"4a3eb58c-aa97-4d48-9ab2-92d90df9a75f"}';
     if (profile) {
       setAccountProfile(JSON.parse(profile));
     }
 
-    const profiles = window.sessionStorage.getItem(KEY_ACCOUNT_PROFILES);
+    const profiles = window.localStorage.getItem(KEY_ACCOUNT_PROFILES);
     if (profiles) {
       setProfiles(JSON.parse(profiles));
     }
@@ -80,12 +80,12 @@ export function ContextProvider({ children, data, openSnackbar }) {
     const profile = profiles.find((x) => x.account === account);
     if (!profile) return;
     setAccountProfile(profile);
-    window.sessionStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
+    window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
   };
 
   const doLogIn = (profile) => {
     setAccountProfile(profile);
-    window.sessionStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
+    window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
 
     // const old = profiles.find(x => x.account === profile.account);
     let exist = false;
@@ -109,8 +109,8 @@ export function ContextProvider({ children, data, openSnackbar }) {
   };
 
   const doLogOut = () => {
-    window.sessionStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(null));
-    window.sessionStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify([]));
+    window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(null));
+    window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify([]));
     setAccountProfile(null);
     setProfiles([]);
   };

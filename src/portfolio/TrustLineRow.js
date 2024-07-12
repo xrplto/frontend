@@ -10,7 +10,7 @@ import sdk from "@crossmarkio/sdk";
 import { PulseLoader } from "react-spinners";
 import CustomQRDialog from "src/components/QRDialog";
 import { useDispatch } from "react-redux";
-import { updateProcess } from "src/redux/transactionSlice";
+import { updateProcess, updateTxHash } from "src/redux/transactionSlice";
 
 const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, account }) => {
 
