@@ -137,6 +137,9 @@ const WalletConnectModal = () => {
           maxWidth: "450px",
         }
       }}
+      sx={{
+        zIndex: 9999
+      }}
     >
       <DialogTitle>
         <Stack direction="row" justifyContent={openLogin ? "space-between" : "end"}>
