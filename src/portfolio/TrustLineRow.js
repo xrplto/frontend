@@ -12,7 +12,7 @@ import CustomQRDialog from "src/components/QRDialog";
 import { useDispatch } from "react-redux";
 import { updateProcess, updateTxHash } from "src/redux/transactionSlice";
 
-const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, account }) => {
+const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, account, currency }) => {
 
     const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -194,23 +194,41 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                     })
                     break;
                 case "crossmark":
+                    console.log(balance);
                     // if (!window.xrpl) {
                     //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
                     //   return;
                     // }
                     // const { isCrossmark } = window.xrpl;
                     // if (isCrossmark) {
+                    dispatch(updateProcess(1));
+
                     const trustSet = {
                         Flags: Flags,
                         LimitAmount: LimitAmount,
+                        Account: accountProfile.account,
+                        TransactionType: 'TrustSet'
+                    }
+                    let bulkTx = [trustSet];
+                    if (balance > 0) {
+                        const refundToIssuer = {
+                            TransactionType: "Payment",
+                            Account: accountProfile.account,
+                            Amount: {
+                                currency: currency,
+                                value: balance,
+                                issuer: issuer
+                            },
+                            Destination: issuer,
+                            Fee: "12",
+                            SourceTag: 20221212,
+                        };
+                        bulkTx = [refundToIssuer, ...bulkTx];
                     }
 
                     dispatch(updateProcess(1));
-                    await sdk.methods.signAndSubmitAndWait({
-                        ...trustSet,
-                        Account: accountProfile.account,
-                        TransactionType: 'TrustSet'
-                    }).then(({ response }) => {
+                    await sdk.methods.bulkSignAndSubmitAndWait(bulkTx).then(({ response }) => {
+                        console.log(response);
                         if (response.data.meta.isSuccess) {
                             dispatch(updateProcess(2));
                             dispatch(updateTxHash(response.data.resp.result?.hash));
@@ -245,9 +263,9 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
 
     return (
         <>
-            <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
+            {/* <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
                 <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
-            </Backdrop>
+            </Backdrop> */}
             <TableRow
                 sx={{
                     '&:hover': {

@@ -185,6 +185,7 @@ export default function TrustLines({ account }) {
                   <TrustLineRow
                     key={_id}
                     currencyName={currencyName}
+                    currency={currency}
                     balance={balance}
                     md5={md5}
                     exchRate={exchRate}
