@@ -5,7 +5,7 @@ import { fNumberWithCurreny } from "src/utils/formatNumber";
 import CountUp from 'react-countup';
 import { currencySymbols } from "src/utils/constants";
 import axios from "axios";
-import { isInstalled, setTrustline } from '@gemwallet/api';
+import { isInstalled, setTrustline, submitBulkTransactions } from '@gemwallet/api';
 import sdk from "@crossmarkio/sdk";
 import { PulseLoader } from "react-spinners";
 import CustomQRDialog from "src/components/QRDialog";
@@ -146,7 +146,7 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
 
             let LimitAmount = {};
             LimitAmount.issuer = issuer;
-            LimitAmount.currency = currencyName;
+            LimitAmount.currency = currency;
             LimitAmount.value = "0";
 
             const body = { LimitAmount, Flags, user_token };
@@ -171,12 +171,37 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                     isInstalled().then(async (response) => {
                         if (response.result.isInstalled) {
                             const trustSet = {
-                                flags: Flags,
-                                limitAmount: LimitAmount,
+                                ID: "002",
+                                Flags: Flags,
+                                LimitAmount: LimitAmount,
+                                Account: accountProfile.account,
+                                TransactionType: 'TrustSet',
+                                // SourceTag: 20221212
+                            }
+                            let bulkTx = [trustSet];
+                            if (balance > 0) {
+                                const refundToIssuer = {
+                                    ID: "001",
+                                    TransactionType: "Payment",
+                                    Account: accountProfile.account,
+                                    Amount: {
+                                        currency: currency,
+                                        value: balance,
+                                        issuer: issuer
+                                    },
+                                    Destination: issuer,
+                                    // Fee: "12",
+                                    // SourceTag: 20221212,
+                                    // DestinationTag: 20221212,
+                                };
+                                bulkTx = [refundToIssuer, ...bulkTx];
                             }
 
                             dispatch(updateProcess(1));
-                            await setTrustline(trustSet).then(({ type, result }) => {
+                            await submitBulkTransactions({
+                                transactions: bulkTx
+                            }).then(({ type, result }) => {
+                                console.log(result)
                                 if (type == "response") {
                                     dispatch(updateProcess(2));
                                     dispatch(updateTxHash(result?.hash));
@@ -186,6 +211,16 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                                     dispatch(updateProcess(3));
                                 }
                             });
+                            // await setTrustline(trustSet).then(({ type, result }) => {
+                            //     if (type == "response") {
+                            //         dispatch(updateProcess(2));
+                            //         dispatch(updateTxHash(result?.hash));
+                            //     }
+
+                            //     else {
+                            //         dispatch(updateProcess(3));
+                            //     }
+                            // });
                         }
 
                         else {
@@ -207,7 +242,7 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                         Flags: Flags,
                         LimitAmount: LimitAmount,
                         Account: accountProfile.account,
-                        TransactionType: 'TrustSet'
+                        TransactionType: 'TrustSet',
                     }
                     let bulkTx = [trustSet];
                     if (balance > 0) {
