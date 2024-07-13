@@ -5,7 +5,7 @@ import { fNumberWithCurreny } from "src/utils/formatNumber";
 import CountUp from 'react-countup';
 import { currencySymbols } from "src/utils/constants";
 import axios from "axios";
-import { isInstalled, setTrustline, submitBulkTransactions } from '@gemwallet/api';
+import { isInstalled, setTrustline, submitBulkTransactions, submitTransaction } from '@gemwallet/api';
 import sdk from "@crossmarkio/sdk";
 import { PulseLoader } from "react-spinners";
 import CustomQRDialog from "src/components/QRDialog";
@@ -170,18 +170,18 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                 case "gem":
                     isInstalled().then(async (response) => {
                         if (response.result.isInstalled) {
+                            dispatch(updateProcess(1));
+
                             const trustSet = {
-                                ID: "002",
                                 Flags: Flags,
                                 LimitAmount: LimitAmount,
                                 Account: accountProfile.account,
                                 TransactionType: 'TrustSet',
-                                // SourceTag: 20221212
+                                SourceTag: 20221212,
+                                Fee: "12"
                             }
-                            let bulkTx = [trustSet];
                             if (balance > 0) {
                                 const refundToIssuer = {
-                                    ID: "001",
                                     TransactionType: "Payment",
                                     Account: accountProfile.account,
                                     Amount: {
@@ -190,16 +190,25 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                                         issuer: issuer
                                     },
                                     Destination: issuer,
-                                    // Fee: "12",
-                                    // SourceTag: 20221212,
-                                    // DestinationTag: 20221212,
+                                    Fee: "12",
+                                    SourceTag: 20221212,
+                                    DestinationTag: 20221212,
                                 };
-                                bulkTx = [refundToIssuer, ...bulkTx];
+                                let flag = false;
+                                await submitTransaction({
+                                    transaction: refundToIssuer
+                                }).then(({ type, result }) => {
+                                    if (type != "response") {
+                                        dispatch(updateProcess(3));
+                                        flag = true;
+                                    }
+                                });
+
+                                if (flag) return;
                             }
 
-                            dispatch(updateProcess(1));
-                            await submitBulkTransactions({
-                                transactions: bulkTx
+                            await submitTransaction({
+                                transaction: trustSet
                             }).then(({ type, result }) => {
                                 console.log(result)
                                 if (type == "response") {
@@ -275,14 +284,13 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                     // }
                     break;
             }
+            setSync(!sync);
 
         } catch (err) {
             console.log(err);
             dispatch(updateProcess(0));
             openSnackbar('Network error!', 'error');
         }
-        setLoading(false);
-        setSync(!sync);
     };
 
     const onDisconnectXumm = async (uuid) => {
