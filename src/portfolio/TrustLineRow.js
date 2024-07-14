@@ -327,6 +327,7 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
     const handleConfirmClose = () => {
         setOpenConfirm(false);
         setXamanStep(0);
+        setSync(!sync);
     }
 
     const handleConfirmContinue = async () => {
@@ -392,6 +393,15 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
         }
     }
 
+    const getDecimal = (str) => {
+        str = str.toString();
+        if (str) {
+            const dotIdx = str.indexOf(".");
+            const decimal = str.length - dotIdx - 1;
+            return decimal > 11 ? 11 : decimal;
+        } else return 1;
+    }
+
     return (
         <>
             {/* <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
@@ -442,7 +452,7 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                         <CountUp
                             end={balance}
                             duration={3.5}
-                            decimals={11}
+                            decimals={getDecimal(balance)}
                         />
                     </Typography>
                 </TableCell>
@@ -458,7 +468,7 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                                 token.exch ? balance * fNumberWithCurreny(token.exch, exchRate) : 0
                             }
                             duration={3.5}
-                            decimals={11}
+                            decimals={getDecimal(token.exch ? balance * fNumberWithCurreny(token.exch, exchRate) : "0")}
                         />
                     </Stack>
                 </TableCell>
