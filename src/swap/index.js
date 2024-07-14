@@ -128,6 +128,7 @@ const ToggleContent = styled('div')(
     left: 50%;
     top: 51%;
     transform: translate(-50%, -50%);
+    margin-top: 14px;
 `
 );
 
@@ -592,7 +593,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       amt = new Decimal(amount).toNumber();
     } catch (e) { }
 
-    if (amt === 0) return 0;
+    if (amt === 0) return "";
 
     try {
       if (active === 'AMOUNT') {
@@ -856,7 +857,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                   borderRadius: "50%",
                   color: "#17171AAA",
                   background: "#ffffff",
-                  transform: 'rotate(90deg)' // Rotates the icon 90 degrees permanently
+                  transform: 'rotate(90deg)', // Rotates the icon 90 degrees permanently,
                 }}
               />
             </IconButton>

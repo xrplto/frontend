@@ -354,7 +354,7 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                         <CountUp
                             end={balance}
                             duration={3.5}
-                            decimals={2}
+                            decimals={11}
                         />
                     </Typography>
                 </TableCell>
