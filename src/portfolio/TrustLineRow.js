@@ -370,7 +370,7 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                                 token.exch ? balance * fNumberWithCurreny(token.exch, exchRate) : 0
                             }
                             duration={3.5}
-                            decimals={2}
+                            decimals={11}
                         />
                     </Stack>
                 </TableCell>
