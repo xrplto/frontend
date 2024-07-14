@@ -23,6 +23,9 @@ export default function CustomDialog({ open, title, content, handleContinue, han
           maxWidth: "300px"
         }
       }}
+      sx={{
+        zIndex: 9999
+      }}
     >
       <DialogTitle sx={{ textAlign: "center" }}>{title}</DialogTitle>
       <DialogContent sx={{ textAlign: "center" }}>{content}</DialogContent>

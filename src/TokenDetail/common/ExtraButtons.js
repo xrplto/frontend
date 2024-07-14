@@ -25,6 +25,7 @@ import TrustSetDialog from 'src/components/TrustSetDialog';
 import { useContext } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { AppContext } from 'src/AppContext';
+import Decimal from 'decimal.js';
 
 // ----------------------------------------------------------------------
 export default function ExtraButtons({ token }) {
@@ -34,9 +35,11 @@ export default function ExtraButtons({ token }) {
   const [trustToken, setTrustToken] = useState(null);
   const [lines, setLines] = useState([]);
   const [isRemove, setIsRemove] = useState(false);
+  const [balance, setBalance] = useState(0);
+  const [limit, setLimit] = useState(0);
 
   // Step 2: Access the darkMode variable from AppContext
-  const { darkMode, accountProfile } = useContext(AppContext);
+  const { darkMode, accountProfile, sync } = useContext(AppContext);
 
   const {
     id,
@@ -75,14 +78,18 @@ export default function ExtraButtons({ token }) {
           );
         });
 
+        if (trustlineToRemove) {
+          setBalance(Decimal.abs(trustlineToRemove.Balance.value).toString());
+          setLimit(trustlineToRemove.HighLimit.value);
+        }
+        
         setIsRemove(trustlineToRemove);
-
       }
     })
     .catch((err) => {
       console.log('Error on getting account lines!!!', err);
     })
-  }, [trustToken, accountProfile])
+  }, [trustToken, accountProfile, sync])
 
   const handleSetTrust = (e) => {
     setTrustToken(token);
@@ -94,6 +101,8 @@ export default function ExtraButtons({ token }) {
     <Stack alignItems="center">
       {trustToken && (
         <TrustSetDialog
+          balance={balance}
+          limit={limit}
           token={trustToken}
           setToken={setTrustToken}
         />

@@ -5,12 +5,11 @@ import { fNumberWithCurreny } from "src/utils/formatNumber";
 import CountUp from 'react-countup';
 import { currencySymbols } from "src/utils/constants";
 import axios from "axios";
-import { isInstalled, setTrustline, submitBulkTransactions, submitTransaction } from '@gemwallet/api';
+import { isInstalled, submitTransaction } from '@gemwallet/api';
 import sdk from "@crossmarkio/sdk";
 import { PulseLoader } from "react-spinners";
 import CustomQRDialog from "src/components/QRDialog";
 import { useDispatch } from "react-redux";
-import { updateProcess, updateTxHash } from "src/redux/transactionSlice";
 import CustomDialog from "src/components/Dialog";
 
 const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, account, currency }) => {
@@ -206,117 +205,130 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
     const handleConfirmContinue = async () => {
         const user_token = accountProfile?.user_token;
         const wallet_type = accountProfile?.wallet_type;
-
+    
         let body;
         switch (xamanStep) {
-            case 3:
-                if (limit == 0) {
-                    setXamanStep(4);
-                    return;
-                }
-
-                const Flags = 0x00020000;
-                let LimitAmount = {};
-                LimitAmount.issuer = issuer;
-                LimitAmount.currency = currency;
-                LimitAmount.value = "0";
-                LimitAmount.TransactionType = "TrustSet";
-
-                body = { LimitAmount, Flags, user_token };
-                if (wallet_type == "xaman") {
-                    const res1 = await axios.post(`${BASE_URL}/xumm/trustset`, body);
-                    if (res1.status === 200) {
-                        const uuid = res1.data.data.uuid;
-                        const qrlink = res1.data.data.qrUrl;
-                        const nextlink = res1.data.data.next;
-
-                        setXamanStep(4);
-                        setUuid(uuid);
-                        setQrUrl(qrlink);
-                        setNextUrl(nextlink);
-                        setOpenScanQR(true);
+          case 3:
+            if (limit == 0) {
+              setXamanStep(4);
+              return;
+            }
+    
+            const Flags = 0x00020000;
+            let LimitAmount = {};
+            LimitAmount.issuer = issuer;
+            LimitAmount.currency = currency;
+            LimitAmount.value = "0";
+    
+            body = { LimitAmount, Flags, user_token, TransactionType: "TrustSet" };
+            if (wallet_type == "xaman") {
+              const res1 = await axios.post(`${BASE_URL}/xumm/trustset`, body);
+              if (res1.status === 200) {
+                const uuid = res1.data.data.uuid;
+                const qrlink = res1.data.data.qrUrl;
+                const nextlink = res1.data.data.next;
+    
+                setXamanStep(4);
+                setUuid(uuid);
+                setQrUrl(qrlink);
+                setNextUrl(nextlink);
+                setOpenScanQR(true);
+              }
+            }
+    
+            else if (wallet_type == "gem") {
+              isInstalled().then(async (response) => {
+                if (response.result.isInstalled) {
+                  await submitTransaction({
+                    transaction: body
+                  }).then(({ type, result }) => {
+                    if (type === "response") {
+                      setXamanStep(4);
+                    } else {
+                      handleConfirmClose();
                     }
+                  });
+                } else {
+                  enqueueSnackbar("GemWallet is not installed", { variant: "error" });
+                  handleConfirmClose();
                 }
-
-                else if (wallet_type == "gem") {
-                    await submitTransaction({
-                        transaction: body
-                    }).then(({ type, result }) => {
-                        if (type === "response") {
-                            setXamanStep(4);
-                        } else {
-                            handleConfirmClose();
-                        }
-                    });
+              });
+            }
+    
+            else if (wallet_type == "crossmark") {
+              await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
+                if (response.data.meta.isSuccess) {
+                  setXamanStep(4);
+                } else {
+                  handleConfirmClose();
                 }
-
-                else if (wallet_type == "crossmark") {
-                    await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
-                        if (response.data.meta.isSuccess) {
-                            setXamanStep(4);
-                        } else {
-                            handleConfirmClose();
-                        }
-                    });
-                }
-                break;
-            case 2:
-                setXamanStep(3);
-                break;
-            case 1:
-                body = {
-                    TransactionType: "Payment",
-                    Account: accountProfile.account,
-                    Amount: {
-                        currency: currency,
-                        value: balance,
-                        issuer: issuer
-                    },
-                    Destination: issuer,
-                    Fee: "12",
-                    SourceTag: 20221212,
-                    DestinationTag: 20221212,
-                }
-                if (wallet_type == "xaman") {
-                    const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
-                    if (res2.status === 200) {
-                        const uuid = res2.data.data.uuid;
-                        const qrlink = res2.data.data.qrUrl;
-                        const nextlink = res2.data.data.next;
-
-                        setXamanStep(2);
-                        setUuid(uuid);
-                        setQrUrl(qrlink);
-                        setNextUrl(nextlink);
-                        setOpenScanQR(true);
+              });
+            }
+            break;
+          case 2:
+            setXamanStep(3);
+            break;
+          case 1:
+            body = {
+              TransactionType: "Payment",
+              Account: accountProfile.account,
+              Amount: {
+                currency: currency,
+                value: balance,
+                issuer: issuer
+              },
+              Destination: issuer,
+              Fee: "12",
+              SourceTag: 20221212,
+              DestinationTag: 20221212,
+            }
+            if (wallet_type == "xaman") {
+              const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
+              if (res2.status === 200) {
+                const uuid = res2.data.data.uuid;
+                const qrlink = res2.data.data.qrUrl;
+                const nextlink = res2.data.data.next;
+    
+                setXamanStep(2);
+                setUuid(uuid);
+                setQrUrl(qrlink);
+                setNextUrl(nextlink);
+                setOpenScanQR(true);
+              }
+            }
+    
+            else if (wallet_type == "gem") {
+              isInstalled().then(async (response) => {
+                if (response.result.isInstalled) {
+                  await submitTransaction({
+                    transaction: body
+                  }).then(({ type, result }) => {
+                    if (type === "response") {
+                      setXamanStep(2);
+                    } else {
+                      handleConfirmClose();
                     }
+                  });
+                } else {
+                  enqueueSnackbar("GemWallet is not installed", { variant: "error" });
+                  handleConfirmClose();
                 }
-
-                else if (wallet_type == "gem") {
-                    await submitTransaction({
-                        transaction: body
-                    }).then(({ type }) => {
-                        if (type === "response") {
-                            setXamanStep(2);
-                        } else {
-                            handleConfirmClose();
-                        }
-                    });
+              });
+            }
+    
+            else if (wallet_type == "crossmark") {
+              await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
+                if (response.data.meta.isSuccess) {
+                  setXamanStep(2);
+                } else {
+                  handleConfirmClose();
                 }
-
-                else if (wallet_type == "crossmark") {
-                    await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
-                        if (response.data.meta.isSuccess) {
-                            setXamanStep(2);
-                        } else {
-                            handleConfirmClose();
-                        }
-                    });
-                }
-
-                break;
+              });
+            }
+    
+            break;
         }
-    }
+      }
 
     const getDecimal = (str) => {
         str = str.toString();

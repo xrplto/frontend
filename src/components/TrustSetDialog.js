@@ -46,10 +46,11 @@ import Decimal from 'decimal.js';
 import { Icon } from '@iconify/react';
 import copyIcon from '@iconify/icons-fad/copy';
 import Wallet from './Wallet';
-import { isInstalled, setTrustline } from '@gemwallet/api';
+import { isInstalled, setTrustline, submitTransaction } from '@gemwallet/api';
 import { enqueueSnackbar } from 'notistack';
 import sdk from "@crossmarkio/sdk";
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
+import CustomDialog from './Dialog';
 
 // ----------------------------------------------------------------------
 const TrustDialog = styled(Dialog)(({ theme }) => ({
@@ -93,11 +94,12 @@ const Label = withStyles({
   }
 })(Typography);
 
-export default function TrustSetDialog({ token, setToken }) {
+export default function TrustSetDialog({ limit, token, setToken, balance }) {
   const theme = useTheme();
   const dispatch = useDispatch();
   const BASE_URL = 'https://api.xrpl.to/api';
-  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const { accountProfile, openSnackbar, darkMode, sync, setSync } = useContext(AppContext);
+
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const isLoggedIn = accountProfile && accountProfile.account;
@@ -108,6 +110,11 @@ export default function TrustSetDialog({ token, setToken }) {
   const [nextUrl, setNextUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState(fNumber(token.amount));
+  const [content, setContent] = useState("");
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [xamanStep, setXamanStep] = useState(0);
+  const [xamanTitle, setXamanTitle] = useState(0);
+  const [stepTitle, setStepTitle] = useState("");
 
   const [isRemove, setIsRemove] = useState(false);
 
@@ -130,7 +137,7 @@ export default function TrustSetDialog({ token, setToken }) {
         const dispatched_result = res.dispatched_result;
 
         return dispatched_result;
-      } catch (err) {}
+      } catch (err) { }
     }
 
     const startInterval = () => {
@@ -158,7 +165,7 @@ export default function TrustSetDialog({ token, setToken }) {
       }, 1000);
     };
 
-    
+
     // Stop the interval
     const stopInterval = () => {
       clearInterval(dispatchTimer);
@@ -179,7 +186,7 @@ export default function TrustSetDialog({ token, setToken }) {
           startInterval();
           return;
         }
-      } catch (err) {}
+      } catch (err) { }
       isRunning = false;
       counter--;
       if (counter <= 0) {
@@ -264,7 +271,7 @@ export default function TrustSetDialog({ token, setToken }) {
 
       const body = { LimitAmount, Flags, user_token };
 
-      switch(wallet_type) {
+      switch (wallet_type) {
         case "xaman":
           setLoading(true);
           const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
@@ -281,7 +288,7 @@ export default function TrustSetDialog({ token, setToken }) {
           }
           break;
         case "gem":
-          isInstalled().then(async(response) => {
+          isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               const trustSet = {
                 flags: Flags,
@@ -313,30 +320,30 @@ export default function TrustSetDialog({ token, setToken }) {
           // }
           // const { isCrossmark } = window.xrpl;
           // if (isCrossmark) {
-            const trustSet = {
-              Flags: Flags,
-              LimitAmount: LimitAmount,
+          const trustSet = {
+            Flags: Flags,
+            LimitAmount: LimitAmount,
+          }
+
+          dispatch(updateProcess(1));
+          await sdk.methods.signAndSubmitAndWait({
+            ...trustSet,
+            Account: accountProfile.account,
+            TransactionType: 'TrustSet'
+          }).then(({ response }) => {
+            if (response.data.meta.isSuccess) {
+              dispatch(updateProcess(2));
+              dispatch(updateTxHash(response.data.resp.result?.hash));
+
+            } else {
+              dispatch(updateProcess(3));
             }
-
-            dispatch(updateProcess(1));
-            await sdk.methods.signAndSubmitAndWait({
-              ...trustSet,
-              Account: accountProfile.account,
-              TransactionType: 'TrustSet'
-            }).then(({ response }) => {
-              if (response.data.meta.isSuccess) {
-                dispatch(updateProcess(2));
-                dispatch(updateTxHash(response.data.resp.result?.hash));
-
-              } else {
-                dispatch(updateProcess(3));
-              }
-            });
+          });
           // }
           break;
       }
 
-      
+
     } catch (err) {
       console.log(err);
       dispatch(updateProcess(0));
@@ -352,7 +359,7 @@ export default function TrustSetDialog({ token, setToken }) {
       if (res.status === 200) {
         setUuid(null);
       }
-    } catch (err) {}
+    } catch (err) { }
     setLoading(false);
   };
 
@@ -380,26 +387,197 @@ export default function TrustSetDialog({ token, setToken }) {
       if (isNumber(amount)) {
         fAmount = new Decimal(amount.replaceAll(',', '')).toNumber();
       }
-    } catch (e) {}
+    } catch (e) { }
 
     if (fAmount > 0) {
       onTrustSetXumm(fAmount);
     } else {
       openSnackbar('Invalid value!', 'error');
     }
-  };
+  }
 
-  const handleRemoveTrust = () => {
-    onTrustSetXumm(0);
-  };
+  useEffect(() => {
 
-  const { darkMode } = useContext(AppContext);
+    switch (xamanStep) {
+      case 1:
+        setContent(`This TrustLine still contains ${balance} ${currency}. If you continue, it will be sent back to the issuer before your TrustLine is deleted.`);
+        setXamanTitle("Refund to Issuer");
+        setStepTitle("Warning");
+        setOpenConfirm(true);
+        break;
+      case 2:
+        setContent("Your dust balance has been sent back to the issuer. The TrustLine can now be eliminated");
+        setStepTitle("Success");
+        setOpenConfirm(true);
+        break;
+      case 3:
+        setContent("You are removing this token from your XRP ledger account. Are you sure?");
+        setXamanTitle("Trust Set");
+        setStepTitle("Warning");
+        setOpenConfirm(true);
+        break;
+      case 4:
+        openSnackbar("You removed trustline", "success");
+        handleConfirmClose();
+        break;
+    }
+
+  }, [xamanStep]);
+
+  const handleRemoveTrust = async () => {
+    try {
+
+      if (balance > 0) {
+        setXamanStep(1);
+      } else {
+        setXamanStep(3);
+      }
+
+    } catch (err) {
+      console.log(err);
+      openSnackbar('Network error!', 'error');
+    }
+  };
+  const handleConfirmClose = () => {
+    setOpenConfirm(false);
+    setXamanStep(0);
+  }
+
+  const handleConfirmContinue = async () => {
+    const user_token = accountProfile?.user_token;
+    const wallet_type = accountProfile?.wallet_type;
+
+    let body;
+    switch (xamanStep) {
+      case 3:
+        if (limit == 0) {
+          setXamanStep(4);
+          return;
+        }
+
+        const Flags = 0x00020000;
+        let LimitAmount = {};
+        LimitAmount.issuer = issuer;
+        LimitAmount.currency = currency;
+        LimitAmount.value = "0";
+
+        body = { LimitAmount, Flags, user_token, TransactionType: "TrustSet" };
+        if (wallet_type == "xaman") {
+          const res1 = await axios.post(`${BASE_URL}/xumm/trustset`, body);
+          if (res1.status === 200) {
+            const uuid = res1.data.data.uuid;
+            const qrlink = res1.data.data.qrUrl;
+            const nextlink = res1.data.data.next;
+
+            setXamanStep(4);
+            setUuid(uuid);
+            setQrUrl(qrlink);
+            setNextUrl(nextlink);
+            setOpenScanQR(true);
+          }
+        }
+
+        else if (wallet_type == "gem") {
+          isInstalled().then(async (response) => {
+            if (response.result.isInstalled) {
+              await submitTransaction({
+                transaction: body
+              }).then(({ type, result }) => {
+                if (type === "response") {
+                  setXamanStep(4);
+                } else {
+                  handleConfirmClose();
+                }
+              });
+            } else {
+              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
+              handleConfirmClose();
+            }
+          });
+        }
+
+        else if (wallet_type == "crossmark") {
+          await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
+            if (response.data.meta.isSuccess) {
+              setXamanStep(4);
+            } else {
+              handleConfirmClose();
+            }
+          });
+        }
+        break;
+      case 2:
+        setXamanStep(3);
+        break;
+      case 1:
+        body = {
+          TransactionType: "Payment",
+          Account: accountProfile.account,
+          Amount: {
+            currency: currency,
+            value: balance,
+            issuer: issuer
+          },
+          Destination: issuer,
+          Fee: "12",
+          SourceTag: 20221212,
+          DestinationTag: 20221212,
+        }
+        if (wallet_type == "xaman") {
+          const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
+          if (res2.status === 200) {
+            const uuid = res2.data.data.uuid;
+            const qrlink = res2.data.data.qrUrl;
+            const nextlink = res2.data.data.next;
+
+            setXamanStep(2);
+            setUuid(uuid);
+            setQrUrl(qrlink);
+            setNextUrl(nextlink);
+            setOpenScanQR(true);
+          }
+        }
+
+        else if (wallet_type == "gem") {
+          isInstalled().then(async (response) => {
+            if (response.result.isInstalled) {
+              await submitTransaction({
+                transaction: body
+              }).then(({ type, result }) => {
+                if (type === "response") {
+                  setXamanStep(2);
+                } else {
+                  handleConfirmClose();
+                }
+              });
+            } else {
+              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
+              handleConfirmClose();
+            }
+          });
+        }
+
+        else if (wallet_type == "crossmark") {
+          await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
+            if (response.data.meta.isSuccess) {
+              setXamanStep(2);
+            } else {
+              handleConfirmClose();
+            }
+          });
+        }
+
+        break;
+    }
+
+    setSync(!sync);
+  }
 
   return (
     <>
       <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
         <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
-        
+
       </Backdrop>
 
       <TrustDialog
@@ -407,11 +585,11 @@ export default function TrustSetDialog({ token, setToken }) {
         onClose={handleClose}
         open={true}
         sx={{ zIndex: 1302 }}
-        // hideBackdrop={true}
+      // hideBackdrop={true}
       >
         <TrustDialogTitle id="customized-dialog-title" onClose={handleClose}>
           <Stack direction="row" alignItems="center">
-          <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ mr: 1 }} />
+            <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ mr: 1 }} />
             <Stack>
               <Typography variant="token" color="primary">{name}</Typography>
               <Typography variant="caption">{user}</Typography>
@@ -517,6 +695,8 @@ export default function TrustSetDialog({ token, setToken }) {
         qrUrl={qrUrl}
         nextUrl={nextUrl}
       />
+
+      <CustomDialog open={openConfirm} content={content} title={stepTitle} handleClose={handleConfirmClose} handleContinue={handleConfirmContinue} />
     </>
   );
 }
