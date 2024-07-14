@@ -31,6 +31,7 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
     const [openConfirm, setOpenConfirm] = useState(false);
     const [xamanStep, setXamanStep] = useState(0);
     const [xamanTitle, setXamanTitle] = useState(0);
+    const [stepTitle, setStepTitle] = useState("");
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -128,15 +129,18 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
             case 1:
                 setContent(`This TrustLine still contains ${balance} ${currencyName}. If you continue, it will be sent back to the issuer before your TrustLine is deleted.`);
                 setXamanTitle("Refund to Issuer");
+                setStepTitle("Warning");
                 setOpenConfirm(true);
                 break;
             case 2:
                 setContent("Your dust balance has been sent back to the issuer. The TrustLine can now be eliminated");
+                setStepTitle("Success");
                 break;
             case 3:
                 setContent("You are removing this token from your XRP ledger account. Are you sure?");
                 setXamanTitle("Trust Set");
-
+                setStepTitle("Warning");
+                break;
             case 4:
                 openSnackbar("You removed trustline", "success");
                 handleConfirmClose();
@@ -169,146 +173,15 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
 
     const onTrustRemoveXumm = async () => {
         try {
-            const wallet_type = accountProfile.wallet_type;
 
-            const Flags = 0x00020000;
-
-            let LimitAmount = {};
-            LimitAmount.issuer = issuer;
-            LimitAmount.currency = currency;
-            LimitAmount.value = "0";
-            setLoading(true);
-
-            switch (wallet_type) {
-                case "xaman":
-
-                    // step 1
-                    if (balance > 0) {
-                        setXamanStep(1);
-                    }
-
-                    break;
-                case "gem":
-                    isInstalled().then(async (response) => {
-                        if (response.result.isInstalled) {
-                            dispatch(updateProcess(1));
-
-                            const trustSet = {
-                                Flags: Flags,
-                                LimitAmount: LimitAmount,
-                                Account: accountProfile.account,
-                                TransactionType: 'TrustSet',
-                                SourceTag: 20221212,
-                                Fee: "12"
-                            }
-                            if (balance > 0) {
-                                const refundToIssuer = {
-                                    TransactionType: "Payment",
-                                    Account: accountProfile.account,
-                                    Amount: {
-                                        currency: currency,
-                                        value: balance,
-                                        issuer: issuer
-                                    },
-                                    Destination: issuer,
-                                    Fee: "12",
-                                    SourceTag: 20221212,
-                                    DestinationTag: 20221212,
-                                };
-                                let flag = false;
-                                await submitTransaction({
-                                    transaction: refundToIssuer
-                                }).then(({ type, result }) => {
-                                    if (type != "response") {
-                                        dispatch(updateProcess(3));
-                                        flag = true;
-                                    }
-                                });
-
-                                if (flag) return;
-                            }
-
-                            await submitTransaction({
-                                transaction: trustSet
-                            }).then(({ type, result }) => {
-                                console.log(result)
-                                if (type == "response") {
-                                    dispatch(updateProcess(2));
-                                    dispatch(updateTxHash(result?.hash));
-                                }
-
-                                else {
-                                    dispatch(updateProcess(3));
-                                }
-                            });
-                            // await setTrustline(trustSet).then(({ type, result }) => {
-                            //     if (type == "response") {
-                            //         dispatch(updateProcess(2));
-                            //         dispatch(updateTxHash(result?.hash));
-                            //     }
-
-                            //     else {
-                            //         dispatch(updateProcess(3));
-                            //     }
-                            // });
-                        }
-
-                        else {
-                            enqueueSnackbar("GemWallet is not installed", { variant: "error" });
-                        }
-                    })
-                    break;
-                case "crossmark":
-                    // if (!window.xrpl) {
-                    //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
-                    //   return;
-                    // }
-                    // const { isCrossmark } = window.xrpl;
-                    // if (isCrossmark) {
-                    dispatch(updateProcess(1));
-
-                    const trustSet = {
-                        Flags: Flags,
-                        LimitAmount: LimitAmount,
-                        Account: accountProfile.account,
-                        TransactionType: 'TrustSet',
-                    }
-                    let bulkTx = [trustSet];
-                    if (balance > 0) {
-                        const refundToIssuer = {
-                            TransactionType: "Payment",
-                            Account: accountProfile.account,
-                            Amount: {
-                                currency: currency,
-                                value: balance,
-                                issuer: issuer
-                            },
-                            Destination: issuer,
-                            Fee: "12",
-                            SourceTag: 20221212,
-                        };
-                        bulkTx = [refundToIssuer, ...bulkTx];
-                    }
-
-                    dispatch(updateProcess(1));
-                    await sdk.methods.bulkSignAndSubmitAndWait(bulkTx).then(({ response }) => {
-                        console.log(response);
-                        if (response.data.meta.isSuccess) {
-                            dispatch(updateProcess(2));
-                            dispatch(updateTxHash(response.data.resp.result?.hash));
-
-                        } else {
-                            dispatch(updateProcess(3));
-                        }
-                    });
-                    // }
-                    break;
+            if (balance > 0) {
+                setXamanStep(1);
+            } else {
+                setXamanStep(3);
             }
-            setSync(!sync);
 
         } catch (err) {
             console.log(err);
-            dispatch(updateProcess(0));
             openSnackbar('Network error!', 'error');
         }
     };
@@ -332,7 +205,8 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
 
     const handleConfirmContinue = async () => {
         const user_token = accountProfile?.user_token;
-        
+        const wallet_type = accountProfile?.wallet_type;
+
         let body;
         switch (xamanStep) {
             case 3:
@@ -346,19 +220,44 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                 LimitAmount.issuer = issuer;
                 LimitAmount.currency = currency;
                 LimitAmount.value = "0";
+                LimitAmount.TransactionType = "TrustSet";
 
                 body = { LimitAmount, Flags, user_token };
-                const res1 = await axios.post(`${BASE_URL}/xumm/trustset`, body);
-                if (res1.status === 200) {
-                    const uuid = res1.data.data.uuid;
-                    const qrlink = res1.data.data.qrUrl;
-                    const nextlink = res1.data.data.next;
+                if (wallet_type == "xaman") {
+                    const res1 = await axios.post(`${BASE_URL}/xumm/trustset`, body);
+                    if (res1.status === 200) {
+                        const uuid = res1.data.data.uuid;
+                        const qrlink = res1.data.data.qrUrl;
+                        const nextlink = res1.data.data.next;
 
-                    setXamanStep(4);
-                    setUuid(uuid);
-                    setQrUrl(qrlink);
-                    setNextUrl(nextlink);
-                    setOpenScanQR(true);
+                        setXamanStep(4);
+                        setUuid(uuid);
+                        setQrUrl(qrlink);
+                        setNextUrl(nextlink);
+                        setOpenScanQR(true);
+                    }
+                }
+
+                else if (wallet_type == "gem") {
+                    await submitTransaction({
+                        transaction: body
+                    }).then(({ type, result }) => {
+                        if (type === "response") {
+                            setXamanStep(4);
+                        } else {
+                            handleConfirmClose();
+                        }
+                    });
+                }
+
+                else if (wallet_type == "crossmark") {
+                    await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
+                        if (response.data.meta.isSuccess) {
+                            setXamanStep(4);
+                        } else {
+                            handleConfirmClose();
+                        }
+                    });
                 }
                 break;
             case 2:
@@ -366,6 +265,7 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                 break;
             case 1:
                 body = {
+                    TransactionType: "Payment",
                     Account: accountProfile.account,
                     Amount: {
                         currency: currency,
@@ -375,18 +275,43 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                     Destination: issuer,
                     Fee: "12",
                     SourceTag: 20221212,
+                    DestinationTag: 20221212,
                 }
-                const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
-                if (res2.status === 200) {
-                    const uuid = res2.data.data.uuid;
-                    const qrlink = res2.data.data.qrUrl;
-                    const nextlink = res2.data.data.next;
+                if (wallet_type == "xaman") {
+                    const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
+                    if (res2.status === 200) {
+                        const uuid = res2.data.data.uuid;
+                        const qrlink = res2.data.data.qrUrl;
+                        const nextlink = res2.data.data.next;
 
-                    setXamanStep(2);
-                    setUuid(uuid);
-                    setQrUrl(qrlink);
-                    setNextUrl(nextlink);
-                    setOpenScanQR(true);
+                        setXamanStep(2);
+                        setUuid(uuid);
+                        setQrUrl(qrlink);
+                        setNextUrl(nextlink);
+                        setOpenScanQR(true);
+                    }
+                }
+
+                else if (wallet_type == "gem") {
+                    await submitTransaction({
+                        transaction: body
+                    }).then(({ type }) => {
+                        if (type === "response") {
+                            setXamanStep(2);
+                        } else {
+                            handleConfirmClose();
+                        }
+                    });
+                }
+
+                else if (wallet_type == "crossmark") {
+                    await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
+                        if (response.data.meta.isSuccess) {
+                            setXamanStep(2);
+                        } else {
+                            handleConfirmClose();
+                        }
+                    });
                 }
 
                 break;
@@ -492,7 +417,7 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                 qrUrl={qrUrl}
                 nextUrl={nextUrl}
             />
-            <CustomDialog open={openConfirm} content={content} handleClose={handleConfirmClose} handleContinue={handleConfirmContinue} />
+            <CustomDialog open={openConfirm} content={content} title={stepTitle} handleClose={handleConfirmClose} handleContinue={handleConfirmContinue} />
         </>
     )
 }

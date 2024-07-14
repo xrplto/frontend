@@ -10,7 +10,7 @@ const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function CustomDialog({ open, content, handleContinue, handleClose }) {
+export default function CustomDialog({ open, title, content, handleContinue, handleClose }) {
   return (
     <Dialog
       open={open}
@@ -24,7 +24,7 @@ export default function CustomDialog({ open, content, handleContinue, handleClos
         }
       }}
     >
-      <DialogTitle sx={{ textAlign: "center" }}>Warning</DialogTitle>
+      <DialogTitle sx={{ textAlign: "center" }}>{title}</DialogTitle>
       <DialogContent sx={{ textAlign: "center" }}>{content}</DialogContent>
       <DialogActions>
         <Grid container>
