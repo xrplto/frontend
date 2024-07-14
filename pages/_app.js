@@ -7,6 +7,7 @@ import TransactionAlert from 'src/components/TransactionAlert';
 import { useSnackbar } from 'src/components/useSnackbar';
 import "./zMain.css";
 import { SnackbarProvider } from 'notistack';
+import NextNProgress from 'nextjs-progressbar';
 
 function XRPLToApp({ Component, pageProps, router }) {
   const isUnderMaintenance = process.env.MAINTENANCE; // Set this variable to enable or disable maintenance mode
@@ -118,6 +119,7 @@ function XRPLToApp({ Component, pageProps, router }) {
       </noscript>
 
       <ContextProvider data={data} openSnackbar={openSnackbar}>
+        <NextNProgress />
         <ThemeProvider>
           <SnackbarProvider
             maxSnack={2}

@@ -690,7 +690,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
 
       <QRDialog
         open={openScanQR}
-        type="Trust Set"
+        type={xamanTitle}
         onClose={handleScanQRClose}
         qrUrl={qrUrl}
         nextUrl={nextUrl}

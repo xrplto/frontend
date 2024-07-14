@@ -72,6 +72,7 @@
     "next": "12.2.0",
     "next-images": "1.8.4",
     "next-transpile-modules": "9.1.0",
+    "nextjs-progressbar": "^0.0.16",
     "notistack": "^3.0.1",
     "nprogress": "0.2.0",
     "perf_hooks": "^0.0.1",
