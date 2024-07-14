@@ -13,7 +13,7 @@ import { useDispatch } from "react-redux";
 import { updateProcess, updateTxHash } from "src/redux/transactionSlice";
 import CustomDialog from "src/components/Dialog";
 
-const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, account, currency }) => {
+const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, account, currency }) => {
 
     const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -30,6 +30,7 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
     const [content, setContent] = useState("");
     const [openConfirm, setOpenConfirm] = useState(false);
     const [xamanStep, setXamanStep] = useState(0);
+    const [xamanTitle, setXamanTitle] = useState(0);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -62,19 +63,21 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                 const dispatched_result = await getDispatchResult();
 
                 if (dispatched_result && dispatched_result === 'tesSUCCESS') {
-                    openSnackbar(
-                        `Successfully ${isRemove ? 'removed' : 'set'} trustline!`,
-                        'success'
-                    );
+                    // openSnackbar(
+                    //     `Successfully ${isRemove ? 'removed' : 'set'} trustline!`,
+                    //     'success'
+                    // );
+                    setXamanStep(xamanStep + 1);
                     stopInterval();
                     return;
                 }
 
                 times++;
 
-                if (times >= 10) {
+                if (times >= 20) {
                     openSnackbar('Operation rejected!', 'error');
                     stopInterval();
+                    handleConfirmClose();
                     return;
                 }
             }, 1000);
@@ -85,7 +88,7 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
         const stopInterval = () => {
             clearInterval(dispatchTimer);
             setOpenScanQR(false);
-            handleClose();
+            // handleClose();
         };
 
         async function getPayload() {
@@ -117,18 +120,26 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                 clearInterval(timer);
             }
         };
-    }, [openScanQR, uuid]);
+    }, [openScanQR, uuid, xamanStep]);
 
     useEffect(() => {
 
         switch (xamanStep) {
             case 1:
                 setContent(`This TrustLine still contains ${balance} ${currencyName}. If you continue, it will be sent back to the issuer before your TrustLine is deleted.`);
+                setXamanTitle("Refund to Issuer");
                 setOpenConfirm(true);
                 break;
             case 2:
+                setContent("Your dust balance has been sent back to the issuer. The TrustLine can now be eliminated");
                 break;
             case 3:
+                setContent("You are removing this token from your XRP ledger account. Are you sure?");
+                setXamanTitle("Trust Set");
+
+            case 4:
+                openSnackbar("You removed trustline", "success");
+                handleConfirmClose();
                 break;
         }
 
@@ -159,7 +170,6 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
     const onTrustRemoveXumm = async () => {
         try {
             const wallet_type = accountProfile.wallet_type;
-            const user_token = accountProfile?.user_token;
 
             const Flags = 0x00020000;
 
@@ -177,17 +187,6 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                         setXamanStep(1);
                     }
 
-                    // const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
-                    // if (res.status === 200) {
-                    //     const uuid = res.data.data.uuid;
-                    //     const qrlink = res.data.data.qrUrl;
-                    //     const nextlink = res.data.data.next;
-
-                    //     setUuid(uuid);
-                    //     setQrUrl(qrlink);
-                    //     setNextUrl(nextlink);
-                    //     setOpenScanQR(true);
-                    // }
                     break;
                 case "gem":
                     isInstalled().then(async (response) => {
@@ -260,7 +259,6 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                     })
                     break;
                 case "crossmark":
-                    console.log(balance);
                     // if (!window.xrpl) {
                     //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
                     //   return;
@@ -337,6 +335,11 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
         let body;
         switch (xamanStep) {
             case 3:
+                if (limit == 0) {
+                    setXamanStep(4);
+                    return;
+                }
+
                 const Flags = 0x00020000;
                 let LimitAmount = {};
                 LimitAmount.issuer = issuer;
@@ -350,11 +353,15 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                     const qrlink = res1.data.data.qrUrl;
                     const nextlink = res1.data.data.next;
 
+                    setXamanStep(4);
                     setUuid(uuid);
                     setQrUrl(qrlink);
                     setNextUrl(nextlink);
                     setOpenScanQR(true);
                 }
+                break;
+            case 2:
+                setXamanStep(3);
                 break;
             case 1:
                 body = {
@@ -374,11 +381,13 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                     const qrlink = res2.data.data.qrUrl;
                     const nextlink = res2.data.data.next;
 
+                    setXamanStep(2);
                     setUuid(uuid);
                     setQrUrl(qrlink);
                     setNextUrl(nextlink);
                     setOpenScanQR(true);
                 }
+
                 break;
         }
     }
@@ -468,7 +477,7 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
             </TableRow>
             <CustomQRDialog
                 open={openScanQR}
-                type="Trust Set"
+                type={xamanTitle}
                 onClose={handleScanQRClose}
                 qrUrl={qrUrl}
                 nextUrl={nextUrl}
