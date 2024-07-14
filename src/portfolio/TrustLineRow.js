@@ -11,6 +11,7 @@ import { PulseLoader } from "react-spinners";
 import CustomQRDialog from "src/components/QRDialog";
 import { useDispatch } from "react-redux";
 import { updateProcess, updateTxHash } from "src/redux/transactionSlice";
+import CustomDialog from "src/components/Dialog";
 
 const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, account, currency }) => {
 
@@ -26,6 +27,9 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
     const [uuid, setUuid] = useState(null);
     const [qrUrl, setQrUrl] = useState(null);
     const [nextUrl, setNextUrl] = useState(null);
+    const [content, setContent] = useState("");
+    const [openConfirm, setOpenConfirm] = useState(false);
+    const [xamanStep, setXamanStep] = useState(0);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -115,6 +119,21 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
         };
     }, [openScanQR, uuid]);
 
+    useEffect(() => {
+
+        switch (xamanStep) {
+            case 1:
+                setContent(`This TrustLine still contains ${balance} ${currencyName}. If you continue, it will be sent back to the issuer before your TrustLine is deleted.`);
+                setOpenConfirm(true);
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+        }
+
+    }, [xamanStep]);
+
     const getToken = async () => {
         await axios.get(`${BASE_URL}/token/get-by-hash/${md5}`).then(res => {
             setToken(res.data.token);
@@ -148,24 +167,27 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
             LimitAmount.issuer = issuer;
             LimitAmount.currency = currency;
             LimitAmount.value = "0";
-
-            const body = { LimitAmount, Flags, user_token };
             setLoading(true);
 
             switch (wallet_type) {
                 case "xaman":
-                    const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
 
-                    if (res.status === 200) {
-                        const uuid = res.data.data.uuid;
-                        const qrlink = res.data.data.qrUrl;
-                        const nextlink = res.data.data.next;
-
-                        setUuid(uuid);
-                        setQrUrl(qrlink);
-                        setNextUrl(nextlink);
-                        setOpenScanQR(true);
+                    // step 1
+                    if (balance > 0) {
+                        setXamanStep(1);
                     }
+
+                    // const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
+                    // if (res.status === 200) {
+                    //     const uuid = res.data.data.uuid;
+                    //     const qrlink = res.data.data.qrUrl;
+                    //     const nextlink = res.data.data.next;
+
+                    //     setUuid(uuid);
+                    //     setQrUrl(qrlink);
+                    //     setNextUrl(nextlink);
+                    //     setOpenScanQR(true);
+                    // }
                     break;
                 case "gem":
                     isInstalled().then(async (response) => {
@@ -304,6 +326,63 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
         setLoading(false);
     };
 
+    const handleConfirmClose = () => {
+        setOpenConfirm(false);
+        setXamanStep(0);
+    }
+
+    const handleConfirmContinue = async () => {
+        const user_token = accountProfile?.user_token;
+        
+        let body;
+        switch (xamanStep) {
+            case 3:
+                const Flags = 0x00020000;
+                let LimitAmount = {};
+                LimitAmount.issuer = issuer;
+                LimitAmount.currency = currency;
+                LimitAmount.value = "0";
+
+                body = { LimitAmount, Flags, user_token };
+                const res1 = await axios.post(`${BASE_URL}/xumm/trustset`, body);
+                if (res1.status === 200) {
+                    const uuid = res1.data.data.uuid;
+                    const qrlink = res1.data.data.qrUrl;
+                    const nextlink = res1.data.data.next;
+
+                    setUuid(uuid);
+                    setQrUrl(qrlink);
+                    setNextUrl(nextlink);
+                    setOpenScanQR(true);
+                }
+                break;
+            case 1:
+                body = {
+                    Account: accountProfile.account,
+                    Amount: {
+                        currency: currency,
+                        value: balance,
+                        issuer: issuer
+                    },
+                    Destination: issuer,
+                    Fee: "12",
+                    SourceTag: 20221212,
+                }
+                const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
+                if (res2.status === 200) {
+                    const uuid = res2.data.data.uuid;
+                    const qrlink = res2.data.data.qrUrl;
+                    const nextlink = res2.data.data.next;
+
+                    setUuid(uuid);
+                    setQrUrl(qrlink);
+                    setNextUrl(nextlink);
+                    setOpenScanQR(true);
+                }
+                break;
+        }
+    }
+
     return (
         <>
             {/* <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
@@ -394,6 +473,7 @@ const TrustLineRow = ({ idx, currencyName, balance, md5, exchRate, issuer, accou
                 qrUrl={qrUrl}
                 nextUrl={nextUrl}
             />
+            <CustomDialog open={openConfirm} content={content} handleClose={handleConfirmClose} handleContinue={handleConfirmContinue} />
         </>
     )
 }

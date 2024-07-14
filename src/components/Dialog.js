@@ -4,12 +4,13 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import Slide from '@mui/material/Slide';
+import { DialogContent, Grid } from '@mui/material';
 
 const Transition = forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export default function CustomDialog({ open, handleRedirect, handleClose }) {
+export default function CustomDialog({ open, content, handleContinue, handleClose }) {
   return (
     <Dialog
       open={open}
@@ -17,13 +18,23 @@ export default function CustomDialog({ open, handleRedirect, handleClose }) {
       keepMounted
       onClose={handleClose}
       aria-describedby="alert-dialog-slide-description"
-      maxWidth="xl"
-      fullWidth
+      PaperProps={{
+        sx: {
+          maxWidth: "300px"
+        }
+      }}
     >
-      <DialogTitle>Open in XUMM?</DialogTitle>
+      <DialogTitle sx={{ textAlign: "center" }}>Warning</DialogTitle>
+      <DialogContent sx={{ textAlign: "center" }}>{content}</DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleRedirect}>Open</Button>
+        <Grid container>
+          <Grid item xs={6}>
+            <Button fullWidth onClick={handleClose}>Cancel</Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Button fullWidth onClick={handleContinue} color="error">Continue</Button>
+          </Grid>
+        </Grid>
       </DialogActions>
     </Dialog>
   );
