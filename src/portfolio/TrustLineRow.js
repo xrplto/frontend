@@ -134,11 +134,13 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
             case 2:
                 setContent("Your dust balance has been sent back to the issuer. The TrustLine can now be eliminated");
                 setStepTitle("Success");
+                setOpenConfirm(true);
                 break;
             case 3:
                 setContent("You are removing this token from your XRP ledger account. Are you sure?");
                 setXamanTitle("Trust Set");
                 setStepTitle("Warning");
+                setOpenConfirm(true);
                 break;
             case 4:
                 openSnackbar("You removed trustline", "success");
