@@ -113,6 +113,14 @@ const colors = {
     main: themeColors.secondary,
     dark: darken(themeColors.secondary, 0.2)
   },
+  secondaryOrigin: {
+    lighter: '#D6E4FF',
+    light: '#84A9FF',
+    main: '#3366FF',
+    dark: '#1939B7',
+    darker: '#091A7A',
+    contrastText: '#fff'
+  },
   success: {
     lighter: lighten(themeColors.success, 0.85),
     light: lighten(themeColors.success, 0.3),
@@ -288,6 +296,12 @@ export const XrplToLightTheme = createTheme({
       light: colors.secondary.light,
       main: colors.secondary.main,
       dark: colors.secondary.dark
+    },
+    secondaryOrigin: {
+      main: '#9c27b0',
+      light: '#ba68c8',
+      dark: '#7b1fa2',
+      contrastText: '#fff',
     },
     error: {
       light: colors.error.light,

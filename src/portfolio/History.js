@@ -11,9 +11,7 @@ import {
     Radio,
     RadioGroup,
     FormControlLabel,
-    IconButton
 } from '@mui/material';
-import LinkIcon from '@mui/icons-material/Link';
 import { Client } from "xrpl";
 import { useContext, useEffect, useState } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -104,15 +102,15 @@ const History = () => {
                 <FormControlLabel value="Tokens" control={<Radio sx={{ color: theme.palette.text.primary }} />} label="Tokens" />
                 <FormControlLabel value="NFTs" control={<Radio sx={{ color: theme.palette.text.primary }} />} label="NFTs" />
             </RadioGroup>
-            <Paper sx={{ width: '100%', overflow: 'hidden', color: theme.palette.text.primary }}>
-                <Table>
+            <Paper sx={{ width: '100%', overflow: 'auto', maxHeight: "475px", color: theme.palette.text.primary }}>
+                <Table stickyHeader>
                     <TableHead>
                         <TableRow>
                             <TableCell sx={{ color: theme.palette.text.primary }}>Type</TableCell>
-                            <TableCell sx={{ color: theme.palette.text.primary }}>Asset</TableCell>
                             <TableCell sx={{ color: theme.palette.text.primary }}>Amount</TableCell>
                             <TableCell sx={{ color: theme.palette.text.primary }}>Date</TableCell>
-                            <TableCell sx={{ color: theme.palette.text.primary }}></TableCell>
+                            <TableCell sx={{ color: theme.palette.text.primary }}>Result</TableCell>
+                            <TableCell sx={{ color: theme.palette.text.primary }}>View</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

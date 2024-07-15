@@ -1,10 +1,14 @@
-import { Chip } from "@mui/material";
+import { Chip, Stack, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
     useTheme,
     TableCell,
     TableRow,
 } from '@mui/material';
+import EastIcon from '@mui/icons-material/East';
+import LinkIcon from '@mui/icons-material/Link';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import numeral from "numeral";
 
 const HistoryRow = (props) => {
@@ -180,12 +184,12 @@ const HistoryRow = (props) => {
             if (SendMax.currency && SendMax.value) {
                 setAssetName(normalizeCurrencyCode(SendMax.currency));
                 setAssetValue(getFormat(Number(SendMax.value)));
-                if (SendMax.currency === "MAG") setAssetColor1("text-blue-500");
-                else if (typeof Amount === "string") setAssetColor1("text-[#de0f3e]");
-                else setAssetColor1("text-[#009b0a]");
+                if (SendMax.currency === "MAG") setAssetColor1("#3b82f6");
+                else if (typeof Amount === "string") setAssetColor1("#de0f3e");
+                else setAssetColor1("#009b0a");
             } else {
                 setAssetName("XRP");
-                setAssetColor1("text-blue-500");
+                setAssetColor1("#3b82f6");
                 setAssetValue(getFormat(Number(SendMax) / 1000000));
             }
 
@@ -196,12 +200,12 @@ const HistoryRow = (props) => {
                     DeliveredAmount.currency === "XRP" ||
                     DeliveredAmount.currency === "MAG"
                 )
-                    setAssetColor2("text-blue-500");
-                else if (typeof Amount === "string") setAssetColor2("text-[#de0f3e]");
-                else setAssetColor2("text-[#009b0a]");
+                    setAssetColor2("#3b82f6");
+                else if (typeof Amount === "string") setAssetColor2("#de0f3e");
+                else setAssetColor2("#009b0a");
             } else {
                 setAssetName2("XRP");
-                setAssetColor2("text-blue-500");
+                setAssetColor2("#3b82f6");
                 setAssetValue2(getFormat(Number(DeliveredAmount) / 1000000));
             }
         }
@@ -230,33 +234,108 @@ const HistoryRow = (props) => {
         <TableRow>
             <TableCell sx={{ color: theme.palette.text.primary }}>
                 {TransactionType === "Payment" &&
-                    // <p className="text-[#eeeeee]">{t("swap")}</p>
+                    // <Typography sx={{color: "#eee"}}>{t("swap")}</Typography>
                     (typeof Amount !== "string" ? (
-                        
-                        <Chip color="success" label="Buy"/>
+
+                        <Chip color="success" label="Buy" size="small" />
                     ) : (
-                        <span className="inline-flex items-center rounded-md bg-[#de0f3e] px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-red-600/10">
-                            Sell
-                        </span>
+                        <Chip color="error" label="Sell" size="small" />
+
                     ))}
                 {TransactionType === "AMMDeposit" && (
-                    // <p className="text-[#eeeeee]">{t("amm deposit")}</p>
-                    <span className="inline-flex items-center rounded-md bg-purple-700 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-600/20">
-                        Add
-                    </span>
+                    <Chip color="secondaryOrigin" label="Add" size="small" />
+
                 )}
                 {TransactionType === "AMMWithdraw" && (
-                    // <p className="text-[#eeeeee]">{t("amm withdraw")}</p>
-                    <span className="inline-flex items-center rounded-md bg-yellow-700 px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-600/20">
-                        Remove
-                    </span>
+                    // <Typography sx={{color: "#eee"}}>{t("amm withdraw")}</Typography>
+                    <Chip color="warning" label="Remove" size="small" />
+
                 )}
             </TableCell>
-            <TableCell sx={{ color: theme.palette.text.primary }}></TableCell>
-            <TableCell sx={{ color: theme.palette.text.primary }}></TableCell>
-            <TableCell sx={{ color: theme.palette.text.primary }}></TableCell>
+            <TableCell sx={{ color: theme.palette.text.primary }}>
+                {TransactionType === "AMMDeposit" && (
+                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                        <Stack direction="row" alignItems="baseline">
+                            <Typography sx={{ fontSize: "13px" }}>{assetValue.valueBeforeDot}</Typography>
+                            {assetValue.valueAfterDot !== "" && (
+                                <Typography sx={{ fontSize: "13px" }}>.{assetValue.valueAfterDot}</Typography>
+                            )}
+                        </Stack>
+                        <Typography sx={{ color: "#eee", fontSize: "13px" }}>{assetName}</Typography>
+                        <Typography sx={{ color: "#eee" }}>/</Typography>
+
+                        <Stack direction="row" alignItems="baseline">
+                            <Typography sx={{ fontSize: "13px" }}>{assetValue2.valueBeforeDot}</Typography>
+                            {assetValue2.valueAfterDot !== "" && (
+                                <Typography sx={{ fontSize: "13px" }}>.{assetValue2.valueAfterDot}</Typography>
+                            )}
+                        </Stack>
+                        <Typography sx={{ color: "#eee", fontSize: "13px" }}>{assetName2}</Typography>
+                    </Stack>
+                )}
+                {TransactionType === "AMMWithdraw" && (
+                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                        {assetValue.valueAfterDot === "" &&
+                            assetValue2.valueAfterDot === "" ? (
+                            <Stack direction="row" spacing={0.5}>
+                                <Typography sx={{ color: "#eee", fontSize: "13px" }}>{assetName}</Typography>
+                                <Typography sx={{ color: "#eee" }}>/</Typography>
+                                <Typography sx={{ color: "#eee", fontSize: "13px" }}>{assetName2}</Typography>
+                            </Stack>
+                        ) : (
+                            <Stack direction="row" spacing={0.5}>
+                                <Stack direction="row" alignItems="baseline">
+                                    <Typography sx={{ fontSize: "13px" }}>{assetValue.valueBeforeDot}</Typography>
+                                    {assetValue.valueAfterDot !== "" && (
+                                        <Typography sx={{ fontSize: "13px" }}>.{assetValue.valueAfterDot}</Typography>
+                                    )}
+                                </Stack>
+                                <Typography sx={{ color: "#eee", fontSize: "13px" }}>{assetName}</Typography>
+                                <Typography sx={{ color: "#eee" }}>/</Typography>
+
+                                <Stack direction="row" alignItems="baseline">
+                                    <Typography sx={{ fontSize: "13px" }}>{assetValue2.valueBeforeDot}</Typography>
+                                    {assetValue2.valueAfterDot !== "" && (
+                                        <Typography sx={{ fontSize: "13px" }}>.{assetValue2.valueAfterDot}</Typography>
+                                    )}
+                                </Stack>
+                                <Typography sx={{ color: "#eee", fontSize: "13px" }}>{assetName2}</Typography>
+                            </Stack>
+                        )}
+                    </Stack>
+                )}
+                {TransactionType === "Payment" && (
+                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                        <Stack direction="row" alignItems="baseline">
+                            <Typography sx={{ fontSize: "13px" }}>{assetValue.valueBeforeDot}</Typography>
+                            {assetValue.valueAfterDot && (
+                                <Typography sx={{ fontSize: "13px" }}>.{assetValue.valueAfterDot}</Typography>
+                            )}
+                        </Stack>
+                        <Typography sx={{ color: assetColor1 || "#eee", fontSize: "13px" }}>{assetName}</Typography>
+                        <EastIcon sx={{ color: "#eee" }} />
+                        <Stack direction="row" alignItems="baseline">
+                            <Typography sx={{ fontSize: "13px" }}>{assetValue2.valueBeforeDot}</Typography>
+                            {assetValue2.valueAfterDot && (
+                                <Typography sx={{ fontSize: "13px" }}>.{assetValue2.valueAfterDot}</Typography>
+                            )}
+                        </Stack>
+                        <Typography sx={{ color: assetColor2 || "#eee", fontSize: "13px" }}>{assetName2}</Typography>
+                    </Stack>
+                )}
+            </TableCell>
+            <TableCell sx={{ color: theme.palette.text.primary }}>
+                {getRelativeTime(rippleEpoch)}
+            </TableCell>
+            <TableCell sx={{ color: theme.palette.text.primary }}>
+                {TransactionResult === "tesSUCCESS" ? (
+                    <CheckIcon color="success" />
+                ) : (
+                    <CloseIcon color="error" />
+                )}
+            </TableCell>
             <TableCell>
-                
+                <LinkIcon onClick={handleViewClick}/>
             </TableCell>
         </TableRow>
     )

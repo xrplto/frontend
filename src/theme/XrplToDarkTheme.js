@@ -102,12 +102,12 @@ const colors = {
     contrastText: '#fff'
   },
   primary: {
-      lighter: alpha("#fff", 0.1),
-      light: '#00AB55',  // #5BE584
-      main: '#007B55',   // #00AB55
-      dark: '#005249',   // #007B55
-      darker: '#003349', // #005249
-      contrastText: '#fff'
+    lighter: alpha("#fff", 0.1),
+    light: '#00AB55',  // #5BE584
+    main: '#007B55',   // #00AB55
+    dark: '#005249',   // #007B55
+    darker: '#003349', // #005249
+    contrastText: '#fff'
   },
   // primary: {
   //   lighter: alpha(themeColors.primary, 0.85),
@@ -116,19 +116,21 @@ const colors = {
   //   dark: darken(themeColors.primary, 0.2)
   // },
   secondary: {
-      lighter: '#D6E4FF',
-      light: '#84A9FF',
-      main: '#3366FF',
-      dark: '#1939B7',
-      darker: '#091A7A',
-      contrastText: '#fff'
+    lighter: '#D6E4FF',
+    light: '#84A9FF',
+    main: '#3366FF',
+    dark: '#1939B7',
+    darker: '#091A7A',
+    contrastText: '#fff'
   },
-  // secondary: {
-  //   lighter: alpha(themeColors.secondary, 0.85),
-  //   light: alpha(themeColors.secondary, 0.6),
-  //   main: themeColors.secondary,
-  //   dark: darken(themeColors.secondary, 0.2)
-  // },
+  secondaryOrigin: {
+    lighter: '#D6E4FF',
+    light: '#84A9FF',
+    main: '#3366FF',
+    dark: '#1939B7',
+    darker: '#091A7A',
+    contrastText: '#fff'
+  },
   info: {
     lighter: '#D0F2FF',
     light: '#74CAFF',
@@ -144,11 +146,11 @@ const colors = {
   //   dark: darken(themeColors.info, 0.2)
   // },
   success: {
-      lighter: '#E9FCD4',
-      light: '#AAF27F',
-      main: '#54D62C',
-      dark: '#229A16',
-      darker: '#08660D',
+    lighter: '#E9FCD4',
+    light: '#AAF27F',
+    main: '#54D62C',
+    dark: '#229A16',
+    darker: '#08660D',
   },
   // success: {
   //   lighter: alpha(themeColors.success, 0.85),
@@ -157,11 +159,11 @@ const colors = {
   //   dark: darken(themeColors.success, 0.2)
   // },
   warning: {
-      lighter: '#FFF7CD',
-      light: '#FFE16A',
-      main: '#FFC107',
-      dark: '#B78103',
-      darker: '#7A4F01',
+    lighter: '#FFF7CD',
+    light: '#FFE16A',
+    main: '#FFC107',
+    dark: '#B78103',
+    darker: '#7A4F01',
   },
   // warning: {
   //   lighter: alpha(themeColors.warning, 0.85),
@@ -170,12 +172,12 @@ const colors = {
   //   dark: darken(themeColors.warning, 0.2)
   // },
   error: {
-      lighter: '#FFE7D9',
-      light: '#FFA48D',
-      main: '#FF4842',
-      dark: '#B72136',
-      darker: '#7A0C2E',
-      contrastText: '#fff'
+    lighter: '#FFE7D9',
+    light: '#FFA48D',
+    main: '#FF4842',
+    dark: '#B72136',
+    darker: '#7A0C2E',
+    contrastText: '#fff'
   },
   // error: {
   //   lighter: alpha(themeColors.error, 0.85),
@@ -333,6 +335,12 @@ export const XrplToDarkTheme = createTheme({
       light: colors.secondary.light,
       main: colors.secondary.main,
       dark: colors.secondary.dark
+    },
+    secondaryOrigin: {
+      main: '#9c27b0',
+      light: '#ba68c8',
+      dark: '#7b1fa2',
+      contrastText: '#fff',
     },
     error: {
       light: colors.error.light,
@@ -588,7 +596,7 @@ export const XrplToDarkTheme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          
+
         },
         colorSecondary: {
           background: colors.alpha.black[5],
@@ -1361,7 +1369,7 @@ export const XrplToDarkTheme = createTheme({
   typography: {
     fontFamily:
       '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
-      
+
     wallet_h3: {
       fontWeight: 'bold',
       fontSize: 24,
