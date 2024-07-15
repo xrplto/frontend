@@ -11,11 +11,14 @@ import {
     Radio,
     RadioGroup,
     FormControlLabel,
+    Stack,
 } from '@mui/material';
 import { Client } from "xrpl";
 import { useContext, useEffect, useState } from 'react';
 import { AppContext } from 'src/AppContext';
 import HistoryRow from './HistoryRow';
+import { PulseLoader } from 'react-spinners';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 const rippleServerUrl = process.env.NEXT_PUBLIC_RIPPLED_LIVE_DATA_ONLY_URL;
 const client = new Client(rippleServerUrl);
@@ -23,8 +26,10 @@ const client = new Client(rippleServerUrl);
 const History = () => {
 
     const theme = useTheme();
-    const { accountProfile } = useContext(AppContext);
+    const { accountProfile, darkMode } = useContext(AppContext);
     const [activityHistory, setActivityHistory] = useState([]);
+    const [loading, setLoading] = useState(false);
+
     useEffect(() => {
         accountHistory();
     }, [accountProfile])
@@ -32,8 +37,9 @@ const History = () => {
     const accountHistory = async () => {
         const xrpAddress = accountProfile?.account;
         if (xrpAddress === undefined) return;
-        await client.connect();
+        setLoading(true);
         try {
+            await client.connect();
             const transaction = {
                 command: "account_tx",
                 account: xrpAddress,
@@ -86,6 +92,7 @@ const History = () => {
         } catch (error) {
             console.log("The error is occurred in my transaction history", error);
         }
+        setLoading(false);
     };
 
     console.log(activityHistory)
@@ -103,22 +110,39 @@ const History = () => {
                 <FormControlLabel value="NFTs" control={<Radio sx={{ color: theme.palette.text.primary }} />} label="NFTs" />
             </RadioGroup>
             <Paper sx={{ width: '100%', overflow: 'auto', maxHeight: "475px", color: theme.palette.text.primary }}>
-                <Table stickyHeader>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell sx={{ color: theme.palette.text.primary }}>Type</TableCell>
-                            <TableCell sx={{ color: theme.palette.text.primary }}>Amount</TableCell>
-                            <TableCell sx={{ color: theme.palette.text.primary }}>Date</TableCell>
-                            <TableCell sx={{ color: theme.palette.text.primary }}>Result</TableCell>
-                            <TableCell sx={{ color: theme.palette.text.primary }}>View</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {activityHistory.map((item, index) => (
-                            <HistoryRow key={index} {...item} />
-                        ))}
-                    </TableBody>
-                </Table>
+                {
+                    loading ? (
+                        <Stack alignItems="center">
+                            <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
+                        </Stack>
+                    ) : (
+                        activityHistory && activityHistory.length === 0 &&
+                        <Stack alignItems="center" sx={{ mt: 2, mb: 1 }}>
+                            <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
+                            <Typography variant="s6" color='primary'>[ No History ]</Typography>
+                        </Stack>
+                    )
+                }
+                {
+                    activityHistory.length > 0 && (
+                        <Table stickyHeader>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell sx={{ color: theme.palette.text.primary }}>Type</TableCell>
+                                    <TableCell sx={{ color: theme.palette.text.primary }}>Amount</TableCell>
+                                    <TableCell sx={{ color: theme.palette.text.primary }}>Date</TableCell>
+                                    <TableCell sx={{ color: theme.palette.text.primary }}>Result</TableCell>
+                                    <TableCell sx={{ color: theme.palette.text.primary }}>View</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {activityHistory.map((item, index) => (
+                                    <HistoryRow key={index} {...item} />
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )
+                }
             </Paper>
         </Box>
     )

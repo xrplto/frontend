@@ -7,6 +7,7 @@ import CollectionCard from "./CollectionCard";
 import { PulseLoader } from "react-spinners";
 import { AppContext } from "src/AppContext";
 import { useRouter } from "next/router";
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 const NFTs = ({ account, collection, type = "collected", limit }) => {
 
@@ -75,9 +76,15 @@ const NFTs = ({ account, collection, type = "collected", limit }) => {
             }}
         >
             {
-                loading && (
+                loading ? (
                     <Stack alignItems="center">
                         <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
+                    </Stack>
+                ) : (
+                    nfts && nfts.length === 0 &&
+                    <Stack alignItems="center" sx={{ mt: 2, mb: 1 }}>
+                        <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
+                        <Typography variant="s6" color='primary'>[ No NFTs ]</Typography>
                     </Stack>
                 )
             }
