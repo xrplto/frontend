@@ -320,7 +320,8 @@ export default function PlaceOrder({
             const offer = {
               Flags: Flags,
               TakerGets: TakerGets,
-              TakerPays: TakerPays
+              TakerPays: TakerPays,
+              Account: accountProfile?.account
             }
   
             dispatch(updateProcess(1));
