@@ -77,7 +77,7 @@ export default function CustomQRDialog({ open, type, qrUrl, nextUrl, onClose }) 
       maxWidth="xs"
       onClose={onClose}
       open={open}
-      sx={{ zIndex: 1303 }}
+      sx={{ zIndex: 1305 }}
     >
       
       <DialogContent dividers>
