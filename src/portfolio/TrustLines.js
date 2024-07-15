@@ -191,7 +191,7 @@ export default function TrustLines({ account }) {
                     exchRate={exchRate}
                     issuer={issuer}
                     account={account}
-                    limit={highLimit}
+                    limit={highLimit || lowLimit}
                   />
                 );
               })}

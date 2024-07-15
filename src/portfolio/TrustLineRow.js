@@ -230,7 +230,6 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                 const qrlink = res1.data.data.qrUrl;
                 const nextlink = res1.data.data.next;
     
-                setXamanStep(4);
                 setUuid(uuid);
                 setQrUrl(qrlink);
                 setNextUrl(nextlink);
@@ -291,7 +290,6 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                 const qrlink = res2.data.data.qrUrl;
                 const nextlink = res2.data.data.next;
     
-                setXamanStep(2);
                 setUuid(uuid);
                 setQrUrl(qrlink);
                 setNextUrl(nextlink);
