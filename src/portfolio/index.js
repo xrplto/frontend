@@ -22,13 +22,8 @@ import {
     TableHead,
     TableRow,
     Paper,
-    Radio,
-    RadioGroup,
-    FormControlLabel,
-    IconButton
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import LinkIcon from '@mui/icons-material/Link';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import styled from '@emotion/styled';
@@ -37,6 +32,7 @@ import TrustLines from "./TrustLines";
 import Offer from "./Offer";
 import { TabContext, TabPanel } from "@mui/lab";
 import NFTs from "./NFTs";
+import History from "./History";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -348,54 +344,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 </TabContext>
                             </CardContent>
                         </Card>
-
-                        <Box>
-                            <Typography sx={{ color: theme.palette.text.primary, mb: 2 }} variant="h6">Historical Trades</Typography>
-                            <RadioGroup
-                                row
-                                value={filter}
-                                onChange={handleFilterChange}
-                                sx={{ mb: 2, color: theme.palette.text.primary }}
-                            >
-                                <FormControlLabel value="All" control={<Radio sx={{ color: theme.palette.text.primary }} />} label="All" />
-                                <FormControlLabel value="Tokens" control={<Radio sx={{ color: theme.palette.text.primary }} />} label="Tokens" />
-                                <FormControlLabel value="NFTs" control={<Radio sx={{ color: theme.palette.text.primary }} />} label="NFTs" />
-                            </RadioGroup>
-                            <Paper sx={{ width: '100%', overflow: 'hidden', color: theme.palette.text.primary }}>
-                                <Table>
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell sx={{ color: theme.palette.text.primary }}>Type</TableCell>
-                                            <TableCell sx={{ color: theme.palette.text.primary }}>Asset</TableCell>
-                                            <TableCell sx={{ color: theme.palette.text.primary }}>Amount</TableCell>
-                                            <TableCell sx={{ color: theme.palette.text.primary }}>Date</TableCell>
-                                            <TableCell sx={{ color: theme.palette.text.primary }}></TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {filteredTrades.map((trade) => (
-                                            <TableRow key={trade.id}>
-                                                <TableCell sx={{ color: theme.palette.text.primary }}>{trade.type}</TableCell>
-                                                <TableCell sx={{ color: theme.palette.text.primary }}>{trade.asset}</TableCell>
-                                                <TableCell sx={{ color: theme.palette.text.primary }}>{trade.amount}</TableCell>
-                                                <TableCell sx={{ color: theme.palette.text.primary }}>{trade.date}</TableCell>
-                                                <TableCell>
-                                                    <IconButton
-                                                        component="a"
-                                                        href={`https://bithomp.com/explorer/${trade.hash}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        sx={{ color: theme.palette.text.primary }}
-                                                    >
-                                                        <LinkIcon />
-                                                    </IconButton>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </Paper>
-                        </Box>
+                        <History/>
                     </Grid>
                 </Grid>
             </Container>

@@ -75,6 +75,7 @@
     "nextjs-progressbar": "^0.0.16",
     "notistack": "^3.0.1",
     "nprogress": "0.2.0",
+    "numeral": "^2.0.6",
     "perf_hooks": "^0.0.1",
     "react": "17.0.2",
     "react-apexcharts": "1.4.0",
@@ -104,7 +105,8 @@
     "styled-components": "^6.1.11",
     "styled-system": "^5.1.5",
     "use-sound": "^4.0.3",
-    "verify-xrpl-signature": "^4.1.5"
+    "verify-xrpl-signature": "^4.1.5",
+    "xrpl": "^3.1.0"
   },
   "scripts": {
     "dev": "next",
