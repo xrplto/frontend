@@ -35,7 +35,7 @@ function truncate(str, n) {
     return (str.length > n) ? str.substr(0, n - 1) + ' ...' : str;
 };
 
-const Offer = ({ account }) => {
+const Offer = () => {
 
     const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -58,7 +58,7 @@ const Offer = ({ account }) => {
     useEffect(() => {
         function getOffers() {
             setLoading(true);
-            axios.get(`${BASE_URL}/account/offers/${account}?page=${page}&limit=${rows}`)
+            axios.get(`${BASE_URL}/account/offers/${accountProfile?.account}?page=${page}&limit=${rows}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -71,9 +71,9 @@ const Offer = ({ account }) => {
                     setLoading(false);
                 });
         }
-        if (account)
+        if (accountProfile?.account)
             getOffers();
-    }, [account, sync, page, rows]);
+    }, [accountProfile, sync, page, rows]);
 
     const tableRef = useRef(null);
     const [scrollLeft, setScrollLeft] = useState(0);
