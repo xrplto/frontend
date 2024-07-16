@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Box, Card, CardContent, CardHeader, styled } from "@mui/material";
 
 import {
@@ -24,12 +24,24 @@ import { PulseLoader } from "react-spinners";
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CancelIcon from '@mui/icons-material/Cancel';
 import axios from "axios";
+import { checkExpiration } from "src/utils/extra";
+import { formatDateTime } from "src/utils/formatTime";
 
 const OfferBox = styled(Box)(({ theme }) => `
 
 `);
+function truncate(str, n) {
+    if (!str) return '';
+    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
+    return (str.length > n) ? str.substr(0, n-1) + ' ...' : str;
+};
 
-const Offer = ({ account = "rf8NFCN8U5grHbvnAvAwihwubudCMBiM93" }) => {
+function truncateAccount(str) {
+    if (!str) return '';
+    return str.slice(0, 9) + '...' + str.slice(-9);
+};
+
+const Offer = () => {
 
     const BASE_URL = 'https://api.xrpl.to/api';
     
@@ -52,7 +64,7 @@ const Offer = ({ account = "rf8NFCN8U5grHbvnAvAwihwubudCMBiM93" }) => {
         function getOffers() {
             setLoading(true);
             // https://api.xrpl.to/api/account/offers/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
-            axios.get(`${BASE_URL}/account/offers/${account}?page=${page}&limit=${rows}`)
+            axios.get(`${BASE_URL}/account/offers/${accountProfile?.account}?page=${page}&limit=${rows}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -66,9 +78,24 @@ const Offer = ({ account = "rf8NFCN8U5grHbvnAvAwihwubudCMBiM93" }) => {
                     setLoading(false);
                 });
         }
-        getOffers();
-    }, [account, sync, page, rows]);
+        if (accountProfile?.account)
+            getOffers();
+    }, [accountProfile, sync, page, rows]);
 
+    const tableRef = useRef(null);
+    const [scrollLeft, setScrollLeft] = useState(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrollLeft(tableRef?.current?.scrollLeft > 0);
+        };
+
+        tableRef?.current?.addEventListener('scroll', handleScroll);
+
+        return () => {
+            tableRef?.current?.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
 
     return (
         <Card sx={{ mt: 3, height: "320px" }}>
