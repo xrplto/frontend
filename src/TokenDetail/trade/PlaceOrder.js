@@ -295,6 +295,8 @@ export default function PlaceOrder({
                 else {
                   dispatch(updateProcess(3));
                 }
+
+                setSync(sync + 1);
               });
             }
 
@@ -336,6 +338,7 @@ export default function PlaceOrder({
               } else {
                 dispatch(updateProcess(3));
               }
+              setSync(sync + 1);
             });
           // }
           break;
