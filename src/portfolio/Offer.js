@@ -11,7 +11,8 @@ import {
     TableHead,
     TableRow,
     Tooltip,
-    Typography
+    Typography,
+    Button
 } from '@mui/material';
 
 import { AppContext } from "src/AppContext";
@@ -277,15 +278,10 @@ const Offer = ({ account }) => {
                         >
                             <TableHead>
                                 <TableRow>
-                                    <TableCell align="left" sx={{
-                                        position: "sticky",
-                                        zIndex: 1001,
-                                        left: 0,
-                                        background: darkMode ? "#17171A" : '#F2F5F9'
-                                    }}></TableCell>
                                     <TableCell align="left">Taker Gets</TableCell>
                                     <TableCell align="left">Taker Pays</TableCell>
                                     <TableCell align="left">Hash</TableCell>
+                                    <TableCell align="center">Actions</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -311,19 +307,6 @@ const Offer = ({ account }) => {
                                                     }
                                                 }}
                                             >
-                                                <TableCell align="left" sx={{
-                                                    position: "sticky",
-                                                    zIndex: 1001,
-                                                    left: 0,
-                                                    background: darkMode ? "#17171A" : '#F2F5F9'
-                                                }}>
-                                                    <Tooltip title="Cancel Offer">
-                                                        <IconButton color='error' onClick={e => handleCancel(e, account, seq)} aria-label="cancel">
-                                                            <CancelIcon fontSize='small' />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                </TableCell>
-
                                                 <TableCell align="left">
                                                     <Typography variant="s6" noWrap>{gets.value} <Typography variant="small">{gets.name}</Typography></Typography>
                                                 </TableCell>
@@ -344,6 +327,24 @@ const Offer = ({ account }) => {
                                                             </Typography>
                                                         </Link>
                                                     }
+                                                </TableCell>
+
+                                                <TableCell align="center">
+                                                    <Tooltip title="Cancel Offer">
+                                                        <Button 
+                                                            variant="outlined" 
+                                                            color='error' 
+                                                            sx={{ 
+                                                                backgroundColor: 'transparent', 
+                                                                border: '1px solid red', 
+                                                                color: 'red', 
+                                                                minWidth: '80px'
+                                                            }} 
+                                                            onClick={e => handleCancel(e, account, seq)}
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                    </Tooltip>
                                                 </TableCell>
                                             </TableRow>
                                         );
