@@ -72,7 +72,7 @@ const Offer = ({ account }) => {
         function getOffers() {
             setLoading(true);
             // https://api.xrpl.to/api/account/offers/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
-            axios.get(`${BASE_URL}/account/offers/${accountProfile?.account}?page=${page}&limit=${rows}`)
+            axios.get(`${BASE_URL}/account/offers/${account}?page=${page}&limit=${rows}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
