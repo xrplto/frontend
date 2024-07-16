@@ -48,7 +48,7 @@ function truncateAccount(str) {
     return str.slice(0, 9) + '...' + str.slice(-9);
 };
 
-const Offer = () => {
+const Offer = ({ account }) => {
 
     const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -86,9 +86,9 @@ const Offer = () => {
                     setLoading(false);
                 });
         }
-        if (accountProfile?.account)
+        if (account)
             getOffers();
-    }, [accountProfile, sync, page, rows]);
+    }, [account, sync, page, rows]);
 
     const tableRef = useRef(null);
     const [scrollLeft, setScrollLeft] = useState(0);

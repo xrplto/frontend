@@ -23,26 +23,25 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 const rippleServerUrl = process.env.NEXT_PUBLIC_RIPPLED_LIVE_DATA_ONLY_URL;
 const client = new Client(rippleServerUrl);
 
-const History = () => {
+const History = ({ account }) => {
 
     const theme = useTheme();
-    const { accountProfile, darkMode } = useContext(AppContext);
+    const { darkMode } = useContext(AppContext);
     const [activityHistory, setActivityHistory] = useState([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         accountHistory();
-    }, [accountProfile])
+    }, [account])
 
     const accountHistory = async () => {
-        const xrpAddress = accountProfile?.account;
-        if (xrpAddress === undefined) return;
+        if (account === undefined) return;
         setLoading(true);
         try {
             await client.connect();
             const transaction = {
                 command: "account_tx",
-                account: xrpAddress,
+                account: account,
                 ledger_index_min: -1,
                 ledger_index_max: -1,
                 binary: false,
@@ -86,7 +85,7 @@ const History = () => {
                 }
             }
             const filteredData = updatedArray.filter((item) => {
-                return item.Account === xrpAddress || item.Destination === xrpAddress;
+                return item.Account === account || item.Destination === account;
             });
             setActivityHistory(filteredData);
         } catch (error) {
@@ -95,7 +94,6 @@ const History = () => {
         setLoading(false);
     };
 
-    console.log(activityHistory)
     return (
         <Box>
             <Typography sx={{ color: theme.palette.text.primary, mb: 2 }} variant="h6">Historical Trades</Typography>

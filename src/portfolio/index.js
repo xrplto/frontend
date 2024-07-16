@@ -260,7 +260,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                     </AccordionDetails>
                                 </Accordion>
 
-                                <Offer />
+                                <Offer account={account} />
                             </Stack>
                         </OuterBorderContainer>
                     </Grid>
@@ -344,7 +344,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 </TabContext>
                             </CardContent>
                         </Card>
-                        <History/>
+                        <History account={account}/>
                     </Grid>
                 </Grid>
             </Container>
