@@ -2,14 +2,9 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Box, Card, CardContent, CardHeader, styled } from "@mui/material";
 
 import {
-    Avatar,
-    Backdrop,
-    Container,
     IconButton,
     Link,
     Stack,
-    Tab,
-    Tabs,
     Table,
     TableBody,
     TableCell,
@@ -24,8 +19,6 @@ import { PulseLoader } from "react-spinners";
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CancelIcon from '@mui/icons-material/Cancel';
 import axios from "axios";
-import { checkExpiration } from "src/utils/extra";
-import { formatDateTime } from "src/utils/formatTime";
 
 import QRDialog from 'src/components/QRDialog';
 import { useDispatch } from "react-redux";
@@ -34,18 +27,11 @@ import { enqueueSnackbar } from "notistack";
 import { isInstalled, submitTransaction } from "@gemwallet/api";
 import sdk from "@crossmarkio/sdk";
 
-const OfferBox = styled(Box)(({ theme }) => `
+const OfferBox = styled(Box)(({ theme }) => ``);
 
-`);
 function truncate(str, n) {
     if (!str) return '';
-    //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
     return (str.length > n) ? str.substr(0, n - 1) + ' ...' : str;
-};
-
-function truncateAccount(str) {
-    if (!str) return '';
-    return str.slice(0, 9) + '...' + str.slice(-9);
 };
 
 const Offer = ({ account }) => {
@@ -71,7 +57,6 @@ const Offer = ({ account }) => {
     useEffect(() => {
         function getOffers() {
             setLoading(true);
-            // https://api.xrpl.to/api/account/offers/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
             axios.get(`${BASE_URL}/account/offers/${account}?page=${page}&limit=${rows}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
@@ -82,7 +67,6 @@ const Offer = ({ account }) => {
                 }).catch(err => {
                     console.log("Error on getting account orders!!!", err);
                 }).then(function () {
-                    // always executed
                     setLoading(false);
                 });
         }
@@ -131,7 +115,6 @@ const Offer = ({ account }) => {
                 if (resolved_at) {
                     setOpenScanQR(false);
                     if (dispatched_result === 'tesSUCCESS') {
-                        // TRIGGER account refresh
                         setSync(sync + 1);
                     }
                     return;
@@ -194,14 +177,11 @@ const Offer = ({ account }) => {
                                 if (type == "response") {
                                     dispatch(updateProcess(2));
                                     dispatch(updateTxHash(result?.hash));
-                                }
-
-                                else {
+                                } else {
                                     dispatch(updateProcess(3));
                                 }
                             });
-                        }
-                        else {
+                        } else {
                             enqueueSnackbar("GemWallet is not installed", { variant: "error" });
                         }
                     });
@@ -259,8 +239,7 @@ const Offer = ({ account }) => {
                         <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
                         <Typography variant="s6" color='primary'>[ No Offers ]</Typography>
                     </Stack>
-                )
-                }
+                )}
 
                 <QRDialog
                     open={openScanQR}
@@ -324,56 +303,20 @@ const Offer = ({ account }) => {
                                     }}>#</TableCell>
                                     <TableCell align="left">Taker Gets</TableCell>
                                     <TableCell align="left">Taker Pays</TableCell>
-                                    <TableCell align="left">Seq</TableCell>
-                                    <TableCell align="left">Account</TableCell>
-                                    <TableCell align="left">Expire</TableCell>
-                                    <TableCell align="left">Modified</TableCell>
-                                    <TableCell align="left">Created</TableCell>
                                     <TableCell align="left">Hash</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {
                                     offers.map((row, idx) => {
-                                        /*{
-                                            "_id": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm_71158478",
-                                            "account": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm",
-                                            "seq": 71158478,
-                                            "flags": 0,
-                                            "gets": {
-                                                "issuer": "XRPL",
-                                                "currency": "XRP",
-                                                "name": "XRP",
-                                                "value": "5"
-                                            },
-                                            "pays": {
-                                                "issuer": "rLpunkscgfzS8so59bUCJBVqZ3eHZue64r",
-                                                "currency": "4C656467657250756E6B73000000000000000000",
-                                                "name": "LedgerPunks",
-                                                "value": "5000"
-                                            },
-                                            "pair": "1e766311a6e689cd7225b5923ed5811c"
-                                        },*/
                                         const {
                                             _id,
                                             account,
                                             seq,
-                                            flags,
                                             gets,
                                             pays,
-                                            expire,
-                                            user,
                                             chash,
-                                            ctime,
-                                            mhash,
-                                            mtime
                                         } = row;
-
-                                        const expired = checkExpiration(expire);
-
-                                        const strCreatedTime = formatDateTime(ctime);
-                                        const strModifiedTime = formatDateTime(mtime);
-                                        const strExpireTime = expire ? formatDateTime(expire) : "";
 
                                         return (
                                             <TableRow
@@ -429,69 +372,18 @@ const Offer = ({ account }) => {
                                                 </TableCell>
 
                                                 <TableCell align="left">
-                                                    <Typography variant="s6" noWrap>{seq}</Typography>
-                                                </TableCell>
-
-                                                <TableCell align="left">
-                                                    <Link
-                                                        // underline="none"
-                                                        // color="inherit"
-                                                        target="_blank"
-                                                        href={`https://bithomp.com/explorer/${account}`}
-                                                        rel="noreferrer noopener nofollow"
-                                                    >
-                                                        <Typography variant="s6" color="primary" noWrap>{truncateAccount(account)}</Typography>
-                                                    </Link>
-                                                </TableCell>
-
-                                                <TableCell align="left">
-                                                    <Typography variant="s6" noWrap>{strExpireTime}</Typography>
-                                                </TableCell>
-
-                                                <TableCell align="left">
-                                                    <Typography variant="s6" noWrap>{strModifiedTime}</Typography>
-                                                </TableCell>
-
-                                                <TableCell align="left">
-                                                    <Typography variant="s6" noWrap>{strCreatedTime}</Typography>
-                                                </TableCell>
-
-                                                <TableCell align="left">
                                                     {chash &&
-                                                        <Stack direction="row" alignItems='center'>
-                                                            <Link
-                                                                // underline="none"
-                                                                // color="inherit"
-                                                                target="_blank"
-                                                                href={`https://bithomp.com/explorer/${chash}`}
-                                                                rel="noreferrer noopener nofollow"
-                                                            >
-                                                                <Stack direction="row" alignItems='center'>
-                                                                    <Typography variant="s6" noWrap color="primary">
-                                                                        {truncate(chash, 16)}
-                                                                    </Typography>
-                                                                    <IconButton edge="end" aria-label="bithomp">
-                                                                        <Avatar alt="Bithomp Explorer" src="/static/bithomp.ico" sx={{ width: 16, height: 16 }} />
-                                                                    </IconButton>
-                                                                </Stack>
-                                                            </Link>
-
-                                                            <Link
-                                                                // underline="none"
-                                                                // color="inherit"
-                                                                target="_blank"
-                                                                href={`https://livenet.xrpl.org/transactions/${chash}`}
-                                                                rel="noreferrer noopener nofollow"
-                                                            >
-                                                                <IconButton edge="end" aria-label="bithomp">
-                                                                    <Avatar alt="livenetxrpl.org Explorer" src="/static/livenetxrplorg.ico" sx={{ width: 16, height: 16 }} />
-                                                                </IconButton>
-                                                            </Link>
-                                                        </Stack>
+                                                        <Link
+                                                            target="_blank"
+                                                            href={`https://bithomp.com/explorer/${chash}`}
+                                                            rel="noreferrer noopener nofollow"
+                                                        >
+                                                            <Typography variant="s6" noWrap color="primary">
+                                                                {truncate(chash, 16)}
+                                                            </Typography>
+                                                        </Link>
                                                     }
                                                 </TableCell>
-
-
                                             </TableRow>
                                         );
                                     })}
