@@ -283,24 +283,6 @@ const Offer = ({ account }) => {
                                         left: 0,
                                         background: darkMode ? "#17171A" : '#F2F5F9'
                                     }}></TableCell>
-                                    <TableCell align="left" sx={{
-                                        position: "sticky",
-                                        zIndex: 1002,
-                                        left: 32,
-                                        background: darkMode ? "#17171A" : '#F2F5F9',
-                                        '&:before': (scrollLeft ? {
-                                            content: "''",
-                                            boxShadow: "inset 10px 0 8px -8px #00000026",
-                                            position: "absolute",
-                                            top: "0",
-                                            right: "0",
-                                            bottom: "-1px",
-                                            width: "30px",
-                                            transform: "translate(100%)",
-                                            transition: "box-shadow .3s",
-                                            pointerEvents: "none",
-                                        } : {})
-                                    }}>#</TableCell>
                                     <TableCell align="left">Taker Gets</TableCell>
                                     <TableCell align="left">Taker Pays</TableCell>
                                     <TableCell align="left">Hash</TableCell>
@@ -340,27 +322,6 @@ const Offer = ({ account }) => {
                                                             <CancelIcon fontSize='small' />
                                                         </IconButton>
                                                     </Tooltip>
-                                                </TableCell>
-
-                                                <TableCell align="left" sx={{
-                                                    position: "sticky",
-                                                    zIndex: 1002,
-                                                    left: 32,
-                                                    background: darkMode ? "#17171A" : '#F2F5F9',
-                                                    '&:before': (scrollLeft ? {
-                                                        content: "''",
-                                                        boxShadow: "inset 10px 0 8px -8px #00000026",
-                                                        position: "absolute",
-                                                        top: "0",
-                                                        right: "0",
-                                                        bottom: "-1px",
-                                                        width: "30px",
-                                                        transform: "translate(100%)",
-                                                        transition: "box-shadow .3s",
-                                                        pointerEvents: "none",
-                                                    } : {})
-                                                }}>
-                                                    <Typography variant="s6" noWrap>{idx + page * rows + 1}</Typography>
                                                 </TableCell>
 
                                                 <TableCell align="left">
