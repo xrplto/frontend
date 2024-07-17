@@ -30,7 +30,7 @@ const OverviewWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   flex: 1,
   overflowX: 'hidden',
-  backgroundColor: '#121212', // Dark background color
+
   color: '#ffffff', // White text color for contrast
   padding: theme.spacing(4),
 }));
