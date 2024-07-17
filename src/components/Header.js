@@ -3,7 +3,6 @@ import 'src/utils/i18n';
 import { useTranslation } from 'react-i18next';
 import {
   alpha,
-  styled,
   useMediaQuery,
   useTheme,
   Box,
@@ -11,12 +10,10 @@ import {
   IconButton,
   Link,
   Stack,
-  // Menu,
-  // MenuItem
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
-// import { Link as MuiLink } from '@mui/material'; // Importing MUI Link
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -118,7 +115,7 @@ export default function Header(props) {
 
   return (
     <HeaderWrapper>
-      <Container maxWidth="xl">
+      <Container maxWidth={false}>
         <Box
           display="flex"
           alignItems="center"

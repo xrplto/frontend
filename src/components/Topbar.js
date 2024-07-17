@@ -1,10 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Decimal from 'decimal.js';
-
-// import i18n (needs to be bundled ;))
 import 'src/utils/i18n';
-
-// Material-UI
 import {
   alpha,
   styled,
@@ -13,36 +9,20 @@ import {
   Stack,
   Tooltip,
   Typography,
-  Button,
-  Menu,
-  MenuItem,
   useTheme,
   useMediaQuery
 } from '@mui/material';
-
-// Redux
-import { useSelector, useDispatch } from 'react-redux';
-import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
-
-// Iconify Icons
 import { Icon } from '@iconify/react';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
-
-// Context
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
-
-// Import Language
+import { useSelector } from 'react-redux';
+import { selectMetrics } from 'src/redux/statusSlice';
 import { useTranslation } from 'react-i18next';
-// Utils
+import { AppContext } from 'src/AppContext';
 import {
   fIntNumber,
-  fCurrency3,
-  fNumber,
-  fPercent
+  fNumber
 } from 'src/utils/formatNumber';
 import CurrencySwithcer from './CurrencySwitcher';
-
 
 const TopWrapper = styled(Box)(
   ({ theme }) => `
@@ -59,9 +39,9 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: 1,
   py: 1,
-  overflow: 'auto',
   width: '100%',
   justifyContent: 'space-between',
+  alignItems: 'center',
   '& > *': {
     scrollSnapAlign: 'center'
   },
@@ -72,29 +52,9 @@ const Separator = styled('span')(({ theme }) => ({
   fontSize: '0.4rem'
 }));
 
-// Utility function to calculate rate
-function Rate(num) {
-  if (num === 0) return 0;
-  return fCurrency3(1 / num);
-}
-
-// Set language const
-const lngs = {
-  en: { nativeName: 'English' },
-  es: { nativeName: 'Spanish' }
-};
-
-const currencies = [
-  { label: 'USD', value: 'USD' },
-  { label: 'EUR', value: 'EUR' },
-  { label: 'JPY', value: 'JPY' }
-];
-
 const Topbar = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const metrics = useSelector(selectMetrics);
-  const dispatch = useDispatch();
-
   const totalAddresses = metrics.H24.totalAddresses;
   const activeAddresses = metrics.H24.activeAddresses24H;
   let percentAddress = 0;
@@ -104,34 +64,10 @@ const Topbar = () => {
       .div(totalAddresses)
       .toString();
 
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [rate, setRate] = useState(metrics.USD);
-  const [currentCurrency, setCurrentCurrency] = useState('USD');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleCurrencyChange = (currency) => {
-    setCurrentCurrency(currency);
-    setRate(metrics[currency]);
-    handleClose();
-  };
-
-  const handleCurrencyClick = (currency) => () => {
-    handleCurrencyChange(currency);
-  };
   const { darkMode } = useContext(AppContext);
   const iconColor = darkMode ? '#FFFFFF' : '#000000';
-  const iconStyle = {
-    marginRight: '5px' // Adjust the value as needed
-  };
 
   const H24Style = styled('div')(({ theme }) => ({
     cursor: 'pointer',
@@ -139,18 +75,18 @@ const Topbar = () => {
     paddingRight: theme.spacing(0.5),
     paddingTop: theme.spacing(0.07),
     paddingBottom: theme.spacing(0.07),
-    backgroundColor: darkMode ? '#007B55 !important  ' : '#5569ff !important',
+    backgroundColor: darkMode ? '#007B55 !important' : '#5569ff !important',
     borderRadius: 8,
     transition: theme.transitions.create('opacity'),
     opacity: 1,
     '&:hover': { opacity: 1 }
   }));
+
   return (
     <TopWrapper>
-      <Container maxWidth="xl">
+      <Container maxWidth={false}>
         <ContentWrapper>
-          
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack direction="row" spacing={2} alignItems="center" sx={{ flex: 1 }}>
             <Typography
               variant="body2"
               color="#a1a7bb"
@@ -225,7 +161,7 @@ const Topbar = () => {
             </Typography>
             <Typography align="center" color="#FF6C40" variant="body2">
               <Stack direction="row" spacing={0.5} alignItems="center">
-                <Icon icon={rippleSolid} color={darkMode ? '#FFF' : '#000'} />
+                <Icon icon={rippleSolid} color={iconColor} />
                 <Typography align="center" color="#FF6C40" variant="body2">
                   {fNumber(metrics.H24.tradedXRP24H)}
                 </Typography>
@@ -254,62 +190,11 @@ const Topbar = () => {
               {fIntNumber(metrics.H24.activeAddresses24H)}
             </Typography>
           </Stack>
-          {!isMobile && (<Box sx={{
-            paddingLeft : 2
-          }}>
-            <CurrencySwithcer />
-          </Box>)}
-          {/* <Stack
-            direction="row"
-            spacing={2}
-            alignItems="center"
-            sx={{ ml: 5, mr: 2 }}
-          >
-Disable before more translated
-<div>
-  <select
-    onChange={(e) => i18n.changeLanguage(e.target.value)}
-    value={i18n.resolvedLanguage}
-  >
-    {Object.keys(lngs).map((lng) => (
-      <option key={lng} value={lng}>
-        {lngs[lng].nativeName}
-      </option>
-    ))}
-  </select>
-</div>
-
-
-
-
-            <Button onClick={handleClick}>
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <Icon icon={rippleSolid} width="12" height="12"  color={iconColor} style={iconStyle} />
-              </Stack>
-              <Typography variant="body2" noWrap>
-                 {Rate(rate)} {currentCurrency}
-              </Typography>
-            </Button>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-            >
-              {currencies.map((currency) => (
-                <MenuItem
-                  key={currency.value}
-                  onClick={handleCurrencyClick(currency.value)}
-                >
-                  <Stack direction="row" spacing={0.5} alignItems="center">
-                    <Icon icon={rippleSolid} width="12" height="12"  style={iconStyle}/>
-                  </Stack>
-                  <Typography variant="body2" noWrap>
-                     {Rate(metrics[currency.value])} {currency.label}
-                  </Typography>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Stack> */}
+          {!isMobile && (
+            <Box sx={{ paddingLeft: 2, flexShrink: 0 }}>
+              <CurrencySwithcer />
+            </Box>
+          )}
         </ContentWrapper>
       </Container>
     </TopWrapper>

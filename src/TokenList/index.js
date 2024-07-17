@@ -1,39 +1,47 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import useWebSocket from 'react-use-websocket';
-
-// Material
 import {
   Box,
   Table,
   TableBody,
   useTheme,
-  useMediaQuery,
-  makeStyles
+  useMediaQuery
 } from '@mui/material';
-
-// Context
+import { makeStyles } from '@mui/styles';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-
-// Redux
 import { useDispatch, useSelector } from 'react-redux';
 import {
   update_metrics,
   update_filteredCount,
   selectMetrics
 } from 'src/redux/statusSlice';
-
-// Components
 import TokenListHead from './TokenListHead';
 import TokenListToolbar from './TokenListToolbar';
 import SearchToolbar from './SearchToolbar';
 import { TokenRow } from './TokenRow';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 import TrustSetDialog from 'src/components/TrustSetDialog';
-import { useRef } from 'react';
 
-// ----------------------------------------------------------------------
+const useStyles = makeStyles({
+  tableContainer: {
+    display: 'flex',
+    gap: 1,
+    py: 1,
+    overflow: 'auto',
+    width: '100%',
+    '& > *': {
+      scrollSnapAlign: 'center'
+    },
+    '::-webkit-scrollbar': { display: 'none' }
+  },
+  tableCell: {
+    borderBottom: 'none',
+    padding: (props) => (props.isMobile ? '4px' : '16px')
+  }
+});
+
 export default function TokenList({
   showWatchList,
   tag,
@@ -43,20 +51,14 @@ export default function TokenList({
   setTokens,
   tMap
 }) {
-  const {
-    accountProfile,
-    openSnackbar,
-    setLoading,
-    darkMode,
-    activeFiatCurrency
-  } = useContext(AppContext);
+  const { accountProfile, openSnackbar, setLoading, darkMode, activeFiatCurrency } = useContext(AppContext);
   const theme = useTheme();
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency];
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const classes = useStyles({ isMobile });
 
-  // const WSS_URL = 'wss://ws.xrpl.to';
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
   const BASE_URL = process.env.API_URL;
 
@@ -64,19 +66,14 @@ export default function TokenList({
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
-
   const [orderBy, setOrderBy] = useState('vol24hxrp');
-
   const [sync, setSync] = useState(showWatchList ? 1 : 0);
   const [editToken, setEditToken] = useState(null);
   const [trustToken, setTrustToken] = useState(null);
-
-  // -----------------------------------------------
   const [rows, setRows] = useState(100);
   const [showNew, setShowNew] = useState(false);
   const [showSlug, setShowSlug] = useState(false);
   const [showDate, setShowDate] = useState(false);
-  // -----------------------------------------------
 
   const tableContainerRef = useRef(null);
   const tableRef = useRef(null);
@@ -85,12 +82,12 @@ export default function TokenList({
 
   useEffect(() => {
     const handleScrollX = () => {
-      setScrollLeft(tableContainerRef?.current?.scrollLeft > 0);
+      setScrollLeft(tableContainerRef.current?.scrollLeft > 0);
     };
 
     const handleScrollY = () => {
-      const tableOffsetTop = tableRef?.current?.offsetTop;
-      const tableHeight = tableRef?.current?.clientHeight;
+      const tableOffsetTop = tableRef.current?.offsetTop;
+      const tableHeight = tableRef.current?.clientHeight;
       const scrollTop = window.scrollY;
       const anchorTop = tableOffsetTop;
       const anchorBottom = tableOffsetTop + tableHeight;
@@ -102,143 +99,87 @@ export default function TokenList({
       }
     };
 
-    tableContainerRef?.current?.addEventListener('scroll', handleScrollX);
+    tableContainerRef.current?.addEventListener('scroll', handleScrollX);
     window.addEventListener('scroll', handleScrollY);
 
     return () => {
-      tableContainerRef?.current?.removeEventListener('scroll', handleScrollX);
+      tableContainerRef.current?.removeEventListener('scroll', handleScrollX);
       window.removeEventListener('scroll', handleScrollY);
     };
   }, []);
 
   const [watchList, setWatchList] = useState([]);
 
-  const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-    onOpen: () => {},
-    onClose: () => {},
-    shouldReconnect: (closeEvent) => true,
+  const { sendJsonMessage } = useWebSocket(WSS_FEED_URL, {
+    shouldReconnect: () => true,
     onMessage: (event) => processMessages(event)
-    // reconnectAttempts: 10,
-    // reconnectInterval: 3000,
   });
 
-  const applyTokenChanges = (newTokens) => {
-    for (var t of newTokens) {
+  const applyTokenChanges = useCallback((newTokens) => {
+    newTokens.forEach(t => {
       const token = tMap.get(t.md5);
       if (token) {
-        let bearbull = 1;
-        if (token.exch > t.exch) bearbull = -1;
-
         token.time = Date.now();
-        token.bearbull = bearbull;
-
+        token.bearbull = token.exch > t.exch ? -1 : 1;
         Object.assign(token, t);
       }
-    }
-  };
+    });
+  }, [tMap]);
 
-  const processMessages = (event) => {
+  const processMessages = useCallback((event) => {
     try {
-      var t1 = Date.now();
-
       const json = JSON.parse(event.data);
-
       dispatch(update_metrics(json));
-
-      // json.tokens = [
-      //     {
-      //         "md5": "0413ca7cfc258dfaf698c02fe304e607",
-      //         "exch": 0.023699995994735382,
-      //         "pro24h": -6.674273598810572,
-      //         "p24h": -0.000557907346761026,
-      //         "pro7d": 23.136049129452402,
-      //         "p7d": 0.0015705872139334812,
-      //         "vol24h": 3275628.9955383483,
-      //         "vol24htx": 964,
-      //         "vol24hx": 3275628.9955383483,
-      //         "vol24hxrp": 82279.51683999998
-      //     }
-      // ]
-
       if (json.tokens && json.tokens.length > 0) {
         applyTokenChanges(json.tokens);
       }
-
-      var t2 = Date.now();
-      var dt = (t2 - t1).toFixed(2);
-
-      // console.log(`${dt} ms`);
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [applyTokenChanges, dispatch]);
+
+  const loadTokens = useCallback(() => {
+    const start = page * rows + 1;
+    const ntag = tag || '';
+    const watchAccount = showWatchList ? accountProfile?.account || '' : '';
+
+    axios
+      .get(`${BASE_URL}/tokens?tag=${ntag}&watchlist=${watchAccount}&start=${start}&limit=${rows}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}`)
+      .then((res) => {
+        if (res.status === 200 && res.data) {
+          const ret = res.data;
+          dispatch(update_metrics(ret));
+          dispatch(update_filteredCount(ret));
+          setTokens(ret.tokens);
+        }
+      })
+      .catch((err) => console.log('err->>', err))
+      .finally(() => setSearch(filterName));
+  }, [accountProfile, filterName, order, orderBy, page, rows, showDate, showNew, showSlug, showWatchList, tag, dispatch, setTokens]);
 
   useEffect(() => {
-    const loadTokens = () => {
-      // https://livenet.xrpl.org/api/v1/token/top
-      // https://api.xrpl.to/api/tokens/-1
-      // https://github.com/WietseWind/fetch-xrpl-transactions
-      // https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc
-      const start = page * rows + 1;
-
-      let ntag = '';
-      if (tag) ntag = tag;
-
-      let watchAccount = '';
-      if (showWatchList) watchAccount = accountProfile?.account || '';
-
-      axios
-        .get(
-          `${BASE_URL}/tokens?tag=${ntag}&watchlist=${watchAccount}&start=${start}&limit=${rows}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}`
-        )
-        .then((res) => {
-          try {
-            if (res.status === 200 && res.data) {
-              const ret = res.data;
-              dispatch(update_metrics(ret));
-              dispatch(update_filteredCount(ret));
-              setTokens(ret.tokens);
-            }
-          } catch (error) {
-            console.log(error);
-          }
-        })
-        .catch((err) => {
-          console.log('err->>', err);
-        })
-        .then(function () {
-          // Always executed
-          setSearch(filterName);
-        });
-    };
     if (sync > 0) loadTokens();
-  }, [accountProfile, sync]);
+  }, [loadTokens, sync]);
 
   useEffect(() => {
-    function getWatchList() {
+    const getWatchList = () => {
       const account = accountProfile?.account;
       if (!account) {
         setWatchList([]);
         return;
       }
-      // https://api.xrpl.to/api/watchlist/get_list?account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
+
       axios
         .get(`${BASE_URL}/watchlist/get_list?account=${account}`)
         .then((res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            setWatchList(ret.watchlist);
+          if (res.status === 200) {
+            setWatchList(res.data.watchlist);
           }
         })
-        .catch((err) => {
-          console.log('Error on getting watchlist!', err);
-        })
-        .then(function () {
-          // always executed
-        });
-    }
+        .catch((err) => console.log('Error on getting watchlist!', err));
+    };
     getWatchList();
-  }, [sync, accountProfile]);
+  }, [accountProfile, sync]);
 
   const onChangeWatchList = async (md5) => {
     const account = accountProfile?.account;
@@ -251,17 +192,10 @@ export default function TokenList({
 
     setLoading(true);
     try {
-      let res;
-
-      let action = 'add';
-
-      if (watchList.includes(md5)) {
-        action = 'remove';
-      }
-
+      const action = watchList.includes(md5) ? 'remove' : 'add';
       const body = { md5, account, action };
 
-      res = await axios.post(`${BASE_URL}/watchlist/update_watchlist`, body, {
+      const res = await axios.post(`${BASE_URL}/watchlist/update_watchlist`, body, {
         headers: { 'x-access-token': accountToken }
       });
 
@@ -274,8 +208,7 @@ export default function TokenList({
             setSync(sync + 1);
           }
         } else {
-          const err = ret.err;
-          openSnackbar(err, 'error');
+          openSnackbar(ret.err, 'error');
         }
       }
     } catch (err) {
@@ -284,7 +217,7 @@ export default function TokenList({
     setLoading(false);
   };
 
-  const handleRequestSort = (event, id, no) => {
+  const handleRequestSort = (event, id) => {
     const isDesc = orderBy === id && order === 'desc';
     setOrder(isDesc ? 'asc' : 'desc');
     setOrderBy(id);
@@ -293,15 +226,17 @@ export default function TokenList({
   };
 
   const updatePage = (newPage) => {
-    if (newPage === page) return;
-    setPage(newPage);
-    setSync(sync + 1);
+    if (newPage !== page) {
+      setPage(newPage);
+      setSync(sync + 1);
+    }
   };
 
   const updateRows = (newRows) => {
-    if (newRows === rows) return;
-    setRows(newRows);
-    if (tokens.length < newRows) setSync(sync + 1);
+    if (newRows !== rows) {
+      setRows(newRows);
+      if (tokens.length < newRows) setSync(sync + 1);
+    }
   };
 
   const updateShowNew = (val) => {
@@ -353,32 +288,8 @@ export default function TokenList({
         setShowDate={updateShowDate}
       />
 
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          py: 1,
-          overflow: 'auto',
-          width: '100%',
-          '& > *': {
-            scrollSnapAlign: 'center'
-          },
-          '::-webkit-scrollbar': { display: 'none' }
-        }}
-        ref={tableContainerRef}
-      >
-        <Table
-          sx={{
-            '& .MuiTableCell-root': {
-              borderBottom: 'none',
-              boxShadow: darkMode
-                ? 'inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)'
-                : 'inset 0 -1px 0 #dadee3',
-              padding: isMobile ? '4px' : '16px'
-            }
-          }}
-          ref={tableRef}
-        >
+      <Box className={classes.tableContainer} ref={tableContainerRef}>
+        <Table ref={tableRef}>
           <TokenListHead
             order={order}
             orderBy={orderBy}
@@ -388,28 +299,21 @@ export default function TokenList({
             scrollTopLength={scrollTopLength}
           />
           <TableBody>
-            {tokens.slice(0, rows).map((row, idx) => {
-              return (
-                <TokenRow
-                  key={idx}
-                  time={row.time}
-                  idx={idx + page * rows}
-                  token={row}
-                  setEditToken={setEditToken}
-                  setTrustToken={setTrustToken}
-                  watchList={watchList}
-                  onChangeWatchList={onChangeWatchList}
-                  scrollLeft={scrollLeft}
-                  activeFiatCurrency={activeFiatCurrency}
-                  exchRate={exchRate}
-                />
-              );
-            })}
-            {/* {emptyRows > 0 && (
-                                <TableRow style={{ height: 53 * emptyRows }}>
-                                    <TableCell colSpan={6} />
-                                </TableRow>
-                            )} */}
+            {tokens.slice(0, rows).map((row, idx) => (
+              <TokenRow
+                key={idx}
+                time={row.time}
+                idx={idx + page * rows}
+                token={row}
+                setEditToken={setEditToken}
+                setTrustToken={setTrustToken}
+                watchList={watchList}
+                onChangeWatchList={onChangeWatchList}
+                scrollLeft={scrollLeft}
+                activeFiatCurrency={activeFiatCurrency}
+                exchRate={exchRate}
+              />
+            ))}
           </TableBody>
         </Table>
       </Box>

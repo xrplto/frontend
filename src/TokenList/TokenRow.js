@@ -1,13 +1,10 @@
 import Decimal from 'decimal.js';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import React from 'react';
 import {
   LazyLoadImage,
   LazyLoadComponent
 } from 'react-lazy-load-image-component';
-
-// Material
-import { withStyles } from '@mui/styles';
 import {
   styled,
   useMediaQuery,
@@ -25,45 +22,21 @@ import {
 } from '@mui/material';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
-
-// Iconify
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 
-// Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-
-// Components
 import TokenMoreMenu from './TokenMoreMenu';
 import BearBullLabel from 'src/components/BearBullLabel';
-
-// Utils
 import {
   fNumber,
   fIntNumber,
   fNumberWithCurreny
 } from 'src/utils/formatNumber';
-
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
 import LoadChart from 'src/components/LoadChart';
 import { useRouter } from 'next/router';
-
-const StickyTableCell = withStyles((theme) => ({
-  head: {
-    position: 'sticky',
-    zIndex: 100,
-    top: 0,
-    left: 24
-  },
-  body: {
-    position: 'sticky',
-    zIndex: 100,
-    left: 24
-  }
-}))(TableCell);
 
 const TransitionTypo = styled(Typography)(
   () => `
@@ -101,21 +74,16 @@ const badge24hStyle = {
   padding: '0.5px 4px'
 };
 
-function truncate(str, n) {
+const truncate = (str, n) => {
   if (!str) return '';
-  //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
   return str.length > n ? str.substr(0, n - 1) + '... ' : str;
-}
+};
 
-function getPriceColor(token) {
-  const bearbull = token.bearbull;
-  let color = '';
-  if (bearbull === -1) color = '#FF6C40';
-  else if (bearbull === 1) color = '#54D62C';
-  return color;
-}
-
-export const TokenRow = React.memo(FTokenRow);
+const getPriceColor = (bearbull) => {
+  if (bearbull === -1) return '#FF6C40';
+  if (bearbull === 1) return '#54D62C';
+  return '';
+};
 
 function FTokenRow({
   time,
@@ -130,29 +98,23 @@ function FTokenRow({
 }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
-  const { accountProfile, darkMode, activeFiatCurrency } =
-    useContext(AppContext);
-  const isAdmin =
-    accountProfile && accountProfile.account && accountProfile.admin;
+  const { accountProfile, darkMode, activeFiatCurrency } = useContext(AppContext);
+  const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const router = useRouter();
 
   const [priceColor, setPriceColor] = useState('');
+
   const {
     id,
-    // issuer,
     name,
-    // currency,
     date,
-    amount, // Total Supply
-    supply, // Circulating Supply
+    amount,
+    supply,
     trustlines,
-    vol24hxrp, // XRP amount with pair token
-    vol24hx, // Token amount with pair XRP
-    //vol24h,
+    vol24hxrp,
+    vol24hx,
     vol24htx,
-    //holders,
-    //offers,
     kyc,
     md5,
     slug,
@@ -167,18 +129,16 @@ function FTokenRow({
   } = token;
 
   useEffect(() => {
-    setPriceColor(getPriceColor(token));
-    setTimeout(() => {
+    setPriceColor(getPriceColor(token.bearbull));
+    const timer = setTimeout(() => {
       setPriceColor('');
     }, 3000);
-  }, [time]);
+
+    return () => clearTimeout(timer);
+  }, [time, token.bearbull]);
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-  // const imgUrl = `/static/tokens/${md5}.${ext}`;
-  //const imgUrl = `/static/tokens/${md5}.webp`;
-
-  const convertedMarketCap = Decimal.div(marketcap, exchRate).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
-
+  const convertedMarketCap = Decimal.div(marketcap, exchRate).toNumber();
   const supplyRate = Decimal.div(supply, amount).toNumber() * 100;
 
   return (
@@ -187,17 +147,15 @@ function FTokenRow({
       sx={{
         '&:hover': {
           '& .MuiTableCell-root': {
-            backgroundColor: darkMode
-              ? '#232326 !important'
-              : '#D9DCE0 !important'
+            backgroundColor: darkMode ? '#232326 !important' : '#D9DCE0 !important'
           },
-          cursor: "pointer"
+          cursor: 'pointer'
         },
         '& .MuiTypography-root': {
-          fontSize: isMobile && '14px'
+          fontSize: isMobile ? '14px' : 'inherit'
         }
       }}
-      onClick={() => router.replace(`/token/${slug}`) }
+      onClick={() => router.replace(`/token/${slug}`)}
     >
       <TableCell
         align="left"
@@ -211,29 +169,23 @@ function FTokenRow({
         {watchList.includes(md5) ? (
           <Tooltip title="Remove from Watchlist">
             <StarRateIcon
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 onChangeWatchList(md5);
               }}
               fontSize="small"
-              sx={{
-                cursor: 'pointer',
-                color: '#F6B87E'
-              }}
+              sx={{ cursor: 'pointer', color: '#F6B87E' }}
             />
           </Tooltip>
         ) : (
           <Tooltip title="Add to Watchlist and follow token">
             <StarOutlineIcon
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 onChangeWatchList(md5);
               }}
               fontSize="small"
-              sx={{
-                cursor: 'pointer',
-                '&:hover': {
-                  color: '#F6B87E'
-                }
-              }}
+              sx={{ cursor: 'pointer', '&:hover': { color: '#F6B87E' } }}
             />
           </Tooltip>
         )}
@@ -280,7 +232,7 @@ function FTokenRow({
             <Box>
               {isAdmin ? (
                 <AdminImage
-                  src={imgUrl} // use normal <img> attributes as props
+                  src={imgUrl}
                   width={isMobile ? 26 : 46}
                   height={isMobile ? 26 : 46}
                   onClick={() => setEditToken(token)}
@@ -289,7 +241,7 @@ function FTokenRow({
                 />
               ) : (
                 <TokenImage
-                  src={imgUrl} // use normal <img> attributes as props
+                  src={imgUrl}
                   width={isMobile ? 26 : 46}
                   height={isMobile ? 26 : 46}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
@@ -308,8 +260,6 @@ function FTokenRow({
                 <Typography
                   variant="token"
                   color={
-                    // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : slug === md5 ? '#B72136' : ''
-                    // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : slug === md5 ? ( darkMode ? 'red' : 'blue') : ''
                     isOMCF !== 'yes'
                       ? darkMode
                         ? '#fff'
@@ -320,16 +270,14 @@ function FTokenRow({
                       ? '#B72136'
                       : ''
                   }
-                  noWrap={isMobile ? false : true}
+                  noWrap={!isMobile}
                 >
                   {truncate(user, 13)}
                 </Typography>
                 <Typography
                   variant="caption"
-                  color={
-                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-                  }
-                  noWrap={isMobile ? false : true}
+                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
+                  noWrap={!isMobile}
                 >
                   {isMobile && <span style={badge24hStyle}>{id}</span>}
                   {truncate(name, 8)}
@@ -345,19 +293,16 @@ function FTokenRow({
         </TableCell>
         <TableCell
           align="right"
-          sx={{
-            color: priceColor
-          }}
+          sx={{ color: priceColor }}
         >
-          <TransitionTypo variant="h4" noWrap={isMobile ? false : true}>
+          <TransitionTypo variant="h4" noWrap={!isMobile}>
             <NumberTooltip
               prepend={currencySymbols[activeFiatCurrency]}
               number={fNumberWithCurreny(exch, exchRate)}
             />
           </TransitionTypo>
-          <TransitionTypo variant="h6" noWrap={isMobile ? false : true}>
-            ✕{' '}
-            <NumberTooltip number={fNumber(exch)} />
+          <TransitionTypo variant="h6" noWrap={!isMobile}>
+            ✕ <NumberTooltip number={fNumber(exch)} />
           </TransitionTypo>
         </TableCell>
         <TableCell align="right">
@@ -374,7 +319,7 @@ function FTokenRow({
             alignItems="center"
           >
             <Typography>✕</Typography>
-            <Typography variant="h4" noWrap={isMobile ? false : true}>
+            <Typography variant="h4" noWrap={!isMobile}>
               {fNumber(vol24hxrp)}
             </Typography>
           </Stack>
@@ -384,7 +329,6 @@ function FTokenRow({
             justifyContent="flex-end"
             alignItems="center"
           >
-            {/* <Icon icon={outlineToken} color="#0C53B7"/> */}
             <Icon
               icon={arrowsExchange}
               color="primary"
@@ -401,13 +345,10 @@ function FTokenRow({
           {currencySymbols[activeFiatCurrency]}
           {fNumber(convertedMarketCap)}
         </TableCell>
-        {/* <TableCell align="left">{holders}</TableCell>
-                <TableCell align="left">{offers}</TableCell> */}
         <TableCell align="right">{fIntNumber(trustlines)}</TableCell>
-
         <TableCell align="right">
           {fNumber(supply)}{' '}
-          <Typography variant="small" noWrap={isMobile ? false : true}>
+          <Typography variant="small" noWrap={!isMobile}>
             {name}
           </Typography>
           <Box display="flex" alignItems="center" pt={1}>
@@ -518,16 +459,8 @@ function FTokenRow({
             px: '0 !important',
           }}
         >
-          {/* <LazyLoadImage
-            alt={`${user} ${name} 7D Price Graph`}
-            src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
-            width={135}
-            height={50}
-          /> */}
-
-          <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}/>
+          <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
         </TableCell>
-
         <TableCell align="right">
           <TokenMoreMenu
             token={token}
@@ -540,3 +473,5 @@ function FTokenRow({
     </TableRow>
   );
 }
+
+export const TokenRow = React.memo(FTokenRow);
