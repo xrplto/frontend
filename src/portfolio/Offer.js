@@ -34,7 +34,7 @@ function truncate(str, n) {
     return (str.length > n) ? str.substr(0, n - 1) + ' ...' : str;
 };
 
-const Offer = () => {
+const Offer = ({ account }) => {
 
     const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -57,7 +57,7 @@ const Offer = () => {
     useEffect(() => {
         function getOffers() {
             setLoading(true);
-            axios.get(`${BASE_URL}/account/offers/${accountProfile?.account}?page=${page}&limit=${rows}`)
+            axios.get(`${BASE_URL}/account/offers/${account}?page=${page}&limit=${rows}`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
                     if (ret) {
@@ -70,9 +70,9 @@ const Offer = () => {
                     setLoading(false);
                 });
         }
-        if (accountProfile?.account)
+        if (account)
             getOffers();
-    }, [accountProfile, sync, page, rows]);
+    }, [account, sync, page, rows]);
 
     const tableRef = useRef(null);
     const [scrollLeft, setScrollLeft] = useState(0);
@@ -280,7 +280,11 @@ const Offer = () => {
                                     <TableCell align="left">Taker Gets</TableCell>
                                     <TableCell align="left">Taker Pays</TableCell>
                                     <TableCell align="left">Hash</TableCell>
-                                    <TableCell align="center">Actions</TableCell>
+                                    {
+                                        (account && accountProfile?.account == account) && (
+                                            <TableCell align="center">Actions</TableCell>
+                                        )
+                                    }
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -328,13 +332,18 @@ const Offer = () => {
                                                     }
                                                 </TableCell>
 
-                                                <TableCell align="center">
-                                                    <Tooltip title="Cancel Offer">
-                                                        <IconButton color='error' onClick={e => handleCancel(e, account, seq)} aria-label="cancel">
-                                                            <CancelIcon fontSize='small' />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                </TableCell>
+                                                {
+                                                    (account && accountProfile?.account == account) && (
+
+                                                        <TableCell align="center">
+                                                            <Tooltip title="Cancel Offer">
+                                                                <IconButton color='error' onClick={e => handleCancel(e, account, seq)} aria-label="cancel">
+                                                                    <CancelIcon fontSize='small' />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        </TableCell>
+                                                    )
+                                                }
                                             </TableRow>
                                         );
                                     })}
