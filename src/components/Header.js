@@ -178,7 +178,7 @@ export default function Header(props) {
               id="id_search_tokens"
               placeholder="Search XRPL Tokens"
               fullSearch={fullSearch}
-              setFullSearch={fullSearch}
+              setFullSearch={setFullSearch}
             />
           )}
 
@@ -208,7 +208,7 @@ export default function Header(props) {
                   id="id_search_tokens"
                   placeholder="Search XRPL Tokens"
                   fullSearch={fullSearch}
-                  setFullSearch={fullSearch}
+                  setFullSearch={setFullSearch}
                 />
               </Stack>
             )}
