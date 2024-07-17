@@ -22,7 +22,7 @@ import { currencySymbols } from 'src/utils/constants';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import Decimal from 'decimal.js';
-import LoadChart from 'src/components/LoadChart';
+import LoadChart from 'src/components/LoadChartSearch';
 
 // ----------------------------------------------------------------------
 export default function PriceDesc({ token }) {

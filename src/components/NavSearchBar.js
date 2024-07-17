@@ -19,7 +19,7 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import useDebounce from 'src/hooks/useDebounce';
 import { AppContext } from 'src/AppContext';
-import LoadChart from './LoadChart';
+import LoadChart from './LoadChartSearch';
 
 const BASE_URL = process.env.API_URL;
 

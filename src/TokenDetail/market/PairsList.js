@@ -26,7 +26,7 @@ import { AppContext } from 'src/AppContext';
 
 // ----------------------------------------------------------------------
 import StackStyle from 'src/components/StackStyle'; //Maybe need to disable?
-import LoadChart from 'src/components/LoadChart';
+import LoadChart from 'src/components/LoadChartPair';
 
 // ----------------------------------------------------------------------
 

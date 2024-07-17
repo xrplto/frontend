@@ -47,7 +47,7 @@ const LoadChart = ({ url }) => {
             {chartOption ? (
                 <ReactECharts
                     option={chartOption}
-                    style={{ height: 80, width: 260 }} // Updated width here
+                    style={{ height: 80, width: 210 }} // Updated width here
                     opts={{ renderer: "svg" }}
                 />
             ) : ""}
