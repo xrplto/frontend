@@ -12,7 +12,6 @@ import {
     TableRow,
     Tooltip,
     Typography,
-    Button
 } from '@mui/material';
 
 import { AppContext } from "src/AppContext";
@@ -331,19 +330,9 @@ const Offer = () => {
 
                                                 <TableCell align="center">
                                                     <Tooltip title="Cancel Offer">
-                                                        <Button 
-                                                            variant="outlined" 
-                                                            color='error' 
-                                                            sx={{ 
-                                                                backgroundColor: 'transparent', 
-                                                                border: '1px solid red', 
-                                                                color: 'red', 
-                                                                minWidth: '80px'
-                                                            }} 
-                                                            onClick={e => handleCancel(e, account, seq)}
-                                                        >
-                                                            Cancel
-                                                        </Button>
+                                                        <IconButton color='error' onClick={e => handleCancel(e, account, seq)} aria-label="cancel">
+                                                            <CancelIcon fontSize='small' />
+                                                        </IconButton>
                                                     </Tooltip>
                                                 </TableCell>
                                             </TableRow>
