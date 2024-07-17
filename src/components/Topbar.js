@@ -23,6 +23,7 @@ import {
   fNumber
 } from 'src/utils/formatNumber';
 import CurrencySwithcer from './CurrencySwitcher';
+import ThemeSwitcher from './ThemeSwitcher';
 
 const TopWrapper = styled(Box)(
   ({ theme }) => `
@@ -39,6 +40,7 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: 1,
   py: 1,
+  overflow: 'auto',
   width: '100%',
   justifyContent: 'space-between',
   alignItems: 'center',
@@ -191,8 +193,9 @@ const Topbar = () => {
             </Typography>
           </Stack>
           {!isMobile && (
-            <Box sx={{ paddingLeft: 2, flexShrink: 0 }}>
+            <Box sx={{ paddingLeft: 2, display: 'flex', alignItems: 'center' }}>
               <CurrencySwithcer />
+              <ThemeSwitcher />
             </Box>
           )}
         </ContentWrapper>

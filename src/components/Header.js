@@ -23,7 +23,7 @@ import Logo from 'src/components/Logo';
 import Wallet from 'src/components/Wallet';
 import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
-import ThemeSwitcher from './ThemeSwitcher';
+
 import DropDownMenu from './DropDownMenu';
 import LoginDialog from './LoginDialog';
 import WalletConnectModal from './WalletConnectModal';
@@ -68,7 +68,8 @@ export default function Header(props) {
   const theme = useTheme();
   const dispatch = useDispatch();
   const isProcessing = useSelector(selectProcess);
-  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
+  const isTabletOrMobile = useMediaQuery(theme.breakpoints.down('lg'));
   const [fullSearch, setFullSearch] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [isClosed, setClosed] = useState(false);
@@ -98,7 +99,7 @@ export default function Header(props) {
   };
   
   useEffect(() => {
-    if (isProcessing == 1 && isClosed) {
+    if (isProcessing === 1 && isClosed) {
       dispatch(updateProcess(3));
     }
     
@@ -133,7 +134,7 @@ export default function Header(props) {
           >
             <Logo alt="xrpl.to Logo" style={{ marginRight: 25 }} />
 
-            {!isTablet && (
+            {isDesktop && (
               <>
                 <MenuContainer>
                   <DropDownMenu />
@@ -169,8 +170,7 @@ export default function Header(props) {
               </>
             )}
             
-
-            <WalletConnectModal/>
+            <WalletConnectModal />
           </Box>
 
           {fullSearch && (
@@ -178,7 +178,7 @@ export default function Header(props) {
               id="id_search_tokens"
               placeholder="Search XRPL Tokens"
               fullSearch={fullSearch}
-              setFullSearch={setFullSearch}
+              setFullSearch={fullSearch}
             />
           )}
 
@@ -202,32 +202,30 @@ export default function Header(props) {
               alignItems: 'center'
             }}
           >
-            {!fullSearch && !isTablet && (
+            {!fullSearch && isDesktop && (
               <Stack mr={2}>
                 <NavSearchBar
                   id="id_search_tokens"
                   placeholder="Search XRPL Tokens"
                   fullSearch={fullSearch}
-                  setFullSearch={setFullSearch}
+                  setFullSearch={fullSearch}
                 />
               </Stack>
             )}
 
-            {!fullSearch && isTablet && (
+            {!fullSearch && isTabletOrMobile && (
               <IconButton aria-label="search" onClick={handleFullSearch}>
                 <SearchIcon />
               </IconButton>
             )}
 
-            {!fullSearch && !isTablet && (
+            {!fullSearch && isDesktop && (
               <Wallet style={{ marginRight: '5px' }} />
             )}
 
-            {!isTablet && (
-              <ThemeSwitcher darkMode={darkMode} setDarkMode={setDarkMode} />
-            )}
+         
 
-            {isTablet && !fullSearch && (
+            {isTabletOrMobile && !fullSearch && (
               <IconButton onClick={() => toggleDrawer(true)}>
                 <MenuIcon />
               </IconButton>
