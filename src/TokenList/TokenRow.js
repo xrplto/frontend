@@ -210,7 +210,7 @@ function FTokenRow({
             p: 0,
             position: 'sticky',
             zIndex: 1001,
-            left: isMobile ? 28 : 99,
+            // left: isMobile ? 28 : 99,
             background: darkMode ? '#17171A' : '#F2F5F9',
             '&:before': scrollLeft
               ? {
