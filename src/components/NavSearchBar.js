@@ -250,7 +250,26 @@ const NavSearchBar = React.memo(
                     )}
                   </InputAdornment>
                 ),
-                endAdornment: <InputAdornment position="end" />,
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '4px',
+                        backgroundColor: '#E0E0E0',
+                        color: '#757575',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      /
+                    </Box>
+                  </InputAdornment>
+                ),
               }}
             />
           );

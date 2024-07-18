@@ -119,33 +119,33 @@ export default function Wallet({ style }) {
   return (
     <Box style={style}>
       <Button
-        direction="row"
-        spacing={1}
-        sx={{
-          padding: '3px 7px',
-          // backgroundImage: 'linear-gradient(to right, #721DA6 0%, #3021C1 51%, #721DA6 100%)',
-          backgroundColor: `${darkMode ? '#007B55' : '#5569FF'}`,
-          transition: '0.5s',
-          backgroundSize: '200% auto',
-          '&:hover': {
-            backgroundColor: `${darkMode ? '#005E46' : '#4455CC'}`,
-          }
-        }}
-        ref={anchorRef}
-        onClick={accountLogin ? handleOpen : () => setOpenWalletModal(true)}
+  direction="row"
+  spacing={1}
+  sx={{
+    padding: '6px 12px', // Adjust the padding to make it thicker
+    // backgroundImage: 'linear-gradient(to right, #721DA6 0%, #3021C1 51%, #721DA6 100%)',
+    backgroundColor: `${darkMode ? '#007B55' : '#5569FF'}`,
+    transition: '0.5s',
+    backgroundSize: '200% auto',
+    '&:hover': {
+      backgroundColor: `${darkMode ? '#005E46' : '#4455CC'}`,
+    }
+  }}
+  ref={anchorRef}
+  onClick={accountLogin ? handleOpen : () => setOpenWalletModal(true)}
+>
+  <AccountBalanceWalletIcon
+    fontSize="small"
+    sx={{
+      color: '#fff',
+      marginRight: '6px'
+    }}
+  />
+  <Typography variant="s3" fontSize={13} color="#fff">
+    {accountLogin ? truncateAccount(accountLogin, 4) : 'Connect'}
+  </Typography>
+</Button>
 
-      >
-        <AccountBalanceWalletIcon
-          fontSize="small"
-          sx={{
-            color: '#fff',
-            marginRight: '6px'
-          }}
-        />
-        <Typography variant="s3" fontSize={13} color="#fff">
-          {accountLogin ? truncateAccount(accountLogin, 4) : 'Connect'}
-        </Typography>
-      </Button>
 
       {accountLogin && (
         <Popover

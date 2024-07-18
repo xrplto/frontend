@@ -2,7 +2,6 @@ import { Avatar, IconButton, Stack, TableCell, TableRow, Tooltip, Typography, us
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "src/AppContext";
 import { fNumberWithCurreny } from "src/utils/formatNumber";
-import CountUp from 'react-countup';
 import { currencySymbols } from "src/utils/constants";
 import axios from "axios";
 import { isInstalled, submitTransaction } from '@gemwallet/api';
@@ -49,31 +48,21 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
             try {
                 const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
                 const res = ret.data.data.response;
-                // const account = res.account;
                 const dispatched_result = res.dispatched_result;
-
                 return dispatched_result;
             } catch (err) { }
         }
 
         const startInterval = () => {
             let times = 0;
-
             dispatchTimer = setInterval(async () => {
                 const dispatched_result = await getDispatchResult();
-
                 if (dispatched_result && dispatched_result === 'tesSUCCESS') {
-                    // openSnackbar(
-                    //     `Successfully ${isRemove ? 'removed' : 'set'} trustline!`,
-                    //     'success'
-                    // );
                     setXamanStep(xamanStep + 1);
                     stopInterval();
                     return;
                 }
-
                 times++;
-
                 if (times >= 20) {
                     openSnackbar('Operation rejected!', 'error');
                     stopInterval();
@@ -83,22 +72,17 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
             }, 1000);
         };
 
-
-        // Stop the interval
         const stopInterval = () => {
             clearInterval(dispatchTimer);
             setOpenScanQR(false);
-            // handleClose();
         };
 
         async function getPayload() {
-            // console.log(counter + " " + isRunning, uuid);
             if (isRunning) return;
             isRunning = true;
             try {
                 const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
                 const res = ret.data.data.response;
-                // const account = res.account;
                 const resolved_at = res.resolved_at;
                 if (resolved_at) {
                     startInterval();
@@ -123,7 +107,6 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
     }, [openScanQR, uuid, xamanStep]);
 
     useEffect(() => {
-
         switch (xamanStep) {
             case 1:
                 setContent(`This TrustLine still contains ${balance} ${currencyName}. If you continue, it will be sent back to the issuer before your TrustLine is deleted.`);
@@ -147,13 +130,12 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                 handleConfirmClose();
                 break;
         }
-
     }, [xamanStep]);
 
     const getToken = async () => {
         await axios.get(`${BASE_URL}/token/get-by-hash/${md5}`).then(res => {
             setToken(res.data.token);
-        })
+        });
     }
 
     const handleCancel = async () => {
@@ -162,7 +144,6 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
         } else if (accountProfile.account !== account) {
             openSnackbar('You are not the owner of this offer!', 'error');
         } else {
-            // onOfferCancelXumm(seq);
             await onTrustRemoveXumm();
         }
     };
@@ -174,13 +155,11 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
 
     const onTrustRemoveXumm = async () => {
         try {
-
             if (balance > 0) {
                 setXamanStep(1);
             } else {
                 setXamanStep(3);
             }
-
         } catch (err) {
             console.log(err);
             openSnackbar('Network error!', 'error');
@@ -207,7 +186,6 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
     const handleConfirmContinue = async () => {
         const user_token = accountProfile?.user_token;
         const wallet_type = accountProfile?.wallet_type;
-
         let body;
         switch (xamanStep) {
             case 3:
@@ -215,13 +193,11 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                     setXamanStep(4);
                     return;
                 }
-
                 const Flags = 0x00020000;
                 let LimitAmount = {};
                 LimitAmount.issuer = issuer;
                 LimitAmount.currency = currency;
                 LimitAmount.value = "0";
-
                 body = { LimitAmount, Flags, user_token, TransactionType: "TrustSet" };
                 if (wallet_type == "xaman") {
                     const res1 = await axios.post(`${BASE_URL}/xumm/trustset`, body);
@@ -229,15 +205,12 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                         const uuid = res1.data.data.uuid;
                         const qrlink = res1.data.data.qrUrl;
                         const nextlink = res1.data.data.next;
-
                         setUuid(uuid);
                         setQrUrl(qrlink);
                         setNextUrl(nextlink);
                         setOpenScanQR(true);
                     }
-                }
-
-                else if (wallet_type == "gem") {
+                } else if (wallet_type == "gem") {
                     isInstalled().then(async (response) => {
                         if (response.result.isInstalled) {
                             await submitTransaction({
@@ -254,9 +227,7 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                             handleConfirmClose();
                         }
                     });
-                }
-
-                else if (wallet_type == "crossmark") {
+                } else if (wallet_type == "crossmark") {
                     await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
                         if (response.data.meta.isSuccess) {
                             setXamanStep(4);
@@ -289,15 +260,12 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                         const uuid = res2.data.data.uuid;
                         const qrlink = res2.data.data.qrUrl;
                         const nextlink = res2.data.data.next;
-
                         setUuid(uuid);
                         setQrUrl(qrlink);
                         setNextUrl(nextlink);
                         setOpenScanQR(true);
                     }
-                }
-
-                else if (wallet_type == "gem") {
+                } else if (wallet_type == "gem") {
                     isInstalled().then(async (response) => {
                         if (response.result.isInstalled) {
                             await submitTransaction({
@@ -314,9 +282,7 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                             handleConfirmClose();
                         }
                     });
-                }
-
-                else if (wallet_type == "crossmark") {
+                } else if (wallet_type == "crossmark") {
                     await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
                         if (response.data.meta.isSuccess) {
                             setXamanStep(2);
@@ -325,7 +291,6 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                         }
                     });
                 }
-
                 break;
         }
     }
@@ -341,9 +306,6 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
 
     return (
         <>
-            {/* <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
-                <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
-            </Backdrop> */}
             <TableRow
                 sx={{
                     '&:hover': {
@@ -354,24 +316,14 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                         }
                     },
                     '& .MuiTableCell-root': {
-                        paddingLeft: '0px !important', // Ensure no padding
-                        marginLeft: '0px !important' // Ensure no margin
+                        paddingLeft: '0px !important',
+                        marginLeft: '0px !important'
                     }
                 }}
             >
-
-                {/* <TableCell
-                    align="left"
-                    sx={{ paddingLeft: 0, marginLeft: 0 }} // Ensure no padding or margin
-                >
-                    <Typography variant="s6" noWrap>
-                        {idx}
-                    </Typography>
-                </TableCell> */}
-
                 <TableCell
                     align="left"
-                    sx={{ py: 1 }} // Ensure no padding or margin
+                    sx={{ py: 1 }}
                 >
                     <Stack direction="row" spacing={1} alignItems="center" paddingLeft={1}>
                         <Avatar src={`https://s1.xrpl.to/token/${md5}`} sx={{ width: 32, height: 32 }} />
@@ -383,30 +335,20 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
 
                 <TableCell
                     align="left"
-                    sx={{ display: isMobile ? "none" : "table-cell", paddingLeft: 0, marginLeft: 0 }} // Ensure no padding or margin
+                    sx={{ display: isMobile ? "none" : "table-cell", paddingLeft: 0, marginLeft: 0 }}
                 >
                     <Typography variant="s6" noWrap>
-                        <CountUp
-                            end={balance}
-                            duration={3.5}
-                            decimals={getDecimal(balance)}
-                        />
+                        {balance}
                     </Typography>
                 </TableCell>
 
                 <TableCell
                     align="right"
-                    sx={{ paddingLeft: 0, marginLeft: 0 }} // Ensure no padding or margin
+                    sx={{ paddingLeft: 0, marginLeft: 0 }}
                 >
                     <Stack direction="row" alignItems="center" justifyContent="end" spacing={0.5}>
                         <span>{currencySymbols[activeFiatCurrency]}</span>
-                        <CountUp
-                            end={
-                                token.exch ? balance * fNumberWithCurreny(token.exch, exchRate) : 0
-                            }
-                            duration={3.5}
-                            decimals={getDecimal(token.exch ? balance * fNumberWithCurreny(token.exch, exchRate) : "0")}
-                        />
+                        {token.exch ? (balance * fNumberWithCurreny(token.exch, exchRate)).toFixed(getDecimal(balance * fNumberWithCurreny(token.exch, exchRate))) : 0}
                     </Stack>
                 </TableCell>
                 {isLoggedIn && accountProfile?.account === account ?
