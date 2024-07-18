@@ -40,10 +40,11 @@ const OverviewWrapper = styled(Box)(({ theme }) => `
     flex: 1;
 `);
 
-const Balance = styled("div")(() => `
-    font-size: 20px;
-    color: #fff;
-`);
+const Balance = styled("div")(({ theme, sx }) => ({
+    fontSize: '20px',
+    color: '#fff',
+    ...sx
+}));
 
 const ButtonSend = styled(Button)(({ theme }) => ({
     '&:hover': {
@@ -180,7 +181,9 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                                     <Box sx={{ textAlign: 'center' }}>
                                         <Typography sx={{ color: theme.palette.text.primary, mb: 1 }} variant="h6">Total Balance</Typography>
-                                        <Balance>215,438.97897 <span>XRP</span></Balance>
+                                        <Balance sx={{ color: theme.palette.text.primary, mb: 1 }}>
+                                            215,438.97897 <span>XRP</span>
+                                        </Balance>
                                         <Typography sx={{ color: theme.palette.text.primary, mt: 1 }} variant="h4">$109,325.8132</Typography>
                                     </Box>
 
