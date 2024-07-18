@@ -251,7 +251,7 @@ export default function Row({ id, item, isMine }) {
                         width={isMobile ? 12 : 16}
                         height={isMobile ? 12 : 16}
                     />{' '}
-                    {fNumber(volume)}
+                    {fNumber(vol24h)}
                 </Typography>
             </TableCell>
 
