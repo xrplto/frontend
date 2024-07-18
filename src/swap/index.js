@@ -118,6 +118,7 @@ const ToggleContent = styled('div')(
     padding: 1px;
     box-shadow: 0 0 5px ${theme.palette.primary.main};
     transition: all 0.3s ease;
+    background: #252525;
 
     &:hover {
       transform: translate(-50%, -50%) scale(1.1);
