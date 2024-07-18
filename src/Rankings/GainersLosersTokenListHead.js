@@ -1,13 +1,9 @@
-import PropTypes from 'prop-types';
 // Material
-import { visuallyHidden } from '@mui/utils';
 import { withStyles } from '@mui/styles';
 import {
-    Box,
     TableRow,
     TableCell,
     TableHead,
-    TableSortLabel
 } from '@mui/material';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';

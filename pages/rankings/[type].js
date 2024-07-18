@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { performance } from 'perf_hooks';
-import { useState, useEffect } from 'react';
-import useWebSocket from "react-use-websocket";
+import { useState } from 'react';
 
 // Material
 import {
@@ -10,10 +9,6 @@ import {
     styled,
     Toolbar
 } from '@mui/material';
-
-// Redux
-import { useDispatch } from "react-redux";
-import { update_metrics } from "src/redux/statusSlice";
 
 // Components
 import Topbar from 'src/components/Topbar';
@@ -33,7 +28,6 @@ const OverviewWrapper = styled(Box)(
 );
 
 function Rankings({data}) {
-    const dispatch = useDispatch();
     const [type, setType] = useState(data.type);
     
     /*const [token, setToken] = useState(data.token);

@@ -1,4 +1,3 @@
-import Decimal from 'decimal.js';
 import { useState, useEffect } from 'react';
 import React from 'react';
 import {
@@ -7,7 +6,6 @@ import {
 } from 'react-lazy-load-image-component';
 
 // Material
-import { withStyles } from '@mui/styles';
 import {
   styled,
   Link,
@@ -35,20 +33,6 @@ import BearBullLabel from 'src/components/BearBullLabel';
 // Utils
 import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 import { currencySymbols } from 'src/utils/constants';
-
-const StickyTableCell = withStyles((theme) => ({
-  head: {
-    position: 'sticky',
-    zIndex: 100,
-    top: 0,
-    left: 24
-  },
-  body: {
-    position: 'sticky',
-    zIndex: 100,
-    left: 24
-  }
-}))(TableCell);
 
 const TransitionTypo = styled(Typography)(
   () => `
@@ -88,27 +72,6 @@ function getPriceColor(token) {
   return color;
 }
 
-function timeAgo(dateInMilliseconds) {
-    const currentDate = new Date();
-    const inputDate = new Date(dateInMilliseconds);
-
-    const timeDifference = currentDate - inputDate;
-    const seconds = Math.floor(timeDifference / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (seconds < 60) {
-        return formatTime(seconds, 'second');
-    } else if (minutes < 60) {
-        return formatTime(minutes, 'minute');
-    } else if (hours < 24) {
-        return formatTime(hours, 'hour');
-    } else {
-        return formatTime(days, 'day');
-    }
-}
-
 function formatTime(value, unit) {
     if (value === 1) {
         return `${value} ${unit} ago`;
@@ -129,40 +92,24 @@ function fTokenRow({
   activeFiatCurrency,
   exchRate
 }) {
-  const BASE_URL = process.env.API_URL;
-  const { accountProfile, darkMode } = useContext(AppContext);
-  const isAdmin =
-    accountProfile && accountProfile.account && accountProfile.admin;
+  // const BASE_URL = process.env.API_URL;
+  const { darkMode } = useContext(AppContext);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     
   const [priceColor, setPriceColor] = useState('');
   const {
     id,
-    // issuer,
     name,
-    // currency,
     date,
-    dateon,
-    amount, // Total Supply
-    supply, // Circulating Supply
-    trustlines,
     vol24hxrp, // XRP amount with pair token
     vol24hx, // Token amount with pair XRP
-    //vol24h,
-    vol24htx,
-    //holders,
-    //offers,
     kyc,
     md5,
     slug,
     user,
-    pro7d,
     pro24h,
     exch,
-    usd,
-    ext,
-    marketcap,
     isOMCF
   } = token;
 

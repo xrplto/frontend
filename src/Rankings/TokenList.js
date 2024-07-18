@@ -1,36 +1,9 @@
-// Material
-import {
-  useTheme,
-  styled,
-  Link,
-  CardHeader,
-  Stack,
-  Typography,
-  Table,
-  TableRow,
-  TableBody,
-  TableCell,
-  Box
-} from '@mui/material';
-import { tableCellClasses } from '@mui/material/TableCell';
-import WhatshotIcon from '@mui/icons-material/Whatshot';
-import StackStyle from 'src/components/StackStyle';
-
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-
-import {
-  LazyLoadImage,
-  LazyLoadComponent
-} from 'react-lazy-load-image-component';
-const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
-  borderRadius: '50%',
-  overflow: 'hidden'
-}));
 
 // Redux
 import { useSelector } from 'react-redux';
@@ -52,8 +25,6 @@ export default function TokenList({ sortBy }) {
     useContext(AppContext);
   const isAdmin =
     accountProfile && accountProfile.account && accountProfile.admin;
-
-  const theme = useTheme();
 
   const [count, setCount] = useState(0);
   const [tokens, setTokens] = useState([]);
