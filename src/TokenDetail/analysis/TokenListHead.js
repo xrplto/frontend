@@ -121,13 +121,13 @@ export default function TokenListHead({ scrollLeft, tokens }) {
                 position: "sticky",
                 zIndex: 1001,
                 left: 0,
-                background: darkMode ? "#17171A" : '#F2F5F9'
+                background: darkMode ? "#000000" : '#F2F5F9'
             },
             '& .MuiTableCell-root:nth-of-type(2)': {
                 position: "sticky",
                 zIndex: 1002,
                 left: tokens.length > 0 ? 55 : 40,
-                background: darkMode ? "#17171A" : '#F2F5F9',
+                background: darkMode ? "#000000" : '#F2F5F9',
                 '&:before': (scrollLeft ? {
                     content: "''",
                     boxShadow: "inset 10px 0 8px -8px #00000026",

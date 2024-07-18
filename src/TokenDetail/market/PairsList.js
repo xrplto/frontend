@@ -125,13 +125,13 @@ const { slug } = token;
                                 position: "sticky",
                                 zIndex: 1001,
                                 left: 0,
-                                background: darkMode ? "#17171A" : '#F2F5F9'
+                                background: darkMode ? "#000000" : '#F2F5F9'
                             }}>#</TableCell>
                             <TableCell align="left" sx={{
                                 position: "sticky",
                                 zIndex: 1002,
                                 left: 40,
-                                background: darkMode ? "#17171A" : '#F2F5F9',
+                                background: darkMode ? "#000000" : '#F2F5F9',
                                 '&:before': (scrollLeft ? {
                                     content: "''",
                                     boxShadow: "inset 10px 0 8px -8px #00000026",
@@ -223,7 +223,7 @@ const { slug } = token;
                                         position: "sticky",
                                         zIndex: 1001,
                                         left: 0,
-                                        background: darkMode ? "#17171A" : '#F2F5F9'
+                                        background: darkMode ? "#000000" : '#F2F5F9'
                                     }}>
                                         {fNumber(id)}
                                     </TableCell>
@@ -231,7 +231,7 @@ const { slug } = token;
                                         position: "sticky",
                                         zIndex: 1003,
                                         left: 40,
-                                        background: darkMode ? "#17171A" : '#F2F5F9',
+                                        background: darkMode ? "#000000" : '#F2F5F9',
                                         '&:before': (scrollLeft ? {
                                             content: "''",
                                             boxShadow: "inset 10px 0 8px -8px #00000026",

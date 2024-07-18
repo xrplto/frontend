@@ -4,14 +4,14 @@ import '@mui/lab/themeAugmentation';
 // import i18n from 'src/i18n/i18n';
 
 const themeColors = {
-  primary: '#8C7CF0',
+  primary: '#147DFE',
   secondary: '#9EA4C1',
   success: '#57CA22',
   warning: '#FFA319',
   error: '#FF1943',
   info: '#33C2FF',
   black: '#FFFFFF',
-  white: '#252525',
+  white: '#000000',
   primaryAlt: '#111633',
   trueWhite: '#ffffff'
 };
@@ -52,7 +52,7 @@ const colors = {
   },
   layout: {
     general: {
-      bodyBg: '#17171A'
+      bodyBg: '#000000'
     },
     sidebar: {
       background: themeColors.primaryAlt,
@@ -285,7 +285,7 @@ export const XrplToDarkTheme = createTheme({
     borderRadiusLg: '12px',
     borderRadiusXl: '16px',
     backgroundAlt: "#08060b70",
-    backgroundAsset: "#17171A",
+    backgroundAsset: "#000000",
     backgroundTrait: "#00ff7f10",
     borderTrait: "#00ff7f"
   },
@@ -390,7 +390,7 @@ export const XrplToDarkTheme = createTheme({
     },
     tx: {
       light: "#fff",
-      main: "#252525",
+      main: "#000000",
       dark: "#0f0f0f"
     }
   },
@@ -438,7 +438,7 @@ export const XrplToDarkTheme = createTheme({
     MuiDialog: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#17171A'
+          backgroundColor: '#000000'
         }
       }
     },
@@ -833,7 +833,7 @@ export const XrplToDarkTheme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          background: '#17171A',
+          background: '#000000',
           padding: 0,
           border: '1px solid #21252B'
         },

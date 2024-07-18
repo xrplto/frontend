@@ -179,7 +179,7 @@ export default function TokenListHead({
         position: 'sticky',
         zIndex: 1002,
         transform: `translateY(${scrollTopLength}px)`,
-        background: darkMode ? '#17171A' : '#F2F5F9'
+        background: darkMode ? '#000000' : '#F2F5F9'
       }}
     >
       <TableRow
@@ -192,13 +192,13 @@ export default function TokenListHead({
             position: 'sticky',
             zIndex: 1001,
             left: 0,
-            background: darkMode ? '#17171A' : '#F2F5F9'
+            background: darkMode ? '#000000' : '#F2F5F9'
           },
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
             zIndex: 1001,
             left: tokens.length > 0 ? (isMobile ? 28 : 52) : isMobile ? 8 : 32,
-            background: darkMode ? '#17171A' : '#F2F5F9',
+            background: darkMode ? '#000000' : '#F2F5F9',
             '&:before':
               isMobile && scrollLeft
                 ? {
@@ -219,7 +219,7 @@ export default function TokenListHead({
             position: 'sticky',
             zIndex: 1001,
             // left: tokens.length > 0 ? 99 : 72,
-            background: darkMode ? '#17171A' : '#F2F5F9',
+            background: darkMode ? '#000000' : '#F2F5F9',
             '&:before': scrollLeft
               ? {
                   content: "''",

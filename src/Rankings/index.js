@@ -232,7 +232,7 @@ export default function RankingsTabs({ tab }) {
                 top: 0,
                 zIndex: 1000,
                 boxShadow: `5px 2px 5px ${!darkMode ? '#fff' : '#000'}`,
-                backgroundColor: !darkMode ? '#fff' : '#17171A',
+                backgroundColor: !darkMode ? '#fff' : '#000000',
                 width: '100%'
               }
               : null

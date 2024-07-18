@@ -7,7 +7,7 @@ const DrawerHeader = styled('div')(({ darkMode }) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  background: darkMode ? '#17171A' : '#fff',
+  background: darkMode ? '#000000' : '#fff',
   paddingLeft: 18,
   paddingRight: 18,
   boxShadow:

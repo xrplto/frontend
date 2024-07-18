@@ -4,7 +4,7 @@ import '@mui/lab/themeAugmentation';
 // import i18n from 'src/i18n/i18n';
 
 const themeColors = {
-  primary: '#5569ff',
+  primary: '#147DFE',
   secondary: '#6E759F',
   success: '#57CA22',
   warning: '#FFA319',
@@ -351,7 +351,7 @@ export const XrplToLightTheme = createTheme({
     },
     tx: {
       light: "#fff",
-      main: "#252525",
+      main: "#000000",
       dark: "#0f0f0f"
     },
     tonalOffset: 0.5
@@ -1569,7 +1569,7 @@ export const XrplToLightTheme = createTheme({
     s15: {
       fontWeight: 700,
       fontSize: 18,
-      color: "#2D2D2D"
+      color: "#000000"
     },
     s17: {
       fontWeight: 400,

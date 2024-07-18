@@ -222,7 +222,7 @@ export default function Wallet({ style }) {
 
               <Box
                 sx={{
-                  backgroundColor: darkMode ? '#2D2D2D' : '#fff',
+                  backgroundColor: darkMode ? '#000000' : '#fff',
                   padding: '10px',
                   borderRadius: '4px'
                 }}

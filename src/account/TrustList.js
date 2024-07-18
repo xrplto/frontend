@@ -446,7 +446,7 @@ export default function TrustList({ account }) {
                     position: 'sticky',
                     zIndex: 1001,
                     left: 0,
-                    background: darkMode ? '#17171A' : '#F2F5F9'
+                    background: darkMode ? '#000000' : '#F2F5F9'
                   }}
                 ></TableCell>
                 <TableCell
@@ -455,7 +455,7 @@ export default function TrustList({ account }) {
                     position: 'sticky',
                     zIndex: 1002,
                     left: 32,
-                    background: darkMode ? '#17171A' : '#F2F5F9',
+                    background: darkMode ? '#000000' : '#F2F5F9',
                     '&:before': scrollLeft
                       ? {
                           content: "''",
@@ -571,7 +571,7 @@ export default function TrustList({ account }) {
                         position: 'sticky',
                         zIndex: 1001,
                         left: 0,
-                        background: darkMode ? '#17171A' : '#F2F5F9'
+                        background: darkMode ? '#000000' : '#F2F5F9'
                       }}
                     >
                       <Tooltip title="Remove TrustLine">
@@ -593,7 +593,7 @@ export default function TrustList({ account }) {
                         position: 'sticky',
                         zIndex: 1002,
                         left: 32,
-                        background: darkMode ? '#17171A' : '#F2F5F9',
+                        background: darkMode ? '#000000' : '#F2F5F9',
                         '&:before': scrollLeft
                           ? {
                               content: "''",

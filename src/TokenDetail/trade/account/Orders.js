@@ -283,7 +283,7 @@ export default function Orders({pair}) {
                                 position: "sticky",
                                 zIndex: 1001,
                                 left: 0,
-                                background: darkMode ? "#17171A" : '#F2F5F9',
+                                background: darkMode ? "#000000" : '#F2F5F9',
                                 '&:before': (scrollLeft ? {
                                     content: "''",
                                     boxShadow: "inset 10px 0 8px -8px #00000026",
@@ -373,7 +373,7 @@ export default function Orders({pair}) {
                                             position: "sticky",
                                             zIndex: 1001,
                                             left: 0,
-                                            background: darkMode ? "#17171A" : '#F2F5F9',
+                                            background: darkMode ? "#000000" : '#F2F5F9',
                                             '&:before': (scrollLeft ? {
                                                 content: "''",
                                                 boxShadow: "inset 10px 0 8px -8px #00000026",
