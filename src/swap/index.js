@@ -2,9 +2,7 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
 import { ClipLoader } from 'react-spinners';
-import {
-  LazyLoadImage,
-} from 'react-lazy-load-image-component';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Material
 import { withStyles } from '@mui/styles';
@@ -19,8 +17,7 @@ import {
   Typography,
   Snackbar,
   Alert,
-  AlertTitle,
-  CircularProgress
+  CircularProgress,
 } from '@mui/material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
@@ -32,8 +29,8 @@ import exchangeIcon from '@iconify/icons-uil/exchange';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { isInstalled, submitTransaction } from "@gemwallet/api";
-import sdk from "@crossmarkio/sdk";
+import { isInstalled, submitTransaction } from '@gemwallet/api';
+import sdk from '@crossmarkio/sdk';
 
 // Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -54,16 +51,15 @@ import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactio
 const CurrencyContent = styled('div')(
   ({ theme }) => `
     box-sizing: border-box;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 10px;
+    margin: 10px;
     display: flex;
     flex: 1 1 0%;
     flex-direction: row;
     padding: 10px 24px;
     border-radius: 10px;
-    -webkit-box-align: center;
     align-items: center;
+    background-color: ${theme.palette.background.paper};
+    box-shadow: ${theme.shadows[1]};
 `
 );
 
@@ -74,40 +70,28 @@ const InputContent = styled('div')(
     display: flex;
     flex: 1 1 0%;
     flex-direction: column;
-    -webkit-box-align: flex-end;
     align-items: flex-end;
-    -webkit-box-pack: flex-end;
     justify-content: flex-end;
-    color: rgb(255, 255, 255);
+    color: ${theme.palette.text.primary};
 `
 );
 
-let border; // webxtor SEO fix
-if (typeof theme !== 'undefined' && theme.currency) {
-  border = theme.currency.border;
-}
 const OverviewWrapper = styled('div')(
   ({ theme }) => `
     flex-direction: column;
     overflow: hidden;
-    /*// margin: auto -16px;*/
     box-sizing: border-box;
     position: relative;
     border-radius: 16px;
     display: flex;
-    /*//border:$000{theme.currency.border};//webxtor SEO fix */
-    border: ${border};
+    border: ${theme.palette.divider};
     padding-bottom: 10px;
+    margin: 16px;
 
     @media (max-width: 600px) {
         border-right: none;
         border-left: none;
-        border-image: initial;
         border-radius: unset;
-        /*// border-top: $000{theme.currency.border};
-        // border-bottom: $000{theme.currency.border};*/
-        border-top: none;
-        border-bottom: none;
     }
 `
 );
@@ -126,16 +110,26 @@ const ToggleContent = styled('div')(
     cursor: pointer;
     position: absolute;
     left: 50%;
-    top: 51%;
+    top: 50%;
     transform: translate(-50%, -50%);
     margin-top: 14px;
+    border: 2px solid ${theme.palette.primary.main};
+    border-radius: 50%;
+    padding: 1px;
+    box-shadow: 0 0 5px ${theme.palette.primary.main};
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translate(-50%, -50%) scale(1.1);
+      box-shadow: 0 0 10px ${theme.palette.primary.main};
+    }
 `
 );
 
 const ExchangeButton = styled(Button)(
   ({ theme }) => `
+    margin-top: 10px;
     @media (max-width: 600px) {
-        // border-radius: 0px;
         margin-left: 10px;
         margin-right: 10px;
     }
@@ -152,7 +146,6 @@ const AllowButton = styled(Button)(() => `
 export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
-  const QR_BLUR = '/static/blurqr.webp';
 
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
@@ -161,7 +154,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const curr1 = pair?.curr1;
   const curr2 = pair?.curr2;
 
-  const { accountProfile, darkMode, setLoading, sync, setSync, openSnackbar, activeFiatCurrency } =
+  const { accountProfile, setLoading, sync, setSync, openSnackbar, activeFiatCurrency } =
     useContext(AppContext);
 
   const [openScanQR, setOpenScanQR] = useState(false);
@@ -172,8 +165,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const [token1, setToken1] = useState(curr1);
   const [token2, setToken2] = useState(curr2);
 
-  const [amount1, setAmount1] = useState(''); // XRP
-  const [amount2, setAmount2] = useState(''); // Token
+  const [amount1, setAmount1] = useState('');
+  const [amount2, setAmount2] = useState('');
 
   const [tokenExch1, setTokenExch1] = useState(0);
   const [tokenExch2, setTokenExch2] = useState(0);
@@ -212,15 +205,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         .toNumber()
       : 0;
 
-  // const color1 = revert?theme.currency.background2:theme.currency.background1;
-  // const color2 = revert?theme.currency.background1:theme.currency.background2;
-  var color1, color2;
-  if (typeof theme.currency !== "undefined") // webxtor SEO fix
-  {
-    /*const */color1 = theme.currency.background2;
-    /*const */color2 = theme.currency.background2;
-  }
-
   const isLoggedIn =
     accountProfile && accountProfile.account && accountPairBalance;
 
@@ -228,21 +212,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   let errMsg = '';
 
   if (isLoggedIn) {
-    /* accountPairBalance
-        {
-            "curr1": {
-                "currency": "534F4C4F00000000000000000000000000000000",
-                "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-                "value": "0.00000383697235788"
-            },
-            "curr2": {
-                "currency": "XRP",
-                "issuer": "XRPL",
-                "value": 26.733742000000007
-            }
-        }
-        */
-
     errMsg = '';
     isSufficientBalance = false;
     try {
@@ -282,7 +251,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       if (!curr1 || !curr2) return;
 
       const account = accountProfile.account;
-      // https://api.xrpl.to/api/account/info/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=XRPL
       axios
         .get(
           `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`
@@ -300,7 +268,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           // always executed
         });
     }
-    // console.log('account_info')
     getAccountInfo();
   }, [accountProfile, curr1, curr2, sync, isSwapped]);
 
@@ -309,7 +276,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       setLoadingPrice(true);
       const md51 = token1.md5;
       const md52 = token2.md5;
-      // https://api.xrpl.to/api/pair_rates?md51=84e5efeb89c4eae8f68188982dc290d8&md52=c9ac9a6c44763c1bd9ccc6e47572fd26
       axios
         .get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`)
         .then((res) => {
@@ -323,7 +289,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           console.log('Error on getting token info!', err);
         })
         .then(function () {
-          // always executed
           setLoadingPrice(false);
         });
     }
@@ -341,7 +306,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   useEffect(() => {
     const pair = {
       curr1: revert ? token2 : token1,
-      curr2: revert ? token1 : token2
+      curr2: revert ? token1 : token2,
     };
     setPair(pair);
   }, [revert, token1, token2]);
@@ -356,11 +321,10 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       try {
         const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
         const res = ret.data.data.response;
-        // const account = res.account;
         const dispatched_result = res.dispatched_result;
 
         return dispatched_result;
-      } catch (err) { }
+      } catch (err) {}
     }
 
     const startInterval = () => {
@@ -386,7 +350,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       }, 1000);
     };
 
-    // Stop the interval
     const stopInterval = () => {
       clearInterval(dispatchTimer);
       setOpenScanQR(false);
@@ -395,19 +358,17 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     };
 
     async function getPayload() {
-      // console.log(counter + " " + isRunning, uuid);
       if (isRunning) return;
       isRunning = true;
       try {
         const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
         const res = ret.data.data.response;
-        // const account = res.account;
         const resolved_at = res.resolved_at;
         if (resolved_at) {
           startInterval();
           return;
         }
-      } catch (err) { }
+      } catch (err) {}
       isRunning = false;
       counter--;
       if (counter <= 0) {
@@ -426,44 +387,34 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
   const onOfferCreateXumm = async () => {
     try {
-      // const curr1 = revert?pair.curr2:pair.curr1;
-      // const curr2 = revert?pair.curr1:pair.curr2;
       const curr1 = pair.curr1;
       const curr2 = pair.curr2;
       const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
       let TakerGets, TakerPays;
-      /*if (buySell === 'BUY') {
-                // BUY logic
-                TakerGets = {currency:curr2.currency, issuer:curr2.issuer, value: value.toString()};
-                TakerPays = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
-            } else */
-      // {
-      // SELL logic
+
       TakerGets = {
         currency: curr1.currency,
         issuer: curr1.issuer,
-        value: amount.toString()
+        value: amount.toString(),
       };
       TakerPays = {
         currency: curr2.currency,
         issuer: curr2.issuer,
-        value: value.toString()
+        value: value.toString(),
       };
-      // }
 
       const OfferCreate = {
         tfPassive: 0x00010000,
         tfImmediateOrCancel: 0x00020000,
         tfFillOrKill: 0x00040000,
-        tfSell: 0x00080000
+        tfSell: 0x00080000,
       };
 
-      //const Flags = OfferCreate.tfSell | OfferCreate.tfImmediateOrCancel;
       const Flags = OfferCreate.tfImmediateOrCancel;
 
-      const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
+      const body = { TakerGets, TakerPays, Flags, user_token };
 
       let memoData = `Create offer via https://xrpl.to`;
       if (Flags & OfferCreate.tfImmediateOrCancel) {
@@ -471,7 +422,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       }
 
       switch (wallet_type) {
-        case "xaman":
+        case 'xaman':
           setLoading(true);
           const res = await axios.post(`${BASE_URL}/offer/create`, body);
 
@@ -487,7 +438,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           }
 
           break;
-        case "gem":
+        case 'gem':
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               if (TakerGets.currency === 'XRP') {
@@ -498,39 +449,34 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
               }
               let offerTxData = {
-                TransactionType: "OfferCreate",
+                TransactionType: 'OfferCreate',
                 Account,
                 Flags,
                 TakerGets,
                 TakerPays,
-                Memos: configureMemos('', '', memoData)
+                Memos: configureMemos('', '', memoData),
               };
 
               dispatch(updateProcess(1));
 
               await submitTransaction({
-                transaction: offerTxData
+                transaction: offerTxData,
               }).then(({ type, result }) => {
-                if (type == "response") {
+                if (type == 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
-                }
-
-                else {
+                } else {
                   dispatch(updateProcess(3));
                 }
 
                 setSwapped(!isSwapped);
               });
+            } else {
+              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
             }
-
-            else {
-              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
-            }
-          })
+          });
           break;
-        case "crossmark":
-
+        case 'crossmark':
           if (TakerGets.currency === 'XRP') {
             TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
           }
@@ -539,32 +485,28 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
           }
           let offerTxData = {
-            TransactionType: "OfferCreate",
+            TransactionType: 'OfferCreate',
             Account,
             Flags,
             TakerGets,
             TakerPays,
-            Memos: configureMemos('', '', memoData)
+            Memos: configureMemos('', '', memoData),
           };
 
           dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(offerTxData)
-            .then(({ response }) => {
-              if (response.data.meta.isSuccess) {
-                dispatch(updateProcess(2));
-                dispatch(updateTxHash(response.data.resp.result?.hash));
-
-              } else {
-                dispatch(updateProcess(3));
-              }
-              setSwapped(!isSwapped);
-            });
-          // }
+          await sdk.methods.signAndSubmitAndWait(offerTxData).then(({ response }) => {
+            if (response.data.meta.isSuccess) {
+              dispatch(updateProcess(2));
+              dispatch(updateTxHash(response.data.resp.result?.hash));
+            } else {
+              dispatch(updateProcess(3));
+            }
+            setSwapped(!isSwapped);
+          });
           break;
       }
-
     } catch (err) {
-      console.log("err", err);
+      console.log('err', err);
       dispatch(updateProcess(0));
     }
     setLoading(false);
@@ -577,7 +519,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       if (res.status === 200) {
         setUuid(null);
       }
-    } catch (err) { }
+    } catch (err) {}
     setLoading(false);
   };
 
@@ -585,15 +527,11 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     let amt = 0;
     let val = 0;
 
-    /*
-            ask: taker_gets = curr1, taker_pays = curr2
-            bid: taker_gets = curr2, taker_pays = curr1
-         */
     try {
       amt = new Decimal(amount).toNumber();
-    } catch (e) { }
+    } catch (e) {}
 
-    if (amt === 0) return "";
+    if (amt === 0) return '';
 
     try {
       if (active === 'AMOUNT') {
@@ -618,7 +556,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         }
       }
       return new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
-    } catch (e) { }
+    } catch (e) {}
 
     return 0;
   };
@@ -635,37 +573,12 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     else {
       openSnackbar('Invalid values!', 'error');
     }
-
-    // if (accountProfile && accountProfile.account) {
-    //     // Create offer
-    //     /*{
-    //         "TransactionType": "OfferCreate",
-    //         "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
-    //         "Fee": "12",
-    //         "Flags": 0,
-    //         "LastLedgerSequence": 7108682,
-    //         "Sequence": 8,
-    //         "TakerGets": "6000000",
-    //         "TakerPays": {
-    //           "currency": "GKO",
-    //           "issuer": "ruazs5h1qEsqpke88pcqnaseXdm6od2xc",
-    //           "value": "2"
-    //         }
-    //     }*/
-    //     onOfferCreateXumm();
-
-    // } else {
-    //     setShowAccountAlert(true);
-    //     setTimeout(() => {
-    //         setShowAccountAlert(false);
-    //     }, 2000);
-    // }
   };
 
   const handleChangeAmount1 = (e) => {
     let value = e.target.value;
 
-    if (value == ".") value = "0.";
+    if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
 
     setAmount1(value);
@@ -675,7 +588,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const handleChangeAmount2 = (e) => {
     const value = e.target.value;
 
-    if (value == ".") value = "0.";
+    if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
 
     setAmount2(value);
@@ -685,9 +598,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const onChangeToken1 = (token) => {
     if (token.md5 !== token2.md5) {
       setToken1(token);
-    }
-
-    else {
+    } else {
       onRevertExchange();
     }
   };
@@ -695,92 +606,77 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const onChangeToken2 = (token) => {
     if (token.md5 !== token1.md5) {
       setToken2(token);
-    }
-
-    else {
+    } else {
       onRevertExchange();
     }
   };
 
   const onRevertExchange = () => {
     setRevert(!revert);
-    /*
-        
-        const newToken1 = {...token2};
-        const newToken2 = {...token1};
-        setToken1(newToken1);
-        setToken2(newToken2);
-        setAmount1(amount1);
-        setAmount2(amount2);
-
-        */
   };
 
   const onFillHalf = () => {
     if (revert) {
       if (accountPairBalance?.curr1.value > 0)
         setAmount2(accountPairBalance?.curr1.value / 2);
-    }
-
-    else {
+    } else {
       if (accountPairBalance?.curr1.value > 0)
         setAmount1(accountPairBalance?.curr1.value / 2);
     }
-  }
+  };
 
   const onFillMax = () => {
     if (revert) {
       if (accountPairBalance?.curr1.value > 0)
         setAmount2(accountPairBalance?.curr1.value);
-    }
-
-    else {
+    } else {
       if (accountPairBalance?.curr1.value > 0)
         setAmount1(accountPairBalance?.curr1.value);
     }
-  }
+  };
 
   const handleMsg = () => {
-     if (isProcessing == 1) return "Pending Exchanging";
-    if (!amount1 || !amount2) return "Enter an Amount";
+    if (isProcessing == 1) return 'Pending Exchanging';
+    if (!amount1 || !amount2) return 'Enter an Amount';
     else if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
-    else return "Exchange";
-  }
+    else return 'Exchange';
+  };
 
   return (
     <Stack alignItems="center">
       <OverviewWrapper>
         <ConverterFrame>
-          {
-            isLoggedIn &&
-            <Stack direction="row" justifyContent="end" spacing={1} siz="small" sx={{ px: 1.2 }}>
-              <AllowButton variant="outlined" onClick={onFillHalf}>Half</AllowButton>
-              <AllowButton variant="outlined" onClick={onFillMax}>Max</AllowButton>
+          {isLoggedIn && (
+            <Stack direction="row" justifyContent="end" spacing={1} sx={{ px: 1.2 }}>
+              <AllowButton variant="outlined" onClick={onFillHalf}>
+                Half
+              </AllowButton>
+              <AllowButton variant="outlined" onClick={onFillMax}>
+                Max
+              </AllowButton>
             </Stack>
-          }
+          )}
           <CurrencyContent
-            style={{ order: revert ? 2 : 1, backgroundColor: color1, border: focusTop ? `1px solid ${theme?.general?.reactFrameworkColor}` : "none" }}
+            style={{
+              order: revert ? 2 : 1,
+              border: focusTop ? `1px solid ${theme.palette.primary.main}` : 'none',
+            }}
           >
             <Stack>
               <QueryToken token={token1} onChangeToken={onChangeToken1} />
-              {
-                isLoggedIn &&
+              {isLoggedIn && (
                 <Typography variant="s7">
                   Balance{' '}
-                  <Typography variant="s2" color="primary" >
-                    {revert
-                      ? accountPairBalance?.curr2.value
-                      : accountPairBalance?.curr1.value}
+                  <Typography variant="s2" color="primary">
+                    {revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value}
                   </Typography>
                 </Typography>
-              }
+              )}
             </Stack>
             <InputContent>
               <Input
                 placeholder="0"
                 autoComplete="new-password"
-                // margin='dense'
-                // disabled={revert?true:false}
                 disableUnderline
                 value={amount1}
                 onChange={handleChangeAmount1}
@@ -793,38 +689,42 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                     fontSize: '18px',
                     textAlign: 'end',
                     appearance: 'none',
-                    fontWeight: 700
-                  }
+                    fontWeight: 700,
+                  },
                 }}
                 onFocus={() => setFocusTop(true)}
                 onBlur={() => setFocusTop(false)}
               />
-              <Typography variant="s2" color="primary" sx={{ visibility: tokenPrice1 > 0 ? "visible" : "hidden" }}>{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}</Typography>
+              <Typography
+                variant="s2"
+                color="primary"
+                sx={{ visibility: tokenPrice1 > 0 ? 'visible' : 'hidden' }}
+              >
+                {currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}
+              </Typography>
             </InputContent>
           </CurrencyContent>
           <CurrencyContent
-            style={{ order: revert ? 1 : 2, backgroundColor: color2, border: focusBottom ? `1px solid ${theme?.general?.reactFrameworkColor}` : "none" }}
+            style={{
+              order: revert ? 1 : 2,
+              border: focusBottom ? `1px solid ${theme.palette.primary.main}` : 'none',
+            }}
           >
             <Stack>
               <QueryToken token={token2} onChangeToken={onChangeToken2} />
-              {
-                isLoggedIn &&
+              {isLoggedIn && (
                 <Typography variant="s7">
                   Balance{' '}
-                  <Typography variant="s2" color="primary" >
-                    {revert
-                      ? accountPairBalance?.curr1.value
-                      : accountPairBalance?.curr2.value}
+                  <Typography variant="s2" color="primary">
+                    {revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value}
                   </Typography>
                 </Typography>
-              }
+              )}
             </Stack>
             <InputContent>
               <Input
                 placeholder="0"
                 autoComplete="new-password"
-                // margin='dense'
-                // disabled={revert?false:true}
                 disableUnderline
                 value={amount1 === '' ? '' : amount2}
                 onChange={handleChangeAmount2}
@@ -837,51 +737,53 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                     fontSize: '18px',
                     textAlign: 'end',
                     appearance: 'none',
-                    fontWeight: 700
-                  }
+                    fontWeight: 700,
+                  },
                 }}
                 onFocus={() => setFocusBottom(true)}
                 onBlur={() => setFocusBottom(false)}
               />
-              <Typography variant="s2" color="primary" sx={{ visibility: tokenPrice2 > 0 ? "visible" : "hidden" }}>{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}</Typography>
+              <Typography
+                variant="s2"
+                color="primary"
+                sx={{ visibility: tokenPrice2 > 0 ? 'visible' : 'hidden' }}
+              >
+                {currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}
+              </Typography>
             </InputContent>
           </CurrencyContent>
           <ToggleContent>
-            <IconButton size="medium" onClick={onRevertExchange}>
+            <IconButton size="small" onClick={onRevertExchange}>
               <Icon
                 icon={exchangeIcon}
-                width="28"
-                height="28"
+                width="20"
+                height="20"
                 style={{
-                  padding: 6,
-                  borderRadius: "50%",
-                  color: "#17171AAA",
-                  background: "#ffffff",
-                  transform: 'rotate(90deg)', // Rotates the icon 90 degrees permanently,
+                  color: theme.palette.primary.main,
+                  background: theme.palette.background.paper,
+                  transform: 'rotate(90deg)',
                 }}
               />
             </IconButton>
-
-
           </ToggleContent>
         </ConverterFrame>
 
-        <CurrencyContent
-          style={{ order: 3, backgroundColor: color2 /*theme.currency.background2*/ /* webxtor SEO fix */ }}
-        >
+        <CurrencyContent style={{ order: 3 }}>
           <Stack
             direction="row"
             alignItems="center"
             justifyContent="space-between"
             sx={{
-              width: '100%'
+              width: '100%',
             }}
           >
             <Typography variant="s6">Price impact</Typography>
             {loadingPrice ? (
-              <ClipLoader color="#FF6C40" size={15} />
+              <ClipLoader color={theme.palette.primary.main} size={15} />
             ) : (
-              <Typography variant="s2" color="primary">{priceImpact} %</Typography>
+              <Typography variant="s2" color="primary">
+                {priceImpact} %
+              </Typography>
             )}
           </Stack>
         </CurrencyContent>
@@ -890,17 +792,10 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       <Stack sx={{ width: '100%', mt: 2 }}>
         {accountProfile && accountProfile.account ? (
           <>
-            {/* {errMsg && amount1 !== '' && amount2 !== '' && (
-              <Typography variant="s2" sx={{ ml: 2 }}>
-                {errMsg}
-              </Typography>
-            )} */}
-
             <ExchangeButton
               variant="contained"
               sx={{ mt: 1.5 }}
               onClick={handlePlaceOrder}
-              // color={'primary'}
               disabled={!canPlaceOrder || isProcessing == 1}
             >
               {handleMsg()}
