@@ -22,7 +22,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Components
-// import SearchToolbar from './SearchToolbar';
+import SearchToolbar from './SearchToolbar';
 import Row from './Row';
 import ListHead from './ListHead';
 import ListToolbar from './ListToolbar';
@@ -135,12 +135,12 @@ export default function CollectionList({ type, category }) {
 
     return (
         <>
-            {/* <SearchToolbar
+            <SearchToolbar
                 filter={filter}
                 setFilter={setFilter}
                 rows={rows}
                 setRows={setRows}
-            /> */}
+            />
 
             {type !== CollectionListType.LANDING && (
                 <ToggleButtonGroup
