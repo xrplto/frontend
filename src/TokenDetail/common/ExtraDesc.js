@@ -225,8 +225,8 @@ export default function ExtraDesc({token}) {
                         </Tooltip>
                     </Stack>
                     <Stack alignItems="center">
-                        <VolumeTypography variant="desc" sx={{mt:3,mb:2}}><NumberTooltip number={volume} /> <VolumeTypography variant="small"> {name}</VolumeTypography></VolumeTypography>
                         <VolumeTypography variant="desc" sx={{mt:3,mb:2}}><NumberTooltip number={vol24hxrp} /> <VolumeTypography variant="small"> XRP</VolumeTypography></VolumeTypography>
+                        <VolumeTypography variant="desc" sx={{mt:3,mb:2}}><NumberTooltip number={volume} /> <VolumeTypography variant="small">{name}</VolumeTypography></VolumeTypography>
                     </Stack>
 
                     <Stack direction="row" alignItems="center" gap={1} sx={{ pl:3 }}>
