@@ -10,16 +10,10 @@ import {
     Radio,
     RadioGroup,
     Stack,
-    Tooltip,
     Typography,
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import FactCheckIcon from '@mui/icons-material/FactCheck';
-import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
-
-// Iconify
-import { Icon } from '@iconify/react';
-import infoFilled from '@iconify/icons-ep/info-filled';
 
 // Components
 

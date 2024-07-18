@@ -45,30 +45,12 @@ const Balance = styled("div")(() => `
     color: #fff;
 `);
 
-const OverviewBox = styled(Box)(({ theme }) => ({
-    padding: '16px',
-    borderRadius: '10px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '16px',
-}));
-
-const OverviewItem = styled(Box)({
-    textAlign: 'center',
-});
-
 const ButtonSend = styled(Button)(({ theme }) => ({
     '&:hover': {
     }
 }));
 
 const ButtonReceive = styled(Button)(({ theme }) => ({
-    '&:hover': {
-    }
-}));
-
-const ButtonWatch = styled(Button)(({ theme }) => ({
     '&:hover': {
     }
 }));
@@ -121,14 +103,8 @@ const volumeOptions = {
     },
 };
 
-function truncateAccount(str, length = 5) {
-    if (!str) return '';
-    return str.slice(0, length) + '...' + str.slice(length * -1);
-}
-
 export default function Portfolio({ account, limit, collection, type }) {
     const theme = useTheme();
-    console.log('Theme:', theme); // Debugging line
 
     // Fallback value for theme.palette.divider
     const dividerColor = theme?.palette?.divider || '#ccc';
@@ -146,17 +122,6 @@ export default function Portfolio({ account, limit, collection, type }) {
         border: `1px solid ${dividerColor}`,
         marginBottom: '16px',
     }));
-
-    const handleFilterChange = (event) => {
-        setFilter(event.target.value);
-    };
-
-    const filteredTrades = tradesData.filter((trade) => {
-        if (filter === 'All') return true;
-        if (filter === 'Tokens' && trade.type === 'Swap') return true;
-        if (filter === 'NFTs' && trade.type === 'Buy NFT') return true;
-        return false;
-    });
 
     const nftIcons = [
         // Add your icon URLs or paths here

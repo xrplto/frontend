@@ -5,8 +5,6 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Portfolio from "src/portfolio";
-import { useContext } from "react";
-import { AppContext } from 'src/AppContext'
 import { isValidClassicAddress } from 'ripple-address-codec';
 
 const OverviewWrapper = styled(Box)(
@@ -17,8 +15,6 @@ const OverviewWrapper = styled(Box)(
 );
 
 const OverView = ({ account, limit, collection, type }) => {
-
-    const { accountProfile, openSnackbar } = useContext(AppContext);
 
     return (
         <OverviewWrapper>
