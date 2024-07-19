@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import Decimal from 'decimal.js';
+import Wallet from 'src/components/Wallet';
 import 'src/utils/i18n';
 import {
   alpha,
@@ -86,6 +87,8 @@ const Topbar = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { darkMode } = useContext(AppContext);
   const iconColor = darkMode ? '#FFFFFF' : '#000000';
+  const [fullSearch, setFullSearch] = useState(false);
+  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
 
   const H24Style = styled('div')(({ theme }) => ({
     cursor: 'pointer',
@@ -203,11 +206,14 @@ const Topbar = () => {
               {fIntNumber(metrics.H24.activeAddresses24H)}</Typography>
           </Stack>
           {!isMobile && (
-            <Box sx={{ paddingLeft: 2, display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ paddingLeft: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
               <CurrencySwithcer />
               <ThemeSwitcher />
               <Separator>|</Separator> {/* Add separator */}
               <APILabel href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer">API</APILabel> {/* Add API label with new window */}
+              {!fullSearch && isDesktop && (
+              <Wallet style={{ marginRight: '9px' }} />
+            )}
             </Box>
           )}
         </ContentWrapper>

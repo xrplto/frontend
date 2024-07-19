@@ -210,14 +210,14 @@ export default function SearchToolbar({
           value={tagValue}
           // onChange={handleChange}
           variant="scrollable"
-          scrollButtons
-          // allowScrollButtonsMobile
-          // scrollButtons="auto"
+          scrollButtons="auto"
           aria-label="tag-tabs"
           sx={{
             '& .MuiTabs-indicator': {
               display: 'none'
-              //backgroundColor: "orange"
+            },
+            '& .MuiTabs-flexContainer': {
+              justifyContent: 'flex-start' // Align tabs to the left
             }
           }}
         >
@@ -290,7 +290,9 @@ export default function SearchToolbar({
                   borderRadius: '4px'
                 }}
               />
+              
             }
+            
             style={{
               paddingLeft: 0,
               paddingRight: 0
@@ -303,13 +305,13 @@ export default function SearchToolbar({
             flexItem
             sx={{
               display: { xs: 'none', md: 'flex' },
-              mx: 1, // Adjust this margin to ensure the divider is visible
+              mx: 3, // Adjust this margin to ensure the divider is visible
               my: 'auto',
             }}
           />
 
           {tags &&
-            tags?.slice(0, 11)?.map((tag, idx) => {
+            tags?.slice(0, 12)?.map((tag, idx) => {
               const nTag = normalizeTag(tag);
               return (
                 <Tab

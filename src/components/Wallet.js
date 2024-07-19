@@ -122,7 +122,7 @@ export default function Wallet({ style }) {
   direction="row"
   spacing={1}
   sx={{
-    padding: '6px 12px', // Adjust the padding to make it thicker
+    padding: '4px 12px', // Adjust the padding to make it thicker
     // backgroundImage: 'linear-gradient(to right, #721DA6 0%, #3021C1 51%, #721DA6 100%)',
     backgroundColor: `${darkMode ? '#007B55' : '#147DFE'}`,
     transition: '0.5s',

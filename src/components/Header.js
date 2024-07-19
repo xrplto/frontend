@@ -1,35 +1,31 @@
-import { useState, useContext, useEffect } from 'react';
-import 'src/utils/i18n';
-import { useTranslation } from 'react-i18next';
 import {
   alpha,
-  useMediaQuery,
-  useTheme,
   Box,
+  Chip,
   Container,
   IconButton,
   Link,
+  Snackbar,
   Stack,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
-
-// Context
-import { AppContext } from 'src/AppContext';
-
-// Components
-import Logo from 'src/components/Logo';
-import Wallet from 'src/components/Wallet';
-import NavSearchBar from './NavSearchBar';
-import SidebarDrawer from './SidebarDrawer';
-
-import DropDownMenu from './DropDownMenu';
-import LoginDialog from './LoginDialog';
-import WalletConnectModal from './WalletConnectModal';
-import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
+import StarOutlineIcon from '@mui/icons-material/StarOutline';
+import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
+import { useTranslation } from 'react-i18next';
+import { useState, useContext, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import sdk from "@crossmarkio/sdk";
+import { AppContext } from 'src/AppContext';
+import Logo from 'src/components/Logo';
+import NavSearchBar from './NavSearchBar';
+import SidebarDrawer from './SidebarDrawer';
+import DropDownMenu from './DropDownMenu';
+import WalletConnectModal from './WalletConnectModal';
+import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -73,6 +69,9 @@ export default function Header(props) {
   const [fullSearch, setFullSearch] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [isClosed, setClosed] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const {
     darkMode,
     setDarkMode,
@@ -86,6 +85,16 @@ export default function Header(props) {
     setOpenDrawer(isOpen);
   };
 
+  const openSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
   // Dropdown menu state and functions
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -97,12 +106,12 @@ export default function Header(props) {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-  
+
   useEffect(() => {
     if (isProcessing === 1 && isClosed) {
       dispatch(updateProcess(3));
     }
-    
+
     if (isClosed) {
       setClosed(false);
     }
@@ -169,8 +178,9 @@ export default function Header(props) {
                 </StyledLink>
               </>
             )}
-            
+
             <WalletConnectModal />
+
           </Box>
 
           {fullSearch && (
@@ -180,6 +190,7 @@ export default function Header(props) {
               fullSearch={fullSearch}
               setFullSearch={setFullSearch}
             />
+
           )}
 
           {!fullSearch && (
@@ -210,6 +221,7 @@ export default function Header(props) {
                   fullSearch={fullSearch}
                   setFullSearch={setFullSearch}
                 />
+
               </Stack>
             )}
 
@@ -219,11 +231,44 @@ export default function Header(props) {
               </IconButton>
             )}
 
-            {!fullSearch && isDesktop && (
-              <Wallet style={{ marginRight: '5px' }} />
-            )}
+            {!fullSearch && (
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={0.5}
+                sx={{ display: { xs: 'none', md: 'flex' }, mr: 0 }}
+              >
+                <Link
+                  underline="none"
+                  color="inherit"
+                  href={`/watchlist`}
+                  rel="noreferrer noopener nofollow"
+                >
+                  <Chip
+                    variant={'outlined'}
+                    icon={<StarOutlineIcon fontSize="small" />}
+                    label={'Watchlist'}
+                    onClick={() => { }}
+                    sx={{
+                      borderRadius: '8px'
+                    }}
+                  />
+                </Link>
 
-         
+                <Chip
+                  variant={'outlined'}
+                  icon={<TroubleshootIcon fontSize="small" />}
+                  label={'Portfolio'}
+                  onClick={() => {
+                    openSnackbar('Coming soon!', 'success');
+                  }}
+                  sx={{
+                    borderRadius: '8px'
+                  }}
+                />
+
+              </Stack>
+            )}
 
             {isTabletOrMobile && !fullSearch && (
               <IconButton onClick={() => toggleDrawer(true)}>
@@ -235,6 +280,14 @@ export default function Header(props) {
           </Box>
         </Box>
       </Container>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        message={snackbarMessage}
+        severity={snackbarSeverity}
+      />
     </HeaderWrapper>
   );
 }
