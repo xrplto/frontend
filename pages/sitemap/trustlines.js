@@ -111,7 +111,7 @@ const Sitemap = ({ tokens, slug }) => {
                   rel="noreferrer noopener nofollow"
                   sx={{
                     fontSize: 15,
-                    color: darkMode ? '#007B55 !important  ' : '#5569FF !important',
+                    color: darkMode ? '#007B55 !important  ' : '#147DFE !important',
                     '&:hover': {
                       color: 'rgb(160, 160, 160) !important'
                     }
@@ -144,7 +144,7 @@ const Sitemap = ({ tokens, slug }) => {
               rel="noreferrer noopener nofollow"
               sx={{
                 fontSize: 15,
-                color: darkMode ? '#007B55 !important  ' : '#5569FF !important',
+                color: darkMode ? '#007B55 !important  ' : '#147DFE !important',
                 '&:hover': {
                   color: 'rgb(160, 160, 160) !important'
                 }

@@ -124,11 +124,11 @@ export default function Wallet({ style }) {
   sx={{
     padding: '6px 12px', // Adjust the padding to make it thicker
     // backgroundImage: 'linear-gradient(to right, #721DA6 0%, #3021C1 51%, #721DA6 100%)',
-    backgroundColor: `${darkMode ? '#007B55' : '#5569FF'}`,
+    backgroundColor: `${darkMode ? '#007B55' : '#147DFE'}`,
     transition: '0.5s',
     backgroundSize: '200% auto',
     '&:hover': {
-      backgroundColor: `${darkMode ? '#005E46' : '#4455CC'}`,
+      backgroundColor: `${darkMode ? '#005E46' : '#147DFE'}`,
     }
   }}
   ref={anchorRef}
