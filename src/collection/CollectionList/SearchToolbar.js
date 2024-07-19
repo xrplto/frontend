@@ -37,19 +37,7 @@ export default function SearchToolbar({
 
     return (
         <RootStyle sx={{mb: 1 }}>
-            <SearchBox
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="Search ..."
-                size="small"
-                fullWidth
-                startAdornment={
-                    <InputAdornment position="start">
-                        <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
-                    </InputAdornment>
-                }
-                sx={{pb:0.3}}
-            />
+            
         </RootStyle>
     );
 }
