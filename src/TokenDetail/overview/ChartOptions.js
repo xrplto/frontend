@@ -7,7 +7,7 @@ import {
 
 // Iconify Icons
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 
 // Utils
 import { fCurrency5/*, fNumber*/ } from 'src/utils/formatNumber';

@@ -39,7 +39,7 @@ import PermIdentityIcon from '@mui/icons-material/PermIdentity';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 
 // Loader
 import { ClipLoader } from 'react-spinners';

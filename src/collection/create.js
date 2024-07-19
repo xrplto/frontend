@@ -36,7 +36,7 @@ import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 
 // Context
 import { useContext } from 'react';
@@ -847,11 +847,7 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                                                         sx={{ ml: 2 }}
                                                         noWrap
                                                     >
-                                                        <Icon
-                                                            icon={rippleSolid}
-                                                            width={12}
-                                                            height={12}
-                                                        />{' '}
+                                                        <Typography>✕</Typography>{' '}
                                                         {fNumber(cost.exch)}
                                                     </Typography>
                                                 </Stack>

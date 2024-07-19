@@ -21,7 +21,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 
 // Utils
 import { getMinterName } from "src/utils/constants";

@@ -20,7 +20,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 import infoFilled from '@iconify/icons-ep/info-filled';
 
 // Context
@@ -196,7 +196,7 @@ export default function NFTDetails({nft}) {
                         <Stack direction="row" spacing={2} sx={{mt: 2}}>
                             <Typography variant="caption">Volume</Typography>
                             <Stack direction="row" spacing={0.5} alignItems='center'>
-                                <Icon icon={rippleSolid} />
+                            <Typography>✕</Typography>
                                 <Typography variant="s6">{fVolume(volume || 0)}</Typography>
                                 <Tooltip title={<Typography variant="body2">Traded volume on XRPL</Typography>}>
                                     <Icon icon={infoFilled} />

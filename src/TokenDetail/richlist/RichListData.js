@@ -36,7 +36,7 @@ import RichListToolbar from './RichListToolbar';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 import checkIcon from '@iconify/icons-akar-icons/check';
 import caretDown from '@iconify/icons-bx/caret-down';
 import caretUp from '@iconify/icons-bx/caret-up';
@@ -492,7 +492,7 @@ export default function RichListData({ token }) {
                           spacing={0.5}
                           alignItems="center"
                         >
-                          <Icon icon={rippleSolid} width="12" height="12" />
+                          <Typography>✕</Typography>
                           <Typography variant="subtitle1" noWrap>
                             {fNumber(exch * balance)}
                           </Typography>

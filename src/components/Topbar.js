@@ -14,7 +14,7 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { useTranslation } from 'react-i18next';
@@ -178,7 +178,7 @@ const Topbar = () => {
             </Typography>
             <Typography align="center" color="#FF6C40" variant="body2">
               <Stack direction="row" spacing={0.5} alignItems="center">
-                <Icon icon={rippleSolid} color={iconColor} />
+              <Typography>✕</Typography>
                 <Typography align="center" color="#FF6C40" variant="body2">
                   {fNumber(metrics.H24.tradedXRP24H)}
                 </Typography>

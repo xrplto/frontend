@@ -23,7 +23,7 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 import infoFilled from '@iconify/icons-ep/info-filled';
 
 // Utils
@@ -352,7 +352,7 @@ export default function ViewNFT({ collection }) {
                     </Stack>
                     <Stack>
                         <Stack direction="row" spacing={0.5} alignItems='center'>
-                            <Icon icon={rippleSolid} width="20" height="20" />
+                        <Typography>✕</Typography>
                             <Typography variant="d5" noWrap>{volume2}</Typography>
                             <Stack direction="row" sx={{ pb: 1.5 }}>
                                 <Tooltip
@@ -371,7 +371,7 @@ export default function ViewNFT({ collection }) {
                     </Stack>
                     <Stack>
                         <Stack direction="row" spacing={0.5} alignItems='center'>
-                            <Icon icon={rippleSolid} width="20" height="20" />
+                        <Typography>✕</Typography>
                             <Typography variant="d5" noWrap>{fNumber(floorPrice)}</Typography>
                         </Stack>
                         <Typography variant='s13' noWrap>floor price</Typography>

@@ -15,7 +15,7 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import { formatMonthYearDate } from 'src/utils/formatTime';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatNumber';
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 
 const IconCover = styled('div')(
     ({ theme }) => `
@@ -213,22 +213,14 @@ export default function Row({ id, item, isMine, timeFrame }) {
 
             <TableCell align="right" sx={{ pl: 0, pr: 0, border: 'none' }}>
                 <Typography variant={isMobile ? 'caption' : 'body2'} noWrap> 
-                    <Icon
-                        icon={rippleSolid}
-                        width={isMobile ? 10 : 12} 
-                        height={isMobile ? 10 : 12} 
-                    />{' '}
+                <Typography>✕</Typography>{' '}
                     {volumeDisplay}
                 </Typography>
             </TableCell>
 
             <TableCell align="right" sx={{ pl: 0, pr: 0, border: 'none' }}>
                 <Typography variant={isMobile ? 'caption' : 'body2'} noWrap> 
-                    <Icon
-                        icon={rippleSolid}
-                        width={isMobile ? 10 : 12} 
-                        height={isMobile ? 10 : 12} 
-                    />{' '}
+                <Typography>✕</Typography>{' '}
                     {fNumber(floorPrice)}
                 </Typography>
             </TableCell>

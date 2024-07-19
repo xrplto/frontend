@@ -40,7 +40,7 @@ import { AppContext } from 'src/AppContext';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
@@ -759,7 +759,7 @@ export default function EditCollection({collection}) {
                                             <Stack spacing={0.5}>
                                                 <Stack direction="row">
                                                     <Typography variant='d4'>{cost.name}</Typography>
-                                                    <Typography variant='d4' sx={{ml: 2}} noWrap><Icon icon={rippleSolid} width={12} height={12}/> {fNumber(cost.exch)}</Typography>
+                                                    <Typography variant='d4' sx={{ml: 2}} noWrap><Typography>✕</Typography> {fNumber(cost.exch)}</Typography>
                                                 </Stack>
                                                 <Stack direction="row" alignItems="center">
                                                     <Typography variant='p3'>{cost.issuer}</Typography>

@@ -59,7 +59,7 @@ export default function FilterDetail({
     const handleOnSaleFlagChange = (event) => {
         const value = event.target.value;
         setSubFilter(value);
-        setPage(0)
+        setPage(0);
     };
 
     return (
@@ -77,7 +77,6 @@ export default function FilterDetail({
                         </Stack>
                     </AccordionSummary>
                     <AccordionDetails>
-                        {/* owners, pendingNfts, buyWithMints, boughtWithMints, onSaleCount */}
                         <FormGroup sx={{ flexDirection: 'col' }}>
                             {type === 'bulk' && (
                                 <FormControlLabel
@@ -130,7 +129,7 @@ export default function FilterDetail({
                             <FormControlLabel
                                 label={
                                     <Typography variant="s3">
-                                        On Sale{' '}
+                                        Buy Now{' '}
                                         <Typography variant="s7">
                                             ({extra?.onSaleCount})
                                         </Typography>
@@ -146,50 +145,32 @@ export default function FilterDetail({
                             />
 
                             {(filter & 0x04) !== 0 && (
-                                <FormControl sx={{ ml: 5 }}>
-                                    {/* <FormLabel id="on-sale-sub-filter">On Sale sub</FormLabel> */}
+                                <FormControl sx={{ ml: 5, mt: 2 }}>
                                     <RadioGroup
-                                        aria-labelledby="demo-controlled-radio-buttons-group"
-                                        name="controlled-radio-buttons-group"
+                                        aria-labelledby="on-sale-sub-filter"
+                                        name="on-sale-sub-filter"
                                         value={subFilter}
                                         onChange={handleOnSaleFlagChange}
                                     >
                                         <FormControlLabel
                                             value="pricenoxrp"
                                             control={<Radio />}
-                                            label="Price (noXRP)"
+                                            label="Price No XRP"
                                         />
                                         <FormControlLabel
                                             value="pricexrpasc"
                                             control={<Radio />}
-                                            label="Price (XRP, Asc)"
+                                            label="Price Low"
                                         />
                                         <FormControlLabel
                                             value="pricexrpdesc"
                                             control={<Radio />}
-                                            label="Price (XRP, Desc)"
+                                            label="Price High"
                                         />
                                     </RadioGroup>
                                 </FormControl>
                             )}
 
-                            <FormControlLabel
-                                label={
-                                    <Typography variant="s3">
-                                        Idle{' '}
-                                        <Typography variant="s7">
-                                            ({extra?.notOnSaleCount})
-                                        </Typography>
-                                    </Typography>
-                                }
-                                value={8}
-                                control={
-                                    <Checkbox
-                                        checked={(filter & 8) !== 0}
-                                        onChange={handleFlagChange}
-                                    />
-                                }
-                            />
 
                             <FormControlLabel
                                 label={

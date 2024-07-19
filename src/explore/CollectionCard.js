@@ -23,7 +23,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 // import infoFilled from '@iconify/icons-ep/info-filled';
 
 // Utils

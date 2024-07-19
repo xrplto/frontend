@@ -20,7 +20,7 @@ import {
 // Iconify
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 
 // Context
 import { useContext } from 'react';
@@ -246,7 +246,7 @@ function fTokenRow({
             {currencySymbols[activeFiatCurrency]} {fNumberWithCurreny(exch,exchRate)}
           </TransitionTypo>
           <TransitionTypo variant="h6" noWrap>
-            <Icon icon={rippleSolid} width={12} height={12} /> {fNumber(exch)}
+          <Typography>✕</Typography> {fNumber(exch)}
           </TransitionTypo>
         </TableCell>
         <TableCell align="right">
@@ -262,7 +262,7 @@ function fTokenRow({
             justifyContent="flex-end"
             alignItems="center"
           >
-            <Icon icon={rippleSolid} />
+            <Typography>✕</Typography>
             <Typography variant="h4" noWrap>
               {fNumber(vol24hxrp)}
             </Typography>

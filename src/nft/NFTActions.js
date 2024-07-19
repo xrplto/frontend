@@ -39,7 +39,7 @@ import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 import infoFilled from '@iconify/icons-ep/info-filled';
 
 // Loader
@@ -626,7 +626,7 @@ export default function NFTActions({ nft }) {
 
                         <Stack direction="row" spacing={0.5} alignItems='center'>
                             <Typography variant="s7" noWrap>Global Floor</Typography>
-                            <Icon icon={rippleSolid} width="16" height="16" />
+                            <Typography>✕</Typography>
                             <Typography variant="s7" noWrap>{fNumber(floorPrice)}</Typography>
                         </Stack>
                     </Stack>
@@ -796,7 +796,7 @@ export default function NFTActions({ nft }) {
                                                 cost ? (
                                                     cost.currency === "XRP" ?
                                                         <Stack direction="row" spacing={0.5} alignItems="center">
-                                                            <Typography variant='s9' pt={0.8}><Icon icon={rippleSolid} width="24" height="24" /></Typography>
+                                                            <Typography variant='s9' pt={0.8}><Typography>✕</Typography></Typography>
                                                             <Typography variant='s9'>{fNumber(cost.amount)}</Typography>
                                                         </Stack>
                                                         :

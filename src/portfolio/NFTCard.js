@@ -23,7 +23,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
+
 // import infoFilled from '@iconify/icons-ep/info-filled';
 
 // Utils
@@ -339,7 +339,7 @@ export default function NFTCard({ nft, handleRemove }) {
                                         {cost ? (
                                             cost.currency === "XRP" ?
                                                 <Stack direction="row" spacing={0.5} alignItems="center">
-                                                    <Icon icon={rippleSolid} width="14" height="14" />
+                                                    <Typography>✕</Typography>
                                                     <Typography variant="s15">{fNumber(cost.amount)}</Typography>
                                                 </Stack>
                                                 :
@@ -370,7 +370,7 @@ export default function NFTCard({ nft, handleRemove }) {
                                                 {costb.currency === "XRP" ?
                                                     <Stack direction="row" spacing={0.5} alignItems="center">
                                                         <Typography variant='s7'>Offer</Typography>
-                                                        <Icon icon={rippleSolid} color="#00AB55" width="12" height="12" />
+                                                        <Typography>✕</Typography>
                                                         <Typography variant='s15' color="#00AB55">{fNumber(costb.amount)}</Typography>
                                                     </Stack>
                                                     :
