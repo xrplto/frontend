@@ -312,7 +312,7 @@ export default function ViewNFT({ collection }) {
                         href={`/account/${account}`}
                         // rel="noreferrer noopener nofollow"
                     >
-                        <Typography variant="s5" color="#33C2FF">{accountName || account.slice(0, 4) + '...' + account.slice(-4)}</Typography>
+                        <Typography variant="s5" color="primary">{accountName || account.slice(0, 4) + '...' + account.slice(-4)}</Typography>
                     </Link>
                     <Typography variant="s10">&nbsp;&nbsp;·&nbsp;Created <Typography variant="s3">{formatMonthYear(created)}</Typography></Typography>
                 </Typography>

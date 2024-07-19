@@ -61,22 +61,26 @@ const TABLE_HEAD = (isMobile) => {
             width: '40%',
             order: false
         },
+
         {
             no: 1,
-            id: 'floor.amount',
-            label: 'Floor',
-            align: 'right',
-            width: '10%',
-            order: true
-        },
-        {
-            no: 2,
             id: 'vol',
             label: 'Volume',
             align: 'right',
             width: '10%',
             order: true
         },
+
+
+        {
+            no: 2,
+            id: 'floor.amount',
+            label: 'Floor',
+            align: 'right',
+            width: '10%',
+            order: true
+        },
+        
         // { no: 3, id: 'volume', label: 'Volume', align: 'right', width: '10%', order: true },
         {
             no: 4,

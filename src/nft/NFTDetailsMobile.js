@@ -699,7 +699,7 @@ export default function NFTDetailsMobile({ nft }) {
                                             href={`https://bithomp.com/explorer/${destination}`}
                                             rel="noreferrer noopener nofollow"
                                         >
-                                            <Typography variant="s3" color="#33C2FF">{destination}</Typography>
+                                            <Typography variant="s3" color="primary">{destination}</Typography>
                                         </Link>.
                                     </Typography>
                                 }

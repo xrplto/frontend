@@ -1,4 +1,4 @@
-import { Avatar, Box, CardMedia, IconButton, InputBase, Link, MenuItem, MenuList, Paper, Stack, styled, Typography } from "@mui/material";
+import { Avatar, Box, CardMedia, IconButton, InputBase, Link, MenuItem, MenuList, Paper, Stack, styled, Tooltip, Typography } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import CasinoIcon from '@mui/icons-material/Casino';
@@ -38,7 +38,8 @@ const NFTRender = ({
     verified,
     items,
     type,
-    slug
+    slug,
+    darkMode
 }) => {
 
     const [hLink, setHLink] = useState('')
@@ -81,7 +82,13 @@ const NFTRender = ({
                             />
                         </Avatar>
                     }
-                    <Typography variant="s5">{name ?? ''}</Typography>
+                    <Typography
+                        variant="token"
+                        color={darkMode ? '#fff' : '#222531'}
+                        noWrap
+                    >
+                        {truncate(name, 8)}
+                    </Typography>
                     {
                         option_type === 'COLLECTIONS' && <>
                             {verified === 'yes' &&
@@ -227,7 +234,6 @@ export default function SearchModal({ onClose, open }) {
                                             src={imgUrl}
                                             width={24}
                                             height={24}
-                                        // onError={(event) => (event.target.src = '/static/alt.webp')}
                                         />
                                         <Stack>
                                             <Typography
@@ -290,7 +296,7 @@ export default function SearchModal({ onClose, open }) {
                 <MenuList sx={{ px: 0 }}>
                     {
                         collections.map((nft, idx) => (
-                            <NFTRender key={idx} {...nft} />
+                            <NFTRender key={idx} {...nft} darkMode={darkMode} />
                         ))
                     }
                 </MenuList>

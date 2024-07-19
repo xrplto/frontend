@@ -91,7 +91,7 @@ export default function ConfirmAcceptOfferDialog({open, setOpen, offer, onContin
 
             <DialogContent>
                 <Stack sx={{pl:1, pr:1}}>
-                    <Typography variant="p5" sx={{mt: 2}}>Are you sure to accept offer with <Typography variant='s3' color='#33C2FF'>{price.amount} {price.name}</Typography> ?</Typography>
+                    <Typography variant="p5" sx={{mt: 2}}>Are you sure to accept offer with <Typography variant='s3' color='primary'>{price.amount} {price.name}</Typography> ?</Typography>
 
                     <Stack direction='row' spacing={2} justifyContent="center" sx={{mt:3, mb:4}}>
                         <Button

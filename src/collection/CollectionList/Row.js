@@ -201,22 +201,22 @@ export default function Row({ id, item, isMine }) {
                     <Link underline="none" href={`/collection/${slug}`}>
                         <Stack spacing={0.4}>
                             <Stack direction="row" spacing={0.5} sx={{ pt: 0 }}>
-                                <Typography
-                                    variant={isMobile ? 'caption' : 'body2'} 
-                                    noWrap
-                                    sx={{
-                                        width: isMobile ? '80px' : undefined,
-                                        textOverflow: isMobile
-                                            ? 'ellipsis'
-                                            : 'none'
-                                    }}
-                                >
-                                    {name}
-                                </Typography>
+                            <Typography
+    variant={isMobile ? 'caption' : 'token'} 
+    noWrap
+    color="primary" // Assign primary color
+    sx={{
+        width: isMobile ? '80px' : undefined,
+        textOverflow: isMobile ? 'ellipsis' : 'none'
+    }}
+>
+    {name}
+</Typography>
+
                               
                             </Stack>
                             <Typography
-                                variant={isMobile ? 'caption' : 'body2'} 
+                                variant={isMobile ? 'caption' : 'token'} 
                                 noWrap
                             >
                           
@@ -233,7 +233,7 @@ export default function Row({ id, item, isMine }) {
                         width={isMobile ? 10 : 12} 
                         height={isMobile ? 10 : 12} 
                     />{' '}
-                    {fNumber(floorPrice)}
+                    {fNumber(vol24h)}
                 </Typography>
             </TableCell>
 
@@ -244,7 +244,7 @@ export default function Row({ id, item, isMine }) {
                         width={isMobile ? 10 : 12} 
                         height={isMobile ? 10 : 12} 
                     />{' '}
-                    {fNumber(vol24h)}
+                    {fNumber(floorPrice)}
                 </Typography>
             </TableCell>
 
