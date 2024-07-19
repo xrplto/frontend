@@ -36,14 +36,14 @@ export default function CollectionList({ type, category }) {
 
     const [filter, setFilter] = useState('');
     const [page, setPage] = useState(0);
-    const [rows, setRows] = useState(10);
+    const [rows, setRows] = useState(100);
     const [order, setOrder] = useState('desc');
-    const [orderBy, setOrderBy] = useState('vol24h');
+    const [orderBy, setOrderBy] = useState('totalVolume');
 
     const [total, setTotal] = useState(0);
     const [collections, setCollections] = useState([]);
 
-    const [choice, setChoice] = useState('verified');
+    const [choice, setChoice] = useState('all');
 
     const [sync, setSync] = useState(0);
 
@@ -149,20 +149,8 @@ export default function CollectionList({ type, category }) {
                     exclusive
                     onChange={handleChangeChoice}
                 >
-                    <ToggleButton
-                        value="all"
-                        sx={{ pl: 2, pr: 2, pt: 0.3, pb: 0.3 }}
-                        style={{ textTransform: 'none' }}
-                    >
-                        All
-                    </ToggleButton>
-                    <ToggleButton
-                        value="verified"
-                        sx={{ pl: 2, pr: 2, pt: 0.3, pb: 0.3 }}
-                        style={{ textTransform: 'none' }}
-                    >
-                        Verified
-                    </ToggleButton>
+                    
+                    
                 </ToggleButtonGroup>
             )}
 

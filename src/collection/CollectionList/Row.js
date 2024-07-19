@@ -26,8 +26,8 @@ import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
 
 const IconCover = styled('div')(
     ({ theme }) => `
-        width: 72px;
-        height: 72px;
+        width: 30px;  // reduced from 40px
+        height: 30px; // reduced from 40px
         box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
 
         border: 1px solid ${theme.colors.alpha.black[50]};
@@ -49,8 +49,8 @@ const IconCover = styled('div')(
         }
 
         ${theme.breakpoints.down('sm')} {
-            width: 52px;
-            height: 52px;
+            width: 20px; // reduced from 28px
+            height: 20px; // reduced from 28px
         }
     `
 );
@@ -60,12 +60,12 @@ const IconWrapper = styled('div')(
         box-sizing: border-box;
         display: inline-block;
         position: relative;
-        width: 70px;
-        height: 70px;
+        width: 28px;  // reduced from 38px
+        height: 28px; // reduced from 38px
 
         ${theme.breakpoints.down('sm')} {
-            width: 50px;
-            height: 50px;
+            width: 18px; // reduced from 26px
+            height: 18px; // reduced from 26px
         }
   `
 );
@@ -158,7 +158,7 @@ export default function Row({ id, item, isMine }) {
                     sx={{ pt: 1, pb: 1 }}
                 >
                     <Typography
-                        variant={isMobile ? 's8' : 's3'}
+                        variant={isMobile ? 'caption' : 'body2'} 
                         sx={{ /*width: isMobile ? '12px' : '16px'*/ }}
                     >
                         {id}
@@ -186,8 +186,8 @@ export default function Row({ id, item, isMine }) {
                                         top: '0vh',
                                         opacity: 0,
                                         zIndex: 1,
-                                        width: { xs: '50px', sm: '70px' },
-                                        height: { xs: '50px', sm: '70px' }
+                                        width: { xs: '18px', sm: '28px' },  // reduced sizes
+                                        height: { xs: '18px', sm: '28px' }  // reduced sizes
                                     }}
                                 >
                                     <EditIcon />
@@ -202,7 +202,7 @@ export default function Row({ id, item, isMine }) {
                         <Stack spacing={0.4}>
                             <Stack direction="row" spacing={0.5} sx={{ pt: 0 }}>
                                 <Typography
-                                    variant={isMobile ? 's8' : 's3'}
+                                    variant={isMobile ? 'caption' : 'body2'} 
                                     noWrap
                                     sx={{
                                         width: isMobile ? '80px' : undefined,
@@ -213,20 +213,13 @@ export default function Row({ id, item, isMine }) {
                                 >
                                     {name}
                                 </Typography>
-                                {verified === 'yes' && (
-                                    <Tooltip title="Verified">
-                                        <VerifiedIcon
-                                            fontSize="small"
-                                            style={{ color: '#4589ff' }}
-                                        />
-                                    </Tooltip>
-                                )}
+                              
                             </Stack>
                             <Typography
-                                variant={isMobile ? 's12' : 's7'}
+                                variant={isMobile ? 'caption' : 'body2'} 
                                 noWrap
                             >
-                                {strDateTime}
+                          
                             </Typography>
                         </Stack>
                     </Link>
@@ -234,29 +227,29 @@ export default function Row({ id, item, isMine }) {
             </TableCell>
 
             <TableCell align="right" sx={{ pl: 0, pr: 0, border: 'none' }}>
-                <Typography variant={isMobile ? 's8' : 's3'} noWrap>
+                <Typography variant={isMobile ? 'caption' : 'body2'} noWrap> 
                     <Icon
                         icon={rippleSolid}
-                        width={isMobile ? 12 : 16}
-                        height={isMobile ? 12 : 16}
+                        width={isMobile ? 10 : 12} 
+                        height={isMobile ? 10 : 12} 
                     />{' '}
                     {fNumber(floorPrice)}
                 </Typography>
             </TableCell>
 
             <TableCell align="right" sx={{ pl: 0, pr: 0, border: 'none' }}>
-                <Typography variant={isMobile ? 's8' : 's3'} noWrap>
+                <Typography variant={isMobile ? 'caption' : 'body2'} noWrap> 
                     <Icon
                         icon={rippleSolid}
-                        width={isMobile ? 12 : 16}
-                        height={isMobile ? 12 : 16}
+                        width={isMobile ? 10 : 12} 
+                        height={isMobile ? 10 : 12} 
                     />{' '}
                     {fNumber(vol24h)}
                 </Typography>
             </TableCell>
 
             {/* <TableCell align="right" sx={{pl:0, pr:0}}>
-                <Typography variant="s3" noWrap><Icon icon={rippleSolid} width={16} height={16} /> {volume1}</Typography>
+                <Typography variant="body2" noWrap><Icon icon={rippleSolid} width={16} height={16} /> {volume1}</Typography>
             </TableCell> */}
 
             <TableCell
@@ -268,8 +261,8 @@ export default function Row({ id, item, isMine }) {
                     display: { xs: 'none', sm: 'table-cell' }
                 }}
             >
-                <Typography variant={isMobile ? 's8' : 's3'} noWrap>
-                    <Icon icon={rippleSolid} width={16} height={16} /> {volume2}
+                <Typography variant={isMobile ? 'caption' : 'body2'} noWrap> 
+                    <Icon icon={rippleSolid} width={12} height={12} /> {volume2} 
                 </Typography>
             </TableCell>
 
@@ -282,7 +275,7 @@ export default function Row({ id, item, isMine }) {
                     display: { xs: 'none', sm: 'table-cell' }
                 }}
             >
-                <Typography variant={isMobile ? 's8' : 's3'} noWrap>
+                <Typography variant={isMobile ? 'caption' : 'body2'} noWrap> 
                     {fIntNumber(owners || 0)}
                 </Typography>
             </TableCell>
@@ -296,7 +289,7 @@ export default function Row({ id, item, isMine }) {
                     display: { xs: 'none', sm: 'table-cell' }
                 }}
             >
-                <Typography variant={isMobile ? 's8' : 's3'} noWrap>
+                <Typography variant={isMobile ? 'caption' : 'body2'} noWrap> 
                     {fIntNumber(items)}
                 </Typography>
             </TableCell>
