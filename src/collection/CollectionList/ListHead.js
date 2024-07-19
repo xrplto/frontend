@@ -1,4 +1,3 @@
-// Material
 import { visuallyHidden } from '@mui/utils';
 import { withStyles } from '@mui/styles';
 import {
@@ -10,7 +9,6 @@ import {
     useTheme,
     useMediaQuery
 } from '@mui/material';
-// ----------------------------------------------------------------------
 
 const StickyTableCell = withStyles((theme) => ({
     head: {
@@ -20,10 +18,9 @@ const StickyTableCell = withStyles((theme) => ({
     }
 }))(TableCell);
 
-//    { id: 'holders', label: 'Holders', align: 'left', order: true },
-//    { id: 'offers', label: 'Offers', align: 'left', order: true },
+const TABLE_HEAD = (isMobile, timeFrame) => {
+    const volumeLabel = timeFrame === '24h' ? 'Volume (24h)' : 'Volume (All)';
 
-const TABLE_HEAD = (isMobile) => {
     if (isMobile) {
         return [
             {
@@ -44,8 +41,8 @@ const TABLE_HEAD = (isMobile) => {
             },
             {
                 no: 2,
-                id: 'vol',
-                label: 'Volume',
+                id: 'volume',
+                label: volumeLabel,
                 align: 'right',
                 width: '30%',
                 order: true
@@ -61,17 +58,14 @@ const TABLE_HEAD = (isMobile) => {
             width: '40%',
             order: false
         },
-
         {
             no: 1,
-            id: 'vol',
-            label: 'Volume',
+            id: 'volume',
+            label: volumeLabel,
             align: 'right',
-            width: '10%',
+            width: '20%',
             order: true
         },
-
-
         {
             no: 2,
             id: 'floor.amount',
@@ -80,36 +74,26 @@ const TABLE_HEAD = (isMobile) => {
             width: '10%',
             order: true
         },
-        
-        // { no: 3, id: 'volume', label: 'Volume', align: 'right', width: '10%', order: true },
         {
-            no: 4,
-            id: 'totalVolume',
-            label: 'Total Vol',
+            no: 3,
+            id: 'owners',
+            label: 'Owners',
             align: 'right',
             width: '10%',
             order: true
         },
         {
-            no: 5,
-            id: 'owners',
-            label: 'Owners',
-            align: 'right',
-            width: '8%',
-            order: true
-        },
-        {
-            no: 6,
+            no: 4,
             id: 'items',
             label: 'Items',
             align: 'right',
-            width: '8%',
+            width: '10%',
             order: true
         }
     ];
 };
 
-export default function ListHead({ order, orderBy, onRequestSort }) {
+export default function ListHead({ order, orderBy, onRequestSort, timeFrame }) {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -120,7 +104,7 @@ export default function ListHead({ order, orderBy, onRequestSort }) {
     return (
         <TableHead>
             <TableRow style={{ background: '#00000000' }}>
-                {TABLE_HEAD(isMobile).map((headCell) => (
+                {TABLE_HEAD(isMobile, timeFrame).map((headCell) => (
                     <StickyTableCell
                         key={headCell.id}
                         align={headCell.align}

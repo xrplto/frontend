@@ -1,27 +1,8 @@
 import axios from 'axios';
-import React from 'react';
-import { useState, useEffect, useRef } from 'react';
-
-// Material
-import {
-    Box,
-    Table,
-    TableBody,
-    TableCell,
-    ToggleButton,
-    ToggleButtonGroup,
-    useMediaQuery,
-    useTheme
-} from '@mui/material';
-
-// Utils
+import React, { useState, useEffect, useContext } from 'react';
+import { Box, Table, TableBody, ToggleButton, ToggleButtonGroup, useMediaQuery, useTheme } from '@mui/material';
 import { CollectionListType } from 'src/utils/constants';
-
-// Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-
-// Components
 import SearchToolbar from './SearchToolbar';
 import Row from './Row';
 import ListHead from './ListHead';
@@ -38,12 +19,13 @@ export default function CollectionList({ type, category }) {
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(100);
     const [order, setOrder] = useState('desc');
-    const [orderBy, setOrderBy] = useState('totalVolume');
+    const [orderBy, setOrderBy] = useState('vol24h'); // Default to 'vol24h' for '24h' time frame
 
     const [total, setTotal] = useState(0);
     const [collections, setCollections] = useState([]);
 
     const [choice, setChoice] = useState('all');
+    const [timeFrame, setTimeFrame] = useState('24h');
 
     const [sync, setSync] = useState(0);
 
@@ -66,57 +48,59 @@ export default function CollectionList({ type, category }) {
                 limit: rows,
                 order,
                 orderBy,
-                choice
+                choice,
+                timeFrame
             };
 
             if (type === CollectionListType.ALL) {
+                // Additional handling for ALL type if necessary
             } else if (type === CollectionListType.MINE) {
                 body.account = account;
             } else if (type === CollectionListType.CATEGORY) {
                 body.category = category;
             } else if (type === CollectionListType.LANDING) {
+                // Additional handling for LANDING type if necessary
             }
 
-            axios
-                .post(`${BASE_URL}/collection/getlistbyorder`, body, {
-                    headers: { 'x-access-token': accountToken }
-                })
-                .then((res) => {
-                    try {
-                        if (res.status === 200 && res.data) {
-                            const ret = res.data;
-                            setTotal(ret.count);
-                            setCollections(ret.collections);
-                        }
-                    } catch (error) {
-                        console.log(error);
+            axios.post(`${BASE_URL}/collection/getlistbyorder`, body, {
+                headers: { 'x-access-token': accountToken }
+            })
+            .then((res) => {
+                try {
+                    if (res.status === 200 && res.data) {
+                        const ret = res.data;
+                        setTotal(ret.count);
+                        setCollections(ret.collections);
                     }
-                })
-                .catch((err) => {
-                    console.log('err->>', err);
-                })
-                .then(function () {
-                    // Always executed
-                });
+                } catch (error) {
+                    console.log(error);
+                }
+            })
+            .catch((err) => {
+                console.log('err->>', err);
+            });
         };
         loadCollections();
-    }, [sync, order, orderBy, page, rows, account]);
+    }, [sync, order, orderBy, page, rows, account, timeFrame]);
 
     useEffect(() => {
-        var timer = null;
-
-        const handleValue = () => {
+        const timer = setTimeout(() => {
             setPage(0);
             setSync(sync + 1);
-        };
-
-        timer = setTimeout(handleValue, 500);
+        }, 500);
         return () => {
-            if (timer) {
-                clearTimeout(timer);
-            }
+            clearTimeout(timer);
         };
     }, [filter]);
+
+    useEffect(() => {
+        if (timeFrame === '24h') {
+            setOrderBy('vol24h');
+        } else if (timeFrame === 'all') {
+            setOrderBy('totalVolume');
+        }
+        setSync(sync + 1); // Trigger sync whenever timeFrame changes
+    }, [timeFrame]);
 
     const handleRequestSort = (event, id) => {
         const isDesc = orderBy === id && order === 'desc';
@@ -133,14 +117,15 @@ export default function CollectionList({ type, category }) {
         }
     };
 
+    const handleChangeTimeFrame = (event, newValue) => {
+        if (newValue && timeFrame !== newValue) {
+            setTimeFrame(newValue);
+        }
+    };
+
     return (
         <>
-            <SearchToolbar
-                filter={filter}
-                setFilter={setFilter}
-                rows={rows}
-                setRows={setRows}
-            />
+            <SearchToolbar filter={filter} setFilter={setFilter} rows={rows} setRows={setRows} />
 
             {type !== CollectionListType.LANDING && (
                 <ToggleButtonGroup
@@ -149,10 +134,20 @@ export default function CollectionList({ type, category }) {
                     exclusive
                     onChange={handleChangeChoice}
                 >
-                    
-                    
+                    {/* Your existing ToggleButtons for choices */}
                 </ToggleButtonGroup>
             )}
+
+            <ToggleButtonGroup
+                color="primary"
+                value={timeFrame}
+                exclusive
+                onChange={handleChangeTimeFrame}
+                sx={{ mb: 2 }}
+            >
+                <ToggleButton value="24h">24h</ToggleButton>
+                <ToggleButton value="all">All</ToggleButton>
+            </ToggleButtonGroup>
 
             <Box
                 sx={{
@@ -172,28 +167,22 @@ export default function CollectionList({ type, category }) {
                         order={order}
                         orderBy={orderBy}
                         onRequestSort={handleRequestSort}
+                        timeFrame={timeFrame} // Pass timeFrame prop
                     />
                     <TableBody>
-                        {collections.map((row, idx) => {
-                            return (
-                                <Row
-                                    key={idx}
-                                    id={page * rows + idx + 1}
-                                    item={row}
-                                    isMine={isMine}
-                                />
-                            );
-                        })}
+                        {collections.map((row, idx) => (
+                            <Row
+                                key={idx}
+                                id={page * rows + idx + 1}
+                                item={row}
+                                isMine={isMine}
+                                timeFrame={timeFrame} // Pass timeFrame prop
+                            />
+                        ))}
                     </TableBody>
                 </Table>
             </Box>
-            <ListToolbar
-                rows={rows}
-                setRows={setRows}
-                page={page}
-                setPage={setPage}
-                total={total}
-            />
+            <ListToolbar rows={rows} setRows={setRows} page={page} setPage={setPage} total={total} />
         </>
     );
 }

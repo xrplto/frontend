@@ -1,4 +1,3 @@
-// Material
 import {
     styled,
     IconButton,
@@ -13,16 +12,10 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import VerifiedIcon from '@mui/icons-material/Verified';
-
-// Utils
 import { formatMonthYearDate } from 'src/utils/formatTime';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatNumber';
-
-// Iconify
 import { Icon } from '@iconify/react';
 import rippleSolid from '@iconify/icons-teenyicons/ripple-solid';
-
-// Components
 
 const IconCover = styled('div')(
     ({ theme }) => `
@@ -100,7 +93,7 @@ const ImageBackdrop = styled('span')(({ theme }) => ({
     transition: theme.transitions.create('opacity')
 }));
 
-export default function Row({ id, item, isMine }) {
+export default function Row({ id, item, isMine, timeFrame }) {
     const {
         uuid,
         account,
@@ -126,20 +119,16 @@ export default function Row({ id, item, isMine }) {
     } = item;
 
     const floorPrice = floor?.amount || 0;
-    let volume1 = fVolume(volume || 0);
-    let volume2 = fVolume(totalVolume || 0);
+    const volumeValue = timeFrame === '24h' ? vol24h : totalVolume;
+    const volumeDisplay = fVolume(volumeValue || 0);
 
     const strDateTime = formatMonthYearDate(created);
-
-    // const featuredImageUrl = `https://s1.xrpnft.com/collection/${featuredImage}`;
     const logoImageUrl = `https://s1.xrpnft.com/collection/${logoImage}`;
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const handleRowClick = () => {
-        // history.push(`/collection/${slug}`);
-        // onclick="document.location = 'links.html';"
         document.location = `/collection/${slug}`;
     };
 
@@ -159,7 +148,6 @@ export default function Row({ id, item, isMine }) {
                 >
                     <Typography
                         variant={isMobile ? 'caption' : 'body2'} 
-                        sx={{ /*width: isMobile ? '12px' : '16px'*/ }}
                     >
                         {id}
                     </Typography>
@@ -201,25 +189,22 @@ export default function Row({ id, item, isMine }) {
                     <Link underline="none" href={`/collection/${slug}`}>
                         <Stack spacing={0.4}>
                             <Stack direction="row" spacing={0.5} sx={{ pt: 0 }}>
-                            <Typography
-    variant={isMobile ? 'caption' : 'token'} 
-    noWrap
-    color="primary" // Assign primary color
-    sx={{
-        width: isMobile ? '80px' : undefined,
-        textOverflow: isMobile ? 'ellipsis' : 'none'
-    }}
->
-    {name}
-</Typography>
-
-                              
+                                <Typography
+                                    variant={isMobile ? 'caption' : 'token'} 
+                                    noWrap
+                                    color="primary"
+                                    sx={{
+                                        width: isMobile ? '80px' : undefined,
+                                        textOverflow: isMobile ? 'ellipsis' : 'none'
+                                    }}
+                                >
+                                    {name}
+                                </Typography>
                             </Stack>
                             <Typography
                                 variant={isMobile ? 'caption' : 'token'} 
                                 noWrap
                             >
-                          
                             </Typography>
                         </Stack>
                     </Link>
@@ -233,7 +218,7 @@ export default function Row({ id, item, isMine }) {
                         width={isMobile ? 10 : 12} 
                         height={isMobile ? 10 : 12} 
                     />{' '}
-                    {fNumber(vol24h)}
+                    {volumeDisplay}
                 </Typography>
             </TableCell>
 
@@ -245,24 +230,6 @@ export default function Row({ id, item, isMine }) {
                         height={isMobile ? 10 : 12} 
                     />{' '}
                     {fNumber(floorPrice)}
-                </Typography>
-            </TableCell>
-
-            {/* <TableCell align="right" sx={{pl:0, pr:0}}>
-                <Typography variant="body2" noWrap><Icon icon={rippleSolid} width={16} height={16} /> {volume1}</Typography>
-            </TableCell> */}
-
-            <TableCell
-                align="right"
-                sx={{
-                    pl: 0,
-                    pr: 0,
-                    border: 'none',
-                    display: { xs: 'none', sm: 'table-cell' }
-                }}
-            >
-                <Typography variant={isMobile ? 'caption' : 'body2'} noWrap> 
-                    <Icon icon={rippleSolid} width={12} height={12} /> {volume2} 
                 </Typography>
             </TableCell>
 
