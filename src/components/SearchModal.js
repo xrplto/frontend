@@ -53,7 +53,7 @@ const NFTRender = ({
 
     useEffect(() => {
         initOption()
-    }, [])
+    }, [slug])
 
 
     return (
@@ -114,7 +114,7 @@ export default function SearchModal({ onClose, open }) {
     const metrics = useSelector(selectMetrics);
     const exchRate = metrics[activeFiatCurrency];
 
-    const [options, setOptions] = useState([]);
+    const [tokens, setTokens] = useState([]);
     const [collections, setCollections] = useState([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(false);
@@ -136,7 +136,7 @@ export default function SearchModal({ onClose, open }) {
                             ...token,
                             option_type: 'TOKENS',
                         }));
-                        setOptions(newOptions.slice(0, 3));
+                        setTokens(newOptions.slice(0, 3));
                     }
                 } catch (error) {
                     console.log(error);
@@ -209,7 +209,7 @@ export default function SearchModal({ onClose, open }) {
 
                 </Stack>
                 <MenuList sx={{ px: 0 }}>
-                    {options.map(({ md5, name, slug, isOMCF, user, kyc, pro24h, exch }, idx) => {
+                    {tokens.map(({ md5, name, slug, isOMCF, user, kyc, pro24h, exch }, idx) => {
                         const imgUrl = `https://s1.xrpl.to/token/${md5}`;
                         const link = `/token/${slug}?fromSearch=1`;
 
