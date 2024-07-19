@@ -142,7 +142,7 @@ function fTokenRow({
           position: 'sticky',
           //zIndex: 1001,
           left: 0,
-          background: darkMode ? '#000000' : '#F2F5F9'
+          background: darkMode ? '#000000' : '#FFFFFF'
         }}
       >
         {id}
@@ -155,7 +155,7 @@ function fTokenRow({
             position: 'sticky',
             //zIndex: 1003,
             left: 67,
-            background: darkMode ? '#000000' : '#F2F5F9',
+            background: darkMode ? '#000000' : '#FFFFFF',
             '&:before': scrollLeft
               ? {
                   content: "''",

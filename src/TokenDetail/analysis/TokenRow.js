@@ -169,7 +169,7 @@ function FTokenRow({
           overflow: 'hidden',
          
           left: 0,
-          background: darkMode ? '#000000' : '#F2F5F9'
+          background: darkMode ? '#000000' : '#FFFFFF'
         }}
       >
         {id}
@@ -182,7 +182,7 @@ function FTokenRow({
             position: 'sticky',
          
             left: 0, // Changed from 67 to 0
-            background: darkMode ? '#000000' : '#F2F5F9',
+            background: darkMode ? '#000000' : '#FFFFFF',
             '&:before': scrollLeft
               ? {
                   content: "''",

@@ -52,16 +52,16 @@ const colors = {
   },
   layout: {
     general: {
-      bodyBg: '#f2f5f9'
+      bodyBg: '#FFFFFF'
     },
     sidebar: {
       background: themeColors.white,
       textColor: themeColors.secondary,
-      dividerBg: '#f2f5f9',
+      dividerBg: '#FFFFFF',
       menuItemColor: '#242E6F',
       menuItemColorActive: themeColors.primary,
       menuItemBg: themeColors.white,
-      menuItemBgActive: '#f2f5f9',
+      menuItemBgActive: '#FFFFFF',
       menuItemIconColor: lighten(themeColors.secondary, 0.3),
       menuItemIconColorActive: themeColors.primary,
       menuItemHeadingColor: darken(themeColors.secondary, 0.3)
@@ -271,11 +271,13 @@ export const XrplToLightTheme = createTheme({
     textColor: colors.secondary.main
   },
   spacing: 9,
+
   currency: {
-    background1: darken('#f2f5f9', 0.05),
-    background2: darken('#f2f5f9', 0.1),
+    background1: '#E9ECEF',
+    background2: '#F8F9FA', 
     border: '1px solid #E0E7EC'
-  },
+},
+
   palette: {
     common: {
       black: colors.alpha.black[100],

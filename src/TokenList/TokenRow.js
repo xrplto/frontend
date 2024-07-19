@@ -163,7 +163,7 @@ function FTokenRow({
           position: 'sticky',
           zIndex: 1001,
           left: 0,
-          background: darkMode ? '#000000' : '#F2F5F9'
+          background: darkMode ? '#000000' : '#FFFFFF'
         }}
       >
         {watchList.includes(md5) ? (
@@ -198,7 +198,7 @@ function FTokenRow({
               position: 'sticky',
               zIndex: 1001,
               left: 52,
-              background: darkMode ? '#000000' : '#F2F5F9'
+              background: darkMode ? '#000000' : '#FFFFFF'
             }}
           >
             {idx + 1}
@@ -211,7 +211,7 @@ function FTokenRow({
             position: 'sticky',
             zIndex: 1001,
             // left: isMobile ? 28 : 99,
-            background: darkMode ? '#000000' : '#F2F5F9',
+            background: darkMode ? '#000000' : '#FFFFFF',
             '&:before': scrollLeft
               ? {
                   content: "''",

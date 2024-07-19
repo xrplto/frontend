@@ -311,10 +311,11 @@ export const XrplToDarkTheme = createTheme({
   },
   spacing: 9,
   currency: {
-    background1: 'rgb(23, 25, 36)',
-    background2: 'rgb(34, 37, 49)',
-    border: '1px solid #32373C'
-  },
+    background1: '#2E2E2E',  
+    background2: '#1C1C1C', 
+    border: '1px solid #32373C' 
+}
+,
   palette: {
     common: {
       black: colors.alpha.black[100],

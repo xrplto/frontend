@@ -287,7 +287,7 @@ export default function HistoryData({ token }) {
                       position: 'sticky',
                       //zIndex: 1001,
                       left: 0,
-                      background: darkMode ? '#000000' : '#F2F5F9'
+                      background: darkMode ? '#000000' : '#FFFFFF'
                     }}
                   >
                     #
@@ -298,7 +298,7 @@ export default function HistoryData({ token }) {
                       position: 'sticky',
                       //zIndex: 1002,
                       left: hists.length > 0 ? 48 : 40,
-                      background: darkMode ? '#000000' : '#F2F5F9',
+                      background: darkMode ? '#000000' : '#FFFFFF',
                       '&:before': scrollLeft
                         ? {
                             content: "''",
@@ -403,7 +403,7 @@ export default function HistoryData({ token }) {
                             position: 'sticky',
                             //zIndex: 1001,
                             left: 0,
-                            background: darkMode ? '#000000' : '#F2F5F9'
+                            background: darkMode ? '#000000' : '#FFFFFF'
                           }}
                         >
                           <Typography variant="subtitle2">
@@ -416,7 +416,7 @@ export default function HistoryData({ token }) {
                             position: 'sticky',
                             //zIndex: 1002,
                             left: 48,
-                            background: darkMode ? '#000000' : '#F2F5F9',
+                            background: darkMode ? '#000000' : '#FFFFFF',
                             '&:before': scrollLeft
                               ? {
                                   content: "''",

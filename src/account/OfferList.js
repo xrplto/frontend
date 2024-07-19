@@ -310,13 +310,13 @@ export default function OfferList({account}) {
                                 position: "sticky",
                                 zIndex: 1001,
                                 left: 0,
-                                background: darkMode ? "#000000" : '#F2F5F9'
+                                background: darkMode ? "#000000" : '#FFFFFF'
                             }}></TableCell>
                             <TableCell align="left" sx={{
                                 position: "sticky",
                                 zIndex: 1002,
                                 left: 32,
-                                background: darkMode ? "#000000" : '#F2F5F9',
+                                background: darkMode ? "#000000" : '#FFFFFF',
                                 '&:before': (scrollLeft ? {
                                     content: "''",
                                     boxShadow: "inset 10px 0 8px -8px #00000026",
@@ -398,7 +398,7 @@ export default function OfferList({account}) {
                                             position: "sticky",
                                             zIndex: 1001,
                                             left: 0,
-                                            background: darkMode ? "#000000" : '#F2F5F9'
+                                            background: darkMode ? "#000000" : '#FFFFFF'
                                         }}>
                                             <Tooltip title="Cancel Offer">
                                                 <IconButton color='error' onClick={e=>handleCancel(e, account, seq)} aria-label="cancel">
@@ -411,7 +411,7 @@ export default function OfferList({account}) {
                                             position: "sticky",
                                             zIndex: 1002,
                                             left: 32,
-                                            background: darkMode ? "#000000" : '#F2F5F9',
+                                            background: darkMode ? "#000000" : '#FFFFFF',
                                             '&:before': (scrollLeft ? {
                                                 content: "''",
                                                 boxShadow: "inset 10px 0 8px -8px #00000026",

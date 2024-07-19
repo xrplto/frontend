@@ -21,7 +21,7 @@ const NavSearchBar = () => {
 
   return (
     <>
-      <Stack direction="row" bgcolor={darkMode ? "#323546" : "#d9dcde"} alignItems="center" p={1} sx={{ borderRadius: "8px", cursor: "pointer" }} onClick={() => setOpen(true)}>
+      <Stack direction="row" bgcolor={darkMode ? "#1C1C1C" : "#F8F9FA"} alignItems="center" p={1} sx={{ borderRadius: "8px", cursor: "pointer" }} onClick={() => setOpen(true)}>
         <SearchIcon />
         <Typography width="200px">Search</Typography>
         <Box
