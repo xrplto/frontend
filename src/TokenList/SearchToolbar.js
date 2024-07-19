@@ -30,6 +30,9 @@ import WhatshotIcon from '@mui/icons-material/Whatshot';
 import FiberNewIcon from '@mui/icons-material/FiberNew';
 import DoNotTouchIcon from '@mui/icons-material/DoNotTouch';
 import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
+import AppsIcon from '@mui/icons-material/Apps';
+import CategoryIcon from '@mui/icons-material/Category';
+import CollectionsIcon from '@mui/icons-material/Collections'; // Import the icon for "NFTs"
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -203,59 +206,6 @@ export default function SearchToolbar({
                     sx={{pb:0.3}}
                 /> */}
 
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={0.5}
-          sx={{ display: { xs: 'none', md: 'flex' }, mr: 0 }}
-        >
-          <Link
-            underline="none"
-            color="inherit"
-            // target="_blank"
-            href={`/watchlist`}
-            rel="noreferrer noopener nofollow"
-          >
-            {/* <Button variant="outlined" startIcon={<StarRateIcon />} size="small" color="disabled">
-                            Watchlist
-                        </Button> */}
-            <Chip
-              variant={'outlined'}
-              icon={<StarOutlineIcon fontSize="small" />}
-              label={'Watchlist'}
-              onClick={() => {}}
-              sx={{
-                borderRadius: '8px'
-              }}
-            />
-          </Link>
-
-          <Chip
-            variant={'outlined'}
-            icon={<TroubleshootIcon fontSize="small" />}
-            label={'Portfolio'}
-            onClick={() => {
-              openSnackbar('Coming soon!', 'success');
-            }}
-            sx={{
-              borderRadius: '8px'
-            }}
-          />
-        </Stack>
-
-        <Divider
-          orientation="vertical"
-          variant="middle"
-          flexItem
-          sx={{
-            display: { xs: 'none', md: 'flex' },
-            ml: 1,
-            mr: 0,
-            mt: 2,
-            mb: 2
-          }}
-        />
-
         <Tabs
           value={tagValue}
           // onChange={handleChange}
@@ -282,7 +232,8 @@ export default function SearchToolbar({
               >
                 <Chip
                   size="small"
-                  label={'Tokens'}
+                  icon={<AppsIcon fontSize="small" />}
+                  label={'All'}
                   onClick={handleDelete}
                   color={tagValue === 0 ? 'primary' : undefined}
                   sx={{
@@ -296,6 +247,34 @@ export default function SearchToolbar({
               paddingRight: 0
             }}
           />
+
+          <Tab
+            disableRipple
+            label={
+              <Link
+                href={`/collections`}
+                sx={{ pl: 0, pr: 0, display: 'inline-flex' }}
+                underline="none"
+                rel="noreferrer noopener nofollow"
+              >
+                <Chip
+                  size="small"
+                  icon={<CollectionsIcon fontSize="small" />}
+                  label={'NFTs'}
+                  onClick={handleDelete}
+                  color={tagValue === 1 ? 'primary' : undefined}
+                  sx={{
+                    borderRadius: '4px'
+                  }}
+                />
+              </Link>
+            }
+            style={{
+              paddingLeft: 0,
+              paddingRight: 0
+            }}
+          />
+
           <Tab
             key={0}
             value={0}
@@ -303,6 +282,7 @@ export default function SearchToolbar({
             label={
               <Chip
                 size="small"
+                icon={<CategoryIcon fontSize="small" />}
                 label={'Categories'}
                 onClick={() => setOpenCategoriesDrawer(true)}
                 sx={{
@@ -316,6 +296,18 @@ export default function SearchToolbar({
               paddingRight: 0
             }}
           />
+
+          <Divider
+            orientation="vertical"
+            variant="middle"
+            flexItem
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              mx: 1, // Adjust this margin to ensure the divider is visible
+              my: 'auto',
+            }}
+          />
+
           {tags &&
             tags?.slice(0, 11)?.map((tag, idx) => {
               const nTag = normalizeTag(tag);
@@ -331,23 +323,21 @@ export default function SearchToolbar({
                       underline="none"
                       rel="noreferrer noopener nofollow"
                     >
-                      
-<Chip
-  size="small"
-  label={
-    <span style={{ display: 'flex', alignItems: 'center' }}>
-      <WhatshotIcon fontSize="small" style={{ marginRight: 4, color: 'orange' }} />
-      {tag}
-    </span>
-  }
-  onClick={handleDelete}
-  color={normalizeTag(tagName) === nTag ? 'primary' : undefined}
-  sx={{
-    borderRadius: '4px',
-    // Additional styling here if needed
-  }}
-/>
-
+                      <Chip
+                        size="small"
+                        label={
+                          <span style={{ display: 'flex', alignItems: 'center' }}>
+                            <WhatshotIcon fontSize="small" style={{ marginRight: 4, color: 'orange' }} />
+                            {tag}
+                          </span>
+                        }
+                        onClick={handleDelete}
+                        color={normalizeTag(tagName) === nTag ? 'primary' : undefined}
+                        sx={{
+                          borderRadius: '4px',
+                          // Additional styling here if needed
+                        }}
+                      />
                     </Link>
                   }
                   style={{

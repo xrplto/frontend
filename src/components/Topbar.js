@@ -51,7 +51,23 @@ const ContentWrapper = styled(Box)(({ theme }) => ({
 }));
 
 const Separator = styled('span')(({ theme }) => ({
-  fontSize: '0.4rem'
+  fontSize: '1rem', // Increase font size
+  padding: '0 10px', // Add padding to make it longer
+  color: theme.palette.text.primary // Adjust color as needed
+}));
+
+const APILabel = styled('a')(({ theme }) => ({
+  fontSize: '14px', // Adjust font size as needed
+  color: theme.palette.text.primary, // Adjust color as needed
+  textDecoration: 'none',
+  marginLeft: theme.spacing(2),
+  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  padding: '5px 10px',
+  borderRadius: '5px',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.2),
+    textDecoration: 'underline'
+  }
 }));
 
 const Topbar = () => {
@@ -106,8 +122,7 @@ const Topbar = () => {
               {t('Addresses')}:
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
-              {fIntNumber(metrics.H24.totalAddresses)}
-            </Typography>
+              {fIntNumber(metrics.H24.totalAddresses)}</Typography>
             <Typography
               variant="body2"
               noWrap
@@ -117,8 +132,7 @@ const Topbar = () => {
               {t('Offers')}:
             </Typography>
             <Typography align="center" color="#FFC107" variant="body2">
-              {fIntNumber(metrics.H24.totalOffers)}
-            </Typography>
+              {fIntNumber(metrics.H24.totalOffers)}</Typography>
             <Typography
               variant="body2"
               noWrap
@@ -128,8 +142,7 @@ const Topbar = () => {
               {t('Trustlines')}:
             </Typography>
             <Typography align="center" color="#FFA48D" variant="body2">
-              {fIntNumber(metrics.H24.totalTrustLines)}
-            </Typography>
+              {fIntNumber(metrics.H24.totalTrustLines)}</Typography>
             <H24Style>
               <Tooltip title="Statistics from the past 24 hours.">
                 <Stack spacing={0} alignItems="center">
@@ -152,8 +165,7 @@ const Topbar = () => {
               {t('Trades')}:
             </Typography>
             <Typography align="center" color="#74CAFF" variant="body2">
-              {fIntNumber(metrics.H24.transactions24H)}
-            </Typography>
+              {fIntNumber(metrics.H24.transactions24H)}</Typography>
             <Typography
               variant="body2"
               color="#a1a7bb"
@@ -178,8 +190,7 @@ const Topbar = () => {
               {t('Tokens Traded')}:
             </Typography>
             <Typography align="center" color="#3366FF" variant="body2">
-              {fIntNumber(metrics.H24.tradedTokens24H)}
-            </Typography>
+              {fIntNumber(metrics.H24.tradedTokens24H)}</Typography>
             <Typography
               variant="body2"
               noWrap
@@ -189,13 +200,14 @@ const Topbar = () => {
               {t('Active Addresses')}:
             </Typography>
             <Typography align="center" color="#54D62C" variant="body2">
-              {fIntNumber(metrics.H24.activeAddresses24H)}
-            </Typography>
+              {fIntNumber(metrics.H24.activeAddresses24H)}</Typography>
           </Stack>
           {!isMobile && (
             <Box sx={{ paddingLeft: 2, display: 'flex', alignItems: 'center' }}>
               <CurrencySwithcer />
               <ThemeSwitcher />
+              <Separator>|</Separator> {/* Add separator */}
+              <APILabel href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer">API</APILabel> {/* Add API label with new window */}
             </Box>
           )}
         </ContentWrapper>
