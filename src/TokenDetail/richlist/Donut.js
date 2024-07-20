@@ -6,7 +6,8 @@ import { useState, useEffect } from 'react';
 import {
     styled,
     CardHeader,
-    Stack
+    Stack,
+    useTheme
 } from '@mui/material';
 
 // Chart
@@ -22,22 +23,21 @@ function getSeries(richList) {
         const holding = new Decimal(l.holding).toFixed(2, Decimal.ROUND_DOWN);
         const percent = new Decimal(holding).toNumber();
         sum = Decimal.add(sum, holding);
-        // series.push({name:l.account, data:[percent]});
         series.push(percent);
     }
     const otherPercent = Decimal.sub(100, sum).toNumber();
     series.push(otherPercent);
-    // series.push({name:'Others', data:[otherPercent]});
 
     return series;
 }
+
 export default function Donut({token}) {
+    const theme = useTheme();
     const BASE_URL = process.env.API_URL;
     const [richList, setRichList] = useState([]);
 
     useEffect(() => {
         function getTop10RichList() {
-            // https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=10&freeze=false
             axios.get(`${BASE_URL}/richlist/${token.md5}?start=0&limit=10&freeze=false`)
                 .then(res => {
                     let ret = res.status === 200 ? res.data : undefined;
@@ -51,7 +51,11 @@ export default function Donut({token}) {
                 });
         }
         getTop10RichList();
-    }, []);
+    }, [BASE_URL, token.md5]);
+
+    const fillColors = [
+        theme.palette.primary.main, '#FF5733', '#FF33A8', '#FF8F33', '#33FFDA', '#8F33FF', '#FFC300', '#C70039', '#900C3F', '#808080', '#00CED1'
+    ];
 
     const state = {
         series: getSeries(richList),
@@ -66,7 +70,8 @@ export default function Donut({token}) {
                 enabled: false
             },
             fill: {
-                type: 'gradient',
+                type: 'solid',
+                colors: fillColors
             },
             legend: {
                 show: false,
@@ -76,49 +81,22 @@ export default function Donut({token}) {
             },
             tooltip: {
                 enabled: true,
-                enabledOnSeries: undefined,
                 shared: true,
-                followCursor: false,
                 intersect: false,
-                inverseOrder: false,
-                custom: undefined,
-                fillSeriesColor: false,
-                // theme: true,
+                custom: function({ series, seriesIndex, w }) {
+                    const value = series[seriesIndex];
+                    const color = w.config.fill.colors[seriesIndex];
+                    const pos = seriesIndex + 1;
+                    const label = pos === 11 ? 'Others' : pos;
+                    return `
+                        <div style="padding: 5px; color: ${color};">
+                            <span style="font-weight: bold; color: ${color};">${label}</span> - ${value} %
+                        </div>
+                    `;
+                },
                 style: {
-                    fontSize: '18px',
-                    fontFamily: undefined
-                },
-                y: {
-                    // formatter: undefined,
-                    formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
-                        const pos = seriesIndex + 1;
-                        if (pos === 11)
-                            return 'Others - ' + value + '%';
-                        return (seriesIndex+1) + ' -  ' + value + ' %';
-                    },
-                    title: {
-                        formatter: function(seriesName) {
-                            // return seriesName;
-                            return '';
-                        },
-                    },
-                },
-                z: {
-                    formatter: undefined,
-                    title: 'Size: '
-                },
-                marker: {
-                    show: true,
-                },
-                items: {
-                   display: 'flex',
-                },
-                fixed: {
-                    enabled: false,
-                    position: 'topRight',
-                    offsetX: 0,
-                    offsetY: 0,
-                },
+                    fontSize: '18px'
+                }
             },
             responsive: [
                 {
@@ -134,14 +112,12 @@ export default function Donut({token}) {
                     }
                 }
             ]
-        },
-      
-      
+        }
     };
-      
+
     return (
         <StackStyle>
-            <CardHeader title={`Top 10 Holders`}  subheader='' sx={{p:2}}/>
+            <CardHeader title={`Top 10 Holders`} subheader='' sx={{p:2}} />
             <Stack alignItems='center'>
                 <Chart options={state.options} series={state.series} type="donut" width={400} height={400} />
             </Stack>

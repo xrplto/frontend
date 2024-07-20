@@ -7,7 +7,8 @@ import {
     Stack,
     ToggleButton,
     ToggleButtonGroup,
-    Typography
+    Typography,
+    useTheme
 } from '@mui/material';
 
 // Chart
@@ -27,6 +28,7 @@ function extractGraphData(items) {
 }
 
 export default function RichListChart({ token }) {
+    const theme = useTheme();
     const BASE_URL = process.env.API_URL;
 
     const [range, setRange] = useState('7D');
@@ -56,7 +58,7 @@ export default function RichListChart({ token }) {
 
         getGraph();
 
-    }, [range]);
+    }, [range, BASE_URL, token.md5]);
 
     const handleChange = (event, newRange) => {
         if (newRange)
@@ -72,6 +74,7 @@ export default function RichListChart({ token }) {
     ];
 
     let options1 = ChartOptions(CHART_DATA1);
+    options1.colors = [theme.palette.primary.main];  // Set the chart color to the theme's primary color
 
     return (
         <>

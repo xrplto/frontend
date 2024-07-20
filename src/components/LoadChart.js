@@ -1,8 +1,10 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import ReactECharts from 'echarts-for-react';
+import { useTheme } from '@mui/material/styles';
 
 const LoadChart = ({ url }) => {
+    const theme = useTheme();
     const [chartOption, setChartOption] = useState('');
 
     useEffect(() => {
@@ -23,10 +25,10 @@ const LoadChart = ({ url }) => {
                         series: [{
                             data: coodinate,
                             type: 'line',
-                            color: chartColor,
+                            color: chartColor === "#54D62C" ? theme.palette.primary.main : chartColor,
                             showSymbol: false,
                             lineStyle: {
-                                width: 1.5
+                                width: 2.4
                             },
                             smooth: true
                         }]
@@ -35,12 +37,12 @@ const LoadChart = ({ url }) => {
                     setChartOption(option);
                 }).catch(err => {
                     console.log(err);
-                })
+                });
             }
 
             getChart();
         }
-    }, [url]);
+    }, [url, theme]);
 
     return (
         <>

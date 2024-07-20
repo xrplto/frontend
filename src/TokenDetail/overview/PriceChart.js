@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Decimal from 'decimal.js';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import csvDownload from 'json-to-csv-export';
 import createMedianFilter from 'moving-median';
 
@@ -23,7 +23,6 @@ import {
 import DownloadIcon from '@mui/icons-material/Download';
 
 // Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Chart
@@ -111,7 +110,7 @@ function PriceChart({ token }) {
     }
 
     getGraph();
-  }, [range, activeFiatCurrency]);
+  }, [range, activeFiatCurrency, token.md5, BASE_URL, fromSearch]);
 
   let user = token.user;
   if (!user) user = token.name;
@@ -157,8 +156,7 @@ function PriceChart({ token }) {
       strokeDashArray: 3,
       borderColor: theme.palette.divider
     },
-    //colors: ['#B72136', '#007B55'],
-    colors: ['#007B55'],
+    colors: [theme.palette.primary.main], // Set the primary color from the theme
 
     // Fill
     fill: {
@@ -168,10 +166,6 @@ function PriceChart({ token }) {
         inverseColors: false,
         type: 'vertical',
         shadeIntensity: 0,
-        //opacityFrom: [0.4, 1],
-        //opacityTo: [0, 1],
-        //opacityFrom: [0.85],
-        //opacityTo: [0.55],
         opacityFrom: [0.6, 1],
         opacityTo: [0.4, 1],
         gradientToColors: ['#B72136', '#B72136'],

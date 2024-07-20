@@ -259,6 +259,7 @@ function FTokenRow({
               <Stack>
                 <Typography
                   variant="token"
+                  sx={{ fontWeight: '700'}}
                   color={
                     isOMCF !== 'yes'
                       ? darkMode
@@ -275,12 +276,14 @@ function FTokenRow({
                   {truncate(user, 13)}
                 </Typography>
                 <Typography
-                  variant="caption"
+                  variant="p2"
+                  sx={{ fontWeight: '600'}}
                   color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                   noWrap={!isMobile}
                 >
                   {isMobile && <span style={badge24hStyle}>{id}</span>}
                   {truncate(name, 8)}
+                
                 </Typography>
               </Stack>
             </Link>
@@ -335,15 +338,17 @@ function FTokenRow({
             </Typography>
           </Stack>
         </TableCell>
-        <TableCell align="right">{fNumber(vol24htx)}</TableCell>
+        <TableCell align="right"><Typography variant="h4">{fNumber(vol24htx)}</Typography></TableCell> 
         <TableCell align="right">
+        <Typography variant="h4">
           {currencySymbols[activeFiatCurrency]}
-          {fNumber(convertedMarketCap)}
+         {fNumber(convertedMarketCap)}</Typography>
         </TableCell>
-        <TableCell align="right">{fIntNumber(trustlines)}</TableCell>
+        <TableCell align="right"><Typography variant="h4">{fIntNumber(trustlines)}</Typography></TableCell>
         <TableCell align="right">
+          
+          <Typography variant="h4" noWrap={!isMobile}>
           {fNumber(supply)}{' '}
-          <Typography variant="small" noWrap={!isMobile}>
             {name}
           </Typography>
           <Box display="flex" alignItems="center" pt={1}>
@@ -404,7 +409,7 @@ function FTokenRow({
                           </Typography>
                         </TableCell>
                         <TableCell sx={{ pt: 0, pb: 0 }}>
-                          <Typography variant="small" noWrap>
+                          <Typography variant="small" noWrap >
                             {fNumber(supply)} {name}
                           </Typography>
                         </TableCell>

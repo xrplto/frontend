@@ -1419,8 +1419,8 @@ export const XrplToLightTheme = createTheme({
     //   color: colors.alpha.black[100]
     // },
     h4: {
-      // fontWeight: 700,
-      fontSize: 16
+      fontWeight: 600,
+      fontSize: 16,
     },
     h4a: {
       fontSize: 14,
