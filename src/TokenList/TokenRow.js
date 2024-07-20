@@ -281,11 +281,6 @@ function FTokenRow({
                 >
                   {isMobile && <span style={badge24hStyle}>{id}</span>}
                   {truncate(name, 8)}
-                  {kyc && (
-                    <Typography variant="kyc" sx={{ ml: 0.5 }}>
-                      KYC
-                    </Typography>
-                  )}
                 </Typography>
               </Stack>
             </Link>

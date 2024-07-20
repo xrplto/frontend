@@ -1478,7 +1478,7 @@ export const XrplToLightTheme = createTheme({
       paddingRight: '2px',
     },
     token: {
-      fontWeight: 600,
+      fontWeight: 700,
       fontSize: 16,
       color: "#3366FF"
     },
