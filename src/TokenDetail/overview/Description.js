@@ -1,8 +1,6 @@
 import React from 'react';
 import Decimal from 'decimal.js';
-import { useState, useEffect } from 'react';
-// import MDEditor from 'react-markdown-editor-lite';
-
+import { useState, useEffect, useContext } from 'react';
 import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
 import 'react-markdown-editor-lite/lib/index.css'; // import style manually
@@ -20,11 +18,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 
 // Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Redux
-import { useSelector /*, useDispatch*/ } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 
 // Utils
@@ -32,7 +29,6 @@ import { fPercent, fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 
 // Components
 import Converter from './Converter';
-
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
 
@@ -107,26 +103,20 @@ export default function Description({
   description,
   onApplyDescription
 }) {
-  const { accountProfile, darkMode, activeFiatCurrency } =
-    useContext(AppContext);
-  const isAdmin =
-    accountProfile && accountProfile.account && accountProfile.admin;
+  const { accountProfile, darkMode, activeFiatCurrency } = useContext(AppContext);
+  const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
   const metrics = useSelector(selectMetrics);
-  const { id, name, pro24h, supply, issuer, vol24hx, slug, marketcap, exch } =
-    token;
+  const { id, name, amount, maxMin24h, pro24h, pro7d, p24h, supply, issuer, vol24h, vol24hx, vol24hxrp, slug, marketcap, exch, dom } = token;
 
   let user = token.user;
   if (!user) user = name;
 
   const price = fNumberWithCurreny(exch || 0, metrics[activeFiatCurrency]);
-  const convertedMarketCap = Decimal.div(
-    marketcap,
-    metrics[activeFiatCurrency]
-  ).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
-  //const vpro7d = fPercent(pro7d);
   const vpro24h = fPercent(pro24h);
+  const vpro7d = fPercent(pro7d);
 
   let strPro24h = 0;
   if (vpro24h < 0) {
@@ -143,8 +133,42 @@ export default function Description({
     setShowEditor(!showEditor);
   };
 
+  const structuredData = {
+    "@context": "https://schema.org/",
+    "@type": "Cryptocurrency",
+    "name": `${user} ${name}`,
+    "description": description,
+    "tickerSymbol": name,
+    "currentExchangeRate": {
+      "@type": "MonetaryAmount",
+      "currency": activeFiatCurrency,
+      "value": price
+    },
+    "marketCap": {
+      "@type": "MonetaryAmount",
+      "currency": activeFiatCurrency,
+      "value": convertedMarketCap
+    },
+    "supply": fNumber(supply),
+    "priceChangePercentage24h": strPro24h,
+    "priceChangePercentage7d": vpro7d,
+    "fiatChange24h": p24h,
+    "maxPrice24h": maxMin24h.max,
+    "minPrice24h": maxMin24h.min,
+    "tradingVolume24h": {
+      "@type": "MonetaryAmount",
+      "currency": "XRP",
+      "value": fNumber(vol24hxrp)
+    },
+    "marketDominance": dom
+  };
+
   return (
     <Stack>
+      <script type="application/ld+json">
+        {JSON.stringify(structuredData)}
+      </script>
+      
       {issuer !== 'XRPL' && <Converter token={token} />}
 
       <Typography
