@@ -28,7 +28,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
     }
 }));
 
-export default function AnalysisData({token}) {
+export default function AnalysisData({ token }) {
     const metrics = useSelector(selectMetrics);
     const BASE_URL = process.env.API_URL;
     const { accountProfile, darkMode, activeFiatCurrency } = useContext(AppContext);
@@ -50,8 +50,9 @@ export default function AnalysisData({token}) {
             try {
                 const response = await axios.get(`${BASE_URL}/other_tokens?md5=${token.md5}&issuer=${token.issuer}&page=${page}&limit=${rows}`);
                 if (response.status === 200) {
-                    setCount(response.data.count);
-                    setTokens(response.data.tokens);
+                    const filteredTokens = response.data.tokens.filter(t => parseFloat(t.amount) !== 0);
+                    setCount(filteredTokens.length);
+                    setTokens(filteredTokens);
                 }
             } catch (err) {
                 console.error("Error on getting tokens!!!", err);
@@ -124,7 +125,7 @@ export default function AnalysisData({token}) {
                 />
             ) : loading ? (
                 <Stack alignItems="center" sx={{ mt: 5, mb: 5 }}>
-                  {/*   <PuffLoader color={"#00AB55"} size={35} />*/}
+                    <PuffLoader color={"#00AB55"} size={35} />
                 </Stack>
             ) : (
                 <ConnectWalletContainer>
