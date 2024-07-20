@@ -10,10 +10,9 @@ import { SnackbarProvider } from 'notistack';
 import NextNProgress from 'nextjs-progressbar';
 
 function XRPLToApp({ Component, pageProps, router }) {
-  const isUnderMaintenance = process.env.MAINTENANCE; // Set this variable to enable or disable maintenance mode
+  const isUnderMaintenance = process.env.MAINTENANCE;
   const { isOpen, msg, variant, openSnackbar, closeSnackbar } = useSnackbar();
 
-  // Check if we're under maintenance and not already on the maintenance page
   if (isUnderMaintenance && router.pathname !== '/status/maintenance') {
     if (typeof window !== 'undefined') {
       router.push('/status/maintenance');
@@ -51,9 +50,7 @@ function XRPLToApp({ Component, pageProps, router }) {
   return (
     <>
       <Head>
-        {/* <!-- HTML Meta Tags --> */}
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        {/* <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" /> */}
         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, user-scalable=0" />
         <meta name="robots" content="index, follow" />
         <meta name="language" content="en" />
@@ -62,13 +59,10 @@ function XRPLToApp({ Component, pageProps, router }) {
         <meta name="coverage" content="Worldwide" />
         <meta name="distribution" content="Global" />
         <meta name="rating" content="General" />
-        {/* <!-- May result in lower load time fetching from the server directly! --> */}
         <meta httpEquiv="Expires" content="0" />
         <meta httpEquiv="Pragma" content="no-cache" />
         <meta httpEquiv="Cache-Control" content="no-cache" />
         <meta name="google-site-verification" content="hh6F1f8GQ-_d3L7eGAcBc9G020PM2jSDzIjT12_I-Mc" />
-
-        {/* <!-- iOS / MS Meta Tags and favicon --> */}
         <meta name="msapplication-TileColor" content="#000000" />
         <meta name="theme-color" content="#ffffff" />
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
@@ -79,7 +73,6 @@ function XRPLToApp({ Component, pageProps, router }) {
         <link rel="shortcut icon" href="/icons/favicon.ico" type="image/x-icon" />
         <link rel="canonical" href={ogp.canonical} />
 
-        {/* Add your JSON-LD schema here */}
         <script type="application/ld+json">
           {JSON.stringify(jsonLdSchema)}
         </script>
@@ -95,28 +88,17 @@ function XRPLToApp({ Component, pageProps, router }) {
         <meta property="og:description" content={ogp.desc} />
         <meta property="og:image" content={ogp.imgUrl} />
         <meta property="og:image:type" content="image/png" />
-        <meta property="og:image:width" content="200" />
-        <meta property="og:image:height" content="200" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
 
         {/* Twitter Meta Tags */}
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta property="twitter:domain" content="xrpl.to" />
         <meta property="twitter:url" content={ogp.url} />
         <meta name="twitter:title" content={`${ogp.title} | xrpl.to`} />
         <meta name="twitter:description" content={ogp.desc} />
         <meta name="twitter:image" content={ogp.imgUrl} />
-        <meta name="twitter:image:src" content={ogp.imgUrl} />
       </Head>
-      <noscript>
-        {/* <!-- webxtor SEO fix --> */}
-        <ContextProvider data={data} openSnackbar={openSnackbar}>
-          {/* <!-- <ThemeProvider> --> */}
-          {/* <!-- <CssBaseline /> --> */}
-          <Component {...pageProps} />
-          <TransactionAlert isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
-          {/* <!-- </ThemeProvider> --> */}
-        </ContextProvider>
-      </noscript>
 
       <ContextProvider data={data} openSnackbar={openSnackbar}>
         <NextNProgress />
