@@ -17,6 +17,8 @@ import {
     Stack,
     useTheme, useMediaQuery,
     Typography,
+    Paper,
+    Button
 } from '@mui/material';
 
 // Context
@@ -29,14 +31,14 @@ import PriceStatistics from './PriceStatistics';
 import Description from './Description';
 import TrendingTokens from './TrendingTokens';
 import Swap from './Swap'; // Import Swap component
-
+import Poll from './Poll'; // Import Poll component
 
 // ----------------------------------------------------------------------
 
-export default function Overview({token}) {
-	const theme = useTheme();
-	const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-	const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+export default function Overview({ token }) {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isTablet = useMediaQuery(theme.breakpoints.down('md'));
     const BASE_URL = process.env.API_URL;
     const { accountProfile, setLoading, openSnackbar } = useContext(AppContext);
 
@@ -62,7 +64,7 @@ export default function Overview({token}) {
             const accountAdmin = accountProfile.account;
             const accountToken = accountProfile.token;
 
-            const body = {md5: token.md5, description};
+            const body = { md5: token.md5, description };
 
             res = await axios.post(`${BASE_URL}/admin/update_description`, body, {
                 headers: { 'x-access-account': accountAdmin, 'x-access-token': accountToken }
@@ -88,54 +90,50 @@ export default function Overview({token}) {
             setShowEditor(false);
     };
 
+    let user = token.user;
+    if (!user) user = token.name;
+
     return (
         <Grid container spacing={{ xs: 0, md: 3 }}>
             <Grid item xs={12} md={12} lg={8}>
-				<PriceChart token={token} />
-				{(!isMobile && !isTablet) && (
-					<>
-					<Description
-							token={token}
-							showEditor={showEditor}
-							setShowEditor={setShowEditor}
-							description={description}
-							onApplyDescription={onApplyDescription}
-					/>
-
-					{showEditor &&
-						<MDEditor value={description} renderHTML={text => mdParser.render(text)} onChange={handleEditorChange} style={{ height: '500px' }} />
-					}
-
-					{/* <MDEditor value={description} renderHTML={text => <ReactMarkdown children={text} />} onChange={handleEditorChange} style={{ height: '500px' }} /> */}
-					</>
-				)}
+                <PriceChart token={token} />
+                {(!isMobile && !isTablet) && (
+                    <>
+                        <Description
+                            token={token}
+                            showEditor={showEditor}
+                            setShowEditor={setShowEditor}
+                            description={description}
+                            onApplyDescription={onApplyDescription}
+                        />
+                        {showEditor &&
+                            <MDEditor value={description} renderHTML={text => mdParser.render(text)} onChange={handleEditorChange} style={{ height: '500px' }} />
+                        }
+                        {/* <MDEditor value={description} renderHTML={text => <ReactMarkdown children={text} />} onChange={handleEditorChange} style={{ height: '500px' }} /> */}
+                    </>
+                )}
+                <Poll user={user} name={token.name} /> {/* Pass user and name as props */}
             </Grid>
-           
             <Grid item xs={12} md={12} lg={4}>
                 <Swap />
                 <PriceStatistics token={token} />
-                
-				<TrendingTokens />
+                <TrendingTokens />
             </Grid>
-            
-			{(isMobile || isTablet) && (
-				<>
-				<Description
-						token={token}
-						showEditor={showEditor}
-						setShowEditor={setShowEditor}
-						description={description}
-						onApplyDescription={onApplyDescription}
-				/>
-
-				{showEditor &&
-					<MDEditor value={description} renderHTML={text => mdParser.render(text)} onChange={handleEditorChange} style={{ height: '500px' }} />
-				}
-
-				{/* <MDEditor value={description} renderHTML={text => <ReactMarkdown children={text} />} onChange={handleEditorChange} style={{ height: '500px' }} /> */}
-				</>
-			)}
+            {(isMobile || isTablet) && (
+                <>
+                    <Description
+                        token={token}
+                        showEditor={showEditor}
+                        setShowEditor={setShowEditor}
+                        description={description}
+                        onApplyDescription={onApplyDescription}
+                    />
+                    {showEditor &&
+                        <MDEditor value={description} renderHTML={text => mdParser.render(text)} onChange={handleEditorChange} style={{ height: '500px' }} />
+                    }
+                    {/* <MDEditor value={description} renderHTML={text => <ReactMarkdown children={text} />} onChange={handleEditorChange} style={{ height: '500px' }} /> */}
+                </>
+            )}
         </Grid>
-
     );
 }

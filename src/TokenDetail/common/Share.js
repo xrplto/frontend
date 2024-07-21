@@ -152,6 +152,9 @@ export default function Share({ token }) {
         open={open}
         sx={{ zIndex: 1302 }}
       >
+        <ShareDialogTitle onClose={handleClose}>
+        
+        </ShareDialogTitle>
         <DialogContent>
           <Stack alignItems="center">
             <Avatar
@@ -258,11 +261,6 @@ export default function Share({ token }) {
             </Stack>
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button autoFocus onClick={handleClose}>
-            Close
-          </Button>
-        </DialogActions>
       </ShareDialog>
     </>
   );
