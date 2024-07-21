@@ -1,36 +1,37 @@
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import axios from 'axios';
-import { useState, useEffect, useRef } from 'react';
 import Decimal from 'decimal.js';
 import { MD5 } from 'crypto-js';
-
-// Material
-import { withStyles } from '@mui/styles';
 import {
-  alpha,
-  styled,
   Avatar,
   Box,
   IconButton,
   Link,
-  CardHeader,
-  Stack,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
   Typography,
-  Grid
+  Grid,
+  Tooltip,
+  Stack // Add this line to import Stack
 } from '@mui/material';
-
-// Timeline
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import { makeStyles } from '@mui/styles';
-import { FacebookShareButton, TwitterShareButton } from 'react-share';
-import { FacebookIcon, TwitterIcon } from 'react-share';
+import { FacebookShareButton, TwitterShareButton, FacebookIcon, TwitterIcon } from 'react-share';
+import moment from 'moment';
+import HistoryToolbar from './HistoryToolbar';
+import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
+import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
+import { formatDateTime } from 'src/utils/formatTime';
+import { AppContext } from 'src/AppContext';
+import StackStyle from 'src/components/StackStyle';
+import { useSelector } from 'react-redux';
+import { selectMetrics } from 'src/redux/statusSlice';
+import { currencySymbols } from 'src/utils/constants';
 
 const generateClassName = (rule, sheet) => {
-  // Custom logic to generate class names
   return `my-component-${rule.key}`;
 };
 
@@ -41,7 +42,6 @@ const useStyles = makeStyles(
       flexDirection: 'column',
       alignItems: 'flex-start',
       margin: '10px 0'
-      /*maxWidth: '250px',*/
     },
     lineContainer: {
       display: 'flex',
@@ -53,10 +53,10 @@ const useStyles = makeStyles(
       width: '2px',
       height: '15px',
       background: 'grey',
-      marginLeft: '11px' // Adjust margin to align with icon
+      marginLeft: '11px'
     },
     icon: {
-      marginRight: '5px', // Adjust margin to align with vertical line
+      marginRight: '5px',
       fontSize: '1.25rem',
       color: 'grey'
     },
@@ -75,28 +75,10 @@ const useStyles = makeStyles(
     }
   }),
   { generateClassName }
-); // Pass the custom class name generator
-
-// Components
-import HistoryToolbar from './HistoryToolbar';
-
-// Utils
-import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
-import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
-import { formatDateTime } from 'src/utils/formatTime';
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
-// ----------------------------------------------------------------------
-
-// ----------------------------------------------------------------------
-import StackStyle from 'src/components/StackStyle';
-import { useSelector } from 'react-redux';
-import { selectMetrics } from 'src/redux/statusSlice';
-import { currencySymbols } from 'src/utils/constants';
+);
 
 function truncate(str, n) {
   if (!str) return '';
-  //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
   return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
 }
 
@@ -119,7 +101,6 @@ export default function HistoryData({ token }) {
 
   useEffect(() => {
     function getHistories() {
-      // https://api.xrpl.to/api/history?md5=c9ac9a6c44763c1bd9ccc6e47572fd26&page=0&limit=10
       axios
         .get(`${BASE_URL}/history?md5=${md5}&page=${page}&limit=${rows}`)
         .then((res) => {
@@ -154,10 +135,7 @@ export default function HistoryData({ token }) {
     };
   }, []);
 
-  // Timeline
-
   const { name } = token;
-
   let user = token.user;
   if (!user) user = name;
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
@@ -178,9 +156,7 @@ export default function HistoryData({ token }) {
       closestEntry = entry;
     }
 
-    //console.log('Closest', date, new Date(date).toLocaleDateString("en-US"), new Date(closestEntry[0]).toLocaleDateString("en-US"), startIndex)
-
-    closestEntry[2] = startIndex; // Store the startIndex in the third element
+    closestEntry[2] = startIndex;
     return closestEntry;
   }
 
@@ -210,8 +186,6 @@ export default function HistoryData({ token }) {
             );
 
             if (closestEntry[0] === history[history.length - 1][0]) {
-              // Break if we are on the last element
-              // But still check if it's within 10 days to include to output
               const daysDifference =
                 Math.abs(targetDate - new Date(closestEntry[0])) /
                 (1000 * 60 * 60 * 24);
@@ -219,16 +193,12 @@ export default function HistoryData({ token }) {
                 yearlyValues.push(closestEntry[1]);
                 break;
               }
-              // If the closest entry is the last one in the dataset, stop
               break;
             }
 
             yearlyValues.push(closestEntry[1]);
-
-            // Update startIndex based on the last iteration
             startIndex = closestEntry[2];
           }
-          //console.log(yearlyValues);
           setHistsPrices(yearlyValues);
         }
       })
@@ -241,14 +211,12 @@ export default function HistoryData({ token }) {
   }, []);
 
   const classes = useStyles();
-
-  // From Share.js
   const title = `${user} price today: ${name} to ${activeFiatCurrency} conversion, live rates, trading volume, historical data, and interactive chart`;
   const desc = `Access up-to-date ${user} prices, ${name} market cap, trading pairs, interactive charts, and comprehensive data from the leading XRP Ledger token price-tracking platform.`;
   const url =
     typeof window !== 'undefined' && window.location.href
       ? window.location.href
-      : ''; //webxtor SEO fix
+      : '';
 
   return (
     <>
@@ -285,18 +253,6 @@ export default function HistoryData({ token }) {
                     align="left"
                     sx={{
                       position: 'sticky',
-                      //zIndex: 1001,
-                      left: 0,
-                      background: darkMode ? '#000000' : '#FFFFFF'
-                    }}
-                  >
-                    #
-                  </TableCell>
-                  <TableCell
-                    align="left"
-                    sx={{
-                      position: 'sticky',
-                      //zIndex: 1002,
                       left: hists.length > 0 ? 48 : 40,
                       background: darkMode ? '#000000' : '#FFFFFF',
                       '&:before': scrollLeft
@@ -327,209 +283,141 @@ export default function HistoryData({ token }) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {
-                  // {
-                  //     "_id": "23304962_1",
-                  //     "dir": "buy",
-                  //     "account": "rHmaZbZGqKWN7D45ue7J5cRu8yxyNdHeN2",
-                  //     "paid": {
-                  //         "issuer": "XRPL",
-                  //         "currency": "XRP",
-                  //         "name": "XRP",
-                  //         "value": "179999.9982"
-                  //     },
-                  //     "got": {
-                  //         "issuer": "rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B",
-                  //         "currency": "USD",
-                  //         "name": "USD",
-                  //         "value": "1096.755823946603"
-                  //     },
-                  //     "pair": "21e8e9b61d766f6187cb9009fda56e9e",
-                  //     "hash": "98229608E154559663CBA8A78AF42AF7E803B40E5814CFABC639CA238A9E8DFE",
-                  //     "ledger": 23304962,
-                  //     "time": 1471034710000
-                  // },
-                  hists.map((row, idx) => {
-                    const {
-                      _id,
-                      maker,
-                      taker,
-                      seq,
-                      paid,
-                      got,
-                      ledger,
-                      hash,
-                      time
-                    } = row;
+                {hists.map((row, idx) => {
+                  const {
+                    maker,
+                    taker,
+                    seq,
+                    paid,
+                    got,
+                    ledger,
+                    hash,
+                    time
+                  } = row;
 
-                    const paidName = normalizeCurrencyCodeXummImpl(
-                      paid.currency
-                    );
-                    const gotName = normalizeCurrencyCodeXummImpl(got.currency);
-                    const md51 = getMD5(paid.issuer, paid.currency);
-                    // const md52 = getMD5(got.issuer, got.currency);
+                  const paidName = normalizeCurrencyCodeXummImpl(
+                    paid.currency
+                  );
+                  const gotName = normalizeCurrencyCodeXummImpl(got.currency);
+                  const md51 = getMD5(paid.issuer, paid.currency);
 
-                    let exch;
-                    let name;
+                  let exch;
+                  let name;
 
-                    if (md5 === md51) {
-                      // volume = got.value;
-                      exch = Decimal.div(got.value, paid.value).toNumber();
-                      name = gotName;
-                    } else {
-                      // volume = paid.value;
-                      exch = Decimal.div(paid.value, got.value).toNumber();
-                      name = paidName;
-                    }
+                  if (md5 === md51) {
+                    exch = Decimal.div(got.value, paid.value).toNumber();
+                    name = gotName;
+                  } else {
+                    exch = Decimal.div(paid.value, got.value).toNumber();
+                    name = paidName;
+                  }
 
-                    const strDateTime = formatDateTime(time);
+                  const strDateTime = formatDateTime(time);
+                  const relativeTime = moment(time).fromNow();
 
-                    return (
-                      <TableRow
-                        key={_id}
-                        sx={{
-                          '&:hover': {
-                            '& .MuiTableCell-root': {
-                              backgroundColor: darkMode
-                                ? '#232326 !important'
-                                : '#D9DCE0 !important'
-                            }
+                  return (
+                    <TableRow
+                      key={hash}
+                      sx={{
+                        '&:hover': {
+                          '& .MuiTableCell-root': {
+                            backgroundColor: darkMode
+                              ? '#232326 !important'
+                              : '#D9DCE0 !important'
                           }
+                        }
+                      }}
+                    >
+                      <TableCell
+                        align="left"
+                        sx={{
+                          position: 'sticky',
+                          left: 48,
+                          background: darkMode ? '#000000' : '#FFFFFF',
+                          '&:before': scrollLeft
+                            ? {
+                                content: "''",
+                                boxShadow: 'inset 10px 0 8px -8px #00000026',
+                                position: 'absolute',
+                                top: '0',
+                                right: '0',
+                                bottom: '-1px',
+                                width: '30px',
+                                transform: 'translate(100%)',
+                                transition: 'box-shadow .3s',
+                                pointerEvents: 'none'
+                              }
+                            : {}
                         }}
                       >
-                        <TableCell
-                          align="left"
-                          style={{
-                            position: 'sticky',
-                            //zIndex: 1001,
-                            left: 0,
-                            background: darkMode ? '#000000' : '#FFFFFF'
-                          }}
-                        >
-                          <Typography variant="subtitle2">
-                            {idx + page * rows + 1}
-                          </Typography>
-                        </TableCell>
-                        <TableCell
-                          align="left"
-                          sx={{
-                            position: 'sticky',
-                            //zIndex: 1002,
-                            left: 48,
-                            background: darkMode ? '#000000' : '#FFFFFF',
-                            '&:before': scrollLeft
-                              ? {
-                                  content: "''",
-                                  boxShadow: 'inset 10px 0 8px -8px #00000026',
-                                  position: 'absolute',
-                                  top: '0',
-                                  right: '0',
-                                  bottom: '-1px',
-                                  width: '30px',
-                                  transform: 'translate(100%)',
-                                  transition: 'box-shadow .3s',
-                                  pointerEvents: 'none'
-                                }
-                              : {}
-                          }}
-                        >
+                        <Tooltip title={strDateTime}>
                           <Typography variant="caption">
-                            {strDateTime}
+                            {relativeTime}
                           </Typography>
-                        </TableCell>
-                        <TableCell align="left">
-                          <Typography variant="caption">
-                            {fNumber(exch)} {name}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="left">
-                          {fNumber(paid.value)}{' '}
-                          <Typography variant="caption">{paidName}</Typography>
-                        </TableCell>
-
-                        <TableCell align="left">
-                          {fNumber(got.value)}{' '}
-                          <Typography variant="caption">{gotName}</Typography>
-                        </TableCell>
-
-                        <TableCell align="left">
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell align="left">
+                        <Typography variant="caption">
+                          {fNumber(exch)} {name}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="left">
+                        {fNumber(paid.value)}{' '}
+                        <Typography variant="caption">{paidName}</Typography>
+                      </TableCell>
+                      <TableCell align="left">
+                        {fNumber(got.value)}{' '}
+                        <Typography variant="caption">{gotName}</Typography>
+                      </TableCell>
+                      <TableCell align="left">
+                        <Link
+                          color="primary"
+                          target="_blank"
+                          href={`https://bithomp.com/explorer/${taker}`}
+                          rel="noreferrer noopener nofollow"
+                        >
+                          {truncate(taker, 12)}
+                        </Link>
+                      </TableCell>
+                      <TableCell align="left">
+                        <Link
+                          color="primary"
+                          target="_blank"
+                          href={`https://bithomp.com/explorer/${maker}`}
+                          rel="noreferrer noopener nofollow"
+                        >
+                          {truncate(maker, 12)}
+                        </Link>
+                      </TableCell>
+                      <TableCell align="left">{ledger}</TableCell>
+                      <TableCell
+                        align="left"
+                        sx={{
+                          width: '5%',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        <Stack direction="row" alignItems="center">
                           <Link
-                            // underline="none"
                             color="primary"
                             target="_blank"
-                            href={`https://bithomp.com/explorer/${taker}`}
+                            href={`https://bithomp.com/explorer/${hash}`}
                             rel="noreferrer noopener nofollow"
                           >
-                            {truncate(taker, 12)}
+                            <Stack direction="row" alignItems="center">
+                              {truncate(hash, 16)}
+                              <IconButton edge="end" aria-label="bithomp"></IconButton>
+                            </Stack>
                           </Link>
-                        </TableCell>
-
-                        <TableCell align="left">
-                          <Link
-                            // underline="none"
-                            color="primary"
-                            target="_blank"
-                            href={`https://bithomp.com/explorer/${maker}`}
-                            rel="noreferrer noopener nofollow"
-                          >
-                            {truncate(maker, 12)}
-                          </Link>
-                        </TableCell>
-                        <TableCell align="left">{ledger}</TableCell>
-                        <TableCell
-                          align="left"
-                          sx={{
-                            width: '5%', //Timeline
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          <Stack direction="row" alignItems="center">
-                            <Link
-                              // underline="none"
-                              color="primary"
-                              target="_blank"
-                              href={`https://bithomp.com/explorer/${hash}`}
-                              rel="noreferrer noopener nofollow"
-                            >
-                              <Stack direction="row" alignItems="center">
-                                {truncate(hash, 16)}
-                                <IconButton edge="end" aria-label="bithomp">
-                                  <Avatar
-                                    alt="Bithomp Explorer"
-                                    src="/static/bithomp.ico"
-                                    sx={{ width: 16, height: 16 }}
-                                  />
-                                </IconButton>
-                              </Stack>
-                            </Link>
-
-                            <Link
-                              // underline="none"
-                              // color="inherit"
-                              target="_blank"
-                              href={`https://livenet.xrpl.org/transactions/${hash}`}
-                              rel="noreferrer noopener nofollow"
-                            >
-                              <IconButton edge="end" aria-label="bithomp">
-                                <Avatar
-                                  alt="live.xrpl.org Explorer"
-                                  src="/static/livenetxrplorg.ico"
-                                  sx={{ width: 16, height: 16 }}
-                                />
-                              </IconButton>
-                            </Link>
-                          </Stack>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                }
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </Box>
         </Grid>
-
-        {/* Timeline */}
 
         <Grid
           item
@@ -598,7 +486,6 @@ export default function HistoryData({ token }) {
                       {currencySymbols[activeFiatCurrency]}
                       {fNumberWithCurreny(value, metrics[activeFiatCurrency])}
                     </span>
-                    {/* <span>{value}</span> */}
                   </div>,
                   index < histsPrices.length - 1 && (
                     <div

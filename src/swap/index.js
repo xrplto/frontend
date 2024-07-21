@@ -887,7 +887,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         </CurrencyContent>
       </OverviewWrapper>
 
-      <Stack sx={{ width: '100%', mt: 2 }}>
+      <Stack sx={{ width: '95.9%', mt: 2 }}>
         {accountProfile && accountProfile.account ? (
           <>
             {/* {errMsg && amount1 !== '' && amount2 !== '' && (
