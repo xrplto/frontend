@@ -5,6 +5,7 @@ import {
     Chip,
     Link,
     Menu,
+    useTheme,
     MenuItem,
     Avatar,
     ListItemText
@@ -32,6 +33,7 @@ const LinkChip = styled(Chip)(({ theme }) => ({
 export default function CommunityMenu({token}) {
     const [anchorEl, setAnchorEl] = useState(null);
     const [open, setOpen] = useState(false);
+    const theme = useTheme();
 
     const {
         name,
@@ -68,7 +70,7 @@ export default function CommunityMenu({token}) {
                 onMouseLeave={handleClose}
                 style={{ zIndex: open ? 1301:100 }}
                 label="Community" sx={{pl:0.5,pr:0.5}}
-                deleteIcon={<Icon icon={chevronDown} width="16" height="16"/>}
+                deleteIcon={<Icon icon={chevronDown} width="16" height="16" style={{ color: theme.palette.primary.main }}/>}
                 onDelete={handleClick}
                 icon={<Icon icon={personFill} width="16" height="16" />}
             />

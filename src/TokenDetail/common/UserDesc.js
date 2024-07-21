@@ -331,11 +331,12 @@ export default function UserDesc({ token }) {
             alt={user}
             fontSize="1.1rem"
           >
-            {user}
+            
+            {name}
           </Typography>
           <Stack direction="row" alignItems="center" spacing={0.5}>
-            <TokenIcon fontSize="small" color="disabled" />
-            <Typography variant="s17">{name}</Typography>
+            
+            <Typography variant="s17">{truncate(user, 15)}</Typography>
             <Stack>{kyc && <Typography variant="kyc2">KYC</Typography>}</Stack>
           </Stack>
           {date && (
@@ -718,16 +719,16 @@ export default function UserDesc({ token }) {
                   href={`https://${domain}`}
                   rel="noreferrer noopener nofollow"
                 >
-                  <Chip
-                    label={domain}
-                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px' }}
-                    deleteIcon={
-                      <Icon icon={linkExternal} width="16" height="16" />
-                    }
-                    onDelete={handleDelete}
-                    onClick={handleDelete}
-                    icon={<Icon icon={link45deg} width="16" height="16" />}
-                  />
+                 <Chip
+      label={domain}
+      sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px' }}
+      deleteIcon={
+        <Icon icon={linkExternal} width="16" height="16" style={{ color: theme.palette.primary.main }} />
+      }
+      onDelete={handleDelete}
+      onClick={handleDelete}
+      icon={<Icon icon={link45deg} width="16" height="16"   />}
+    />
                 </Link>
               </Grid>
             )}
@@ -744,11 +745,11 @@ export default function UserDesc({ token }) {
                     label={'Whitepaper'}
                     sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px' }}
                     deleteIcon={
-                      <Icon icon={linkExternal} width="16" height="16" />
+                      <Icon icon={linkExternal} width="16" height="16" style={{ color: theme.palette.primary.main }}/>
                     }
                     onDelete={handleDelete}
                     onClick={handleDelete}
-                    icon={<Icon icon={paperIcon} width="16" height="16" />}
+                    icon={<Icon icon={paperIcon} width="16" height="16"  /> }
                   />
                 </Link>
               </Grid>

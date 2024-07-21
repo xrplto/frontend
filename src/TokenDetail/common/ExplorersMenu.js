@@ -4,6 +4,7 @@ import {
     styled,
     Chip,
     Link,
+    useTheme,
     Menu,
     MenuItem,
     Avatar,
@@ -32,6 +33,7 @@ const LinkChip = styled(Chip)(({ theme }) => ({
 export default function ExplorersMenu({issuer}) {
     const [anchorEl, setAnchorEl] = useState(null);
     const [open, setOpen] = useState(false);
+    const theme = useTheme();
 
     const handleClick = () => {
     }
@@ -59,7 +61,7 @@ export default function ExplorersMenu({issuer}) {
                 onMouseLeave={handleClose}
                 style={{ zIndex: open ? 1301:100 }}
                 label="Explorers" sx={{pl:0.5,pr:0.5}}
-                deleteIcon={<Icon icon={chevronDown} width="16" height="16"/>}
+                deleteIcon={<Icon icon={chevronDown} width="16" height="16" style={{ color: theme.palette.primary.main }}/>}
                 onDelete={handleClick}
                 icon={<Icon icon={zoomIcon} width="16" height="16" />} 
             />

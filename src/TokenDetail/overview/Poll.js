@@ -20,7 +20,7 @@ const Poll = ({ user, name }) => {
                     <Typography variant="h5" sx={{ fontSize: '1.0rem' }}>
                         How do you feel about {user} {name} today?
                     </Typography>
-                    <Typography variant="body2">Vote to see what our Community thinks!</Typography>
+                    <Typography variant="p2">Vote to see what our Community thinks!</Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
                     {!showResult ? (

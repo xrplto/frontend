@@ -273,7 +273,7 @@ function FTokenRow({
                   }
                   noWrap={!isMobile}
                 >
-                  {truncate(user, 13)}
+                  {truncate(name, 13)}
                 </Typography>
                 <Typography
                   variant="p2"
@@ -282,7 +282,7 @@ function FTokenRow({
                   noWrap={!isMobile}
                 >
                   {isMobile && <span style={badge24hStyle}>{id}</span>}
-                  {truncate(name, 8)}
+                  {truncate(user, 15)}
                 
                 </Typography>
               </Stack>
