@@ -149,7 +149,7 @@ function PriceChart({ token }) {
       }
     ],
     stroke: {
-      width: [0, 2]
+      width: [0, 2.5]
     },
     // Grid
     grid: {

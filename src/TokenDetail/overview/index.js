@@ -16,6 +16,7 @@ import {
     Grid,
     Stack,
     useTheme, useMediaQuery,
+    Typography,
 } from '@mui/material';
 
 // Context
@@ -27,6 +28,8 @@ import PriceChart from './PriceChart';
 import PriceStatistics from './PriceStatistics';
 import Description from './Description';
 import TrendingTokens from './TrendingTokens';
+import Swap from './Swap'; // Import Swap component
+
 
 // ----------------------------------------------------------------------
 
@@ -107,8 +110,9 @@ export default function Overview({token}) {
 					</>
 				)}
             </Grid>
-
+           
             <Grid item xs={12} md={12} lg={4}>
+                <Swap />
                 <PriceStatistics token={token} />
                 
 				<TrendingTokens />
