@@ -62,7 +62,7 @@ const APILabel = styled('a')(({ theme }) => ({
   color: theme.palette.text.primary, // Adjust color as needed
   textDecoration: 'none',
   marginLeft: theme.spacing(2),
-  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  backgroundColor: alpha(theme.palette.primary.main, 0.3),
   padding: '5px 10px',
   borderRadius: '5px',
   '&:hover': {

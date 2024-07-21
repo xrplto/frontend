@@ -3,12 +3,8 @@ import Decimal from 'decimal.js';
 import { useState, useEffect } from 'react';
 
 // Material
-import {
-    styled,
-    CardHeader,
-    Stack,
-    useTheme
-} from '@mui/material';
+import { styled, CardHeader, Stack } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // Chart
 import { Chart } from 'src/components/Chart';
@@ -31,8 +27,8 @@ function getSeries(richList) {
     return series;
 }
 
-export default function Donut({token}) {
-    const theme = useTheme();
+export default function Donut({ token }) {
+    const theme = useTheme(); // Access the theme object
     const BASE_URL = process.env.API_URL;
     const [richList, setRichList] = useState([]);
 
@@ -53,10 +49,6 @@ export default function Donut({token}) {
         getTop10RichList();
     }, [BASE_URL, token.md5]);
 
-    const fillColors = [
-        theme.palette.primary.main, '#FF5733', '#FF33A8', '#FF8F33', '#33FFDA', '#8F33FF', '#FFC300', '#C70039', '#900C3F', '#808080', '#00CED1'
-    ];
-
     const state = {
         series: getSeries(richList),
         options: {
@@ -71,7 +63,10 @@ export default function Donut({token}) {
             },
             fill: {
                 type: 'solid',
-                colors: fillColors
+                colors: [
+                    '#F8693E', '#F6844E', '#F3A15E', '#F1BD6E', '#EED97E', 
+                    '#EAE68E', '#E4E79E', '#D8EAAD', '#CCE5BD', '#BFDFCC', theme.palette.primary.main
+                ]
             },
             legend: {
                 show: false,
