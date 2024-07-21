@@ -15,9 +15,10 @@ import {
   Typography,
   Grid,
   Tooltip,
-  Stack // Add this line to import Stack
+  Stack
 } from '@mui/material';
 import DateRangeIcon from '@mui/icons-material/DateRange';
+import InfoIcon from '@mui/icons-material/Info';
 import { makeStyles } from '@mui/styles';
 import { FacebookShareButton, TwitterShareButton, FacebookIcon, TwitterIcon } from 'react-share';
 import moment from 'moment';
@@ -218,6 +219,13 @@ export default function HistoryData({ token }) {
       ? window.location.href
       : '';
 
+  function getValueIcon(paidValue, gotValue) {
+    if (paidValue < 500 || gotValue < 500) return '🦐';
+    if ((paidValue >= 500 && paidValue < 5000) || (gotValue >= 500 && gotValue < 5000)) return '🐬';
+    if ((paidValue >= 5000 && paidValue < 10000) || (gotValue >= 5000 && gotValue < 10000)) return '🐋';
+    return '';
+  }
+
   return (
     <>
       <Grid container spacing={3} sx={{ p: 0 }}>
@@ -249,31 +257,24 @@ export default function HistoryData({ token }) {
             >
               <TableHead>
                 <TableRow>
-                  <TableCell
-                    align="left"
-                    sx={{
-                      position: 'sticky',
-                      left: hists.length > 0 ? 48 : 40,
-                      background: darkMode ? '#000000' : '#FFFFFF',
-                      '&:before': scrollLeft
-                        ? {
-                            content: "''",
-                            boxShadow: 'inset 10px 0 8px -8px #00000026',
-                            position: 'absolute',
-                            top: '0',
-                            right: '0',
-                            bottom: '-1px',
-                            width: '30px',
-                            transform: 'translate(100%)',
-                            transition: 'box-shadow .3s',
-                            pointerEvents: 'none'
-                          }
-                        : {}
-                    }}
-                  >
-                    Time
-                  </TableCell>
+                  <TableCell align="left">Time</TableCell>
                   <TableCell align="left">Price</TableCell>
+                  <TableCell align="left">
+                    Value
+                    <Tooltip
+                      title={
+                        <React.Fragment>
+                          <Typography variant="body2">{'< 500 XRP 🦐'}</Typography>
+                          <Typography variant="body2">{'500 - 5000 XRP 🐬'}</Typography>
+                          <Typography variant="body2">{'5000 - 10000 XRP 🐋'}</Typography>
+                        </React.Fragment>
+                      }
+                    >
+                      <IconButton size="small">
+                        <InfoIcon fontSize="inherit" />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
                   <TableCell align="left">Taker Paid</TableCell>
                   <TableCell align="left">Taker Got</TableCell>
                   <TableCell align="left">Taker</TableCell>
@@ -328,28 +329,7 @@ export default function HistoryData({ token }) {
                         }
                       }}
                     >
-                      <TableCell
-                        align="left"
-                        sx={{
-                          position: 'sticky',
-                          left: 48,
-                          background: darkMode ? '#000000' : '#FFFFFF',
-                          '&:before': scrollLeft
-                            ? {
-                                content: "''",
-                                boxShadow: 'inset 10px 0 8px -8px #00000026',
-                                position: 'absolute',
-                                top: '0',
-                                right: '0',
-                                bottom: '-1px',
-                                width: '30px',
-                                transform: 'translate(100%)',
-                                transition: 'box-shadow .3s',
-                                pointerEvents: 'none'
-                              }
-                            : {}
-                        }}
-                      >
+                      <TableCell align="left">
                         <Tooltip title={strDateTime}>
                           <Typography variant="caption">
                             {relativeTime}
@@ -360,6 +340,9 @@ export default function HistoryData({ token }) {
                         <Typography variant="caption">
                           {fNumber(exch)} {name}
                         </Typography>
+                      </TableCell>
+                      <TableCell align="left">
+                        {getValueIcon(paid.value, got.value)}
                       </TableCell>
                       <TableCell align="left">
                         {fNumber(paid.value)}{' '}
