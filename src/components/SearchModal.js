@@ -1,28 +1,9 @@
-import {
-    Avatar,
-    Box,
-    Button,
-    CardMedia,
-    IconButton,
-    InputBase,
-    Link,
-    MenuItem,
-    MenuList,
-    Paper,
-    Stack,
-    styled,
-    ToggleButton,
-    ToggleButtonGroup,
-    toggleButtonGroupClasses,
-    Typography,
-    Tooltip
-} from "@mui/material";
+import { Avatar, Box, Button, CardMedia, IconButton, InputBase, Link, MenuItem, MenuList, Paper, Stack, styled, ToggleButton, ToggleButtonGroup, toggleButtonGroupClasses, Typography } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import CasinoIcon from '@mui/icons-material/Casino';
 import AnimationIcon from '@mui/icons-material/Animation';
 import VerifiedIcon from '@mui/icons-material/Verified';
-import WhatshotIcon from '@mui/icons-material/Whatshot';
 
 import { useContext, useEffect, useRef, useState } from "react";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
@@ -54,11 +35,13 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
             border: 0,
         },
     },
-    [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]: {
+    [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]:
+    {
         marginLeft: -1,
         borderLeft: '1px solid transparent',
     },
 }));
+
 
 function truncate(str, n) {
     if (!str) return '';
@@ -171,7 +154,8 @@ export default function SearchModal({ onClose, open }) {
             search,
         };
 
-        axios.post(`${BASE_URL}/search`, body)
+        axios
+            .post(`${BASE_URL}/search`, body)
             .then((res) => {
                 try {
                     if (res.status === 200 && res.data) {
@@ -197,108 +181,107 @@ export default function SearchModal({ onClose, open }) {
     const getNFTs = (search) => {
         const body = {
             search,
-            type: "SEARCH_ITEM_COLLECTION_ACCOUNT",
+            type: "SEARCH_ITEM_COLLECTION_ACCOUNT"
         };
 
-        axios.post(`${NFT_BASE_URL}/search`, body)
-            .then((res) => {
-                try {
-                    if (res.status === 200 && res.data) {
-                        const ret = res.data;
-                        setCollections(ret.collections);
-                    }
-                } catch (error) {
-                    console.log(error);
+        axios.post(`${NFT_BASE_URL}/search`, body).then(res => {
+            try {
+                if (res.status === 200 && res.data) {
+                    const ret = res.data;
+                    setCollections(ret.collections);
                 }
-            })
-            .catch((err) => {
-                console.log("err->>", err);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    };
+            } catch (error) {
+                console.log(error);
+            }
+        }).catch(err => {
+            console.log("err->>", err);
+        }).then(function () {
+            // Always executed
+            setLoading(false);
+        });
+    }
 
     useEffect(() => {
         getData(debouncedSearch);
         getNFTs(debouncedSearch);
     }, [debouncedSearch]);
 
+    useEffect(() => {
+        if (!search.length) setActiveTab("all");
+    }, [search])
+
     const handleClose = () => {
         setSearch("");
         onClose();
     }
 
-    const handleTabChange = (event, newValue) => {
-        if (newValue !== activeTab) {
-            setActiveTab(newValue);
+    const handleClickOutside = (event) => {
+        if (modalRef.current && !modalRef.current.contains(event.target)) {
+            handleClose();
         }
     };
 
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (modalRef.current && !modalRef.current.contains(event.target)) {
-                handleClose();
-            }
-        };
-
         if (open) {
-            document.addEventListener("mousedown", handleClickOutside);
+            window.addEventListener('click', handleClickOutside);
         } else {
-            document.removeEventListener("mousedown", handleClickOutside);
+            window.removeEventListener('click', handleClickOutside);
         }
 
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
+            window.removeEventListener('click', handleClickOutside);
         };
     }, [open]);
 
-    const filteredTokens = activeTab === 'token' ? tokens.slice(0, 50) : tokens.slice(0, 4);
-    const filteredCollections = activeTab === 'nft' ? collections.slice(0, 50) : collections.slice(0, 3);
-
     return (
-        <Paper ref={modalRef} sx={{
-            width: "100%",
-            maxWidth: "600px",
-            minHeight: "500px",
-            position: "fixed",
-            right: "10px",
-            top: open ? "45px" : "-100%",
-            p: 1.5,
-            zIndex: 9999,
-            opacity: open ? 1 : 0,
-            transition: "opacity 0.2s",
-        }}>
+        <Paper
+            sx={{ width: "100%", maxWidth: "600px", minHeight: "500px", position: "fixed", right: "10px", top: open ? "45px" : "-100%", p: 1.5, zIndex: 9999, opacity: open ? 1 : 0, transition: "opacity 0.2s", }}
+            ref={modalRef}
+        >
             <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
                 <SearchIcon />
-                <InputBase placeholder="Search token, pair, or NFT" fullWidth sx={{ border: "none" }} value={search} onChange={(e) => setSearch(e.target.value)} />
+                <InputBase placeholder="Search coin, NFT" fullWidth sx={{ border: "none" }} value={search} onChange={(e) => setSearch(e.target.value)} />
                 <IconButton onClick={handleClose}>
                     <CloseIcon />
                 </IconButton>
             </Stack>
 
-            {search.length > 0 && (
+            {
+                search.length > 0 &&
                 <StyledToggleButtonGroup
                     color="primary"
                     value={activeTab}
                     exclusive
-                    onChange={handleTabChange}
+                    onChange={(_, newValue) => {
+                        setActiveTab(newValue);
+                    }}
                     aria-label="text formatting"
                 >
                     <ToggleButton value="all">All</ToggleButton>
-                    <ToggleButton value="token">Tokens</ToggleButton>
+                    <ToggleButton value="token">Cryptoassets</ToggleButton>
                     <ToggleButton value="nft">NFTs</ToggleButton>
                 </StyledToggleButtonGroup>
-            )}
+            }
 
-            {filteredTokens.length > 0 && (
+            {
+                tokens.length > 0 &&
                 <Stack mt={1} sx={{ display: (activeTab === 'token' || activeTab === 'all') ? "flex" : "none" }}>
                     <Stack direction="row" alignItems="center" sx={{ px: 1 }} spacing={0.5}>
-                        <Typography>{`${!search ? "Trending " : ""}Tokens`}</Typography>
-                        <WhatshotIcon fontSize="small" style={{ marginRight: 4, color: 'orange' }} />
+                        <Typography>{`${!search ? "Trending " : ""}Cryptoassets`}</Typography>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="currentColor"
+                            height="16px"
+                            width="16px"
+                            viewBox="0 0 24 24"
+                            color="#FF775F"
+                        >
+                            <path d="M17.0881 9.42254C16.4368 8.90717 15.8155 8.35512 15.3012 7.71336C12.3755 4.06357 13.8912 1 13.8912 1C8.46026 3.18334 7.22337 6.64895 7.16462 9.22981L7.1675 9.2572C7.1675 9.2572 7.21498 10.7365 7.90791 12.3625C8.12481 12.8713 7.88299 13.4666 7.33195 13.6199C6.87638 13.7465 6.40822 13.5317 6.21571 13.1314C5.90413 12.4831 5.49262 11.4521 5.6109 10.7249C4.75064 11.817 4.1815 13.1452 4.03542 14.6184C3.65092 18.4924 6.43759 22.0879 10.4208 22.8488C14.9906 23.7217 19.3121 20.7182 19.9269 16.3623C20.3117 13.6367 19.1498 11.0538 17.0881 9.42254ZM14.3578 17.7393C14.3289 17.776 13.5893 18.6597 12.3501 18.7517C12.2829 18.7547 12.2124 18.7577 12.1452 18.7577C11.2902 18.7577 10.4226 18.3682 9.56103 17.5951L9.37219 17.4262L9.61243 17.3372C9.62843 17.3312 11.2742 16.7236 11.6778 15.4077C11.8155 14.9629 11.7707 14.4566 11.553 13.9842C11.2905 13.4075 10.7845 11.9564 11.7453 10.9041L11.9309 10.7015L12.0206 10.9561C12.0238 10.9714 12.6034 12.5911 13.9741 13.4379C14.3871 13.6957 14.6977 14.0086 14.8931 14.3644C15.2959 15.1132 15.533 16.3065 14.3578 17.7393Z" />
+                        </svg>
+
                     </Stack>
                     <MenuList sx={{ px: 0 }}>
-                        {filteredTokens.map(({ md5, name, slug, isOMCF, user, kyc, pro24h, exch }, idx) => {
+                        {tokens.slice(0, activeTab == "token" ? tokens.length : 3).map(({ md5, name, slug, isOMCF, user, kyc, pro24h, exch }, idx) => {
                             const imgUrl = `https://s1.xrpl.to/token/${md5}`;
                             const link = `/token/${slug}?fromSearch=1`;
 
@@ -356,25 +339,41 @@ export default function SearchModal({ onClose, open }) {
                                         </Stack>
                                     </Box>
                                 </MenuItem>
-                            );
+                            )
                         })}
                     </MenuList>
+                    <Button onClick={() => setActiveTab("token")} sx={{ display: (search && activeTab != "token") ? "flex" : "none"}}>See all results &#40;{tokens.length}&#41;</Button>
                 </Stack>
-            )}
+            }
 
-            {filteredCollections.length > 0 && (
+            {
+                collections.length > 0 &&
                 <Stack mt={1} sx={{ display: (activeTab === 'nft' || activeTab === 'all') ? "flex" : "none" }}>
                     <Stack direction="row" alignItems="center" spacing={0.5} sx={{ px: 1 }}>
                         <Typography>{`${!search ? "Trending " : ""}NFTs`}</Typography>
-                        <WhatshotIcon fontSize="small" style={{ marginRight: 4, color: 'orange' }} />
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="currentColor"
+                            height="16px"
+                            width="16px"
+                            viewBox="0 0 24 24"
+                            color="#FF775F"
+                        >
+                            <path d="M17.0881 9.42254C16.4368 8.90717 15.8155 8.35512 15.3012 7.71336C12.3755 4.06357 13.8912 1 13.8912 1C8.46026 3.18334 7.22337 6.64895 7.16462 9.22981L7.1675 9.2572C7.1675 9.2572 7.21498 10.7365 7.90791 12.3625C8.12481 12.8713 7.88299 13.4666 7.33195 13.6199C6.87638 13.7465 6.40822 13.5317 6.21571 13.1314C5.90413 12.4831 5.49262 11.4521 5.6109 10.7249C4.75064 11.817 4.1815 13.1452 4.03542 14.6184C3.65092 18.4924 6.43759 22.0879 10.4208 22.8488C14.9906 23.7217 19.3121 20.7182 19.9269 16.3623C20.3117 13.6367 19.1498 11.0538 17.0881 9.42254ZM14.3578 17.7393C14.3289 17.776 13.5893 18.6597 12.3501 18.7517C12.2829 18.7547 12.2124 18.7577 12.1452 18.7577C11.2902 18.7577 10.4226 18.3682 9.56103 17.5951L9.37219 17.4262L9.61243 17.3372C9.62843 17.3312 11.2742 16.7236 11.6778 15.4077C11.8155 14.9629 11.7707 14.4566 11.553 13.9842C11.2905 13.4075 10.7845 11.9564 11.7453 10.9041L11.9309 10.7015L12.0206 10.9561C12.0238 10.9714 12.6034 12.5911 13.9741 13.4379C14.3871 13.6957 14.6977 14.0086 14.8931 14.3644C15.2959 15.1132 15.533 16.3065 14.3578 17.7393Z" />
+                        </svg>
+
                     </Stack>
                     <MenuList sx={{ px: 0 }}>
-                        {filteredCollections.map((nft, idx) => (
-                            <NFTRender key={idx} {...nft} darkMode={darkMode} />
-                        ))}
+                        {
+                            collections.slice(0, activeTab == "nft" ? collections.length : 3).map((nft, idx) => (
+                                <NFTRender key={idx} {...nft} darkMode={darkMode} />
+                            ))
+                        }
                     </MenuList>
+                    <Button onClick={() => setActiveTab("nft")} sx={{ display: (search && activeTab != "nft") ? "flex" : "none"}}>See all results &#40;{collections.length}&#41;</Button>
                 </Stack>
-            )}
+            }
         </Paper>
-    );
+    )
 };
