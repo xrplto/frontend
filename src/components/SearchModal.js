@@ -234,7 +234,7 @@ export default function SearchModal({ onClose, open }) {
 
     return (
         <Paper
-            sx={{ width: "100%", maxWidth: "600px", minHeight: "500px", position: "fixed", right: "10px", top: open ? "45px" : "-100%", p: 1.5, zIndex: 9999, opacity: open ? 1 : 0, transition: "opacity 0.2s", }}
+            sx={{ width: "100%", maxWidth: "600px", position: "fixed", right: "10px", top: open ? "45px" : "-100%", p: 1.5, zIndex: 9999, opacity: open ? 1 : 0, transition: "opacity 0.2s", }}
             ref={modalRef}
         >
             <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
@@ -280,7 +280,18 @@ export default function SearchModal({ onClose, open }) {
                             <path d="M17.0881 9.42254C16.4368 8.90717 15.8155 8.35512 15.3012 7.71336C12.3755 4.06357 13.8912 1 13.8912 1C8.46026 3.18334 7.22337 6.64895 7.16462 9.22981L7.1675 9.2572C7.1675 9.2572 7.21498 10.7365 7.90791 12.3625C8.12481 12.8713 7.88299 13.4666 7.33195 13.6199C6.87638 13.7465 6.40822 13.5317 6.21571 13.1314C5.90413 12.4831 5.49262 11.4521 5.6109 10.7249C4.75064 11.817 4.1815 13.1452 4.03542 14.6184C3.65092 18.4924 6.43759 22.0879 10.4208 22.8488C14.9906 23.7217 19.3121 20.7182 19.9269 16.3623C20.3117 13.6367 19.1498 11.0538 17.0881 9.42254ZM14.3578 17.7393C14.3289 17.776 13.5893 18.6597 12.3501 18.7517C12.2829 18.7547 12.2124 18.7577 12.1452 18.7577C11.2902 18.7577 10.4226 18.3682 9.56103 17.5951L9.37219 17.4262L9.61243 17.3372C9.62843 17.3312 11.2742 16.7236 11.6778 15.4077C11.8155 14.9629 11.7707 14.4566 11.553 13.9842C11.2905 13.4075 10.7845 11.9564 11.7453 10.9041L11.9309 10.7015L12.0206 10.9561C12.0238 10.9714 12.6034 12.5911 13.9741 13.4379C14.3871 13.6957 14.6977 14.0086 14.8931 14.3644C15.2959 15.1132 15.533 16.3065 14.3578 17.7393Z" />
                         </svg>
                     </Stack>
-                    <MenuList sx={{ px: 0, height: "300px", overflowY: "auto" }}>
+                    <MenuList sx={{
+                        p: 0,
+                        maxHeight: search.length > 0 ? "465px" : "auto",
+                        overflowY: "auto",
+                        "&::-webkit-scrollbar": {
+                            width: "6px !important"
+                        },
+                        "&::-webkit-scrollbar-thumb": {
+                            backgroundColor: "#666"
+                        }
+                    }}
+                    >
                         {tokens.slice(0, activeTab == "token" ? tokens.length : 4).map(({ md5, name, slug, isOMCF, user, kyc, pro24h, exch }, idx) => {
                             const imgUrl = `https://s1.xrpl.to/token/${md5}`;
                             const link = `/token/${slug}?fromSearch=1`;
@@ -343,7 +354,7 @@ export default function SearchModal({ onClose, open }) {
                             );
                         })}
                     </MenuList>
-                    <Button onClick={() => setActiveTab("token")} sx={{ display: (search && activeTab != "token") ? "flex" : "none", mt: -10 }}>See all results &#40;{tokens.length}&#41;</Button>
+                    <Button onClick={() => setActiveTab("token")} sx={{ display: (search && activeTab != "token") ? "flex" : "none" }}>See all results &#40;{tokens.length}&#41;</Button>
                 </Stack>
             }
 
@@ -365,14 +376,24 @@ export default function SearchModal({ onClose, open }) {
                         </svg>
 
                     </Stack>
-                    <MenuList sx={{ px: 0, height: "220px", overflowY: "auto" }}>
+                    <MenuList sx={{
+                        p: 0,
+                        maxHeight: search.length > 0 ? "465px" : "auto",
+                        overflowY: "auto",
+                        "&::-webkit-scrollbar": {
+                            width: "6px !important"
+                        },
+                        "&::-webkit-scrollbar-thumb": {
+                            backgroundColor: "#666"
+                        }
+                    }}>
                         {
                             collections.slice(0, activeTab == "nft" ? collections.length : 3).map((nft, idx) => (
                                 <NFTRender key={idx} {...nft} darkMode={darkMode} />
                             ))
                         }
                     </MenuList>
-                    <Button onClick={() => setActiveTab("nft")} sx={{ display: (search && activeTab != "nft") ? "flex" : "none", mt: -10 }}>See all results &#40;{collections.length}&#41;</Button>
+                    <Button onClick={() => setActiveTab("nft")} sx={{ display: (search && activeTab != "nft") ? "flex" : "none" }}>See all results &#40;{collections.length}&#41;</Button>
                 </Stack>
             }
         </Paper>
