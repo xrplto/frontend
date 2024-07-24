@@ -901,20 +901,22 @@ const Swap = ({ token }) => {
         </Typography>
       </Stack>
 
-      {
-        accountProfile && accountProfile.account ? (
-          <ExchangeButton
-            variant="contained"
+      <Stack sx={{ width: "100%" }}>
+        {
+          accountProfile && accountProfile.account ? (
+            <ExchangeButton
+              variant="contained"
 
-            onClick={handlePlaceOrder}
-            sx={{ mt: 0 }}
-          >
-            {handleMsg()}
-          </ExchangeButton>
-        ) : (
-          <ConnectWallet pair={pair} />
-        )
-      }
+              onClick={handlePlaceOrder}
+              sx={{ mt: 0 }}
+            >
+              {handleMsg()}
+            </ExchangeButton>
+          ) : (
+            <ConnectWallet pair={pair} />
+          )
+        }
+      </Stack>
 
       <QRDialog
         open={openScanQR}
