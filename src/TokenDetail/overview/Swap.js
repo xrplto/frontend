@@ -835,7 +835,7 @@ const Swap = ({ token }) => {
                   width: '100%',
                   input: {
                     autoComplete: 'off',
-                    padding: '10px 0px',
+                    padding: '0px 0 10px 0px',
                     border: 'none',
                     fontSize: '18px',
                     textAlign: 'end',
@@ -865,6 +865,19 @@ const Swap = ({ token }) => {
               <Typography variant="body2" color="textSecondary">{curr2.user}</Typography>
             </Box>
             <InputContent>
+              {
+                isLoggedIn &&
+                <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
+                  <Typography variant="s7">
+                    Balance{' '}
+                    <Typography variant="s2" color="primary" >
+                      {revert
+                        ? accountPairBalance?.curr1.value
+                        : accountPairBalance?.curr2.value}
+                    </Typography>
+                  </Typography>
+                </Stack>
+              }
               <Input
                 placeholder="0"
                 autoComplete="new-password"
@@ -876,7 +889,7 @@ const Swap = ({ token }) => {
                   width: '100%',
                   input: {
                     autoComplete: 'off',
-                    padding: '10px 0px',
+                    padding: '0px 0 10px 0px',
                     border: 'none',
                     fontSize: '18px',
                     textAlign: 'end',
