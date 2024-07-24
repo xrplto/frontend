@@ -57,7 +57,8 @@ const NFTRender = ({
     items,
     type,
     slug,
-    darkMode
+    darkMode,
+    addRecentSearchItem
 }) => {
 
     const [hLink, setHLink] = useState('')
@@ -79,6 +80,7 @@ const NFTRender = ({
             color="inherit"
             underline='none'
             href={hLink}
+            onClick={() => addRecentSearchItem(name, "", imgUrl, hLink)}
         >
             <MenuItem sx={{ pt: 1, pb: 1, px: 1, height: "50px" }}>
                 <Stack direction="row" spacing={1} alignItems="center">
@@ -140,6 +142,7 @@ export default function SearchModal({ onClose, open }) {
 
     const [tokens, setTokens] = useState([]);
     const [collections, setCollections] = useState([]);
+    const [searchHistory, setSearchHistory] = useState([]);
     const [search, setSearch] = useState('');
     const [activeTab, setActiveTab] = useState('all');
     const [loading, setLoading] = useState(false);
@@ -232,6 +235,32 @@ export default function SearchModal({ onClose, open }) {
         };
     }, [open]);
 
+    useEffect(() => {
+        if (window !== undefined) {
+            let recentSearches = JSON.parse(window.localStorage.getItem("recent-search"));
+            if (recentSearches) {
+                setSearchHistory(recentSearches);
+            }
+        }
+    }, [])
+
+    const addRecentSearchItem = (name, user, img, link) => {
+        let recentSearches = JSON.parse(window.localStorage.getItem("recent-search"));
+        if (recentSearches) {
+            recentSearches.push({
+                name, user, img, link
+            });
+
+            window.localStorage.setItem("recent-search", JSON.stringify(recentSearches));
+        } else {
+            const newSearch = [{
+                name, user, img, link
+            }];
+
+            window.localStorage.setItem("recent-search", JSON.stringify(newSearch));
+        }
+    }
+
     return (
         <Paper
             sx={{ width: "100%", maxWidth: "600px", position: "fixed", right: "10px", top: open ? "45px" : "-100%", p: 1.5, zIndex: 9999, opacity: open ? 1 : 0, transition: "opacity 0.2s", }}
@@ -297,7 +326,7 @@ export default function SearchModal({ onClose, open }) {
                             const link = `/token/${slug}?fromSearch=1`;
 
                             return (
-                                <Link key={idx} href={link} underline="none" color="inherit">
+                                <Link key={idx} href={link} underline="none" color="inherit" onClick={() => addRecentSearchItem(name, user, imgUrl, link)}>
                                     <MenuItem sx={{ py: "2px", px: 1, height: "50px" }}>
                                         <Box
                                             display="flex"
@@ -389,13 +418,43 @@ export default function SearchModal({ onClose, open }) {
                     }}>
                         {
                             collections.slice(0, activeTab == "nft" ? collections.length : 3).map((nft, idx) => (
-                                <NFTRender key={idx} {...nft} darkMode={darkMode} />
+                                <NFTRender key={idx} {...nft} addRecentSearchItem={addRecentSearchItem} darkMode={darkMode} />
                             ))
                         }
                     </MenuList>
                     <Button onClick={() => setActiveTab("nft")} sx={{ display: (search && activeTab != "nft") ? "flex" : "none" }}>See all results &#40;{collections.length}&#41;</Button>
                 </Stack>
             }
+
+            <Stack mt={1} sx={{ display: (activeTab === 'nft' || activeTab === 'all') ? "flex" : "none" }}>
+                <Stack direction="row" alignItems="center" spacing={0.5} sx={{ px: 1 }}>
+                    <Typography>Recent searches</Typography>
+                </Stack>
+
+                <Stack direction="row" spacing={2} sx={{ px: 1, mt: 0.5 }}>
+                    {
+                        searchHistory.map(({ name, user, img, link }, idx) => {
+                            return (
+                                <Link href={link} key={idx} underline="none" color="inherit">
+                                    <Paper sx={{ width: "100px", height: "100px", padding: "10px" }}>
+                                        <Stack direction="row" justifyContent="center">
+                                            <TokenImage
+                                                src={img}
+                                                width={36}
+                                                height={36}
+                                            />
+                                        </Stack>
+                                        <Stack alignItems="center" sx={{ marginTop: "5px"}}>
+                                            <Typography sx={{ fontWeight: "bold" }}>{truncate(name, 8)}</Typography>
+                                            <Typography variant="caption">{truncate(user, 8)}</Typography>
+                                        </Stack>
+                                    </Paper>
+                                </Link>
+                            )
+                        })
+                    }
+                </Stack>
+            </Stack>
         </Paper>
     )
 };
