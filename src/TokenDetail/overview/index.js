@@ -115,7 +115,7 @@ export default function Overview({ token }) {
                 <Poll user={user} name={token.name} /> {/* Pass user and name as props */}
             </Grid>
             <Grid item xs={12} md={12} lg={4}>
-                <Swap />
+                <Swap token={token}/>
                 <PriceStatistics token={token} />
                 <TrendingTokens />
             </Grid>
