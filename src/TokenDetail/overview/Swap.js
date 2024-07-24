@@ -20,6 +20,7 @@ import { isInstalled, submitTransaction } from '@gemwallet/api';
 import sdk from "@crossmarkio/sdk";
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { PuffLoader } from 'react-spinners';
 
 const pulse = keyframes`
   0% {
@@ -119,17 +120,6 @@ const ExchangeButton = styled(Button)(
         margin-left: 10px;
         margin-right: 10px;
     }
-`
-);
-
-const PulsatingCircle = styled('div')(
-  ({ theme }) => `
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: ${theme.palette.primary.main};
-    animation: ${pulse} 1.5s infinite;
-    margin-right: 8px;
 `
 );
 
@@ -915,8 +905,8 @@ const Swap = ({ token }) => {
         </ConverterFrame>
       </OverviewWrapper>
 
-      <Stack direction="row" alignItems="center" justifyContent="flex-start" sx={{ mt: 1, mb: 1, width: '100%' }}>
-        <PulsatingCircle />
+      <Stack direction="row" alignItems="center" justifyContent="flex-start" spacing={0.5} sx={{ mt: 1, mb: 1, width: '100%' }}>
+        <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={20} />
         <Typography variant="body1">
           1 {curr1.name} = {revert ? tokenExch2.toFixed(3) : (1 / tokenExch2).toFixed(3)} {curr2.name}
         </Typography>
