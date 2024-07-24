@@ -19,6 +19,7 @@ import useWebSocket from 'react-use-websocket';
 import { isInstalled, submitTransaction } from '@gemwallet/api';
 import sdk from "@crossmarkio/sdk";
 import { configureMemos } from 'src/utils/parse/OfferChanges';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 const pulse = keyframes`
   0% {
@@ -131,6 +132,11 @@ const PulsatingCircle = styled('div')(
     margin-right: 8px;
 `
 );
+
+const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
+  borderRadius: '50%',
+  overflow: 'hidden'
+}));
 
 const Swap = ({ token }) => {
   const WSS_URL = 'wss://ws.xrpl.to';
@@ -277,106 +283,106 @@ const Swap = ({ token }) => {
 
   const [wsReady, setWsReady] = useState(false);
   const { sendJsonMessage/*, getWebSocket*/ } = useWebSocket(WSS_URL, {
-      onOpen: () => {setWsReady(true);},
-      onClose: () => {setWsReady(false);},
-      shouldReconnect: (closeEvent) => true,
-      onMessage: (event) => processMessages(event)
+    onOpen: () => { setWsReady(true); },
+    onClose: () => { setWsReady(false); },
+    shouldReconnect: (closeEvent) => true,
+    onMessage: (event) => processMessages(event)
   });
 
   // Orderbook related useEffect - Start
   useEffect(() => {
-      let reqID = 1;
-      function sendRequest() {
-          if (!wsReady) return;
-          /*{
-              "id":17,
-              "command":"book_offers",
-              "taker_gets":{
-                  "currency":"534F4C4F00000000000000000000000000000000",
-                  "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
-              },
-              "taker_pays":{
-                  "currency":"XRP"
-              },
-              "ledger_index":"validated",
-              "limit":200
-          }
-
-          {
-              "id":20,
-              "command":"book_offers",
-              "taker_gets":{"currency":"XRP"},
-              "taker_pays":{
-                  "currency":"534F4C4F00000000000000000000000000000000",
-                  "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
-              },
-              "ledger_index":"validated",
-              "limit":200
-          }*/
-
-          const curr1 = pair.curr1;
-          const curr2 = pair.curr2;
-
-          const cmdAsk = {
-              id: reqID,
-              command: 'book_offers',
-              taker_gets: {
-                  currency: curr1.currency,
-                  issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-              },
-              taker_pays: {
-                  currency: curr2.currency,
-                  issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-              },
-              ledger_index: 'validated',
-              limit: 60
-          }
-          const cmdBid = {
-              id: reqID+1,
-              command: 'book_offers',
-              taker_gets: {
-                  currency: curr2.currency,
-                  issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-              },
-              taker_pays: {
-                  currency: curr1.currency,
-                  issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-              },
-              ledger_index: 'validated',
-              limit: 60
-          }
-          sendJsonMessage(cmdAsk);
-          sendJsonMessage(cmdBid);
-          reqID += 2;
+    let reqID = 1;
+    function sendRequest() {
+      if (!wsReady) return;
+      /*{
+          "id":17,
+          "command":"book_offers",
+          "taker_gets":{
+              "currency":"534F4C4F00000000000000000000000000000000",
+              "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
+          },
+          "taker_pays":{
+              "currency":"XRP"
+          },
+          "ledger_index":"validated",
+          "limit":200
       }
 
-      sendRequest();
+      {
+          "id":20,
+          "command":"book_offers",
+          "taker_gets":{"currency":"XRP"},
+          "taker_pays":{
+              "currency":"534F4C4F00000000000000000000000000000000",
+              "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
+          },
+          "ledger_index":"validated",
+          "limit":200
+      }*/
 
-      const timer = setInterval(() => sendRequest(), 4000);
+      const curr1 = pair.curr1;
+      const curr2 = pair.curr2;
 
-      return () => {
-          clearInterval(timer);
+      const cmdAsk = {
+        id: reqID,
+        command: 'book_offers',
+        taker_gets: {
+          currency: curr1.currency,
+          issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+        },
+        taker_pays: {
+          currency: curr2.currency,
+          issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+        },
+        ledger_index: 'validated',
+        limit: 60
       }
+      const cmdBid = {
+        id: reqID + 1,
+        command: 'book_offers',
+        taker_gets: {
+          currency: curr2.currency,
+          issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
+        },
+        taker_pays: {
+          currency: curr1.currency,
+          issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
+        },
+        ledger_index: 'validated',
+        limit: 60
+      }
+      sendJsonMessage(cmdAsk);
+      sendJsonMessage(cmdBid);
+      reqID += 2;
+    }
+
+    sendRequest();
+
+    const timer = setInterval(() => sendRequest(), 4000);
+
+    return () => {
+      clearInterval(timer);
+    }
 
   }, [wsReady, pair, revert, sendJsonMessage]);
   // Orderbook related useEffect - END
 
   // web socket process messages for orderbook
   const processMessages = (event) => {
-      const orderBook = JSON.parse(event.data);
+    const orderBook = JSON.parse(event.data);
 
-      if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
-          const req = orderBook.id % 2;
-          //console.log(`Received id ${orderBook.id}`)
-          if (req === 1) {
-              const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS);
-              setAsks(parsed);
-          }
-          if (req === 0) {
-              const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS);
-              setBids(parsed);
-          }
+    if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
+      const req = orderBook.id % 2;
+      //console.log(`Received id ${orderBook.id}`)
+      if (req === 1) {
+        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS);
+        setAsks(parsed);
       }
+      if (req === 0) {
+        const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS);
+        setBids(parsed);
+      }
+    }
   };
 
   useEffect(() => {
@@ -738,31 +744,6 @@ const Swap = ({ token }) => {
     else {
       openSnackbar('Invalid values!', 'error');
     }
-
-    // if (accountProfile && accountProfile.account) {
-    //     // Create offer
-    //     /*{
-    //         "TransactionType": "OfferCreate",
-    //         "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
-    //         "Fee": "12",
-    //         "Flags": 0,
-    //         "LastLedgerSequence": 7108682,
-    //         "Sequence": 8,
-    //         "TakerGets": "6000000",
-    //         "TakerPays": {
-    //           "currency": "GKO",
-    //           "issuer": "ruazs5h1qEsqpke88pcqnaseXdm6od2xc",
-    //           "value": "2"
-    //         }
-    //     }*/
-    //     onOfferCreateXumm();
-
-    // } else {
-    //     setShowAccountAlert(true);
-    //     setTimeout(() => {
-    //         setShowAccountAlert(false);
-    //     }, 2000);
-    // }
   };
 
   const handleChangeAmount1 = (e) => {
@@ -806,21 +787,54 @@ const Swap = ({ token }) => {
     else return "Exchange";
   }
 
+  const onFillMax = () => {
+    if (revert) {
+      if (accountPairBalance?.curr1.value > 0)
+        setAmount2(accountPairBalance?.curr1.value);
+    }
+
+    else {
+      if (accountPairBalance?.curr1.value > 0)
+        setAmount1(accountPairBalance?.curr1.value);
+    }
+  }
+
   return (
     <Stack alignItems="center" width="100%">
       <OverviewWrapper>
         <ConverterFrame>
           <CurrencyContent style={{ backgroundColor: color1 }}>
-            <Box display="flex" flexDirection="column" flex="1">
-              <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-                <Typography variant="subtitle1">You sell</Typography>
-
+            <Box display="flex" flexDirection="column" flex="1" gap="5.4px">
+              <Box display="flex" justifyContent="space-between" alignItems="top" width="100%">
+                <Typography lineHeight="1.4" variant="subtitle1">You sell</Typography>
               </Box>
-
-              <Typography variant="h6">{curr1.name}</Typography>
+              <Stack direction="row" alignItems="center" spacing={0.5}>
+                <TokenImage
+                  src={`https://s1.xrpl.to/token/${curr1.md5}`} // use normal <img> attributes as props
+                  width={32}
+                  height={32}
+                  onError={(event) => (event.target.src = '/static/alt.webp')}
+                />
+                <Typography variant="h6">{curr1.name}</Typography>
+              </Stack>
               <Typography variant="body2" color="textSecondary">{curr1.user}</Typography>
             </Box>
             <InputContent>
+              {
+                isLoggedIn &&
+                <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
+                  <Typography variant="s7">
+                    Balance{' '}
+                    <Typography variant="s2" color="primary" >
+                      {revert
+                        ? accountPairBalance?.curr2.value
+                        : accountPairBalance?.curr1.value}
+                    </Typography>
+                  </Typography>
+
+                  <Button sx={{ px: 0, py: 0, minWidth: 0 }} onClick={onFillMax}>MAX</Button>
+                </Stack>
+              }
               <Input
                 placeholder="0"
                 autoComplete="new-password"
@@ -845,12 +859,19 @@ const Swap = ({ token }) => {
           </CurrencyContent>
 
           <CurrencyContent style={{ backgroundColor: color2 }}>
-            <Box display="flex" flexDirection="column" flex="1">
+            <Box display="flex" flexDirection="column" flex="1" gap="5.4px">
               <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
                 <Typography variant="subtitle1">You buy</Typography>
-
               </Box>
-              <Typography variant="h6">{curr2.name}</Typography>
+              <Stack direction="row" alignItems="center" spacing={0.5}>
+                <TokenImage
+                  src={`https://s1.xrpl.to/token/${curr2.md5}`} // use normal <img> attributes as props
+                  width={32}
+                  height={32}
+                  onError={(event) => (event.target.src = '/static/alt.webp')}
+                />
+                <Typography variant="h6">{curr2.name}</Typography>
+              </Stack>
               <Typography variant="body2" color="textSecondary">{curr2.user}</Typography>
             </Box>
             <InputContent>
@@ -942,7 +963,7 @@ const App = ({ token }) => {
       <Button variant="outlined" onClick={toggleSwap} fullWidth startIcon={<Icon icon={showSwap ? hideIcon : swapIcon} />}>
         {showSwap ? 'Hide Swap' : 'Swap Now'}
       </Button>
-      {showSwap && <Swap token={token}/>}
+      {showSwap && <Swap token={token} />}
     </Stack>
   );
 };
@@ -954,93 +975,93 @@ const ORDER_TYPE_ASKS = 2;
 
 const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
 
-    if (offers.length < 1) return []
+  if (offers.length < 1) return []
 
-    const getCurrency = offers[0].TakerGets?.currency || 'XRP'
-    const payCurrency = offers[0].TakerPays?.currency || 'XRP'
-    
-    let multiplier = 1
-    const isBID = orderType === ORDER_TYPE_BIDS
+  const getCurrency = offers[0].TakerGets?.currency || 'XRP'
+  const payCurrency = offers[0].TakerPays?.currency || 'XRP'
 
-    // It's the same on each condition?
-    if (isBID) {
-        if (getCurrency === 'XRP')
-            multiplier = 1_000_000
-        else if (payCurrency === 'XRP')
-            multiplier = 0.000_001
-    } else {
-        if (getCurrency === 'XRP')
-            multiplier = 1_000_000
-        else if (payCurrency === 'XRP')
-            multiplier = 0.000_001
+  let multiplier = 1
+  const isBID = orderType === ORDER_TYPE_BIDS
+
+  // It's the same on each condition?
+  if (isBID) {
+    if (getCurrency === 'XRP')
+      multiplier = 1_000_000
+    else if (payCurrency === 'XRP')
+      multiplier = 0.000_001
+  } else {
+    if (getCurrency === 'XRP')
+      multiplier = 1_000_000
+    else if (payCurrency === 'XRP')
+      multiplier = 0.000_001
+  }
+
+  // let precision = maxDecimals(isBID ? Math.pow(offers[0].quality * multiplier, -1) : offers[0].quality * multiplier)
+
+  // let index = 0
+  const array = []
+  let sumAmount = 0;
+  let sumValue = 0;
+
+  for (let i = 0; i < offers.length; i++) {
+    const offer = offers[i]
+    const obj = {
+      id: '',
+      price: 0,
+      amount: 0,
+      value: 0,
+      sumAmount: 0, // SOLO
+      sumValue: 0, // XRP
+      avgPrice: 0,
+      sumGets: 0,
+      sumPays: 0,
+      isNew: false
     }
 
-    // let precision = maxDecimals(isBID ? Math.pow(offers[0].quality * multiplier, -1) : offers[0].quality * multiplier)
+    const id = `${offer.Account}:${offer.Sequence}`;
+    const gets = offer.taker_gets_funded || offer.TakerGets;
+    const pays = offer.taker_pays_funded || offer.TakerPays;
+    // const partial = (offer.taker_gets_funded || offer.taker_pays_funded) ? true: false;
 
-    // let index = 0
-    const array = []
-    let sumAmount = 0;
-    let sumValue = 0;
+    const takerPays = pays.value || pays;
+    const takerGets = gets.value || gets;
 
-    for (let i = 0; i < offers.length; i++) {
-        const offer = offers[i]
-        const obj = {
-            id: '',
-            price: 0,
-            amount: 0,
-            value: 0,
-            sumAmount: 0, // SOLO
-            sumValue: 0, // XRP
-            avgPrice: 0,
-            sumGets: 0,
-            sumPays: 0,
-            isNew: false
-        }
+    const amount = Number(isBID ? takerPays : takerGets)
+    const price = isBID ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier
+    const value = amount * price;
 
-        const id = `${offer.Account}:${offer.Sequence}`;
-        const gets = offer.taker_gets_funded || offer.TakerGets;
-        const pays = offer.taker_pays_funded || offer.TakerPays;
-        // const partial = (offer.taker_gets_funded || offer.taker_pays_funded) ? true: false;
+    sumAmount += amount;
+    sumValue += value;
+    obj.id = id;
+    obj.price = price
+    obj.amount = amount // SOLO
+    obj.value = value // XRP
+    obj.sumAmount = sumAmount
+    obj.sumValue = sumValue
 
-        const takerPays = pays.value || pays;
-        const takerGets = gets.value || gets;
+    if (sumAmount > 0)
+      obj.avgPrice = sumValue / sumAmount
+    else
+      obj.avgPrice = 0
 
-        const amount = Number(isBID ? takerPays : takerGets)
-        const price = isBID ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier
-        const value = amount * price;
+    //obj.partial = partial
 
-        sumAmount += amount;
-        sumValue += value;
-        obj.id = id;
-        obj.price = price
-        obj.amount = amount // SOLO
-        obj.value = value // XRP
-        obj.sumAmount = sumAmount
-        obj.sumValue = sumValue
+    if (amount > 0)
+      array.push(obj)
 
-        if (sumAmount > 0)
-            obj.avgPrice = sumValue / sumAmount
-        else
-            obj.avgPrice = 0
+  }
 
-        //obj.partial = partial
-
-        if (amount > 0)
-            array.push(obj)
-
+  const sortedArrayByPrice = [...array].sort(
+    (a, b) => {
+      let result = 0;
+      if (orderType === ORDER_TYPE_BIDS) {
+        result = b.price - a.price;
+      } else {
+        result = a.price - b.price;
+      }
+      return result;
     }
+  );
 
-    const sortedArrayByPrice = [ ...array ].sort(
-        (a, b) => {
-            let result = 0;
-            if (orderType === ORDER_TYPE_BIDS) {
-                result = b.price - a.price;
-            } else {
-                result = a.price - b.price;
-            }
-            return result;
-        }
-    );
-
-    return sortedArrayByPrice;
+  return sortedArrayByPrice;
 }
