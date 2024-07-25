@@ -139,6 +139,7 @@ function FTokenRow({
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
   const convertedMarketCap = Decimal.div(marketcap, exchRate).toNumber();
+  const convertedVolume = Decimal.div(vol24hxrp, exchRate).toNumber();
   const supplyRate = Decimal.div(supply, amount).toNumber() * 100;
 
   return (
@@ -316,9 +317,9 @@ function FTokenRow({
             justifyContent="flex-end"
             alignItems="center"
           >
-            <Typography>✕</Typography>
+            <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
             <Typography variant="h4" noWrap={!isMobile}>
-              {fNumber(vol24hxrp)}
+              {fNumber(convertedVolume)}
             </Typography>
           </Stack>
           <Stack
