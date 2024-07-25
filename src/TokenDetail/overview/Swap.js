@@ -527,8 +527,8 @@ const Swap = ({ token }) => {
     try {
       // const curr1 = revert?pair.curr2:pair.curr1;
       // const curr2 = revert?pair.curr1:pair.curr2;
-      // const curr1 = pair.curr1;
-      // const curr2 = pair.curr2;
+      const curr1 = pair.curr1;
+      const curr2 = pair.curr2;
       const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
@@ -816,9 +816,7 @@ const Swap = ({ token }) => {
                   <Typography variant="s7">
                     Balance{' '}
                     <Typography variant="s2" color="primary" >
-                      {revert
-                        ? accountPairBalance?.curr2.value
-                        : accountPairBalance?.curr1.value}
+                      {accountPairBalance?.curr1.value}
                     </Typography>
                   </Typography>
 
@@ -871,9 +869,7 @@ const Swap = ({ token }) => {
                   <Typography variant="s7">
                     Balance{' '}
                     <Typography variant="s2" color="primary" >
-                      {revert
-                        ? accountPairBalance?.curr1.value
-                        : accountPairBalance?.curr2.value}
+                      {accountPairBalance?.curr2.value}
                     </Typography>
                   </Typography>
                 </Stack>
