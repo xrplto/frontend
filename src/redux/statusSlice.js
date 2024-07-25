@@ -8,6 +8,7 @@ const initialState = {
     EUR: 100,
     JPY: 100,
     CNY: 100,
+    XRP: 1,
     H24: {
       transactions24H: 0,
       tradedXRP24H: 0,
@@ -46,7 +47,7 @@ const statusSlice = createSlice({
         EUR: data.exch?.EUR || 100,
         JPY: data.exch?.JPY || 100,
         CNY: data.exch?.CNY || 100,
-        XRP: data.exch?.XRP || 100,
+        XRP: 1,
         H24: data.H24 || initialState.metrics.H24,
         global: data.global || initialState.metrics.global
       };

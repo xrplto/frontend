@@ -15,8 +15,6 @@ export const AppContext = createContext({});
 
 export function ContextProvider({ children, data, openSnackbar }) {
 
-  console.log("data", data);
-  
   const BASE_URL = 'https://api.xrpl.to/api';
 
   const [sync, setSync] = useState(0);

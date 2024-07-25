@@ -17,7 +17,7 @@ export default function NumberTooltip({ number, prepend = '', append = '', pos =
         if (!number.toString().match(/,/)) {
             number = fNumber(number);
         }
-        return prepend + number + append; // if small enough return untrimmed
+        return prepend + " " + number + append; // if small enough return untrimmed
     }
     return (
         <Tooltip title={prepend + fNumber(number) + append} placement={pos} arrow>

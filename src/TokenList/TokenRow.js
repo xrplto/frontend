@@ -299,9 +299,9 @@ function FTokenRow({
               number={fNumberWithCurreny(exch, exchRate)}
             />
           </TransitionTypo>
-          <TransitionTypo variant="h6" noWrap={!isMobile}>
+          {/* <TransitionTypo variant="h6" noWrap={!isMobile}>
             ✕ <NumberTooltip number={fNumber(exch)} />
-          </TransitionTypo>
+          </TransitionTypo> */}
         </TableCell>
         <TableCell align="right">
           <BearBullLabel value={pro24h} variant="h4" />

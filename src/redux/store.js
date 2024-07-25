@@ -14,6 +14,7 @@ const initialState = {
     EUR: 100,
     JPY: 100,
     CNY: 100,
+    XRP: 1,
     H24: {
       transactions24H: 0,
       tradedXRP24H: 0,
@@ -70,6 +71,7 @@ export function configureRedux(data) {
         EUR: data.exch.EUR,
         JPY: data.exch.JPY,
         CNY: data.exch.CNY,
+        XRP: 1,
         H24: data.H24,
         global: data.global
       },
