@@ -18,6 +18,8 @@ import AttachMoneyRoundedIcon from '@mui/icons-material/AttachMoneyRounded';
 import EuroRoundedIcon from '@mui/icons-material/EuroRounded';
 import CurrencyYenRoundedIcon from '@mui/icons-material/CurrencyYenRounded';
 import CurrencyYuanRoundedIcon from '@mui/icons-material/CurrencyYuanRounded';
+import { Icon } from '@iconify/react';
+// import CurrencyXRPIcon from "@iconify/icons-tabler/currency-xrp";
 
 export const SUPPORTED_FILE_TYPES = [
   'JPG',
@@ -408,18 +410,20 @@ export const currencyIcons = {
   USD: <AttachMoneyRoundedIcon {...defaultCurrencyIconProps} />,
   EUR: <EuroRoundedIcon {...defaultCurrencyIconProps} />,
   JPY: <CurrencyYenRoundedIcon {...defaultCurrencyIconProps} />,
-  CNY: <CurrencyYuanRoundedIcon {...defaultCurrencyIconProps} />
+  CNY: <CurrencyYuanRoundedIcon {...defaultCurrencyIconProps} />,
+  XRP: <Icon icon="tabler:currency-xrp" width={18} height={18}/>
 };
 
 export const currencySymbols = {
   USD: '$',
   EUR: '€',
   JPY: '¥',
-  CNY: '¥'
+  CNY: '¥',
+  XRP: '✕'
 };
 
 export const currencyConfig = {
-  availableFiatCurrencies: ['USD', 'EUR', 'JPY', 'CNY'],
+  availableFiatCurrencies: ['XRP', 'USD', 'EUR', 'JPY', 'CNY'],
   activeFiatCurrency: 'USD'
 };
 

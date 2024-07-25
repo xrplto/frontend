@@ -46,6 +46,7 @@ const statusSlice = createSlice({
         EUR: data.exch?.EUR || 100,
         JPY: data.exch?.JPY || 100,
         CNY: data.exch?.CNY || 100,
+        XRP: data.exch?.XRP || 100,
         H24: data.H24 || initialState.metrics.H24,
         global: data.global || initialState.metrics.global
       };
