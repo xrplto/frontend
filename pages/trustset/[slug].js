@@ -16,7 +16,7 @@ import { AppContext } from 'src/AppContext';
 import { fNumber, fIntNumber } from 'src/utils/formatNumber';
 import LogoTrustline from 'src/components/LogoTrustline';
 import { useSelector } from 'react-redux';
-import { selectMetrics, selectActiveFiatCurrency } from 'src/redux/statusSlice';
+import { selectMetrics   } from 'src/redux/statusSlice';
 import { currencySymbols } from 'src/utils/constants';
 import Decimal from 'decimal.js';
 
@@ -47,7 +47,7 @@ const normalizeTag = (tag) => tag && tag.length > 0
 const TrustLine = (props) => {
   const BASE_URL = process.env.API_URL;
   const QR_BLUR = '/static/blurqr.webp';
-  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const { accountProfile, openSnackbar, activeFiatCurrency } = useContext(AppContext);
   const data = props.data || {};
   const token = data.token || {};
   const info = token?.issuer_info || {};
@@ -57,12 +57,13 @@ const TrustLine = (props) => {
   const [loading, setLoading] = useState(false);
   const [counter, setCounter] = useState(150);
   const metrics = useSelector(selectMetrics);
-  const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
+  // const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 
   const imgUrl = useMemo(() => `https://s1.xrpl.to/token/${token.md5}`, [token.md5]);
   const user = token.user || token.name;
   const marketcap = token.amount * token.exch / metrics.USD;
   const voldivmarket = marketcap > 0 ? Decimal.div(token.vol24hxrp, marketcap).toNumber() : 0;
+  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
   useEffect(() => {
     if (!uuid) return;
@@ -348,7 +349,7 @@ const TrustLine = (props) => {
 
                   <Label>MARKET CAP</Label>
                   <Typography variant="subtitle1" color="primary" sx={{ mb: 1 }}>
-                    {currencySymbols[activeFiatCurrency]}{fNumber(Decimal.mul(Decimal.div(metrics.USD, metrics[activeFiatCurrency]).toNumber(), token.marketcap).toNumber())}
+                    {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
                   </Typography>
 
                   <Label>24H VOLUME</Label>

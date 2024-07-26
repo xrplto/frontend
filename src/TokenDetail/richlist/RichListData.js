@@ -487,16 +487,6 @@ export default function RichListData({ token }) {
                             (exch * balance) / metrics[activeFiatCurrency]
                           )}
                         </Typography>
-                        <Stack
-                          direction="row"
-                          spacing={0.5}
-                          alignItems="center"
-                        >
-                          <Typography>✕</Typography>
-                          <Typography variant="subtitle1" noWrap>
-                            {fNumber(exch * balance)}
-                          </Typography>
-                        </Stack>
                       </Stack>
                     </TableCell>
 
