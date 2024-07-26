@@ -25,6 +25,7 @@ import {
 } from 'src/utils/formatNumber';
 import CurrencySwithcer from './CurrencySwitcher';
 import ThemeSwitcher from './ThemeSwitcher';
+import { currencySymbols } from 'src/utils/constants';
 
 const TopWrapper = styled(Box)(
   ({ theme }) => `
@@ -85,7 +86,7 @@ const Topbar = () => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { darkMode } = useContext(AppContext);
+  const { darkMode, activeFiatCurrency } = useContext(AppContext);
   const iconColor = darkMode ? '#FFFFFF' : '#000000';
   const [fullSearch, setFullSearch] = useState(false);
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
@@ -178,9 +179,9 @@ const Topbar = () => {
             </Typography>
             <Typography align="center" color="#FF6C40" variant="body2">
               <Stack direction="row" spacing={0.5} alignItems="center">
-              <Typography>✕</Typography>
+              <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
                 <Typography align="center" color="#FF6C40" variant="body2">
-                  {fNumber(metrics.H24.tradedXRP24H)}
+                  {fNumber(Decimal.div(metrics.H24.tradedXRP24H, metrics[activeFiatCurrency]).toNumber())}
                 </Typography>
               </Stack>
             </Typography>
