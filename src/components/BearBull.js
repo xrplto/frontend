@@ -4,7 +4,8 @@ import PropTypes from 'prop-types';
 import {
     Stack,
     styled,
-    Typography
+    Typography,
+    useTheme
 } from '@mui/material';
 
 // Utils
@@ -18,15 +19,15 @@ import caretUp from '@iconify/icons-bx/caret-up';
 // ----------------------------------------------------------------------
 
 const Bearish = styled('span') (
-    () => `
-        color: #FF6C40;
+    ({ theme }) => `
+        color: ${theme.palette.error.main};
         font-size: 14px;
     `
 );
 
 const Bullish = styled('span') (
-    () => `
-        color: #54D62C;
+    ({ theme }) => `
+        color: ${theme.palette.primary.light};
         font-size: 14px;
     `
 );
@@ -36,6 +37,7 @@ BearBull.propTypes = {
 };
 
 export default function BearBull({value}) {
+    const theme = useTheme();
     const pro = fPercent(value);
 
     let strPro = 0;
@@ -49,16 +51,15 @@ export default function BearBull({value}) {
         <>
             {pro < 0 ? (
                 <span>
-                    <Icon icon={caretDown} color="#FF6C40"/>
+                    <Icon icon={caretDown} color={theme.palette.error.main}/>
                     <Bearish>{strPro}</Bearish>
                 </span>
             ) : (
                 <span>
-                    <Icon icon={caretUp} color="#54D62C"/>
+                    <Icon icon={caretUp} color={theme.palette.primary.light}/>
                     <Bullish>{strPro}</Bullish>
                 </span>
             )}
         </>
     );
 }
-

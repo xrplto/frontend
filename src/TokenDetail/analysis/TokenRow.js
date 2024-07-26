@@ -89,11 +89,16 @@ function truncate(str, n) {
   return str.length > n ? str.substr(0, n - 1) + '... ' : str;
 }
 
-function getPriceColor(token) {
+function getPriceColor(token, theme) {
   const bearbull = token.bearbull;
   let color = '';
-  if (bearbull === -1) color = '#FF6C40';
-  else if (bearbull === 1) color = '#54D62C';
+
+  if (bearbull === -1) {
+    color = theme.palette.error.main;
+  } else if (bearbull === 1) {
+    color = theme.palette.success.main;
+  }
+
   return color;
 }
 

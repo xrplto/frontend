@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import React from 'react';
 import {
   LazyLoadImage,
@@ -21,9 +21,7 @@ import {
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 
-
 // Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Components
@@ -60,24 +58,20 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
 
 function truncate(str, n) {
   if (!str) return '';
-  //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
   return str.length > n ? str.substr(0, n - 1) + '... ' : str;
 }
 
-function getPriceColor(token) {
+function getPriceColor(token, theme) {
   const bearbull = token.bearbull;
   let color = '';
-  if (bearbull === -1) color = '#FF6C40';
-  else if (bearbull === 1) color = '#54D62C';
-  return color;
-}
 
-function formatTime(value, unit) {
-    if (value === 1) {
-        return `${value} ${unit} ago`;
-    } else {
-        return `${value} ${unit}s ago`;
-    }
+  if (bearbull === -1) {
+    color = theme.palette.error.main;
+  } else if (bearbull === 1) {
+    color = theme.palette.success.main;
+  }
+
+  return color;
 }
 
 export const GainersLosersTokenRow = React.memo(fTokenRow);
@@ -92,18 +86,25 @@ function fTokenRow({
   activeFiatCurrency,
   exchRate
 }) {
-  // const BASE_URL = process.env.API_URL;
   const { darkMode } = useContext(AppContext);
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-    
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const [priceColor, setPriceColor] = useState('');
+
+  useEffect(() => {
+    setPriceColor(getPriceColor(token, theme));
+    setTimeout(() => {
+      setPriceColor('');
+    }, 3000);
+  }, [time, token, theme]);
+
   const {
     id,
     name,
     date,
-    vol24hxrp, // XRP amount with pair token
-    vol24hx, // Token amount with pair XRP
+    vol24hxrp,
+    vol24hx,
     kyc,
     md5,
     slug,
@@ -113,14 +114,6 @@ function fTokenRow({
     isOMCF
   } = token;
 
-  useEffect(() => {
-    setPriceColor(getPriceColor(token));
-    setTimeout(() => {
-      setPriceColor('');
-    }, 3000);
-  }, [time]);
-
-  // const imgUrl = `/static/tokens/${md5}.${ext}`;
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
   return (
@@ -140,7 +133,6 @@ function fTokenRow({
         align="left"
         style={{
           position: 'sticky',
-          //zIndex: 1001,
           left: 0,
           background: darkMode ? '#000000' : '#FFFFFF'
         }}
@@ -153,7 +145,6 @@ function fTokenRow({
           sx={{
             p: 0,
             position: 'sticky',
-            //zIndex: 1003,
             left: 67,
             background: darkMode ? '#000000' : '#FFFFFF',
             '&:before': scrollLeft
@@ -175,7 +166,7 @@ function fTokenRow({
           <Stack direction="row" alignItems="center" spacing={2} sx={{ p: 0 }}>
             {admin ? (
               <AdminImage
-                src={imgUrl} // use normal <img> attributes as props
+                src={imgUrl}
                 width={isMobile ? 26 : 46}
                 height={isMobile ? 26 : 46}
                 onClick={() => setEditToken(token)}
@@ -184,7 +175,7 @@ function fTokenRow({
               />
             ) : (
               <TokenImage
-                src={imgUrl} // use normal <img> attributes as props
+                src={imgUrl}
                 width={isMobile ? 26 : 46}
                 height={isMobile ? 26 : 46}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
@@ -197,12 +188,10 @@ function fTokenRow({
               color="inherit"
               href={`/token/${slug}`}
               rel="noreferrer noopener nofollow"
-              // style={{textDecoration: "none"}}
             >
               <Stack>
                 <Typography
                   variant="token"
-
                   color={
                     isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : (darkMode ? '#007B55' : slug === md5 ? '#B72136' : '') 
                   }
@@ -243,18 +232,12 @@ function fTokenRow({
           }}
         >
           <TransitionTypo variant="h4" noWrap>
-            {currencySymbols[activeFiatCurrency]} {fNumberWithCurreny(exch,exchRate)}
+            {currencySymbols[activeFiatCurrency]} {fNumberWithCurreny(exch, exchRate)}
           </TransitionTypo>
-          {/* <TransitionTypo variant="h6" noWrap>
-          <Typography>✕</Typography> {fNumber(exch)}
-          </TransitionTypo> */}
         </TableCell>
         <TableCell align="right">
           <BearBullLabel value={pro24h} variant="h4" />
         </TableCell>
-        {/*<TableCell align="right">
-          <BearBullLabel value={pro7d} variant="h4" />
-        </TableCell>*/}
         <TableCell align="right">
           <Stack
             direction="row"
@@ -273,43 +256,12 @@ function fTokenRow({
             justifyContent="flex-end"
             alignItems="center"
           >
-            {/* <Icon icon={outlineToken} color="#0C53B7"/> */}
-            <Icon
-              icon={arrowsExchange}
-              color="#primary"
-              width="16"
-              height="16"
-            />
-            <Typography variant="h5" color="primary">
-              {fNumber(vol24hx)}
+      
+            <Typography variant="h5" color="primary.dark">
+              {fNumber(vol24hx)} {name}
             </Typography>
           </Stack>
         </TableCell>
-        {/*<TableCell align="right">{fNumber(vol24htx)}</TableCell>
-        <TableCell align="right">${fNumber(usdMarketCap)}</TableCell>*/}
-        {/* <TableCell align="left">{holders}</TableCell>
-                <TableCell align="left">{offers}</TableCell> */}
-
-        {/*<TableCell align="right">{trustlines}</TableCell>
-
-        <TableCell align="right">
-          {fNumber(supply)}{' '}
-          <Typography variant="small" noWrap>
-            {name}
-          </Typography>
-        </TableCell>
-        <TableCell align="right">
-          {timeAgo(dateon)}
-        </TableCell>*/}
-        {/*<TableCell align="right">
-          <LazyLoadImage
-            alt=""
-            src={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
-            width={135}
-            height={50}
-          />
-        </TableCell>*/}
-
         <TableCell align="right">
           <TokenMoreMenu token={token} setTrustToken={setTrustToken} />
         </TableCell>

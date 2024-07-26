@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 // Material
-import { withStyles } from '@mui/styles';
+import { withStyles, useTheme } from '@mui/styles';
 import {
     Stack,
     Typography
@@ -14,17 +14,17 @@ import caretUp from '@iconify/icons-bx/caret-up';
 
 // ----------------------------------------------------------------------
 
-const BearishTypography = withStyles({
+const BearishTypography = withStyles((theme) => ({
     root: {
-        color: "#FF6C40"
+        color: theme.palette.error.main
     }
-})(Typography);
+}))(Typography);
 
-const BullishTypography = withStyles({
+const BullishTypography = withStyles((theme) => ({
     root: {
-        color: "#54D62C"
+        color: theme.palette.primary.light
     }
-})(Typography);
+}))(Typography);
 
 BearBullLabel.propTypes = {
     value: PropTypes.number,
@@ -38,6 +38,7 @@ function abs(num) {
 }
 
 export default function BearBullLabel({ value, variant }) {
+    const theme = useTheme();
     const formattedValue = parseFloat(value).toFixed(2); // Format to two decimal places
     const isBearish = formattedValue < 0;
     const strPro = `${isBearish ? -formattedValue : formattedValue} %`;
@@ -46,12 +47,12 @@ export default function BearBullLabel({ value, variant }) {
         <>
             {isBearish ? (
                 <Stack direction="row" spacing={0.1} justifyContent="flex-end" alignItems='center'>
-                    <Icon icon={caretDown} color="#FF6C40"/>
+                    <Icon icon={caretDown} color={theme.palette.error.main}/>
                     <BearishTypography variant={variant} noWrap>{strPro}</BearishTypography>
                 </Stack>
             ) : (
                 <Stack direction="row" spacing={0.1} justifyContent="flex-end" alignItems='center'>
-                    <Icon icon={caretUp} color="#54D62C"/>
+                    <Icon icon={caretUp} color={theme.palette.primary.light}/>
                     <BullishTypography variant={variant} noWrap>{strPro}</BullishTypography>
                 </Stack>
             )}

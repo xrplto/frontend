@@ -177,10 +177,10 @@ const Topbar = () => {
             >
               {t('Vol')}:
             </Typography>
-            <Typography align="center" color="#FF6C40" variant="body2">
+            <Typography align="center"  variant="body2">
               <Stack direction="row" spacing={0.5} alignItems="center">
               <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
-                <Typography align="center" color="#FF6C40" variant="body2">
+              <Typography align="center" color={theme.palette.error.main} variant="body2">
                   {fNumber(Decimal.div(metrics.H24.tradedXRP24H, metrics[activeFiatCurrency]).toNumber())}
                 </Typography>
               </Stack>

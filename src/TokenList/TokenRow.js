@@ -79,11 +79,18 @@ const truncate = (str, n) => {
   return str.length > n ? str.substr(0, n - 1) + '... ' : str;
 };
 
-const getPriceColor = (bearbull) => {
-  if (bearbull === -1) return '#FF6C40';
-  if (bearbull === 1) return '#54D62C';
-  return '';
-};
+function getPriceColor(token, theme) {
+  const bearbull = token.bearbull;
+  let color = '';
+
+  if (bearbull === -1) {
+    color = theme.palette.error.main;
+  } else if (bearbull === 1) {
+    color = theme.palette.success.main;
+  }
+
+  return color;
+}
 
 function FTokenRow({
   time,
@@ -329,7 +336,7 @@ function FTokenRow({
             alignItems="center"
           >
       
-      <Typography variant="h5" color="primary">
+      <Typography variant="h6" color="primary.dark">
   <NumberTooltip number={fNumber(vol24hx)} />
   {' '}
   {name}

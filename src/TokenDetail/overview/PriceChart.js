@@ -156,7 +156,7 @@ function PriceChart({ token }) {
       strokeDashArray: 3,
       borderColor: theme.palette.divider
     },
-    colors: [theme.palette.primary.main], // Set the primary color from the theme
+    colors: [theme.palette.primary.light], // Set the primary color from the theme
 
     // Fill
     fill: {

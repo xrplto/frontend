@@ -415,11 +415,11 @@ export const currencyIcons = {
 };
 
 export const currencySymbols = {
-  USD: '$',
-  EUR: '€',
-  JPY: '¥',
-  CNY: '¥',
-  XRP: '✕'
+  USD: '$ ',
+  EUR: '€ ',
+  JPY: '¥ ',
+  CNY: '¥ ',
+  XRP: '✕ '
 };
 
 export const currencyConfig = {

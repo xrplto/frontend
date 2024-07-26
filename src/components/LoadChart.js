@@ -25,7 +25,7 @@ const LoadChart = ({ url }) => {
                         series: [{
                             data: coodinate,
                             type: 'line',
-                            color: chartColor === "#54D62C" ? theme.palette.primary.main : chartColor,
+                            color: chartColor === "#54D62C" ? theme.palette.primary.light : chartColor || chartColor ==="#FF6C40" ? theme.palette.error.main : chatColor ,
                             showSymbol: false,
                             lineStyle: {
                                 width: 2.4

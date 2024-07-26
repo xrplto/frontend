@@ -38,17 +38,19 @@ import HistoryToolbar from './HistoryToolbar';
 import { useRef } from 'react';
 
 // ----------------------------------------------------------------------
-const CancelTypography = withStyles({
+const CancelTypography = withStyles((theme) => ({
   root: {
-    color: '#FF6C40',
+    color: theme.palette.error.main,
     borderRadius: '6px',
-    border: '0.05em solid #FF6C40',
+    border: `0.05em solid ${theme.palette.error.main}`,
     //fontSize: '0.5rem',
     lineHeight: '1',
     paddingLeft: '3px',
     paddingRight: '3px'
   }
-})(Typography);
+}))(Typography);
+
+
 
 const BuyTypography = withStyles({
   root: {

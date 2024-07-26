@@ -35,11 +35,9 @@ export default function ChartOptions2(series) {
         // Colors
         colors: [
             '#00AB55',
-            '#B72136',
-            '#2D99FF',
-            '#FF6C40',
-            '#2CD9C5',
-            '#FF6C40',
+            '#BFDFCC',
+            '#F1BD6E',
+            '#F8693E',
         ],
 
         // Fill
