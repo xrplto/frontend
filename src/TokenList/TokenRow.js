@@ -328,15 +328,13 @@ function FTokenRow({
             justifyContent="flex-end"
             alignItems="center"
           >
-            <Icon
-              icon={arrowsExchange}
-              color="primary"
-              width="16"
-              height="16"
-            />
-            <Typography variant="h5" color="primary">
-              <NumberTooltip number={fNumber(vol24hx)} />
-            </Typography>
+      
+      <Typography variant="h5" color="primary">
+  <NumberTooltip number={fNumber(vol24hx)} />
+  {' '}
+  {name}
+</Typography>
+
           </Stack>
         </TableCell>
         <TableCell align="right"><Typography variant="h4">{fNumber(vol24htx)}</Typography></TableCell> 
