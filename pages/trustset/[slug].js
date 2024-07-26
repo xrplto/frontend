@@ -13,7 +13,7 @@ import paperIcon from '@iconify/icons-akar-icons/paper';
 import copyIcon from '@iconify/icons-fad/copy';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { fNumber, fIntNumber } from 'src/utils/formatNumber';
+import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 import LogoTrustline from 'src/components/LogoTrustline';
 import { useSelector } from 'react-redux';
 import { selectMetrics   } from 'src/redux/statusSlice';
@@ -353,7 +353,7 @@ const TrustLine = (props) => {
                   </Typography>
 
                   <Label>24H VOLUME</Label>
-                  <Typography variant="subtitle1" color="primary" sx={{ mb: -0.3 }}>{fNumber(token.vol24hxrp)} XRP</Typography>
+                  <Typography variant="subtitle1" color="primary" sx={{ mb: -0.3 }}>{currencySymbols[activeFiatCurrency]} {fNumberWithCurreny(token.vol24hxrp, metrics[activeFiatCurrency])}</Typography>
                   <Typography variant="subtitle1" color="primary" sx={{ mb: 1 }}>{fNumber(token.vol24hx)} {token.name}</Typography>
 
                   <Label>VOLUME / MARKETCAP</Label>

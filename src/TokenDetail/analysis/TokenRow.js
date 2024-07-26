@@ -270,9 +270,9 @@ function FTokenRow({
           <TransitionTypo variant="h4" noWrap>
             {currencySymbols[activeFiatCurrency]} {fNumberWithCurreny(exch,exchRate)}
           </TransitionTypo>
-          <TransitionTypo variant="h6" noWrap>
+          {/* <TransitionTypo variant="h6" noWrap>
           <Typography>✕</Typography> {fNumber(exch)}
-          </TransitionTypo>
+          </TransitionTypo> */}
         </TableCell>
         <TableCell align="right">
           <BearBullLabel value={pro24h} variant="h4" />
@@ -287,9 +287,9 @@ function FTokenRow({
             justifyContent="flex-end"
             alignItems="center"
           >
-            <Typography>✕</Typography>
+            <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
             <Typography variant="h4" noWrap>
-              {fNumber(vol24hxrp)}
+              {fNumberWithCurreny(vol24hxrp, exchRate)}
             </Typography>
           </Stack>
           <Stack
