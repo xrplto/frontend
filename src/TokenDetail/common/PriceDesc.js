@@ -1,6 +1,5 @@
 // Material
 import {
-  Box,
   Divider,
   Stack,
   Typography,
@@ -13,7 +12,7 @@ import BearBullChip from './BearBullChip';
 import LowHighBar24H from './LowHighBar24H';
 
 // Utils
-import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
+import { fNumberWithCurreny } from 'src/utils/formatNumber';
 
 import NumberTooltip from 'src/components/NumberTooltip';
 import { useSelector } from 'react-redux';
@@ -21,7 +20,6 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { currencySymbols } from 'src/utils/constants';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import Decimal from 'decimal.js';
 import LoadChart from 'src/components/LoadChart';
 
 // ----------------------------------------------------------------------
@@ -51,9 +49,9 @@ export default function PriceDesc({ token }) {
               number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
             />
           </Typography>
-          <Typography variant="subtitle1" style={{ marginTop: 8 }}>
+          {/* <Typography variant="subtitle1" style={{ marginTop: 8 }}>
             <NumberTooltip number={fNumber(exch)} /> XRP
-          </Typography>
+          </Typography> */}
         </Stack>
       </Stack>
 
