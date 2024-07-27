@@ -13,8 +13,13 @@ export function fNumber(num) {
       return trimDecimal(num); //webxtor: no more exponential
     }
 
-    // Seems like never used at e is always with <1 so far, probably pass to currency (now with trimDecimal)
-    return trimDecimal(BigNumber(strNum).toFixed());
+    const splitNum = strNum.split("e");
+    const result = <span>{Number(splitNum[0]).toFixed(2)} x 10<sup>{Number(splitNum[1])}</sup></span>;
+    return result;
+    // console.log(splitNum, BigNumber(strNum).toFixed(),trimDecimal(BigNumber(strNum).toFixed()));
+
+    // // Seems like never used at e is always with <1 so far, probably pass to currency (now with trimDecimal)
+    // return trimDecimal(BigNumber(strNum).toFixed());
   }
   return fCurrency5(num);
 }
