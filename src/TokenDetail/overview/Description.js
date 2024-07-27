@@ -149,7 +149,7 @@ export default function Description({
       "currency": activeFiatCurrency,
       "value": convertedMarketCap
     },
-    "supply": fNumber(supply),
+    "supply": fNumber(supply, true),
     "priceChangePercentage24h": strPro24h,
     "priceChangePercentage7d": vpro7d,
     "fiatChange24h": p24h,
@@ -158,7 +158,7 @@ export default function Description({
     "tradingVolume24h": {
       "@type": "MonetaryAmount",
       "currency": "XRP",
-      "value": fNumber(vol24hxrp)
+      "value": fNumber(vol24hxrp, true)
     },
     "marketDominance": dom
   };
