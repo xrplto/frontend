@@ -1,38 +1,27 @@
 import axios from 'axios';
-import Decimal from 'decimal.js';
-import { useState, useEffect, useContext, useRef } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import csvDownload from 'json-to-csv-export';
 import createMedianFilter from 'moving-median';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
 
 // Material
 import {
   useTheme,
-  Box,
-  Button,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
   Grid,
   IconButton,
   Stack,
-  Switch,
   ToggleButton,
   ToggleButtonGroup,
-  Typography
+  Typography,
+  Paper,
+  toggleButtonGroupClasses,
+  styled
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 
 // Context
 import { AppContext } from 'src/AppContext';
-
-// Chart
-// import { Chart } from 'src/components/Chart';
-
-// Utils
-import { fCurrency5, fNumber } from 'src/utils/formatNumber';
-
-// Components
-import ChartOptions from './ChartOptions';
 
 import { useRouter } from 'next/router';
 import { currencySymbols } from 'src/utils/constants';
@@ -50,12 +39,29 @@ const fiatMapping = {
   XRP: 'XRP',
 };
 
+const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
+  [`& .${toggleButtonGroupClasses.grouped}`]: {
+    margin: theme.spacing(0.5),
+    border: 0,
+    borderRadius: theme.shape.borderRadius,
+    [`&.${toggleButtonGroupClasses.disabled}`]: {
+      border: 0,
+    },
+  },
+  [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]:
+  {
+    marginLeft: -1,
+    borderLeft: '1px solid transparent',
+  },
+}));
+
 function PriceChart({ token }) {
   const BASE_URL = process.env.API_URL;
   const theme = useTheme();
 
   const [data, setData] = useState([]);
   const [dataOHLC, setDataOHLC] = useState([]);
+  const [chartType, setChartType] = useState(0);
 
   const [range, setRange] = useState('1D');
 
@@ -64,9 +70,6 @@ function PriceChart({ token }) {
 
   const [mediumValue, setMediumValue] = useState(null);
   const [minValue, setMinValue] = useState(null);
-  const [maxValue, setMaxValue] = useState(null);
-
-  const chartRef = useRef(null);
 
   const { accountProfile, activeFiatCurrency, darkMode } = useContext(AppContext);
   const isAdmin =
@@ -387,12 +390,11 @@ function PriceChart({ token }) {
   const handleAfterSetExtremes = (e) => {
     if (e.dataMin && e.dataMax) {
       setMinValue(e.dataMin);
-      setMaxValue(e.dataMax);
       setMediumValue((e.dataMin + e.dataMax) / 2);
     }
   };
 
-  const options = {
+  const options1 = {
     title: {
       text: null // Remove y-axis title
     },
@@ -588,9 +590,31 @@ function PriceChart({ token }) {
                 <DownloadIcon fontSize="small" />
               </IconButton>
             )}
+            <Paper
+              elevation={0}
+              sx={{
+                display: 'flex',
+                border: (theme) => `1px solid ${theme.palette.divider}`,
+                flexWrap: 'wrap',
+              }}
+            >
+              <StyledToggleButtonGroup
+                size="small"
+                value={chartType}
+                exclusive
+                onChange={(e, newType) => setChartType(newType)}
+                aria-label="text alignment"
+              >
+                <ToggleButton value={0} sx={{ pt: 0.25, pb: 0.25 }} aria-label="left aligned">
+                  <ShowChartIcon />
+                </ToggleButton>
+                <ToggleButton value={1} sx={{ pt: 0.25, pb: 0.25 }} aria-label="centered">
+                  <CandlestickChartIcon />
+                </ToggleButton>
+              </StyledToggleButtonGroup>
+            </Paper>
           </Stack>
         </Grid>
-
         <Grid container item xs={12} md={6} justifyContent="flex-end">
           <ToggleButtonGroup
             color="primary"
@@ -619,16 +643,18 @@ function PriceChart({ token }) {
           </ToggleButtonGroup>
         </Grid>
       </Grid>
-      {/* <HighchartsReact
-        options={options}
-        highcharts={Highcharts}
-        allowChartUpdate={true}
-        ref={chartRef}
-      /> */}
-      <HighchartsReact
-        highcharts={Highcharts}
-        options={options2}
-      />
+      <Stack display={!chartType ? "flex" : "none"}>
+        <HighchartsReact
+          highcharts={Highcharts}
+          options={options1}
+        />
+      </Stack>
+      <Stack display={chartType ? "flex" : "none"}>
+        <HighchartsReact
+          highcharts={Highcharts}
+          options={options2}
+        />
+      </Stack>
       {/* <Box sx={{ p: 0, pb: 0 }} dir="ltr">
         <Chart series={options1.series} options={options1} height={364} />
       </Box>
