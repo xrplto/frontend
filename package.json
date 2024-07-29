@@ -61,6 +61,8 @@
     "echarts-for-react": "^3.0.2",
     "framer-motion": "^4.1.7",
     "hashicon": "^0.3.0",
+    "highcharts": "^11.4.6",
+    "highcharts-react-official": "^3.2.1",
     "i18next": "^23.5.1",
     "i18next-browser-languagedetector": "^7.1.0",
     "json-to-csv-export": "^2.1.1",
