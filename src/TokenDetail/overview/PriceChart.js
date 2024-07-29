@@ -29,6 +29,8 @@ import { currencySymbols } from 'src/utils/constants';
 // import Highcharts from 'highcharts'
 import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official'
+import moment from 'moment';
+import { fCurrency5 } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
 
 const fiatMapping = {
@@ -506,6 +508,28 @@ function PriceChart({ token }) {
         lineWidth: 1.25
       },
     ],
+    tooltip: {
+      backgroundColor: '#3333338f',
+      borderRadius: 5,
+      borderWidth: 0,
+      style: {
+        color: '#FFF',
+        fontSize: '16px',
+        fontWeight: 'bold'
+      },
+      formatter: function () {
+        return `<div>
+          <div style="display: flex; justify-content: space-between; gap: 10px;">
+            <span style="font-size: 12px;">${moment(this.x).format("MM/DD/YYYY")}</span>
+            <span style="font-size: 12px;">${moment(this.x).format("hh:mm:ss A")}</span>
+          </div>
+          <p>Price: ${currencySymbols[activeFiatCurrency]} ${fCurrency5(this.y)}</p>
+        </div>`
+      },
+      shared: true,
+      split: false,
+      useHTML: true
+    }
   };
 
   const options2 = {
@@ -576,7 +600,32 @@ function PriceChart({ token }) {
       type: 'candlestick',
       name: 'USD to EUR',
       data: dataOHLC
-    }]
+    }],
+    tooltip: {
+      backgroundColor: '#3333338f',
+      borderRadius: 5,
+      borderWidth: 0,
+      style: {
+        color: '#FFF',
+        fontSize: '16px',
+        fontWeight: 'bold'
+      },
+      formatter: function () {
+        return `<div>
+          <div style="display: flex; justify-content: space-between; gap: 10px;">
+            <span style="font-size: 12px;">${moment(this.x).format("MM/DD/YYYY")}</span>
+            <span style="font-size: 12px;">${moment(this.x).format("hh:mm:ss A")}</span>
+          </div>
+          <p style="font-size: 11px;">Open: ${fCurrency5(this.point.open)}</p>
+          <p style="font-size: 11px;">High: ${fCurrency5(this.point.high)}</p>
+          <p style="font-size: 11px;">Low: ${fCurrency5(this.point.low)}</p>
+          <p style="font-size: 11px;">Close: ${fCurrency5(this.point.close)}</p>
+        </div>`
+      },
+      shared: true,
+      split: false,
+      useHTML: true
+    }
   };
 
   return (
