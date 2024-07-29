@@ -37,7 +37,8 @@ import ChartOptions from './ChartOptions';
 import { useRouter } from 'next/router';
 import { currencySymbols } from 'src/utils/constants';
 
-import Highcharts from 'highcharts'
+// import Highcharts from 'highcharts'
+import Highcharts from 'highcharts/highstock';
 import HighchartsReact from 'highcharts-react-official'
 // ----------------------------------------------------------------------
 
@@ -54,6 +55,8 @@ function PriceChart({ token }) {
   const theme = useTheme();
 
   const [data, setData] = useState([]);
+  const [dataOHLC, setDataOHLC] = useState([]);
+
   const [range, setRange] = useState('1D');
 
   const [minTime, setMinTime] = useState(0);
@@ -108,6 +111,30 @@ function PriceChart({ token }) {
             }
 
             setData(items);
+          }
+        })
+        .catch((err) => {
+          console.log('Error on getting graph data.', err);
+        })
+        .then(function () {
+          // always executed
+        });
+
+      axios
+        .get(
+          `${BASE_URL}/graph-ohlc-with-metrics/${token.md5}?range=${range}&vs_currency=${fiatMapping[activeFiatCurrency]}${fromSearch}`
+        )
+        .then((res) => {
+          let ret = res.status === 200 ? res.data : undefined;
+          if (ret) {
+            const items = ret.history;
+
+            if (items && items.length > 0) {
+              setMinTime(items[0][0]);
+              setMaxTime(items[items.length - 1][0]);
+            }
+
+            setDataOHLC(items);
           }
         })
         .catch((err) => {
@@ -398,7 +425,7 @@ function PriceChart({ token }) {
         }
       }
     },
-    legend:{ enabled:false },
+    legend: { enabled: false },
     credits: {
       text: ""
     },
@@ -479,6 +506,77 @@ function PriceChart({ token }) {
     ],
   };
 
+  const options2 = {
+    plotOptions: {
+      candlestick: {
+        color: 'red',
+        lineColor: 'red',
+        upColor: 'green',
+        upLineColor: 'green'
+      }
+    },
+    rangeSelector: {
+      selected: 1
+    },
+    title: {
+      text: null
+    },
+    chart: {
+      backgroundColor: "transparent",
+      height: "500px",
+      events: {
+        render: function () {
+          const chart = this;
+          const imgUrl = darkMode ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
+          const imgWidth = "50";
+          const imgHeight = "15";
+
+          if (chart.watermark) {
+            chart.watermark.destroy();
+          }
+
+          const xPos = chart.plotWidth - imgWidth - 10; // 10px margin from right edge
+          const yPos = chart.plotHeight - imgHeight - 10; // 10px margin from bottom edge
+
+          // Add watermark as an SVG image
+          chart.watermark = chart.renderer.image(imgUrl, xPos, yPos, imgWidth, imgHeight)
+            .attr({
+              zIndex: 5, // Ensure it's above other elements
+              opacity: 0.6, // Adjust the opacity as needed
+              width: "100px",
+            })
+            .add();
+        }
+      }
+    },
+    legend: { enabled: false },
+    credits: {
+      enabled: false
+    },
+    xAxis: {
+      type: "datetime",
+      crosshair: {
+        width: 1,
+        dashStyle: "Dot"
+      }
+    },
+    yAxis: {
+      crosshair: {
+        width: 1,
+        dashStyle: "Dot"
+      },
+      title: {
+        text: null // Remove y-axis title
+      },
+      gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)', // Grid line color
+    },
+    series: [{
+      type: 'candlestick',
+      name: 'USD to EUR',
+      data: dataOHLC
+    }]
+  };
+
   return (
     <>
       <Grid container rowSpacing={2} alignItems="center" sx={{ mt: 0 }}>
@@ -521,14 +619,15 @@ function PriceChart({ token }) {
           </ToggleButtonGroup>
         </Grid>
       </Grid>
-      <HighchartsReact
+      {/* <HighchartsReact
         options={options}
         highcharts={Highcharts}
         allowChartUpdate={true}
         ref={chartRef}
-      // immutable={false}
-      // updateArgs={[true, true, true]}
-      // containerProps={{ className: 'chartContainer' }}
+      /> */}
+      <HighchartsReact
+        highcharts={Highcharts}
+        options={options2}
       />
       {/* <Box sx={{ p: 0, pb: 0 }} dir="ltr">
         <Chart series={options1.series} options={options1} height={364} />
