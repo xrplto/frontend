@@ -71,7 +71,6 @@ function PriceChart({ token }) {
   const [maxTime, setMaxTime] = useState(0);
 
   const [mediumValue, setMediumValue] = useState(null);
-  const [minValue, setMinValue] = useState(null);
 
   const { accountProfile, activeFiatCurrency, darkMode } = useContext(AppContext);
   const isAdmin =
@@ -391,7 +390,6 @@ function PriceChart({ token }) {
 
   const handleAfterSetExtremes = (e) => {
     if (e.dataMin && e.dataMax) {
-      setMinValue(e.dataMin);
       setMediumValue((e.dataMin + e.dataMax) / 2);
     }
   };
@@ -447,9 +445,11 @@ function PriceChart({ token }) {
       tickAmount: 8,
       tickWidth: 1,
       gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)', // Grid line color
-      min: minValue,
       events: {
-        afterSetExtremes: handleAfterSetExtremes
+        afterSetExtremes: handleAfterSetExtremes,
+        setExtremes() {
+          console.log("setExtremes", range)
+        }
       },
       plotLines: [{
         width: 1, // Width of the median line
@@ -696,12 +696,14 @@ function PriceChart({ token }) {
         <HighchartsReact
           highcharts={Highcharts}
           options={options1}
+          allowChartUpdate={true}
         />
       </Stack>
       <Stack display={chartType ? "flex" : "none"}>
         <HighchartsReact
           highcharts={Highcharts}
           options={options2}
+          allowChartUpdate={true}
         />
       </Stack>
       {/* <Box sx={{ p: 0, pb: 0 }} dir="ltr">
