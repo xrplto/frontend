@@ -118,10 +118,12 @@ export default function Header(props) {
   }, [isProcessing, isClosed])
 
   useEffect(() => {
-    sdk.on("close", () => {
-      setClosed(true);
-    });
-  }, [])
+    if (isDesktop) {
+      sdk.on("close", () => {
+        setClosed(true);
+      });
+    }
+  }, [isDesktop])
 
   return (
     <HeaderWrapper>
