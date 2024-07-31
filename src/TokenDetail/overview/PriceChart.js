@@ -274,6 +274,7 @@ function PriceChart({ token }) {
       }
     }));
   }, [minTime, maxTime]);
+  console.log("data", data)
 
   // const options2 = {
   //   chart: {
