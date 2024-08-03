@@ -79,18 +79,11 @@ const truncate = (str, n) => {
   return str.length > n ? str.substr(0, n - 1) + '... ' : str;
 };
 
-function getPriceColor(token, theme) {
-  const bearbull = token.bearbull;
-  let color = '';
-
-  if (bearbull === -1) {
-    color = theme.palette.error.main;
-  } else if (bearbull === 1) {
-    color = theme.palette.success.main;
-  }
-
-  return color;
-}
+const getPriceColor = (bearbull) => {
+  if (bearbull === -1) return '#FF6C40';
+  if (bearbull === 1) return '#54D62C';
+  return '';
+};
 
 function FTokenRow({
   time,
