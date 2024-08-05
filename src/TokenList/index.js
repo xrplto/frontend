@@ -23,6 +23,7 @@ import SearchToolbar from './SearchToolbar';
 import { TokenRow } from './TokenRow';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 import TrustSetDialog from 'src/components/TrustSetDialog';
+import CryptoHeatmap from 'src/components/CryptoHeatmap';
 
 const useStyles = makeStyles({
   tableContainer: {
@@ -74,6 +75,7 @@ export default function TokenList({
   const [showNew, setShowNew] = useState(false);
   const [showSlug, setShowSlug] = useState(false);
   const [showDate, setShowDate] = useState(false);
+  const [viewType, setViewType] = useState("row");
 
   const tableContainerRef = useRef(null);
   const tableRef = useRef(null);
@@ -286,9 +288,11 @@ export default function TokenList({
         setShowSlug={updateShowSlug}
         showDate={showDate}
         setShowDate={updateShowDate}
+        viewType={viewType}
+        setViewType={setViewType}
       />
-
-      <Box className={classes.tableContainer} ref={tableContainerRef}>
+      
+      <Box className={classes.tableContainer} ref={tableContainerRef} sx={{ display: viewType == "row" ? "flex" : "none" }}>
         <Table ref={tableRef}>
           <TokenListHead
             order={order}
@@ -316,6 +320,11 @@ export default function TokenList({
             ))}
           </TableBody>
         </Table>
+      </Box>
+      <Box sx={{ display: viewType == "heatmap" ? "flex" : "none" }}>
+        <CryptoHeatmap
+          tokens={tokens}
+        />
       </Box>
       <TokenListToolbar
         rows={rows}

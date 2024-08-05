@@ -19,7 +19,11 @@ import {
   Stack,
   Tab,
   Tabs,
-  Tooltip
+  Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
+  toggleButtonGroupClasses,
+  Paper
 } from '@mui/material';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
@@ -33,6 +37,8 @@ import UpdateDisabledIcon from '@mui/icons-material/UpdateDisabled';
 import AppsIcon from '@mui/icons-material/Apps';
 import CategoryIcon from '@mui/icons-material/Category';
 import CollectionsIcon from '@mui/icons-material/Collections'; // Import the icon for "NFTs"
+import DehazeIcon from '@mui/icons-material/Dehaze';
+import WindowIcon from '@mui/icons-material/Window';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -44,6 +50,7 @@ import { AppContext } from 'src/AppContext';
 
 // Component
 import CategoriesDrawer from 'src/components/CategoriesDrawer';
+import { borderRadius } from 'styled-system';
 
 function normalizeTag(tag) {
   if (tag && tag.length > 0) {
@@ -89,6 +96,23 @@ const HeaderWrapper = styled(Box)(
 `
 );
 
+const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
+  [`& .${toggleButtonGroupClasses.grouped}`]: {
+    margin: theme.spacing(0.3),
+    border: 0,
+    borderRadius: "4px",
+    height: "24px",
+    [`&.${toggleButtonGroupClasses.disabled}`]: {
+      border: 0,
+    },
+  },
+  [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]:
+    {
+      marginLeft: -1,
+      borderLeft: '1px solid transparent',
+    },
+}));
+
 function getTagValue(tags, tagName) {
   if (!tags || tags.length < 1 || !tagName) return 0;
   const idx = tags.indexOf(tagName);
@@ -103,13 +127,15 @@ export default function SearchToolbar({
   filterName,
   onFilterName,
   rows,
+  viewType,
   setRows,
   showNew,
   setShowNew,
   showSlug,
   setShowSlug,
   showDate,
-  setShowDate
+  setShowDate,
+  setViewType
 }) {
   const { accountProfile, openSnackbar } = useContext(AppContext);
   const isAdmin =
@@ -122,7 +148,7 @@ export default function SearchToolbar({
     setRows(parseInt(e.target.value, 10));
   };
 
-  const handleDelete = () => {};
+  const handleDelete = () => { };
 
   const toggleCategoriesDrawer = (isOpen = true) => {
     setOpenCategoriesDrawer(isOpen);
@@ -172,7 +198,7 @@ export default function SearchToolbar({
             variant={'outlined'}
             icon={<StarOutlineIcon fontSize="small" />}
             label={'Watchlist'}
-            onClick={() => {}}
+            onClick={() => { }}
             sx={{
               borderRadius: '8px'
             }}
@@ -205,6 +231,30 @@ export default function SearchToolbar({
                     }
                     sx={{pb:0.3}}
                 /> */}
+        <Paper
+          elevation={0}
+          sx={{
+            display: 'flex',
+            border: (theme) => `1px solid ${theme.palette.divider}`,
+            flexWrap: 'wrap',
+            borderRadius: "6px",
+            padding: "1px 4px"
+          }}
+        >
+          <StyledToggleButtonGroup
+            size="small"
+            exclusive
+            value={viewType}
+            onChange={(_, newType) => setViewType(newType)}
+          >
+            <ToggleButton size="small" value="row">
+              <DehazeIcon fontSize="16px"/>
+            </ToggleButton>
+            <ToggleButton size="small" value="heatmap">
+              <WindowIcon fontSize="16px"/>
+            </ToggleButton>
+          </StyledToggleButtonGroup>
+        </Paper>
 
         <Tabs
           value={tagValue}
@@ -290,9 +340,9 @@ export default function SearchToolbar({
                   borderRadius: '4px'
                 }}
               />
-              
+
             }
-            
+
             style={{
               paddingLeft: 0,
               paddingRight: 0

@@ -15,6 +15,7 @@ import Footer from 'src/components/Footer';
 import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/components/ScrollToTop';
 import AppMenu from 'src/components/AppMenu';
+import CryptoHeatmap from 'src/components/CryptoHeatmap';
 import Summary from 'src/TokenList/Summary';
 import HowWeWork from 'src/TokenList/HowWeWork';
 
@@ -63,12 +64,17 @@ function Overview({ data }) {
             </Grid>
             <Grid item xs={12} md={12} lg={12}>
               {data && data.tags ? ( 
-                <TokenList
-                  tags={data.tags}
-                  tokens={tokens}
-                  tMap={tMap}
-                  setTokens={setTokens}
-                />
+                <>
+                  <TokenList
+                    tags={data.tags}
+                    tokens={tokens}
+                    tMap={tMap}
+                    setTokens={setTokens}
+                  />
+                  {/* <CryptoHeatmap
+                    tokens={tokens}
+                  /> */}
+                </>
               ) : (
                 <>
                 
