@@ -215,17 +215,17 @@ function FTokenRow({
             background: darkMode ? '#000000' : '#FFFFFF',
             '&:before': scrollLeft
               ? {
-                  content: "''",
-                  boxShadow: 'inset 10px 0 8px -8px #00000026',
-                  position: 'absolute',
-                  top: '0',
-                  right: '0',
-                  bottom: '-1px',
-                  width: '30px',
-                  transform: 'translate(100%)',
-                  transition: 'box-shadow .3s',
-                  pointerEvents: 'none'
-                }
+                content: "''",
+                boxShadow: 'inset 10px 0 8px -8px #00000026',
+                position: 'absolute',
+                top: '0',
+                right: '0',
+                bottom: '-1px',
+                width: '30px',
+                transform: 'translate(100%)',
+                transition: 'box-shadow .3s',
+                pointerEvents: 'none'
+              }
               : {}
           }}
         >
@@ -260,17 +260,17 @@ function FTokenRow({
               <Stack>
                 <Typography
                   variant="token"
-                  sx={{ fontWeight: '700'}}
+                  sx={{ fontWeight: '700' }}
                   color={
                     isOMCF !== 'yes'
                       ? darkMode
                         ? '#fff'
                         : '#222531'
                       : darkMode
-                      ? '#007B55'
-                      : slug === md5
-                      ? '#B72136'
-                      : ''
+                        ? '#007B55'
+                        : slug === md5
+                          ? '#B72136'
+                          : ''
                   }
                   noWrap={!isMobile}
                 >
@@ -278,13 +278,13 @@ function FTokenRow({
                 </Typography>
                 <Typography
                   variant="p2"
-                  sx={{ fontWeight: '600'}}
+                  sx={{ fontWeight: '600' }}
                   color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                   noWrap={!isMobile}
                 >
                   {isMobile && <span style={badge24hStyle}>{id}</span>}
                   {truncate(user, 15)}
-                
+
                 </Typography>
               </Stack>
             </Link>
@@ -328,26 +328,26 @@ function FTokenRow({
             justifyContent="flex-end"
             alignItems="center"
           >
-      
-      <Typography variant="h6" color="primary.dark">
-  <NumberTooltip number={fNumber(vol24hx)} />
-  {' '}
-  {name}
-</Typography>
+
+            <Typography variant="h6" color="primary.dark">
+              <NumberTooltip number={fNumber(vol24hx)} />
+              {' '}
+              {name}
+            </Typography>
 
           </Stack>
         </TableCell>
-        <TableCell align="right"><Typography variant="h4">{fNumber(vol24htx)}</Typography></TableCell> 
+        <TableCell align="right"><Typography variant="h4">{fNumber(vol24htx)}</Typography></TableCell>
         <TableCell align="right">
-        <Typography variant="h4">
-          {currencySymbols[activeFiatCurrency]}
-         {fNumber(convertedMarketCap)}</Typography>
+          <Typography variant="h4">
+            {currencySymbols[activeFiatCurrency]}
+            {fNumber(convertedMarketCap)}</Typography>
         </TableCell>
         <TableCell align="right"><Typography variant="h4">{fIntNumber(trustlines)}</Typography></TableCell>
         <TableCell align="right">
-          
+
           <Typography variant="h4" noWrap={!isMobile}>
-          {fNumber(supply)}{' '}
+            {fNumber(supply)}{' '}
             {name}
           </Typography>
           <Box display="flex" alignItems="center" pt={1}>
