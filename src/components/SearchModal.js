@@ -239,7 +239,7 @@ export default function SearchModal({ onClose, open }) {
         if (window !== undefined) {
             let recentSearches = JSON.parse(window.localStorage.getItem("recent-search"));
             if (recentSearches) {
-                setSearchHistory(recentSearches);
+                setSearchHistory(recentSearches.reverse());
             }
         }
     }, [])
@@ -433,7 +433,7 @@ export default function SearchModal({ onClose, open }) {
 
                 <Stack direction="row" spacing={2} sx={{ px: 1, mt: 0.5 }}>
                     {
-                        searchHistory.reverse().map(({ name, user, img, link }, idx) => {
+                        searchHistory.map(({ name, user, img, link }, idx) => {
                             return (
                                 <Link href={link} key={idx} underline="none" color="inherit">
                                     <Paper sx={{ width: "100px", height: "100px", padding: "10px" }}>
