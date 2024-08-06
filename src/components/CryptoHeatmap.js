@@ -1,3 +1,4 @@
+import axios from 'axios';
 import Decimal from 'decimal.js';
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
@@ -7,7 +8,7 @@ import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
 import { fCurrency, fNumberWithCurreny } from 'src/utils/formatNumber';
 
-function CryptoHeatmap({ tokens, exchRate }) {
+function CryptoHeatmap({ exchRate }) {
   if (typeof Highcharts === 'object') {
     HighchartsTreemap(Highcharts);
   }
@@ -16,23 +17,37 @@ function CryptoHeatmap({ tokens, exchRate }) {
   const [markets, setMarkets] = useState([]);
 
   useEffect(() => {
-    if (tokens.length) {
-      let marketData = [];
-      tokens.map((token) => {
-        const market = {
-          name: token.name,
-          original: token.user,
-          value: token.vol24hxrp,
-          priceChange: token.pro24h,
-          price: token.exch,
-          color: token.pro24h >= 0 ? "#16c784" : "#a4111a"
-        };
-        marketData.push(market);
-      });
+    const getTokenData = async() => {
+      try {
+        const BASE_URL = process.env.API_URL;
+        const res = await axios.get(`${BASE_URL}/tokens?start=1&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`);
 
-      setMarkets(marketData);
+        let data = res.data;
+        if (data) {
+          const tokens = data.tokens;
+          let marketData = [];
+          
+          tokens.map((token) => {
+            const market = {
+              name: token.name,
+              original: token.user,
+              value: token.vol24hxrp,
+              priceChange: token.pro24h,
+              price: token.exch,
+              color: token.pro24h >= 0 ? "#16c784" : "#a4111a"
+            };
+            marketData.push(market);
+          });
+      
+          setMarkets(marketData);
+        }
+      } catch(err) {
+        console.log(err);
+      }
     }
-  }, [tokens])
+
+    getTokenData();
+  }, [])
 
   const options = {
     series: [

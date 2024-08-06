@@ -323,7 +323,6 @@ export default function TokenList({
       </Box>
       <Box sx={{ display: viewType == "heatmap" ? "flex" : "none" }}>
         <CryptoHeatmap
-          tokens={tokens}
           exchRate={exchRate}
         />
       </Box>
