@@ -51,6 +51,7 @@ import { AppContext } from 'src/AppContext';
 // Component
 import CategoriesDrawer from 'src/components/CategoriesDrawer';
 import { borderRadius } from 'styled-system';
+import { useRouter } from 'next/router';
 
 function normalizeTag(tag) {
   if (tag && tag.length > 0) {
@@ -137,6 +138,7 @@ export default function SearchToolbar({
   setShowDate,
   setViewType
 }) {
+  const router = useRouter();
   const { accountProfile, openSnackbar } = useContext(AppContext);
   const isAdmin =
     accountProfile && accountProfile.account && accountProfile.admin;
@@ -250,7 +252,7 @@ export default function SearchToolbar({
             <ToggleButton size="small" value="row">
               <DehazeIcon fontSize="16px"/>
             </ToggleButton>
-            <ToggleButton size="small" value="heatmap">
+            <ToggleButton size="small" onClick={() => router.push('/crypto-heatmap')}>
               <WindowIcon fontSize="16px"/>
             </ToggleButton>
           </StyledToggleButtonGroup>

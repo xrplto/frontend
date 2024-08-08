@@ -15,7 +15,6 @@ import Footer from 'src/components/Footer';
 import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/components/ScrollToTop';
 import AppMenu from 'src/components/AppMenu';
-import CryptoHeatmap from 'src/components/CryptoHeatmap';
 import Summary from 'src/TokenList/Summary';
 import HowWeWork from 'src/TokenList/HowWeWork';
 

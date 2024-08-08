@@ -23,7 +23,6 @@ import SearchToolbar from './SearchToolbar';
 import { TokenRow } from './TokenRow';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 import TrustSetDialog from 'src/components/TrustSetDialog';
-import CryptoHeatmap from 'src/components/CryptoHeatmap';
 
 const useStyles = makeStyles({
   tableContainer: {
@@ -292,7 +291,7 @@ export default function TokenList({
         setViewType={setViewType}
       />
       
-      <Box className={classes.tableContainer} ref={tableContainerRef} sx={{ display: viewType == "row" ? "flex" : "none" }}>
+      <Box className={classes.tableContainer} ref={tableContainerRef}>
         <Table ref={tableRef}>
           <TokenListHead
             order={order}
@@ -320,11 +319,6 @@ export default function TokenList({
             ))}
           </TableBody>
         </Table>
-      </Box>
-      <Box sx={{ display: viewType == "heatmap" ? "flex" : "none" }}>
-        <CryptoHeatmap
-          exchRate={exchRate}
-        />
       </Box>
       <TokenListToolbar
         rows={rows}
