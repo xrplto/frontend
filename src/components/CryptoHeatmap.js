@@ -66,7 +66,7 @@ function CryptoHeatmap({ exchRate }) {
             if (this.point.shapeArgs.width > this.point.shapeArgs.height) {
               return `<div style="color: #fff;"> <div style="text-align: center; font-size:${(this.point.shapeArgs.height) / 10}px;">${this.key}</div><div style="text-align: center; font-size:${(this.point.shapeArgs.height) / 12}px;">${currencySymbols[activeFiatCurrency]} ${fCurrency(marketcap)}</div><div style="text-align: center; font-size:${(this.point.shapeArgs.height) / 12}px;">${fCurrency(this.point.priceChange)}% </div></div>`;
             } else {
-              return `<div style="color: #fff;"> <div style="text-align: center; font-size:${(this.point.shapeArgs.height) / 10}px;">${this.key}</div><div style="text-align: center; font-size:${(this.point.shapeArgs.height) / 12}px;">${fCurrency(marketcap)}</div><div style="text-align: center; font-size:${(this.point.shapeArgs.height) / 12}px;">${fCurrency(this.point.priceChange)}% </div></div>`;
+              return `<div style="color: #fff;"> <div style="text-align: center; font-size:${(this.point.shapeArgs.height) / 10}px;">${this.key}</div><div style="text-align: center; font-size:${(this.point.shapeArgs.height) / 12}px;">${currencySymbols[activeFiatCurrency]} ${fCurrency(marketcap)}</div><div style="text-align: center; font-size:${(this.point.shapeArgs.height) / 12}px;">${fCurrency(this.point.priceChange)}% </div></div>`;
             }
           }
         },
