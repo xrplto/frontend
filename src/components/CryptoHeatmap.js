@@ -34,6 +34,7 @@ function CryptoHeatmap({ exchRate }) {
               value: token.vol24hxrp,
               priceChange: token.pro24h,
               price: token.exch,
+              slug: token.slug,
               color: token.pro24h >= 0 ? "#16c784" : "#a4111a"
             };
             marketData.push(market);
@@ -53,6 +54,7 @@ function CryptoHeatmap({ exchRate }) {
     series: [
       {
         type: 'treemap',
+        cursor: "pointer",
         layoutAlgorithm: 'squarified',
         data: markets,
         dataLabels: {
@@ -66,6 +68,11 @@ function CryptoHeatmap({ exchRate }) {
             } else {
               return `<div style="color: #fff;"> <div style="text-align: center; font-size:${(this.point.shapeArgs.height) / 10}px;">${this.key}</div><div style="text-align: center; font-size:${(this.point.shapeArgs.height) / 12}px;">${fCurrency(marketcap)}</div><div style="text-align: center; font-size:${(this.point.shapeArgs.height) / 12}px;">${fCurrency(this.point.priceChange)}% </div></div>`;
             }
+          }
+        },
+        events: {
+          click: function(event) {
+            window.location.href = "/token/" + event.point.slug;
           }
         }
       }
