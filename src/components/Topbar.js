@@ -211,6 +211,7 @@ const Topbar = () => {
               <CurrencySwithcer />
               <ThemeSwitcher />
               <Separator>|</Separator> {/* Add separator */}
+              <APILabel href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer">Chatbox</APILabel> {/* Add API label with new window */}
               <APILabel href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer">API</APILabel> {/* Add API label with new window */}
               {!fullSearch && isDesktop && (
               <Wallet style={{ marginRight: '9px' }} />
