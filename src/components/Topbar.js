@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { Icon } from '@iconify/react';
 
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { useTranslation } from 'react-i18next';
 import { AppContext } from 'src/AppContext';
@@ -26,6 +26,7 @@ import {
 import CurrencySwithcer from './CurrencySwitcher';
 import ThemeSwitcher from './ThemeSwitcher';
 import { currencySymbols } from 'src/utils/constants';
+import { toggleChatOpen } from 'src/redux/chatSlice';
 
 const TopWrapper = styled(Box)(
   ({ theme }) => `
@@ -74,6 +75,7 @@ const APILabel = styled('a')(({ theme }) => ({
 
 const Topbar = () => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
   const totalAddresses = metrics.H24.totalAddresses;
   const activeAddresses = metrics.H24.activeAddresses24H;
@@ -211,7 +213,7 @@ const Topbar = () => {
               <CurrencySwithcer />
               <ThemeSwitcher />
               <Separator>|</Separator> {/* Add separator */}
-              <APILabel href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer">Chatbox</APILabel> {/* Add API label with new window */}
+              <APILabel onClick={() => dispatch(toggleChatOpen())}>Chatbox</APILabel> {/* Add API label with new window */}
               <APILabel href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer">API</APILabel> {/* Add API label with new window */}
               {!fullSearch && isDesktop && (
               <Wallet style={{ marginRight: '9px' }} />

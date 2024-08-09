@@ -4,6 +4,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ContextProvider } from 'src/AppContext';
 import XSnackbar from 'src/components/Snackbar';
 import TransactionAlert from 'src/components/TransactionAlert';
+import Chatbox from 'src/components/Chatbox';
 import { useSnackbar } from 'src/components/useSnackbar';
 import "./zMain.css";
 import { SnackbarProvider } from 'notistack';
@@ -114,6 +115,7 @@ function XRPLToApp({ Component, pageProps, router }) {
             <Component {...pageProps} />
             <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
             <TransactionAlert />
+            <Chatbox/>
           </SnackbarProvider>
         </ThemeProvider>
       </ContextProvider>
