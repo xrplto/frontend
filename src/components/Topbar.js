@@ -13,7 +13,6 @@ import {
   useTheme,
   useMediaQuery
 } from '@mui/material';
-import { Icon } from '@iconify/react';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
@@ -69,7 +68,8 @@ const APILabel = styled('a')(({ theme }) => ({
   borderRadius: '5px',
   '&:hover': {
     backgroundColor: alpha(theme.palette.primary.main, 0.2),
-    textDecoration: 'underline'
+    textDecoration: 'none',
+    cursor: "pointer"
   }
 }));
 
