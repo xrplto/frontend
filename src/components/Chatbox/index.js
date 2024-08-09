@@ -14,7 +14,7 @@ import { Button, Stack, TextField } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectChatOpen, toggleChatOpen } from 'src/redux/chatSlice';
 
-const drawerWidth = 300;
+const drawerWidth = 400;
 
 function Chatbox() {
   const chatOpen = useSelector(selectChatOpen);
@@ -46,7 +46,7 @@ function Chatbox() {
       <AppBar position="static">
         <Toolbar sx={{ justifyContent: "space-between", padding: "10px !important" }}>
             <Typography >
-              Team Chat
+              Chatbox
             </Typography>
             <IconButton color="inherit" onClick={closeChat}>
               <CloseIcon/>
