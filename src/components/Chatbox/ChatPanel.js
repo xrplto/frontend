@@ -138,7 +138,7 @@ const chats = [
         topTokensOwned: ["XRP", "ETH", "SOL"],
     },
     {
-        username: "@XRPBot",
+        username: "@Bot✨",
         text: "XRP Price Soars on Ripple Victory: Should You Hold On or Take Profits?",
         time: "2024-08-10T12:00:00Z",
         rank: "Bot",
@@ -178,7 +178,7 @@ const rankColors = (theme) => ({
 });
 
 const rankGlowEffect = (theme) => ({
-    Member: '0 0 5px #808080', // Glow effect for Member
+    Member: 'none', // Glow effect for Member
     VIP: theme.palette.mode === 'dark' ? '0 0 5px #FFC700' : '0 0 5px #FFD700',
     AQUA: theme.palette.mode === 'dark' ? '0 0 5px #00E0E0' : '0 0 5px #00BFFF',
     NOVA: theme.palette.mode === 'dark' ? '0 0 5px #FF85B4' : '0 0 5px #FF69B4',
@@ -186,7 +186,7 @@ const rankGlowEffect = (theme) => ({
     Admin: '1px 1px 1.5px #000000',
     Titan: 'none',  // No traditional glow effect for Titan, we'll use background-clip instead
     Legendary: 'none',
-    Developer: `0 0 5px ${theme.palette.primary.main}`, // Glow effect for Developer
+    Developer: `none`, 
     Bot: 'none', // No glow effect for Bot
 });
 
