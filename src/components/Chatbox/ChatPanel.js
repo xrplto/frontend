@@ -1,6 +1,6 @@
 import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid, useTheme } from "@mui/material";
 import { formatDistanceToNow, parseISO } from 'date-fns';
-import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon } from '@mui/icons-material';
+import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon, ArrowUpward as ArrowUpwardIcon, ArrowDownward as ArrowDownwardIcon, Remove as RemoveIcon } from '@mui/icons-material';
 
 const chats = [
     {
@@ -114,6 +114,35 @@ const chats = [
         profitLoss: "+75%",
         topNftCollections: ["Moonbirds", "Azuki"],
         topTokensOwned: ["XRP", "BTC", "LTC"],
+    },
+    {
+        username: "@XRPAddress9",
+        text: "Xrpl.to is so cool platform",
+        time: "2024-08-10T12:00:00Z",
+        rank: "Developer",
+        group: "Developer",
+        activePosts: 10000,
+        memberSince: "Jan 01, 2015",
+        lastActive: "Today, 03:00 AM",
+        currently: "Building Features",
+        profitLoss: "+100%",
+        topNftCollections: ["CryptoKitties", "Axie Infinity"],
+        topTokensOwned: ["XRP", "ETH", "SOL"],
+    },
+    {
+        username: "@XRPBot",
+        text: "XRP Price Soars on Ripple Victory: Should You Hold On or Take Profits?",
+        time: "2024-08-10T12:00:00Z",
+        rank: "Bot",
+        group: "Bot",
+        activePosts: 0,
+        memberSince: "N/A",
+        lastActive: "Now",
+        currently: "Monitoring System",
+        profitLoss: "N/A",
+        topNftCollections: [],
+        topTokensOwned: [],
+        sentiment: "Bullish",  // Adding a sentiment field (could be "Bearish", "Neutral", or "Bullish")
     }
 ];
 
@@ -128,7 +157,7 @@ const Item = styled(Paper)(({ theme }) => ({
 }));
 
 const rankColors = (theme) => ({
-    Member: theme.palette.text.primary,
+    Member: '#808080', // Grey color for Member
     VIP: theme.palette.mode === 'dark' ? '#FFC700' : '#FFD700',
     AQUA: theme.palette.mode === 'dark' ? '#00E0E0' : '#00BFFF',
     NOVA: theme.palette.mode === 'dark' ? '#FF85B4' : '#FF69B4',
@@ -136,18 +165,21 @@ const rankColors = (theme) => ({
     Admin: theme.palette.mode === 'dark' ? '#FF5A5A' : '#ff3a3a',
     Titan: 'linear-gradient(90deg, #1436a1 0%, #1071fa 50%, #970f4a 100%)', // Gradient for Titan
     Legendary: 'linear-gradient(90deg, #ff7e5f 0%, #feb47b 50%, #ffcc00 100%)', // Gradient for Legendary
+    Developer: theme.palette.primary.main, // Using primary color for Developer
+    Bot: theme.palette.text.primary, // Default text color for Bot
 });
 
-
 const rankGlowEffect = (theme) => ({
-    Member: 'none',
+    Member: '0 0 5px #808080', // Glow effect for Member
     VIP: theme.palette.mode === 'dark' ? '0 0 5px #FFC700' : '0 0 5px #FFD700',
     AQUA: theme.palette.mode === 'dark' ? '0 0 5px #00E0E0' : '0 0 5px #00BFFF',
     NOVA: theme.palette.mode === 'dark' ? '0 0 5px #FF85B4' : '0 0 5px #FF69B4',
     Moderator: '1px 1px 1.5px #000000',
     Admin: '1px 1px 1.5px #000000',
     Titan: 'none',  // No traditional glow effect for Titan, we'll use background-clip instead
-    Legendary: 'none', 
+    Legendary: 'none',
+    Developer: `0 0 5px ${theme.palette.primary.main}`, // Glow effect for Developer
+    Bot: 'none', // No glow effect for Bot
 });
 
 const lightningEffect = `
@@ -413,7 +445,6 @@ const ChatPanel = () => {
                                                 ? `url(https://static.nulled.to/public/assets/whitebg.gif),
                                                    radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
                                                    url(https://static.nulled.to/public/assets/white-lightning.gif)`
-                                              
                                                 : 'none',
                                             backgroundSize: chat.rank === 'Legendary' ? 'cover' : '5em, 15% 800%, 10em, 25em',
                                             WebkitTextFillColor: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'transparent' : 'inherit',
@@ -424,13 +455,24 @@ const ChatPanel = () => {
                                         {chat.username}
                                     </Typography>
                                 </Tooltip>
-                                <Item sx={{ marginLeft: 0 }}>
+                                <Item
+                                    sx={{
+                                        marginLeft: 0,
+                                        border: chat.rank === 'Bot' ? `2px solid ${theme.palette.primary.main}` : '1px solid transparent', // Add a primary color outline for Bot messages
+                                    }}
+                                >
                                     <Stack direction="row" alignItems="center" justifyContent="space-between">
+                                    {chat.sentiment === 'Bullish' && <ArrowUpwardIcon sx={{ color: 'green' }} />}
+                                                {chat.sentiment === 'Bearish' && <ArrowDownwardIcon sx={{ color: 'red' }} />}
+                                                {chat.sentiment === 'Neutral' && <RemoveIcon sx={{ color: 'grey' }} />}
                                         <Typography>{chat.text}</Typography>
                                         <Tooltip title={new Date(chat.time).toLocaleString()} arrow>
-                                            <Typography variant="caption" sx={{ marginLeft: 2, whiteSpace: 'nowrap' }}>
-                                                {timeAgo}
-                                            </Typography>
+                                            <Stack direction="row" alignItems="center">
+                                                
+                                                <Typography variant="caption" sx={{ marginLeft: 2, whiteSpace: 'nowrap' }}>
+                                                    {timeAgo}
+                                                </Typography>
+                                            </Stack>
                                         </Tooltip>
                                     </Stack>
                                 </Item>
