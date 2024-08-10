@@ -9,7 +9,9 @@ import SendIcon from '@mui/icons-material/Send';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import ChatPanel from "./ChatPanel";
-import { Button, Stack, TextField } from '@mui/material';
+import { Button, Stack, TextField, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectChatOpen, toggleChatOpen } from 'src/redux/chatSlice';
 
@@ -18,34 +20,92 @@ const drawerWidth = 400;
 function Chatbox() {
   const chatOpen = useSelector(selectChatOpen);
   const dispatch = useDispatch();
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [selectedOption, setSelectedOption] = React.useState('Chatbox'); // Default selected option
+  
   const closeChat = () => {
     dispatch(toggleChatOpen());
   }
+
+  const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleOptionSelect = (option) => {
+    setSelectedOption(option);
+    console.log(`${option} option selected`);
+    handleMenuClose();
+  };
 
   const drawer = (
     <Box>
       <AppBar position="static">
         <Toolbar sx={{ justifyContent: "space-between", padding: "10px !important" }}>
-            <Typography >
-              Chatbox
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography sx={{ marginRight: '4px' }}>
+              {selectedOption}
             </Typography>
-            <IconButton color="inherit" onClick={closeChat}>
-              <CloseIcon/>
+            <IconButton 
+              color="inherit" 
+              onClick={handleMenuClick}
+              sx={{ padding: 0 }}
+            >
+              <ArrowDropDownIcon />
             </IconButton>
-          </Toolbar>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+            >
+              <MenuItem onClick={() => handleOptionSelect('Chatbox')}>
+                <ListItemIcon>
+                  {selectedOption === 'Chatbox' ? <CheckCircleIcon color="primary" /> : null}
+                </ListItemIcon>
+                <ListItemText primary="Chatbox" secondary="Main chat interface" />
+              </MenuItem>
+              <MenuItem onClick={() => handleOptionSelect('Terminal')}>
+                <ListItemIcon>
+                  {selectedOption === 'Terminal' ? <CheckCircleIcon color="primary" /> : null}
+                </ListItemIcon>
+                <ListItemText primary="Terminal" secondary="Command-line interface" />
+              </MenuItem>
+              <MenuItem onClick={() => handleOptionSelect('Messages')}>
+                <ListItemIcon>
+                  {selectedOption === 'Messages' ? <CheckCircleIcon color="primary" /> : null}
+                </ListItemIcon>
+                <ListItemText primary="Messages" secondary="Message history" />
+              </MenuItem>
+            </Menu>
+          </Box>
+          <IconButton color="inherit" onClick={closeChat}>
+            <CloseIcon />
+          </IconButton>
+        </Toolbar>
       </AppBar>
       <Divider />
       <Stack p={1}>
-        <ChatPanel/>
+        <ChatPanel />
       </Stack>
       <Toolbar sx={{ position: "absolute", bottom: "10px", width: "100%", flexDirection: "column" }}>
-        <Divider width="100%"/>
+        <Divider width="100%" />
         <Stack direction="row" mt={1} gap={1} px={1} justifyContent="space-between" width="100%">
           <TextField
             fullWidth
             placeholder="Your message"
           />
-          <Button variant='contained'><SendIcon/></Button>
+          <Button variant='contained'><SendIcon /></Button>
         </Stack>
       </Toolbar>
     </Box>
@@ -66,4 +126,5 @@ function Chatbox() {
     </SwipeableDrawer>
   );
 }
+
 export default Chatbox;
