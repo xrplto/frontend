@@ -95,19 +95,21 @@ function Chatbox() {
         </Toolbar>
       </AppBar>
       <Divider />
-      <Stack p={1}>
+      <Stack p={1} overflow="auto" height="calc(100vh - 135px)">
         <ChatPanel />
       </Stack>
-      <Toolbar sx={{ position: "absolute", bottom: "10px", width: "100%", flexDirection: "column" }}>
-        <Divider width="100%" />
-        <Stack direction="row" mt={1} gap={1} px={1} justifyContent="space-between" width="100%">
-          <TextField
-            fullWidth
-            placeholder="Your message"
-          />
-          <Button variant='contained'><SendIcon /></Button>
-        </Stack>
-      </Toolbar>
+      <AppBar sx={{ position: "absolute", bottom: "0px", width: "100%", top: "auto" }}>
+        <Toolbar sx={{ flexDirection: "column" }}>
+          <Divider width="100%" />
+          <Stack direction="row" mt={1} gap={1} px={1} justifyContent="space-between" width="100%" pb={1}>
+            <TextField
+              fullWidth
+              placeholder="Your message"
+            />
+            <Button variant='contained'><SendIcon /></Button>
+          </Stack>
+        </Toolbar>
+      </AppBar>
     </Box>
   );
 
