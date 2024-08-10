@@ -1,6 +1,6 @@
-import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid } from "@mui/material";
+import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid, useTheme } from "@mui/material";
 import { formatDistanceToNow, parseISO } from 'date-fns';
-import { Send as SendIcon, SwapHoriz as TradeIcon } from '@mui/icons-material'; // Import icons for the buttons
+import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon } from '@mui/icons-material';
 
 const chats = [
     {
@@ -87,6 +87,34 @@ const chats = [
         topNftCollections: ["Pudgy Penguins"],
         topTokensOwned: ["XRP", "LTC"],
     },
+    {
+        username: "@XRPAddress7",
+        text: "Xrpl.to is so cool platform",
+        time: "2024-08-10T12:00:00Z",
+        rank: "Titan",
+        group: "Titan",
+        activePosts: 5000,
+        memberSince: "Mar 01, 2010",
+        lastActive: "Today, 06:00 AM",
+        currently: "Overseeing Everything",
+        profitLoss: "+50%",
+        topNftCollections: ["CryptoPunks", "Bored Ape"],
+        topTokensOwned: ["XRP", "ETH", "BTC"],
+    },
+    {
+        username: "@XRPAddress8",
+        text: "Xrpl.to is so cool platform",
+        time: "2024-08-10T12:00:00Z",
+        rank: "Legendary",
+        group: "Legendary",
+        activePosts: 7000,
+        memberSince: "Jan 01, 2008",
+        lastActive: "Today, 05:00 AM",
+        currently: "Advising Members",
+        profitLoss: "+75%",
+        topNftCollections: ["Moonbirds", "Azuki"],
+        topTokensOwned: ["XRP", "BTC", "LTC"],
+    }
 ];
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -99,23 +127,36 @@ const Item = styled(Paper)(({ theme }) => ({
     flexGrow: 1,
 }));
 
-const rankColors = {
-    Member: '#ffffff',  // Default white
-    VIP: '#FFD700',      // Gold
-    AQUA: '#00FFFF',     // Cyan
-    NOVA: '#FF69B4',     // Hot Pink
-    Moderator: '#8A2BE2', // BlueViolet
-    Admin: '#FF4500'     // OrangeRed
-};
+const rankColors = (theme) => ({
+    Member: theme.palette.text.primary,
+    VIP: theme.palette.mode === 'dark' ? '#FFC700' : '#FFD700',
+    AQUA: theme.palette.mode === 'dark' ? '#00E0E0' : '#00BFFF',
+    NOVA: theme.palette.mode === 'dark' ? '#FF85B4' : '#FF69B4',
+    Moderator: theme.palette.mode === 'dark' ? '#B68BFF' : '#8A2BE2',
+    Admin: theme.palette.mode === 'dark' ? '#FF5A5A' : '#ff3a3a',
+    Titan: 'linear-gradient(90deg, #1436a1 0%, #1071fa 50%, #970f4a 100%)', // Gradient for Titan
+    Legendary: 'linear-gradient(90deg, #ff7e5f 0%, #feb47b 50%, #ffcc00 100%)', // Gradient for Legendary
+});
 
-const rankGlowEffect = {
-    Member: 'none',       // No effect for Member
-    VIP: '0 0 5px #FFD700',
-    AQUA: '0 0 5px #00FFFF',
-    NOVA: '0 0 5px #FF69B4',
-    Moderator: '0 0 5px #000000', // Dark shadow for Moderator
-    Admin: '0 0 5px #000000'      // Dark shadow for Admin
-};
+
+const rankGlowEffect = (theme) => ({
+    Member: 'none',
+    VIP: theme.palette.mode === 'dark' ? '0 0 5px #FFC700' : '0 0 5px #FFD700',
+    AQUA: theme.palette.mode === 'dark' ? '0 0 5px #00E0E0' : '0 0 5px #00BFFF',
+    NOVA: theme.palette.mode === 'dark' ? '0 0 5px #FF85B4' : '0 0 5px #FF69B4',
+    Moderator: '1px 1px 1.5px #000000',
+    Admin: '1px 1px 1.5px #000000',
+    Titan: 'none',  // No traditional glow effect for Titan, we'll use background-clip instead
+    Legendary: 'none', 
+});
+
+const lightningEffect = `
+  @keyframes lightning {
+    0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+    50% { background-position: 100% 100%, 100% 100%, 100% 100%, 100% 100%; }
+    100% { background-position: 0 0, 0 0, 0 0, 0 0; }
+  }
+`;
 
 const formatTimeAgo = (date) => {
     const now = new Date();
@@ -137,75 +178,117 @@ const formatTimeAgo = (date) => {
 };
 
 const UserSummary = ({ user }) => {
+    const theme = useTheme();
+
     const getPLColor = (pl) => {
         if (!pl || pl === "0%") return "inherit";  // Default color if P/L is null or 0%
         return pl.startsWith("+") ? "green" : "red";
     };
 
     return (
-        <Box p={2} sx={{ minWidth: 250, maxWidth: 500 }}> {/* Adjusted width */}
-            <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar alt={user.username} src="/static/crossmark.webp" sx={{ width: 50, height: 50 }} />
+        <Box p={4} sx={{ minWidth: 500, maxWidth: 1000, width: 'fit-content', marginLeft: 0 }}>
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ marginLeft: 0 }}>
+                <Avatar alt={user.username} src="/static/crossmark.webp" sx={{ width: 50, height: 50, marginLeft: 0 }} />
                 <Box>
                     <Typography 
                         variant="subtitle1" 
                         sx={{ 
                             fontWeight: 'bold', 
-                            color: rankColors[user.rank] || '#ffffff',
-                            textShadow: rankGlowEffect[user.rank] || 'none'
+                            color: rankColors(theme)[user.rank] || theme.palette.text.primary,
+                            textShadow: rankGlowEffect(theme)[user.rank] || 'none',
+                            marginBottom: 1,
+                            animation: user.rank === 'Titan' || user.rank === 'Legendary' ? 'lightning 5s linear infinite' : 'none', 
+                            backgroundImage: user.rank === 'Titan' 
+                                ? `url(https://static.nulled.to/public/assets/whitebg.gif),
+                                   radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
+                                   url(https://static.nulled.to/public/assets/white-lightning.gif),
+                                   url(https://static.nulled.to/public/assets/blue-comet.gif)` 
+                                : user.rank === 'Legendary'
+                                ? `url(https://static.nulled.to/public/assets/whitebg.gif),
+                                                   radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
+                                                   url(https://static.nulled.to/public/assets/white-lightning.gif)`
+                                : 'none',
+                            backgroundSize: user.rank === 'Legendary' ? 'cover' : '5em, 15% 800%, 10em, 25em',
+                            WebkitTextFillColor: user.rank === 'Titan' || user.rank === 'Legendary' ? 'transparent' : 'inherit',
+                            WebkitBackgroundClip: user.rank === 'Titan' || user.rank === 'Legendary' ? 'text' : 'unset',
+                            filter: user.rank === 'Titan' ? 'brightness(1.5)' : 'none',
                         }}
                     >
                         {user.username}
                     </Typography>
                     <Grid container spacing={1}>
-                        <Grid item xs={12}>
-                            <Typography variant="body2">
-                                <strong>Group:</strong> 
-                                <span style={{ color: rankColors[user.rank] || '#ffffff', textShadow: rankGlowEffect[user.rank] || 'none', marginLeft: 4 }}>
+                        {/* Rank Section */}
+                        <Grid item xs={12} sx={{ display: 'flex' }}>
+                            <Typography variant="body2" sx={{ flex: 1 }}>
+                                <strong>Rank:</strong> 
+                            </Typography>
+                            <Typography variant="body2" sx={{ flex: 2 }}>
+                                <span style={{ color: rankColors(theme)[user.rank] || theme.palette.text.primary, textShadow: rankGlowEffect(theme)[user.rank] || 'none' }}>
                                     {user.group}
                                 </span>
                             </Typography>
                         </Grid>
 
                         {/* P/L Section */}
-                        <Grid item xs={12}>
-                            <Typography variant="body2">
-                                <strong>P/L:</strong> <span style={{ color: getPLColor(user.profitLoss) }}>{user.profitLoss || 'N/A'}</span>
+                        <Grid item xs={12} sx={{ display: 'flex' }}>
+                            <Typography variant="body2" sx={{ flex: 1 }}>
+                                <strong>P/L:</strong>
+                            </Typography>
+                            <Typography variant="body2" sx={{ flex: 2, color: getPLColor(user.profitLoss) }}>
+                                {user.profitLoss || 'N/A'}
                             </Typography>
                         </Grid>
 
                         {/* Top NFT Collections Section */}
-                        <Grid item xs={12}>
-                            <Typography variant="body2">
-                                <strong>NFTs:</strong> {user.topNftCollections?.join(', ') || 'None'}
+                        <Grid item xs={12} sx={{ display: 'flex' }}>
+                            <Typography variant="body2" sx={{ flex: 1 }}>
+                                <strong>NFTs:</strong>
+                            </Typography>
+                            <Typography variant="body2" sx={{ flex: 2 }}>
+                                {user.topNftCollections?.join(', ') || 'None'}
                             </Typography>
                         </Grid>
 
                         {/* Top Tokens Owned Section */}
-                        <Grid item xs={12}>
-                            <Typography variant="body2">
-                                <strong>Tokens:</strong> {user.topTokensOwned?.join(', ') || 'None'}
+                        <Grid item xs={12} sx={{ display: 'flex' }}>
+                            <Typography variant="body2" sx={{ flex: 1 }}>
+                                <strong>Tokens:</strong>
+                            </Typography>
+                            <Typography variant="body2" sx={{ flex: 2 }}>
+                                {user.topTokensOwned?.join(', ') || 'None'}
                             </Typography>
                         </Grid>
                         
-                        <Grid item xs={12}>
-                            <Typography variant="body2">
-                                <strong>Chats:</strong> {user.activePosts}
+                        <Grid item xs={12} sx={{ display: 'flex' }}>
+                            <Typography variant="body2" sx={{ flex: 1 }}>
+                                <strong>Chats:</strong>
+                            </Typography>
+                            <Typography variant="body2" sx={{ flex: 2 }}>
+                                {user.activePosts}
                             </Typography>
                         </Grid>
-                        <Grid item xs={12}>
-                            <Typography variant="body2">
-                                <strong>Joined XRPL:</strong> {user.memberSince}
+                        <Grid item xs={12} sx={{ display: 'flex' }}>
+                            <Typography variant="body2" sx={{ flex: 1 }}>
+                                <strong>Joined XRPL:</strong>
+                            </Typography>
+                            <Typography variant="body2" sx={{ flex: 2 }}>
+                                {user.memberSince}
                             </Typography>
                         </Grid>
-                        <Grid item xs={12}>
-                            <Typography variant="body2">
-                                <strong>Last Active:</strong> {user.lastActive}
+                        <Grid item xs={12} sx={{ display: 'flex' }}>
+                            <Typography variant="body2" sx={{ flex: 1 }}>
+                                <strong>Last Active:</strong>
+                            </Typography>
+                            <Typography variant="body2" sx={{ flex: 2 }}>
+                                {user.lastActive}
                             </Typography>
                         </Grid>
-                        <Grid item xs={12}>
-                            <Typography variant="body2">
-                                <strong>Currently:</strong> {user.currently}
+                        <Grid item xs={12} sx={{ display: 'flex' }}>
+                            <Typography variant="body2" sx={{ flex: 1 }}>
+                                <strong>Currently:</strong>
+                            </Typography>
+                            <Typography variant="body2" sx={{ flex: 2 }}>
+                                {user.currently}
                             </Typography>
                         </Grid>
                         
@@ -214,20 +297,20 @@ const UserSummary = ({ user }) => {
             </Stack>
 
             <Box mt={2} textAlign="center">
-                <Stack direction="row" spacing={1} justifyContent="center"> {/* Reduced spacing */}
+                <Stack direction="row" spacing={1} justifyContent="center">
                     <Button
                         variant="contained"
                         color="primary"
                         startIcon={<SendIcon />}
                         sx={{
-                            backgroundColor: rankColors[user.rank],
+                            backgroundColor: rankColors(theme)[user.rank],
                             '&:hover': {
-                                backgroundColor: rankColors[user.rank],
+                                backgroundColor: rankColors(theme)[user.rank],
                                 opacity: 0.9,
                             },
-                            textShadow: rankGlowEffect[user.rank] || 'none',
-                            height: '40px',  // Set fixed height
-                            width: '100px', // Fixed width for consistency
+                            textShadow: rankGlowEffect(theme)[user.rank] || 'none',
+                            height: '40px',  
+                            width: '100px', 
                         }}
                         onClick={() => handleSendTip(user)}
                     >
@@ -238,12 +321,24 @@ const UserSummary = ({ user }) => {
                         color="secondary"
                         startIcon={<TradeIcon />}
                         sx={{
-                            height: '40px',  // Set fixed height to match
-                            width: '100px',  // Fixed width for consistency
+                            height: '40px',
+                            width: '100px',
                         }}
                         onClick={() => handleTrade(user)}
                     >
                         Trade
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        startIcon={<MessageIcon />}
+                        sx={{
+                            height: '40px', 
+                            width: '130px', 
+                        }}
+                        onClick={() => handleSendMessage(user)}
+                    >
+                        Message
                     </Button>
                 </Stack>
             </Box>
@@ -252,18 +347,28 @@ const UserSummary = ({ user }) => {
 };
 
 const handleSendTip = (user) => {
-    // Handle the logic to send a tip in XRP to the user
     console.log(`Sending tip to ${user.username}`);
     // Add your tipping logic here
 };
 
 const handleTrade = (user) => {
-    // Handle the logic to initiate a trade with the user
     console.log(`Initiating trade with ${user.username}`);
     // Add your trade initiation logic here
 };
 
+const handleSendMessage = (user) => {
+    console.log(`Sending message to ${user.username}`);
+    // Add your message sending logic here
+};
+
 const ChatPanel = () => {
+    const theme = useTheme();
+
+    // Inject lightningEffect into the document's head
+    const styleElement = document.createElement('style');
+    styleElement.textContent = lightningEffect;
+    document.head.appendChild(styleElement);
+
     return (
         <Stack gap={2}>
             {
@@ -273,26 +378,53 @@ const ChatPanel = () => {
 
                     return (
                         <Stack key={index} direction="row" spacing={1} alignItems="center">
-                            <Avatar alt={chat.username} src="/static/crossmark.webp" sx={{ width: 36, height: 36 }} />
-                            <Stack sx={{ flexGrow: 1 }}>
+                            <Avatar alt={chat.username} src="/static/crossmark.webp" sx={{ width: 36, height: 36, marginLeft: 0 }} />
+                            <Stack sx={{ flexGrow: 1, marginLeft: 0 }}>
                                 <Tooltip 
                                     title={<UserSummary user={chat} />} 
                                     arrow
                                     placement="right"
+                                    PopperProps={{
+                                        modifiers: [
+                                            {
+                                                name: 'preventOverflow',
+                                                options: {
+                                                    padding: 20,
+                                                },
+                                            },
+                                        ],
+                                    }}
                                 >
                                     <Typography 
                                         variant="caption" 
                                         sx={{ 
                                             fontWeight: 'bold', 
-                                            color: rankColors[chat.rank] || '#ffffff',
-                                            textShadow: rankGlowEffect[chat.rank] || 'none',
-                                            cursor: 'pointer' // Indicates it's interactable
+                                            color: rankColors(theme)[chat.rank] || theme.palette.text.primary,
+                                            textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
+                                            cursor: 'pointer',
+                                            marginLeft: 0,
+                                            animation: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'lightning 5s linear infinite' : 'none',
+                                            backgroundImage: chat.rank === 'Titan' 
+                                                ? `url(https://static.nulled.to/public/assets/whitebg.gif),
+                                                   radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
+                                                   url(https://static.nulled.to/public/assets/white-lightning.gif),
+                                                   url(https://static.nulled.to/public/assets/blue-comet.gif)` 
+                                                : chat.rank === 'Legendary'
+                                                ? `url(https://static.nulled.to/public/assets/whitebg.gif),
+                                                   radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
+                                                   url(https://static.nulled.to/public/assets/white-lightning.gif)`
+                                              
+                                                : 'none',
+                                            backgroundSize: chat.rank === 'Legendary' ? 'cover' : '5em, 15% 800%, 10em, 25em',
+                                            WebkitTextFillColor: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'transparent' : 'inherit',
+                                            WebkitBackgroundClip: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'text' : 'unset',
+                                            filter: chat.rank === 'Titan' ? 'brightness(1.5)' : 'none',
                                         }}
                                     >
                                         {chat.username}
                                     </Typography>
                                 </Tooltip>
-                                <Item>
+                                <Item sx={{ marginLeft: 0 }}>
                                     <Stack direction="row" alignItems="center" justifyContent="space-between">
                                         <Typography>{chat.text}</Typography>
                                         <Tooltip title={new Date(chat.time).toLocaleString()} arrow>
