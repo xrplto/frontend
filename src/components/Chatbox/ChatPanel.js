@@ -1,6 +1,14 @@
-import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid, useTheme } from "@mui/material";
-import { formatDistanceToNow, parseISO } from 'date-fns';
+import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid, useTheme, tooltipClasses } from "@mui/material";
+import { parseISO } from 'date-fns';
 import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon, ArrowUpward as ArrowUpwardIcon, ArrowDownward as ArrowDownwardIcon, Remove as RemoveIcon } from '@mui/icons-material';
+
+const CustomWidthTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))({
+    [`& .${tooltipClasses.tooltip}`]: {
+      maxWidth: 500,
+    },
+});
 
 const chats = [
     {
@@ -218,7 +226,7 @@ const UserSummary = ({ user }) => {
     };
 
     return (
-        <Box p={4} sx={{ minWidth: 500, maxWidth: 1000, width: 'fit-content', marginLeft: 0 }}>
+        <Box p={4} sx={{ width: 500, maxWidth: 1000, width: 'fit-content', marginLeft: 0 }}>
             <Stack direction="row" spacing={2} alignItems="center" sx={{ marginLeft: 0 }}>
                 <Avatar alt={user.username} src="/static/crossmark.webp" sx={{ width: 50, height: 50, marginLeft: 0 }} />
                 <Box>
@@ -412,7 +420,7 @@ const ChatPanel = () => {
                         <Stack key={index} direction="row" spacing={1} alignItems="center">
                             <Avatar alt={chat.username} src="/static/crossmark.webp" sx={{ width: 36, height: 36, marginLeft: 0 }} />
                             <Stack sx={{ flexGrow: 1, marginLeft: 0 }}>
-                                <Tooltip 
+                                <CustomWidthTooltip 
                                     title={<UserSummary user={chat} />} 
                                     arrow
                                     placement="right"
@@ -421,7 +429,7 @@ const ChatPanel = () => {
                                             {
                                                 name: 'preventOverflow',
                                                 options: {
-                                                    padding: 20,
+                                                    // padding: 20,
                                                 },
                                             },
                                         ],
@@ -454,7 +462,7 @@ const ChatPanel = () => {
                                     >
                                         {chat.username}
                                     </Typography>
-                                </Tooltip>
+                                </CustomWidthTooltip>
                                 <Item
                                     sx={{
                                         marginLeft: 0,
