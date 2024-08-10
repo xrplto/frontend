@@ -81,11 +81,11 @@ function Chatbox() {
                 </ListItemIcon>
                 <ListItemText primary="Terminal" secondary="Command-line interface" />
               </MenuItem>
-              <MenuItem onClick={() => handleOptionSelect('Messages')}>
+              <MenuItem onClick={() => handleOptionSelect('Mailbox')}>
                 <ListItemIcon>
-                  {selectedOption === 'Messages' ? <CheckCircleIcon color="primary" /> : null}
+                  {selectedOption === 'Mailbox' ? <CheckCircleIcon color="primary" /> : null}
                 </ListItemIcon>
-                <ListItemText primary="Messages" secondary="Message history" />
+                <ListItemText primary="Mailbox" secondary="Manage conversations" />
               </MenuItem>
             </Menu>
           </Box>

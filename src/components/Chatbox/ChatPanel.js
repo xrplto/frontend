@@ -458,11 +458,11 @@ const ChatPanel = () => {
                                 <Item
                                     sx={{
                                         marginLeft: 0,
-                                        border: chat.rank === 'Bot' ? `2px solid ${theme.palette.primary.main}` : '1px solid transparent', // Add a primary color outline for Bot messages
+                                        border: chat.rank === 'Bot' ? `1px solid ${theme.palette.primary.main}` : '1px solid transparent', // Add a primary color outline for Bot messages
                                     }}
                                 >
                                     <Stack direction="row" alignItems="center" justifyContent="space-between">
-                                    {chat.sentiment === 'Bullish' && <ArrowUpwardIcon sx={{ color: 'green' }} />}
+                                    {chat.sentiment === 'Bullish' && <ArrowUpwardIcon sx={{ color: theme.palette.primary.main }} />}
                                                 {chat.sentiment === 'Bearish' && <ArrowDownwardIcon sx={{ color: 'red' }} />}
                                                 {chat.sentiment === 'Neutral' && <RemoveIcon sx={{ color: 'grey' }} />}
                                         <Typography>{chat.text}</Typography>
