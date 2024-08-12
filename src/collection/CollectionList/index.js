@@ -19,7 +19,7 @@ export default function CollectionList({ type, category }) {
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState(100);
     const [order, setOrder] = useState('desc');
-    const [orderBy, setOrderBy] = useState('vol24h'); // Default to 'vol24h' for '24h' time frame
+    const [orderBy, setOrderBy] = useState('totalVol24h'); // Default to 'totalVol24h' for '24h' time frame
 
     const [total, setTotal] = useState(0);
     const [collections, setCollections] = useState([]);
@@ -95,7 +95,7 @@ export default function CollectionList({ type, category }) {
 
     useEffect(() => {
         if (timeFrame === '24h') {
-            setOrderBy('vol24h');
+            setOrderBy('totalVol24h');
         } else if (timeFrame === 'all') {
             setOrderBy('totalVolume');
         }

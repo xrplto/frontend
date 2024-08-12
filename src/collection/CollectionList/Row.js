@@ -115,11 +115,12 @@ export default function Row({ id, item, isMine, timeFrame }) {
         totalVolume,
         floor,
         owners,
-        vol24h
+        vol24h,
+        totalVol24h
     } = item;
 
     const floorPrice = floor?.amount || 0;
-    const volumeValue = timeFrame === '24h' ? vol24h : totalVolume;
+    const volumeValue = timeFrame === '24h' ? totalVol24h : totalVolume;
     const volumeDisplay = fVolume(volumeValue || 0);
 
     const strDateTime = formatMonthYearDate(created);
