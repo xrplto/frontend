@@ -252,7 +252,7 @@ export default function SearchToolbar({
             <ToggleButton size="small" value="row">
               <DehazeIcon fontSize="16px"/>
             </ToggleButton>
-            <ToggleButton size="small" onClick={() => router.push('/crypto-heatmap')}>
+            <ToggleButton size="small" value="heatmap" onClick={() => router.push('/crypto-heatmap')}>
               <WindowIcon fontSize="16px"/>
             </ToggleButton>
           </StyledToggleButtonGroup>

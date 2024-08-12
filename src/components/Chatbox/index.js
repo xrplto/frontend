@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useContext, useEffect, useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
@@ -14,14 +14,23 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectChatOpen, toggleChatOpen } from 'src/redux/chatSlice';
+import { io } from 'socket.io-client';
+import { AppContext } from 'src/AppContext';
 
 const drawerWidth = 400;
+const chatURL = "http://65.108.136.237:5000";
+const socket = io(chatURL, {
+  path: "/chat"
+});
 
 function Chatbox() {
-  const chatOpen = useSelector(selectChatOpen);
   const dispatch = useDispatch();
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [selectedOption, setSelectedOption] = React.useState('Chatbox'); // Default selected option
+  const chatOpen = useSelector(selectChatOpen);
+  const { accountProfile } = useContext(AppContext);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedOption, setSelectedOption] = useState('Chatbox'); // Default selected option
+  const [message, setMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState([]);
   
   const closeChat = () => {
     dispatch(toggleChatOpen());
@@ -40,6 +49,36 @@ function Chatbox() {
     console.log(`${option} option selected`);
     handleMenuClose();
   };
+
+  useEffect(() => {
+    socket.on('init', (msg) => {
+      console.log("iun", msg)
+      setChatHistory((previousHistory) => [...previousHistory, ...msg]);
+    });
+
+    socket.on("chat message", (msg) => {
+      console.log("chat message", msg);
+      setChatHistory((previousHistory) => [...previousHistory, msg]);
+    });
+
+    return () => {
+      socket.off("init");
+      socket.off("chat message");
+    };
+  }, []);
+
+  const sendMessage = () => {
+    if (accountProfile?.account) {
+      socket.emit("chat message", {
+        message,
+        username: accountProfile.account,
+        rank: "Member",
+        group: "Member"
+      });
+
+      setMessage('');
+    }
+  }
 
   const drawer = (
     <Box>
@@ -96,7 +135,7 @@ function Chatbox() {
       </AppBar>
       <Divider />
       <Stack p={1} overflow="auto" height="calc(100vh - 135px)">
-        <ChatPanel />
+        <ChatPanel chats={chatHistory}/>
       </Stack>
       <AppBar sx={{ position: "absolute", bottom: "0px", width: "100%", top: "auto" }}>
         <Toolbar sx={{ flexDirection: "column" }}>
@@ -105,8 +144,10 @@ function Chatbox() {
             <TextField
               fullWidth
               placeholder="Your message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
             />
-            <Button variant='contained'><SendIcon /></Button>
+            <Button variant='contained' onClick={sendMessage}><SendIcon /></Button>
           </Stack>
         </Toolbar>
       </AppBar>

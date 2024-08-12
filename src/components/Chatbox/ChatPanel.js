@@ -10,149 +10,149 @@ const CustomWidthTooltip = styled(({ className, ...props }) => (
     },
 });
 
-const chats = [
-    {
-        username: "@XRPAddress1",
-        text: "Xrpl.to is so cool platform",
-        time: "2024-08-10T12:00:00Z",
-        rank: "Member",
-        group: "Member",
-        activePosts: 120,
-        memberSince: "Jan 01, 2020",
-        lastActive: "Today, 12:00 PM",
-        currently: "Viewing Chat",
-        profitLoss: "+10%",
-        topNftCollections: ["Bored Ape", "CryptoPunks"],
-        topTokensOwned: ["XRP", "BTC", "ETH"],
-    },
-    {
-        username: "@XRPAddress2",
-        text: "Xrpl.to is so cool platform",
-        time: "2024-08-10T11:59:00Z",
-        rank: "VIP",
-        group: "VIP",
-        activePosts: 340,
-        memberSince: "Feb 15, 2019",
-        lastActive: "Today, 11:45 AM",
-        currently: "Viewing Profile",
-        profitLoss: "-5%",
-        topNftCollections: ["Meebits"],
-        topTokensOwned: ["XRP", "ETH"],
-    },
-    {
-        username: "@XRPAddress3",
-        text: "Xrpl.to is so cool platform",
-        time: "2024-08-09T12:00:00Z",
-        rank: "AQUA",
-        group: "AQUA",
-        activePosts: 200,
-        memberSince: "Mar 03, 2018",
-        lastActive: "Today, 10:30 AM",
-        currently: "Viewing Dashboard",
-        profitLoss: "+15%",
-        topNftCollections: ["Cool Cats"],
-        topTokensOwned: ["XRP", "SOL"],
-    },
-    {
-        username: "@XRPAddress4",
-        text: "Xrpl.to is so cool platform",
-        time: "2024-08-08T12:00:00Z",
-        rank: "NOVA",
-        group: "NOVA",
-        activePosts: 480,
-        memberSince: "Apr 22, 2017",
-        lastActive: "Today, 09:00 AM",
-        currently: "Viewing Analytics",
-        profitLoss: "0%",
-        topNftCollections: ["Art Blocks"],
-        topTokensOwned: ["XRP", "DOT"],
-    },
-    {
-        username: "@XRPAddress5",
-        text: "Xrpl.to is so cool platform",
-        time: "2024-08-08T12:00:00Z",
-        rank: "Moderator",
-        group: "Moderator",
-        activePosts: 1500,
-        memberSince: "May 11, 2016",
-        lastActive: "Today, 08:00 AM",
-        currently: "Managing Users",
-        profitLoss: "+25%",
-        topNftCollections: ["Mutant Ape"],
-        topTokensOwned: ["XRP", "ADA"],
-    },
-    {
-        username: "@XRPAddress6",
-        text: "Xrpl.to is so cool platform",
-        time: "2024-08-08T12:00:00Z",
-        rank: "Admin",
-        group: "Administrator",
-        activePosts: 3000,
-        memberSince: "Jun 06, 2015",
-        lastActive: "Today, 07:00 AM",
-        currently: "Viewing System Logs",
-        profitLoss: "-10%",
-        topNftCollections: ["Pudgy Penguins"],
-        topTokensOwned: ["XRP", "LTC"],
-    },
-    {
-        username: "@XRPAddress7",
-        text: "Xrpl.to is so cool platform",
-        time: "2024-08-10T12:00:00Z",
-        rank: "Titan",
-        group: "Titan",
-        activePosts: 5000,
-        memberSince: "Mar 01, 2010",
-        lastActive: "Today, 06:00 AM",
-        currently: "Overseeing Everything",
-        profitLoss: "+50%",
-        topNftCollections: ["CryptoPunks", "Bored Ape"],
-        topTokensOwned: ["XRP", "ETH", "BTC"],
-    },
-    {
-        username: "@XRPAddress8",
-        text: "Xrpl.to is so cool platform",
-        time: "2024-08-10T12:00:00Z",
-        rank: "Legendary",
-        group: "Legendary",
-        activePosts: 7000,
-        memberSince: "Jan 01, 2008",
-        lastActive: "Today, 05:00 AM",
-        currently: "Advising Members",
-        profitLoss: "+75%",
-        topNftCollections: ["Moonbirds", "Azuki"],
-        topTokensOwned: ["XRP", "BTC", "LTC"],
-    },
-    {
-        username: "@XRPAddress9",
-        text: "Xrpl.to is so cool platform",
-        time: "2024-08-10T12:00:00Z",
-        rank: "Developer",
-        group: "Developer",
-        activePosts: 10000,
-        memberSince: "Jan 01, 2015",
-        lastActive: "Today, 03:00 AM",
-        currently: "Building Features",
-        profitLoss: "+100%",
-        topNftCollections: ["CryptoKitties", "Axie Infinity"],
-        topTokensOwned: ["XRP", "ETH", "SOL"],
-    },
-    {
-        username: "@XRPBot",
-        text: "XRP Price Soars on Ripple Victory: Should You Hold On or Take Profits?",
-        time: "2024-08-10T12:00:00Z",
-        rank: "Bot",
-        group: "Bot",
-        activePosts: 0,
-        memberSince: "N/A",
-        lastActive: "Now",
-        currently: "Monitoring System",
-        profitLoss: "N/A",
-        topNftCollections: [],
-        topTokensOwned: [],
-        sentiment: "Bullish",  // Adding a sentiment field (could be "Bearish", "Neutral", or "Bullish")
-    }
-];
+// const chats = [
+//     {
+//         username: "@XRPAddress1",
+//         text: "Xrpl.to is so cool platform",
+//         time: "2024-08-10T12:00:00Z",
+//         rank: "Member",
+//         group: "Member",
+//         activePosts: 120,
+//         memberSince: "Jan 01, 2020",
+//         lastActive: "Today, 12:00 PM",
+//         currently: "Viewing Chat",
+//         profitLoss: "+10%",
+//         topNftCollections: ["Bored Ape", "CryptoPunks"],
+//         topTokensOwned: ["XRP", "BTC", "ETH"],
+//     },
+//     {
+//         username: "@XRPAddress2",
+//         text: "Xrpl.to is so cool platform",
+//         time: "2024-08-10T11:59:00Z",
+//         rank: "VIP",
+//         group: "VIP",
+//         activePosts: 340,
+//         memberSince: "Feb 15, 2019",
+//         lastActive: "Today, 11:45 AM",
+//         currently: "Viewing Profile",
+//         profitLoss: "-5%",
+//         topNftCollections: ["Meebits"],
+//         topTokensOwned: ["XRP", "ETH"],
+//     },
+//     {
+//         username: "@XRPAddress3",
+//         text: "Xrpl.to is so cool platform",
+//         time: "2024-08-09T12:00:00Z",
+//         rank: "AQUA",
+//         group: "AQUA",
+//         activePosts: 200,
+//         memberSince: "Mar 03, 2018",
+//         lastActive: "Today, 10:30 AM",
+//         currently: "Viewing Dashboard",
+//         profitLoss: "+15%",
+//         topNftCollections: ["Cool Cats"],
+//         topTokensOwned: ["XRP", "SOL"],
+//     },
+//     {
+//         username: "@XRPAddress4",
+//         text: "Xrpl.to is so cool platform",
+//         time: "2024-08-08T12:00:00Z",
+//         rank: "NOVA",
+//         group: "NOVA",
+//         activePosts: 480,
+//         memberSince: "Apr 22, 2017",
+//         lastActive: "Today, 09:00 AM",
+//         currently: "Viewing Analytics",
+//         profitLoss: "0%",
+//         topNftCollections: ["Art Blocks"],
+//         topTokensOwned: ["XRP", "DOT"],
+//     },
+//     {
+//         username: "@XRPAddress5",
+//         text: "Xrpl.to is so cool platform",
+//         time: "2024-08-08T12:00:00Z",
+//         rank: "Moderator",
+//         group: "Moderator",
+//         activePosts: 1500,
+//         memberSince: "May 11, 2016",
+//         lastActive: "Today, 08:00 AM",
+//         currently: "Managing Users",
+//         profitLoss: "+25%",
+//         topNftCollections: ["Mutant Ape"],
+//         topTokensOwned: ["XRP", "ADA"],
+//     },
+//     {
+//         username: "@XRPAddress6",
+//         text: "Xrpl.to is so cool platform",
+//         time: "2024-08-08T12:00:00Z",
+//         rank: "Admin",
+//         group: "Administrator",
+//         activePosts: 3000,
+//         memberSince: "Jun 06, 2015",
+//         lastActive: "Today, 07:00 AM",
+//         currently: "Viewing System Logs",
+//         profitLoss: "-10%",
+//         topNftCollections: ["Pudgy Penguins"],
+//         topTokensOwned: ["XRP", "LTC"],
+//     },
+//     {
+//         username: "@XRPAddress7",
+//         text: "Xrpl.to is so cool platform",
+//         time: "2024-08-10T12:00:00Z",
+//         rank: "Titan",
+//         group: "Titan",
+//         activePosts: 5000,
+//         memberSince: "Mar 01, 2010",
+//         lastActive: "Today, 06:00 AM",
+//         currently: "Overseeing Everything",
+//         profitLoss: "+50%",
+//         topNftCollections: ["CryptoPunks", "Bored Ape"],
+//         topTokensOwned: ["XRP", "ETH", "BTC"],
+//     },
+//     {
+//         username: "@XRPAddress8",
+//         text: "Xrpl.to is so cool platform",
+//         time: "2024-08-10T12:00:00Z",
+//         rank: "Legendary",
+//         group: "Legendary",
+//         activePosts: 7000,
+//         memberSince: "Jan 01, 2008",
+//         lastActive: "Today, 05:00 AM",
+//         currently: "Advising Members",
+//         profitLoss: "+75%",
+//         topNftCollections: ["Moonbirds", "Azuki"],
+//         topTokensOwned: ["XRP", "BTC", "LTC"],
+//     },
+//     {
+//         username: "@XRPAddress9",
+//         text: "Xrpl.to is so cool platform",
+//         time: "2024-08-10T12:00:00Z",
+//         rank: "Developer",
+//         group: "Developer",
+//         activePosts: 10000,
+//         memberSince: "Jan 01, 2015",
+//         lastActive: "Today, 03:00 AM",
+//         currently: "Building Features",
+//         profitLoss: "+100%",
+//         topNftCollections: ["CryptoKitties", "Axie Infinity"],
+//         topTokensOwned: ["XRP", "ETH", "SOL"],
+//     },
+//     {
+//         username: "@XRPBot",
+//         text: "XRP Price Soars on Ripple Victory: Should You Hold On or Take Profits?",
+//         time: "2024-08-10T12:00:00Z",
+//         rank: "Bot",
+//         group: "Bot",
+//         activePosts: 0,
+//         memberSince: "N/A",
+//         lastActive: "Now",
+//         currently: "Monitoring System",
+//         profitLoss: "N/A",
+//         topNftCollections: [],
+//         topTokensOwned: [],
+//         sentiment: "Bullish",  // Adding a sentiment field (could be "Bearish", "Neutral", or "Bullish")
+//     }
+// ];
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -401,7 +401,7 @@ const handleSendMessage = (user) => {
     // Add your message sending logic here
 };
 
-const ChatPanel = () => {
+const ChatPanel = ({ chats }) => {
     const theme = useTheme();
 
     // Inject lightningEffect into the document's head
@@ -413,7 +413,7 @@ const ChatPanel = () => {
         <Stack gap={2}>
             {
                 chats.map((chat, index) => {
-                    const parsedTime = parseISO(chat.time);
+                    const parsedTime = parseISO(chat.timestamp);
                     const timeAgo = formatTimeAgo(parsedTime);
 
                     return (
@@ -421,7 +421,7 @@ const ChatPanel = () => {
                             <Avatar alt={chat.username} src="/static/crossmark.webp" sx={{ width: 36, height: 36, marginLeft: 0 }} />
                             <Stack sx={{ flexGrow: 1, marginLeft: 0 }}>
                                 <CustomWidthTooltip 
-                                    title={<UserSummary user={chat} />} 
+                                    // title={<UserSummary user={chat} />} 
                                     arrow
                                     placement="right"
                                     PopperProps={{
@@ -473,8 +473,8 @@ const ChatPanel = () => {
                                     {chat.sentiment === 'Bullish' && <ArrowUpwardIcon sx={{ color: theme.palette.primary.main }} />}
                                                 {chat.sentiment === 'Bearish' && <ArrowDownwardIcon sx={{ color: 'red' }} />}
                                                 {chat.sentiment === 'Neutral' && <RemoveIcon sx={{ color: 'grey' }} />}
-                                        <Typography>{chat.text}</Typography>
-                                        <Tooltip title={new Date(chat.time).toLocaleString()} arrow>
+                                        <Typography>{chat.message}</Typography>
+                                        <Tooltip title={new Date(chat.timestamp).toLocaleString()} arrow>
                                             <Stack direction="row" alignItems="center">
                                                 
                                                 <Typography variant="caption" sx={{ marginLeft: 2, whiteSpace: 'nowrap' }}>

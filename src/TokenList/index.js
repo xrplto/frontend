@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import useWebSocket from 'react-use-websocket';
 import {
   Box,
