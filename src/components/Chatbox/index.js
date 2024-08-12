@@ -22,7 +22,8 @@ function Chatbox() {
   const dispatch = useDispatch();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [selectedOption, setSelectedOption] = React.useState('Chatbox'); // Default selected option
-  
+  const [message, setMessage] = React.useState(''); // State for message input
+
   const closeChat = () => {
     dispatch(toggleChatOpen());
   }
@@ -39,6 +40,10 @@ function Chatbox() {
     setSelectedOption(option);
     console.log(`${option} option selected`);
     handleMenuClose();
+  };
+
+  const handleMessageChange = (event) => {
+    setMessage(event.target.value);
   };
 
   const drawer = (
@@ -105,8 +110,18 @@ function Chatbox() {
             <TextField
               fullWidth
               placeholder="Your message"
+              value={message}
+              onChange={handleMessageChange} // Update the state when the input changes
             />
-            <Button variant='contained'><SendIcon /></Button>
+            <Button 
+              variant='contained' 
+              disabled={!message.trim()} // Disable the button if no text is entered
+              sx={{ 
+                backgroundColor: !message.trim() ? 'grey.400' : undefined // Optional: change color when disabled
+              }}
+            >
+              <SendIcon />
+            </Button>
           </Stack>
         </Toolbar>
       </AppBar>

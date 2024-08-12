@@ -4,9 +4,9 @@ import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon, Arrow
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
     <Tooltip {...props} classes={{ popper: className }} />
-  ))({
+))({
     [`& .${tooltipClasses.tooltip}`]: {
-      maxWidth: 500,
+        maxWidth: 500,
     },
 });
 
@@ -151,6 +151,21 @@ const chats = [
         topNftCollections: [],
         topTokensOwned: [],
         sentiment: "Bullish",  // Adding a sentiment field (could be "Bearish", "Neutral", or "Bullish")
+    },
+    {
+        username: "@XRPAddress10",
+        text: "Check out this cool NFT I just bought!",
+        time: "2024-08-10T12:05:00Z",
+        rank: "VIP",
+        group: "VIP",
+        activePosts: 450,
+        memberSince: "Dec 20, 2019",
+        lastActive: "Today, 12:05 PM",
+        currently: "Browsing NFTs",
+        profitLoss: "+20%",
+        topNftCollections: ["Bored Ape", "CryptoPunks"],
+        topTokensOwned: ["XRP", "ETH"],
+        nftImage: "/static/bithomp.webp", // Placeholder image for the NFT
     }
 ];
 
@@ -216,6 +231,59 @@ const formatTimeAgo = (date) => {
         return `${Math.floor(diffInSeconds / 86400)}d`;
     }
 };
+
+const NFTDisplay = ({ nftImage, nftName }) => (
+    <Tooltip
+        title={
+            <Box>
+                <img 
+                    src="/static/crossmark.webp" 
+                    alt="NFT" 
+                    style={{ maxWidth: '50px', maxHeight: '50px', marginBottom: '10px', borderRadius: '5px' }} 
+                />
+                <Typography variant="body2"><strong>Name:</strong> xshroom #2233</Typography>
+                <Typography variant="body2"><strong>Collection:</strong> XShroom</Typography>
+                <Typography variant="body2"><strong>Rank:</strong> 4440</Typography>
+                <Typography variant="body2"><strong>On-Chain Rank:</strong> 553332</Typography>
+                <Typography variant="body2"><strong>Standard:</strong> XLS-20</Typography>
+                <Typography variant="body2">
+                    <strong>Owner:</strong>{' '}
+                    <span style={{ color: '#808080', fontWeight: 'bold' }}>
+                        @XRPAddress1
+                    </span>
+                </Typography>
+                <Stack direction="row" spacing={1} sx={{ marginTop: '10px' }}>
+                    <Button 
+                        variant="contained" 
+                        color="primary" 
+                        size="small"
+                        onClick={() => alert('Buy button clicked')}
+                    >
+                        Buy
+                    </Button>
+                    <Button 
+                        variant="outlined" 
+                        color="primary" 
+                        size="small"
+                        onClick={() => alert('Offer button clicked')}
+                    >
+                        Offer
+                    </Button>
+                </Stack>
+            </Box>
+        }
+        arrow
+    >
+        <Box sx={{ display: 'inline-flex', alignItems: 'center', marginLeft: 1 }}>
+            <img 
+                src={nftImage} 
+                alt={nftName} 
+                style={{ maxWidth: '20px', maxHeight: '20px', marginRight: '5px', borderRadius: '3px' }} 
+            />
+            <Typography variant="caption" sx={{ color: '#a335ee' }}>{nftName}</Typography>
+        </Box>
+    </Tooltip>
+);
 
 const UserSummary = ({ user }) => {
     const theme = useTheme();
@@ -411,86 +479,66 @@ const ChatPanel = () => {
 
     return (
         <Stack gap={2}>
-            {
-                chats.map((chat, index) => {
-                    const parsedTime = parseISO(chat.time);
-                    const timeAgo = formatTimeAgo(parsedTime);
+            {chats.map((chat, index) => {
+                const parsedTime = parseISO(chat.time);
+                const timeAgo = formatTimeAgo(parsedTime);
 
-                    return (
-                        <Stack key={index} direction="row" spacing={1} alignItems="center">
-                            <Avatar alt={chat.username} src="/static/crossmark.webp" sx={{ width: 36, height: 36, marginLeft: 0 }} />
-                            <Stack sx={{ flexGrow: 1, marginLeft: 0 }}>
-                                <CustomWidthTooltip 
-                                    title={<UserSummary user={chat} />} 
-                                    arrow
-                                    placement="right"
-                                    PopperProps={{
-                                        modifiers: [
-                                            {
-                                                name: 'preventOverflow',
-                                                options: {
-                                                    // padding: 20,
-                                                },
-                                            },
-                                        ],
+                return (
+                    <Stack key={index} direction="row" spacing={1} alignItems="center">
+                        <Avatar alt={chat.username} src={chat.nftImage || "/static/crossmark.webp"} sx={{ width: 36, height: 36 }} />
+                        <Stack sx={{ flexGrow: 1 }}>
+                            <CustomWidthTooltip title={<UserSummary user={chat} />} arrow placement="right">
+                                <Typography 
+                                    variant="caption" 
+                                    sx={{ 
+                                        fontWeight: 'bold', 
+                                        color: rankColors(theme)[chat.rank] || theme.palette.text.primary,
+                                        textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
+                                        cursor: 'pointer',
+                                        animation: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'lightning 5s linear infinite' : 'none',
+                                        backgroundImage: chat.rank === 'Titan' 
+                                            ? `url(https://static.nulled.to/public/assets/whitebg.gif),
+                                               radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
+                                               url(https://static.nulled.to/public/assets/white-lightning.gif),
+                                               url(https://static.nulled.to/public/assets/blue-comet.gif)` 
+                                            : chat.rank === 'Legendary'
+                                            ? `url(https://static.nulled.to/public/assets/whitebg.gif),
+                                               radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
+                                               url(https://static.nulled.to/public/assets/white-lightning.gif)`
+                                            : 'none',
+                                        backgroundSize: chat.rank === 'Legendary' ? 'cover' : '5em, 15% 800%, 10em, 25em',
+                                        WebkitTextFillColor: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'transparent' : 'inherit',
+                                        WebkitBackgroundClip: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'text' : 'unset',
+                                        filter: chat.rank === 'Titan' ? 'brightness(1.5)' : 'none',
                                     }}
                                 >
-                                    <Typography 
-                                        variant="caption" 
-                                        sx={{ 
-                                            fontWeight: 'bold', 
-                                            color: rankColors(theme)[chat.rank] || theme.palette.text.primary,
-                                            textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
-                                            cursor: 'pointer',
-                                            marginLeft: 0,
-                                            animation: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'lightning 5s linear infinite' : 'none',
-                                            backgroundImage: chat.rank === 'Titan' 
-                                                ? `url(https://static.nulled.to/public/assets/whitebg.gif),
-                                                   radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
-                                                   url(https://static.nulled.to/public/assets/white-lightning.gif),
-                                                   url(https://static.nulled.to/public/assets/blue-comet.gif)` 
-                                                : chat.rank === 'Legendary'
-                                                ? `url(https://static.nulled.to/public/assets/whitebg.gif),
-                                                   radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
-                                                   url(https://static.nulled.to/public/assets/white-lightning.gif)`
-                                                : 'none',
-                                            backgroundSize: chat.rank === 'Legendary' ? 'cover' : '5em, 15% 800%, 10em, 25em',
-                                            WebkitTextFillColor: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'transparent' : 'inherit',
-                                            WebkitBackgroundClip: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'text' : 'unset',
-                                            filter: chat.rank === 'Titan' ? 'brightness(1.5)' : 'none',
-                                        }}
-                                    >
-                                        {chat.username}
+                                    {chat.username}
+                                </Typography>
+                            </CustomWidthTooltip>
+                            <Item
+                                sx={{
+                                    border: chat.rank === 'Bot' ? `1px solid ${theme.palette.primary.main}` : '1px solid transparent',
+                                }}
+                            >
+                                <Stack direction="row" alignItems="center">
+                                    <Typography>
+                                        {chat.text} {chat.nftImage && <NFTDisplay nftImage={chat.nftImage} nftName={`xshroom #2233`} />}
                                     </Typography>
-                                </CustomWidthTooltip>
-                                <Item
-                                    sx={{
-                                        marginLeft: 0,
-                                        border: chat.rank === 'Bot' ? `1px solid ${theme.palette.primary.main}` : '1px solid transparent', // Add a primary color outline for Bot messages
-                                    }}
-                                >
-                                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                                    {chat.sentiment === 'Bullish' && <ArrowUpwardIcon sx={{ color: theme.palette.primary.main }} />}
-                                                {chat.sentiment === 'Bearish' && <ArrowDownwardIcon sx={{ color: 'red' }} />}
-                                                {chat.sentiment === 'Neutral' && <RemoveIcon sx={{ color: 'grey' }} />}
-                                        <Typography>{chat.text}</Typography>
-                                        <Tooltip title={new Date(chat.time).toLocaleString()} arrow>
-                                            <Stack direction="row" alignItems="center">
-                                                
-                                                <Typography variant="caption" sx={{ marginLeft: 2, whiteSpace: 'nowrap' }}>
-                                                    {timeAgo}
-                                                </Typography>
-                                            </Stack>
-                                        </Tooltip>
-                                    </Stack>
-                                </Item>
-                            </Stack>
+                                    <Tooltip title={new Date(chat.time).toLocaleString()} arrow>
+                                        <Stack direction="row" alignItems="center">
+                                            <Typography variant="caption" sx={{ marginLeft: 2, whiteSpace: 'nowrap' }}>
+                                                {timeAgo}
+                                            </Typography>
+                                        </Stack>
+                                    </Tooltip>
+                                </Stack>
+                            </Item>
                         </Stack>
-                    );
-                })
-            }
+                    </Stack>
+                );
+            })}
         </Stack>
-    )
-}
+    );
+};
 
 export default ChatPanel;
