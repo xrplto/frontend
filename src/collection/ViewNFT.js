@@ -179,7 +179,8 @@ export default function ViewNFT({ collection }) {
         created,
         volume,
         totalVolume,
-        floor
+        floor,
+        totalVol24h
     } = collection;
 
     const floorPrice = floor?.amount || 0;
@@ -342,17 +343,26 @@ export default function ViewNFT({ collection }) {
             >
 
                 <Stack direction="row" width="100%" sx={{ mt: 2, mb: 3 }} spacing={{xs: 3, sm: 5}} alignItems="flex-end" justifyContent={{xs: 'space-around', sm: 'flex-start'}}>
-                    <Stack>
-                        <Typography variant='d5'>{items}</Typography>
-                        <Typography variant='s13'>items</Typography>
-                    </Stack>
-                    <Stack>
-                        <Typography variant='d5'>{extra.owners}</Typography>
-                        <Typography variant='s13'>owners</Typography>
+                <Stack>
+                        <Stack direction="row" spacing={0.5} alignItems='center'>
+                        <Typography>✕</Typography>
+                            <Typography variant="d5" noWrap>{fNumber(floorPrice)}</Typography>
+                        </Stack>
+                        <Typography variant='s13' noWrap>Floor Price</Typography>
                     </Stack>
                     <Stack>
                         <Stack direction="row" spacing={0.5} alignItems='center'>
                         <Typography>✕</Typography>
+                            <Typography variant="d5" noWrap>{fNumber(totalVol24h)}</Typography>
+                        </Stack>
+                        <Typography variant='s13' noWrap>24h Vol</Typography>
+                    </Stack>
+                    <Stack>
+                        <Stack direction="row" spacing={0.5} alignItems='center'>
+                            
+                        <Typography>✕</Typography>
+
+                        
                             <Typography variant="d5" noWrap>{volume2}</Typography>
                             <Stack direction="row" sx={{ pb: 1.5 }}>
                                 <Tooltip
@@ -367,14 +377,16 @@ export default function ViewNFT({ collection }) {
                                 </Tooltip>
                             </Stack>
                         </Stack>
-                        <Typography variant='s13' noWrap>total volume</Typography>
+                        <Typography variant='s13' noWrap>All Vol</Typography>
+                    </Stack>
+                    
+                    <Stack>
+                        <Typography variant='d5'>{items}</Typography>
+                        <Typography variant='s13'>Supply</Typography>
                     </Stack>
                     <Stack>
-                        <Stack direction="row" spacing={0.5} alignItems='center'>
-                        <Typography>✕</Typography>
-                            <Typography variant="d5" noWrap>{fNumber(floorPrice)}</Typography>
-                        </Stack>
-                        <Typography variant='s13' noWrap>floor price</Typography>
+                        <Typography variant='d5'>{extra.owners}</Typography>
+                        <Typography variant='s13'>Owners</Typography>
                     </Stack>
                 </Stack>
             </Box>

@@ -4,9 +4,9 @@ import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon, Arrow
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
     <Tooltip {...props} classes={{ popper: className }} />
-  ))({
+))({
     [`& .${tooltipClasses.tooltip}`]: {
-      maxWidth: 500,
+        maxWidth: 500,
     },
 });
 
@@ -178,7 +178,7 @@ const rankColors = (theme) => ({
 });
 
 const rankGlowEffect = (theme) => ({
-    Member: '0 0 5px #808080', // Glow effect for Member
+    Member: 'none', // Glow effect for Member
     VIP: theme.palette.mode === 'dark' ? '0 0 5px #FFC700' : '0 0 5px #FFD700',
     AQUA: theme.palette.mode === 'dark' ? '0 0 5px #00E0E0' : '0 0 5px #00BFFF',
     NOVA: theme.palette.mode === 'dark' ? '0 0 5px #FF85B4' : '0 0 5px #FF69B4',
@@ -186,7 +186,7 @@ const rankGlowEffect = (theme) => ({
     Admin: '1px 1px 1.5px #000000',
     Titan: 'none',  // No traditional glow effect for Titan, we'll use background-clip instead
     Legendary: 'none',
-    Developer: `0 0 5px ${theme.palette.primary.main}`, // Glow effect for Developer
+    Developer: `none`, 
     Bot: 'none', // No glow effect for Bot
 });
 
@@ -216,6 +216,59 @@ const formatTimeAgo = (date) => {
         return `${Math.floor(diffInSeconds / 86400)}d`;
     }
 };
+
+const NFTDisplay = ({ nftImage, nftName }) => (
+    <Tooltip
+        title={
+            <Box>
+                <img 
+                    src="/static/crossmark.webp" 
+                    alt="NFT" 
+                    style={{ maxWidth: '50px', maxHeight: '50px', marginBottom: '10px', borderRadius: '5px' }} 
+                />
+                <Typography variant="body2"><strong>Name:</strong> xshroom #2233</Typography>
+                <Typography variant="body2"><strong>Collection:</strong> XShroom</Typography>
+                <Typography variant="body2"><strong>Rank:</strong> 4440</Typography>
+                <Typography variant="body2"><strong>On-Chain Rank:</strong> 553332</Typography>
+                <Typography variant="body2"><strong>Standard:</strong> XLS-20</Typography>
+                <Typography variant="body2">
+                    <strong>Owner:</strong>{' '}
+                    <span style={{ color: '#808080', fontWeight: 'bold' }}>
+                        @XRPAddress1
+                    </span>
+                </Typography>
+                <Stack direction="row" spacing={1} sx={{ marginTop: '10px' }}>
+                    <Button 
+                        variant="contained" 
+                        color="primary" 
+                        size="small"
+                        onClick={() => alert('Buy button clicked')}
+                    >
+                        Buy
+                    </Button>
+                    <Button 
+                        variant="outlined" 
+                        color="primary" 
+                        size="small"
+                        onClick={() => alert('Offer button clicked')}
+                    >
+                        Offer
+                    </Button>
+                </Stack>
+            </Box>
+        }
+        arrow
+    >
+        <Box sx={{ display: 'inline-flex', alignItems: 'center', marginLeft: 1 }}>
+            <img 
+                src={nftImage} 
+                alt={nftName} 
+                style={{ maxWidth: '20px', maxHeight: '20px', marginRight: '5px', borderRadius: '3px' }} 
+            />
+            <Typography variant="caption" sx={{ color: '#a335ee' }}>{nftName}</Typography>
+        </Box>
+    </Tooltip>
+);
 
 const UserSummary = ({ user }) => {
     const theme = useTheme();
@@ -490,7 +543,7 @@ const ChatPanel = ({ chats }) => {
                 })
             }
         </Stack>
-    )
-}
+    );
+};
 
 export default ChatPanel;
