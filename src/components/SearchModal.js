@@ -216,24 +216,23 @@ export default function SearchModal({ onClose, open }) {
         setSearch("");
         onClose();
     }
-
-    const handleClickOutside = (event) => {
-        if (modalRef.current && !modalRef.current.contains(event.target)) {
-            handleClose();
-        }
-    };
-
+    
     useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (modalRef.current && !modalRef.current.contains(event.target)) {
+                handleClose();
+            }
+        };
+        
         if (open) {
-            window.addEventListener('click', handleClickOutside);
-        } else {
-            window.removeEventListener('click', handleClickOutside);
+            document.addEventListener('click', handleClickOutside);
         }
+
 
         return () => {
-            window.removeEventListener('click', handleClickOutside);
+            document.removeEventListener('click', handleClickOutside);
         };
-    }, [open]);
+    }, [handleClose, open]);
 
     useEffect(() => {
         if (window !== undefined) {
@@ -260,6 +259,8 @@ export default function SearchModal({ onClose, open }) {
             window.localStorage.setItem("recent-search", JSON.stringify(newSearch));
         }
     }
+
+    if (!open) return null;
 
     return (
         <Paper
