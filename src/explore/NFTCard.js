@@ -12,7 +12,8 @@ import {
     Skeleton,
     Card,
     Grid,
-    CardContent
+    CardContent,
+    Button
 } from '@mui/material';
 import SportsScoreIcon from '@mui/icons-material/SportsScore';
 import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
@@ -29,11 +30,12 @@ const CardWrapper = styled(Card)(({ theme }) => ({
     borderRadius: 10,
     backdropFilter: 'blur(50px)',
     cursor: 'pointer',
-    transition: 'transform 0.3s',
+    transition: 'border-color 0.3s', // removed transform from transition
     overflow: 'hidden',
     paddingBottom: 5,
+    border: `2px solid transparent`, // default border
     '&:hover': {
-        transform: 'scale(1.05)',
+        borderColor: theme.palette.primary.main, // change border color on hover
     },
 }));
 
@@ -77,7 +79,7 @@ export default function NFTCard({ nft, handleRemove }) {
     };
 
     return (
-        <Link href={`/nft/${NFTokenID}`} underline='none' sx={{ position: 'relative' }}>
+        <Link href={`/nft/{NFTokenID}`} underline='none' sx={{ position: 'relative' }}>
             <CardWrapper sx={{ margin: 'auto', maxWidth: 280, aspectRatio: '9 / 15' }}>
                 {isAdmin && (
                     <CloseIcon
@@ -103,7 +105,25 @@ export default function NFTCard({ nft, handleRemove }) {
                 />
                 <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
 
-                <CardContent sx={{ padding: 1 }}>
+                {/* Offer and Minimalist Event Display on top right corner */}
+                <Stack direction="column" alignItems="flex-end" justifyContent="flex-start" sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1500 }}>
+                    {costb && costb.amount && (
+                        <Box sx={{ backgroundColor: theme.palette.primary.main, borderRadius: '8px', padding: '4px 8px', marginBottom: '8px', boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)' }}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#fff', textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)' }} noWrap>
+                                Offer ✕ {fNumber(costb.amount)}
+                            </Typography>
+                        </Box>
+                    )}
+                    {updateEvent && (
+                        <Box sx={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', borderRadius: '8px', padding: '2px 6px', boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)' }}>
+                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#fff' }} noWrap>
+                                {updateEvent}
+                            </Typography>
+                        </Box>
+                    )}
+                </Stack>
+
+                <CardContent sx={{ padding: 1, pb: 0.5 }}>
                     <Box display='flex' justifyContent='space-between' alignItems='center'>
                         <Typography variant="h6" noWrap sx={{ mt: 0.5, mb: 0.4, textOverflow: 'ellipsis', overflow: 'hidden' }}>
                             {name}
@@ -127,7 +147,7 @@ export default function NFTCard({ nft, handleRemove }) {
                         <Grid container alignItems="center" spacing={0.1}>
                             <Grid item xs={12}>
                                 <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0 }}>
-                                    {cost ? (
+                                    {cost && (
                                         cost.currency === "XRP" ? (
                                             <Stack direction="row" spacing={0.5} alignItems="center">
                                                 <Typography>✕</Typography>
@@ -138,8 +158,6 @@ export default function NFTCard({ nft, handleRemove }) {
                                                 {fNumber(cost.amount)} {normalizeCurrencyCodeXummImpl(cost.currency)}
                                             </Typography>
                                         )
-                                    ) : (
-                                        <Typography variant="body2" noWrap>Unlisted</Typography>
                                     )}
                                     {rarity_rank > 0 && (
                                         <Chip
@@ -151,31 +169,18 @@ export default function NFTCard({ nft, handleRemove }) {
                                     )}
                                 </Stack>
                             </Grid>
-                            <Grid item xs={12}>
-                                {costb ? (
-                                    costb.currency === "XRP" ? (
-                                        <Stack direction="row" spacing={0.5} alignItems="center">
-                                            <Typography variant="caption" noWrap>Offer</Typography>
-                                            <Typography>✕</Typography>
-                                            <Typography variant="body2" color="#00AB55" noWrap>
-                                                {fNumber(costb.amount)}
-                                            </Typography>
-                                        </Stack>
-                                    ) : (
-                                        <Stack direction="row" spacing={0.5} alignItems="center">
-                                            <Typography variant="caption" noWrap>Offer</Typography>
-                                            <Typography variant="body2" color="#00AB55" noWrap>
-                                                {fNumber(costb.amount)} {normalizeCurrencyCodeXummImpl(costb.currency)}
-                                            </Typography>
-                                        </Stack>
-                                    )
-                                ) : (
-                                    <Typography variant="caption" noWrap>No Offer</Typography>
-                                )}
-                            </Grid>
                         </Grid>
                     )}
-                    <Typography variant="caption" noWrap>Event: {updateEvent}</Typography>
+                    {/* Buy Now button below Event */}
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        fullWidth
+                        sx={{ mt: 1, boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)', borderRadius: '8px', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.02)' } }}
+                    >
+                        Buy Now
+                    </Button>
                 </CardContent>
             </CardWrapper>
         </Link>
