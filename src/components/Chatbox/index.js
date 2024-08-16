@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectChatOpen, toggleChatOpen } from 'src/redux/chatSlice';
 import { io } from 'socket.io-client';
 import { AppContext } from 'src/AppContext';
+import { useTheme } from '@mui/material/styles';
 
 const drawerWidth = 400;
 const chatURL = "http://65.108.136.237:5000";
@@ -23,17 +24,20 @@ const socket = io(chatURL, {
   path: "/chat"
 });
 
-// Custom Emoji Picker Component with 18 Emojis Organized in Rows of 4
 function EmojiPicker({ onSelect }) {
+  const theme = useTheme();
+  const backgroundColor = theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff';
+  const hoverColor = theme.palette.mode === 'dark' ? '#333' : '#f0f0f0';
+
   const emojis = ["😀", "😂", "😍", "👍", "🙏", "🔥", "🎉", "❤️", "😎", "🤔", "🥳", "😇", "😭", "💪", "😜", "🥰", "🤩", "👏"];
 
   return (
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)', // 4 emojis per row
+        gridTemplateColumns: 'repeat(4, 1fr)', 
         gap: '8px',
-        backgroundColor: '#fff',
+        backgroundColor: backgroundColor,
         boxShadow: '0px 0px 10px rgba(0,0,0,0.1)',
         borderRadius: '10px',
         padding: '10px',
@@ -51,7 +55,7 @@ function EmojiPicker({ onSelect }) {
             userSelect: 'none',
             textAlign: 'center',
             '&:hover': {
-              backgroundColor: '#f0f0f0',
+              backgroundColor: hoverColor,
               borderRadius: '5px',
             },
           }}
@@ -64,17 +68,20 @@ function EmojiPicker({ onSelect }) {
   );
 }
 
-// Custom NFT Picker Component (Placeholder)
 function NftPicker() {
+  const theme = useTheme();
+  const backgroundColor = theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff';
+  const hoverColor = theme.palette.mode === 'dark' ? '#333' : '#f0f0f0';
+
   const nfts = ["[NFT 1]", "[NFT 2]", "[NFT 3]", "[NFT 4]", "[NFT 5]", "[NFT 6]"];
 
   return (
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)', // 2 NFTs per row
+        gridTemplateColumns: 'repeat(2, 1fr)', 
         gap: '8px',
-        backgroundColor: '#fff',
+        backgroundColor: backgroundColor,
         boxShadow: '0px 0px 10px rgba(0,0,0,0.1)',
         borderRadius: '10px',
         padding: '10px',
@@ -92,7 +99,7 @@ function NftPicker() {
             userSelect: 'none',
             textAlign: 'center',
             '&:hover': {
-              backgroundColor: '#f0f0f0',
+              backgroundColor: hoverColor,
               borderRadius: '5px',
             },
           }}
@@ -106,6 +113,11 @@ function NftPicker() {
 }
 
 function Chatbox() {
+  const theme = useTheme();
+  const backgroundColor = theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff';
+  const iconBackgroundColor = theme.palette.mode === 'dark' ? '#333' : '#e0e0e0';
+  const iconColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
+  
   const dispatch = useDispatch();
   const chatOpen = useSelector(selectChatOpen);
   const { accountProfile } = useContext(AppContext);
@@ -114,7 +126,10 @@ function Chatbox() {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [tabIndex, setTabIndex] = useState(0); // State to manage tab index
+  const [tabIndex, setTabIndex] = useState(0); 
+
+  const chatboxRef = useRef(null);
+  const emojiPickerRef = useRef(null);
 
   const closeChat = () => {
     dispatch(toggleChatOpen());
@@ -137,6 +152,27 @@ function Chatbox() {
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
   };
+
+  const handleClickOutside = (event) => {
+    if (chatboxRef.current && !chatboxRef.current.contains(event.target)) {
+      closeChat();
+    }
+    if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+      setShowEmojiPicker(false);
+    }
+  };
+
+  useEffect(() => {
+    if (chatOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [chatOpen, showEmojiPicker]);
 
   useEffect(() => {
     socket.on('init', (msg) => {
@@ -173,11 +209,11 @@ function Chatbox() {
   };
 
   const drawer = (
-    <Box>
-      <AppBar position="static">
+    <Box ref={chatboxRef}>
+      <AppBar position="static" sx={{ backgroundColor: backgroundColor }}>
         <Toolbar sx={{ justifyContent: "space-between", padding: "10px !important" }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography sx={{ marginRight: '4px' }}>
+            <Typography sx={{ marginRight: '4px', color: theme.palette.text.primary }}>
               {selectedOption}
             </Typography>
             <IconButton 
@@ -185,7 +221,7 @@ function Chatbox() {
               onClick={handleMenuClick}
               sx={{ padding: 0 }}
             >
-              <ArrowDropDownIcon />
+              <ArrowDropDownIcon sx={{ color: theme.palette.text.primary }} />
             </IconButton>
             <Menu
               anchorEl={anchorEl}
@@ -221,7 +257,7 @@ function Chatbox() {
             </Menu>
           </Box>
           <IconButton color="inherit" onClick={closeChat}>
-            <CloseIcon />
+            <CloseIcon sx={{ color: theme.palette.text.primary }} />
           </IconButton>
         </Toolbar>
       </AppBar>
@@ -229,7 +265,7 @@ function Chatbox() {
       <Stack p={1} overflow="auto" height="calc(100vh - 135px)">
         <ChatPanel chats={chatHistory}/>
       </Stack>
-      <AppBar sx={{ position: "absolute", bottom: "0px", width: "100%", top: "auto" }}>
+      <AppBar sx={{ position: "absolute", bottom: "0px", width: "100%", top: "auto", backgroundColor: backgroundColor }}>
         <Toolbar sx={{ flexDirection: "column" }}>
           <Divider width="100%" />
           <Stack direction="row" mt={1} gap={1} px={1} justifyContent="space-between" width="100%" pb={1}>
@@ -238,10 +274,16 @@ function Chatbox() {
               placeholder="Your message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              sx={{
+                backgroundColor: theme.palette.mode === 'dark' ? '#333' : '#fff',
+                borderRadius: '4px',
+                input: {
+                  color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+                }
+              }}
             />
             <Box sx={{ position: 'relative' }}>
-              <Button 
-                variant="contained" 
+              <IconButton 
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                 sx={{
                   minWidth: '40px',
@@ -250,27 +292,30 @@ function Chatbox() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '20px',
+                  backgroundColor: iconBackgroundColor,
+                  color: iconColor,
+                  borderRadius: '8px',
                 }}
               >
                 😊
-              </Button>
+              </IconButton>
               {showEmojiPicker && (
                 <Box
+                  ref={emojiPickerRef}
                   sx={{
                     position: 'absolute',
                     bottom: '60px',
                     right: '5px',
                     zIndex: 1000,
-                    backgroundColor: '#fff',
+                    backgroundColor: backgroundColor,
                     borderRadius: '10px',
                     boxShadow: '0px 0px 10px rgba(0,0,0,0.1)',
                     padding: '10px',
                   }}
                 >
                   <Tabs value={tabIndex} onChange={handleTabChange}>
-                    <Tab label="Emojis" />
-                    <Tab label="NFTs" />
+                    <Tab label="Emojis" sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }} />
+                    <Tab label="NFTs" sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }} />
                   </Tabs>
                   <Divider />
                   {tabIndex === 0 && <EmojiPicker onSelect={addEmoji} />}
@@ -278,7 +323,22 @@ function Chatbox() {
                 </Box>
               )}
             </Box>
-            <Button variant='contained' onClick={sendMessage}><SendIcon /></Button>
+            <IconButton 
+              variant='contained' 
+              onClick={sendMessage} 
+              sx={{
+                minWidth: '40px',
+                minHeight: '40px',
+                padding: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: iconBackgroundColor,
+                color: iconColor,
+                borderRadius: '8px',
+              }}>
+              <SendIcon sx={{ color: iconColor }} />
+            </IconButton>
           </Stack>
         </Toolbar>
       </AppBar>
@@ -289,7 +349,7 @@ function Chatbox() {
     <SwipeableDrawer
       variant="temporary"
       sx={{
-        '& .MuiDrawer-paper': { width: drawerWidth },
+        '& .MuiDrawer-paper': { width: drawerWidth, backgroundColor: backgroundColor },
       }}
       open={chatOpen}
       onOpen={console.log}
