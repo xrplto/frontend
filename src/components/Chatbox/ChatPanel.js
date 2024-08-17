@@ -1,6 +1,8 @@
 import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid, useTheme, tooltipClasses } from "@mui/material";
 import { parseISO } from 'date-fns';
 import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon, ArrowUpward as ArrowUpwardIcon, ArrowDownward as ArrowDownwardIcon, Remove as RemoveIcon } from '@mui/icons-material';
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
     <Tooltip {...props} classes={{ popper: className }} />
@@ -272,6 +274,44 @@ const NFTDisplay = ({ nftImage, nftName }) => (
 
 const UserSummary = ({ user }) => {
     const theme = useTheme();
+    const [token, setToken] = useState(0);
+    const [nft , setNFT] = useState(0);
+
+    useEffect(() => {
+
+        const fetchAssets = () => {
+            axios.get(`https://api.xrpl.to/api/account/lines/${user.username}?page=0&limit=10`).then(res => {
+                const { total } = res.data;
+                setToken(total);
+            }).catch(error => {
+
+            });
+
+            axios.post(`https://api.xrpnft.com/api/account/collectedCreated`, {
+                account: user.username,
+                filter: 0,
+                limit: 32,
+                page: 0,
+                search: "",
+                subFilter: "pricexrpasc",
+                type: "collected",
+            }).then(res => {
+                const { nfts } = res.data;
+                let total = 0;
+                nfts.map(nft => {
+                    total += nft.nftCount;
+                })
+                setNFT(total);
+            }).catch(error => {
+
+            });
+        }
+
+        if (user.username) {
+            fetchAssets();
+        }
+
+    }, [user])
 
     const getPLColor = (pl) => {
         if (!pl || pl === "0%") return "inherit";  // Default color if P/L is null or 0%
@@ -338,7 +378,7 @@ const UserSummary = ({ user }) => {
                                 <strong>NFTs:</strong>
                             </Typography>
                             <Typography variant="body2" sx={{ flex: 2 }}>
-                                {user.topNftCollections?.join(', ') || 'None'}
+                                {nft || 'None'}
                             </Typography>
                         </Grid>
 
@@ -348,7 +388,7 @@ const UserSummary = ({ user }) => {
                                 <strong>Tokens:</strong>
                             </Typography>
                             <Typography variant="body2" sx={{ flex: 2 }}>
-                                {user.topTokensOwned?.join(', ') || 'None'}
+                                {token || 'None'}
                             </Typography>
                         </Grid>
                         
@@ -474,7 +514,7 @@ const ChatPanel = ({ chats }) => {
                             <Avatar alt={chat.username} src="/static/crossmark.webp" sx={{ width: 36, height: 36, marginLeft: 0 }} />
                             <Stack sx={{ flexGrow: 1, marginLeft: 0 }}>
                                 <CustomWidthTooltip 
-                                    // title={<UserSummary user={chat} />} 
+                                    title={<UserSummary user={chat} />} 
                                     arrow
                                     placement="right"
                                     PopperProps={{
