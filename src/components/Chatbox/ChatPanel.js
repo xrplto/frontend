@@ -220,14 +220,19 @@ const formatTimeAgo = (date) => {
     }
 };
 
-const NFTDisplay = ({ nftName, tokenId }) => {
-    const [name, number] = nftName.split('#');
+const NFTDisplay = ({ nftLink }) => {
+    const theme = useTheme();
+    const match = nftLink.match(/\[NFT: (.*?) #(\d+) \((.*?)\)\]/);
+    
+    if (!match) return null;
+
+    const [_, name, number, tokenId] = match;
     
     return (
         <Tooltip
             title={
                 <Box>
-                    <Typography variant="body2">{nftName}</Typography>
+                    <Typography variant="body2">{`${name} #${number}`}</Typography>
                     <Typography variant="caption" color="textSecondary">{tokenId}</Typography>
                 </Box>
             }
@@ -236,10 +241,10 @@ const NFTDisplay = ({ nftName, tokenId }) => {
             <Box sx={{ display: 'inline-flex', alignItems: 'center', marginLeft: 1 }}>
                 <img 
                     src="/static/crossmark.webp" 
-                    alt={nftName} 
+                    alt={`${name} #${number}`} 
                     style={{ maxWidth: '20px', maxHeight: '20px', marginRight: '5px', borderRadius: '3px' }} 
                 />
-                <Typography variant="caption" sx={{ color: '#a335ee' }}>
+                <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
                     {name} <span style={{ fontWeight: 'bold' }}>#{number}</span>
                 </Typography>
             </Box>
@@ -547,13 +552,12 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                                     color: chat.isPrivate ? 'purple' : 'inherit'
                                 }}
                             >
-                                {chat.message}
-                                {chat.nft && (
-                                    <NFTDisplay 
-                                        nftName={chat.nft.name} 
-                                        tokenId={chat.nft.tokenId} 
-                                    />
-                                )}
+                                {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
+                                    if (part.startsWith('[NFT:')) {
+                                        return <NFTDisplay key={i} nftLink={part} />;
+                                    }
+                                    return part;
+                                })}
                             </Typography>
                         </Box>
                         <Typography variant="caption" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>

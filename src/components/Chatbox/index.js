@@ -9,7 +9,7 @@ import SendIcon from '@mui/icons-material/Send';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import ChatPanel from "./ChatPanel";
-import { Button, Stack, TextField, Menu, MenuItem, ListItemIcon, ListItemText, Tabs, Tab } from '@mui/material';
+import { Button, Stack, TextField, Menu, MenuItem, ListItemIcon, ListItemText, Tabs, Tab, Tooltip, Chip } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useDispatch, useSelector } from 'react-redux';
@@ -69,6 +69,109 @@ function EmojiPicker({ onSelect }) {
     </Box>
   );
 }
+
+const FormattedNFT = ({ nftLink, onRemove }) => {
+  const theme = useTheme();
+  const match = nftLink.match(/\[NFT: (.*?) #(\d+) \((.*?)\)\]/);
+  
+  if (!match) return null;
+
+  const [_, name, number, tokenId] = match;
+  
+  return (
+    <Tooltip
+      title={
+        <Box>
+          <Typography variant="body2">{`${name} #${number}`}</Typography>
+          <Typography variant="caption" color="textSecondary">{tokenId}</Typography>
+        </Box>
+      }
+      arrow
+    >
+      <Chip
+        icon={<img src="/static/crossmark.webp" alt={`${name} #${number}`} style={{ width: '16px', height: '16px' }} />}
+        label={`${name} #${number}`}
+        onDelete={onRemove}
+        size="small"
+        sx={{
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.primary.main}`,
+          '& .MuiChip-label': {
+            color: theme.palette.primary.main,
+          },
+          mr: 0.5,
+          my: 0.25,
+        }}
+      />
+    </Tooltip>
+  );
+};
+
+const CustomInput = ({ value, onChange, onNFTRemove }) => {
+  const inputRef = useRef(null);
+  const [parts, setParts] = useState([]);
+
+  useEffect(() => {
+    const newParts = value.split(/(\[NFT:.*?\])/).filter(Boolean).map((part, index) => {
+      if (part.startsWith('[NFT:')) {
+        return { type: 'nft', content: part, id: index };
+      }
+      return { type: 'text', content: part, id: index };
+    });
+    setParts(newParts);
+  }, [value]);
+
+  const handleChange = (e) => {
+    const newValue = e.target.value;
+    onChange(newValue);
+  };
+
+  const handleNFTRemove = (index) => {
+    const newParts = [...parts];
+    newParts.splice(index, 1);
+    const newValue = newParts.map(part => part.content).join('');
+    onChange(newValue);
+    onNFTRemove && onNFTRemove(index);
+  };
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        p: 1,
+        border: 1,
+        borderColor: 'divider',
+        borderRadius: 1,
+        minHeight: 40,
+      }}
+      onClick={() => inputRef.current.focus()}
+    >
+      {parts.map((part, index) => 
+        part.type === 'nft' ? (
+          <FormattedNFT key={part.id} nftLink={part.content} onRemove={() => handleNFTRemove(index)} />
+        ) : (
+          <span key={part.id}>{part.content}</span>
+        )
+      )}
+      <input
+        ref={inputRef}
+        style={{
+          flex: 1,
+          border: 'none',
+          outline: 'none',
+          background: 'transparent',
+          fontSize: 'inherit',
+          fontFamily: 'inherit',
+          color: 'inherit',
+        }}
+        value=""
+        onChange={handleChange}
+      />
+    </Box>
+  );
+};
 
 function Chatbox() {
   const theme = useTheme();
@@ -189,6 +292,10 @@ function Chatbox() {
     dispatch(toggleChatOpen());
   };
 
+  const handleNFTRemove = (index) => {
+    // You can add any additional logic here if needed
+  };
+
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>
@@ -215,12 +322,10 @@ function Chatbox() {
           </Typography>
         )}
         <Stack direction="row" spacing={1}>
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Type a message"
+          <CustomInput
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={setMessage}
+            onNFTRemove={handleNFTRemove}
           />
           <Box sx={{ position: 'relative' }}>
             <IconButton 
