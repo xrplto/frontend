@@ -1,6 +1,6 @@
 import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid, useTheme, tooltipClasses, IconButton } from "@mui/material";
 import { parseISO } from 'date-fns';
-import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon, ArrowUpward as ArrowUpwardIcon, ArrowDownward as ArrowDownwardIcon, Remove as RemoveIcon, Person as PersonIcon } from '@mui/icons-material';
+import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon, ArrowUpward as ArrowUpwardIcon, ArrowDownward as ArrowDownwardIcon, Remove as RemoveIcon, ChatBubbleOutline as ChatBubbleOutlineIcon } from '@mui/icons-material';
 import { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { AppContext } from 'src/AppContext';
@@ -504,101 +504,84 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
     styleElement.textContent = lightningEffect;
     document.head.appendChild(styleElement);
 
-    return (
-        <Stack gap={2}>
-            {
-                chats.filter(chat => 
-                    !chat.isPrivate || 
-                    chat.username === accountProfile?.account || 
-                    chat.recipient === accountProfile?.account
-                ).map((chat, index) => {
-                    const parsedTime = parseISO(chat.timestamp);
-                    const timeAgo = formatTimeAgo(parsedTime);
+    const truncateString = (str) => str.slice(0, 12) + (str.length > 12 ? '...' : '');
 
-                    return (
-                        <Stack key={index} direction="row" spacing={1} alignItems="center">
-                            <Avatar alt={chat.username} src="/static/crossmark.webp" sx={{ width: 36, height: 36, marginLeft: 0 }} />
-                            <Stack sx={{ flexGrow: 1, marginLeft: 0 }}>
+    return (
+        <Stack gap={1}>
+            {chats.filter(chat => 
+                !chat.isPrivate || 
+                chat.username === accountProfile?.account || 
+                chat.recipient === accountProfile?.account
+            ).map((chat, index) => {
+                const parsedTime = parseISO(chat.timestamp);
+                const timeAgo = formatTimeAgo(parsedTime);
+
+                const privateMessageRecipient = chat.isPrivate
+                    ? (chat.username === accountProfile?.account ? chat.recipient : chat.username)
+                    : chat.username;
+
+                const displayUsername = truncateString(chat.username);
+                const displayRecipient = truncateString(privateMessageRecipient);
+
+                const isCurrentUser = chat.username === accountProfile?.account;
+
+                return (
+                    <Stack key={index} direction="row" spacing={1} alignItems="flex-start">
+                        <Avatar 
+                            alt={chat.username} 
+                            src="/static/crossmark.webp" 
+                            sx={{ width: 32, height: 32, marginTop: 0.5 }}
+                        />
+                        <Box sx={{ flexGrow: 1 }}>
+                            <Stack direction="row" alignItems="center" spacing={1}>
                                 <CustomWidthTooltip 
                                     title={<UserSummary user={chat} />} 
                                     arrow
                                     placement="right"
-                                    PopperProps={{
-                                        modifiers: [
-                                            {
-                                                name: 'preventOverflow',
-                                                options: {
-                                                    // padding: 20,
-                                                },
-                                            },
-                                        ],
-                                    }}
                                 >
                                     <Typography 
                                         variant="caption" 
                                         sx={{ 
-                                            fontWeight: 'bold', 
+                                            fontWeight: 'bold',
                                             color: rankColors(theme)[chat.rank] || theme.palette.text.primary,
-                                            textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
                                             cursor: 'pointer',
-                                            marginLeft: 0,
-                                            animation: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'lightning 5s linear infinite' : 'none',
-                                            backgroundImage: chat.rank === 'Titan' 
-                                                ? `url(https://static.nulled.to/public/assets/whitebg.gif),
-                                                   radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
-                                                   url(https://static.nulled.to/public/assets/white-lightning.gif),
-                                                   url(https://static.nulled.to/public/assets/blue-comet.gif)` 
-                                                : chat.rank === 'Legendary'
-                                                ? `url(https://static.nulled.to/public/assets/whitebg.gif),
-                                                   radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
-                                                   url(https://static.nulled.to/public/assets/white-lightning.gif)`
-                                                : 'none',
-                                            backgroundSize: chat.rank === 'Legendary' ? 'cover' : '5em, 15% 800%, 10em, 25em',
-                                            WebkitTextFillColor: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'transparent' : 'inherit',
-                                            WebkitBackgroundClip: chat.rank === 'Titan' || chat.rank === 'Legendary' ? 'text' : 'unset',
-                                            filter: chat.rank === 'Titan' ? 'brightness(1.5)' : 'none',
                                         }}
                                     >
-                                        {chat.username}
+                                        {displayUsername}
                                         {chat.isPrivate && (
-                                            chat.username === accountProfile?.account 
-                                                ? ` (Private to ${chat.recipient})`
-                                                : ` (Private from ${chat.username})`
+                                            <>
+                                                {" → "}
+                                                <span style={{ color: theme.palette.text.secondary }}>
+                                                    {displayRecipient}
+                                                </span>
+                                            </>
                                         )}
                                     </Typography>
                                 </CustomWidthTooltip>
-                                <Item
-                                    sx={{
-                                        marginLeft: 0,
-                                        border: chat.rank === 'Bot' ? `1px solid ${theme.palette.primary.main}` : '1px solid transparent',
-                                    }}
+                                <IconButton 
+                                    size="small" 
+                                    onClick={() => onStartPrivateMessage(privateMessageRecipient)}
+                                    sx={{ padding: 0 }}
                                 >
-                                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                                        {chat.sentiment === 'Bullish' && <ArrowUpwardIcon sx={{ color: theme.palette.primary.main }} />}
-                                        {chat.sentiment === 'Bearish' && <ArrowDownwardIcon sx={{ color: 'red' }} />}
-                                        {chat.sentiment === 'Neutral' && <RemoveIcon sx={{ color: 'grey' }} />}
-                                        <Typography>{chat.message}</Typography>
-                                        <Tooltip title={new Date(chat.timestamp).toLocaleString()} arrow>
-                                            <Stack direction="row" alignItems="center">
-                                                <Typography variant="caption" sx={{ marginLeft: 2, whiteSpace: 'nowrap' }}>
-                                                    {timeAgo}
-                                                </Typography>
-                                            </Stack>
-                                        </Tooltip>
-                                    </Stack>
-                                </Item>
+                                    <ChatBubbleOutlineIcon fontSize="small" />
+                                </IconButton>
                             </Stack>
-                            <IconButton 
-                                size="small" 
-                                onClick={() => onStartPrivateMessage(chat.username)}
-                                sx={{ ml: 1 }}
+                            <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                    mt: 0.5, 
+                                    color: chat.isPrivate ? 'purple' : 'inherit'
+                                }}
                             >
-                                <PersonIcon fontSize="small" />
-                            </IconButton>
-                        </Stack>
-                    );
-                })
-            }
+                                {chat.message}
+                            </Typography>
+                        </Box>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>
+                            {timeAgo}
+                        </Typography>
+                    </Stack>
+                );
+            })}
         </Stack>
     );
 };

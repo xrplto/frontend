@@ -231,163 +231,80 @@ function Chatbox() {
   };
 
   const drawer = (
-    <Box ref={chatboxRef}>
-      <AppBar position="static" sx={{ backgroundColor: backgroundColor }}>
-        <Toolbar sx={{ justifyContent: "space-between", padding: "10px !important" }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography sx={{ marginRight: '4px', color: theme.palette.text.primary }}>
-              {selectedOption}
-            </Typography>
-            <IconButton 
-              color="inherit" 
-              onClick={handleMenuClick}
-              sx={{ padding: 0 }}
-            >
-              <ArrowDropDownIcon sx={{ color: theme.palette.text.primary }} />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-            >
-              <MenuItem onClick={() => handleOptionSelect('Chatbox')}>
-                <ListItemIcon>
-                  {selectedOption === 'Chatbox' ? <CheckCircleIcon color="primary" /> : null}
-                </ListItemIcon>
-                <ListItemText primary="Chatbox" secondary="Main chat interface" />
-              </MenuItem>
-              <MenuItem onClick={() => handleOptionSelect('Terminal')}>
-                <ListItemIcon>
-                  {selectedOption === 'Terminal' ? <CheckCircleIcon color="primary" /> : null}
-                </ListItemIcon>
-                <ListItemText primary="Terminal" secondary="Command-line interface" />
-              </MenuItem>
-              <MenuItem onClick={() => handleOptionSelect('Mailbox')}>
-                <ListItemIcon>
-                  {selectedOption === 'Mailbox' ? <CheckCircleIcon color="primary" /> : null}
-                </ListItemIcon>
-                <ListItemText primary="Mailbox" secondary="Manage conversations" />
-              </MenuItem>
-            </Menu>
-          </Box>
-          <IconButton color="inherit" onClick={closeChat}>
-            <CloseIcon sx={{ color: theme.palette.text.primary }} />
+    <Box ref={chatboxRef} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>
+        <Toolbar sx={{ justifyContent: "space-between" }}>
+          <Typography variant="h6" sx={{ color: 'text.primary' }}>Chat</Typography>
+          <IconButton onClick={closeChat} edge="end" sx={{ color: 'text.primary' }}>
+            <CloseIcon />
           </IconButton>
         </Toolbar>
       </AppBar>
-      <Divider />
-      <Stack p={1} overflow="auto" height="calc(100vh - 135px)">
+      <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2 }}>
         <ChatPanel 
           chats={chatHistory}
           onStartPrivateMessage={startPrivateMessage}
         />
-      </Stack>
-      <AppBar sx={{ position: "absolute", bottom: "0px", width: "100%", top: "auto", backgroundColor: backgroundColor }}>
-        <Toolbar sx={{ flexDirection: "column" }}>
-          <Divider width="100%" />
-          {recipient && (
-            <Typography variant="caption" sx={{ alignSelf: 'flex-start', mb: 1, color: theme.palette.text.primary }}>
-              Private message to: {recipient}
-              <IconButton size="small" onClick={() => setRecipient(null)}>
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            </Typography>
-          )}
-          <Stack direction="row" mt={1} gap={1} px={1} justifyContent="space-between" width="100%" pb={1}>
-            <TextField
-              fullWidth
-              placeholder="Your message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              sx={{
-                backgroundColor: theme.palette.mode === 'dark' ? '#333' : '#fff',
-                borderRadius: '4px',
-                input: {
-                  color: theme.palette.mode === 'dark' ? '#fff' : '#000',
-                }
-              }}
-            />
-            <Box sx={{ position: 'relative' }}>
-              <IconButton 
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+      </Box>
+      <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+        {recipient && (
+          <Typography variant="caption" sx={{ mb: 1, display: 'block' }}>
+            To: {recipient}
+            <IconButton size="small" onClick={() => setRecipient(null)}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Typography>
+        )}
+        <Stack direction="row" spacing={1}>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="Type a message"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+          <Box sx={{ position: 'relative' }}>
+            <IconButton 
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              sx={{ color: 'text.secondary' }}
+            >
+              😊
+            </IconButton>
+            {showEmojiPicker && (
+              <Box
+                ref={emojiPickerRef}
                 sx={{
-                  minWidth: '40px',
-                  minHeight: '40px',
-                  padding: '10px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: iconBackgroundColor,
-                  color: iconColor,
-                  borderRadius: '8px',
+                  position: 'absolute',
+                  bottom: '100%',
+                  right: 0,
+                  zIndex: 1000,
+                  backgroundColor: 'background.paper',
+                  borderRadius: '4px',
+                  boxShadow: 3,
+                  p: 1,
                 }}
               >
-                😊
-              </IconButton>
-              {showEmojiPicker && (
-                <Box
-                  ref={emojiPickerRef}
-                  sx={{
-                    position: 'absolute',
-                    bottom: '60px',
-                    right: '5px',
-                    zIndex: 1000,
-                    backgroundColor: backgroundColor,
-                    borderRadius: '10px',
-                    boxShadow: '0px 0px 10px rgba(0,0,0,0.1)',
-                    padding: '10px',
-                  }}
-                >
-                  <Tabs value={tabIndex} onChange={handleTabChange}>
-                    <Tab label="Emojis" sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }} />
-                    <Tab label="NFTs" sx={{ color: theme.palette.mode === 'dark' ? '#fff' : '#000' }} />
-                  </Tabs>
-                  <Divider />
-                  {tabIndex === 0 && <EmojiPicker onSelect={addEmoji} />}
-                  {tabIndex === 1 && <NftPicker />}
-                </Box>
-              )}
-            </Box>
-            <IconButton 
-              variant='contained' 
-              onClick={sendMessage} 
-              sx={{
-                minWidth: '40px',
-                minHeight: '40px',
-                padding: '10px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: iconBackgroundColor,
-                color: iconColor,
-                borderRadius: '8px',
-              }}>
-              <SendIcon sx={{ color: iconColor }} />
-            </IconButton>
-          </Stack>
-        </Toolbar>
-      </AppBar>
+                <EmojiPicker onSelect={addEmoji} />
+              </Box>
+            )}
+          </Box>
+          <IconButton onClick={sendMessage} color="primary">
+            <SendIcon />
+          </IconButton>
+        </Stack>
+      </Box>
     </Box>
   );
 
   return (
     <SwipeableDrawer
-      variant="temporary"
-      sx={{
-        '& .MuiDrawer-paper': { width: drawerWidth, backgroundColor: backgroundColor },
-      }}
-      open={chatOpen}
-      onOpen={console.log}
-      onClose={console.log}
       anchor="right"
+      open={chatOpen}
+      onClose={closeChat}
+      onOpen={() => {}}
+      sx={{
+        '& .MuiDrawer-paper': { width: drawerWidth, bgcolor: 'background.default' },
+      }}
     >
       {drawer}
     </SwipeableDrawer>
