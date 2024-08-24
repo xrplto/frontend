@@ -1,4 +1,4 @@
-import { useState, createContext, useEffect } from 'react';
+import { useState, createContext, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 
 import { Backdrop } from '@mui/material';
@@ -38,15 +38,18 @@ export function ContextProvider({ children, data, openSnackbar }) {
   const KEY_ACCOUNT_PROFILE = 'account_profile_2';
   const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
 
-  const toggleTheme = () => {
-    window.localStorage.setItem('appTheme', !darkMode);
-    setDarkMode(!darkMode);
-  };
+  const toggleTheme = useCallback(() => {
+    setDarkMode(prevMode => {
+      const newMode = !prevMode;
+      window.localStorage.setItem('appTheme', newMode);
+      return newMode;
+    });
+  }, []);
 
-  const toggleFiatCurrency = (newValue) => {
+  const toggleFiatCurrency = useCallback((newValue) => {
     window.localStorage.setItem('appFiatCurrency', newValue);
     setActiveFiatCurrency(newValue);
-  };
+  }, []);
 
   useEffect(() => {
     const isDarkMode = window.localStorage.getItem('appTheme');
@@ -81,7 +84,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
     window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
   };
 
-  const doLogIn = (profile) => {
+  const doLogIn = useCallback((profile) => {
     setAccountProfile(profile);
     window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
 
@@ -104,16 +107,16 @@ export function ContextProvider({ children, data, openSnackbar }) {
       JSON.stringify(newProfiles)
     );
     setProfiles(newProfiles);
-  };
+  }, [profiles]);
 
-  const doLogOut = () => {
+  const doLogOut = useCallback(() => {
     window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(null));
     window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify([]));
     setAccountProfile(null);
     setProfiles([]);
-  };
+  }, []);
 
-  const removeProfile = (account) => {
+  const removeProfile = useCallback((account) => {
     const newProfiles = profiles.filter(function (obj) {
       return obj.account !== account;
     });
@@ -122,8 +125,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
       JSON.stringify(newProfiles)
     );
     setProfiles(newProfiles);
-  };
-
+  }, [profiles]);
 
   useEffect(() => {
     var timer = null;
@@ -161,7 +163,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
     };
   }, [openLogin, uuid, doLogIn]);
 
-  const onConnectXumm = async () => {
+  const onConnectXumm = useCallback(async () => {
     setOpenLogin(true);
     setConnecting(true);
     try {
@@ -179,9 +181,9 @@ export function ContextProvider({ children, data, openSnackbar }) {
       alert(err);
     }
     setConnecting(false);
-  };
+  }, [BASE_URL]);
 
-  const onCancelLoginXumm = async (xuuid) => {
+  const onCancelLoginXumm = useCallback(async (xuuid) => {
     setConnecting(true);
     try {
       const res = await axios.delete(
@@ -192,16 +194,16 @@ export function ContextProvider({ children, data, openSnackbar }) {
     } catch (err) {}
     setUuid(null);
     setConnecting(false);
-  };
+  }, [BASE_URL]);
 
-  const onLogoutXumm = async () => {
+  const onLogoutXumm = useCallback(async () => {
     setConnecting(true);
     setOpenLogin(false);
     try {
       const accountToken = accountProfile?.token;
       const accountUuid = accountProfile?.xuuid;
       const res = await axios.delete(
-        `${BASE_URL}/account/logout/${accountLogin}/${accountUuid}`,
+        `${BASE_URL}/account/logout/${accountUuid}`,
         { headers: { 'x-access-token': accountToken } }
       );
       if (res.status === 200) {
@@ -210,7 +212,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
     doLogOut();
     setUuid(null);
     setConnecting(false);
-  };
+  }, [BASE_URL, accountProfile, doLogOut]);
 
   const handleOpen = () => {
     setOpen(true);
@@ -264,54 +266,71 @@ export function ContextProvider({ children, data, openSnackbar }) {
     }
     // console.log('account_info')
     getAccountInfo();
-  }, [accountProfile, sync]);
+  }, [accountProfile, sync, BASE_URL]);
+
+  const contextValue = useMemo(() => ({
+    toggleTheme,
+    darkMode,
+    setDarkMode,
+    accountProfile,
+    setActiveProfile,
+    profiles,
+    removeProfile,
+    doLogIn,
+    doLogOut,
+    setLoading,
+    openSnackbar,
+    sync,
+    setSync,
+    activeFiatCurrency,
+    toggleFiatCurrency,
+    open,
+    setOpen,
+    openLogin,
+    setOpenLogin,
+    openWalletModal,
+    setOpenWalletModal,
+    uuid,
+    setUuid,
+    qrUrl,
+    setQrUrl,
+    nextUrl,
+    setNextUrl,
+    accountBalance,
+    setAccountBalance,
+    onConnectXumm, 
+    onCancelLoginXumm, 
+    onLogoutXumm, 
+    handleOpen,
+    handleClose ,
+    handleLogin ,
+    handleLogout,
+    handleLoginClose,
+    connecting,
+    setConnecting,
+    deletingNfts,
+    setDeletingNfts
+  }), [
+    toggleTheme,
+    darkMode,
+    accountProfile,
+    profiles,
+    removeProfile,
+    doLogIn,
+    doLogOut,
+    openLogin,
+    uuid,
+    onConnectXumm,
+    onCancelLoginXumm,
+    onLogoutXumm,
+    accountBalance,
+    BASE_URL,
+    connecting,
+    deletingNfts
+  ]);
 
   return (
-    <AppContext.Provider
-      value={{
-        toggleTheme,
-        darkMode,
-        setDarkMode,
-        accountProfile,
-        setActiveProfile,
-        profiles,
-        removeProfile,
-        doLogIn,
-        doLogOut,
-        setLoading,
-        openSnackbar,
-        sync,
-        setSync,
-        activeFiatCurrency,
-        toggleFiatCurrency,
-        open,
-        setOpen,
-        openLogin,
-        setOpenLogin,
-        openWalletModal,
-        setOpenWalletModal,
-        uuid,
-        setUuid,
-        qrUrl,
-        setQrUrl,
-        nextUrl,
-        setNextUrl,
-        accountBalance,
-        setAccountBalance,
-        onConnectXumm, 
-        onCancelLoginXumm, 
-        onLogoutXumm, 
-        handleOpen,
-        handleClose ,
-        handleLogin ,
-        handleLogout,
-        handleLoginClose,
-        connecting,
-        setConnecting,
-        deletingNfts,
-        setDeletingNfts
-      }}
-    >
+    <AppContext.Provider value={contextValue}>
       <Backdrop
         sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 202 }}
         open={loading}

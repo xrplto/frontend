@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useMemo } from 'react';
 import 'src/utils/i18n';
 import { useTranslation } from 'react-i18next';
 import {
@@ -29,6 +29,7 @@ import SidebarDrawer from './SidebarDrawer';
 import ThemeSwitcher from './ThemeSwitcher';
 import DropDownMenu from './DropDownMenu';
 
+// Move styled components outside of the component
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
     width: 100%;
@@ -89,6 +90,46 @@ export default function Header(props) {
     setAnchorEl(null);
   };
 
+  // Memoize the theme-dependent styles
+  const linkHoverStyle = useMemo(() => ({
+    '&:hover': {
+      color: darkMode ? '#22B14C !important' : '#3366FF !important'
+    }
+  }), [darkMode]);
+
+  // Memoize the desktop menu items
+  const desktopMenuItems = useMemo(() => (
+    <>
+      <MenuContainer
+        onMouseLeave={handleMenuClose}
+        onMouseEnter={handleMenuOpen}
+      >
+        <DropDownMenu 
+          handleMenuOpen={handleMenuOpen}
+          handleMenuClose={handleMenuClose}
+          anchorEl={anchorEl}
+          open={open}
+        />
+      </MenuContainer>
+      <StyledLink
+        underline="none"
+        color={darkMode ? 'white' : 'black'}
+        sx={linkHoverStyle}
+        href="/swap"
+      >
+        {t('Swap')}
+      </StyledLink>
+      <StyledLink
+        underline="none"
+        color={darkMode ? 'white' : 'black'}
+        sx={linkHoverStyle}
+        href="/buy-xrp"
+      >
+        {t('Fiat')}
+      </StyledLink>
+    </>
+  ), [darkMode, handleMenuClose, handleMenuOpen, anchorEl, open, linkHoverStyle, t]);
+
   return (
     <HeaderWrapper>
       <Container maxWidth="xl">
@@ -109,50 +150,7 @@ export default function Header(props) {
           >
             <Logo alt="xrpl.to Logo" style={{ marginRight: 25 }} />
 
-            {!isTablet && (
-              <>
-                <MenuContainer
-                  onMouseLeave={handleMenuClose}
-                  onMouseEnter={handleMenuOpen}
-                >
-                  <DropDownMenu 
-                    handleMenuOpen
-                    handleMenuClose
-                    anchorEl
-                    open
-                  />
-
-                </MenuContainer>
-                <StyledLink
-                  underline="none"
-                  color={darkMode ? 'white' : 'black'}
-                  sx={{
-                    '&:hover': {
-                      color: darkMode
-                        ? '#22B14C !important'
-                        : '#3366FF !important'
-                    }
-                  }}
-                  href="/swap"
-                >
-                  {t('Swap')}
-                </StyledLink>
-                <StyledLink
-                  underline="none"
-                  color={darkMode ? 'white' : 'black'}
-                  sx={{
-                    '&:hover': {
-                      color: darkMode
-                        ? '#22B14C !important'
-                        : '#3366FF !important'
-                    }
-                  }}
-                  href="/buy-xrp"
-                >
-                  {t('Fiat')}
-                </StyledLink>
-              </>
-            )}
+            {!isTablet && desktopMenuItems}
           </Box>
 
           {fullSearch && (

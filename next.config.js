@@ -39,4 +39,9 @@ module.exports = {
 			},
 		]
 	},
+	// Add performance optimizations
+	reactStrictMode: true,
+	compress: true,
+	optimizeFonts: true,
+	swcMinify: true,
 }

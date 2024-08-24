@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Portfolio from './portfolio';
@@ -21,10 +21,13 @@ const theme = createTheme({
   },
 });
 
-ReactDOM.render(
-  <ThemeProvider theme={theme}>
-    <CssBaseline />
-    <Portfolio account="example" limit={10} collection="exampleCollection" type="exampleType" />
-  </ThemeProvider>,
-  document.getElementById('root')
+const root = createRoot(document.getElementById('root'));
+
+root.render(
+  <React.StrictMode>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Portfolio account="example" limit={10} collection="exampleCollection" type="exampleType" />
+    </ThemeProvider>
+  </React.StrictMode>
 );

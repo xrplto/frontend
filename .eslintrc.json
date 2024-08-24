@@ -14,6 +14,15 @@
         "maximum": 2,
         "when": "multiline"
       }
-    ]
-  }
+    ],
+    "react/jsx-no-bind": ["error", {
+      "allowArrowFunctions": true,
+      "allowFunctions": false,
+      "allowBind": false
+    }],
+    "react/jsx-no-constructed-context-values": "error",
+    "react/no-array-index-key": "warn"
+  },
+  "cache": true,
+  "cacheLocation": ".eslintcache"
 }

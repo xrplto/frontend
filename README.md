@@ -1,12 +1,38 @@
-# XRPL Token Prices, Charts, Market Volume, and Activity | XRPL.to
+# XRPL.to - Real-Time XRP Ledger Token Analytics
 
-Welcome to the GitHub repository for the XRPL.to front-end application! This Next.js application provides real-time data on XRP Ledger token prices, market volumes, and activity. Here you'll find all the necessary source code to run and deploy the application.
+Welcome to the XRPL.to front-end repository! This Next.js application provides comprehensive, real-time analytics for XRP Ledger tokens, including prices, charts, market volumes, and activity metrics.
 
-## Features
+## Key Features
 
-- **Real-time Data**: Display up-to-date information on token prices and market volumes directly from the XRP Ledger.
-- **Interactive Charts**: Visualize price changes and trading volumes with dynamic charts.
-- **User-Friendly Interface**: Navigate easily through token statistics and details with a clean and responsive design.
+- **Live Data**: Real-time token prices and market volumes directly from the XRP Ledger
+- **Interactive Visualizations**: Dynamic charts for price trends and trading volumes
+- **Intuitive UI**: Clean, responsive design for easy navigation of token statistics
+- **Comprehensive Analytics**: In-depth token activity metrics and market insights
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v14 or later)
+- npm (v6 or later)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-github/xrpl-token-prices.git
+   cd xrpl-token-prices
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
 ## Deployment
 
@@ -46,10 +72,10 @@ Here are some previews of the XRPL.to application:
 ![Screen4 ](./docs/screen4.png)
 
 
-### Contributing
+## Contributing
 
-Contributions to the XRPL.to project are welcome! Please refer to our contributing guidelines for more details.
-License
+We welcome contributions to XRPL.to! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-This project is licensed under the MIT License - see the LICENSE.md file for details.
+## License
 
+This project is proprietary software. All rights reserved. See [LICENSE.md](LICENSE.md) for details.
