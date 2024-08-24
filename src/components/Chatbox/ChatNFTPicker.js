@@ -1,9 +1,10 @@
 import { useContext, useEffect, useRef, useState } from 'react';
-import { Box, Grid, Typography, Stack } from '@mui/material';
+import { Box, Grid, Typography, Stack, Button } from '@mui/material';
 import { AppContext } from 'src/AppContext';
 import axios from 'axios';
 import { PulseLoader } from 'react-spinners';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import ArrowBackIcon from '@mui/icons-material/KeyboardBackspace';
 import ChatNFTCard from './ChatNFTCard';
 import ChatCollectionCard from './ChatCollectionCard';
 
@@ -15,6 +16,7 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
 
     const [nfts, setNFTs] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [selectedCollection, setSelectedCollection] = useState(null);
 
     useEffect(() => {
         if (account) {
@@ -23,7 +25,7 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
                 scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
-    }, [account, collection, type]);
+    }, [account, collection, type, selectedCollection]);
 
     const getNFTs = async () => {
         const body = {
@@ -34,7 +36,7 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
             search: "",
             subFilter: "pricexrpasc",
             type,
-            collection
+            collection: selectedCollection
         };
 
         setLoading(true);
@@ -46,6 +48,14 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCollectionSelect = (collectionData) => {
+        setSelectedCollection(collectionData.collection.id);
+    };
+
+    const handleBack = () => {
+        setSelectedCollection(null);
     };
 
     return (
@@ -66,6 +76,14 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
                 },
             }}
         >
+            {selectedCollection && (
+                <Box display="flex" justifyContent="start" mb={1}>
+                    <Button size="small" onClick={handleBack}>
+                        <ArrowBackIcon fontSize="small" />
+                        <Typography variant="caption">Back</Typography>
+                    </Button>
+                </Box>
+            )}
             {loading ? (
                 <Stack alignItems="center" justifyContent="center" height="100%">
                     <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
@@ -78,8 +96,8 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
             ) : (
                 <Grid container spacing={1}>
                     {nfts.map((nft, index) => (
-                        <Grid item key={index} xs={3}>
-                            {collection ? (
+                        <Grid item key={index} xs={6}>
+                            {selectedCollection ? (
                                 <ChatNFTCard 
                                     nft={nft}
                                     onSelect={onSelect}
@@ -87,7 +105,7 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
                             ) : (
                                 <ChatCollectionCard 
                                     collectionData={nft} 
-                                    onSelect={onSelect}
+                                    onSelect={handleCollectionSelect}
                                 />
                             )}
                         </Grid>
