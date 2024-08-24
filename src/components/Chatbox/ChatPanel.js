@@ -1,8 +1,9 @@
 import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid, useTheme, tooltipClasses, IconButton } from "@mui/material";
 import { parseISO } from 'date-fns';
 import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon, ArrowUpward as ArrowUpwardIcon, ArrowDownward as ArrowDownwardIcon, Remove as RemoveIcon, Person as PersonIcon } from '@mui/icons-material';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import axios from "axios";
+import { AppContext } from 'src/AppContext';
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
     <Tooltip {...props} classes={{ popper: className }} />
@@ -496,6 +497,7 @@ const handleSendMessage = (user) => {
 
 const ChatPanel = ({ chats, onStartPrivateMessage }) => {
     const theme = useTheme();
+    const { accountProfile } = useContext(AppContext);
 
     // Inject lightningEffect into the document's head
     const styleElement = document.createElement('style');
@@ -505,7 +507,11 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
     return (
         <Stack gap={2}>
             {
-                chats.map((chat, index) => {
+                chats.filter(chat => 
+                    !chat.isPrivate || 
+                    chat.username === accountProfile?.account || 
+                    chat.recipient === accountProfile?.account
+                ).map((chat, index) => {
                     const parsedTime = parseISO(chat.timestamp);
                     const timeAgo = formatTimeAgo(parsedTime);
 
@@ -554,23 +560,26 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                                         }}
                                     >
                                         {chat.username}
-                                        {chat.isPrivate && ` (Private to ${chat.recipient})`}
+                                        {chat.isPrivate && (
+                                            chat.username === accountProfile?.account 
+                                                ? ` (Private to ${chat.recipient})`
+                                                : ` (Private from ${chat.username})`
+                                        )}
                                     </Typography>
                                 </CustomWidthTooltip>
                                 <Item
                                     sx={{
                                         marginLeft: 0,
-                                        border: chat.rank === 'Bot' ? `1px solid ${theme.palette.primary.main}` : '1px solid transparent', // Add a primary color outline for Bot messages
+                                        border: chat.rank === 'Bot' ? `1px solid ${theme.palette.primary.main}` : '1px solid transparent',
                                     }}
                                 >
                                     <Stack direction="row" alignItems="center" justifyContent="space-between">
-                                    {chat.sentiment === 'Bullish' && <ArrowUpwardIcon sx={{ color: theme.palette.primary.main }} />}
-                                                {chat.sentiment === 'Bearish' && <ArrowDownwardIcon sx={{ color: 'red' }} />}
-                                                {chat.sentiment === 'Neutral' && <RemoveIcon sx={{ color: 'grey' }} />}
+                                        {chat.sentiment === 'Bullish' && <ArrowUpwardIcon sx={{ color: theme.palette.primary.main }} />}
+                                        {chat.sentiment === 'Bearish' && <ArrowDownwardIcon sx={{ color: 'red' }} />}
+                                        {chat.sentiment === 'Neutral' && <RemoveIcon sx={{ color: 'grey' }} />}
                                         <Typography>{chat.message}</Typography>
                                         <Tooltip title={new Date(chat.timestamp).toLocaleString()} arrow>
                                             <Stack direction="row" alignItems="center">
-                                                
                                                 <Typography variant="caption" sx={{ marginLeft: 2, whiteSpace: 'nowrap' }}>
                                                     {timeAgo}
                                                 </Typography>
