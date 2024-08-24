@@ -123,7 +123,12 @@ const CustomInput = ({ value, onChange, onNFTRemove }) => {
 
   const handleChange = (e) => {
     const newValue = e.target.value;
-    onChange(newValue);
+    const nftParts = parts.filter(part => part.type === 'nft');
+    const updatedValue = [...nftParts, { type: 'text', content: newValue, id: parts.length }]
+      .sort((a, b) => a.id - b.id)
+      .map(part => part.content)
+      .join('');
+    onChange(updatedValue);
   };
 
   const handleNFTRemove = (index) => {
@@ -151,9 +156,7 @@ const CustomInput = ({ value, onChange, onNFTRemove }) => {
       {parts.map((part, index) => 
         part.type === 'nft' ? (
           <FormattedNFT key={part.id} nftLink={part.content} onRemove={() => handleNFTRemove(index)} />
-        ) : (
-          <span key={part.id}>{part.content}</span>
-        )
+        ) : null
       )}
       <input
         ref={inputRef}
@@ -166,7 +169,7 @@ const CustomInput = ({ value, onChange, onNFTRemove }) => {
           fontFamily: 'inherit',
           color: 'inherit',
         }}
-        value=""
+        value={parts.filter(part => part.type === 'text').map(part => part.content).join('')}
         onChange={handleChange}
       />
     </Box>
@@ -296,6 +299,10 @@ function Chatbox() {
     // You can add any additional logic here if needed
   };
 
+  const handleMessageChange = (newMessage) => {
+    setMessage(newMessage);
+  };
+
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>
@@ -324,7 +331,7 @@ function Chatbox() {
         <Stack direction="row" spacing={1}>
           <CustomInput
             value={message}
-            onChange={setMessage}
+            onChange={handleMessageChange}
             onNFTRemove={handleNFTRemove}
           />
           <Box sx={{ position: 'relative' }}>
