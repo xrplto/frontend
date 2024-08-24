@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 
 import MarkdownIt from 'markdown-it';
 import ReactMarkdown from "react-markdown";
-import "react-markdown-editor-lite/lib/index.css"; // import style manually
 
 const MDEditor = dynamic(() => import("react-markdown-editor-lite"), {
     ssr: false

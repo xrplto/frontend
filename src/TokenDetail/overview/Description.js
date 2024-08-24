@@ -3,7 +3,6 @@ import Decimal from 'decimal.js';
 import { useState, useEffect, useContext } from 'react';
 import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
-import 'react-markdown-editor-lite/lib/index.css'; // import style manually
 
 // Material
 import {
