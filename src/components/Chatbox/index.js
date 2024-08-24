@@ -17,6 +17,7 @@ import { selectChatOpen, toggleChatOpen } from 'src/redux/chatSlice';
 import { io } from 'socket.io-client';
 import { AppContext } from 'src/AppContext';
 import { useTheme } from '@mui/material/styles';
+import PersonIcon from '@mui/icons-material/Person';
 
 const drawerWidth = 400;
 const chatURL = "http://65.108.136.237:5000";
@@ -127,6 +128,7 @@ function Chatbox() {
   const [chatHistory, setChatHistory] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [tabIndex, setTabIndex] = useState(0); 
+  const [recipient, setRecipient] = useState(null);
 
   const chatboxRef = useRef(null);
   const emojiPickerRef = useRef(null);
@@ -185,24 +187,44 @@ function Chatbox() {
       setChatHistory((previousHistory) => [...previousHistory, msg]);
     });
 
+    socket.on("private message", (msg) => {
+      console.log("private message", msg);
+      setChatHistory((previousHistory) => [...previousHistory, msg]);
+    });
+
     return () => {
       socket.off("init");
       socket.off("chat message");
+      socket.off("private message");
     };
   }, []);
 
   const sendMessage = () => {
     if (accountProfile?.account) {
-      socket.emit("chat message", {
-        message,
-        username: accountProfile.account,
-        rank: "Member",
-        group: "Member"
-      });
+      if (recipient) {
+        socket.emit("private message", {
+          to: recipient,
+          message: message,
+          username: accountProfile.account,
+          isPrivate: true
+        });
+      } else {
+        socket.emit("chat message", {
+          message,
+          username: accountProfile.account,
+          rank: "Member",
+          group: "Member"
+        });
+      }
 
       setMessage('');
+      setRecipient(null);
     }
   }
+
+  const startPrivateMessage = (username) => {
+    setRecipient(username);
+  };
 
   const addEmoji = (emoji) => {
     setMessage((prevMessage) => prevMessage + emoji);
@@ -263,11 +285,22 @@ function Chatbox() {
       </AppBar>
       <Divider />
       <Stack p={1} overflow="auto" height="calc(100vh - 135px)">
-        <ChatPanel chats={chatHistory}/>
+        <ChatPanel 
+          chats={chatHistory}
+          onStartPrivateMessage={startPrivateMessage}
+        />
       </Stack>
       <AppBar sx={{ position: "absolute", bottom: "0px", width: "100%", top: "auto", backgroundColor: backgroundColor }}>
         <Toolbar sx={{ flexDirection: "column" }}>
           <Divider width="100%" />
+          {recipient && (
+            <Typography variant="caption" sx={{ alignSelf: 'flex-start', mb: 1, color: theme.palette.text.primary }}>
+              Private message to: {recipient}
+              <IconButton size="small" onClick={() => setRecipient(null)}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Typography>
+          )}
           <Stack direction="row" mt={1} gap={1} px={1} justifyContent="space-between" width="100%" pb={1}>
             <TextField
               fullWidth

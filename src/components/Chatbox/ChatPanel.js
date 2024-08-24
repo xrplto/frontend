@@ -1,6 +1,6 @@
-import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid, useTheme, tooltipClasses } from "@mui/material";
+import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid, useTheme, tooltipClasses, IconButton } from "@mui/material";
 import { parseISO } from 'date-fns';
-import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon, ArrowUpward as ArrowUpwardIcon, ArrowDownward as ArrowDownwardIcon, Remove as RemoveIcon } from '@mui/icons-material';
+import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon, ArrowUpward as ArrowUpwardIcon, ArrowDownward as ArrowDownwardIcon, Remove as RemoveIcon, Person as PersonIcon } from '@mui/icons-material';
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -494,7 +494,7 @@ const handleSendMessage = (user) => {
     // Add your message sending logic here
 };
 
-const ChatPanel = ({ chats }) => {
+const ChatPanel = ({ chats, onStartPrivateMessage }) => {
     const theme = useTheme();
 
     // Inject lightningEffect into the document's head
@@ -554,6 +554,7 @@ const ChatPanel = ({ chats }) => {
                                         }}
                                     >
                                         {chat.username}
+                                        {chat.isPrivate && ` (Private to ${chat.recipient})`}
                                     </Typography>
                                 </CustomWidthTooltip>
                                 <Item
@@ -578,6 +579,13 @@ const ChatPanel = ({ chats }) => {
                                     </Stack>
                                 </Item>
                             </Stack>
+                            <IconButton 
+                                size="small" 
+                                onClick={() => onStartPrivateMessage(chat.username)}
+                                sx={{ ml: 1 }}
+                            >
+                                <PersonIcon fontSize="small" />
+                            </IconButton>
                         </Stack>
                     );
                 })
