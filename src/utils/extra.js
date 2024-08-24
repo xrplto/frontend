@@ -1,5 +1,4 @@
 import hashicon from 'hashicon';
-import { createCanvas } from 'canvas';
 
 const Activity = { // 04:12 PM 03/26/2023
     LOGIN: 1,
@@ -19,7 +18,7 @@ const Activity = { // 04:12 PM 03/26/2023
 function getHashIcon(account) {
     let url = '/static/account_logo.webp';
     try {
-        const icon = hashicon(account, { createCanvas });
+        const icon = hashicon(account);
         url = icon.toDataURL();
     } catch (e) {
     }
@@ -36,9 +35,7 @@ export function checkExpiration(expiration) {
     } else {
         return false
     }
-}
-
-module.exports = {
+}module.exports = {
     Activity,
     getHashIcon,
     checkExpiration
