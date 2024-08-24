@@ -198,7 +198,7 @@ const { slug } = token;
 
                             let unhostedDexURL = `https://unhosted.exchange/?base=${curr1.currency}_${curr1.issuer}&quote=XRP`;
 
-                            let xrpltoDexURL = `https://xrpl.to/token/${slug}/trade`;
+                            let xrpltoDexURL = `/token/${slug}/trade`;
 
                             let sparkline = '';
                             if (id === 1)

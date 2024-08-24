@@ -7,7 +7,7 @@
   
 // module.exports = withBundleAnalyzer({ })
 
-const isProd = process.env.RUN_ENV === 'production'
+const isProd = process.env.RUN_ENV === 'development'
 module.exports = {
     poweredByHeader: false,
     assetPrefix: isProd ? 'https://xrpl.to' : '',

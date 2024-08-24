@@ -62,7 +62,7 @@ export default function TokenMoreMenu({token, admin, setEditToken, setTrustToken
                     underline="none"
                     color="inherit"
                     target="_blank"
-                    href={`https://xrpl.to/token/${slug}/trade`}
+                    href={`/token/${slug}/trade`}
                     rel="noreferrer noopener nofollow"
                 >
                     <MenuItem onClick={() => setIsOpen(false)} disableRipple sx={{ color: 'text.secondary' }}>
