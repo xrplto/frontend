@@ -18,6 +18,7 @@ import { io } from 'socket.io-client';
 import { AppContext } from 'src/AppContext';
 import { useTheme } from '@mui/material/styles';
 import PersonIcon from '@mui/icons-material/Person';
+import ChatNFTPicker from './ChatNFTPicker';
 
 const drawerWidth = 400;
 const chatURL = "http://65.108.136.237:5000";
@@ -69,50 +70,6 @@ function EmojiPicker({ onSelect }) {
   );
 }
 
-function NftPicker() {
-  const theme = useTheme();
-  const backgroundColor = theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff';
-  const hoverColor = theme.palette.mode === 'dark' ? '#333' : '#f0f0f0';
-
-  const nfts = ["[NFT 1]", "[NFT 2]", "[NFT 3]", "[NFT 4]", "[NFT 5]", "[NFT 6]"];
-
-  return (
-    <Box
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)', 
-        gap: '8px',
-        backgroundColor: backgroundColor,
-        boxShadow: '0px 0px 10px rgba(0,0,0,0.1)',
-        borderRadius: '10px',
-        padding: '10px',
-        maxWidth: '240px',
-        zIndex: 1000,
-      }}
-    >
-      {nfts.map((nft, index) => (
-        <Box
-          key={index}
-          sx={{
-            fontSize: '18px',
-            padding: '5px',
-            cursor: 'pointer',
-            userSelect: 'none',
-            textAlign: 'center',
-            '&:hover': {
-              backgroundColor: hoverColor,
-              borderRadius: '5px',
-            },
-          }}
-          onClick={() => console.log(nft)}
-        >
-          {nft}
-        </Box>
-      ))}
-    </Box>
-  );
-}
-
 function Chatbox() {
   const theme = useTheme();
   const backgroundColor = theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff';
@@ -129,13 +86,9 @@ function Chatbox() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [tabIndex, setTabIndex] = useState(0); 
   const [recipient, setRecipient] = useState(null);
+  const [pickerType, setPickerType] = useState('emoji');
 
-  const chatboxRef = useRef(null);
   const emojiPickerRef = useRef(null);
-
-  const closeChat = () => {
-    dispatch(toggleChatOpen());
-  }
 
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -156,16 +109,13 @@ function Chatbox() {
   };
 
   const handleClickOutside = (event) => {
-    if (chatboxRef.current && !chatboxRef.current.contains(event.target)) {
-      closeChat();
-    }
     if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
       setShowEmojiPicker(false);
     }
   };
 
   useEffect(() => {
-    if (chatOpen) {
+    if (showEmojiPicker) {
       document.addEventListener('mousedown', handleClickOutside);
     } else {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -174,7 +124,7 @@ function Chatbox() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [chatOpen, showEmojiPicker]);
+  }, [showEmojiPicker]);
 
   useEffect(() => {
     socket.on('init', (msg) => {
@@ -230,8 +180,17 @@ function Chatbox() {
     setMessage((prevMessage) => prevMessage + emoji);
   };
 
+  const addNFT = (nft) => {
+    setMessage((prevMessage) => prevMessage + ` [NFT: ${nft.tokenId}]`);
+    setShowEmojiPicker(false);
+  };
+
+  const closeChat = () => {
+    dispatch(toggleChatOpen());
+  };
+
   const drawer = (
-    <Box ref={chatboxRef} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>
         <Toolbar sx={{ justifyContent: "space-between" }}>
           <Typography variant="h6" sx={{ color: 'text.primary' }}>Chat</Typography>
@@ -284,7 +243,19 @@ function Chatbox() {
                   p: 1,
                 }}
               >
-                <EmojiPicker onSelect={addEmoji} />
+                <Tabs 
+                  value={pickerType} 
+                  onChange={(e, newValue) => setPickerType(newValue)}
+                  sx={{ minHeight: 32 }}
+                >
+                  <Tab label="Emoji" value="emoji" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
+                  <Tab label="NFT" value="nft" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
+                </Tabs>
+                {pickerType === 'emoji' ? (
+                  <EmojiPicker onSelect={addEmoji} />
+                ) : (
+                  <ChatNFTPicker onSelect={addNFT} />
+                )}
               </Box>
             )}
           </Box>
@@ -300,8 +271,9 @@ function Chatbox() {
     <SwipeableDrawer
       anchor="right"
       open={chatOpen}
-      onClose={closeChat}
+      onClose={() => {}}
       onOpen={() => {}}
+      disableSwipeToOpen={true}
       sx={{
         '& .MuiDrawer-paper': { width: drawerWidth, bgcolor: 'background.default' },
       }}

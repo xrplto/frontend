@@ -9,7 +9,7 @@ import { AppContext } from "src/AppContext";
 import { useRouter } from "next/router";
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
-const NFTs = ({ account, collection, type = "collected", limit }) => {
+const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallSize = false }) => {
 
     const BASE_URL = 'https://api.xrpnft.com/api';
     const router = useRouter();
@@ -62,9 +62,9 @@ const NFTs = ({ account, collection, type = "collected", limit }) => {
     return (
         <Box
             sx={{
-                padding: "10px",
+                padding: smallSize ? "5px" : "10px",
                 pt: 0,
-                height: "500px",
+                height: smallSize ? "240px" : "500px",
                 overflow: "auto",
                 "&::-webkit-scrollbar": {
                     width: "6px !important"
@@ -96,14 +96,14 @@ const NFTs = ({ account, collection, type = "collected", limit }) => {
                     </Button>
                 </Box>
             )}
-            <Grid container spacing={3}>
+            <Grid container spacing={smallSize ? 1 : 3}>
                 {
                     nfts.map((nft, index) => (
-                        <Grid item key={index} xs={12} sm={6} md={4} lg={3}>
+                        <Grid item key={index} xs={smallSize ? 6 : 12} sm={smallSize ? 4 : 6} md={smallSize ? 3 : 4} lg={smallSize ? 2 : 3}>
                             {collection ? (
-                                <NFTCard nft={nft} />
+                                <NFTCard nft={nft} smallSize={smallSize} onSelect={onSelect} />
                             ) : (
-                                <CollectionCard collectionData={nft} type={type} account={account} />
+                                <CollectionCard collectionData={nft} type={type} account={account} smallSize={smallSize} onSelect={onSelect} />
                             )}
                         </Grid>
                     ))
