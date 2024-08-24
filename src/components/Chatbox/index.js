@@ -109,42 +109,40 @@ const FormattedNFT = ({ nftLink, onRemove }) => {
 
 const CustomInput = ({ value, onChange, onNFTRemove }) => {
   const inputRef = useRef(null);
-  const [parts, setParts] = useState([]);
+  const [localValue, setLocalValue] = useState('');
 
   useEffect(() => {
-    const newParts = value.split(/(\[NFT:.*?\])/).filter(Boolean).map((part, index) => {
-      if (part.startsWith('[NFT:')) {
-        return { type: 'nft', content: part, id: index };
-      }
-      return { type: 'text', content: part, id: index };
-    });
-    setParts(newParts);
+    const textParts = value.split(/(\[NFT:.*?\])/).filter(part => !part.startsWith('[NFT:'));
+    setLocalValue(textParts.join(''));
   }, [value]);
 
   const handleChange = (e) => {
-    const newValue = e.target.value;
-    const nftParts = parts.filter(part => part.type === 'nft');
-    const updatedValue = [...nftParts, { type: 'text', content: newValue, id: parts.length }]
-      .sort((a, b) => a.id - b.id)
-      .map(part => part.content)
-      .join('');
-    onChange(updatedValue);
+    const newTextValue = e.target.value;
+    setLocalValue(newTextValue);
+    
+    const nftParts = value.match(/\[NFT:.*?\]/g) || [];
+    const newFullValue = [...nftParts, newTextValue].join('');
+    onChange(newFullValue);
   };
 
-  const handleNFTRemove = (index) => {
-    const newParts = [...parts];
-    newParts.splice(index, 1);
-    const newValue = newParts.map(part => part.content).join('');
+  const handleNFTRemove = (nftLink) => {
+    const newValue = value.replace(nftLink, '');
     onChange(newValue);
-    onNFTRemove && onNFTRemove(index);
+    onNFTRemove && onNFTRemove(nftLink);
+  };
+
+  const renderNFTChips = () => {
+    const nftMatches = value.match(/\[NFT:.*?\]/g) || [];
+    return nftMatches.map((nftLink, index) => (
+      <FormattedNFT key={index} nftLink={nftLink} onRemove={() => handleNFTRemove(nftLink)} />
+    ));
   };
 
   return (
     <Box
       sx={{
         display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
+        flexDirection: 'column',
         p: 1,
         border: 1,
         borderColor: 'divider',
@@ -153,24 +151,32 @@ const CustomInput = ({ value, onChange, onNFTRemove }) => {
       }}
       onClick={() => inputRef.current.focus()}
     >
-      {parts.map((part, index) => 
-        part.type === 'nft' ? (
-          <FormattedNFT key={part.id} nftLink={part.content} onRemove={() => handleNFTRemove(index)} />
-        ) : null
-      )}
-      <input
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 1 }}>
+        {renderNFTChips()}
+      </Box>
+      <textarea
         ref={inputRef}
         style={{
-          flex: 1,
+          width: '100%',
           border: 'none',
           outline: 'none',
           background: 'transparent',
           fontSize: 'inherit',
           fontFamily: 'inherit',
           color: 'inherit',
+          resize: 'none',
+          minHeight: '20px',
+          overflow: 'hidden',
+          wordWrap: 'break-word',
+          whiteSpace: 'pre-wrap',
         }}
-        value={parts.filter(part => part.type === 'text').map(part => part.content).join('')}
+        value={localValue}
         onChange={handleChange}
+        rows={1}
+        onInput={(e) => {
+          e.target.style.height = 'auto';
+          e.target.style.height = e.target.scrollHeight + 'px';
+        }}
       />
     </Box>
   );
@@ -328,52 +334,56 @@ function Chatbox() {
             </IconButton>
           </Typography>
         )}
-        <Stack direction="row" spacing={1}>
-          <CustomInput
-            value={message}
-            onChange={handleMessageChange}
-            onNFTRemove={handleNFTRemove}
-          />
-          <Box sx={{ position: 'relative' }}>
-            <IconButton 
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              sx={{ color: 'text.secondary' }}
-            >
-              😊
-            </IconButton>
-            {showEmojiPicker && (
-              <Box
-                ref={emojiPickerRef}
-                sx={{
-                  position: 'absolute',
-                  bottom: '100%',
-                  right: 0,
-                  zIndex: 1000,
-                  backgroundColor: 'background.paper',
-                  borderRadius: '4px',
-                  boxShadow: 3,
-                  p: 1,
-                }}
-              >
-                <Tabs 
-                  value={pickerType} 
-                  onChange={(e, newValue) => setPickerType(newValue)}
-                  sx={{ minHeight: 32 }}
-                >
-                  <Tab label="Emoji" value="emoji" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
-                  <Tab label="NFT" value="nft" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
-                </Tabs>
-                {pickerType === 'emoji' ? (
-                  <EmojiPicker onSelect={addEmoji} />
-                ) : (
-                  <ChatNFTPicker onSelect={addNFT} />
-                )}
-              </Box>
-            )}
+        <Stack direction="row" spacing={1} alignItems="flex-end">
+          <Box sx={{ flexGrow: 1 }}>
+            <CustomInput
+              value={message}
+              onChange={handleMessageChange}
+              onNFTRemove={handleNFTRemove}
+            />
           </Box>
-          <IconButton onClick={sendMessage} color="primary">
-            <SendIcon />
-          </IconButton>
+          <Stack direction="row" spacing={1}>
+            <Box sx={{ position: 'relative' }}>
+              <IconButton 
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                sx={{ color: 'text.secondary' }}
+              >
+                😊
+              </IconButton>
+              {showEmojiPicker && (
+                <Box
+                  ref={emojiPickerRef}
+                  sx={{
+                    position: 'absolute',
+                    bottom: '100%',
+                    right: 0,
+                    zIndex: 1000,
+                    backgroundColor: 'background.paper',
+                    borderRadius: '4px',
+                    boxShadow: 3,
+                    p: 1,
+                  }}
+                >
+                  <Tabs 
+                    value={pickerType} 
+                    onChange={(e, newValue) => setPickerType(newValue)}
+                    sx={{ minHeight: 32 }}
+                  >
+                    <Tab label="Emoji" value="emoji" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
+                    <Tab label="NFT" value="nft" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
+                  </Tabs>
+                  {pickerType === 'emoji' ? (
+                    <EmojiPicker onSelect={addEmoji} />
+                  ) : (
+                    <ChatNFTPicker onSelect={addNFT} />
+                  )}
+                </Box>
+              )}
+            </Box>
+            <IconButton onClick={sendMessage} color="primary">
+              <SendIcon />
+            </IconButton>
+          </Stack>
         </Stack>
       </Box>
     </Box>
