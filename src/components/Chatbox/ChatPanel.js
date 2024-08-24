@@ -220,58 +220,32 @@ const formatTimeAgo = (date) => {
     }
 };
 
-const NFTDisplay = ({ nftImage, nftName }) => (
-    <Tooltip
-        title={
-            <Box>
+const NFTDisplay = ({ nftName, tokenId }) => {
+    const [name, number] = nftName.split('#');
+    
+    return (
+        <Tooltip
+            title={
+                <Box>
+                    <Typography variant="body2">{nftName}</Typography>
+                    <Typography variant="caption" color="textSecondary">{tokenId}</Typography>
+                </Box>
+            }
+            arrow
+        >
+            <Box sx={{ display: 'inline-flex', alignItems: 'center', marginLeft: 1 }}>
                 <img 
                     src="/static/crossmark.webp" 
-                    alt="NFT" 
-                    style={{ maxWidth: '50px', maxHeight: '50px', marginBottom: '10px', borderRadius: '5px' }} 
+                    alt={nftName} 
+                    style={{ maxWidth: '20px', maxHeight: '20px', marginRight: '5px', borderRadius: '3px' }} 
                 />
-                <Typography variant="body2"><strong>Name:</strong> xshroom #2233</Typography>
-                <Typography variant="body2"><strong>Collection:</strong> XShroom</Typography>
-                <Typography variant="body2"><strong>Rank:</strong> 4440</Typography>
-                <Typography variant="body2"><strong>On-Chain Rank:</strong> 553332</Typography>
-                <Typography variant="body2"><strong>Standard:</strong> XLS-20</Typography>
-                <Typography variant="body2">
-                    <strong>Owner:</strong>{' '}
-                    <span style={{ color: '#808080', fontWeight: 'bold' }}>
-                        @XRPAddress1
-                    </span>
+                <Typography variant="caption" sx={{ color: '#a335ee' }}>
+                    {name} <span style={{ fontWeight: 'bold' }}>#{number}</span>
                 </Typography>
-                <Stack direction="row" spacing={1} sx={{ marginTop: '10px' }}>
-                    <Button 
-                        variant="contained" 
-                        color="primary" 
-                        size="small"
-                        onClick={() => alert('Buy button clicked')}
-                    >
-                        Buy
-                    </Button>
-                    <Button 
-                        variant="outlined" 
-                        color="primary" 
-                        size="small"
-                        onClick={() => alert('Offer button clicked')}
-                    >
-                        Offer
-                    </Button>
-                </Stack>
             </Box>
-        }
-        arrow
-    >
-        <Box sx={{ display: 'inline-flex', alignItems: 'center', marginLeft: 1 }}>
-            <img 
-                src={nftImage} 
-                alt={nftName} 
-                style={{ maxWidth: '20px', maxHeight: '20px', marginRight: '5px', borderRadius: '3px' }} 
-            />
-            <Typography variant="caption" sx={{ color: '#a335ee' }}>{nftName}</Typography>
-        </Box>
-    </Tooltip>
-);
+        </Tooltip>
+    );
+};
 
 const UserSummary = ({ user }) => {
     const theme = useTheme();
@@ -574,6 +548,12 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                                 }}
                             >
                                 {chat.message}
+                                {chat.nft && (
+                                    <NFTDisplay 
+                                        nftName={chat.nft.name} 
+                                        tokenId={chat.nft.tokenId} 
+                                    />
+                                )}
                             </Typography>
                         </Box>
                         <Typography variant="caption" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>

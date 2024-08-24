@@ -8,10 +8,12 @@ const ChatNFTCard = ({ nft, onSelect }) => {
 
     const imgUrl = getNftCoverUrl(nft, 'small');
     const name = nft.meta?.name || nft.meta?.Name || 'No Name';
+    const nftId = nft.NFTokenID || nft.nftokenID || nft.id || 'Unknown';
+    const nftLink = `[NFT: ${name} (${nftId})]`;
 
     return (
         <Card 
-            onClick={() => onSelect(nft)}
+            onClick={() => onSelect(nftLink)}
             sx={{ 
                 cursor: 'pointer', 
                 height: '100%',
@@ -34,7 +36,7 @@ const ChatNFTCard = ({ nft, onSelect }) => {
             />
             <CardContent sx={{ p: 0.5, flexGrow: 1 }}>
                 <Typography variant="caption" component="div" noWrap>
-                    {name}
+                    {name} ({nftId})
                 </Typography>
             </CardContent>
         </Card>

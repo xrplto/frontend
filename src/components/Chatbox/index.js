@@ -180,8 +180,8 @@ function Chatbox() {
     setMessage((prevMessage) => prevMessage + emoji);
   };
 
-  const addNFT = (nft) => {
-    setMessage((prevMessage) => prevMessage + ` [NFT: ${nft.tokenId}]`);
+  const addNFT = (nftLink) => {
+    setMessage((prevMessage) => prevMessage + ` ${nftLink}`);
     setShowEmojiPicker(false);
   };
 
