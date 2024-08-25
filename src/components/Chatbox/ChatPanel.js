@@ -1,4 +1,4 @@
-import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid, useTheme, tooltipClasses, IconButton } from "@mui/material";
+import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid, useTheme, tooltipClasses, IconButton, Link } from "@mui/material";
 import { parseISO } from 'date-fns';
 import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon, ArrowUpward as ArrowUpwardIcon, ArrowDownward as ArrowDownwardIcon, Remove as RemoveIcon, ChatBubbleOutline as ChatBubbleOutlineIcon } from '@mui/icons-material';
 import { useEffect, useState, useContext } from "react";
@@ -504,6 +504,16 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
 
                 const isCurrentUser = chat.username === accountProfile?.account;
 
+                // Parse NewsBot message
+                let newsData = null;
+                if (chat.username === "NewsBot") {
+                    try {
+                        newsData = JSON.parse(chat.message);
+                    } catch (error) {
+                        console.error("Error parsing NewsBot message:", error);
+                    }
+                }
+
                 return (
                     <Stack key={index} direction="row" spacing={1} alignItems="flex-start">
                         <Avatar 
@@ -545,20 +555,45 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                                     <ChatBubbleOutlineIcon fontSize="small" />
                                 </IconButton>
                             </Stack>
-                            <Typography 
-                                variant="body2" 
-                                sx={{ 
-                                    mt: 0.5, 
-                                    color: chat.isPrivate ? 'purple' : 'inherit'
-                                }}
-                            >
-                                {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
-                                    if (part.startsWith('[NFT:')) {
-                                        return <NFTDisplay key={i} nftLink={part} />;
-                                    }
-                                    return part;
-                                })}
-                            </Typography>
+                            {newsData ? (
+                                <Box sx={{ mt: 0.5 }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                                        {newsData.title}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mt: 0.5 }}>
+                                        {newsData.summary !== "No summary available" ? newsData.summary : "No summary available."}
+                                    </Typography>
+                                    <Link href={newsData.sourceUrl} target="_blank" rel="noopener noreferrer">
+                                        <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
+                                            Read more at {newsData.sourceName}
+                                        </Typography>
+                                    </Link>
+                                    {newsData.sentiment !== "Unknown" && (
+                                        <Typography variant="caption" sx={{ 
+                                            ml: 1, 
+                                            color: newsData.sentiment === "Bullish" ? "green" : 
+                                                   newsData.sentiment === "Bearish" ? "red" : "inherit"
+                                        }}>
+                                            • {newsData.sentiment}
+                                        </Typography>
+                                    )}
+                                </Box>
+                            ) : (
+                                <Typography 
+                                    variant="body2" 
+                                    sx={{ 
+                                        mt: 0.5, 
+                                        color: chat.isPrivate ? 'purple' : 'inherit'
+                                    }}
+                                >
+                                    {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
+                                        if (part.startsWith('[NFT:')) {
+                                            return <NFTDisplay key={i} nftLink={part} />;
+                                        }
+                                        return part;
+                                    })}
+                                </Typography>
+                            )}
                         </Box>
                         <Typography variant="caption" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>
                             {timeAgo}
