@@ -19,6 +19,9 @@ import { AppContext } from 'src/AppContext';
 import { useTheme } from '@mui/material/styles';
 import PersonIcon from '@mui/icons-material/Person';
 import ChatNFTPicker from './ChatNFTPicker';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import TerminalIcon from '@mui/icons-material/Terminal';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 const drawerWidth = 400;
 const chatURL = "http://65.108.136.237:5000";
@@ -203,6 +206,7 @@ function Chatbox() {
   const emojiPickerRef = useRef(null);
 
   const handleMenuClick = (event) => {
+    event.preventDefault();
     setAnchorEl(event.currentTarget);
   };
 
@@ -313,8 +317,56 @@ function Chatbox() {
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>
         <Toolbar sx={{ justifyContent: "space-between" }}>
-          <Typography variant="h6" sx={{ color: 'text.primary' }}>Chat</Typography>
-          <IconButton onClick={closeChat} edge="end" sx={{ color: 'text.primary' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Button
+              endIcon={<ArrowDropDownIcon />}
+              onClick={handleMenuClick}
+              sx={{ 
+                color: 'text.primary', 
+                textTransform: 'none',
+                '&:active': {
+                  backgroundColor: 'action.selected',
+                },
+              }}
+            >
+              {selectedOption}
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+            >
+              <MenuItem onClick={() => handleOptionSelect('Chatbox')}>
+                <ListItemIcon>
+                  <ChatBubbleOutlineIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Chatbox</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={() => handleOptionSelect('Terminal')}>
+                <ListItemIcon>
+                  <TerminalIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Terminal</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={() => handleOptionSelect('Settings')}>
+                <ListItemIcon>
+                  <SettingsIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Settings</ListItemText>
+              </MenuItem>
+            </Menu>
+          </Box>
+          <IconButton 
+            onClick={closeChat} 
+            edge="end" 
+            sx={{ 
+              color: 'text.primary', 
+              mr: 2,
+              '&:active': {
+                backgroundColor: 'action.selected',
+              },
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </Toolbar>

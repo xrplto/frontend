@@ -1,16 +1,38 @@
-import { Stack, Avatar, styled, Paper, Typography, Tooltip, Box, Button, Grid, useTheme, tooltipClasses, IconButton, Link } from "@mui/material";
+import {
+  Stack,
+  Avatar,
+  styled,
+  Paper,
+  Typography,
+  Tooltip,
+  Box,
+  Button,
+  Grid,
+  useTheme,
+  tooltipClasses,
+  IconButton,
+  Link
+} from '@mui/material';
 import { parseISO } from 'date-fns';
-import { Send as SendIcon, SwapHoriz as TradeIcon, Message as MessageIcon, ArrowUpward as ArrowUpwardIcon, ArrowDownward as ArrowDownwardIcon, Remove as RemoveIcon, ChatBubbleOutline as ChatBubbleOutlineIcon } from '@mui/icons-material';
-import { useEffect, useState, useContext } from "react";
-import axios from "axios";
+import {
+  Send as SendIcon,
+  SwapHoriz as TradeIcon,
+  Message as MessageIcon,
+  ArrowUpward as ArrowUpwardIcon,
+  ArrowDownward as ArrowDownwardIcon,
+  Remove as RemoveIcon,
+  ChatBubbleOutline as ChatBubbleOutlineIcon
+} from '@mui/icons-material';
+import { useEffect, useState, useContext } from 'react';
+import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
-    <Tooltip {...props} classes={{ popper: className }} />
+  <Tooltip {...props} classes={{ popper: className }} />
 ))({
-    [`& .${tooltipClasses.tooltip}`]: {
-        maxWidth: 500,
-    },
+  [`& .${tooltipClasses.tooltip}`]: {
+    maxWidth: 500
+  }
 });
 
 // const chats = [
@@ -158,39 +180,39 @@ const CustomWidthTooltip = styled(({ className, ...props }) => (
 // ];
 
 const Item = styled(Paper)(({ theme }) => ({
-    backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
-    ...theme.typography.body2,
-    padding: theme.spacing(1),
-    textAlign: 'left',
-    color: theme.palette.text.secondary,
-    maxWidth: '100%',
-    flexGrow: 1,
+  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'left',
+  color: theme.palette.text.secondary,
+  maxWidth: '100%',
+  flexGrow: 1
 }));
 
 const rankColors = (theme) => ({
-    Member: '#808080', // Grey color for Member
-    VIP: theme.palette.mode === 'dark' ? '#FFC700' : '#FFD700',
-    AQUA: theme.palette.mode === 'dark' ? '#00E0E0' : '#00BFFF',
-    NOVA: theme.palette.mode === 'dark' ? '#FF85B4' : '#FF69B4',
-    Moderator: theme.palette.mode === 'dark' ? '#B68BFF' : '#8A2BE2',
-    Admin: theme.palette.mode === 'dark' ? '#FF5A5A' : '#ff3a3a',
-    Titan: 'linear-gradient(90deg, #1436a1 0%, #1071fa 50%, #970f4a 100%)', // Gradient for Titan
-    Legendary: 'linear-gradient(90deg, #ff7e5f 0%, #feb47b 50%, #ffcc00 100%)', // Gradient for Legendary
-    Developer: theme.palette.primary.main, // Using primary color for Developer
-    Bot: theme.palette.text.primary, // Default text color for Bot
+  Member: theme.palette.grey[500],
+  VIP: theme.palette.mode === 'dark' ? '#FFD700' : '#DAA520',
+  AQUA: theme.palette.mode === 'dark' ? '#00CED1' : '#20B2AA',
+  NOVA: theme.palette.mode === 'dark' ? '#FF69B4' : '#DB7093',
+  Moderator: theme.palette.mode === 'dark' ? '#9370DB' : '#8A2BE2',
+  Admin: theme.palette.mode === 'dark' ? '#FF4500' : '#DC143C',
+  Titan: 'linear-gradient(90deg, #4B0082 0%, #0000FF 50%, #800080 100%)',
+  Legendary: 'linear-gradient(90deg, #FFD700 0%, #FFA500 50%, #FF4500 100%)',
+  Developer: theme.palette.primary.dark,
+  Bot: theme.palette.info.main
 });
 
 const rankGlowEffect = (theme) => ({
-    Member: 'none', // Glow effect for Member
-    VIP: theme.palette.mode === 'dark' ? '0 0 5px #FFC700' : '0 0 5px #FFD700',
-    AQUA: theme.palette.mode === 'dark' ? '0 0 5px #00E0E0' : '0 0 5px #00BFFF',
-    NOVA: theme.palette.mode === 'dark' ? '0 0 5px #FF85B4' : '0 0 5px #FF69B4',
-    Moderator: '1px 1px 1.5px #000000',
-    Admin: '1px 1px 1.5px #000000',
-    Titan: 'none',  // No traditional glow effect for Titan, we'll use background-clip instead
-    Legendary: 'none',
-    Developer: `none`, 
-    Bot: 'none', // No glow effect for Bot
+  Member: 'none',
+  VIP: `0 0 5px ${theme.palette.mode === 'dark' ? '#FFD700' : '#DAA520'}`,
+  AQUA: `0 0 5px ${theme.palette.mode === 'dark' ? '#00CED1' : '#20B2AA'}`,
+  NOVA: `0 0 5px ${theme.palette.mode === 'dark' ? '#FF69B4' : '#DB7093'}`,
+  Moderator: `0 0 5px ${theme.palette.mode === 'dark' ? '#9370DB' : '#8A2BE2'}`,
+  Admin: `0 0 5px ${theme.palette.mode === 'dark' ? '#FF4500' : '#DC143C'}`,
+  Titan: '0 0 8px #0000FF',
+  Legendary: '0 0 8px #FFA500',
+  Developer: `0 0 5px ${theme.palette.primary.dark}`,
+  Bot: `0 0 5px ${theme.palette.info.main}`
 });
 
 const lightningEffect = `
@@ -202,407 +224,454 @@ const lightningEffect = `
 `;
 
 const formatTimeAgo = (date) => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now - date) / 1000);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
 
-    if (diffInSeconds < 0) {
-        return "Just now";
-    }
+  if (diffInSeconds < 0) {
+    return 'Just now';
+  }
 
-    if (diffInSeconds < 60) {
-        return `${diffInSeconds}s`;
-    } else if (diffInSeconds < 3600) {
-        return `${Math.floor(diffInSeconds / 60)}m`;
-    } else if (diffInSeconds < 86400) {
-        return `${Math.floor(diffInSeconds / 3600)}hr`;
-    } else {
-        return `${Math.floor(diffInSeconds / 86400)}d`;
-    }
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds}s`;
+  } else if (diffInSeconds < 3600) {
+    return `${Math.floor(diffInSeconds / 60)}m`;
+  } else if (diffInSeconds < 86400) {
+    return `${Math.floor(diffInSeconds / 3600)}hr`;
+  } else {
+    return `${Math.floor(diffInSeconds / 86400)}d`;
+  }
 };
 
 const NFTDisplay = ({ nftLink }) => {
-    const theme = useTheme();
-    const match = nftLink.match(/\[NFT: (.*?) #(\d+) \((.*?)\)\]/);
-    
-    if (!match) return null;
+  const theme = useTheme();
+  const match = nftLink.match(/\[NFT: (.*?) #(\d+) \((.*?)\)\]/);
 
-    const [_, name, number, tokenId] = match;
-    
-    return (
-        <Tooltip
-            title={
-                <Box>
-                    <Typography variant="body2">{`${name} #${number}`}</Typography>
-                    <Typography variant="caption" color="textSecondary">{tokenId}</Typography>
-                </Box>
-            }
-            arrow
-        >
-            <Box sx={{ display: 'inline-flex', alignItems: 'center', marginLeft: 1 }}>
-                <img 
-                    src="/static/crossmark.webp" 
-                    alt={`${name} #${number}`} 
-                    style={{ maxWidth: '20px', maxHeight: '20px', marginRight: '5px', borderRadius: '3px' }} 
-                />
-                <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
-                    {name} <span style={{ fontWeight: 'bold' }}>#{number}</span>
-                </Typography>
-            </Box>
-        </Tooltip>
-    );
+  if (!match) return null;
+
+  const [_, name, number, tokenId] = match;
+
+  return (
+    <Tooltip
+      title={
+        <Box>
+          <Typography variant="body2">{`${name} #${number}`}</Typography>
+          <Typography variant="caption" color="textSecondary">
+            {tokenId}
+          </Typography>
+        </Box>
+      }
+      arrow
+    >
+      <Box sx={{ display: 'inline-flex', alignItems: 'center', marginLeft: 1 }}>
+        <img
+          src="/static/crossmark.webp"
+          alt={`${name} #${number}`}
+          style={{ maxWidth: '20px', maxHeight: '20px', marginRight: '5px', borderRadius: '3px' }}
+        />
+        <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
+          {name} <span style={{ fontWeight: 'bold' }}>#{number}</span>
+        </Typography>
+      </Box>
+    </Tooltip>
+  );
 };
 
 const UserSummary = ({ user }) => {
-    const theme = useTheme();
-    const [token, setToken] = useState(0);
-    const [nft , setNFT] = useState(0);
+  const theme = useTheme();
+  const [token, setToken] = useState(0);
+  const [nft, setNFT] = useState(0);
 
-    useEffect(() => {
+  useEffect(() => {
+    const fetchAssets = () => {
+      axios
+        .get(`https://api.xrpl.to/api/account/lines/${user.username}?page=0&limit=10`)
+        .then((res) => {
+          const { total } = res.data;
+          setToken(total);
+        })
+        .catch((error) => {});
 
-        const fetchAssets = () => {
-            axios.get(`https://api.xrpl.to/api/account/lines/${user.username}?page=0&limit=10`).then(res => {
-                const { total } = res.data;
-                setToken(total);
-            }).catch(error => {
-
-            });
-
-            axios.post(`https://api.xrpnft.com/api/account/collectedCreated`, {
-                account: user.username,
-                filter: 0,
-                limit: 32,
-                page: 0,
-                search: "",
-                subFilter: "pricexrpasc",
-                type: "collected",
-            }).then(res => {
-                const { nfts } = res.data;
-                let total = 0;
-                nfts.map(nft => {
-                    total += nft.nftCount;
-                })
-                setNFT(total);
-            }).catch(error => {
-
-            });
-        }
-
-        if (user.username) {
-            fetchAssets();
-        }
-
-    }, [user])
-
-    const getPLColor = (pl) => {
-        if (!pl || pl === "0%") return "inherit";  // Default color if P/L is null or 0%
-        return pl.startsWith("+") ? "green" : "red";
+      axios
+        .post(`https://api.xrpnft.com/api/account/collectedCreated`, {
+          account: user.username,
+          filter: 0,
+          limit: 32,
+          page: 0,
+          search: '',
+          subFilter: 'pricexrpasc',
+          type: 'collected'
+        })
+        .then((res) => {
+          const { nfts } = res.data;
+          let total = 0;
+          nfts.map((nft) => {
+            total += nft.nftCount;
+          });
+          setNFT(total);
+        })
+        .catch((error) => {});
     };
 
-    return (
-        <Box p={4} sx={{ width: 500, maxWidth: 1000, width: 'fit-content', marginLeft: 0 }}>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ marginLeft: 0 }}>
-                <Avatar alt={user.username} src="/static/crossmark.webp" sx={{ width: 50, height: 50, marginLeft: 0 }} />
-                <Box>
-                    <Typography 
-                        variant="subtitle1" 
-                        sx={{ 
-                            fontWeight: 'bold', 
-                            color: rankColors(theme)[user.rank] || theme.palette.text.primary,
-                            textShadow: rankGlowEffect(theme)[user.rank] || 'none',
-                            marginBottom: 1,
-                            animation: user.rank === 'Titan' || user.rank === 'Legendary' ? 'lightning 5s linear infinite' : 'none', 
-                            backgroundImage: user.rank === 'Titan' 
-                                ? `url(https://static.nulled.to/public/assets/whitebg.gif),
+    if (user.username) {
+      fetchAssets();
+    }
+  }, [user]);
+
+  const getPLColor = (pl) => {
+    if (!pl || pl === '0%') return 'inherit'; // Default color if P/L is null or 0%
+    return pl.startsWith('+') ? 'green' : 'red';
+  };
+
+  return (
+    <Box p={4} sx={{ width: 500, maxWidth: 1000, width: 'fit-content', marginLeft: 0 }}>
+      <Stack direction="row" spacing={2} alignItems="center" sx={{ marginLeft: 0 }}>
+        <Avatar
+          alt={user.username}
+          src="/static/crossmark.webp"
+          sx={{ width: 50, height: 50, marginLeft: 0 }}
+        />
+        <Box>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 'bold',
+              color: rankColors(theme)[user.rank] || theme.palette.text.primary,
+              textShadow: rankGlowEffect(theme)[user.rank] || 'none',
+              marginBottom: 1,
+              animation:
+                user.rank === 'Titan' || user.rank === 'Legendary'
+                  ? 'lightning 5s linear infinite'
+                  : 'none',
+              backgroundImage:
+                user.rank === 'Titan'
+                  ? `url(https://static.nulled.to/public/assets/whitebg.gif),
                                    radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
                                    url(https://static.nulled.to/public/assets/white-lightning.gif),
-                                   url(https://static.nulled.to/public/assets/blue-comet.gif)` 
-                                : user.rank === 'Legendary'
-                                ? `url(https://static.nulled.to/public/assets/whitebg.gif),
+                                   url(https://static.nulled.to/public/assets/blue-comet.gif)`
+                  : user.rank === 'Legendary'
+                  ? `url(https://static.nulled.to/public/assets/whitebg.gif),
                                                    radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
                                                    url(https://static.nulled.to/public/assets/white-lightning.gif)`
-                                : 'none',
-                            backgroundSize: user.rank === 'Legendary' ? 'cover' : '5em, 15% 800%, 10em, 25em',
-                            WebkitTextFillColor: user.rank === 'Titan' || user.rank === 'Legendary' ? 'transparent' : 'inherit',
-                            WebkitBackgroundClip: user.rank === 'Titan' || user.rank === 'Legendary' ? 'text' : 'unset',
-                            filter: user.rank === 'Titan' ? 'brightness(1.5)' : 'none',
-                        }}
-                    >
-                        {user.username}
-                    </Typography>
-                    <Grid container spacing={1}>
-                        {/* Rank Section */}
-                        <Grid item xs={12} sx={{ display: 'flex' }}>
-                            <Typography variant="body2" sx={{ flex: 1 }}>
-                                <strong>Rank:</strong> 
-                            </Typography>
-                            <Typography variant="body2" sx={{ flex: 2 }}>
-                                <span style={{ color: rankColors(theme)[user.rank] || theme.palette.text.primary, textShadow: rankGlowEffect(theme)[user.rank] || 'none' }}>
-                                    {user.group}
-                                </span>
-                            </Typography>
-                        </Grid>
+                  : 'none',
+              backgroundSize: user.rank === 'Legendary' ? 'cover' : '5em, 15% 800%, 10em, 25em',
+              WebkitTextFillColor:
+                user.rank === 'Titan' || user.rank === 'Legendary' ? 'transparent' : 'inherit',
+              WebkitBackgroundClip:
+                user.rank === 'Titan' || user.rank === 'Legendary' ? 'text' : 'unset',
+              filter: user.rank === 'Titan' ? 'brightness(1.5)' : 'none'
+            }}
+          >
+            {user.username}
+          </Typography>
+          <Grid container spacing={1}>
+            {/* Rank Section */}
+            <Grid item xs={12} sx={{ display: 'flex' }}>
+              <Typography variant="body2" sx={{ flex: 1 }}>
+                <strong>Rank:</strong>
+              </Typography>
+              <Typography variant="body2" sx={{ flex: 2 }}>
+                <span
+                  style={{
+                    color: rankColors(theme)[user.rank] || theme.palette.text.primary,
+                    textShadow: rankGlowEffect(theme)[user.rank] || 'none'
+                  }}
+                >
+                  {user.group}
+                </span>
+              </Typography>
+            </Grid>
 
-                        {/* P/L Section */}
-                        <Grid item xs={12} sx={{ display: 'flex' }}>
-                            <Typography variant="body2" sx={{ flex: 1 }}>
-                                <strong>P/L:</strong>
-                            </Typography>
-                            <Typography variant="body2" sx={{ flex: 2, color: getPLColor(user.profitLoss) }}>
-                                {user.profitLoss || 'N/A'}
-                            </Typography>
-                        </Grid>
+            {/* P/L Section */}
+            <Grid item xs={12} sx={{ display: 'flex' }}>
+              <Typography variant="body2" sx={{ flex: 1 }}>
+                <strong>P/L:</strong>
+              </Typography>
+              <Typography variant="body2" sx={{ flex: 2, color: getPLColor(user.profitLoss) }}>
+                {user.profitLoss || 'N/A'}
+              </Typography>
+            </Grid>
 
-                        {/* Top NFT Collections Section */}
-                        <Grid item xs={12} sx={{ display: 'flex' }}>
-                            <Typography variant="body2" sx={{ flex: 1 }}>
-                                <strong>NFTs:</strong>
-                            </Typography>
-                            <Typography variant="body2" sx={{ flex: 2 }}>
-                                {nft || 'None'}
-                            </Typography>
-                        </Grid>
+            {/* Top NFT Collections Section */}
+            <Grid item xs={12} sx={{ display: 'flex' }}>
+              <Typography variant="body2" sx={{ flex: 1 }}>
+                <strong>NFTs:</strong>
+              </Typography>
+              <Typography variant="body2" sx={{ flex: 2 }}>
+                {nft || 'None'}
+              </Typography>
+            </Grid>
 
-                        {/* Top Tokens Owned Section */}
-                        <Grid item xs={12} sx={{ display: 'flex' }}>
-                            <Typography variant="body2" sx={{ flex: 1 }}>
-                                <strong>Tokens:</strong>
-                            </Typography>
-                            <Typography variant="body2" sx={{ flex: 2 }}>
-                                {token || 'None'}
-                            </Typography>
-                        </Grid>
-                        
-                        <Grid item xs={12} sx={{ display: 'flex' }}>
-                            <Typography variant="body2" sx={{ flex: 1 }}>
-                                <strong>Chats:</strong>
-                            </Typography>
-                            <Typography variant="body2" sx={{ flex: 2 }}>
-                                {user.activePosts}
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={12} sx={{ display: 'flex' }}>
-                            <Typography variant="body2" sx={{ flex: 1 }}>
-                                <strong>Joined XRPL:</strong>
-                            </Typography>
-                            <Typography variant="body2" sx={{ flex: 2 }}>
-                                {user.memberSince}
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={12} sx={{ display: 'flex' }}>
-                            <Typography variant="body2" sx={{ flex: 1 }}>
-                                <strong>Last Active:</strong>
-                            </Typography>
-                            <Typography variant="body2" sx={{ flex: 2 }}>
-                                {user.lastActive}
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={12} sx={{ display: 'flex' }}>
-                            <Typography variant="body2" sx={{ flex: 1 }}>
-                                <strong>Currently:</strong>
-                            </Typography>
-                            <Typography variant="body2" sx={{ flex: 2 }}>
-                                {user.currently}
-                            </Typography>
-                        </Grid>
-                        
-                    </Grid>
-                </Box>
-            </Stack>
+            {/* Top Tokens Owned Section */}
+            <Grid item xs={12} sx={{ display: 'flex' }}>
+              <Typography variant="body2" sx={{ flex: 1 }}>
+                <strong>Tokens:</strong>
+              </Typography>
+              <Typography variant="body2" sx={{ flex: 2 }}>
+                {token || 'None'}
+              </Typography>
+            </Grid>
 
-            <Box mt={2} textAlign="center">
-                <Stack direction="row" spacing={1} justifyContent="center">
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        startIcon={<SendIcon />}
-                        sx={{
-                            backgroundColor: rankColors(theme)[user.rank],
-                            '&:hover': {
-                                backgroundColor: rankColors(theme)[user.rank],
-                                opacity: 0.9,
-                            },
-                            textShadow: rankGlowEffect(theme)[user.rank] || 'none',
-                            height: '40px',  
-                            width: '100px', 
-                        }}
-                        onClick={() => handleSendTip(user)}
-                    >
-                        Tip
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="secondary"
-                        startIcon={<TradeIcon />}
-                        sx={{
-                            height: '40px',
-                            width: '100px',
-                        }}
-                        onClick={() => handleTrade(user)}
-                    >
-                        Trade
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        startIcon={<MessageIcon />}
-                        sx={{
-                            height: '40px', 
-                            width: '130px', 
-                        }}
-                        onClick={() => handleSendMessage(user)}
-                    >
-                        Message
-                    </Button>
-                </Stack>
-            </Box>
+            <Grid item xs={12} sx={{ display: 'flex' }}>
+              <Typography variant="body2" sx={{ flex: 1 }}>
+                <strong>Chats:</strong>
+              </Typography>
+              <Typography variant="body2" sx={{ flex: 2 }}>
+                {user.activePosts}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sx={{ display: 'flex' }}>
+              <Typography variant="body2" sx={{ flex: 1 }}>
+                <strong>Joined XRPL:</strong>
+              </Typography>
+              <Typography variant="body2" sx={{ flex: 2 }}>
+                {user.memberSince}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sx={{ display: 'flex' }}>
+              <Typography variant="body2" sx={{ flex: 1 }}>
+                <strong>Last Active:</strong>
+              </Typography>
+              <Typography variant="body2" sx={{ flex: 2 }}>
+                {user.lastActive}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sx={{ display: 'flex' }}>
+              <Typography variant="body2" sx={{ flex: 1 }}>
+                <strong>Currently:</strong>
+              </Typography>
+              <Typography variant="body2" sx={{ flex: 2 }}>
+                {user.currently}
+              </Typography>
+            </Grid>
+          </Grid>
         </Box>
-    );
+      </Stack>
+
+      <Box mt={2} textAlign="center">
+        <Stack direction="row" spacing={1} justifyContent="center">
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<SendIcon />}
+            sx={{
+              backgroundColor: rankColors(theme)[user.rank],
+              '&:hover': {
+                backgroundColor: rankColors(theme)[user.rank],
+                opacity: 0.9
+              },
+              textShadow: rankGlowEffect(theme)[user.rank] || 'none',
+              height: '40px',
+              width: '100px'
+            }}
+            onClick={() => handleSendTip(user)}
+          >
+            Tip
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<TradeIcon />}
+            sx={{
+              height: '40px',
+              width: '100px'
+            }}
+            onClick={() => handleTrade(user)}
+          >
+            Trade
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<MessageIcon />}
+            sx={{
+              height: '40px',
+              width: '130px'
+            }}
+            onClick={() => handleSendMessage(user)}
+          >
+            Message
+          </Button>
+        </Stack>
+      </Box>
+    </Box>
+  );
 };
 
 const handleSendTip = (user) => {
-    console.log(`Sending tip to ${user.username}`);
-    // Add your tipping logic here
+  console.log(`Sending tip to ${user.username}`);
+  // Add your tipping logic here
 };
 
 const handleTrade = (user) => {
-    console.log(`Initiating trade with ${user.username}`);
-    // Add your trade initiation logic here
+  console.log(`Initiating trade with ${user.username}`);
+  // Add your trade initiation logic here
 };
 
 const handleSendMessage = (user) => {
-    console.log(`Sending message to ${user.username}`);
-    // Add your message sending logic here
+  console.log(`Sending message to ${user.username}`);
+  // Add your message sending logic here
 };
 
 const ChatPanel = ({ chats, onStartPrivateMessage }) => {
-    const theme = useTheme();
-    const { accountProfile } = useContext(AppContext);
+  const theme = useTheme();
+  const { accountProfile } = useContext(AppContext);
 
-    // Inject lightningEffect into the document's head
-    const styleElement = document.createElement('style');
-    styleElement.textContent = lightningEffect;
-    document.head.appendChild(styleElement);
+  // Inject lightningEffect into the document's head
+  const styleElement = document.createElement('style');
+  styleElement.textContent = lightningEffect;
+  document.head.appendChild(styleElement);
 
-    const truncateString = (str) => str.slice(0, 12) + (str.length > 12 ? '...' : '');
+  const truncateString = (str) => str.slice(0, 12) + (str.length > 12 ? '...' : '');
 
-    return (
-        <Stack gap={1}>
-            {chats.filter(chat => 
-                !chat.isPrivate || 
-                chat.username === accountProfile?.account || 
-                chat.recipient === accountProfile?.account
-            ).map((chat, index) => {
-                const parsedTime = parseISO(chat.timestamp);
-                const timeAgo = formatTimeAgo(parsedTime);
+  return (
+    <Stack gap={1}>
+      {chats
+        .filter(
+          (chat) =>
+            !chat.isPrivate ||
+            chat.username === accountProfile?.account ||
+            chat.recipient === accountProfile?.account
+        )
+        .map((chat, index) => {
+          const parsedTime = parseISO(chat.timestamp);
+          const timeAgo = formatTimeAgo(parsedTime);
 
-                const privateMessageRecipient = chat.isPrivate
-                    ? (chat.username === accountProfile?.account ? chat.recipient : chat.username)
-                    : chat.username;
+          const privateMessageRecipient = chat.isPrivate
+            ? chat.username === accountProfile?.account
+              ? chat.recipient
+              : chat.username
+            : chat.username;
 
-                const displayUsername = truncateString(chat.username);
-                const displayRecipient = truncateString(privateMessageRecipient);
+          const displayUsername = truncateString(chat.username);
+          const displayRecipient = truncateString(privateMessageRecipient);
 
-                const isCurrentUser = chat.username === accountProfile?.account;
+          const isCurrentUser = chat.username === accountProfile?.account;
 
-                // Parse NewsBot message
-                let newsData = null;
-                if (chat.username === "NewsBot") {
-                    try {
-                        newsData = JSON.parse(chat.message);
-                    } catch (error) {
-                        console.error("Error parsing NewsBot message:", error);
-                    }
+          // Parse NewsBot message
+          let newsData = null;
+          if (chat.username === 'NewsBot') {
+            try {
+              newsData = JSON.parse(chat.message);
+            } catch (error) {
+              console.error('Error parsing NewsBot message:', error);
+            }
+          }
+
+          return (
+            <Stack
+              key={index}
+              direction="row"
+              spacing={1}
+              alignItems="flex-start"
+              sx={{
+                backgroundColor: theme.palette.background.paper,
+                borderRadius: 1,
+                p: 1,
+                '&:hover': {
+                  backgroundColor: theme.palette.action.hover
                 }
-
-                return (
-                    <Stack key={index} direction="row" spacing={1} alignItems="flex-start">
-                        <Avatar 
-                            alt={chat.username} 
-                            src="/static/crossmark.webp" 
-                            sx={{ width: 32, height: 32, marginTop: 0.5 }}
-                        />
-                        <Box sx={{ flexGrow: 1 }}>
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                                <CustomWidthTooltip 
-                                    title={<UserSummary user={chat} />} 
-                                    arrow
-                                    placement="right"
-                                >
-                                    <Typography 
-                                        variant="caption" 
-                                        sx={{ 
-                                            fontWeight: 'bold',
-                                            color: rankColors(theme)[chat.rank] || theme.palette.text.primary,
-                                            cursor: 'pointer',
-                                        }}
-                                    >
-                                        {displayUsername}
-                                        {chat.isPrivate && (
-                                            <>
-                                                {" → "}
-                                                <span style={{ color: theme.palette.text.secondary }}>
-                                                    {displayRecipient}
-                                                </span>
-                                            </>
-                                        )}
-                                    </Typography>
-                                </CustomWidthTooltip>
-                                <IconButton 
-                                    size="small" 
-                                    onClick={() => onStartPrivateMessage(privateMessageRecipient)}
-                                    sx={{ padding: 0 }}
-                                >
-                                    <ChatBubbleOutlineIcon fontSize="small" />
-                                </IconButton>
-                            </Stack>
-                            {newsData ? (
-                                <Box sx={{ mt: 0.5 }}>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-                                        {newsData.title}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ mt: 0.5 }}>
-                                        {newsData.summary !== "No summary available" ? newsData.summary : "No summary available."}
-                                    </Typography>
-                                    <Link href={newsData.sourceUrl} target="_blank" rel="noopener noreferrer">
-                                        <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
-                                            Read more at {newsData.sourceName}
-                                        </Typography>
-                                    </Link>
-                                    {newsData.sentiment !== "Unknown" && (
-                                        <Typography variant="caption" sx={{ 
-                                            ml: 1, 
-                                            color: newsData.sentiment === "Bullish" ? "green" : 
-                                                   newsData.sentiment === "Bearish" ? "red" : "inherit"
-                                        }}>
-                                            • {newsData.sentiment}
-                                        </Typography>
-                                    )}
-                                </Box>
-                            ) : (
-                                <Typography 
-                                    variant="body2" 
-                                    sx={{ 
-                                        mt: 0.5, 
-                                        color: chat.isPrivate ? 'purple' : 'inherit'
-                                    }}
-                                >
-                                    {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
-                                        if (part.startsWith('[NFT:')) {
-                                            return <NFTDisplay key={i} nftLink={part} />;
-                                        }
-                                        return part;
-                                    })}
-                                </Typography>
-                            )}
-                        </Box>
-                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>
-                            {timeAgo}
-                        </Typography>
-                    </Stack>
-                );
-            })}
-        </Stack>
-    );
+              }}
+            >
+              <Avatar
+                alt={chat.username}
+                src="/static/crossmark.webp"
+                sx={{ width: 32, height: 32, marginTop: 0.5 }}
+              />
+              <Box sx={{ flexGrow: 1 }}>
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <CustomWidthTooltip title={<UserSummary user={chat} />} arrow placement="right">
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontWeight: 'bold',
+                        color: rankColors(theme)[chat.rank] || theme.palette.text.primary,
+                        textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {displayUsername}
+                      {chat.isPrivate && (
+                        <>
+                          {' → '}
+                          <span style={{ color: theme.palette.text.secondary }}>
+                            {displayRecipient}
+                          </span>
+                        </>
+                      )}
+                    </Typography>
+                  </CustomWidthTooltip>
+                  <IconButton
+                    size="small"
+                    onClick={() => onStartPrivateMessage(privateMessageRecipient)}
+                    sx={{ padding: 0 }}
+                  >
+                    <ChatBubbleOutlineIcon fontSize="small" />
+                  </IconButton>
+                </Stack>
+                {newsData ? (
+                  <Box sx={{ mt: 0.5 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                      {newsData.title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 0.5 }}>
+                      {newsData.summary !== 'No summary available'
+                        ? newsData.summary
+                        : 'No summary available.'}
+                    </Typography>
+                    <Link href={newsData.sourceUrl} target="_blank" rel="noopener noreferrer">
+                      <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
+                        Read more at {newsData.sourceName}
+                      </Typography>
+                    </Link>
+                    {newsData.sentiment !== 'Unknown' && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          ml: 1,
+                          color:
+                            newsData.sentiment === 'Bullish'
+                              ? 'green'
+                              : newsData.sentiment === 'Bearish'
+                              ? 'red'
+                              : 'inherit'
+                        }}
+                      >
+                        • {newsData.sentiment}
+                      </Typography>
+                    )}
+                  </Box>
+                ) : (
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mt: 0.5,
+                      color: chat.isPrivate ? theme.palette.secondary.main : theme.palette.text.primary
+                    }}
+                  >
+                    {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
+                      if (part.startsWith('[NFT:')) {
+                        return <NFTDisplay key={i} nftLink={part} />;
+                      }
+                      return part;
+                    })}
+                  </Typography>
+                )}
+              </Box>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  mt: 0.5,
+                  opacity: 0.8
+                }}
+              >
+                {timeAgo}
+              </Typography>
+            </Stack>
+          );
+        })}
+    </Stack>
+  );
 };
 
 export default ChatPanel;
