@@ -304,7 +304,7 @@ const NFTDisplay = ({ nftLink }) => {
         <img 
           src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.image}`} 
           alt={nft.name}
-          style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain' }}
+          style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain', borderRadius: '10px' }}
         />
       );
     }

@@ -447,6 +447,8 @@ function Chatbox() {
                     zIndex: 1000,
                     backgroundColor: 'background.paper',
                     borderRadius: '4px',
+                    border: '1px solid',
+                    borderColor: 'divider',
                     boxShadow: 3,
                     p: 1,
                   }}
