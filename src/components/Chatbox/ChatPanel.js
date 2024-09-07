@@ -21,9 +21,10 @@ import {
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   Remove as RemoveIcon,
-  ChatBubbleOutline as ChatBubbleOutlineIcon
+  ChatBubbleOutline as ChatBubbleOutlineIcon,
+  Reply as ReplyIcon
 } from '@mui/icons-material';
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import NFTPreview from 'src/nft/NFTPreview';
@@ -522,6 +523,7 @@ const handleSendMessage = (user) => {
 const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   const theme = useTheme();
   const { accountProfile } = useContext(AppContext);
+  const chatContainerRef = useRef(null);
 
   // Inject lightningEffect into the document's head
   const styleElement = document.createElement('style');
@@ -530,8 +532,23 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
 
   const truncateString = (str) => str.slice(0, 12) + (str.length > 12 ? '...' : '');
 
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chats]);
+
   return (
-    <Stack gap={1}>
+    <Stack
+      ref={chatContainerRef}
+      gap={1}
+      sx={{
+        height: '100%',
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column-reverse'
+      }}
+    >
       {chats
         .filter(
           (chat) =>
@@ -539,6 +556,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
             chat.username === accountProfile?.account ||
             chat.recipient === accountProfile?.account
         )
+        .reverse() // Reverse the order of messages
         .map((chat, index) => {
           const parsedTime = parseISO(chat.timestamp);
           const timeAgo = formatTimeAgo(parsedTime);
@@ -607,13 +625,21 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                       )}
                     </Typography>
                   </CustomWidthTooltip>
-                  <IconButton
-                    size="small"
-                    onClick={() => onStartPrivateMessage(privateMessageRecipient)}
-                    sx={{ padding: 0 }}
-                  >
-                    <ChatBubbleOutlineIcon fontSize="small" />
-                  </IconButton>
+                  <Tooltip title="Send private message" arrow>
+                    <IconButton
+                      size="small"
+                      onClick={() => onStartPrivateMessage(privateMessageRecipient)}
+                      sx={{
+                        padding: 0,
+                        color: theme.palette.text.secondary,
+                        '&:hover': {
+                          color: theme.palette.primary.main
+                        }
+                      }}
+                    >
+                      <ChatBubbleOutlineIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                 </Stack>
                 {newsData ? (
                   <Box sx={{ mt: 0.5 }}>

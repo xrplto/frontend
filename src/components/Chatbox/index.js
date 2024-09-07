@@ -110,11 +110,14 @@ const FormattedNFT = ({ nftLink, onRemove }) => {
   );
 };
 
-const CustomInput = ({ value, onChange, onNFTRemove }) => {
+const CustomInput = ({ value, onChange, onNFTRemove, onKeyPress }) => {
   const inputRef = useRef(null);
   const [localValue, setLocalValue] = useState('');
+  const [nftParts, setNftParts] = useState([]);
 
   useEffect(() => {
+    const newNftParts = value.match(/\[NFT:.*?\]/g) || [];
+    setNftParts(newNftParts);
     const textParts = value.split(/(\[NFT:.*?\])/).filter(part => !part.startsWith('[NFT:'));
     setLocalValue(textParts.join(''));
   }, [value]);
@@ -123,20 +126,20 @@ const CustomInput = ({ value, onChange, onNFTRemove }) => {
     const newTextValue = e.target.value;
     setLocalValue(newTextValue);
     
-    const nftParts = value.match(/\[NFT:.*?\]/g) || [];
     const newFullValue = [...nftParts, newTextValue].join('');
     onChange(newFullValue);
   };
 
   const handleNFTRemove = (nftLink) => {
-    const newValue = value.replace(nftLink, '');
-    onChange(newValue);
+    const newNftParts = nftParts.filter(part => part !== nftLink);
+    setNftParts(newNftParts);
+    const newFullValue = [...newNftParts, localValue].join('');
+    onChange(newFullValue);
     onNFTRemove && onNFTRemove(nftLink);
   };
 
   const renderNFTChips = () => {
-    const nftMatches = value.match(/\[NFT:.*?\]/g) || [];
-    return nftMatches.map((nftLink, index) => (
+    return nftParts.map((nftLink, index) => (
       <FormattedNFT key={index} nftLink={nftLink} onRemove={() => handleNFTRemove(nftLink)} />
     ));
   };
@@ -175,6 +178,7 @@ const CustomInput = ({ value, onChange, onNFTRemove }) => {
         }}
         value={localValue}
         onChange={handleChange}
+        onKeyPress={onKeyPress}
         rows={1}
         onInput={(e) => {
           e.target.style.height = 'auto';
@@ -313,6 +317,13 @@ function Chatbox() {
     setMessage(newMessage);
   };
 
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  };
+
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>
@@ -379,12 +390,27 @@ function Chatbox() {
       </Box>
       <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
         {recipient && (
-          <Typography variant="caption" sx={{ mb: 1, display: 'block' }}>
-            To: {recipient}
-            <IconButton size="small" onClick={() => setRecipient(null)}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              mb: 2,
+              p: 1,
+              borderRadius: 1,
+              backgroundColor: theme.palette.action.selected,
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <PersonIcon sx={{ mr: 1, color: theme.palette.text.secondary }} />
+              <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                To: <span style={{ color: theme.palette.primary.main }}>{recipient}</span>
+              </Typography>
+            </Box>
+            <IconButton size="small" onClick={() => setRecipient(null)} sx={{ color: theme.palette.text.secondary }}>
               <CloseIcon fontSize="small" />
             </IconButton>
-          </Typography>
+          </Box>
         )}
         <Stack direction="row" spacing={1} alignItems="flex-end">
           <Box sx={{ flexGrow: 1 }}>
@@ -392,6 +418,7 @@ function Chatbox() {
               value={message}
               onChange={handleMessageChange}
               onNFTRemove={handleNFTRemove}
+              onKeyPress={handleKeyPress}
             />
           </Box>
           <Stack direction="row" spacing={1}>
