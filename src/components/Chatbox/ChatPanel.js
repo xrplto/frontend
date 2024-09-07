@@ -27,6 +27,7 @@ import {
 import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
+import NFTPreview from 'src/nft/NFTPreview';
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -244,12 +245,22 @@ const formatTimeAgo = (date) => {
 };
 
 const NFTDisplay = ({ nftLink }) => {
+  const BASE_URL = 'https://api.xrpnft.com/api';
   const theme = useTheme();
+  const [nft, setNFT] = useState(null);
   const match = nftLink.match(/\[NFT: (.*?) #(\d+) \((.*?)\)\]/);
 
   if (!match) return null;
 
   const [_, name, number, tokenId] = match;
+
+  useEffect(() => {
+    async function fetchNFT() {
+      const res = await axios.get(`${BASE_URL}/nft/${tokenId}`);
+      setNFT(res.data.nft);
+    }
+    if (tokenId) fetchNFT();
+  }, [tokenId])
 
   return (
     <Tooltip
@@ -263,12 +274,8 @@ const NFTDisplay = ({ nftLink }) => {
       }
       arrow
     >
-      <Box sx={{ display: 'inline-flex', alignItems: 'center', marginLeft: 1 }}>
-        <img
-          src="/static/crossmark.webp"
-          alt={`${name} #${number}`}
-          style={{ maxWidth: '20px', maxHeight: '20px', marginRight: '5px', borderRadius: '3px' }}
-        />
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 1, gap: 1 }}>
+        {nft && <NFTPreview nft={nft}/> }
         <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
           {name} <span style={{ fontWeight: 'bold' }}>#{number}</span>
         </Typography>
