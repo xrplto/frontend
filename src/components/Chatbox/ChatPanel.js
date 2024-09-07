@@ -29,6 +29,8 @@ import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import NFTPreview from 'src/nft/NFTPreview';
+import CreateOfferDialog from 'src/nft/CreateOfferDialog';
+import { NFToken } from 'src/utils/constants';
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -260,7 +262,13 @@ const StyledTooltip = styled(({ className, ...props }) => (
 const NFTDisplay = ({ nftLink }) => {
   const BASE_URL = 'https://api.xrpnft.com/api';
   const theme = useTheme();
+  const { accountProfile } = useContext(AppContext);
+  const accountLogin = accountProfile?.account;
+
   const [nft, setNFT] = useState(null);
+  const [openCreateOffer, setOpenCreateOffer] = useState(false);
+  const [isSellOffer, setIsSellOffer] = useState(false);
+
   const match = nftLink.match(/\[NFT: (.*?) #(\d+) \((.*?)\)\]/);
 
   if (!match) return null;
@@ -270,7 +278,6 @@ const NFTDisplay = ({ nftLink }) => {
   useEffect(() => {
     async function fetchNFT() {
       const res = await axios.get(`${BASE_URL}/nft/${tokenId}`);
-      console.log('xrpnft API response:', res.data.nft);
       setNFT(res.data.nft);
     }
     if (tokenId) fetchNFT();
@@ -304,67 +311,89 @@ const NFTDisplay = ({ nftLink }) => {
     return null;
   };
 
+  const handleCreateBuyOffer = () => {
+    setIsSellOffer(false);
+    setOpenCreateOffer(true);
+  }
+
   return (
-    <StyledTooltip
-      title={
-        <Paper elevation={0}>
-          <Box sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>{nft ? nft.name : `${name} #${number}`}</Typography>
-            <Divider sx={{ my: 1 }} />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="body2">Collection:</Typography>
-              <Typography variant="body2" fontWeight="bold">{nft?.collection}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="body2">Rarity Rank:</Typography>
-              <Typography variant="body2" fontWeight="bold">{nft?.rarity_rank} / {nft?.total}</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="body2">Royalty:</Typography>
-              <Typography variant="body2" fontWeight="bold">
-                {nft ? `${(nft.royalty / 1000).toFixed(2)}%` : 'N/A'}
-              </Typography>
-            </Box>
-            {nft?.props && (
-              <>
-                <Divider sx={{ my: 1 }} />
-                <Typography variant="subtitle2" gutterBottom>Properties:</Typography>
-                {nft.props.map((prop, index) => (
-                  <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="body2">{prop.type}:</Typography>
-                    <Typography variant="body2" fontWeight="bold">{prop.value}</Typography>
+    <>
+      <StyledTooltip
+        title={
+          <Paper elevation={0}>
+            <Box sx={{ p: 2 }}>
+              <Typography variant="h6" gutterBottom>{nft ? nft.name : `${name} #${number}`}</Typography>
+              <Divider sx={{ my: 1 }} />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2">Collection:</Typography>
+                <Typography variant="body2" fontWeight="bold">{nft?.collection}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2">Rarity Rank:</Typography>
+                <Typography variant="body2" fontWeight="bold">{nft?.rarity_rank} / {nft?.total}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2">Royalty:</Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {nft ? `${(nft.royalty / 1000).toFixed(2)}%` : 'N/A'}
+                </Typography>
+              </Box>
+              {nft?.props && (
+                <>
+                  <Divider sx={{ my: 1 }} />
+                  <Typography variant="subtitle2" gutterBottom>Properties:</Typography>
+                  {nft.props.map((prop, index) => (
+                    <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                      <Typography variant="body2">{prop.type}:</Typography>
+                      <Typography variant="body2" fontWeight="bold">{prop.value}</Typography>
+                    </Box>
+                  ))}
+                </>
+              )}
+              {nft?.cfloor && (
+                <>
+                  <Divider sx={{ my: 1 }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Typography variant="body2">Floor Price:</Typography>
+                    <Typography variant="body2" fontWeight="bold">
+                      {nft.cfloor.amount} {nft.cfloor.currency}
+                    </Typography>
                   </Box>
-                ))}
-              </>
-            )}
-            {nft?.cfloor && (
-              <>
-                <Divider sx={{ my: 1 }} />
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="body2">Floor Price:</Typography>
-                  <Typography variant="body2" fontWeight="bold">
-                    {nft.cfloor.amount} {nft.cfloor.currency}
-                  </Typography>
-                </Box>
-              </>
-            )}
-            <Divider sx={{ my: 1 }} />
-            <Typography variant="caption" color="textSecondary">
-              Token ID: {tokenId}
-            </Typography>
-          </Box>
-        </Paper>
-      }
-      arrow
-      placement="right"
-    >
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 1, gap: 1 }}>
-        {getMediaPreview()}
-        <Typography variant="caption" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
-          {nft ? nft.name : `${name} #${number}`}
-        </Typography>
-      </Box>
-    </StyledTooltip>
+                </>
+              )}
+              <Divider sx={{ my: 1 }} />
+              <Typography variant="caption" color="textSecondary">
+                Token ID: {tokenId}
+              </Typography>
+              <Divider sx={{ my: 1 }} />
+              <Button
+                fullWidth
+                variant='outlined'
+                onClick={handleCreateBuyOffer}
+                disabled={!accountLogin || nft?.status === NFToken.BURNT}
+              >
+                Make Offer
+              </Button>
+            </Box>
+          </Paper>
+        }
+        arrow
+        placement="right"
+      >
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 1, gap: 1 }}>
+          {getMediaPreview()}
+          <Typography variant="caption" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
+            {nft ? nft.name : `${name} #${number}`}
+          </Typography>
+        </Box>
+      </StyledTooltip>
+      <CreateOfferDialog
+        open={openCreateOffer}
+        setOpen={setOpenCreateOffer}
+        nft={nft}
+        isSellOffer={isSellOffer}
+      />
+    </>
   );
 };
 
