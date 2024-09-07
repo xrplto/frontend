@@ -321,7 +321,9 @@ const NFTDisplay = ({ nftLink }) => {
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
               <Typography variant="body2">Royalty:</Typography>
-              <Typography variant="body2" fontWeight="bold">{nft ? `${nft.royalty / 100}%` : 'N/A'}</Typography>
+              <Typography variant="body2" fontWeight="bold">
+                {nft ? `${(nft.royalty / 1000).toFixed(2)}%` : 'N/A'}
+              </Typography>
             </Box>
             {nft?.props && (
               <>
