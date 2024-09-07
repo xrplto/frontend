@@ -622,6 +622,9 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
     }
   }, [chats]);
 
+  // Add this console.log to check if chats are being received
+  console.log('Chats received in ChatPanel:', chats);
+
   return (
     <Stack
       ref={chatContainerRef}
@@ -633,160 +636,166 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
         flexDirection: 'column-reverse'
       }}
     >
-      {chats
-        .filter(
-          (chat) =>
-            !chat.isPrivate ||
-            chat.username === accountProfile?.account ||
-            chat.recipient === accountProfile?.account
-        )
-        .reverse() // Reverse the order of messages
-        .map((chat, index) => {
-          const parsedTime = parseISO(chat.timestamp);
-          const timeAgo = formatTimeAgo(parsedTime);
+      {Array.isArray(chats) && chats.length > 0 ? (
+        chats
+          .filter(
+            (chat) =>
+              !chat.isPrivate ||
+              chat.username === accountProfile?.account ||
+              chat.recipient === accountProfile?.account
+          )
+          .reverse()
+          .map((chat, index) => {
+            const parsedTime = parseISO(chat.timestamp);
+            const timeAgo = formatTimeAgo(parsedTime);
 
-          const privateMessageRecipient = chat.isPrivate
-            ? chat.username === accountProfile?.account
-              ? chat.recipient
-              : chat.username
-            : chat.username;
+            const privateMessageRecipient = chat.isPrivate
+              ? chat.username === accountProfile?.account
+                ? chat.recipient
+                : chat.username
+              : chat.username;
 
-          const displayUsername = truncateString(chat.username);
-          const displayRecipient = truncateString(privateMessageRecipient);
+            const displayUsername = truncateString(chat.username);
+            const displayRecipient = truncateString(privateMessageRecipient);
 
-          const isCurrentUser = chat.username === accountProfile?.account;
+            const isCurrentUser = chat.username === accountProfile?.account;
 
-          // Parse NewsBot message
-          let newsData = null;
-          if (chat.username === 'NewsBot') {
-            try {
-              newsData = JSON.parse(chat.message);
-            } catch (error) {
-              console.error('Error parsing NewsBot message:', error);
+            // Parse NewsBot message
+            let newsData = null;
+            if (chat.username === 'NewsBot') {
+              try {
+                newsData = JSON.parse(chat.message);
+              } catch (error) {
+                console.error('Error parsing NewsBot message:', error);
+              }
             }
-          }
 
-          return (
-            <Stack
-              key={index}
-              direction="row"
-              spacing={1}
-              alignItems="flex-start"
-              sx={{
-                backgroundColor: theme.palette.background.paper,
-                borderRadius: 1,
-                p: 1,
-                '&:hover': {
-                  backgroundColor: theme.palette.action.hover
-                }
-              }}
-            >
-              <Avatar
-                alt={chat.username}
-                src="/static/crossmark.webp"
-                sx={{ width: 32, height: 32, marginTop: 0.5 }}
-              />
-              <Box sx={{ flexGrow: 1 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <CustomWidthTooltip title={<UserSummary user={chat} />} arrow placement="right">
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontWeight: 'bold',
-                        color: rankColors(theme)[chat.rank] || theme.palette.text.primary,
-                        textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {displayUsername}
-                      {chat.isPrivate && (
-                        <>
-                          {' → '}
-                          <span style={{ color: theme.palette.text.secondary }}>
-                            {displayRecipient}
-                          </span>
-                        </>
-                      )}
-                    </Typography>
-                  </CustomWidthTooltip>
-                  <Tooltip title="Send private message" arrow>
-                    <IconButton
-                      size="small"
-                      onClick={() => onStartPrivateMessage(privateMessageRecipient)}
-                      sx={{
-                        padding: 0,
-                        color: theme.palette.text.secondary,
-                        '&:hover': {
-                          color: theme.palette.primary.main
-                        }
-                      }}
-                    >
-                      <ChatBubbleOutlineIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
-                {newsData ? (
-                  <Box sx={{ mt: 0.5 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-                      {newsData.title}
-                    </Typography>
-                    <Typography variant="body2" sx={{ mt: 0.5 }}>
-                      {newsData.summary !== 'No summary available'
-                        ? newsData.summary
-                        : 'No summary available.'}
-                    </Typography>
-                    <Link href={newsData.sourceUrl} target="_blank" rel="noopener noreferrer">
-                      <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
-                        Read more at {newsData.sourceName}
-                      </Typography>
-                    </Link>
-                    {newsData.sentiment !== 'Unknown' && (
+            return (
+              <Stack
+                key={index}
+                direction="row"
+                spacing={1}
+                alignItems="flex-start"
+                sx={{
+                  backgroundColor: theme.palette.background.paper,
+                  borderRadius: 1,
+                  p: 1,
+                  '&:hover': {
+                    backgroundColor: theme.palette.action.hover
+                  }
+                }}
+              >
+                <Avatar
+                  alt={chat.username}
+                  src="/static/crossmark.webp"
+                  sx={{ width: 32, height: 32, marginTop: 0.5 }}
+                />
+                <Box sx={{ flexGrow: 1 }}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <CustomWidthTooltip title={<UserSummary user={chat} />} arrow placement="right">
                       <Typography
                         variant="caption"
                         sx={{
-                          ml: 1,
-                          color:
-                            newsData.sentiment === 'Bullish'
-                              ? 'green'
-                              : newsData.sentiment === 'Bearish'
-                              ? 'red'
-                              : 'inherit'
+                          fontWeight: 'bold',
+                          color: rankColors(theme)[chat.rank] || theme.palette.text.primary,
+                          textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
+                          cursor: 'pointer'
                         }}
                       >
-                        • {newsData.sentiment}
+                        {displayUsername}
+                        {chat.isPrivate && (
+                          <>
+                            {' → '}
+                            <span style={{ color: theme.palette.text.secondary }}>
+                              {displayRecipient}
+                            </span>
+                          </>
+                        )}
                       </Typography>
-                    )}
-                  </Box>
-                ) : (
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mt: 0.5,
-                      color: chat.isPrivate ? theme.palette.secondary.main : theme.palette.text.primary
-                    }}
-                  >
-                    {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
-                      if (part.startsWith('[NFT:')) {
-                        return <NFTDisplay key={i} nftLink={part} />;
-                      }
-                      return part;
-                    })}
-                  </Typography>
-                )}
-              </Box>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: theme.palette.text.secondary,
-                  mt: 0.5,
-                  opacity: 0.8
-                }}
-              >
-                {timeAgo}
-              </Typography>
-            </Stack>
-          );
-        })}
+                    </CustomWidthTooltip>
+                    <Tooltip title="Send private message" arrow>
+                      <IconButton
+                        size="small"
+                        onClick={() => onStartPrivateMessage(privateMessageRecipient)}
+                        sx={{
+                          padding: 0,
+                          color: theme.palette.text.secondary,
+                          '&:hover': {
+                            color: theme.palette.primary.main
+                          }
+                        }}
+                      >
+                        <ChatBubbleOutlineIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                  {newsData ? (
+                    <Box sx={{ mt: 0.5 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                        {newsData.title}
+                      </Typography>
+                      <Typography variant="body2" sx={{ mt: 0.5 }}>
+                        {newsData.summary !== 'No summary available'
+                          ? newsData.summary
+                          : 'No summary available.'}
+                      </Typography>
+                      <Link href={newsData.sourceUrl} target="_blank" rel="noopener noreferrer">
+                        <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
+                          Read more at {newsData.sourceName}
+                        </Typography>
+                      </Link>
+                      {newsData.sentiment !== 'Unknown' && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            ml: 1,
+                            color:
+                              newsData.sentiment === 'Bullish'
+                                ? 'green'
+                                : newsData.sentiment === 'Bearish'
+                                ? 'red'
+                                : 'inherit'
+                          }}
+                        >
+                          • {newsData.sentiment}
+                        </Typography>
+                      )}
+                    </Box>
+                  ) : (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        mt: 0.5,
+                        color: chat.isPrivate ? theme.palette.secondary.main : theme.palette.text.primary
+                      }}
+                    >
+                      {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
+                        if (part.startsWith('[NFT:')) {
+                          return <NFTDisplay key={i} nftLink={part} />;
+                        }
+                        return part;
+                      })}
+                    </Typography>
+                  )}
+                </Box>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    mt: 0.5,
+                    opacity: 0.8
+                  }}
+                >
+                  {timeAgo}
+                </Typography>
+              </Stack>
+            );
+          })
+      ) : (
+        <Typography variant="body2" sx={{ textAlign: 'center', py: 2 }}>
+          No messages to display.
+        </Typography>
+      )}
     </Stack>
   );
 };

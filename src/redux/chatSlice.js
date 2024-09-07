@@ -1,7 +1,8 @@
 const { createSlice } = require("@reduxjs/toolkit");
 
 const initialState = {
-    chatOpen: false
+    chatOpen: false,
+    messages: []
 }
 
 const chatSlice = createSlice({
@@ -10,10 +11,13 @@ const chatSlice = createSlice({
     reducers: {
         toggleChatOpen: (state) => {
             state.chatOpen = !state.chatOpen;
+        },
+        addMessage: (state, action) => {
+            state.messages.push(action.payload);
         }
     }
 });
 
-export const { toggleChatOpen } = chatSlice.actions;
+export const { toggleChatOpen, addMessage } = chatSlice.actions;
 export const selectChatOpen = state => state.chat.chatOpen;
 export default chatSlice.reducer;
