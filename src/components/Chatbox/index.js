@@ -110,7 +110,7 @@ const FormattedNFT = ({ nftLink, onRemove }) => {
   );
 };
 
-const CustomInput = ({ value, onChange, onNFTRemove }) => {
+const CustomInput = ({ value, onChange, onNFTRemove, onKeyPress }) => {
   const inputRef = useRef(null);
   const [localValue, setLocalValue] = useState('');
 
@@ -175,6 +175,7 @@ const CustomInput = ({ value, onChange, onNFTRemove }) => {
         }}
         value={localValue}
         onChange={handleChange}
+        onKeyPress={onKeyPress}
         rows={1}
         onInput={(e) => {
           e.target.style.height = 'auto';
@@ -313,6 +314,13 @@ function Chatbox() {
     setMessage(newMessage);
   };
 
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  };
+
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>
@@ -392,6 +400,7 @@ function Chatbox() {
               value={message}
               onChange={handleMessageChange}
               onNFTRemove={handleNFTRemove}
+              onKeyPress={handleKeyPress}
             />
           </Box>
           <Stack direction="row" spacing={1}>
