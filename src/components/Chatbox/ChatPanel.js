@@ -23,7 +23,7 @@ import {
   Remove as RemoveIcon,
   ChatBubbleOutline as ChatBubbleOutlineIcon
 } from '@mui/icons-material';
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 
@@ -515,6 +515,7 @@ const handleSendMessage = (user) => {
 const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   const theme = useTheme();
   const { accountProfile } = useContext(AppContext);
+  const chatContainerRef = useRef(null);
 
   // Inject lightningEffect into the document's head
   const styleElement = document.createElement('style');
@@ -523,8 +524,23 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
 
   const truncateString = (str) => str.slice(0, 12) + (str.length > 12 ? '...' : '');
 
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chats]);
+
   return (
-    <Stack gap={1}>
+    <Stack
+      ref={chatContainerRef}
+      gap={1}
+      sx={{
+        height: '100%',
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column-reverse'
+      }}
+    >
       {chats
         .filter(
           (chat) =>
@@ -532,6 +548,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
             chat.username === accountProfile?.account ||
             chat.recipient === accountProfile?.account
         )
+        .reverse() // Reverse the order of messages
         .map((chat, index) => {
           const parsedTime = parseISO(chat.timestamp);
           const timeAgo = formatTimeAgo(parsedTime);
