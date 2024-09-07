@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, memo, useMemo, useCallback } from 'react';
 import React from 'react';
 import {
   LazyLoadImage,
@@ -105,6 +105,21 @@ function FTokenRow({
 
   const [priceColor, setPriceColor] = useState('');
 
+  const memoizedToken = useMemo(() => token, [token]);
+
+  const handleWatchlistClick = useCallback((e) => {
+    e.stopPropagation();
+    onChangeWatchList(md5);
+  }, [md5, onChangeWatchList]);
+
+  const handleRowClick = useCallback(() => {
+    router.replace(`/token/${slug}`);
+  }, [router, slug]);
+
+  const handleEditToken = useCallback(() => {
+    setEditToken(memoizedToken);
+  }, [setEditToken, memoizedToken]);
+
   const {
     id,
     name,
@@ -126,16 +141,16 @@ function FTokenRow({
     ext,
     marketcap,
     isOMCF
-  } = token;
+  } = memoizedToken;
 
   useEffect(() => {
-    setPriceColor(getPriceColor(token.bearbull));
+    setPriceColor(getPriceColor(memoizedToken.bearbull));
     const timer = setTimeout(() => {
       setPriceColor('');
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [time, token.bearbull]);
+  }, [time, memoizedToken.bearbull]);
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
   const convertedMarketCap = Decimal.div(marketcap, exchRate).toNumber();
@@ -156,7 +171,7 @@ function FTokenRow({
           fontSize: isMobile ? '14px' : 'inherit'
         }
       }}
-      onClick={() => router.replace(`/token/${slug}`)}
+      onClick={handleRowClick}
     >
       <TableCell
         align="left"
@@ -170,10 +185,7 @@ function FTokenRow({
         {watchList.includes(md5) ? (
           <Tooltip title="Remove from Watchlist">
             <StarRateIcon
-              onClick={(e) => {
-                e.stopPropagation();
-                onChangeWatchList(md5);
-              }}
+              onClick={handleWatchlistClick}
               fontSize="small"
               sx={{ cursor: 'pointer', color: '#F6B87E' }}
             />
@@ -181,10 +193,7 @@ function FTokenRow({
         ) : (
           <Tooltip title="Add to Watchlist and follow token">
             <StarOutlineIcon
-              onClick={(e) => {
-                e.stopPropagation();
-                onChangeWatchList(md5);
-              }}
+              onClick={handleWatchlistClick}
               fontSize="small"
               sx={{ cursor: 'pointer', '&:hover': { color: '#F6B87E' } }}
             />
@@ -236,7 +245,7 @@ function FTokenRow({
                   src={imgUrl}
                   width={isMobile ? 26 : 46}
                   height={isMobile ? 26 : 46}
-                  onClick={() => setEditToken(token)}
+                  onClick={handleEditToken}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
                   alt={`${user} ${name} Logo`}
                 />
@@ -462,7 +471,7 @@ function FTokenRow({
         </TableCell>
         <TableCell align="right">
           <TokenMoreMenu
-            token={token}
+            token={memoizedToken}
             admin={isAdmin}
             setEditToken={setEditToken}
             setTrustToken={setTrustToken}
@@ -473,4 +482,4 @@ function FTokenRow({
   );
 }
 
-export const TokenRow = React.memo(FTokenRow);
+export const TokenRow = memo(FTokenRow);
