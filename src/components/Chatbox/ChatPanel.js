@@ -742,21 +742,24 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                         )}
                       </Typography>
                     </CustomWidthTooltip>
-                    <Tooltip title="Send private message" arrow>
-                      <IconButton
-                        size="small"
-                        onClick={() => onStartPrivateMessage(privateMessageRecipient)}
-                        sx={{
-                          padding: 0,
-                          color: theme.palette.text.secondary,
-                          '&:hover': {
-                            color: theme.palette.primary.main
-                          }
-                        }}
-                      >
-                        <ChatBubbleOutlineIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                    {
+                      chat.username !== accountProfile?.account &&
+                        <Tooltip title="Send private message" arrow>
+                          <IconButton
+                            size="small"
+                            onClick={() => onStartPrivateMessage(privateMessageRecipient)}
+                            sx={{
+                              padding: 0,
+                              color: theme.palette.text.secondary,
+                              '&:hover': {
+                                color: theme.palette.primary.main
+                              }
+                            }}
+                          >
+                            <ChatBubbleOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                    }
                   </Stack>
                   {newsData ? (
                     <Box sx={{ mt: 0.5 }}>
