@@ -11,7 +11,8 @@ import {
   useTheme,
   tooltipClasses,
   IconButton,
-  Link
+  Link,
+  Divider
 } from '@mui/material';
 import { parseISO } from 'date-fns';
 import {
@@ -244,6 +245,18 @@ const formatTimeAgo = (date) => {
   }
 };
 
+const StyledTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} classes={{ popper: className }} />
+))(({ theme }) => ({
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.background.paper,
+    color: theme.palette.text.primary,
+    maxWidth: 350,
+    fontSize: theme.typography.pxToRem(12),
+    border: '1px solid #dadde9',
+  },
+}));
+
 const NFTDisplay = ({ nftLink }) => {
   const BASE_URL = 'https://api.xrpnft.com/api';
   const theme = useTheme();
@@ -257,30 +270,99 @@ const NFTDisplay = ({ nftLink }) => {
   useEffect(() => {
     async function fetchNFT() {
       const res = await axios.get(`${BASE_URL}/nft/${tokenId}`);
+      console.log('xrpnft API response:', res.data.nft);
       setNFT(res.data.nft);
     }
     if (tokenId) fetchNFT();
-  }, [tokenId])
+  }, [tokenId]);
+
+  const getMediaPreview = () => {
+    if (!nft) return null;
+    if (nft.dfile.video) {
+      return (
+        <video 
+          width="100%" 
+          height="auto" 
+          controls 
+          loop 
+          muted
+          style={{ maxWidth: '200px', maxHeight: '200px' }}
+        >
+          <source src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.video}`} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      );
+    } else if (nft.dfile.image) {
+      return (
+        <img 
+          src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.image}`} 
+          alt={nft.name}
+          style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain' }}
+        />
+      );
+    }
+    return null;
+  };
 
   return (
-    <Tooltip
+    <StyledTooltip
       title={
-        <Box>
-          <Typography variant="body2">{`${name} #${number}`}</Typography>
-          <Typography variant="caption" color="textSecondary">
-            {tokenId}
-          </Typography>
-        </Box>
+        <Paper elevation={0}>
+          <Box sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>{nft ? nft.name : `${name} #${number}`}</Typography>
+            <Divider sx={{ my: 1 }} />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2">Collection:</Typography>
+              <Typography variant="body2" fontWeight="bold">{nft?.collection}</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2">Rarity Rank:</Typography>
+              <Typography variant="body2" fontWeight="bold">{nft?.rarity_rank} / {nft?.total}</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2">Royalty:</Typography>
+              <Typography variant="body2" fontWeight="bold">{nft ? `${nft.royalty / 100}%` : 'N/A'}</Typography>
+            </Box>
+            {nft?.props && (
+              <>
+                <Divider sx={{ my: 1 }} />
+                <Typography variant="subtitle2" gutterBottom>Properties:</Typography>
+                {nft.props.map((prop, index) => (
+                  <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2">{prop.type}:</Typography>
+                    <Typography variant="body2" fontWeight="bold">{prop.value}</Typography>
+                  </Box>
+                ))}
+              </>
+            )}
+            {nft?.cfloor && (
+              <>
+                <Divider sx={{ my: 1 }} />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="body2">Floor Price:</Typography>
+                  <Typography variant="body2" fontWeight="bold">
+                    {nft.cfloor.amount} {nft.cfloor.currency}
+                  </Typography>
+                </Box>
+              </>
+            )}
+            <Divider sx={{ my: 1 }} />
+            <Typography variant="caption" color="textSecondary">
+              Token ID: {tokenId}
+            </Typography>
+          </Box>
+        </Paper>
       }
       arrow
+      placement="right"
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 1, gap: 1 }}>
-        {nft && <NFTPreview nft={nft}/> }
-        <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
-          {name} <span style={{ fontWeight: 'bold' }}>#{number}</span>
+        {getMediaPreview()}
+        <Typography variant="caption" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
+          {nft ? nft.name : `${name} #${number}`}
         </Typography>
       </Box>
-    </Tooltip>
+    </StyledTooltip>
   );
 };
 
