@@ -22,6 +22,7 @@ import ChatNFTPicker from './ChatNFTPicker';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import TerminalIcon from '@mui/icons-material/Terminal';
 import SettingsIcon from '@mui/icons-material/Settings';
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 
 const drawerWidth = 400;
 const chatURL = "http://65.108.136.237:5000";
@@ -31,8 +32,8 @@ const socket = io(chatURL, {
 
 function EmojiPicker({ onSelect }) {
   const theme = useTheme();
-  const backgroundColor = theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff';
-  const hoverColor = theme.palette.mode === 'dark' ? '#333' : '#f0f0f0';
+  const backgroundColor = 'black';
+  const hoverColor = '#333';
 
   const emojis = ["😀", "😂", "😍", "👍", "🙏", "🔥", "🎉", "❤️", "😎", "🤔", "🥳", "😇", "😭", "💪", "😜", "🥰", "🤩", "👏"];
 
@@ -59,6 +60,7 @@ function EmojiPicker({ onSelect }) {
             cursor: 'pointer',
             userSelect: 'none',
             textAlign: 'center',
+            color: 'white',
             '&:hover': {
               backgroundColor: hoverColor,
               borderRadius: '5px',
@@ -425,9 +427,15 @@ function Chatbox() {
             <Box sx={{ position: 'relative' }}>
               <IconButton 
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                sx={{ color: 'text.secondary' }}
+                sx={{ 
+                  color: showEmojiPicker ? 'primary.main' : 'text.secondary',
+                  backgroundColor: showEmojiPicker ? 'action.selected' : 'transparent',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                }}
               >
-                😊
+                <EmojiEmotionsIcon />
               </IconButton>
               {showEmojiPicker && (
                 <Box
