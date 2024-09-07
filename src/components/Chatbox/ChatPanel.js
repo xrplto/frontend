@@ -21,7 +21,8 @@ import {
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   Remove as RemoveIcon,
-  ChatBubbleOutline as ChatBubbleOutlineIcon
+  ChatBubbleOutline as ChatBubbleOutlineIcon,
+  Reply as ReplyIcon
 } from '@mui/icons-material';
 import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
@@ -617,13 +618,21 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                       )}
                     </Typography>
                   </CustomWidthTooltip>
-                  <IconButton
-                    size="small"
-                    onClick={() => onStartPrivateMessage(privateMessageRecipient)}
-                    sx={{ padding: 0 }}
-                  >
-                    <ChatBubbleOutlineIcon fontSize="small" />
-                  </IconButton>
+                  <Tooltip title="Send private message" arrow>
+                    <IconButton
+                      size="small"
+                      onClick={() => onStartPrivateMessage(privateMessageRecipient)}
+                      sx={{
+                        padding: 0,
+                        color: theme.palette.text.secondary,
+                        '&:hover': {
+                          color: theme.palette.primary.main
+                        }
+                      }}
+                    >
+                      <ChatBubbleOutlineIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                 </Stack>
                 {newsData ? (
                   <Box sx={{ mt: 0.5 }}>
