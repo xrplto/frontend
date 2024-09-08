@@ -17,7 +17,9 @@ import {
     Stack,
     Typography,
     TextField,
-    CircularProgress
+    CircularProgress,
+    Box,
+    Divider
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
@@ -380,34 +382,39 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer }) {
                 fullScreen={fullScreen}
                 onClose={handleClose}
                 open={open}
-                // sx={{zIndex: 1302}}
                 hideBackdrop={true}
                 disableScrollLock
                 disablePortal
                 keepMounted
+                PaperProps={{
+                    sx: {
+                        borderRadius: 2,
+                        maxWidth: 'sm',
+                        width: '100%',
+                    }
+                }}
             >
                 <OfferDialogTitle id="customized-dialog-title" onClose={handleClose}>
-                    <Typography variant="p4">Create {isSellOffer ? 'Sell' : 'Buy'} Offer</Typography>
+                    <Typography variant="h6">Create {isSellOffer ? 'Sell' : 'Buy'} Offer</Typography>
                 </OfferDialogTitle>
 
+                <Divider />
+
                 <DialogContent>
-                    <Stack sx={{ pl: 1, pr: 1 }}>
-                        {/* <Typography variant="p5" sx={{mt: 0}}></Typography> */}
-                        {/* <Typography variant="p6" sx={{mt: 2}}></Typography> */}
+                    <Box sx={{ p: 2 }}>
                         <QueryToken
                             token={token}
                             onChangeToken={setToken}
                         />
 
-                        <Stack spacing={2} sx={{ mt: 3 }}>
-                            <Typography variant='p2'>Cost <Typography variant='s2'>*</Typography></Typography>
+                        <Box sx={{ mt: 3 }}>
+                            <Typography variant='subtitle1' gutterBottom>Cost <Typography component="span" color="error">*</Typography></Typography>
 
                             <Stack direction="row" spacing={2} alignItems="center">
                                 <TextField
                                     id='id_txt_costamount'
-                                    // autoFocus
                                     variant='outlined'
-                                    placeholder=''
+                                    placeholder='Enter amount'
                                     onChange={handleChangeAmount}
                                     autoComplete='new-password'
                                     value={amount}
@@ -415,47 +422,29 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer }) {
                                         event.target.select();
                                     }}
                                     onKeyDown={(e) => e.stopPropagation()}
-                                // sx={{width: 100}}
+                                    fullWidth
                                 />
-                                <Typography variant='p2'>{token?.name}</Typography>
+                                <Typography variant='body1'>{token?.name}</Typography>
                             </Stack>
-                        </Stack>
+                        </Box>
 
-                        {/* <Stack direction="row" spacing={2} sx={{mt: 3}}>
-                            <TextField
-                                id="outlined-size-name"
-                                label="Name"
-                                value={name}
-                                size="small"
-                                onChange={handleChangeName}
-                            />
-
-                            <TextField
-                                id="outlined-size-value"
-                                label="Value"
-                                value={value}
-                                size="small"
-                                onChange={handleChangeValue}
-                            />
-                        </Stack> */}
-
-                        <Stack direction='row' spacing={2} justifyContent="center" sx={{ mt: 3, mb: 3 }}>
+                        <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
                             <Button
-                                variant="outlined"
+                                variant="contained"
                                 startIcon={
                                     isProcessing == 1 ? <CircularProgress
                                         disableShrink
                                         size={20}
-                                        color="primary"
+                                        color="inherit"
                                     /> : <AddCircleIcon />}
-                                size="small"
                                 onClick={handleCreateOffer}
-                                disabled={isProcessing == 1}
+                                disabled={isProcessing == 1 || !amount}
+                                sx={{ minWidth: 200 }}
                             >
                                 {handleMsg()}
                             </Button>
-                        </Stack>
-                    </Stack>
+                        </Box>
+                    </Box>
                 </DialogContent>
             </OfferDialog>
 
