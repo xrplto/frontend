@@ -262,6 +262,24 @@ const StyledTooltip = styled(({ className, ...props }) => (
   },
 }));
 
+const CustomScrollBox = styled(Stack)(({ theme }) => ({
+  '&::-webkit-scrollbar': {
+    width: '8px',
+  },
+  '&::-webkit-scrollbar-track': {
+    background: '#a9a9a94d',
+    borderRadius: '10px'
+  },
+  '&::-webkit-scrollbar-thumb': {
+    background: 'darkgrey',
+    borderRadius: '10px'
+  },
+  '&::-webkit-scrollbar-thumb:hover': {
+    background: '#a9a9a9d4',
+    cursor: 'pointer'
+  },
+}));
+
 const NFTDisplay = ({ nftLink }) => {
   const BASE_URL = 'https://api.xrpnft.com/api';
   const theme = useTheme();
@@ -712,14 +730,14 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   console.log('Chats received in ChatPanel:', chats);
 
   return (
-    <Stack
+    <CustomScrollBox
       ref={chatContainerRef}
       gap={1}
       sx={{
         height: '100%',
         overflowY: 'auto',
         display: 'flex',
-        flexDirection: 'column-reverse'
+        flexDirection: 'column-reverse',
       }}
     >
       {Array.isArray(chats) && chats.length > 0 ? (
@@ -885,7 +903,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
           No messages to display.
         </Typography>
       )}
-    </Stack>
+    </CustomScrollBox>
   );
 };
 
