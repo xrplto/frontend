@@ -66,7 +66,13 @@ const Terminal = () => {
 
   const handleSubmit = async (event, overrideInput = null) => {
     event.preventDefault();
-    const submittedInput = overrideInput || input;
+    let submittedInput = overrideInput || input;
+    
+    // Add a question mark if it's not already present
+    if (submittedInput.trim() && !submittedInput.trim().endsWith('?')) {
+      submittedInput = submittedInput.trim() + '?';
+    }
+
     if (submittedInput.trim() && !isLoading) {
       const userMessage = { role: 'user', content: submittedInput.trim() };
       let currentMessages = [];
