@@ -18,8 +18,6 @@ import {
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
-import LoginIcon from '@mui/icons-material/Login';
-import LogoutIcon from '@mui/icons-material/Logout';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import GridOnIcon from '@mui/icons-material/GridOn';
 import Grid4x4Icon from '@mui/icons-material/Grid4x4';
@@ -138,10 +136,6 @@ export default function NFTHistory({ account }) {
 
   const renderActivityIcon = (activity) => {
     switch (activity) {
-      case Activity.LOGIN:
-        return <LoginIcon />;
-      case Activity.LOGOUT:
-        return <LogoutIcon />;
       case Activity.UPDATE_PROFILE:
         return <ManageAccountsIcon />;
       case Activity.CREATE_COLLECTION:
@@ -393,20 +387,12 @@ export default function NFTHistory({ account }) {
           </Stack>
         );
       default:
-        return (
-          <Stack direction="row" spacing={1}>
-            <Typography variant="s7">Unknown Activity</Typography>
-          </Stack>
-        );
+        return null;
     }
   };
 
   const getActivityName = (activity) => {
     switch (activity) {
-      case Activity.LOGIN:
-        return 'Login';
-      case Activity.LOGOUT:
-        return 'Logout';
       case Activity.UPDATE_PROFILE:
         return 'Update Profile';
       case Activity.CREATE_COLLECTION:
@@ -456,7 +442,7 @@ export default function NFTHistory({ account }) {
       case Activity.BROKER_ACCEPTED_YOUR_SELL_OFFER:
         return 'Broker accepted your Sell Offer';
       default:
-        return `Unknown Activity: ${activity}`;
+        return null;
     }
   };
 
@@ -487,6 +473,14 @@ export default function NFTHistory({ account }) {
           >
             <TableBody>
               {acts.map(({ account, activity, data, time }) => {
+                const activityName = getActivityName(activity);
+                const activityDetails = renderActivityDetails(activity, data);
+                
+                // Skip rendering if activityName is null
+                if (activityName === null) {
+                  return null;
+                }
+
                 const strDateTime = formatDistanceToNow(new Date(time), { addSuffix: true });
                 return (
                   <TableRow key={time} hover>
@@ -502,13 +496,13 @@ export default function NFTHistory({ account }) {
                           alignItems="center"
                         >
                           <Typography variant="subtitle1" fontWeight="bold">
-                            {getActivityName(activity)}
+                            {activityName}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
                             {strDateTime}
                           </Typography>
                         </Stack>
-                        {renderActivityDetails(activity, data)}
+                        {activityDetails}
                       </Stack>
                     </TableCell>
                   </TableRow>

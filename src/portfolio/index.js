@@ -75,43 +75,36 @@ const tradesData = [
 ];
 
 const volumeData = {
-    labels: ['June 1', 'June 2', 'June 3', 'June 4', 'June 5', 'June 6', 'June 7'],
+    labels: ['Jun 1', 'Jun 8', 'Jun 15', 'Jun 22', 'Jun 29', 'Jul 6', 'Jul 13'],
     datasets: [
+        {
+            label: 'Portfolio Worth',
+            data: [5000, 5200, 5300, 15400, 15500, 15600, 15700],
+            fill: false,
+            backgroundColor: 'rgba(75,192,192,0.2)',
+            borderColor: 'rgba(75,192,192,1)',
+            tension: 0.4,
+            yAxisID: 'y',
+        },
         {
             label: 'Token Volume',
             data: [100, 150, 200, 250, 300, 350, 400],
             fill: false,
-            backgroundColor: 'rgba(75,192,192,0.2)',
-            borderColor: 'rgba(75,192,192,1)',
+            backgroundColor: 'rgba(255,99,132,0.2)',
+            borderColor: 'rgba(255,99,132,1)',
+            tension: 0.4,
+            yAxisID: 'y1',
         },
         {
             label: 'NFT Volume',
             data: [50, 400, 1500, 20, 2500, 300, 350],
             fill: false,
-            backgroundColor: 'rgba(255,99,132,0.2)',
-            borderColor: 'rgba(255,99,132,1)',
-        },
-        {
-            label: 'Portfolio Worth',
-            data: [5000, 5200, 5300, 15400, 5500, 5600, 5700],
-            fill: false,
             backgroundColor: 'rgba(153,102,255,0.2)',
             borderColor: 'rgba(153,102,255,1)',
+            tension: 0.4,
+            yAxisID: 'y1',
         },
     ],
-};
-
-const volumeOptions = {
-    scales: {
-        x: {
-            type: 'category',
-            beginAtZero: true,
-        },
-        y: {
-            type: 'linear',
-            beginAtZero: true,
-        },
-    },
 };
 
 export default function Portfolio({ account, limit, collection, type }) {
@@ -125,6 +118,71 @@ export default function Portfolio({ account, limit, collection, type }) {
 
     const handleChange = (_, newValue) => {
         setActiveTab(newValue);
+    };
+
+    const volumeOptions = {
+        responsive: true,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        stacked: false,
+        plugins: {
+            title: {
+                display: true,
+                text: 'Portfolio Performance',
+                color: theme.palette.text.primary,
+            },
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: theme.palette.text.primary,
+                },
+            },
+            tooltip: {
+                mode: 'index',
+            },
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false,
+                },
+                ticks: {
+                    color: theme.palette.text.secondary,
+                },
+            },
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                    display: true,
+                    text: 'Portfolio Worth ($)',
+                    color: theme.palette.text.secondary,
+                },
+                ticks: {
+                    color: theme.palette.text.secondary,
+                    callback: (value) => `$${value.toLocaleString()}`,
+                },
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Volume',
+                    color: theme.palette.text.secondary,
+                },
+                ticks: {
+                    color: theme.palette.text.secondary,
+                },
+                grid: {
+                    drawOnChartArea: false,
+                },
+            },
+        },
     };
 
     const OuterBorderContainer = styled(Box)(({ theme }) => ({
