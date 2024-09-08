@@ -41,7 +41,7 @@ function EmojiPicker({ onSelect }) {
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)', 
+        gridTemplateColumns: 'repeat(4, 1fr)',
         gap: '8px',
         backgroundColor: backgroundColor,
         boxShadow: '0px 0px 10px rgba(0,0,0,0.1)',
@@ -78,11 +78,11 @@ function EmojiPicker({ onSelect }) {
 const FormattedNFT = ({ nftLink, onRemove }) => {
   const theme = useTheme();
   const match = nftLink.match(/\[NFT: (.*?) #(\d+) \((.*?)\)\]/);
-  
+
   if (!match) return null;
 
   const [_, name, number, tokenId] = match;
-  
+
   return (
     <Tooltip
       title={
@@ -127,7 +127,7 @@ const CustomInput = ({ value, onChange, onNFTRemove, onKeyPress }) => {
   const handleChange = (e) => {
     const newTextValue = e.target.value;
     setLocalValue(newTextValue);
-    
+
     const newFullValue = [...nftParts, newTextValue].join('');
     onChange(newFullValue);
   };
@@ -196,7 +196,7 @@ function Chatbox() {
   const backgroundColor = theme.palette.mode === 'dark' ? '#1e1e1e' : '#fff';
   const iconBackgroundColor = theme.palette.mode === 'dark' ? '#333' : '#e0e0e0';
   const iconColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
-  
+
   const dispatch = useDispatch();
   const chatOpen = useSelector(selectChatOpen);
   const { accountProfile } = useContext(AppContext);
@@ -205,7 +205,7 @@ function Chatbox() {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [tabIndex, setTabIndex] = useState(0); 
+  const [tabIndex, setTabIndex] = useState(0);
   const [recipient, setRecipient] = useState(null);
   const [pickerType, setPickerType] = useState('emoji');
 
@@ -334,8 +334,8 @@ function Chatbox() {
             <Button
               endIcon={<ArrowDropDownIcon />}
               onClick={handleMenuClick}
-              sx={{ 
-                color: 'text.primary', 
+              sx={{
+                color: 'text.primary',
                 textTransform: 'none',
                 '&:active': {
                   backgroundColor: 'action.selected',
@@ -369,11 +369,11 @@ function Chatbox() {
               </MenuItem>
             </Menu>
           </Box>
-          <IconButton 
-            onClick={closeChat} 
-            edge="end" 
-            sx={{ 
-              color: 'text.primary', 
+          <IconButton
+            onClick={closeChat}
+            edge="end"
+            sx={{
+              color: 'text.primary',
               mr: 2,
               '&:active': {
                 backgroundColor: 'action.selected',
@@ -385,96 +385,100 @@ function Chatbox() {
         </Toolbar>
       </AppBar>
       <Box sx={{ flexGrow: 1, overflow: 'auto', p: 2 }}>
-        <ChatPanel 
+        <ChatPanel
           chats={chatHistory}
           onStartPrivateMessage={startPrivateMessage}
         />
       </Box>
-      <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-        {recipient && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              mb: 2,
-              p: 1,
-              borderRadius: 1,
-              backgroundColor: theme.palette.action.selected,
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <PersonIcon sx={{ mr: 1, color: theme.palette.text.secondary }} />
-              <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                To: <span style={{ color: theme.palette.primary.main }}>{recipient}</span>
-              </Typography>
-            </Box>
-            <IconButton size="small" onClick={() => setRecipient(null)} sx={{ color: theme.palette.text.secondary }}>
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        )}
-        <Stack direction="row" spacing={1} alignItems="flex-end">
-          <Box sx={{ flexGrow: 1 }}>
-            <CustomInput
-              value={message}
-              onChange={handleMessageChange}
-              onNFTRemove={handleNFTRemove}
-              onKeyPress={handleKeyPress}
-            />
-          </Box>
-          <Stack direction="row" spacing={1}>
-            <Box sx={{ position: 'relative' }}>
-              <IconButton 
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                sx={{ 
-                  color: showEmojiPicker ? 'primary.main' : 'text.secondary',
-                  backgroundColor: showEmojiPicker ? 'action.selected' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: 'action.hover',
-                  },
-                }}
-              >
-                <EmojiEmotionsIcon />
+      {
+        accountProfile?.account &&
+        <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+          {recipient && (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 2,
+                p: 1,
+                borderRadius: 1,
+                backgroundColor: theme.palette.action.selected,
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <PersonIcon sx={{ mr: 1, color: theme.palette.text.secondary }} />
+                <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                  To: <span style={{ color: theme.palette.primary.main }}>{recipient}</span>
+                </Typography>
+              </Box>
+              <IconButton size="small" onClick={() => setRecipient(null)} sx={{ color: theme.palette.text.secondary }}>
+                <CloseIcon fontSize="small" />
               </IconButton>
-              {showEmojiPicker && (
-                <Box
-                  ref={emojiPickerRef}
+            </Box>
+          )}
+
+          <Stack direction="row" spacing={1} alignItems="flex-end">
+            <Box sx={{ flexGrow: 1 }}>
+              <CustomInput
+                value={message}
+                onChange={handleMessageChange}
+                onNFTRemove={handleNFTRemove}
+                onKeyPress={handleKeyPress}
+              />
+            </Box>
+            <Stack direction="row" spacing={1}>
+              <Box sx={{ position: 'relative' }}>
+                <IconButton
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                   sx={{
-                    position: 'absolute',
-                    bottom: '100%',
-                    right: 0,
-                    zIndex: 1000,
-                    backgroundColor: 'background.paper',
-                    borderRadius: '4px',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    boxShadow: 3,
-                    p: 1,
+                    color: showEmojiPicker ? 'primary.main' : 'text.secondary',
+                    backgroundColor: showEmojiPicker ? 'action.selected' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    },
                   }}
                 >
-                  <Tabs 
-                    value={pickerType} 
-                    onChange={(e, newValue) => setPickerType(newValue)}
-                    sx={{ minHeight: 32 }}
+                  <EmojiEmotionsIcon />
+                </IconButton>
+                {showEmojiPicker && (
+                  <Box
+                    ref={emojiPickerRef}
+                    sx={{
+                      position: 'absolute',
+                      bottom: '100%',
+                      right: 0,
+                      zIndex: 1000,
+                      backgroundColor: 'background.paper',
+                      borderRadius: '4px',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      boxShadow: 3,
+                      p: 1,
+                    }}
                   >
-                    <Tab label="Emoji" value="emoji" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
-                    <Tab label="NFT" value="nft" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
-                  </Tabs>
-                  {pickerType === 'emoji' ? (
-                    <EmojiPicker onSelect={addEmoji} />
-                  ) : (
-                    <ChatNFTPicker onSelect={addNFT} />
-                  )}
-                </Box>
-              )}
-            </Box>
-            <IconButton onClick={sendMessage} color="primary">
-              <SendIcon />
-            </IconButton>
+                    <Tabs
+                      value={pickerType}
+                      onChange={(e, newValue) => setPickerType(newValue)}
+                      sx={{ minHeight: 32 }}
+                    >
+                      <Tab label="Emoji" value="emoji" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
+                      <Tab label="NFT" value="nft" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
+                    </Tabs>
+                    {pickerType === 'emoji' ? (
+                      <EmojiPicker onSelect={addEmoji} />
+                    ) : (
+                      <ChatNFTPicker onSelect={addNFT} />
+                    )}
+                  </Box>
+                )}
+              </Box>
+              <IconButton onClick={sendMessage} color="primary">
+                <SendIcon />
+              </IconButton>
+            </Stack>
           </Stack>
-        </Stack>
-      </Box>
+        </Box>
+      }
     </Box>
   );
 
@@ -482,8 +486,8 @@ function Chatbox() {
     <SwipeableDrawer
       anchor="right"
       open={chatOpen}
-      onClose={() => {}}
-      onOpen={() => {}}
+      onClose={() => { }}
+      onOpen={() => { }}
       disableSwipeToOpen={true}
       sx={{
         '& .MuiDrawer-paper': { width: drawerWidth, bgcolor: 'background.default' },
