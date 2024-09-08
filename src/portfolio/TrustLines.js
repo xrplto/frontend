@@ -138,10 +138,12 @@ export default function TrustLines({ account }) {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell align="left">Token</TableCell>
-                <TableCell align="right" sx={{ display: isMobile ? "none" : "table-cell" }}>Amount</TableCell>
+                <TableCell>Currency</TableCell>
+                <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Balance</TableCell>
                 <TableCell align="right">Value</TableCell>
-                {isLoggedIn && <TableCell align="center">Action</TableCell>}
+                {isLoggedIn && accountProfile?.account === account && (
+                  <TableCell align="center">Action</TableCell>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>

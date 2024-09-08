@@ -33,6 +33,10 @@ import Offer from "./Offer";
 import { TabContext, TabPanel } from "@mui/lab";
 import NFTs from "./NFTs";
 import History from "./History";
+import { alpha } from '@mui/material/styles';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -47,12 +51,18 @@ const Balance = styled("div")(({ theme, sx }) => ({
 }));
 
 const ButtonSend = styled(Button)(({ theme }) => ({
+    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+    color: theme.palette.primary.main,
     '&:hover': {
+        backgroundColor: alpha(theme.palette.primary.main, 0.2),
     }
 }));
 
 const ButtonReceive = styled(Button)(({ theme }) => ({
+    backgroundColor: alpha(theme.palette.secondary.main, 0.1),
+    color: theme.palette.secondary.main,
     '&:hover': {
+        backgroundColor: alpha(theme.palette.secondary.main, 0.2),
     }
 }));
 
@@ -147,7 +157,7 @@ export default function Portfolio({ account, limit, collection, type }) {
     return (
         <OverviewWrapper>
             <Container maxWidth="xl" sx={{ mt: 4 }}>
-                <Grid container spacing={2}>
+                <Grid container spacing={3}>
                     <Grid item md={4} xs={12}>
                         <OuterBorderContainer>
                             <Stack sx={{ height: "100%", justifyContent: "space-between" }}>
@@ -179,20 +189,26 @@ export default function Portfolio({ account, limit, collection, type }) {
                                         />
                                     </Box>
 
-                                    <Box sx={{ textAlign: 'center' }}>
-                                        <Typography sx={{ color: theme.palette.text.primary, mb: 1 }} variant="h6">Total Balance</Typography>
-                                        <Balance sx={{ color: theme.palette.text.primary, mb: 1 }}>
-                                            215,438.97897 <span>XRP</span>
+                                    <Box sx={{ textAlign: 'center', my: 3 }}>
+                                        <Typography sx={{ color: theme.palette.text.secondary, mb: 1 }} variant="h6">Total Balance</Typography>
+                                        <Balance sx={{ color: theme.palette.primary.main, mb: 1, fontWeight: 'bold' }}>
+                                            215,438.97897 <span style={{ fontSize: '0.8em' }}>XRP</span>
                                         </Balance>
-                                        <Typography sx={{ color: theme.palette.text.primary, mt: 1 }} variant="h4">$109,325.8132</Typography>
+                                        <Typography sx={{ color: theme.palette.success.main, mt: 1 }} variant="h4">$109,325.8132</Typography>
                                     </Box>
 
-                                    <Box sx={{ mt: 2 }}>
+                                    <Box sx={{ mt: 2, mb: 3 }}>
                                         <Line data={volumeData} options={volumeOptions} />
                                     </Box>
 
-                                    <ButtonSend variant="outlined" sx={{ mt: 2 }}>Send</ButtonSend>
-                                    <ButtonReceive variant="outlined" sx={{ mt: 2 }}>Receive</ButtonReceive>
+                                    <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+                                        <ButtonSend variant="contained" fullWidth startIcon={<SwapHorizIcon />}>
+                                            Send
+                                        </ButtonSend>
+                                        <ButtonReceive variant="contained" fullWidth startIcon={<AccountBalanceWalletIcon />}>
+                                            Receive
+                                        </ButtonReceive>
+                                    </Stack>
 
                                     <Box sx={{ mt: 2 }}>
                                         <Grid container spacing={0} sx={{ maxWidth: 400 }}>
@@ -234,34 +250,41 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </Grid>
 
                     <Grid item md={8} xs={12}>
-                        <Grid container spacing={2}>
+                        <Grid container spacing={3}>
                             <Grid item xs={4}>
-                                <Card>
-                                    <CardContent>
-                                        <Typography sx={{ color: theme.palette.text.primary }} variant="h6">1W PnL Beta</Typography>
-                                        <Typography sx={{ color: theme.palette.success.main }} variant="h5">+$7,436.57</Typography>
+                                <Card elevation={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                    <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                        <Typography sx={{ color: theme.palette.text.secondary }} variant="subtitle2">1W PnL Beta</Typography>
+                                        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+                                            <TrendingUpIcon sx={{ color: theme.palette.success.main, mr: 1 }} />
+                                            <Typography sx={{ color: theme.palette.success.main, fontWeight: 'bold' }} variant="h5">+$7,436.57</Typography>
+                                        </Box>
                                     </CardContent>
                                 </Card>
                             </Grid>
                             <Grid item xs={4}>
-                                <Card>
-                                    <CardContent>
-                                        <Typography sx={{ color: theme.palette.text.primary }} variant="h6">1W Volume</Typography>
-                                        <Typography sx={{ color: theme.palette.text.primary }} variant="h5">$304,889.84</Typography>
+                                <Card elevation={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                    <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                        <Typography sx={{ color: theme.palette.text.secondary }} variant="subtitle2">1W Volume</Typography>
+                                        <Box sx={{ mt: 2 }}>
+                                            <Typography sx={{ color: theme.palette.text.primary, fontWeight: 'bold' }} variant="h5">$304,889.84</Typography>
+                                        </Box>
                                     </CardContent>
                                 </Card>
                             </Grid>
                             <Grid item xs={4}>
-                                <Card>
-                                    <CardContent>
-                                        <Typography sx={{ color: theme.palette.text.primary }} variant="h6">1W Trades</Typography>
-                                        <Typography sx={{ color: theme.palette.text.primary }} variant="h5">126</Typography>
+                                <Card elevation={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                    <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                                        <Typography sx={{ color: theme.palette.text.secondary }} variant="subtitle2">1W Trades</Typography>
+                                        <Box sx={{ mt: 2 }}>
+                                            <Typography sx={{ color: theme.palette.text.primary, fontWeight: 'bold' }} variant="h5">126</Typography>
+                                        </Box>
                                     </CardContent>
                                 </Card>
                             </Grid>
                         </Grid>
 
-                        <Card sx={{ flex: 1, mt: 2, mb: 2, color: theme.palette.text.primary }}>
+                        <Card sx={{ flex: 1, mt: 3, mb: 2, color: theme.palette.text.primary }}>
                             <CardContent sx={{ px: 0 }}>
                                 <TabContext value={activeTab}>
                                     <Box>

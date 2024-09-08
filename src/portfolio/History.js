@@ -3,9 +3,8 @@ import {
     Box,
     Typography,
     Paper,
-    Radio,
-    RadioGroup,
-    FormControlLabel,
+    ToggleButton,
+    ToggleButtonGroup,
 } from '@mui/material';
 import DeFiHistory from './history/DeFi';
 import NFTHistory from './history/NFT';
@@ -21,32 +20,33 @@ const History = ({ account }) => {
     }
 
     return (
-        <Box>
-            <Typography sx={{ color: theme.palette.text.primary, mb: 2 }} variant="h6">Historical Trades</Typography>
-            <RadioGroup
-                row
+        <Box sx={{ bgcolor: theme.palette.background.paper, p: 3, borderRadius: 2 }}>
+            <Typography sx={{ color: theme.palette.text.primary, mb: 3 }} variant="h5">Historical Trades</Typography>
+            <ToggleButtonGroup
                 value={filter}
-                onChange={handleFilterChange}
-                sx={{ mb: 2, color: theme.palette.text.primary }}
+                exclusive
+                onChange={(e, newFilter) => newFilter && setFilter(newFilter)}
+                sx={{ mb: 3 }}
             >
-                <FormControlLabel value="token" control={<Radio sx={{ color: theme.palette.text.primary }} />} label="Tokens" />
-                <FormControlLabel value="nft" control={<Radio sx={{ color: theme.palette.text.primary }} />} label="NFTs" />
-            </RadioGroup>
+                <ToggleButton value="token" sx={{ px: 3 }}>Tokens</ToggleButton>
+                <ToggleButton value="nft" sx={{ px: 3 }}>NFTs</ToggleButton>
+            </ToggleButtonGroup>
             <Paper sx={{
-                width: '100%', overflow: 'auto', maxHeight: "475px", color: theme.palette.text.primary,
+                width: '100%',
+                overflow: 'auto',
+                maxHeight: "475px",
+                color: theme.palette.text.primary,
+                bgcolor: theme.palette.background.default,
+                boxShadow: 3,
                 "&::-webkit-scrollbar": {
-                    width: "6px !important"
+                    width: "8px"
                 },
                 "&::-webkit-scrollbar-thumb": {
-                    borderRadius: "10px",
-                    boxShadow: "inset 0 0 6px rgba(0,0,0,.7)",
+                    backgroundColor: theme.palette.primary.main,
+                    borderRadius: "4px",
                 },
             }}>
-                {
-                    filter == "token" ?
-                        <DeFiHistory account={account} />
-                        : <NFTHistory account={account} />
-                }
+                {filter === "token" ? <DeFiHistory account={account} /> : <NFTHistory account={account} />}
             </Paper>
         </Box>
     )
