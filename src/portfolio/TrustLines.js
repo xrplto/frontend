@@ -138,10 +138,10 @@ export default function TrustLines({ account }) {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ color: theme.palette.text.primary }}>Asset</TableCell>
-                <TableCell sx={{ color: theme.palette.text.primary, pl: 0 }}>Amount</TableCell>
-                <TableCell sx={{ color: theme.palette.text.primary }} align="right">Estimated Value</TableCell>
-                {isLoggedIn && accountProfile?.account === account ? <TableCell /> : ""}
+                <TableCell align="left">Token</TableCell>
+                <TableCell align="right" sx={{ display: isMobile ? "none" : "table-cell" }}>Amount</TableCell>
+                <TableCell align="right">Value</TableCell>
+                {isLoggedIn && <TableCell align="center">Action</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>

@@ -1,4 +1,4 @@
-import { Avatar, IconButton, Stack, TableCell, TableRow, Tooltip, Typography, useMediaQuery } from "@mui/material";
+import { Avatar, IconButton, Stack, TableCell, TableRow, Tooltip, Typography, useMediaQuery, Box, Chip } from "@mui/material";
 import { useContext, useEffect, useState, useMemo, useCallback } from "react";
 import { AppContext } from "src/AppContext";
 import { fNumberWithCurreny } from "src/utils/formatNumber";
@@ -10,6 +10,7 @@ import CustomQRDialog from "src/components/QRDialog";
 import { useDispatch } from "react-redux";
 import CustomDialog from "src/components/Dialog";
 import CancelIcon from '@mui/icons-material/Cancel';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, account, currency }) => {
 
@@ -191,13 +192,16 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
         }
     };
 
-    const getDecimal = (str) => {
-        const decimal = (str.toString().split(".")[1] || "").length;
-        return Math.min(decimal, 11);
-    }
+    const formatNumber = (num) => {
+        // Convert to regular notation, round to 2 decimal places, and remove trailing zeros
+        return parseFloat(parseFloat(num).toFixed(2)).toString();
+    };
 
-    const computedBalance = useMemo(() => balance, [balance]);
-    const computedValue = useMemo(() => (token.exch ? balance * fNumberWithCurreny(token.exch, exchRate) : 0).toFixed(getDecimal(balance * fNumberWithCurreny(token.exch, exchRate))), [balance, token.exch, exchRate]);
+    const computedBalance = useMemo(() => formatNumber(balance), [balance]);
+    const computedValue = useMemo(() => {
+        const value = token.exch ? balance * fNumberWithCurreny(token.exch, exchRate) : 0;
+        return value.toFixed(2); // This will round to 2 decimal places
+    }, [balance, token.exch, exchRate]);
 
     return (
         <>
@@ -205,44 +209,53 @@ const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, acc
                 sx={{
                     '&:hover': {
                         '& .MuiTableCell-root': {
-                            backgroundColor: darkMode ? '#232326 !important' : '#D9DCE0 !important'
+                            backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
                         }
                     },
                     '& .MuiTableCell-root': {
-                        paddingLeft: '0px !important',
-                        marginLeft: '0px !important'
+                        padding: '16px 8px',
+                        borderBottom: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`
                     }
                 }}
             >
-                <TableCell align="left" sx={{ py: 1 }}>
-                    <Stack direction="row" spacing={1} alignItems="center" paddingLeft={1}>
-                        <Avatar src={`https://s1.xrpl.to/token/${md5}`} sx={{ width: 32, height: 32 }} />
-                        <Typography variant="s6" noWrap>
-                            {currencyName}
-                        </Typography>
+                <TableCell align="left">
+                    <Stack direction="row" spacing={2} alignItems="center">
+                        <Avatar src={`https://s1.xrpl.to/token/${md5}`} sx={{ width: 40, height: 40 }} />
+                        <Box>
+                            <Typography variant="subtitle2" noWrap>
+                                {currencyName}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" noWrap>
+                                {issuer.substring(0, 6)}...{issuer.substring(issuer.length - 4)}
+                            </Typography>
+                        </Box>
                     </Stack>
                 </TableCell>
 
-                <TableCell align="left" sx={{ display: isMobile ? "none" : "table-cell", paddingLeft: 0, marginLeft: 0 }}>
-                    <Typography variant="s6" noWrap>
+                <TableCell align="right" sx={{ display: isMobile ? "none" : "table-cell" }}>
+                    <Typography variant="body2" noWrap>
                         {computedBalance}
                     </Typography>
                 </TableCell>
 
-                <TableCell align="right" sx={{ paddingLeft: 0, marginLeft: 0 }}>
-                    <Stack direction="row" alignItems="center" justifyContent="end" spacing={0.5}>
-                        <span>{currencySymbols[activeFiatCurrency]}</span>
-                        <Typography variant="s6" noWrap>
-                            {computedValue}
-                        </Typography>
-                    </Stack>
+                <TableCell align="right">
+                    <Typography variant="body2" noWrap>
+                        {currencySymbols[activeFiatCurrency]}{computedValue}
+                    </Typography>
                 </TableCell>
+
                 {isLoggedIn && accountProfile?.account === account && (
-                    <TableCell align="right">
-                        <Tooltip title="Cancel Offer">
-                            <IconButton color='error' onClick={handleCancel} aria-label="cancel">
-                                <CancelIcon fontSize='small' />
-                            </IconButton>
+                    <TableCell align="center">
+                        <Tooltip title="Remove TrustLine">
+                            <Chip
+                                icon={<DeleteOutlineIcon fontSize="small" />}
+                                label="Remove"
+                                color="error"
+                                variant="outlined"
+                                size="small"
+                                onClick={handleCancel}
+                                sx={{ cursor: 'pointer' }}
+                            />
                         </Tooltip>
                     </TableCell>
                 )}
