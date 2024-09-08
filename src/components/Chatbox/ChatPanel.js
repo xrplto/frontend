@@ -405,7 +405,7 @@ const NFTDisplay = ({ nftLink }) => {
                     </Button>
                     <Button
                       fullWidth
-                      // sx={{ minWidth: 150 }}
+                      sx={{ padding: '8px 30px' }}
                       variant='outlined'
                       startIcon={<SendIcon />}
                       onClick={handleTransfer}
