@@ -18,7 +18,7 @@ import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import { useTranslation } from 'react-i18next';
 import { useState, useContext, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import sdk from "@crossmarkio/sdk";
+// import sdk from "@crossmarkio/sdk";
 import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
 import NavSearchBar from './NavSearchBar';
@@ -118,11 +118,40 @@ export default function Header(props) {
   }, [isProcessing, isClosed])
 
   useEffect(() => {
-    if (isDesktop) {
-      sdk.on("close", () => {
-        setClosed(true);
-      });
-    }
+    let isMounted = true;
+    
+    const initializeCrossmark = async () => {
+      if (isDesktop && typeof window !== 'undefined') {
+        try {
+          // Dynamically import the SDK
+          const { default: CrossmarkSDK } = await import('@crossmarkio/sdk');
+          
+          if (isMounted && CrossmarkSDK && typeof CrossmarkSDK.on === 'function') {
+            const handleClose = () => {
+              if (isMounted) {
+                setClosed(true);
+              }
+            };
+
+            CrossmarkSDK.on("close", handleClose);
+
+            return () => {
+              if (CrossmarkSDK && typeof CrossmarkSDK.off === 'function') {
+                CrossmarkSDK.off("close", handleClose);
+              }
+            };
+          }
+        } catch (error) {
+          console.error('Failed to load Crossmark SDK:', error);
+        }
+      }
+    };
+
+    initializeCrossmark();
+
+    return () => {
+      isMounted = false;
+    };
   }, [isDesktop])
 
   return (
