@@ -44,12 +44,12 @@ const Terminal = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (input.trim() && !isLoading) {
+      const userMessage = { role: 'user', content: input.trim() };
+      setMessages((prevMessages) => [...prevMessages, userMessage]);
+      setInput(''); // Clear input immediately after submission
       setIsLoading(true);
       setError(null);
       setStreamingMessage('');
-      const userMessage = { role: 'user', content: input };
-      setMessages((prevMessages) => [...prevMessages, userMessage]);
-      setInput('');
 
       try {
         const response = await fetch('http://localhost:11434/api/chat', {
