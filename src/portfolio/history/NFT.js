@@ -86,10 +86,14 @@ export default function NFTHistory({ account }) {
       const response = await axios.get(`${BASE_URL}/nft/${NFTokenID}`);
       console.log('Fetched NFT Details:', response.data.nft);
       if (response.data.nft && response.data.nft.NFTokenID === NFTokenID) {
-        setNftDetails((prevDetails) => ({
-          ...prevDetails,
-          [NFTokenID]: response.data.nft
-        }));
+        setNftDetails((prevDetails) => {
+          const newDetails = {
+            ...prevDetails,
+            [NFTokenID]: response.data.nft
+          };
+          console.log('Updated NFT Details:', newDetails);
+          return newDetails;
+        });
       } else {
         console.error('Fetched NFT does not match requested NFTokenID');
       }
@@ -100,38 +104,67 @@ export default function NFTHistory({ account }) {
 
   const renderNFTPreview = (nft) => {
     if (!nft) return null;
-    if (nft.dfile?.video) {
-      return (
-        <video
-          width="100%"
-          height="auto"
-          controls
-          loop
-          muted
-          style={{ maxWidth: '50px', maxHeight: '50px' }}
-        >
-          <source
-            src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.video}`}
-            type="video/mp4"
-          />
-          Your browser does not support the video tag.
-        </video>
-      );
-    } else if (nft.dfile?.image) {
+
+    const getImageUrl = (nft) => {
+      if (nft.files && nft.files.length > 0) {
+        const fileWithThumbnail = nft.files.find(file => file.thumbnail);
+        if (fileWithThumbnail) {
+          const thumbnailUrl = fileWithThumbnail.thumbnail.big || fileWithThumbnail.thumbnail.small;
+          if (thumbnailUrl) {
+            return `https://s2.xrpnft.com/d1/${thumbnailUrl}`;
+          }
+        }
+      }
+
+      // Fallback to other methods if files array doesn't contain a suitable thumbnail
+      if (nft.thumbnail && nft.thumbnail.image) {
+        return `https://s2.xrpnft.com/d1/${nft.thumbnail.image}`;
+      }
+
+      if (nft.dfile && nft.dfile.image) {
+        return `https://s2.xrpnft.com/d1/${nft.dfile.image}`;
+      }
+
+      return null;
+    };
+
+    const imageUrl = getImageUrl(nft);
+
+    if (imageUrl) {
       return (
         <img
-          src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.image}`}
-          alt={nft.name}
+          src={imageUrl}
+          alt={nft.name || 'NFT'}
           style={{
             maxWidth: '50px',
             maxHeight: '50px',
             objectFit: 'contain',
             borderRadius: '3px'
           }}
+          onError={(e) => {
+            console.error('Error loading NFT image:', e);
+            e.target.src = '/path/to/fallback/image.png'; // Add a fallback image
+          }}
         />
       );
     }
-    return null;
+
+    // Fallback for NFTs without images
+    return (
+      <Box
+        sx={{
+          width: '50px',
+          height: '50px',
+          backgroundColor: 'grey.300',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '3px'
+        }}
+      >
+        <Typography variant="caption">No Image</Typography>
+      </Box>
+    );
   };
 
   const renderActivityIcon = (activity) => {
@@ -277,7 +310,7 @@ export default function NFTHistory({ account }) {
 
         return (
           <Stack direction="row" spacing={2} alignItems="center">
-            {nft && renderNFTPreview(nft)}
+            {nft ? renderNFTPreview(nft) : <Typography variant="s7">Loading NFT preview...</Typography>}
             <Stack>
               <Typography variant="s7">NFTokenID: </Typography>
               <Link
