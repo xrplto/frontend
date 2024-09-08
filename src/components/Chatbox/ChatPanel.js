@@ -23,7 +23,8 @@ import {
   ArrowDownward as ArrowDownwardIcon,
   Remove as RemoveIcon,
   ChatBubbleOutline as ChatBubbleOutlineIcon,
-  Reply as ReplyIcon
+  Reply as ReplyIcon,
+  LocalOffer as LocalOfferIcon
 } from '@mui/icons-material';
 import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
@@ -31,6 +32,8 @@ import { AppContext } from 'src/AppContext';
 import NFTPreview from 'src/nft/NFTPreview';
 import CreateOfferDialog from 'src/nft/CreateOfferDialog';
 import { NFToken } from 'src/utils/constants';
+import TransferDialog from 'src/nft/TransferDialog';
+import BurnNFT from 'src/nft/BurnNFT';
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -268,10 +271,13 @@ const NFTDisplay = ({ nftLink }) => {
   const [nft, setNFT] = useState(null);
   const [openCreateOffer, setOpenCreateOffer] = useState(false);
   const [isSellOffer, setIsSellOffer] = useState(false);
+  const [openTransfer, setOpenTransfer] = useState(false);
+  const [burnt, setBurnt] = useState(nft?.status === NFToken.BURNT);
 
   const match = nftLink.match(/\[NFT: (.*?) #(\d+) \((.*?)\)\]/);
 
   if (!match) return null;
+  const isOwner = accountLogin === nft?.account;
 
   const [_, name, number, tokenId] = match;
 
@@ -287,11 +293,11 @@ const NFTDisplay = ({ nftLink }) => {
     if (!nft) return null;
     if (nft.dfile.video) {
       return (
-        <video 
-          width="100%" 
-          height="auto" 
-          controls 
-          loop 
+        <video
+          width="100%"
+          height="auto"
+          controls
+          loop
           muted
           style={{ maxWidth: '200px', maxHeight: '200px' }}
         >
@@ -301,8 +307,8 @@ const NFTDisplay = ({ nftLink }) => {
       );
     } else if (nft.dfile.image) {
       return (
-        <img 
-          src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.image}`} 
+        <img
+          src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.image}`}
           alt={nft.name}
           style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain', borderRadius: '10px' }}
         />
@@ -311,9 +317,22 @@ const NFTDisplay = ({ nftLink }) => {
     return null;
   };
 
+  const handleCreateSellOffer = () => {
+    setIsSellOffer(true);
+    setOpenCreateOffer(true);
+  }
+
+  const handleTransfer = () => {
+    setOpenTransfer(true);
+  }
+
   const handleCreateBuyOffer = () => {
     setIsSellOffer(false);
     setOpenCreateOffer(true);
+  }
+
+  const onHandleBurn = () => {
+    setBurnt(true);
   }
 
   return (
@@ -366,14 +385,47 @@ const NFTDisplay = ({ nftLink }) => {
                 Token ID: {tokenId}
               </Typography>
               <Divider sx={{ my: 1 }} />
-              <Button
-                fullWidth
-                variant='outlined'
-                onClick={handleCreateBuyOffer}
-                disabled={!accountLogin || nft?.status === NFToken.BURNT}
-              >
-                Make Offer
-              </Button>
+              {
+                isOwner ? (
+                  <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    gap: 1
+                  }}>
+                    <Button
+                      fullWidth
+                      // sx={{ minWidth: 150 }}
+                      variant='outlined'
+                      startIcon={<LocalOfferIcon />}
+                      onClick={handleCreateSellOffer}
+                      color='success'
+                      disabled={!accountLogin || burnt}
+                    >
+                      Sell
+                    </Button>
+                    <Button
+                      fullWidth
+                      // sx={{ minWidth: 150 }}
+                      variant='outlined'
+                      startIcon={<SendIcon />}
+                      onClick={handleTransfer}
+                      color='info'
+                      disabled={!accountLogin || burnt}
+                    >
+                      Transfer
+                    </Button>
+                    <BurnNFT nft={nft} onHandleBurn={onHandleBurn} />
+                  </Box>
+                ) :
+                  <Button
+                    fullWidth
+                    variant='outlined'
+                    onClick={handleCreateBuyOffer}
+                    disabled={!accountLogin || burnt}
+                  >
+                    Make Offer
+                  </Button>
+              }
             </Box>
           </Paper>
         }
@@ -393,6 +445,11 @@ const NFTDisplay = ({ nftLink }) => {
         nft={nft}
         isSellOffer={isSellOffer}
       />
+      <TransferDialog
+        open={openTransfer}
+        setOpen={setOpenTransfer}
+        nft={nft}
+      />
     </>
   );
 };
@@ -410,7 +467,7 @@ const UserSummary = ({ user }) => {
           const { total } = res.data;
           setToken(total);
         })
-        .catch((error) => {});
+        .catch((error) => { });
 
       axios
         .post(`https://api.xrpnft.com/api/account/collectedCreated`, {
@@ -430,7 +487,7 @@ const UserSummary = ({ user }) => {
           });
           setNFT(total);
         })
-        .catch((error) => {});
+        .catch((error) => { });
     };
 
     if (user.username) {
@@ -470,10 +527,10 @@ const UserSummary = ({ user }) => {
                                    url(https://static.nulled.to/public/assets/white-lightning.gif),
                                    url(https://static.nulled.to/public/assets/blue-comet.gif)`
                   : user.rank === 'Legendary'
-                  ? `url(https://static.nulled.to/public/assets/whitebg.gif),
+                    ? `url(https://static.nulled.to/public/assets/whitebg.gif),
                                                    radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
                                                    url(https://static.nulled.to/public/assets/white-lightning.gif)`
-                  : 'none',
+                    : 'none',
               backgroundSize: user.rank === 'Legendary' ? 'cover' : '5em, 15% 800%, 10em, 25em',
               WebkitTextFillColor:
                 user.rank === 'Titan' || user.rank === 'Legendary' ? 'transparent' : 'inherit',
@@ -744,21 +801,21 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                     </CustomWidthTooltip>
                     {
                       chat.username !== accountProfile?.account &&
-                        <Tooltip title="Send private message" arrow>
-                          <IconButton
-                            size="small"
-                            onClick={() => onStartPrivateMessage(privateMessageRecipient)}
-                            sx={{
-                              padding: 0,
-                              color: theme.palette.text.secondary,
-                              '&:hover': {
-                                color: theme.palette.primary.main
-                              }
-                            }}
-                          >
-                            <ChatBubbleOutlineIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
+                      <Tooltip title="Send private message" arrow>
+                        <IconButton
+                          size="small"
+                          onClick={() => onStartPrivateMessage(privateMessageRecipient)}
+                          sx={{
+                            padding: 0,
+                            color: theme.palette.text.secondary,
+                            '&:hover': {
+                              color: theme.palette.primary.main
+                            }
+                          }}
+                        >
+                          <ChatBubbleOutlineIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     }
                   </Stack>
                   {newsData ? (
@@ -785,8 +842,8 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                               newsData.sentiment === 'Bullish'
                                 ? 'green'
                                 : newsData.sentiment === 'Bearish'
-                                ? 'red'
-                                : 'inherit'
+                                  ? 'red'
+                                  : 'inherit'
                           }}
                         >
                           • {newsData.sentiment}
