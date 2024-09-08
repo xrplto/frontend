@@ -6,6 +6,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/material/styles';
 import axios from 'axios';
+import DefaultPrompts from './DefaultPrompts'; // We'll create this component
 
 const CustomScrollBox = styled(Box)(({ theme }) => ({
   '&::-webkit-scrollbar': {
@@ -58,10 +59,11 @@ const Terminal = () => {
     }
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event, overrideInput = null) => {
     event.preventDefault();
-    if (input.trim() && !isLoading) {
-      const userMessage = { role: 'user', content: input.trim() };
+    const submittedInput = overrideInput || input;
+    if (submittedInput.trim() && !isLoading) {
+      const userMessage = { role: 'user', content: submittedInput.trim() };
       let currentMessages = [];
       let newConversationId = null;
 
@@ -169,6 +171,11 @@ const Terminal = () => {
     });
   };
 
+  const handlePromptClick = (promptText) => {
+    // Automatically submit the prompt
+    handleSubmit({ preventDefault: () => {} }, promptText);
+  };
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -195,6 +202,9 @@ const Terminal = () => {
           backgroundColor: 'background.paper'
         }}
       >
+        {activeConversation === 'new' && (
+          <DefaultPrompts onPromptClick={handlePromptClick} />
+        )}
         {activeConversation !== 'new' && conversations[activeConversation]?.messages.map((message, index) => (
           <Typography
             key={index}
@@ -240,7 +250,7 @@ const Terminal = () => {
       </CustomScrollBox>
       <Box
         component="form"
-        onSubmit={handleSubmit}
+        onSubmit={(e) => handleSubmit(e)}
         sx={{
           display: 'flex',
           p: 2,
