@@ -113,7 +113,6 @@ const DeFiHistory = ({ account }) => {
                                 <TableCell sx={{ color: theme.palette.text.primary }}>Type</TableCell>
                                 <TableCell sx={{ color: theme.palette.text.primary }}>Amount</TableCell>
                                 <TableCell sx={{ color: theme.palette.text.primary }}>Date</TableCell>
-                                <TableCell sx={{ color: theme.palette.text.primary }}>Result</TableCell>
                                 <TableCell sx={{ color: theme.palette.text.primary }}>View</TableCell>
                             </TableRow>
                         </TableHead>

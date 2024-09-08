@@ -7,7 +7,6 @@ import {
 } from '@mui/material';
 import EastIcon from '@mui/icons-material/East';
 import LinkIcon from '@mui/icons-material/Link';
-import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import numeral from "numeral";
 
@@ -326,13 +325,6 @@ const HistoryRow = (props) => {
             </TableCell>
             <TableCell sx={{ color: theme.palette.text.primary }}>
                 {getRelativeTime(rippleEpoch)}
-            </TableCell>
-            <TableCell sx={{ color: theme.palette.text.primary }}>
-                {TransactionResult === "tesSUCCESS" ? (
-                    <CheckIcon color="success" />
-                ) : (
-                    <CloseIcon color="error" />
-                )}
             </TableCell>
             <TableCell>
                 <LinkIcon onClick={handleViewClick}/>
