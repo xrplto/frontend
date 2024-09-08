@@ -1,7 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Box, Typography, TextField, IconButton, CircularProgress } from '@mui/material';
+import { Box, Typography, TextField, IconButton, CircularProgress, Tabs, Tab } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import AddIcon from '@mui/icons-material/Add';
 import ErrorIcon from '@mui/icons-material/Error';
+import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/material/styles';
 import axios from 'axios';
 
@@ -24,7 +26,11 @@ const CustomScrollBox = styled(Box)(({ theme }) => ({
 }));
 
 const Terminal = () => {
-  const [messages, setMessages] = useState([]);
+  const [conversations, setConversations] = useState(() => {
+    const savedConversations = localStorage.getItem('chatConversations');
+    return savedConversations ? JSON.parse(savedConversations) : [];
+  });
+  const [activeConversation, setActiveConversation] = useState('new');
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -35,18 +41,44 @@ const Terminal = () => {
     if (terminalRef.current) {
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
-  }, [messages]);
+    // Save messages to localStorage whenever they change
+    localStorage.setItem('chatConversations', JSON.stringify(conversations));
+  }, [conversations]);
 
-  const handleInputChange = (event) => {
-    setInput(event.target.value);
+  const handleNewConversation = () => {
+    setActiveConversation('new');
+    setInput('');
+  };
+
+  const handleTabChange = (event, newValue) => {
+    if (newValue === conversations.length) {
+      handleNewConversation();
+    } else {
+      setActiveConversation(newValue);
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (input.trim() && !isLoading) {
       const userMessage = { role: 'user', content: input.trim() };
-      setMessages((prevMessages) => [...prevMessages, userMessage]);
-      setInput(''); // Clear input immediately after submission
+      let currentMessages = [];
+      let newConversationId = null;
+
+      setConversations(prevConversations => {
+        let updatedConversations = [...prevConversations];
+        if (activeConversation === 'new') {
+          newConversationId = updatedConversations.length;
+          updatedConversations.push({ id: newConversationId, messages: [userMessage] });
+          setActiveConversation(newConversationId);
+        } else {
+          updatedConversations[activeConversation].messages.push(userMessage);
+        }
+        currentMessages = updatedConversations[newConversationId !== null ? newConversationId : activeConversation].messages;
+        return updatedConversations;
+      });
+
+      setInput('');
       setIsLoading(true);
       setError(null);
       setStreamingMessage('');
@@ -59,7 +91,7 @@ const Terminal = () => {
           },
           body: JSON.stringify({
             model: 'gemma2:2b',
-            messages: [...messages, userMessage],
+            messages: currentMessages,
             stream: true
           }),
         });
@@ -94,11 +126,16 @@ const Terminal = () => {
           }
         }
 
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          { role: 'assistant', content: accumulatedContent }
-        ]);
-        setStreamingMessage('');
+        setConversations(prevConversations => {
+          const updatedConversations = [...prevConversations];
+          const conversationIndex = newConversationId !== null ? newConversationId : activeConversation;
+          if (!updatedConversations[conversationIndex]) {
+            console.error('Conversation not found:', conversationIndex);
+            return prevConversations;
+          }
+          updatedConversations[conversationIndex].messages.push({ role: 'assistant', content: accumulatedContent });
+          return updatedConversations;
+        });
       } catch (error) {
         console.error('Error calling Ollama API:', error);
         let errorMessage = 'Error: Unable to get response from AI.';
@@ -109,11 +146,46 @@ const Terminal = () => {
       }
 
       setIsLoading(false);
+      setStreamingMessage('');
     }
+  };
+
+  const handleInputChange = (event) => {
+    setInput(event.target.value);
+  };
+
+  const handleCloseConversation = (event, conversationIndex) => {
+    event.stopPropagation(); // Prevent tab from being selected when closing
+    setConversations(prevConversations => {
+      const updatedConversations = prevConversations.filter((_, index) => index !== conversationIndex);
+      // If we're closing the active conversation, set the active to the previous one or 'new'
+      if (activeConversation === conversationIndex) {
+        setActiveConversation(updatedConversations.length > 0 ? updatedConversations.length - 1 : 'new');
+      } else if (activeConversation > conversationIndex) {
+        // Adjust the active conversation index if we're closing a tab before it
+        setActiveConversation(activeConversation - 1);
+      }
+      return updatedConversations;
+    });
   };
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={activeConversation === 'new' ? conversations.length : activeConversation} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
+          {conversations.map((conv, index) => (
+            <Tab key={conv.id} label={
+              <Box display="flex" alignItems="center">
+                {`Chat ${index + 1}`}
+                <IconButton size="small" onClick={(event) => handleCloseConversation(event, index)} sx={{ ml: 1, p: 0 }}>
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            } />
+          ))}
+          <Tab label="New Chat" />
+        </Tabs>
+      </Box>
       <CustomScrollBox
         ref={terminalRef}
         sx={{
@@ -123,7 +195,7 @@ const Terminal = () => {
           backgroundColor: 'background.paper'
         }}
       >
-        {messages.map((message, index) => (
+        {activeConversation !== 'new' && conversations[activeConversation]?.messages.map((message, index) => (
           <Typography
             key={index}
             variant="body2"
