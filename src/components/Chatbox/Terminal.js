@@ -1,12 +1,16 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Box, Typography, TextField, IconButton, CircularProgress, Tabs, Tab } from '@mui/material';
+import { Box, Typography, TextField, IconButton, CircularProgress, Tabs, Tab, Snackbar } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AddIcon from '@mui/icons-material/Add';
 import ErrorIcon from '@mui/icons-material/Error';
 import CloseIcon from '@mui/icons-material/Close';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { styled } from '@mui/material/styles';
 import axios from 'axios';
 import DefaultPrompts from './DefaultPrompts'; // We'll create this component
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 const CustomScrollBox = styled(Box)(({ theme }) => ({
   '&::-webkit-scrollbar': {
@@ -37,6 +41,7 @@ const Terminal = () => {
   const [error, setError] = useState(null);
   const [streamingMessage, setStreamingMessage] = useState('');
   const terminalRef = useRef(null);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -86,6 +91,7 @@ const Terminal = () => {
       setStreamingMessage('');
 
       try {
+        console.log('Sending request to Ollama API...');
         const response = await fetch('http://localhost:11434/api/chat', {
           method: 'POST',
           headers: {
@@ -97,6 +103,8 @@ const Terminal = () => {
             stream: true
           }),
         });
+
+        console.log('Response status:', response.status);
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -111,6 +119,8 @@ const Terminal = () => {
           if (done) break;
 
           const chunk = decoder.decode(value, { stream: true });
+          console.log('Received chunk:', chunk);
+
           const lines = chunk.split('\n');
 
           for (const line of lines) {
@@ -127,6 +137,8 @@ const Terminal = () => {
             }
           }
         }
+
+        console.log('Finished processing response');
 
         setConversations(prevConversations => {
           const updatedConversations = [...prevConversations];
@@ -176,6 +188,58 @@ const Terminal = () => {
     handleSubmit({ preventDefault: () => {} }, promptText);
   };
 
+  const handleCopyCode = (code) => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    });
+  };
+
+  const formatMessage = (content) => {
+    console.log("Formatting message:", content);
+    return (
+      <ReactMarkdown
+        components={{
+          code({ node, inline, className, children, ...props }) {
+            const match = /language-(\w+)/.exec(className || '');
+            console.log("Code block detected:", { inline, language: match ? match[1] : null, children });
+            return !inline && match ? (
+              <div style={{ position: 'relative' }}>
+                <IconButton
+                  onClick={() => handleCopyCode(String(children))}
+                  style={{
+                    position: 'absolute',
+                    top: '5px',
+                    right: '5px',
+                    color: 'white',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  }}
+                  size="small"
+                >
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+                <SyntaxHighlighter
+                  style={atomDark}
+                  language={match[1]}
+                  PreTag="div"
+                  {...props}
+                >
+                  {String(children).replace(/\n$/, '')}
+                </SyntaxHighlighter>
+              </div>
+            ) : (
+              <code className={className} {...props}>
+                {children}
+              </code>
+            );
+          },
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    );
+  };
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -206,30 +270,55 @@ const Terminal = () => {
           <DefaultPrompts onPromptClick={handlePromptClick} />
         )}
         {activeConversation !== 'new' && conversations[activeConversation]?.messages.map((message, index) => (
-          <Typography
-            key={index}
-            variant="body2"
-            sx={{
-              fontFamily: 'monospace',
-              color: message.role === 'user' ? 'primary.main' : 'text.primary',
-              mb: 1
+          <Box 
+            key={index} 
+            sx={{ 
+              mb: 2, 
+              p: 2, 
+              borderRadius: 2,
+              backgroundColor: message.role === 'user' ? 'action.hover' : 'background.default',
+              boxShadow: 1
             }}
           >
-            {message.role === 'user' ? '> ' : ''}
-            {message.content}
-          </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 'bold',
+                color: message.role === 'user' ? 'primary.main' : 'secondary.main',
+                mb: 0.5
+              }}
+            >
+              {message.role === 'user' ? 'You:' : 'AI:'}
+            </Typography>
+            <Box>
+              {formatMessage(message.content)}
+            </Box>
+          </Box>
         ))}
         {streamingMessage && (
-          <Typography
-            variant="body2"
-            sx={{
-              fontFamily: 'monospace',
-              color: 'text.primary',
-              mb: 1
+          <Box 
+            sx={{ 
+              mb: 2, 
+              p: 2, 
+              borderRadius: 2,
+              backgroundColor: 'background.default',
+              boxShadow: 1
             }}
           >
-            {streamingMessage}
-          </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 'bold',
+                color: 'secondary.main',
+                mb: 0.5
+              }}
+            >
+              AI:
+            </Typography>
+            <Box>
+              {formatMessage(streamingMessage)}
+            </Box>
+          </Box>
         )}
         {isLoading && !streamingMessage && (
           <Box display="flex" alignItems="center">
@@ -248,6 +337,12 @@ const Terminal = () => {
           </Box>
         )}
       </CustomScrollBox>
+      <Snackbar
+        open={copySuccess}
+        autoHideDuration={2000}
+        onClose={() => setCopySuccess(false)}
+        message="Code copied to clipboard!"
+      />
       <Box
         component="form"
         onSubmit={(e) => handleSubmit(e)}
