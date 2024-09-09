@@ -8,7 +8,7 @@ export const rankColors = (theme) => ({
   Titan: 'linear-gradient(90deg, #4B0082 0%, #0000FF 50%, #800080 100%)',
   Legendary: 'linear-gradient(90deg, #FFD700 0%, #FFA500 50%, #FF4500 100%)',
   Developer: theme.palette.primary.dark,
-  Bot: theme.palette.info.main,
+  Bot: theme.palette.info.main
 });
 
 export const rankGlowEffect = (theme) => ({
@@ -21,5 +21,13 @@ export const rankGlowEffect = (theme) => ({
   Titan: '0 0 8px #0000FF',
   Legendary: '0 0 8px #FFA500',
   Developer: `0 0 5px ${theme.palette.primary.dark}`,
-  Bot: `0 0 5px ${theme.palette.info.main}`,
+  Bot: `0 0 5px ${theme.palette.info.main}`
 });
+
+export const lightningEffect = `
+  @keyframes lightning {
+    0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+    50% { background-position: 100% 100%, 100% 100%, 100% 100%, 100% 100%; }
+    100% { background-position: 0 0, 0 0, 0 0, 0 0; }
+  }
+`;

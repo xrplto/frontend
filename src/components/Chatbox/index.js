@@ -25,6 +25,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import Terminal from './Terminal';
 import ChatSettings from './ChatSettings';
+import StoreIcon from '@mui/icons-material/Store';
+import Store from './Store';
 
 const drawerWidth = 400;
 const chatURL = "http://65.108.136.237:5000";
@@ -345,6 +347,12 @@ function Chatbox() {
                 </ListItemIcon>
                 <ListItemText>Terminal</ListItemText>
               </MenuItem>
+              <MenuItem onClick={() => handleOptionSelect('Store')}>
+                <ListItemIcon>
+                  <StoreIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Store</ListItemText>
+              </MenuItem>
               <MenuItem onClick={() => handleOptionSelect('Settings')}>
                 <ListItemIcon>
                   <SettingsIcon fontSize="small" />
@@ -376,6 +384,7 @@ function Chatbox() {
           />
         )}
         {selectedOption === 'Terminal' && <Terminal />}
+        {selectedOption === 'Store' && <Store />}
         {selectedOption === 'Settings' && <ChatSettings />}
       </Box>
       {
