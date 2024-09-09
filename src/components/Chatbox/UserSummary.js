@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Stack,
   Avatar,
@@ -14,11 +15,20 @@ import {
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { rankColors, rankGlowEffect } from './RankStyles';
+import { Client } from 'xrpl';
 
 const UserSummary = ({ user }) => {
   const theme = useTheme();
+  let location;
+  try {
+    location = useLocation();
+  } catch (error) {
+    console.warn('useLocation is not available. Using fallback for current status.');
+    location = null;
+  }
   const [tokenCount, setTokenCount] = useState(0);
   const [nft, setNFT] = useState(0);
+  const [nftCount, setNftCount] = useState(0);
   const [userImage, setUserImage] = useState(null);
   const [username, setUsername] = useState(user.username); // Initialize with prop, will be updated if available from API
   const [joinedDate, setJoinedDate] = useState(null);
@@ -26,21 +36,37 @@ const UserSummary = ({ user }) => {
   const [lastActive, setLastActive] = useState(null);
   const [kycStatus, setKycStatus] = useState(null);
   const [rank, setRank] = useState('Member'); // Default rank
+  const [xrpBalance, setXrpBalance] = useState(null);
+  const [availableXrpBalance, setAvailableXrpBalance] = useState(null);
+  const [reserveXrp, setReserveXrp] = useState(null);
+  const [tokenLines, setTokenLines] = useState([]);
 
   useEffect(() => {
-    const fetchAssets = () => {
-      axios
-        .get(`https://api.xrpscan.com/api/v1/account/${user.username}/trustlines2`)
-        .then((res) => {
-          const tokenLines = res.data.lines.filter((line) => parseFloat(line.balance) > 0);
-          setTokenCount(tokenLines.length);
-        })
-        .catch(() => setTokenCount(0));
+    const fetchTokenLines = async () => {
+      const client = new Client('wss://s1.ripple.com'); // Use the appropriate server
 
-      axios
-        .get(`https://api.xrpscan.com/api/v1/account/${user.username}/nfts`)
-        .then((res) => setNFT(res.data.length))
-        .catch(() => setNFT(0));
+      try {
+        await client.connect();
+
+        const response = await client.request({
+          command: 'account_lines',
+          account: user.username
+        });
+
+        if (response.result && response.result.lines) {
+          const filteredLines = response.result.lines.filter(
+            (line) => parseFloat(line.balance) > 0
+          );
+          setTokenCount(filteredLines.length);
+        } else {
+          setTokenCount(0);
+        }
+      } catch (error) {
+        console.error('Error fetching account lines:', error);
+        setTokenCount(0);
+      } finally {
+        client.disconnect();
+      }
     };
 
     const fetchUserImage = async () => {
@@ -67,17 +93,35 @@ const UserSummary = ({ user }) => {
     const fetchAccountInfo = async () => {
       try {
         const response = await axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}`);
-        if (response.data && response.data.inception) {
-          const date = new Date(response.data.inception);
-          setJoinedDate(
-            date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-          );
+        if (response.data) {
+          if (response.data.inception) {
+            const date = new Date(response.data.inception);
+            setJoinedDate(
+              date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            );
+          }
+
+          if (response.data.xrpBalance) {
+            const totalBalance = parseFloat(response.data.xrpBalance);
+            const ownerCount = response.data.ownerCount || 0;
+            const baseReserve = 10; // XRP Ledger base reserve
+            const ownerReserve = 2; // XRP Ledger owner reserve per object
+            const totalReserve = baseReserve + ownerCount * ownerReserve;
+
+            setReserveXrp(totalReserve.toFixed(2));
+            const availableBalance = Math.max(0, totalBalance - totalReserve);
+            setAvailableXrpBalance(availableBalance.toFixed(2));
+          }
         } else {
           setJoinedDate('N/A');
+          setReserveXrp('N/A');
+          setAvailableXrpBalance('N/A');
         }
       } catch (error) {
         console.error('Error fetching account info:', error);
         setJoinedDate('Error');
+        setReserveXrp('Error');
+        setAvailableXrpBalance('Error');
       }
     };
 
@@ -149,16 +193,39 @@ const UserSummary = ({ user }) => {
       }
     };
 
+    const fetchNFTs = async () => {
+      try {
+        const response = await axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}/nfts`);
+        setNftCount(response.data.length);
+      } catch (error) {
+        console.error('Error fetching NFTs:', error);
+        setNftCount(0);
+      }
+    };
+
     setUserRank();
-    fetchAssets();
+    fetchTokenLines();
     fetchUserImage();
     fetchAccountInfo();
     fetchIssuedTokens();
     fetchLastActive();
     fetchKYCStatus();
+    fetchNFTs();
   }, [user, theme]);
 
   const getPLColor = (pl) => (pl?.startsWith('+') ? 'green' : 'red');
+
+  const truncateUsername = (name) => {
+    return name.length > 12 ? name.slice(0, 12) + '...' : name;
+  };
+
+  const getCurrentStatus = () => {
+    if (user.currentStatus) {
+      return user.currentStatus;
+    }
+    
+    return 'Unknown';
+  };
 
   return (
     <Paper
@@ -179,8 +246,8 @@ const UserSummary = ({ user }) => {
             sx={{ width: 80, height: 80, border: `2px solid ${rankColors(theme)[rank]}` }}
           />
           <Box>
-            <Typography variant="h5" fontWeight="bold">
-              {username}
+            <Typography variant="h5" fontWeight="bold" noWrap>
+              {truncateUsername(username)}
             </Typography>
             <Chip
               label={rank}
@@ -206,31 +273,16 @@ const UserSummary = ({ user }) => {
             value={user.profitLoss || 'N/A'}
             valueColor={getPLColor(user.profitLoss)}
           />
-          <InfoItem label="NFTs" value={nft || 'None'} />
+          <InfoItem label="NFTs" value={nftCount || 'None'} />
           <InfoItem label="Tokens" value={tokenCount || 'None'} />
           <InfoItem label="Chats" value={user.activePosts} />
-          <InfoItem label="Currently" value={user.currently} />
+          <InfoItem label="Currently" value={getCurrentStatus()} />
+          <InfoItem label="Reserve XRP" value={reserveXrp ? `${reserveXrp} XRP` : 'Loading...'} />
+          <InfoItem
+            label="Available XRP"
+            value={availableXrpBalance ? `${availableXrpBalance} XRP` : 'Loading...'}
+          />
         </Grid>
-
-        {issuedTokens.length > 0 && (
-          <>
-            <Divider />
-            <Typography variant="subtitle1" fontWeight="bold">
-              Issued Tokens
-            </Typography>
-            <Grid container spacing={1}>
-              {issuedTokens.map((token, index) => (
-                <Grid item xs={6} key={index}>
-                  <Chip
-                    label={`${token.currency}: ${parseFloat(token.value).toFixed(2)}`}
-                    size="small"
-                    sx={{ width: '100%', justifyContent: 'space-between' }}
-                  />
-                </Grid>
-              ))}
-            </Grid>
-          </>
-        )}
 
         <Stack direction="row" spacing={1} justifyContent="center" mt={2}>
           <Button variant="contained" color="primary" onClick={() => handleSendTip(user)}>
