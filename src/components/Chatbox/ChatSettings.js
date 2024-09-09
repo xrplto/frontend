@@ -93,12 +93,17 @@ function ChatSettings() {
 
     // Send update to server
     try {
-      const response = await fetch('http://localhost:5000/update-profile', {
+      const response = await fetch('http://localhost:5000/api/set-user-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(updatedProfile)
+        body: JSON.stringify({
+          account: localProfile.account,
+          username: tempUsername,
+          imageUrl: localProfile.imageUrl,
+          nftTokenId: localProfile.nftTokenId
+        })
       });
 
       if (!response.ok) {
@@ -107,6 +112,11 @@ function ChatSettings() {
 
       const result = await response.json();
       console.log('Server response:', result);
+
+      // Update local state with the server response
+      if (result.user) {
+        safeUpdateAccountProfile(result.user);
+      }
 
       // Show a success message to the user
       showNotification('Profile updated successfully!');
