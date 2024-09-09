@@ -57,7 +57,7 @@ const Terminal = () => {
   };
 
   const handleTabChange = (event, newValue) => {
-    if (newValue === conversations.length) {
+    if (newValue === 'new') {
       handleNewConversation();
     } else {
       setActiveConversation(newValue);
@@ -248,19 +248,29 @@ const Terminal = () => {
 
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={activeConversation === 'new' ? conversations.length : activeConversation} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', zIndex: 1 }}>
+        <Tabs 
+          value={activeConversation === 'new' ? 'new' : activeConversation} 
+          onChange={handleTabChange} 
+          variant="scrollable" 
+          scrollButtons="auto"
+          sx={{ pointerEvents: 'auto' }}
+        >
+          <Tab label="New Chat" value="new" />
           {conversations.map((conv, index) => (
-            <Tab key={conv.id} label={
-              <Box display="flex" alignItems="center">
-                {`Chat ${index + 1}`}
-                <IconButton size="small" onClick={(event) => handleCloseConversation(event, index)} sx={{ ml: 1, p: 0 }}>
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            } />
+            <Tab
+              key={conv.id}
+              value={index}
+              label={
+                <Box display="flex" alignItems="center">
+                  {`Chat ${index + 1}`}
+                  <IconButton size="small" onClick={(event) => handleCloseConversation(event, index)} sx={{ ml: 1, p: 0 }}>
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              }
+            />
           ))}
-          <Tab label="New Chat" />
         </Tabs>
       </Box>
       <CustomScrollBox
@@ -356,7 +366,9 @@ const Terminal = () => {
           display: 'flex',
           p: 2,
           borderTop: 1,
-          borderColor: 'divider'
+          borderColor: 'divider',
+          zIndex: 1,
+          backgroundColor: 'background.paper'
         }}
       >
         <TextField
@@ -366,10 +378,15 @@ const Terminal = () => {
           value={input}
           onChange={handleInputChange}
           placeholder="Chat with AI..."
-          sx={{ mr: 1 }}
+          sx={{ mr: 1, pointerEvents: 'auto' }}
           disabled={isLoading}
         />
-        <IconButton type="submit" color="primary" disabled={isLoading || !input.trim()}>
+        <IconButton 
+          type="submit" 
+          color="primary" 
+          disabled={isLoading || !input.trim()}
+          sx={{ pointerEvents: 'auto' }}
+        >
           {isLoading ? <CircularProgress size={24} /> : <SendIcon />}
         </IconButton>
       </Box>
