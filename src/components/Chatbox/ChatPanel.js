@@ -817,6 +817,7 @@ const UserSummary = ({ user }) => {
   const theme = useTheme();
   const [token, setToken] = useState(0);
   const [nft, setNFT] = useState(0);
+  const [userImage, setUserImage] = useState(null);
 
   useEffect(() => {
     const fetchAssets = () => {
@@ -849,8 +850,20 @@ const UserSummary = ({ user }) => {
         .catch((error) => { });
     };
 
+    const fetchUserImage = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/set-user-image?account=${user.username}`);
+        if (response.data.user && response.data.user.imageUrl) {
+          setUserImage(`https://s2.xrpnft.com/d1/${response.data.user.imageUrl}`);
+        }
+      } catch (error) {
+        console.error(`Error fetching image for ${user.username}:`, error.message);
+      }
+    };
+
     if (user.username) {
       fetchAssets();
+      fetchUserImage();
     }
   }, [user]);
 
@@ -864,7 +877,7 @@ const UserSummary = ({ user }) => {
       <Stack direction="row" spacing={2} alignItems="center" sx={{ marginLeft: 0 }}>
         <Avatar
           alt={user.username}
-          src="/static/crossmark.webp"
+          src={userImage || "/static/crossmark.webp"}
           sx={{ width: 50, height: 50, marginLeft: 0 }}
         />
         <Box>
