@@ -38,11 +38,12 @@ import ConfirmAcceptOfferDialog from 'src/nft/ConfirmAcceptOfferDialog';
 import SelectPriceDialog from 'src/nft/SelectPriceDialog';
 import { useDispatch } from 'react-redux';
 import { isInstalled, submitTransaction } from '@gemwallet/api';
-import sdk from "@crossmarkio/sdk";
+import sdk from '@crossmarkio/sdk';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import QRDialog from 'src/components/QRDialog';
 import { normalizeAmount } from 'src/utils/normalizers';
 import { ProgressBar } from 'react-loader-spinner';
+import UserSummary from './UserSummary';
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -51,8 +52,6 @@ const CustomWidthTooltip = styled(({ className, ...props }) => (
     maxWidth: 500
   }
 });
-
-
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -125,13 +124,13 @@ const StyledTooltip = styled(({ className, ...props }) => (
     color: theme.palette.text.primary,
     maxWidth: 350,
     fontSize: theme.typography.pxToRem(12),
-    border: '1px solid #dadde9',
-  },
+    border: '1px solid #dadde9'
+  }
 }));
 
 const CustomScrollBox = styled(Stack)(({ theme }) => ({
   '&::-webkit-scrollbar': {
-    width: '8px',
+    width: '8px'
   },
   '&::-webkit-scrollbar-track': {
     background: '#a9a9a94d',
@@ -144,20 +143,14 @@ const CustomScrollBox = styled(Stack)(({ theme }) => ({
   '&::-webkit-scrollbar-thumb:hover': {
     background: '#a9a9a9d4',
     cursor: 'pointer'
-  },
+  }
 }));
 
 function getCostFromOffers(nftOwner, offers, isSellOffer) {
   let xrpCost = null;
   let noXrpCost = null;
   for (const offer of offers) {
-    const {
-      amount,
-      destination,
-      flags,
-      nft_offer_index,
-      owner
-    } = offer;
+    const { amount, destination, flags, nft_offer_index, owner } = offer;
 
     let validOffer = true;
 
@@ -171,14 +164,12 @@ function getCostFromOffers(nftOwner, offers, isSellOffer) {
 
     cost.offer = offer;
 
-    if (cost.currency === "XRP") {
+    if (cost.currency === 'XRP') {
       if (xrpCost) {
         if (isSellOffer) {
-          if (cost.amount < xrpCost.amount)
-            xrpCost = cost;
+          if (cost.amount < xrpCost.amount) xrpCost = cost;
         } else {
-          if (cost.amount > xrpCost.amount)
-            xrpCost = cost;
+          if (cost.amount > xrpCost.amount) xrpCost = cost;
         }
       } else {
         xrpCost = cost;
@@ -218,7 +209,7 @@ const NFTDisplay = ({ nftLink }) => {
   const [xummUuid, setXummUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
-  const [qrType, setQrType] = useState("NFTokenAcceptOffer");
+  const [qrType, setQrType] = useState('NFTokenAcceptOffer');
 
   const match = nftLink.match(/\[NFT: (.*?) #(\d+) \((.*?)\)\]/);
 
@@ -239,19 +230,21 @@ const NFTDisplay = ({ nftLink }) => {
 
   useEffect(() => {
     function getOffers() {
-      axios.get(`${BASE_URL}/offers/${tokenId}`)
-        .then(res => {
+      axios
+        .get(`${BASE_URL}/offers/${tokenId}`)
+        .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
           if (ret) {
             const offers = ret.sellOffers;
             const nftOwner = nft.account;
             setCost(getCostFromOffers(nftOwner, offers, true));
             setSellOffers(getValidOffers(ret.sellOffers, true));
-
           }
-        }).catch(err => {
-          console.log("Error on getting nft offers list!!!", err);
-        }).then(function () {
+        })
+        .catch((err) => {
+          console.log('Error on getting nft offers list!!!', err);
+        })
+        .then(function () {
           // always executed
         });
     }
@@ -262,9 +255,8 @@ const NFTDisplay = ({ nftLink }) => {
   }, [tokenId, nft]);
 
   const getValidOffers = (offers, isSell) => {
-    const newOffers = []
+    const newOffers = [];
     for (const offer of offers) {
-
       if (isSell) {
         // Sell Offers
         if (isOwner) {
@@ -277,7 +269,10 @@ const NFTDisplay = ({ nftLink }) => {
           if (accountLogin === offer.owner) {
             newOffers.push(offer);
           } else {
-            if (nft.account === offer.owner && (!offer.destination || accountLogin === offer.destination)) {
+            if (
+              nft.account === offer.owner &&
+              (!offer.destination || accountLogin === offer.destination)
+            ) {
               newOffers.push(offer);
             }
           }
@@ -297,7 +292,7 @@ const NFTDisplay = ({ nftLink }) => {
     }
 
     return newOffers;
-  }
+  };
 
   const getMediaPreview = () => {
     if (!nft) return null;
@@ -311,7 +306,10 @@ const NFTDisplay = ({ nftLink }) => {
           muted
           style={{ maxWidth: '200px', maxHeight: '200px' }}
         >
-          <source src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.video}`} type="video/mp4" />
+          <source
+            src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.video}`}
+            type="video/mp4"
+          />
           Your browser does not support the video tag.
         </video>
       );
@@ -320,7 +318,12 @@ const NFTDisplay = ({ nftLink }) => {
         <img
           src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.image}`}
           alt={nft.name}
-          style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain', borderRadius: '10px' }}
+          style={{
+            maxWidth: '200px',
+            maxHeight: '200px',
+            objectFit: 'contain',
+            borderRadius: '10px'
+          }}
         />
       );
     }
@@ -330,32 +333,32 @@ const NFTDisplay = ({ nftLink }) => {
   const handleCreateSellOffer = () => {
     setIsSellOffer(true);
     setOpenCreateOffer(true);
-  }
+  };
 
   const handleTransfer = () => {
     setOpenTransfer(true);
-  }
+  };
 
   const handleCreateBuyOffer = () => {
     setIsSellOffer(false);
     setOpenCreateOffer(true);
-  }
+  };
 
   const onHandleBurn = () => {
     setBurnt(true);
-  }
+  };
 
   const handleAcceptOffer = async (offer) => {
     setAcceptOffer(offer);
     setOpenConfirm(true);
-  }
+  };
   const handleBuyNow = async () => {
     if (sellOffers.length > 1) {
       setOpenSelectPrice(true);
     } else {
       handleAcceptOffer(cost.offer);
     }
-  }
+  };
 
   const doProcessOffer = async (offer, isAcceptOrCancel) => {
     if (!accountLogin || !accountToken) {
@@ -384,56 +387,61 @@ const NFTDisplay = ({ nftLink }) => {
 
     setPageLoading(true);
     try {
-      const {
-        uuid,
-        NFTokenID
-      } = nft;
+      const { uuid, NFTokenID } = nft;
 
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
 
       let offerTxData = {
-        TransactionType: isAcceptOrCancel ? "NFTokenAcceptOffer" : "NFTokenCancelOffer",
-        Memos: isAcceptOrCancel ? configureMemos(isSell ? 'XRPNFT-nft-accept-sell-offer' : 'XRPNFT-nft-accept-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`) : configureMemos(isSell ? 'XRPNFT-nft-cancel-sell-offer' : 'XRPNFT-nft-cancel-buy-offer', '', `https://xrpnft.com/nft/${NFTokenID}`),
+        TransactionType: isAcceptOrCancel ? 'NFTokenAcceptOffer' : 'NFTokenCancelOffer',
+        Memos: isAcceptOrCancel
+          ? configureMemos(
+              isSell ? 'XRPNFT-nft-accept-sell-offer' : 'XRPNFT-nft-accept-buy-offer',
+              '',
+              `https://xrpnft.com/nft/${NFTokenID}`
+            )
+          : configureMemos(
+              isSell ? 'XRPNFT-nft-cancel-sell-offer' : 'XRPNFT-nft-cancel-buy-offer',
+              '',
+              `https://xrpnft.com/nft/${NFTokenID}`
+            ),
         NFTokenOffers: !isAcceptOrCancel ? [index] : undefined,
         Account: accountLogin
       };
 
       if (isAcceptOrCancel) {
         if (isSell) {
-          offerTxData["NFTokenSellOffer"] = index;
-        }
-        else {
-          offerTxData["NFTokenBuyOffer"] = index;
+          offerTxData['NFTokenSellOffer'] = index;
+        } else {
+          offerTxData['NFTokenBuyOffer'] = index;
         }
       }
 
       switch (wallet_type) {
-        case "xaman":
+        case 'xaman':
           const body = {
             account: accountLogin,
             uuid,
             NFTokenID,
             index,
             destination,
-            accept: isAcceptOrCancel ? "yes" : "no",
-            sell: isSell ? "yes" : "no",
+            accept: isAcceptOrCancel ? 'yes' : 'no',
+            sell: isSell ? 'yes' : 'no',
             user_token
           };
 
-
-          const res = await axios.post(`${BASE_URL}/offers/acceptcancel`, body, { headers: { 'x-access-token': accountToken } });
+          const res = await axios.post(`${BASE_URL}/offers/acceptcancel`, body, {
+            headers: { 'x-access-token': accountToken }
+          });
 
           if (res.status === 200) {
             const newUuid = res.data.data.uuid;
             const qrlink = res.data.data.qrUrl;
             const nextlink = res.data.data.next;
 
-            let newQrType = isAcceptOrCancel ? "NFTokenAcceptOffer" : "NFTokenCancelOffer";
-            if (isSell)
-              newQrType += " [Sell Offer]";
-            else
-              newQrType += " [Buy Offer]";
+            let newQrType = isAcceptOrCancel ? 'NFTokenAcceptOffer' : 'NFTokenCancelOffer';
+            if (isSell) newQrType += ' [Sell Offer]';
+            else newQrType += ' [Buy Offer]';
 
             setQrType(newQrType);
             setXummUuid(newUuid);
@@ -442,40 +450,35 @@ const NFTDisplay = ({ nftLink }) => {
             setOpenScanQR(true);
           }
           break;
-        case "gem":
+        case 'gem':
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               dispatch(updateProcess(1));
               await submitTransaction({
                 transaction: offerTxData
               }).then(({ type, result }) => {
-                if (type == "response") {
+                if (type == 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
-                }
-
-                else {
+                } else {
                   dispatch(updateProcess(3));
                 }
               });
             }
           });
           break;
-        case "crossmark":
+        case 'crossmark':
           dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(offerTxData)
-            .then(({ response }) => {
-              if (response.data.meta.isSuccess) {
-                dispatch(updateProcess(2));
-                dispatch(updateTxHash(response.data.resp.result?.hash));
-
-              } else {
-                dispatch(updateProcess(3));
-              }
-            });
+          await sdk.methods.signAndSubmitAndWait(offerTxData).then(({ response }) => {
+            if (response.data.meta.isSuccess) {
+              dispatch(updateProcess(2));
+              dispatch(updateTxHash(response.data.resp.result?.hash));
+            } else {
+              dispatch(updateProcess(3));
+            }
+          });
           break;
       }
-
     } catch (err) {
       console.error(err);
       dispatch(updateProcess(0));
@@ -505,7 +508,7 @@ const NFTDisplay = ({ nftLink }) => {
 
   const onContinueAccept = async () => {
     doProcessOffer(acceptOffer, true);
-  }
+  };
 
   return (
     <>
@@ -513,15 +516,21 @@ const NFTDisplay = ({ nftLink }) => {
         title={
           <Paper elevation={0}>
             <Box sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>{nft ? nft.name : `${name} #${number}`}</Typography>
+              <Typography variant="h6" gutterBottom>
+                {nft ? nft.name : `${name} #${number}`}
+              </Typography>
               <Divider sx={{ my: 1 }} />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="body2">Collection:</Typography>
-                <Typography variant="body2" fontWeight="bold">{nft?.collection}</Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {nft?.collection}
+                </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="body2">Rarity Rank:</Typography>
-                <Typography variant="body2" fontWeight="bold">{nft?.rarity_rank} / {nft?.total}</Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {nft?.rarity_rank} / {nft?.total}
+                </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                 <Typography variant="body2">Royalty:</Typography>
@@ -532,11 +541,18 @@ const NFTDisplay = ({ nftLink }) => {
               {nft?.props && (
                 <>
                   <Divider sx={{ my: 1 }} />
-                  <Typography variant="subtitle2" gutterBottom>Properties:</Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Properties:
+                  </Typography>
                   {nft.props.map((prop, index) => (
-                    <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Box
+                      key={index}
+                      sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}
+                    >
                       <Typography variant="body2">{prop.type}:</Typography>
-                      <Typography variant="body2" fontWeight="bold">{prop.value}</Typography>
+                      <Typography variant="body2" fontWeight="bold">
+                        {prop.value}
+                      </Typography>
                     </Box>
                   ))}
                 </>
@@ -557,69 +573,78 @@ const NFTDisplay = ({ nftLink }) => {
                 Token ID: {tokenId}
               </Typography>
               <Divider sx={{ my: 1 }} />
-              {
-                isOwner ? (
-                  <Box sx={{
+              {isOwner ? (
+                <Box
+                  sx={{
                     display: 'flex',
                     justifyContent: 'space-around',
                     gap: 1
-                  }}>
-                    <Button
-                      fullWidth
-                      // sx={{ minWidth: 150 }}
-                      variant='outlined'
-                      startIcon={<LocalOfferIcon />}
-                      onClick={handleCreateSellOffer}
-                      color='success'
-                      disabled={!accountLogin || burnt}
-                    >
-                      Sell
-                    </Button>
-                    <Button
-                      fullWidth
-                      sx={{ padding: '8px 30px' }}
-                      variant='outlined'
-                      startIcon={<SendIcon />}
-                      onClick={handleTransfer}
-                      color='info'
-                      disabled={!accountLogin || burnt}
-                    >
-                      Transfer
-                    </Button>
-                    <BurnNFT nft={nft} onHandleBurn={onHandleBurn} />
-                  </Box>
-                ) :
-                  <Stack
-                    spacing={{ xs: 1, sm: 2 }}
-                    direction="row"
+                  }}
+                >
+                  <Button
+                    fullWidth
+                    // sx={{ minWidth: 150 }}
+                    variant="outlined"
+                    startIcon={<LocalOfferIcon />}
+                    onClick={handleCreateSellOffer}
+                    color="success"
+                    disabled={!accountLogin || burnt}
                   >
-                    <Button
-                      fullWidth
-                      disabled={!cost || burnt}
-                      variant='contained'
-                      onClick={handleBuyNow}
-                    >
-                      Buy Now
-                    </Button>
-                    <Button
-                      fullWidth
-                      disabled={!accountLogin || burnt}
-                      variant='outlined'
-                      onClick={handleCreateBuyOffer}
-                    >
-                      Make Offer
-                    </Button>
-                  </Stack>
-              }
+                    Sell
+                  </Button>
+                  <Button
+                    fullWidth
+                    sx={{ padding: '8px 30px' }}
+                    variant="outlined"
+                    startIcon={<SendIcon />}
+                    onClick={handleTransfer}
+                    color="info"
+                    disabled={!accountLogin || burnt}
+                  >
+                    Transfer
+                  </Button>
+                  <BurnNFT nft={nft} onHandleBurn={onHandleBurn} />
+                </Box>
+              ) : (
+                <Stack spacing={{ xs: 1, sm: 2 }} direction="row">
+                  <Button
+                    fullWidth
+                    disabled={!cost || burnt}
+                    variant="contained"
+                    onClick={handleBuyNow}
+                  >
+                    Buy Now
+                  </Button>
+                  <Button
+                    fullWidth
+                    disabled={!accountLogin || burnt}
+                    variant="outlined"
+                    onClick={handleCreateBuyOffer}
+                  >
+                    Make Offer
+                  </Button>
+                </Stack>
+              )}
             </Box>
           </Paper>
         }
         arrow
         placement="right"
       >
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 1, gap: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            marginLeft: 1,
+            gap: 1
+          }}
+        >
           {getMediaPreview()}
-          <Typography variant="caption" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
+          <Typography
+            variant="caption"
+            sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}
+          >
             {nft ? nft.name : `${name} #${number}`}
           </Typography>
         </Box>
@@ -634,11 +659,16 @@ const NFTDisplay = ({ nftLink }) => {
           ariaLabel="progress-bar-loading"
           wrapperStyle={{}}
           wrapperClass="progress-bar-wrapper"
-          borderColor='#F4442E'
-          barColor='#51E5FF'
+          borderColor="#F4442E"
+          barColor="#51E5FF"
         />
       </Backdrop>
-      <ConfirmAcceptOfferDialog open={openConfirm} setOpen={setOpenConfirm} offer={acceptOffer} onContinue={onContinueAccept} />
+      <ConfirmAcceptOfferDialog
+        open={openConfirm}
+        setOpen={setOpenConfirm}
+        offer={acceptOffer}
+        onContinue={onContinueAccept}
+      />
 
       <CreateOfferDialog
         open={openCreateOffer}
@@ -647,11 +677,7 @@ const NFTDisplay = ({ nftLink }) => {
         isSellOffer={isSellOffer}
       />
 
-      <TransferDialog
-        open={openTransfer}
-        setOpen={setOpenTransfer}
-        nft={nft}
-      />
+      <TransferDialog open={openTransfer} setOpen={setOpenTransfer} nft={nft} />
 
       <SelectPriceDialog
         open={openSelectPrice}
@@ -670,256 +696,6 @@ const NFTDisplay = ({ nftLink }) => {
     </>
   );
 };
-
-const UserSummary = ({ user }) => {
-  const theme = useTheme();
-  const [token, setToken] = useState(0);
-  const [nft, setNFT] = useState(0);
-  const [userImage, setUserImage] = useState(null);
-
-  useEffect(() => {
-    const fetchAssets = () => {
-      axios
-        .get(`https://api.xrpl.to/api/account/lines/${user.username}?page=0&limit=10`)
-        .then((res) => {
-          const { total } = res.data;
-          setToken(total);
-        })
-        .catch((error) => { });
-
-      axios
-        .post(`https://api.xrpnft.com/api/account/collectedCreated`, {
-          account: user.username,
-          filter: 0,
-          limit: 32,
-          page: 0,
-          search: '',
-          subFilter: 'pricexrpasc',
-          type: 'collected'
-        })
-        .then((res) => {
-          const { nfts } = res.data;
-          let total = 0;
-          nfts.map((nft) => {
-            total += nft.nftCount;
-          });
-          setNFT(total);
-        })
-        .catch((error) => { });
-    };
-
-    const fetchUserImage = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5000/api/set-user-image?account=${user.username}`);
-        if (response.data.user && response.data.user.imageUrl) {
-          setUserImage(`https://s2.xrpnft.com/d1/${response.data.user.imageUrl}`);
-        }
-      } catch (error) {
-        console.error(`Error fetching image for ${user.username}:`, error.message);
-      }
-    };
-
-    if (user.username) {
-      fetchAssets();
-      fetchUserImage();
-    }
-  }, [user]);
-
-  const getPLColor = (pl) => {
-    if (!pl || pl === '0%') return 'inherit'; // Default color if P/L is null or 0%
-    return pl.startsWith('+') ? 'green' : 'red';
-  };
-
-  return (
-    <Box p={4} sx={{ width: 500, maxWidth: 1000, width: 'fit-content', marginLeft: 0 }}>
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ marginLeft: 0 }}>
-        <Avatar
-          alt={user.username}
-          src={userImage || "/static/crossmark.webp"}
-          sx={{ width: 50, height: 50, marginLeft: 0 }}
-        />
-        <Box>
-          <Typography
-            variant="subtitle1"
-            sx={{
-              fontWeight: 'bold',
-              color: rankColors(theme)[user.rank] || theme.palette.text.primary,
-              textShadow: rankGlowEffect(theme)[user.rank] || 'none',
-              marginBottom: 1,
-              animation:
-                user.rank === 'Titan' || user.rank === 'Legendary'
-                  ? 'lightning 5s linear infinite'
-                  : 'none',
-              backgroundImage:
-                user.rank === 'Titan'
-                  ? `url(https://static.nulled.to/public/assets/whitebg.gif),
-                                   radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
-                                   url(https://static.nulled.to/public/assets/white-lightning.gif),
-                                   url(https://static.nulled.to/public/assets/blue-comet.gif)`
-                  : user.rank === 'Legendary'
-                    ? `url(https://static.nulled.to/public/assets/whitebg.gif),
-                                                   radial-gradient(circle,#1436a1 8%,#1071fa 19%,#1071fa 35%,#1071fa 60%,#1071fa 70%,#970f4a 87%,#fff 100%),
-                                                   url(https://static.nulled.to/public/assets/white-lightning.gif)`
-                    : 'none',
-              backgroundSize: user.rank === 'Legendary' ? 'cover' : '5em, 15% 800%, 10em, 25em',
-              WebkitTextFillColor:
-                user.rank === 'Titan' || user.rank === 'Legendary' ? 'transparent' : 'inherit',
-              WebkitBackgroundClip:
-                user.rank === 'Titan' || user.rank === 'Legendary' ? 'text' : 'unset',
-              filter: user.rank === 'Titan' ? 'brightness(1.5)' : 'none'
-            }}
-          >
-            {user.username}
-          </Typography>
-          <Grid container spacing={1}>
-            {/* Rank Section */}
-            <Grid item xs={12} sx={{ display: 'flex' }}>
-              <Typography variant="body2" sx={{ flex: 1 }}>
-                <strong>Rank:</strong>
-              </Typography>
-              <Typography variant="body2" sx={{ flex: 2 }}>
-                <span
-                  style={{
-                    color: rankColors(theme)[user.rank] || theme.palette.text.primary,
-                    textShadow: rankGlowEffect(theme)[user.rank] || 'none'
-                  }}
-                >
-                  {user.group}
-                </span>
-              </Typography>
-            </Grid>
-
-            {/* P/L Section */}
-            <Grid item xs={12} sx={{ display: 'flex' }}>
-              <Typography variant="body2" sx={{ flex: 1 }}>
-                <strong>P/L:</strong>
-              </Typography>
-              <Typography variant="body2" sx={{ flex: 2, color: getPLColor(user.profitLoss) }}>
-                {user.profitLoss || 'N/A'}
-              </Typography>
-            </Grid>
-
-            {/* Top NFT Collections Section */}
-            <Grid item xs={12} sx={{ display: 'flex' }}>
-              <Typography variant="body2" sx={{ flex: 1 }}>
-                <strong>NFTs:</strong>
-              </Typography>
-              <Typography variant="body2" sx={{ flex: 2 }}>
-                {nft || 'None'}
-              </Typography>
-            </Grid>
-
-            {/* Top Tokens Owned Section */}
-            <Grid item xs={12} sx={{ display: 'flex' }}>
-              <Typography variant="body2" sx={{ flex: 1 }}>
-                <strong>Tokens:</strong>
-              </Typography>
-              <Typography variant="body2" sx={{ flex: 2 }}>
-                {token || 'None'}
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12} sx={{ display: 'flex' }}>
-              <Typography variant="body2" sx={{ flex: 1 }}>
-                <strong>Chats:</strong>
-              </Typography>
-              <Typography variant="body2" sx={{ flex: 2 }}>
-                {user.activePosts}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sx={{ display: 'flex' }}>
-              <Typography variant="body2" sx={{ flex: 1 }}>
-                <strong>Joined XRPL:</strong>
-              </Typography>
-              <Typography variant="body2" sx={{ flex: 2 }}>
-                {user.memberSince}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sx={{ display: 'flex' }}>
-              <Typography variant="body2" sx={{ flex: 1 }}>
-                <strong>Last Active:</strong>
-              </Typography>
-              <Typography variant="body2" sx={{ flex: 2 }}>
-                {user.lastActive}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sx={{ display: 'flex' }}>
-              <Typography variant="body2" sx={{ flex: 1 }}>
-                <strong>Currently:</strong>
-              </Typography>
-              <Typography variant="body2" sx={{ flex: 2 }}>
-                {user.currently}
-              </Typography>
-            </Grid>
-          </Grid>
-        </Box>
-      </Stack>
-
-      <Box mt={2} textAlign="center">
-        <Stack direction="row" spacing={1} justifyContent="center">
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<SendIcon />}
-            sx={{
-              backgroundColor: rankColors(theme)[user.rank],
-              '&:hover': {
-                backgroundColor: rankColors(theme)[user.rank],
-                opacity: 0.9
-              },
-              textShadow: rankGlowEffect(theme)[user.rank] || 'none',
-              height: '40px',
-              width: '100px'
-            }}
-            onClick={() => handleSendTip(user)}
-          >
-            Tip
-          </Button>
-          <Button
-            variant="outlined"
-            color="secondary"
-            startIcon={<TradeIcon />}
-            sx={{
-              height: '40px',
-              width: '100px'
-            }}
-            onClick={() => handleTrade(user)}
-          >
-            Trade
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<MessageIcon />}
-            sx={{
-              height: '40px',
-              width: '130px'
-            }}
-            onClick={() => handleSendMessage(user)}
-          >
-            Message
-          </Button>
-        </Stack>
-      </Box>
-    </Box>
-  );
-};
-
-const handleSendTip = (user) => {
-  console.log(`Sending tip to ${user.username}`);
-  // Add your tipping logic here
-};
-
-const handleTrade = (user) => {
-  console.log(`Initiating trade with ${user.username}`);
-  // Add your trade initiation logic here
-};
-
-const handleSendMessage = (user) => {
-  console.log(`Sending message to ${user.username}`);
-  // Add your message sending logic here
-};
-
 
 const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   const theme = useTheme();
@@ -945,18 +721,20 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
 
   useEffect(() => {
     const fetchUserImages = async () => {
-      const uniqueUsers = [...new Set(chats.map(chat => chat.username))];
+      const uniqueUsers = [...new Set(chats.map((chat) => chat.username))];
       const imagePromises = uniqueUsers.map(async (account) => {
         try {
-          const response = await axios.get(`http://localhost:5000/api/set-user-image?account=${account}`);
+          const response = await axios.get(
+            `http://localhost:5000/api/set-user-image?account=${account}`
+          );
           if (response.data.user) {
             const user = response.data.user;
-            return { 
-              [account]: user.imageUrl 
-                ? `https://s2.xrpnft.com/d1/${user.imageUrl}` 
-                : user.nftTokenId 
-                  ? `https://s2.xrpnft.com/d1/${user.nftTokenId}` 
-                  : null 
+            return {
+              [account]: user.imageUrl
+                ? `https://s2.xrpnft.com/d1/${user.imageUrl}`
+                : user.nftTokenId
+                ? `https://s2.xrpnft.com/d1/${user.nftTokenId}`
+                : null
             };
           } else {
             console.log(`No user data found for ${account}`);
@@ -985,7 +763,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
         height: '100%',
         overflowY: 'auto',
         display: 'flex',
-        flexDirection: 'column-reverse',
+        flexDirection: 'column-reverse'
       }}
     >
       {Array.isArray(chats) && chats.length > 0 ? (
@@ -1039,7 +817,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
               >
                 <Avatar
                   alt={chat.username}
-                  src={userImages[chat.username] || "/static/crossmark.webp"}
+                  src={userImages[chat.username] || '/static/crossmark.webp'}
                   sx={{ width: 32, height: 32, marginTop: 0.5 }}
                 />
                 <Box sx={{ flexGrow: 1 }}>
@@ -1065,8 +843,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                         )}
                       </Typography>
                     </CustomWidthTooltip>
-                    {
-                      chat.username !== accountProfile?.account &&
+                    {chat.username !== accountProfile?.account && (
                       <Tooltip title="Send private message" arrow>
                         <IconButton
                           size="small"
@@ -1082,7 +859,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                           <ChatBubbleOutlineIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-                    }
+                    )}
                   </Stack>
                   {newsData ? (
                     <Box sx={{ mt: 0.5 }}>
@@ -1108,8 +885,8 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                               newsData.sentiment === 'Bullish'
                                 ? 'green'
                                 : newsData.sentiment === 'Bearish'
-                                  ? 'red'
-                                  : 'inherit'
+                                ? 'red'
+                                : 'inherit'
                           }}
                         >
                           • {newsData.sentiment}
@@ -1121,7 +898,9 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                       variant="body2"
                       sx={{
                         mt: 0.5,
-                        color: chat.isPrivate ? theme.palette.secondary.main : theme.palette.text.primary
+                        color: chat.isPrivate
+                          ? theme.palette.secondary.main
+                          : theme.palette.text.primary
                       }}
                     >
                       {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
@@ -1154,6 +933,5 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
     </CustomScrollBox>
   );
 };
-
 
 export default ChatPanel;
