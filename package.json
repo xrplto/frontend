@@ -43,7 +43,7 @@
     "@iconify/icons-uil": "^1.2.3",
     "@iconify/react": "^3.2.2",
     "@mui/base": "5.0.0-alpha.87",
-    "@mui/icons-material": "5.11.11",
+    "@mui/icons-material": "^5.11.11",
     "@mui/lab": "^5.0.0-alpha.88",
     "@mui/material": "^5.16.7",
     "@mui/styles": "5.8.6",

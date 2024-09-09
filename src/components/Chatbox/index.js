@@ -24,6 +24,7 @@ import TerminalIcon from '@mui/icons-material/Terminal';
 import SettingsIcon from '@mui/icons-material/Settings';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import Terminal from './Terminal';
+import ChatSettings from './ChatSettings';
 
 const drawerWidth = 400;
 const chatURL = "http://65.108.136.237:5000";
@@ -375,11 +376,7 @@ function Chatbox() {
           />
         )}
         {selectedOption === 'Terminal' && <Terminal />}
-        {selectedOption === 'Settings' && (
-          <Typography variant="body1" sx={{ p: 2 }}>
-            Settings panel (to be implemented)
-          </Typography>
-        )}
+        {selectedOption === 'Settings' && <ChatSettings />}
       </Box>
       {
         accountProfile?.account && selectedOption === 'Chatbox' && (
