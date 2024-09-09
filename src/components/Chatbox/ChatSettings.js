@@ -12,6 +12,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import { AppContext } from 'src/AppContext';
 import { styled } from '@mui/material/styles';
+import ProfileNFTPicker from './ProfileNFTPicker';
 
 // Styled component for editable fields
 const EditableField = styled(TextField)(({ theme, isediting }) => ({
@@ -30,6 +31,7 @@ function ChatSettings() {
   const [tempUsername, setTempUsername] = useState(accountProfile?.username || '');
   const [notifications, setNotifications] = useState(true);
   const [twoFactor, setTwoFactor] = useState(false);
+  const [showNFTPicker, setShowNFTPicker] = useState(false);
 
   // Add state for social media accounts
   const [socialMedia, setSocialMedia] = useState({
@@ -68,6 +70,14 @@ function ChatSettings() {
     }
   };
 
+  const handleOpenNFTPicker = () => {
+    setShowNFTPicker(true);
+  };
+
+  const handleCloseNFTPicker = () => {
+    setShowNFTPicker(false);
+  };
+
   return (
     <Paper elevation={3} sx={{ p: 3, borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -98,7 +108,7 @@ function ChatSettings() {
                 {accountProfile?.username || 'User'}
               </Typography>
               {editMode && (
-                <Button variant="outlined" size="small">
+                <Button variant="outlined" size="small" onClick={handleOpenNFTPicker}>
                   Change NFT
                 </Button>
               )}
@@ -224,6 +234,10 @@ function ChatSettings() {
               Cancel
             </Button>
           </Box>
+        )}
+
+        {showNFTPicker && (
+          <ProfileNFTPicker open={showNFTPicker} onClose={handleCloseNFTPicker} />
         )}
       </Box>
     </Paper>
