@@ -1,62 +1,65 @@
 import React from 'react';
-import { Stack, Avatar, Typography, Box, Button, Grid, useTheme, styled, Tooltip } from '@mui/material';
+import {
+  Stack,
+  Avatar,
+  Typography,
+  Box,
+  Button,
+  Grid,
+  useTheme,
+  Paper,
+  Divider,
+  Chip
+} from '@mui/material';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-
-const rankColors = (theme) => ({
-  Member: theme.palette.grey[500],
-  VIP: theme.palette.mode === 'dark' ? '#FFD700' : '#DAA520',
-  AQUA: theme.palette.mode === 'dark' ? '#00CED1' : '#20B2AA',
-  NOVA: theme.palette.mode === 'dark' ? '#FF69B4' : '#DB7093',
-  Moderator: theme.palette.mode === 'dark' ? '#9370DB' : '#8A2BE2',
-  Admin: theme.palette.mode === 'dark' ? '#FF4500' : '#DC143C',
-  Titan: 'linear-gradient(90deg, #4B0082 0%, #0000FF 50%, #800080 100%)',
-  Legendary: 'linear-gradient(90deg, #FFD700 0%, #FFA500 50%, #FF4500 100%)',
-  Developer: theme.palette.primary.dark,
-  Bot: theme.palette.info.main,
-});
-
-const rankGlowEffect = (theme) => ({
-  Member: 'none',
-  VIP: `0 0 5px ${theme.palette.mode === 'dark' ? '#FFD700' : '#DAA520'}`,
-  AQUA: `0 0 5px ${theme.palette.mode === 'dark' ? '#00CED1' : '#20B2AA'}`,
-  NOVA: `0 0 5px ${theme.palette.mode === 'dark' ? '#FF69B4' : '#DB7093'}`,
-  Moderator: `0 0 5px ${theme.palette.mode === 'dark' ? '#9370DB' : '#8A2BE2'}`,
-  Admin: `0 0 5px ${theme.palette.mode === 'dark' ? '#FF4500' : '#DC143C'}`,
-  Titan: '0 0 8px #0000FF',
-  Legendary: '0 0 8px #FFA500',
-  Developer: `0 0 5px ${theme.palette.primary.dark}`,
-  Bot: `0 0 5px ${theme.palette.info.main}`,
-});
+import { rankColors, rankGlowEffect } from './RankStyles';
 
 const UserSummary = ({ user }) => {
   const theme = useTheme();
   const [tokenCount, setTokenCount] = useState(0);
   const [nft, setNFT] = useState(0);
   const [userImage, setUserImage] = useState(null);
+  const [username, setUsername] = useState(user.username); // Initialize with prop, will be updated if available from API
   const [joinedDate, setJoinedDate] = useState(null);
   const [issuedTokens, setIssuedTokens] = useState([]);
   const [lastActive, setLastActive] = useState(null);
+  const [kycStatus, setKycStatus] = useState(null);
+  const [rank, setRank] = useState('Member'); // Default rank
 
   useEffect(() => {
     const fetchAssets = () => {
-      axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}/trustlines2`)
+      axios
+        .get(`https://api.xrpscan.com/api/v1/account/${user.username}/trustlines2`)
         .then((res) => {
-          const tokenLines = res.data.lines.filter(line => parseFloat(line.balance) > 0);
+          const tokenLines = res.data.lines.filter((line) => parseFloat(line.balance) > 0);
           setTokenCount(tokenLines.length);
         })
         .catch(() => setTokenCount(0));
 
-      axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}/nfts`)
+      axios
+        .get(`https://api.xrpscan.com/api/v1/account/${user.username}/nfts`)
         .then((res) => setNFT(res.data.length))
         .catch(() => setNFT(0));
     };
 
     const fetchUserImage = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/set-user-image?account=${user.username}`);
-        setUserImage(response.data.user?.imageUrl ? `https://s2.xrpnft.com/d1/${response.data.user.imageUrl}` : null);
-      } catch {
+        const response = await axios.get(
+          `http://localhost:5000/api/set-user-image?account=${user.username}`
+        );
+        if (response.data.user) {
+          setUserImage(
+            response.data.user.imageUrl
+              ? `https://s2.xrpnft.com/d1/${response.data.user.imageUrl}`
+              : null
+          );
+          if (response.data.user.username) {
+            setUsername(response.data.user.username);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user image and username:', error);
         setUserImage(null);
       }
     };
@@ -66,7 +69,9 @@ const UserSummary = ({ user }) => {
         const response = await axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}`);
         if (response.data && response.data.inception) {
           const date = new Date(response.data.inception);
-          setJoinedDate(date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
+          setJoinedDate(
+            date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          );
         } else {
           setJoinedDate('N/A');
         }
@@ -78,7 +83,9 @@ const UserSummary = ({ user }) => {
 
     const fetchIssuedTokens = async () => {
       try {
-        const response = await axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}/obligations`);
+        const response = await axios.get(
+          `https://api.xrpscan.com/api/v1/account/${user.username}/obligations`
+        );
         setIssuedTokens(response.data);
       } catch (error) {
         console.error('Error fetching issued tokens:', error);
@@ -88,17 +95,21 @@ const UserSummary = ({ user }) => {
 
     const fetchLastActive = async () => {
       try {
-        const response = await axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}/transactions?limit=1`);
+        const response = await axios.get(
+          `https://api.xrpscan.com/api/v1/account/${user.username}/transactions?limit=1`
+        );
         if (response.data.transactions && response.data.transactions.length > 0) {
           const lastTx = response.data.transactions[0];
           const lastActiveDate = new Date(lastTx.date);
-          setLastActive(lastActiveDate.toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          }));
+          setLastActive(
+            lastActiveDate.toLocaleString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          );
         } else {
           setLastActive('No transactions found');
         }
@@ -108,67 +119,145 @@ const UserSummary = ({ user }) => {
       }
     };
 
+    const fetchKYCStatus = async () => {
+      const options = {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json'
+        }
+      };
+
+      try {
+        const response = await fetch(
+          `https://xumm.app/api/v1/platform/kyc-status/${user.username}`,
+          options
+        );
+        const data = await response.json();
+        setKycStatus(data.kycApproved ? 'Approved' : 'Not Approved');
+      } catch (error) {
+        console.error('Error fetching KYC status:', error);
+        setKycStatus('Error');
+      }
+    };
+
+    const setUserRank = () => {
+      if (user.rank && rankColors(theme)[user.rank]) {
+        setRank(user.rank);
+      } else {
+        setRank('Member');
+      }
+    };
+
+    setUserRank();
     fetchAssets();
     fetchUserImage();
     fetchAccountInfo();
     fetchIssuedTokens();
     fetchLastActive();
-  }, [user]);
+    fetchKYCStatus();
+  }, [user, theme]);
 
   const getPLColor = (pl) => (pl?.startsWith('+') ? 'green' : 'red');
 
   return (
-    <Box p={4} sx={{ maxWidth: 1000, width: 'fit-content' }}>
-      <Stack direction="row" spacing={2} alignItems="center">
-        <Avatar alt={user.username} src={userImage || "/static/crossmark.webp"} sx={{ width: 50, height: 50 }} />
-        <Box>
-          <Typography
-            variant="subtitle1"
-            sx={{
-              fontWeight: 'bold',
-              color: rankColors(theme)[user.rank] || theme.palette.text.primary,
-              textShadow: rankGlowEffect(theme)[user.rank] || 'none',
-              animation: user.rank === 'Titan' || user.rank === 'Legendary' ? 'lightning 5s linear infinite' : 'none',
-            }}
-          >
-            {user.username}
-          </Typography>
-          <Grid container spacing={1}>
-            <Grid item xs={12}><strong>Rank:</strong> {user.group}</Grid>
-            <Grid item xs={12}><strong>Joined Date:</strong> {joinedDate || 'Loading...'}</Grid>
-            <Grid item xs={12}><strong>Last Active:</strong> {lastActive || 'Loading...'}</Grid>
-            <Grid item xs={12}><strong>P/L:</strong> <span style={{ color: getPLColor(user.profitLoss) }}>{user.profitLoss || 'N/A'}</span></Grid>
-            <Grid item xs={12}><strong>NFTs:</strong> {nft || 'None'}</Grid>
-            <Grid item xs={12}><strong>Tokens:</strong> {tokenCount || 'None'}</Grid>
-            <Grid item xs={12}><strong>Chats:</strong> {user.activePosts}</Grid>
-            <Grid item xs={12}><strong>Currently:</strong> {user.currently}</Grid>
-            <Grid item xs={12}>
-              <strong>Issued Tokens:</strong>
-              {issuedTokens.length > 0 ? (
-                <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                  {issuedTokens.map((token, index) => (
-                    <li key={index}>
-                      {token.currency}: {parseFloat(token.value).toFixed(2)}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                'None'
-              )}
-            </Grid>
-          </Grid>
-        </Box>
-      </Stack>
-      <Box mt={2} textAlign="center">
-        <Stack direction="row" spacing={1} justifyContent="center">
-          <Button variant="contained" color="primary" onClick={() => handleSendTip(user)}>Tip</Button>
-          <Button variant="outlined" color="secondary" onClick={() => handleTrade(user)}>Trade</Button>
-          <Button variant="contained" color="secondary" onClick={() => handleSendMessage(user)}>Message</Button>
+    <Paper
+      elevation={3}
+      sx={{
+        p: 3,
+        maxWidth: 400,
+        width: '100%',
+        border: '2px solid white', // Add white border
+        borderRadius: '16px' // Increase border radius for a softer look
+      }}
+    >
+      <Stack spacing={2}>
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Avatar
+            alt={username}
+            src={userImage || '/static/crossmark.webp'}
+            sx={{ width: 80, height: 80, border: `2px solid ${rankColors(theme)[rank]}` }}
+          />
+          <Box>
+            <Typography variant="h5" fontWeight="bold">
+              {username}
+            </Typography>
+            <Chip
+              label={rank}
+              sx={{
+                bgcolor: rankColors(theme)[rank],
+                color: '#fff',
+                fontWeight: 'bold',
+                boxShadow: rankGlowEffect(theme)[rank]
+              }}
+            />
+          </Box>
         </Stack>
-      </Box>
-    </Box>
+
+        <Divider />
+
+        <Grid container spacing={1}>
+          <InfoItem label="Account" value={user.username} />
+          <InfoItem label="XUMM KYC" value={kycStatus || 'Loading...'} />
+          <InfoItem label="Joined" value={joinedDate || 'Loading...'} />
+          <InfoItem label="Last Active" value={lastActive || 'Loading...'} />
+          <InfoItem
+            label="P/L"
+            value={user.profitLoss || 'N/A'}
+            valueColor={getPLColor(user.profitLoss)}
+          />
+          <InfoItem label="NFTs" value={nft || 'None'} />
+          <InfoItem label="Tokens" value={tokenCount || 'None'} />
+          <InfoItem label="Chats" value={user.activePosts} />
+          <InfoItem label="Currently" value={user.currently} />
+        </Grid>
+
+        {issuedTokens.length > 0 && (
+          <>
+            <Divider />
+            <Typography variant="subtitle1" fontWeight="bold">
+              Issued Tokens
+            </Typography>
+            <Grid container spacing={1}>
+              {issuedTokens.map((token, index) => (
+                <Grid item xs={6} key={index}>
+                  <Chip
+                    label={`${token.currency}: ${parseFloat(token.value).toFixed(2)}`}
+                    size="small"
+                    sx={{ width: '100%', justifyContent: 'space-between' }}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </>
+        )}
+
+        <Stack direction="row" spacing={1} justifyContent="center" mt={2}>
+          <Button variant="contained" color="primary" onClick={() => handleSendTip(user)}>
+            Tip
+          </Button>
+          <Button variant="outlined" color="secondary" onClick={() => handleTrade(user)}>
+            Trade
+          </Button>
+          <Button variant="contained" color="secondary" onClick={() => handleSendMessage(user)}>
+            Message
+          </Button>
+        </Stack>
+      </Stack>
+    </Paper>
   );
 };
+
+const InfoItem = ({ label, value, valueColor }) => (
+  <Grid item xs={6}>
+    <Typography variant="caption" display="block" color="text.secondary">
+      {label}
+    </Typography>
+    <Typography variant="body2" fontWeight="medium" color={valueColor}>
+      {value}
+    </Typography>
+  </Grid>
+);
 
 const handleSendTip = (user) => {
   console.log(`Sending tip to ${user.username}`);
