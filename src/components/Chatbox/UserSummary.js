@@ -12,10 +12,12 @@ import {
   Divider,
   Chip
 } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { rankColors, rankGlowEffect } from './RankStyles';
 import { Client } from 'xrpl';
+import Trade from './Trade';
+import { AppContext } from 'src/AppContext';
 
 const UserSummary = ({ user }) => {
   const theme = useTheme();
@@ -40,6 +42,8 @@ const UserSummary = ({ user }) => {
   const [availableXrpBalance, setAvailableXrpBalance] = useState(null);
   const [reserveXrp, setReserveXrp] = useState(null);
   const [tokenLines, setTokenLines] = useState([]);
+  const [tradeModalOpen, setTradeModalOpen] = useState(false);
+  const { accountProfile } = useContext(AppContext);
 
   useEffect(() => {
     const fetchTokenLines = async () => {
@@ -227,76 +231,87 @@ const UserSummary = ({ user }) => {
     return 'Unknown';
   };
 
+  const handleTrade = () => {
+    setTradeModalOpen(true);
+  };
+
   return (
-    <Paper
-      elevation={3}
-      sx={{
-        p: 3,
-        maxWidth: 400,
-        width: '100%',
-        border: '2px solid white', // Add white border
-        borderRadius: '16px' // Increase border radius for a softer look
-      }}
-    >
-      <Stack spacing={2}>
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Avatar
-            alt={username}
-            src={userImage || '/static/crossmark.webp'}
-            sx={{ width: 80, height: 80, border: `2px solid ${rankColors(theme)[rank]}` }}
-          />
-          <Box>
-            <Typography variant="h5" fontWeight="bold" noWrap>
-              {truncateUsername(username)}
-            </Typography>
-            <Chip
-              label={rank}
-              sx={{
-                bgcolor: rankColors(theme)[rank],
-                color: '#fff',
-                fontWeight: 'bold',
-                boxShadow: rankGlowEffect(theme)[rank]
-              }}
+    <>
+      <Paper
+        elevation={3}
+        sx={{
+          p: 3,
+          maxWidth: 400,
+          width: '100%',
+          border: '2px solid white', // Add white border
+          borderRadius: '16px' // Increase border radius for a softer look
+        }}
+      >
+        <Stack spacing={2}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Avatar
+              alt={username}
+              src={userImage || '/static/crossmark.webp'}
+              sx={{ width: 80, height: 80, border: `2px solid ${rankColors(theme)[rank]}` }}
             />
-          </Box>
+            <Box>
+              <Typography variant="h5" fontWeight="bold" noWrap>
+                {truncateUsername(username)}
+              </Typography>
+              <Chip
+                label={rank}
+                sx={{
+                  bgcolor: rankColors(theme)[rank],
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  boxShadow: rankGlowEffect(theme)[rank]
+                }}
+              />
+            </Box>
+          </Stack>
+
+          <Divider />
+
+          <Grid container spacing={1}>
+            <InfoItem label="Account" value={user.username} />
+            <InfoItem label="XUMM KYC" value={kycStatus || 'Loading...'} />
+            <InfoItem label="Joined" value={joinedDate || 'Loading...'} />
+            <InfoItem label="Last Active" value={lastActive || 'Loading...'} />
+            <InfoItem
+              label="P/L"
+              value={user.profitLoss || 'N/A'}
+              valueColor={getPLColor(user.profitLoss)}
+            />
+            <InfoItem label="NFTs" value={nftCount || 'None'} />
+            <InfoItem label="Tokens" value={tokenCount || 'None'} />
+            <InfoItem label="Chats" value={user.activePosts} />
+            <InfoItem label="Currently" value={getCurrentStatus()} />
+            <InfoItem label="Reserve XRP" value={reserveXrp ? `${reserveXrp} XRP` : 'Loading...'} />
+            <InfoItem
+              label="Available XRP"
+              value={availableXrpBalance ? `${availableXrpBalance} XRP` : 'Loading...'}
+            />
+          </Grid>
+
+          <Stack direction="row" spacing={1} justifyContent="center" mt={2}>
+            <Button variant="contained" color="primary" onClick={() => handleSendTip(user)}>
+              Tip
+            </Button>
+            <Button variant="outlined" color="secondary" onClick={handleTrade}>
+              Trade
+            </Button>
+            <Button variant="contained" color="secondary" onClick={() => handleSendMessage(user)}>
+              Message
+            </Button>
+          </Stack>
         </Stack>
-
-        <Divider />
-
-        <Grid container spacing={1}>
-          <InfoItem label="Account" value={user.username} />
-          <InfoItem label="XUMM KYC" value={kycStatus || 'Loading...'} />
-          <InfoItem label="Joined" value={joinedDate || 'Loading...'} />
-          <InfoItem label="Last Active" value={lastActive || 'Loading...'} />
-          <InfoItem
-            label="P/L"
-            value={user.profitLoss || 'N/A'}
-            valueColor={getPLColor(user.profitLoss)}
-          />
-          <InfoItem label="NFTs" value={nftCount || 'None'} />
-          <InfoItem label="Tokens" value={tokenCount || 'None'} />
-          <InfoItem label="Chats" value={user.activePosts} />
-          <InfoItem label="Currently" value={getCurrentStatus()} />
-          <InfoItem label="Reserve XRP" value={reserveXrp ? `${reserveXrp} XRP` : 'Loading...'} />
-          <InfoItem
-            label="Available XRP"
-            value={availableXrpBalance ? `${availableXrpBalance} XRP` : 'Loading...'}
-          />
-        </Grid>
-
-        <Stack direction="row" spacing={1} justifyContent="center" mt={2}>
-          <Button variant="contained" color="primary" onClick={() => handleSendTip(user)}>
-            Tip
-          </Button>
-          <Button variant="outlined" color="secondary" onClick={() => handleTrade(user)}>
-            Trade
-          </Button>
-          <Button variant="contained" color="secondary" onClick={() => handleSendMessage(user)}>
-            Message
-          </Button>
-        </Stack>
-      </Stack>
-    </Paper>
+      </Paper>
+      <Trade
+        open={tradeModalOpen}
+        onClose={() => setTradeModalOpen(false)}
+        tradePartner={user} // This is the user profile being viewed
+      />
+    </>
   );
 };
 
@@ -313,10 +328,6 @@ const InfoItem = ({ label, value, valueColor }) => (
 
 const handleSendTip = (user) => {
   console.log(`Sending tip to ${user.username}`);
-};
-
-const handleTrade = (user) => {
-  console.log(`Initiating trade with ${user.username}`);
 };
 
 const handleSendMessage = (user) => {
