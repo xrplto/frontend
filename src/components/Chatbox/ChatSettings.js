@@ -1,10 +1,24 @@
-import React, { useContext, useState } from 'react';
-import { Box, TextField, Typography, Avatar, Paper, Grid, Button, Tooltip, IconButton, Divider, Switch, FormControlLabel } from '@mui/material';
-import { 
-  Edit as EditIcon, 
-  Save as SaveIcon, 
-  Cancel as CancelIcon, 
-  Notifications as NotificationsIcon, 
+import React, { useContext, useState, useEffect } from 'react';
+import {
+  Box,
+  TextField,
+  Typography,
+  Avatar,
+  Paper,
+  Grid,
+  Button,
+  Tooltip,
+  IconButton,
+  Divider,
+  Switch,
+  FormControlLabel,
+  Snackbar
+} from '@mui/material';
+import {
+  Edit as EditIcon,
+  Save as SaveIcon,
+  Cancel as CancelIcon,
+  Notifications as NotificationsIcon,
   Security as SecurityIcon
 } from '@mui/icons-material';
 import TelegramIcon from '@mui/icons-material/Telegram';
@@ -13,31 +27,49 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 import { AppContext } from 'src/AppContext';
 import { styled } from '@mui/material/styles';
 import ProfileNFTPicker from './ProfileNFTPicker';
+import { debounce } from 'lodash';
+import MuiAlert from '@mui/material/Alert';
 
 // Styled component for editable fields
 const EditableField = styled(TextField)(({ theme, isediting }) => ({
   '& .MuiInputBase-root': {
-    backgroundColor: isediting === 'true' ? theme.palette.action.hover : theme.palette.action.disabledBackground,
-    transition: theme.transitions.create(['background-color', 'box-shadow']),
+    backgroundColor:
+      isediting === 'true' ? theme.palette.action.hover : theme.palette.action.disabledBackground,
+    transition: theme.transitions.create(['background-color', 'box-shadow'])
   },
   '& .MuiOutlinedInput-root.Mui-focused': {
-    backgroundColor: theme.palette.background.paper,
-  },
+    backgroundColor: theme.palette.background.paper
+  }
 }));
 
 function ChatSettings() {
   const { accountProfile, updateAccountProfile } = useContext(AppContext);
+
+  // Add a check for updateAccountProfile
+  const [localProfile, setLocalProfile] = useState(accountProfile);
+
+  const safeUpdateAccountProfile = (newProfile) => {
+    if (typeof updateAccountProfile === 'function') {
+      updateAccountProfile(newProfile);
+    } else {
+      console.warn('updateAccountProfile is not a function, using local state update');
+      setLocalProfile(newProfile);
+    }
+  };
+
   const [editMode, setEditMode] = useState(false);
-  const [tempUsername, setTempUsername] = useState(accountProfile?.username || '');
+  const [tempUsername, setTempUsername] = useState(localProfile?.username || '');
   const [notifications, setNotifications] = useState(true);
   const [twoFactor, setTwoFactor] = useState(false);
   const [showNFTPicker, setShowNFTPicker] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [isLoading, setIsLoading] = useState(false);
 
   // Add state for social media accounts
   const [socialMedia, setSocialMedia] = useState({
-    telegram: accountProfile?.socialMedia?.telegram || '',
-    discord: accountProfile?.socialMedia?.discord || '',
-    x: accountProfile?.socialMedia?.x || '',
+    telegram: localProfile?.socialMedia?.telegram || '',
+    discord: localProfile?.socialMedia?.discord || '',
+    x: localProfile?.socialMedia?.x || ''
   });
 
   const handleSocialMediaChange = (platform) => (event) => {
@@ -49,24 +81,57 @@ function ChatSettings() {
     setTempUsername(newUsername);
   };
 
-  const handleSave = () => {
-    updateAccountProfile({
-      ...accountProfile,
+  const handleSave = async () => {
+    setIsLoading(true);
+    const updatedProfile = {
+      ...localProfile,
       username: tempUsername,
-      socialMedia: socialMedia,
-    });
+      socialMedia: socialMedia
+    };
+    safeUpdateAccountProfile(updatedProfile);
     setEditMode(false);
+
+    // Send update to server
+    try {
+      const response = await fetch('http://localhost:5000/update-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedProfile)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile on server');
+      }
+
+      const result = await response.json();
+      console.log('Server response:', result);
+
+      // Show a success message to the user
+      showNotification('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile on server:', error);
+      // Show an error message to the user
+      showNotification('Failed to update profile. Please try again.', 'error');
+    }
+    setIsLoading(false);
   };
 
   const handleCancel = () => {
-    setTempUsername(accountProfile?.username || '');
+    setTempUsername(localProfile?.username || '');
     setEditMode(false);
   };
 
   const handleEditToggle = () => {
-    setEditMode(!editMode);
-    if (editMode) {
-      setTempUsername(accountProfile?.username || '');
+    setEditMode((prevMode) => !prevMode);
+    if (!editMode) {
+      setTempUsername(localProfile?.username || '');
+      setSocialMedia({
+        telegram: localProfile?.socialMedia?.telegram || '',
+        discord: localProfile?.socialMedia?.discord || '',
+        x: localProfile?.socialMedia?.x || ''
+      });
     }
   };
 
@@ -78,44 +143,167 @@ function ChatSettings() {
     setShowNFTPicker(false);
   };
 
+  const handleNFTSelect = async (nft) => {
+    console.log('Selected NFT:', nft);
+
+    // Get the small thumbnail URL
+    const smallThumbnailUrl =
+      nft.files?.[0]?.thumbnail?.small ||
+      nft.thumbnail?.image ||
+      nft.meta?.image ||
+      localProfile?.imageUrl;
+
+    // Update the local state with the new profile image
+    const updatedProfile = {
+      ...localProfile,
+      imageUrl: smallThumbnailUrl
+    };
+
+    // Update local state immediately
+    safeUpdateAccountProfile(updatedProfile);
+
+    // Force a re-render
+    setTempUsername((prevUsername) => prevUsername);
+
+    // Prepare the data for the request
+    const requestData = {
+      account: localProfile?.account,
+      imageUrl: smallThumbnailUrl,
+      nftTokenId: nft.NFTokenID || nft._id
+    };
+
+    try {
+      const response = await fetch('http://localhost:5000/api/set-user-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile image on server');
+      }
+
+      const result = await response.json();
+      console.log('Server response:', result);
+
+      // Update local state with the server response
+      if (result.user) {
+        safeUpdateAccountProfile(result.user);
+      }
+
+      // Show a success message to the user
+      showNotification('Profile image updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile image on server:', error);
+      // Show an error message to the user
+      showNotification('Failed to update profile image. Please try again.', 'error');
+    }
+
+    setShowNFTPicker(false);
+  };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const showNotification = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const getProfileImageUrl = (imageUrl) => {
+    if (!imageUrl) return '';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `https://s2.xrpnft.com/d1/${imageUrl}`;
+  };
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/set-user-image?account=${accountProfile.account}`
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch user profile');
+        }
+        const data = await response.json();
+        if (data.user) {
+          safeUpdateAccountProfile(data.user);
+          setLocalProfile(data.user);
+          setTempUsername(data.user.username || '');
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        showNotification('Failed to load user profile', 'error');
+      }
+    };
+
+    fetchUserProfile();
+  }, [accountProfile.account]);
+
   return (
-    <Paper elevation={3} sx={{ p: 3, borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Paper
+      elevation={3}
+      sx={{ p: 3, borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}
+    >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h5" component="h2">
           Chat Settings
         </Typography>
         <Button
-          variant={editMode ? "contained" : "outlined"}
+          variant={editMode ? 'contained' : 'outlined'}
           startIcon={editMode ? <SaveIcon /> : <EditIcon />}
           onClick={editMode ? handleSave : handleEditToggle}
-          color={editMode ? "primary" : "secondary"}
+          color={editMode ? 'primary' : 'secondary'}
+          disabled={isLoading}
         >
-          {editMode ? "Save Changes" : "Edit Profile"}
+          {editMode ? (isLoading ? 'Saving...' : 'Save Changes') : 'Edit Profile'}
         </Button>
       </Box>
-      
+
       <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
-        {/* User info section with even smaller profile image */}
+        {/* User info section with profile image and NFT picker */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} md={4}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'center' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                height: '100%',
+                justifyContent: 'center'
+              }}
+            >
               <Avatar
-                src={accountProfile?.profileImage || ''}
-                alt={accountProfile?.username || 'User'}
+                src={getProfileImageUrl(localProfile?.imageUrl)}
+                alt={localProfile?.username || 'User'}
                 sx={{ width: 80, height: 80, mb: 2 }}
               />
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
-                {accountProfile?.username || 'User'}
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mb: 2, textAlign: 'center' }}
+              >
+                {localProfile?.username || 'User'}
               </Typography>
-              {editMode && (
-                <Button variant="outlined" size="small" onClick={handleOpenNFTPicker}>
-                  Change NFT
-                </Button>
-              )}
+              <Button variant="outlined" size="small" onClick={handleOpenNFTPicker} sx={{ mb: 2 }}>
+                {editMode ? 'Change NFT' : 'View NFT'}
+              </Button>
             </Box>
           </Grid>
           <Grid item xs={12} md={8}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                justifyContent: 'center'
+              }}
+            >
               <Box sx={{ mb: 2 }}>
                 <Typography variant="subtitle1" gutterBottom fontWeight="medium">
                   Username
@@ -124,7 +312,7 @@ function ChatSettings() {
                   fullWidth
                   variant="outlined"
                   size="small"
-                  value={editMode ? tempUsername : (accountProfile?.username || '')}
+                  value={editMode ? tempUsername : localProfile?.username || ''}
                   onChange={handleUsernameChange}
                   disabled={!editMode}
                   isediting={editMode.toString()}
@@ -133,7 +321,7 @@ function ChatSettings() {
                       <Typography variant="caption" color="textSecondary">
                         {`${tempUsername.length}/12`}
                       </Typography>
-                    ),
+                    )
                   }}
                 />
               </Box>
@@ -145,7 +333,7 @@ function ChatSettings() {
                   fullWidth
                   variant="outlined"
                   size="small"
-                  value={accountProfile?.account || ''}
+                  value={localProfile?.account || ''}
                   disabled
                   InputProps={{
                     readOnly: true,
@@ -157,6 +345,12 @@ function ChatSettings() {
           </Grid>
         </Grid>
 
+        {showNFTPicker && (
+          <Box sx={{ width: '100%', mb: 3 }}>
+            <ProfileNFTPicker onSelect={handleNFTSelect} />
+          </Box>
+        )}
+
         <Divider sx={{ my: 3 }} />
 
         <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
@@ -165,7 +359,12 @@ function ChatSettings() {
 
         <Box sx={{ mb: 2 }}>
           <FormControlLabel
-            control={<Switch checked={notifications} onChange={(e) => setNotifications(e.target.checked)} />}
+            control={
+              <Switch
+                checked={notifications}
+                onChange={(e) => setNotifications(e.target.checked)}
+              />
+            }
             label={
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <NotificationsIcon sx={{ mr: 1 }} />
@@ -177,7 +376,9 @@ function ChatSettings() {
 
         <Box sx={{ mb: 2 }}>
           <FormControlLabel
-            control={<Switch checked={twoFactor} onChange={(e) => setTwoFactor(e.target.checked)} />}
+            control={
+              <Switch checked={twoFactor} onChange={(e) => setTwoFactor(e.target.checked)} />
+            }
             label={
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <SecurityIcon sx={{ mr: 1 }} />
@@ -205,13 +406,11 @@ function ChatSettings() {
                 disabled={!editMode}
                 isediting={editMode.toString()}
                 InputProps={{
-                  startAdornment: (
-                    {
-                      telegram: <TelegramIcon sx={{ mr: 1, color: 'action.active' }} />,
-                      discord: <ChatIcon sx={{ mr: 1, color: 'action.active' }} />,
-                      x: <TwitterIcon sx={{ mr: 1, color: 'action.active' }} />,
-                    }[platform]
-                  ),
+                  startAdornment: {
+                    telegram: <TelegramIcon sx={{ mr: 1, color: 'action.active' }} />,
+                    discord: <ChatIcon sx={{ mr: 1, color: 'action.active' }} />,
+                    x: <TwitterIcon sx={{ mr: 1, color: 'action.active' }} />
+                  }[platform]
                 }}
               />
             </Grid>
@@ -235,11 +434,12 @@ function ChatSettings() {
             </Button>
           </Box>
         )}
-
-        {showNFTPicker && (
-          <ProfileNFTPicker open={showNFTPicker} onClose={handleCloseNFTPicker} />
-        )}
       </Box>
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <MuiAlert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </MuiAlert>
+      </Snackbar>
     </Paper>
   );
 }

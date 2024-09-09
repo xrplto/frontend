@@ -291,15 +291,22 @@ const ProfileNFTs = ({
 
 function ProfileNFTPicker({ onSelect }) {
   const { accountProfile } = useContext(AppContext);
+  const [selectedNFT, setSelectedNFT] = useState(null);
+
+  const handleNFTSelect = (nft) => {
+    setSelectedNFT(nft);
+    onSelect(nft);
+  };
 
   return (
-    <ProfileNFTs
-      account={accountProfile?.account}
-      type="collected"
-      limit={24}
-      onSelect={onSelect}
-      smallSize={true}
-    />
+    <Box>
+      <ProfileNFTs
+        account={accountProfile?.account}
+        type="collected"
+        limit={20}
+        onSelect={handleNFTSelect}
+      />
+    </Box>
   );
 }
 
