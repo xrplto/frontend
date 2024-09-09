@@ -1049,10 +1049,12 @@ const handleSendMessage = (user) => {
   // Add your message sending logic here
 };
 
+
 const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   const theme = useTheme();
   const { accountProfile } = useContext(AppContext);
   const chatContainerRef = useRef(null);
+  const [userImages, setUserImages] = useState({});
 
   // Inject lightningEffect into the document's head
   const styleElement = document.createElement('style');
@@ -1069,6 +1071,40 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
 
   // Add this console.log to check if chats are being received
   console.log('Chats received in ChatPanel:', chats);
+
+  useEffect(() => {
+    const fetchUserImages = async () => {
+      const uniqueUsers = [...new Set(chats.map(chat => chat.username))];
+      const imagePromises = uniqueUsers.map(async (account) => {
+        try {
+          const response = await axios.get(`http://localhost:5000/api/set-user-image?account=${account}`);
+          if (response.data.user) {
+            const user = response.data.user;
+            return { 
+              [account]: user.imageUrl 
+                ? `https://s2.xrpnft.com/d1/${user.imageUrl}` 
+                : user.nftTokenId 
+                  ? `https://s2.xrpnft.com/d1/${user.nftTokenId}` 
+                  : null 
+            };
+          } else {
+            console.log(`No user data found for ${account}`);
+            return { [account]: null };
+          }
+        } catch (error) {
+          console.error(`Error fetching image for ${account}:`, error.message);
+          return { [account]: null };
+        }
+      });
+
+      const images = await Promise.all(imagePromises);
+      setUserImages(Object.assign({}, ...images));
+    };
+
+    if (chats.length > 0) {
+      fetchUserImages();
+    }
+  }, [chats]);
 
   return (
     <CustomScrollBox
@@ -1132,7 +1168,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
               >
                 <Avatar
                   alt={chat.username}
-                  src="/static/crossmark.webp"
+                  src={userImages[chat.username] || "/static/crossmark.webp"}
                   sx={{ width: 32, height: 32, marginTop: 0.5 }}
                 />
                 <Box sx={{ flexGrow: 1 }}>
@@ -1247,5 +1283,6 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
     </CustomScrollBox>
   );
 };
+
 
 export default ChatPanel;
