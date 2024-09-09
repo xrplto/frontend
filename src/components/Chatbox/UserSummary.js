@@ -31,25 +31,24 @@ const rankGlowEffect = (theme) => ({
 
 const UserSummary = ({ user }) => {
   const theme = useTheme();
-  const [token, setToken] = useState(0);
+  const [tokenCount, setTokenCount] = useState(0);
   const [nft, setNFT] = useState(0);
   const [userImage, setUserImage] = useState(null);
+  const [joinedDate, setJoinedDate] = useState(null);
+  const [issuedTokens, setIssuedTokens] = useState([]);
+  const [lastActive, setLastActive] = useState(null);
 
   useEffect(() => {
     const fetchAssets = () => {
-      axios.get(`https://api.xrpl.to/api/account/lines/${user.username}?page=0&limit=10`)
-        .then((res) => setToken(res.data.total))
-        .catch(() => setToken(0));
+      axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}/trustlines2`)
+        .then((res) => {
+          const tokenLines = res.data.lines.filter(line => parseFloat(line.balance) > 0);
+          setTokenCount(tokenLines.length);
+        })
+        .catch(() => setTokenCount(0));
 
-      axios.post(`https://api.xrpnft.com/api/account/collectedCreated`, {
-        account: user.username,
-        filter: 0,
-        limit: 32,
-        page: 0,
-        subFilter: 'pricexrpasc',
-        type: 'collected',
-      })
-        .then((res) => setNFT(res.data.nfts.reduce((acc, nft) => acc + nft.nftCount, 0)))
+      axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}/nfts`)
+        .then((res) => setNFT(res.data.length))
         .catch(() => setNFT(0));
     };
 
@@ -62,8 +61,58 @@ const UserSummary = ({ user }) => {
       }
     };
 
+    const fetchAccountInfo = async () => {
+      try {
+        const response = await axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}`);
+        if (response.data && response.data.inception) {
+          const date = new Date(response.data.inception);
+          setJoinedDate(date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
+        } else {
+          setJoinedDate('N/A');
+        }
+      } catch (error) {
+        console.error('Error fetching account info:', error);
+        setJoinedDate('Error');
+      }
+    };
+
+    const fetchIssuedTokens = async () => {
+      try {
+        const response = await axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}/obligations`);
+        setIssuedTokens(response.data);
+      } catch (error) {
+        console.error('Error fetching issued tokens:', error);
+        setIssuedTokens([]);
+      }
+    };
+
+    const fetchLastActive = async () => {
+      try {
+        const response = await axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}/transactions?limit=1`);
+        if (response.data.transactions && response.data.transactions.length > 0) {
+          const lastTx = response.data.transactions[0];
+          const lastActiveDate = new Date(lastTx.date);
+          setLastActive(lastActiveDate.toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }));
+        } else {
+          setLastActive('No transactions found');
+        }
+      } catch (error) {
+        console.error('Error fetching last active:', error);
+        setLastActive('Error fetching data');
+      }
+    };
+
     fetchAssets();
     fetchUserImage();
+    fetchAccountInfo();
+    fetchIssuedTokens();
+    fetchLastActive();
   }, [user]);
 
   const getPLColor = (pl) => (pl?.startsWith('+') ? 'green' : 'red');
@@ -86,13 +135,27 @@ const UserSummary = ({ user }) => {
           </Typography>
           <Grid container spacing={1}>
             <Grid item xs={12}><strong>Rank:</strong> {user.group}</Grid>
+            <Grid item xs={12}><strong>Joined Date:</strong> {joinedDate || 'Loading...'}</Grid>
+            <Grid item xs={12}><strong>Last Active:</strong> {lastActive || 'Loading...'}</Grid>
             <Grid item xs={12}><strong>P/L:</strong> <span style={{ color: getPLColor(user.profitLoss) }}>{user.profitLoss || 'N/A'}</span></Grid>
             <Grid item xs={12}><strong>NFTs:</strong> {nft || 'None'}</Grid>
-            <Grid item xs={12}><strong>Tokens:</strong> {token || 'None'}</Grid>
+            <Grid item xs={12}><strong>Tokens:</strong> {tokenCount || 'None'}</Grid>
             <Grid item xs={12}><strong>Chats:</strong> {user.activePosts}</Grid>
-            <Grid item xs={12}><strong>Joined XRPL:</strong> {user.memberSince}</Grid>
-            <Grid item xs={12}><strong>Last Active:</strong> {user.lastActive}</Grid>
             <Grid item xs={12}><strong>Currently:</strong> {user.currently}</Grid>
+            <Grid item xs={12}>
+              <strong>Issued Tokens:</strong>
+              {issuedTokens.length > 0 ? (
+                <ul style={{ margin: 0, paddingLeft: '20px' }}>
+                  {issuedTokens.map((token, index) => (
+                    <li key={index}>
+                      {token.currency}: {parseFloat(token.value).toFixed(2)}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                'None'
+              )}
+            </Grid>
           </Grid>
         </Box>
       </Stack>
