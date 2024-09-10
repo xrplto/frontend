@@ -28,6 +28,8 @@ import { isInstalled, submitTransaction } from '@gemwallet/api';
 import axios from 'axios';
 import sdk from "@crossmarkio/sdk";
 import { ProgressBar } from 'react-loader-spinner';
+import QRDialog from 'src/components/QRDialog';
+import xrpl from "xrpl";
 
 const ranks = [
   {
@@ -92,6 +94,11 @@ function Store() {
   const [openConfirm, setOpenConfirm] = useState(false);
   const [rank, setRank] = useState(null);
   const [pageLoading, setPageLoading] = useState(false);
+  const [openScanQR, setOpenScanQR] = useState(false);
+  const [uuid, setUuid] = useState(null);
+  const [qrUrl, setQrUrl] = useState(null);
+  const [nextUrl, setNextUrl] = useState(null);
+  const [qrType, setQrType] = useState('Payment');
 
   const handlePurchase = async () => {
     if (!accountProfile?.account) {
@@ -104,7 +111,7 @@ function Store() {
     try {
       // Here you would integrate with XUMM, Crossmark, or GEM wallet for XRP payment
       // For this example, we'll just simulate a successful purchase
-      const response = await fetch(`${chatURL}/api/purchase-chat-feature`, {
+      const response = await fetch(`${chatURL}/api/request-new-chat-feature`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -120,7 +127,7 @@ function Store() {
         let body = {
           TransactionType: "Payment",
           Account: accountProfile.account,
-          Amount: rank.price,
+          Amount: xrpl.transferRateToDecimal(rank.price),
           Destination: "rhsxg4xH8FtYc3eR53XDSjTGfKQsaAGaqm",
           Fee: "12",
           SourceTag: 20221212,
@@ -141,20 +148,19 @@ function Store() {
         }
 
         else if (wallet_type == "gem") {
-          isInstalled().then(async (response) => {
+          await isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               await submitTransaction({
                 transaction: body
               }).then(({ type, result }) => {
                 if (type === "response") {
-                  setXamanStep(2);
                 } else {
-                  // handleConfirmClose();
+                  setPageLoading(false);
                 }
               });
             } else {
               enqueueSnackbar("GemWallet is not installed", { variant: "error" });
-              // handleConfirmClose();
+              setPageLoading(false);
             }
           });
         }
@@ -162,9 +168,8 @@ function Store() {
         else if (wallet_type == "crossmark") {
           await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
             if (response.data.meta.isSuccess) {
-              setXamanStep(2);
             } else {
-              // handleConfirmClose();
+              setPageLoading(false);
             }
           });
         }
@@ -178,6 +183,22 @@ function Store() {
 
     setSnackbarOpen(true);
     setPageLoading(false);
+  };
+
+  const onDisconnectXumm = async (uuid) => {
+    setPageLoading(true);
+    try {
+      const res = await axios.delete(`${BASE_URL}/xumm/logout/${uuid}`);
+      if (res.status === 200) {
+        setUuid(null);
+      }
+    } catch (err) { }
+    setPageLoading(false);
+  };
+
+  const handleScanQRClose = () => {
+    setOpenScanQR(false);
+    onDisconnectXumm(uuid);
   };
 
   const chooseRank = (item) => {
@@ -272,6 +293,13 @@ function Store() {
       </Backdrop>
       <Box sx={{ p: 2, backgroundColor: theme.palette.background.default }}>
         <ConfirmPurchaseDialog open={openConfirm} setOpen={setOpenConfirm} onContinue={handlePurchase} />
+        <QRDialog
+          open={openScanQR}
+          type={qrType}
+          onClose={handleScanQRClose}
+          qrUrl={qrUrl}
+          nextUrl={nextUrl}
+        />
         <Typography
           variant="h5"
           gutterBottom
