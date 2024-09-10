@@ -1,5 +1,4 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
 import {
   Stack,
   Avatar,
@@ -21,13 +20,6 @@ import { AppContext } from 'src/AppContext';
 
 const UserSummary = ({ user }) => {
   const theme = useTheme();
-  let location;
-  try {
-    location = useLocation();
-  } catch (error) {
-    console.warn('useLocation is not available. Using fallback for current status.');
-    location = null;
-  }
   const [tokenCount, setTokenCount] = useState(0);
   const [nft, setNFT] = useState(0);
   const [nftCount, setNftCount] = useState(0);
