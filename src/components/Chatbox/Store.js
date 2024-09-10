@@ -11,7 +11,8 @@ import {
   Avatar,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  Backdrop
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
@@ -22,6 +23,11 @@ import LockIcon from '@mui/icons-material/Lock';
 import SecurityIcon from '@mui/icons-material/Security';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ConfirmPurchaseDialog from './ConfirmPurchaseDialog';
+import { isInstalled, submitTransaction } from '@gemwallet/api';
+import axios from 'axios';
+import sdk from "@crossmarkio/sdk";
+import { ProgressBar } from 'react-loader-spinner';
 
 const ranks = [
   {
@@ -75,24 +81,30 @@ const verifiedStatus = {
   color: '#1DA1F2'
 };
 
+const chatURL = "http://65.108.136.237:5000";
+
 function Store() {
   const theme = useTheme();
   const { accountProfile } = useContext(AppContext);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [expandedCategory, setExpandedCategory] = useState(null);
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [rank, setRank] = useState(null);
+  const [pageLoading, setPageLoading] = useState(false);
 
-  const handlePurchase = async (rank) => {
+  const handlePurchase = async () => {
     if (!accountProfile?.account) {
       setSnackbarMessage('Please connect your XRP wallet to make a purchase.');
       setSnackbarOpen(true);
       return;
     }
-
+    const wallet_type = accountProfile?.wallet_type;
+    setPageLoading(true);
     try {
       // Here you would integrate with XUMM, Crossmark, or GEM wallet for XRP payment
       // For this example, we'll just simulate a successful purchase
-      const response = await fetch('http://your-server-url:5000/api/purchase-chat-feature', {
+      const response = await fetch(`${chatURL}/api/purchase-chat-feature`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -100,12 +112,62 @@ function Store() {
         body: JSON.stringify({
           account: accountProfile.account,
           feature: `rank_${rank.id}`,
-          transactionHash: 'simulated_xrp_transaction_hash'
         })
       });
 
       if (response.ok) {
-        setSnackbarMessage(`Successfully purchased ${rank.name} rank!`);
+        // setSnackbarMessage(`Successfully purchased ${rank.name} rank!`);
+        let body = {
+          TransactionType: "Payment",
+          Account: accountProfile.account,
+          Amount: rank.price,
+          Destination: "rhsxg4xH8FtYc3eR53XDSjTGfKQsaAGaqm",
+          Fee: "12",
+          SourceTag: 20221212,
+          DestinationTag: 20221212,
+        }
+        if (wallet_type == "xaman") {
+          const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
+          if (res2.status === 200) {
+            const uuid = res2.data.data.uuid;
+            const qrlink = res2.data.data.qrUrl;
+            const nextlink = res2.data.data.next;
+
+            setUuid(uuid);
+            setQrUrl(qrlink);
+            setNextUrl(nextlink);
+            setOpenScanQR(true);
+          }
+        }
+
+        else if (wallet_type == "gem") {
+          isInstalled().then(async (response) => {
+            if (response.result.isInstalled) {
+              await submitTransaction({
+                transaction: body
+              }).then(({ type, result }) => {
+                if (type === "response") {
+                  setXamanStep(2);
+                } else {
+                  // handleConfirmClose();
+                }
+              });
+            } else {
+              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
+              // handleConfirmClose();
+            }
+          });
+        }
+
+        else if (wallet_type == "crossmark") {
+          await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
+            if (response.data.meta.isSuccess) {
+              setXamanStep(2);
+            } else {
+              // handleConfirmClose();
+            }
+          });
+        }
       } else {
         setSnackbarMessage('Failed to purchase rank. Please check your XRP balance and try again.');
       }
@@ -115,7 +177,13 @@ function Store() {
     }
 
     setSnackbarOpen(true);
+    setPageLoading(false);
   };
+
+  const chooseRank = (item) => {
+    setRank(item);
+    setOpenConfirm(true);
+  }
 
   const handleCategoryChange = (category) => (event, isExpanded) => {
     setExpandedCategory(isExpanded ? category : null);
@@ -167,7 +235,7 @@ function Store() {
               <Button
                 variant="contained"
                 size="small"
-                onClick={() => handlePurchase(item)}
+                onClick={() => chooseRank(item)}
                 sx={{
                   backgroundColor: item.color,
                   color: '#fff',
@@ -187,40 +255,58 @@ function Store() {
   );
 
   return (
-    <Box sx={{ p: 2, backgroundColor: theme.palette.background.default }}>
-      <Typography
-        variant="h5"
-        gutterBottom
-        sx={{ fontWeight: 'bold', color: theme.palette.primary.main, mb: 2 }}
+    <>
+      <Backdrop
+        sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={pageLoading}
       >
-        XRP Ledger Chat Store
-      </Typography>
+        <ProgressBar
+          height="80"
+          width="80"
+          ariaLabel="progress-bar-loading"
+          wrapperStyle={{}}
+          wrapperClass="progress-bar-wrapper"
+          borderColor="#F4442E"
+          barColor="#51E5FF"
+        />
+      </Backdrop>
+      <Box sx={{ p: 2, backgroundColor: theme.palette.background.default }}>
+        <ConfirmPurchaseDialog open={openConfirm} setOpen={setOpenConfirm} onContinue={handlePurchase} />
+        <Typography
+          variant="h5"
+          gutterBottom
+          sx={{ fontWeight: 'bold', color: theme.palette.primary.main, mb: 2 }}
+        >
+          XRP Ledger Chat Store
+        </Typography>
 
-      <Accordion expanded={expandedCategory === 'ranks'} onChange={handleCategoryChange('ranks')}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">XRP Ledger Chat Ranks</Typography>
-        </AccordionSummary>
-        <AccordionDetails>{renderContent(ranks)}</AccordionDetails>
-      </Accordion>
+        <Accordion expanded={expandedCategory === 'ranks'} onChange={handleCategoryChange('ranks')}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">XRP Ledger Chat Ranks</Typography>
+          </AccordionSummary>
+          <AccordionDetails>{renderContent(ranks)}</AccordionDetails>
+        </Accordion>
 
-      <Accordion
-        expanded={expandedCategory === 'verified'}
-        onChange={handleCategoryChange('verified')}
-      >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Special Status</Typography>
-        </AccordionSummary>
-        <AccordionDetails>{renderContent([verifiedStatus])}</AccordionDetails>
-      </Accordion>
+        <Accordion
+          expanded={expandedCategory === 'verified'}
+          onChange={handleCategoryChange('verified')}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="h6">Special Status</Typography>
+          </AccordionSummary>
+          <AccordionDetails>{renderContent([verifiedStatus])}</AccordionDetails>
+        </Accordion>
 
-      <Snackbar
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={() => setSnackbarOpen(false)}
-        message={snackbarMessage}
-      />
-    </Box>
+        <Snackbar
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={() => setSnackbarOpen(false)}
+          message={snackbarMessage}
+        />
+
+      </Box>
+    </>
   );
 }
 
