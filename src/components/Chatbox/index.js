@@ -9,7 +9,7 @@ import SendIcon from '@mui/icons-material/Send';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import ChatPanel from "./ChatPanel";
-import { Button, Stack, TextField, Menu, MenuItem, ListItemIcon, ListItemText, Tabs, Tab, Tooltip, Chip } from '@mui/material';
+import { Button, Stack, TextField, Menu, MenuItem, ListItemIcon, ListItemText, Tabs, Tab, Tooltip, Chip, styled } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useDispatch, useSelector } from 'react-redux';
@@ -27,6 +27,24 @@ import Terminal from './Terminal';
 import ChatSettings from './ChatSettings';
 import StoreIcon from '@mui/icons-material/Store';
 import Store from './Store';
+
+const CustomScrollBox = styled(Box)(({ theme }) => ({
+  '&::-webkit-scrollbar': {
+    width: '8px'
+  },
+  '&::-webkit-scrollbar-track': {
+    background: '#a9a9a94d',
+    borderRadius: '10px'
+  },
+  '&::-webkit-scrollbar-thumb': {
+    background: 'darkgrey',
+    borderRadius: '10px'
+  },
+  '&::-webkit-scrollbar-thumb:hover': {
+    background: '#a9a9a9d4',
+    cursor: 'pointer'
+  }
+}));
 
 const drawerWidth = 400;
 const chatURL = "http://65.108.136.237:5000";
@@ -376,7 +394,7 @@ function Chatbox() {
           </IconButton>
         </Toolbar>
       </AppBar>
-      <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+      <CustomScrollBox sx={{ flexGrow: 1, overflow: 'auto' }}>
         {selectedOption === 'Chatbox' && (
           <ChatPanel
             chats={chatHistory}
@@ -386,7 +404,7 @@ function Chatbox() {
         {selectedOption === 'Terminal' && <Terminal />}
         {selectedOption === 'Store' && <Store />}
         {selectedOption === 'Settings' && <ChatSettings />}
-      </Box>
+      </CustomScrollBox>
       {
         accountProfile?.account && selectedOption === 'Chatbox' && (
           <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
