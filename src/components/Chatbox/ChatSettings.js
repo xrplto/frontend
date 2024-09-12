@@ -252,8 +252,8 @@ function ChatSettings() {
       }
     };
 
-    fetchUserProfile();
-  }, [accountProfile.account]);
+    if (accountProfile?.account) fetchUserProfile();
+  }, [accountProfile]);
 
   return (
     <Paper
