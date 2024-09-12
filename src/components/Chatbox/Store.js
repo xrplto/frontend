@@ -29,7 +29,6 @@ import axios from 'axios';
 import sdk from "@crossmarkio/sdk";
 import { ProgressBar } from 'react-loader-spinner';
 import QRDialog from 'src/components/QRDialog';
-import xrpl from "xrpl";
 
 const ranks = [
   {
@@ -87,7 +86,7 @@ const chatURL = "http://65.108.136.237:5000";
 
 function Store() {
   const theme = useTheme();
-  const { accountProfile } = useContext(AppContext);
+  const { accountProfile, enqueueSnackbar } = useContext(AppContext);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [expandedCategory, setExpandedCategory] = useState(null);
@@ -98,7 +97,6 @@ function Store() {
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
-  const [qrType, setQrType] = useState('Payment');
 
   const handlePurchase = async () => {
     if (!accountProfile?.account) {
@@ -127,7 +125,7 @@ function Store() {
         let body = {
           TransactionType: "Payment",
           Account: accountProfile.account,
-          Amount: xrpl.transferRateToDecimal(rank.price),
+          Amount: `${rank.price * 1000000}`,
           Destination: "rhsxg4xH8FtYc3eR53XDSjTGfKQsaAGaqm",
           Fee: "12",
           SourceTag: 20221212,
@@ -152,8 +150,24 @@ function Store() {
             if (response.result.isInstalled) {
               await submitTransaction({
                 transaction: body
-              }).then(({ type, result }) => {
+              }).then(async ({ type, result }) => {
                 if (type === "response") {
+                  const response = await fetch(`${chatURL}/api/purchase-chat-feature`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      account: accountProfile.account,
+                      feature: `rank_${rank.id}`,
+                      transactionHash: result?.hash
+                    })
+                  });
+                  if (response.ok) {
+                    setSnackbarMessage(`Successfully purchased ${rank.name} rank!`);
+                  } else {
+                    setSnackbarMessage(`Purchasing is failed`);
+                  }
                 } else {
                   setPageLoading(false);
                 }
@@ -166,8 +180,24 @@ function Store() {
         }
 
         else if (wallet_type == "crossmark") {
-          await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
+          await sdk.methods.signAndSubmitAndWait(body).then(async ({ response }) => {
             if (response.data.meta.isSuccess) {
+              const response = await fetch(`${chatURL}/api/purchase-chat-feature`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  account: accountProfile.account,
+                  feature: `rank_${rank.id}`,
+                  transactionHash: response.data.resp.result?.hash
+                })
+              });
+              if (response.ok) {
+                setSnackbarMessage(`Successfully purchased ${rank.name} rank!`);
+              } else {
+                setSnackbarMessage(`Purchasing is failed`);
+              }
             } else {
               setPageLoading(false);
             }
@@ -295,7 +325,7 @@ function Store() {
         <ConfirmPurchaseDialog open={openConfirm} setOpen={setOpenConfirm} onContinue={handlePurchase} />
         <QRDialog
           open={openScanQR}
-          type={qrType}
+          type="Payment"
           onClose={handleScanQRClose}
           qrUrl={qrUrl}
           nextUrl={nextUrl}
