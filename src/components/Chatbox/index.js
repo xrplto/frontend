@@ -277,6 +277,7 @@ function Chatbox() {
 
   const sendMessage = () => {
     if (accountProfile?.account) {
+      if (!message.length) return;
       if (recipient) {
         socket.emit("private message", {
           to: recipient,

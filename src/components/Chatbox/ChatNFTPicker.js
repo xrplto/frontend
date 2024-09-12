@@ -63,7 +63,7 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
             ref={scrollRef}
             sx={{
                 padding: "5px",
-                pt: 0,
+                pt: 1,
                 height: "240px",
                 width: "240px",
                 overflow: "auto",
