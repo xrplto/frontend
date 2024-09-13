@@ -34,7 +34,7 @@ const ranks = [
   {
     id: 'riddler',
     name: 'Riddler',
-    price: 0.001,
+    price: 5,
     description: 'Entry-level rank for XRP puzzle solvers',
     icon: PsychologyIcon,
     color: '#FFD700'
@@ -42,7 +42,7 @@ const ranks = [
   {
     id: 'rippler',
     name: 'Rippler',
-    price: 0.001,
+    price: 0.0001,
     description: 'Intermediate rank for XRP enthusiasts',
     icon: WaterIcon,
     color: '#4CAF50'
@@ -50,7 +50,7 @@ const ranks = [
   {
     id: 'validator',
     name: 'Validator',
-    price: 0.001,
+    price: 0.0001,
     description: 'Advanced rank with enhanced features',
     icon: VerifiedUserIcon,
     color: '#2196F3'
@@ -58,7 +58,7 @@ const ranks = [
   {
     id: 'escrow',
     name: 'Escrow Master',
-    price: 0.001,
+    price: 0.0001,
     description: 'Elite rank with exclusive XRP-themed perks',
     icon: LockIcon,
     color: '#9C27B0'
@@ -66,7 +66,7 @@ const ranks = [
   {
     id: 'ledger',
     name: 'Ledger Guardian',
-    price: 0.001,
+    price: 0.0001,
     description: 'Legendary rank for true XRP aficionados',
     icon: SecurityIcon,
     color: '#F44336'
@@ -76,7 +76,7 @@ const ranks = [
 const verifiedStatus = {
   id: 'verified',
   name: 'Verified',
-  price: 0.001,
+  price: 0.0001,
   description: 'Exclusive verified status with premium benefits',
   icon: VerifiedIcon,
   color: '#1DA1F2'
@@ -279,7 +279,7 @@ function Store() {
                 variant="subtitle1"
                 sx={{ fontWeight: 'bold', color: theme.palette.secondary.main }}
               >
-                Price: 0.001P
+                Price: 0.0001P
               </Typography>
             </CardContent>
             <CardActions sx={{ justifyContent: 'center', p: 1 }}>
