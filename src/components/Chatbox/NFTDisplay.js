@@ -9,14 +9,10 @@ import {
   Button,
   useTheme,
   tooltipClasses,
-  Link,
   Divider,
   Backdrop
 } from '@mui/material';
-import {
-  Send as SendIcon,
-  LocalOffer as LocalOfferIcon
-} from '@mui/icons-material';
+import { Send as SendIcon, LocalOffer as LocalOfferIcon } from '@mui/icons-material';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import CreateOfferDialog from 'src/nft/CreateOfferDialog';
@@ -98,7 +94,7 @@ const NFTDisplay = ({ nftLink }) => {
   const [openCreateOffer, setOpenCreateOffer] = useState(false);
   const [isSellOffer, setIsSellOffer] = useState(false);
   const [openTransfer, setOpenTransfer] = useState(false);
-  const [burnt, setBurnt] = useState(nft?.status === NFToken.BURNT);
+  const [burnt, setBurnt] = useState(false);
   const [cost, setCost] = useState(null);
   const [sellOffers, setSellOffers] = useState([]);
   const [openSelectPrice, setOpenSelectPrice] = useState(false);
@@ -111,18 +107,15 @@ const NFTDisplay = ({ nftLink }) => {
   const [qrType, setQrType] = useState('NFTokenAcceptOffer');
 
   const match = nftLink.match(/\[NFT: (.*?) #(\d+) \((.*?)\)\]/);
-
-  if (!match) return null;
-  const isOwner = accountLogin === nft?.account;
-
-  const [_, name, number, tokenId] = match;
+  const [_, name, number, tokenId] = match || [null, null, null, null];
 
   useEffect(() => {
-    async function fetchNFT() {
-      const res = await axios.get(`${BASE_URL}/nft/${tokenId}`);
-      setNFT(res.data.nft);
-    }
     if (tokenId) {
+      async function fetchNFT() {
+        const res = await axios.get(`${BASE_URL}/nft/${tokenId}`);
+        setNFT(res.data.nft);
+        setBurnt(res.data.nft.status === NFToken.BURNT);
+      }
       fetchNFT();
     }
   }, [tokenId]);
@@ -142,9 +135,6 @@ const NFTDisplay = ({ nftLink }) => {
         })
         .catch((err) => {
           console.log('Error on getting nft offers list!!!', err);
-        })
-        .then(function () {
-          // always executed
         });
     }
 
@@ -152,6 +142,8 @@ const NFTDisplay = ({ nftLink }) => {
       getOffers();
     }
   }, [tokenId, nft]);
+
+  const isOwner = accountLogin === nft?.account;
 
   const getValidOffers = (offers, isSell) => {
     const newOffers = [];
@@ -185,7 +177,6 @@ const NFTDisplay = ({ nftLink }) => {
         }
 
         if (!offer.destination || accountLogin === offer.destination)
-          // if ((!offer.destination || accountLogin === offer.destination) && offer.)
           newOffers.push(offer);
       }
     }
@@ -251,6 +242,7 @@ const NFTDisplay = ({ nftLink }) => {
     setAcceptOffer(offer);
     setOpenConfirm(true);
   };
+
   const handleBuyNow = async () => {
     if (sellOffers.length > 1) {
       setOpenSelectPrice(true);
@@ -346,7 +338,7 @@ const NFTDisplay = ({ nftLink }) => {
               await submitTransaction({
                 transaction: offerTxData
               }).then(({ type, result }) => {
-                if (type == 'response') {
+                if (type === 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
                 } else {
@@ -378,15 +370,11 @@ const NFTDisplay = ({ nftLink }) => {
   const onDisconnectXumm = async () => {
     setPageLoading(true);
     try {
-      const res = await axios.delete(`${BASE_URL}/offers/acceptcancel/${xummUuid}`);
-      // if (res.status === 200) {
-      //     setXummUuid(null);
-      // }
+      await axios.delete(`${BASE_URL}/offers/acceptcancel/${xummUuid}`);
     } catch (err) {
       console.error(err);
     }
     setXummUuid(null);
-
     setPageLoading(false);
   };
 
@@ -398,6 +386,8 @@ const NFTDisplay = ({ nftLink }) => {
   const onContinueAccept = async () => {
     doProcessOffer(acceptOffer, true);
   };
+
+  if (!match) return null;
 
   return (
     <>
@@ -472,7 +462,6 @@ const NFTDisplay = ({ nftLink }) => {
                 >
                   <Button
                     fullWidth
-                    // sx={{ minWidth: 150 }}
                     variant="outlined"
                     startIcon={<LocalOfferIcon />}
                     onClick={handleCreateSellOffer}

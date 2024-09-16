@@ -276,18 +276,17 @@ function Chatbox() {
   }, []);
 
   const sendMessage = () => {
-    if (accountProfile?.account) {
-      if (!message.length) return;
+    if (accountProfile?.account && message.trim().length > 0) {
       if (recipient) {
         socket.emit("private message", {
           to: recipient,
-          message: message,
+          message: message.trim(),
           username: accountProfile.account,
           isPrivate: true
         });
       } else {
         socket.emit("chat message", {
-          message,
+          message: message.trim(),
           username: accountProfile.account,
           rank: "Member",
           group: "Member"
@@ -488,7 +487,17 @@ function Chatbox() {
                     </Box>
                   )}
                 </Box>
-                <IconButton onClick={sendMessage} color="primary">
+                <IconButton 
+                  onClick={sendMessage} 
+                  color="primary"
+                  disabled={message.trim().length === 0}
+                  sx={{
+                    color: message.trim().length === 0 ? 'action.disabled' : 'primary.main',
+                    '&.Mui-disabled': {
+                      color: 'action.disabled',
+                    },
+                  }}
+                >
                   <SendIcon />
                 </IconButton>
               </Stack>
