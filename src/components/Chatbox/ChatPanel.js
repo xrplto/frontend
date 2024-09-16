@@ -11,7 +11,8 @@ import {
   tooltipClasses,
   IconButton,
   Link,
-  Divider
+  Divider,
+  alpha
 } from '@mui/material';
 import { parseISO } from 'date-fns';
 import {
@@ -130,12 +131,14 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   return (
     <CustomScrollBox
       ref={chatContainerRef}
-      gap={1}
+      gap={1} // Reduced gap from 2 to 1
       sx={{
         height: '100%',
         overflowY: 'auto',
         display: 'flex',
-        flexDirection: 'column-reverse'
+        flexDirection: 'column-reverse',
+        padding: 1, // Reduced padding from 2 to 1
+        backgroundColor: alpha(theme.palette.background.default, 0.8), // Semi-transparent background
       }}
     >
       {Array.isArray(chats) && chats.length > 0 ? (
@@ -173,132 +176,141 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
             }
 
             return (
-              <Stack
+              <Paper
                 key={index}
-                direction="row"
-                spacing={1}
-                alignItems="flex-start"
+                elevation={1} // Reduced elevation from 2 to 1
                 sx={{
-                  backgroundColor: theme.palette.background.paper,
-                  borderRadius: 1,
-                  p: 1,
+                  backgroundColor: isCurrentUser
+                    ? alpha(theme.palette.primary.main, 0.1)
+                    : theme.palette.background.paper,
+                  borderRadius: 1, // Reduced border radius from 2 to 1
+                  p: 1, // Reduced padding from 2 to 1
+                  transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: theme.palette.action.hover
+                    transform: 'translateY(-1px)', // Reduced transform from -2px to -1px
+                    boxShadow: theme.shadows[2], // Reduced shadow from 4 to 2
                   }
                 }}
               >
-                <Avatar
-                  alt={chat.username}
-                  src={userImages[chat.username] || '/static/crossmark.webp'}
-                  sx={{ width: 32, height: 32, marginTop: 0.5 }}
-                />
-                <Box sx={{ flexGrow: 1 }}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <CustomWidthTooltip title={<UserSummary user={chat} />} arrow placement="right">
+                <Stack direction="row" spacing={1} alignItems="flex-start"> 
+                  <Avatar
+                    alt={chat.username}
+                    src={userImages[chat.username] || '/static/crossmark.webp'}
+                    sx={{ 
+                      width: 32, // Reduced size from 40 to 32
+                      height: 32, // Reduced size from 40 to 32
+                      border: `1px solid ${theme.palette.primary.main}`, // Reduced border from 2px to 1px
+                    }}
+                  />
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <CustomWidthTooltip title={<UserSummary user={chat} />} arrow placement="right">
+                        <Typography
+                          variant="subtitle2"
+                          sx={{
+                            fontWeight: 'bold',
+                            color: rankColors(theme)[chat.rank] || theme.palette.text.primary,
+                            textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {displayUsername}
+                          {chat.isPrivate && (
+                            <>
+                              {' → '}
+                              <span style={{ color: theme.palette.text.secondary }}>
+                                {displayRecipient}
+                              </span>
+                            </>
+                          )}
+                        </Typography>
+                      </CustomWidthTooltip>
+                      {chat.username !== accountProfile?.account && (
+                        <Tooltip title="Send private message" arrow>
+                          <IconButton
+                            size="small"
+                            onClick={() => onStartPrivateMessage(privateMessageRecipient)}
+                            sx={{
+                              padding: 0,
+                              color: theme.palette.text.secondary,
+                              '&:hover': {
+                                color: theme.palette.primary.main
+                              }
+                            }}
+                          >
+                            <ChatBubbleOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Stack>
+                    {newsData ? (
+                      <Box sx={{ mt: 1 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                          {newsData.title}
+                        </Typography>
+                        <Typography variant="body2" sx={{ mt: 0.5 }}>
+                          {newsData.summary !== 'No summary available'
+                            ? newsData.summary
+                            : 'No summary available.'}
+                        </Typography>
+                        <Link href={newsData.sourceUrl} target="_blank" rel="noopener noreferrer">
+                          <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
+                            Read more at {newsData.sourceName}
+                          </Typography>
+                        </Link>
+                        {newsData.sentiment !== 'Unknown' && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              ml: 1,
+                              color:
+                                newsData.sentiment === 'Bullish'
+                                  ? 'green'
+                                  : newsData.sentiment === 'Bearish'
+                                  ? 'red'
+                                  : 'inherit'
+                            }}
+                          >
+                            • {newsData.sentiment}
+                          </Typography>
+                        )}
+                      </Box>
+                    ) : (
                       <Typography
-                        variant="caption"
+                        variant="body2" // Changed from body1 to body2
                         sx={{
-                          fontWeight: 'bold',
-                          color: rankColors(theme)[chat.rank] || theme.palette.text.primary,
-                          textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
-                          cursor: 'pointer'
+                          mt: 0.5, // Reduced margin top from 1 to 0.5
+                          color: chat.isPrivate
+                            ? theme.palette.secondary.main
+                            : theme.palette.text.primary,
+                          lineHeight: 1.4, // Reduced line height from 1.6 to 1.4
                         }}
                       >
-                        {displayUsername}
-                        {chat.isPrivate && (
-                          <>
-                            {' → '}
-                            <span style={{ color: theme.palette.text.secondary }}>
-                              {displayRecipient}
-                            </span>
-                          </>
-                        )}
+                        {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
+                          if (part.startsWith('[NFT:')) {
+                            return <NFTDisplay key={i} nftLink={part} />;
+                          }
+                          return part;
+                        })}
                       </Typography>
-                    </CustomWidthTooltip>
-                    {chat.username !== accountProfile?.account && (
-                      <Tooltip title="Send private message" arrow>
-                        <IconButton
-                          size="small"
-                          onClick={() => onStartPrivateMessage(privateMessageRecipient)}
-                          sx={{
-                            padding: 0,
-                            color: theme.palette.text.secondary,
-                            '&:hover': {
-                              color: theme.palette.primary.main
-                            }
-                          }}
-                        >
-                          <ChatBubbleOutlineIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
                     )}
-                  </Stack>
-                  {newsData ? (
-                    <Box sx={{ mt: 0.5 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-                        {newsData.title}
-                      </Typography>
-                      <Typography variant="body2" sx={{ mt: 0.5 }}>
-                        {newsData.summary !== 'No summary available'
-                          ? newsData.summary
-                          : 'No summary available.'}
-                      </Typography>
-                      <Link href={newsData.sourceUrl} target="_blank" rel="noopener noreferrer">
-                        <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
-                          Read more at {newsData.sourceName}
-                        </Typography>
-                      </Link>
-                      {newsData.sentiment !== 'Unknown' && (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            ml: 1,
-                            color:
-                              newsData.sentiment === 'Bullish'
-                                ? 'green'
-                                : newsData.sentiment === 'Bearish'
-                                ? 'red'
-                                : 'inherit'
-                          }}
-                        >
-                          • {newsData.sentiment}
-                        </Typography>
-                      )}
-                    </Box>
-                  ) : (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        mt: 0.5,
-                        color: chat.isPrivate
-                          ? theme.palette.secondary.main
-                          : theme.palette.text.primary
-                      }}
-                    >
-                      {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
-                        if (part.startsWith('[NFT:')) {
-                          return <NFTDisplay key={i} nftLink={part} />;
-                        }
-                        return part;
-                      })}
-                    </Typography>
-                  )}
-                </Box>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    mt: 0.5,
-                    opacity: 0.8
-                  }}
-                >
-                  {timeAgo}
-                </Typography>
-              </Stack>
+                  </Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      opacity: 0.8,
+                      fontStyle: 'italic',
+                    }}
+                  >
+                    {timeAgo}
+                  </Typography>
+                </Stack>
+              </Paper>
             );
           })
       ) : (
-        <Typography variant="body2" sx={{ textAlign: 'center', py: 2 }}>
+        <Typography variant="body2" sx={{ textAlign: 'center', py: 2, fontStyle: 'italic' }}>
           No messages to display.
         </Typography>
       )}
