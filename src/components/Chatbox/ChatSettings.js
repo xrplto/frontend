@@ -7,19 +7,16 @@ import {
   Paper,
   Grid,
   Button,
-  Tooltip,
-  IconButton,
   Divider,
   Switch,
   FormControlLabel,
-  Snackbar
+  Snackbar,
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
   Notifications as NotificationsIcon,
-  Security as SecurityIcon
 } from '@mui/icons-material';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -27,7 +24,6 @@ import TwitterIcon from '@mui/icons-material/Twitter';
 import { AppContext } from 'src/AppContext';
 import { styled } from '@mui/material/styles';
 import ProfileNFTPicker from './ProfileNFTPicker';
-import { debounce } from 'lodash';
 import MuiAlert from '@mui/material/Alert';
 
 // Styled component for editable fields
@@ -35,11 +31,11 @@ const EditableField = styled(TextField)(({ theme, isediting }) => ({
   '& .MuiInputBase-root': {
     backgroundColor:
       isediting === 'true' ? theme.palette.action.hover : theme.palette.action.disabledBackground,
-    transition: theme.transitions.create(['background-color', 'box-shadow'])
+    transition: theme.transitions.create(['background-color', 'box-shadow']),
   },
   '& .MuiOutlinedInput-root.Mui-focused': {
-    backgroundColor: theme.palette.background.paper
-  }
+    backgroundColor: theme.palette.background.paper,
+  },
 }));
 
 function ChatSettings() {
@@ -60,16 +56,18 @@ function ChatSettings() {
   const [editMode, setEditMode] = useState(false);
   const [tempUsername, setTempUsername] = useState(localProfile?.username || '');
   const [notifications, setNotifications] = useState(true);
-  const [twoFactor, setTwoFactor] = useState(false);
   const [showNFTPicker, setShowNFTPicker] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [isLoading, setIsLoading] = useState(false);
+
+  // New state variable to track NFT availability
+  const [nftsAvailable, setNftsAvailable] = useState(true);
 
   // Add state for social media accounts
   const [socialMedia, setSocialMedia] = useState({
     telegram: localProfile?.socialMedia?.telegram || '',
     discord: localProfile?.socialMedia?.discord || '',
-    x: localProfile?.socialMedia?.x || ''
+    x: localProfile?.socialMedia?.x || '',
   });
 
   const handleSocialMediaChange = (platform) => (event) => {
@@ -83,10 +81,11 @@ function ChatSettings() {
 
   const handleSave = async () => {
     setIsLoading(true);
+    setNftsAvailable(true); // Reset nftsAvailable
     const updatedProfile = {
       ...localProfile,
       username: tempUsername,
-      socialMedia: socialMedia
+      socialMedia: socialMedia,
     };
     safeUpdateAccountProfile(updatedProfile);
     setEditMode(false);
@@ -96,14 +95,14 @@ function ChatSettings() {
       const response = await fetch('http://localhost:5000/api/set-user-image', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           account: localProfile.account,
           username: tempUsername,
           imageUrl: localProfile.imageUrl,
-          nftTokenId: localProfile.nftTokenId
-        })
+          nftTokenId: localProfile.nftTokenId,
+        }),
       });
 
       if (!response.ok) {
@@ -131,6 +130,7 @@ function ChatSettings() {
   const handleCancel = () => {
     setTempUsername(localProfile?.username || '');
     setEditMode(false);
+    setNftsAvailable(true); // Reset nftsAvailable on cancel
   };
 
   const handleEditToggle = () => {
@@ -140,7 +140,7 @@ function ChatSettings() {
       setSocialMedia({
         telegram: localProfile?.socialMedia?.telegram || '',
         discord: localProfile?.socialMedia?.discord || '',
-        x: localProfile?.socialMedia?.x || ''
+        x: localProfile?.socialMedia?.x || '',
       });
     }
   };
@@ -166,7 +166,7 @@ function ChatSettings() {
     // Update the local state with the new profile image
     const updatedProfile = {
       ...localProfile,
-      imageUrl: smallThumbnailUrl
+      imageUrl: smallThumbnailUrl,
     };
 
     // Update local state immediately
@@ -179,16 +179,16 @@ function ChatSettings() {
     const requestData = {
       account: localProfile?.account,
       imageUrl: smallThumbnailUrl,
-      nftTokenId: nft.NFTokenID || nft._id
+      nftTokenId: nft.NFTokenID || nft._id,
     };
 
     try {
       const response = await fetch('http://localhost:5000/api/set-user-image', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestData)
+        body: JSON.stringify(requestData),
       });
 
       if (!response.ok) {
@@ -285,7 +285,7 @@ function ChatSettings() {
                 flexDirection: 'column',
                 alignItems: 'center',
                 height: '100%',
-                justifyContent: 'center'
+                justifyContent: 'center',
               }}
             >
               <Avatar
@@ -300,9 +300,16 @@ function ChatSettings() {
               >
                 {localProfile?.username || 'User'}
               </Typography>
-              <Button variant="outlined" size="small" onClick={handleOpenNFTPicker} sx={{ mb: 2 }}>
-                {editMode ? 'Change NFT' : 'View NFT'}
-              </Button>
+              {editMode && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleOpenNFTPicker}
+                  sx={{ mb: 2 }}
+                >
+                  Change NFT
+                </Button>
+              )}
             </Box>
           </Grid>
           <Grid item xs={12} md={8}>
@@ -311,7 +318,7 @@ function ChatSettings() {
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%',
-                justifyContent: 'center'
+                justifyContent: 'center',
               }}
             >
               <Box sx={{ mb: 2 }}>
@@ -331,7 +338,7 @@ function ChatSettings() {
                       <Typography variant="caption" color="textSecondary">
                         {`${tempUsername.length}/12`}
                       </Typography>
-                    )
+                    ),
                   }}
                 />
               </Box>
@@ -347,7 +354,7 @@ function ChatSettings() {
                   disabled
                   InputProps={{
                     readOnly: true,
-                    sx: { bgcolor: 'action.disabledBackground' }
+                    sx: { bgcolor: 'action.disabledBackground' },
                   }}
                 />
               </Box>
@@ -355,9 +362,12 @@ function ChatSettings() {
           </Grid>
         </Grid>
 
-        {showNFTPicker && (
+        {showNFTPicker && nftsAvailable && (
           <Box sx={{ width: '100%', mb: 3 }}>
-            <ProfileNFTPicker onSelect={handleNFTSelect} />
+            <ProfileNFTPicker
+              onSelect={handleNFTSelect}
+              setNftsAvailable={setNftsAvailable}
+            />
           </Box>
         )}
 
@@ -384,19 +394,7 @@ function ChatSettings() {
           />
         </Box>
 
-        <Box sx={{ mb: 2 }}>
-          <FormControlLabel
-            control={
-              <Switch checked={twoFactor} onChange={(e) => setTwoFactor(e.target.checked)} />
-            }
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <SecurityIcon sx={{ mr: 1 }} />
-                <Typography>Two-Factor Authentication</Typography>
-              </Box>
-            }
-          />
-        </Box>
+        {/* Removed Two-Factor Authentication section */}
 
         {/* Social Media Section */}
         <Typography variant="h6" sx={{ mb: 2, mt: 3, fontWeight: 'bold' }}>
@@ -419,8 +417,8 @@ function ChatSettings() {
                   startAdornment: {
                     telegram: <TelegramIcon sx={{ mr: 1, color: 'action.active' }} />,
                     discord: <ChatIcon sx={{ mr: 1, color: 'action.active' }} />,
-                    x: <TwitterIcon sx={{ mr: 1, color: 'action.active' }} />
-                  }[platform]
+                    x: <TwitterIcon sx={{ mr: 1, color: 'action.active' }} />,
+                  }[platform],
                 }}
               />
             </Grid>
