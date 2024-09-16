@@ -42,6 +42,7 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
         setLoading(true);
         try {
             const res = await axios.post(`${BASE_URL}/account/collectedCreated`, body);
+            console.log('XRPNFT API Response:', res.data); // Add this line
             setNFTs(res.data.nfts);
         } catch (err) {
             console.error("Error fetching NFTs:", err);
