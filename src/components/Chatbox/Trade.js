@@ -9,13 +9,43 @@ import {
   Typography,
   Box,
   TextField,
+  Paper,
+  Divider,
+  IconButton,
 } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import CloseIcon from '@mui/icons-material/Close';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import TradeNFTPicker from './TradeNFTPicker';
 import { AppContext } from 'src/AppContext';
 import { Client } from 'xrpl';
 
 const BASE_RESERVE = 10;
 const OWNER_RESERVE = 2;
+
+const StyledDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialog-paper': {
+    borderRadius: 16,
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+  },
+}));
+
+const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
+  background: theme.palette.primary.main,
+  color: theme.palette.primary.contrastText,
+  padding: theme.spacing(2, 3),
+}));
+
+const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
+  padding: theme.spacing(4),
+}));
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(3),
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+}));
 
 const Trade = ({ open, onClose, tradePartner }) => {
   const { accountProfile } = useContext(AppContext);
@@ -114,64 +144,105 @@ const Trade = ({ open, onClose, tradePartner }) => {
   );
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={() => {}} // This prevents the dialog from closing on outside click
-      maxWidth="md" 
+    <StyledDialog
+      open={open}
+      onClose={() => {}}
+      maxWidth="lg"
       fullWidth
-      disableEscapeKeyDown // This prevents the dialog from closing on Escape key press
-      disableBackdropClick // This explicitly disables closing on backdrop click
+      disableEscapeKeyDown
+      disableBackdropClick
     >
-      <DialogTitle>Trade Assets</DialogTitle>
-      <DialogContent>
-        <Grid container spacing={2}>
+      <StyledDialogTitle>
+        Asset Exchange
+        <IconButton
+          aria-label="close"
+          onClick={handleClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </StyledDialogTitle>
+      <StyledDialogContent>
+        <Grid container spacing={4}>
           <Grid item xs={6}>
-            <Typography variant="h6">{accountProfile.username}'s Assets (You)</Typography>
-            <Typography variant="body2">Available XRP Balance: {loggedInUserXrpBalance.toFixed(2)} XRP</Typography>
-            <TextField
-              type="number"
-              label="XRP to offer"
-              value={loggedInUserXrpOffer}
-              onChange={(e) => setLoggedInUserXrpOffer(Number(e.target.value))}
-              inputProps={{ min: 0, max: loggedInUserXrpBalance, step: 0.000001 }}
-              fullWidth
-              margin="normal"
-            />
-            <TradeNFTPicker 
-              onSelect={handleLoggedInUserAssetSelect} 
-              account={accountProfile.account}
-            />
-            <Typography variant="subtitle1" mt={2}>Selected Assets:</Typography>
-            {renderSelectedAssets(selectedLoggedInUserAssets)}
+            <StyledPaper elevation={3}>
+              <Typography variant="h6" gutterBottom>{accountProfile.username}'s Portfolio</Typography>
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                Available XRP: {loggedInUserXrpBalance.toFixed(2)} XRP
+              </Typography>
+              <TextField
+                type="number"
+                label="XRP to offer"
+                value={loggedInUserXrpOffer}
+                onChange={(e) => setLoggedInUserXrpOffer(Number(e.target.value))}
+                inputProps={{ min: 0, max: loggedInUserXrpBalance, step: 0.000001 }}
+                fullWidth
+                margin="normal"
+                variant="outlined"
+              />
+              <Box mt={2} mb={2}>
+                <Divider />
+              </Box>
+              <Typography variant="subtitle1" gutterBottom>Select Assets to Offer:</Typography>
+              <TradeNFTPicker 
+                onSelect={handleLoggedInUserAssetSelect} 
+                account={accountProfile.account}
+              />
+              <Box mt={2}>
+                <Typography variant="subtitle1" gutterBottom>Selected Assets:</Typography>
+                {renderSelectedAssets(selectedLoggedInUserAssets)}
+              </Box>
+            </StyledPaper>
           </Grid>
           <Grid item xs={6}>
-            <Typography variant="h6">{tradePartner.username}'s Assets</Typography>
-            <Typography variant="body2">Available XRP Balance: {partnerXrpBalance.toFixed(2)} XRP</Typography>
-            <TextField
-              type="number"
-              label="XRP to request"
-              value={partnerXrpOffer}
-              onChange={(e) => setPartnerXrpOffer(Number(e.target.value))}
-              inputProps={{ min: 0, max: partnerXrpBalance, step: 0.000001 }}
-              fullWidth
-              margin="normal"
-            />
-            <TradeNFTPicker 
-              onSelect={handlePartnerAssetSelect}
-              account={tradePartner.username}
-            />
-            <Typography variant="subtitle1" mt={2}>Selected Assets:</Typography>
-            {renderSelectedAssets(selectedPartnerAssets)}
+            <StyledPaper elevation={3}>
+              <Typography variant="h6" gutterBottom>{tradePartner.username}'s Portfolio</Typography>
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                Available XRP: {partnerXrpBalance.toFixed(2)} XRP
+              </Typography>
+              <TextField
+                type="number"
+                label="XRP to request"
+                value={partnerXrpOffer}
+                onChange={(e) => setPartnerXrpOffer(Number(e.target.value))}
+                inputProps={{ min: 0, max: partnerXrpBalance, step: 0.000001 }}
+                fullWidth
+                margin="normal"
+                variant="outlined"
+              />
+              <Box mt={2} mb={2}>
+                <Divider />
+              </Box>
+              <Typography variant="subtitle1" gutterBottom>Select Assets to Request:</Typography>
+              <TradeNFTPicker 
+                onSelect={handlePartnerAssetSelect}
+                account={tradePartner.username}
+              />
+              <Box mt={2}>
+                <Typography variant="subtitle1" gutterBottom>Selected Assets:</Typography>
+                {renderSelectedAssets(selectedPartnerAssets)}
+              </Box>
+            </StyledPaper>
           </Grid>
         </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleTrade} variant="contained" color="primary">
-          Propose Trade
+      </StyledDialogContent>
+      <DialogActions sx={{ padding: (theme) => theme.spacing(3) }}>
+        <Button onClick={handleClose} variant="outlined">Cancel</Button>
+        <Button 
+          onClick={handleTrade} 
+          variant="contained" 
+          color="primary" 
+          startIcon={<SwapHorizIcon />}
+        >
+          Propose Exchange
         </Button>
       </DialogActions>
-    </Dialog>
+    </StyledDialog>
   );
 };
 

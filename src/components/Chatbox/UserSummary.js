@@ -232,22 +232,28 @@ const UserSummary = ({ user }) => {
       <Paper
         elevation={3}
         sx={{
-          p: 3,
-          maxWidth: 400,
+          p: 4,
+          maxWidth: 450,
           width: '100%',
-          border: '2px solid white', // Add white border
-          borderRadius: '16px' // Increase border radius for a softer look
+          border: '2px solid white',
+          borderRadius: '20px',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
         }}
       >
-        <Stack spacing={2}>
-          <Stack direction="row" spacing={2} alignItems="center">
+        <Stack spacing={3}>
+          <Stack direction="row" spacing={3} alignItems="center">
             <Avatar
               alt={username}
               src={userImage || '/static/crossmark.webp'}
-              sx={{ width: 80, height: 80, border: `2px solid ${rankColors(theme)[rank]}` }}
+              sx={{
+                width: 90,
+                height: 90,
+                border: `3px solid ${rankColors(theme)[rank]}`,
+                boxShadow: `0 0 15px ${rankColors(theme)[rank]}`,
+              }}
             />
             <Box>
-              <Typography variant="h5" fontWeight="bold" noWrap>
+              <Typography variant="h5" fontWeight="bold" noWrap gutterBottom>
                 {truncateUsername(username)}
               </Typography>
               <Chip
@@ -256,15 +262,17 @@ const UserSummary = ({ user }) => {
                   bgcolor: rankColors(theme)[rank],
                   color: '#fff',
                   fontWeight: 'bold',
-                  boxShadow: rankGlowEffect(theme)[rank]
+                  boxShadow: rankGlowEffect(theme)[rank],
+                  padding: '6px 10px',
+                  fontSize: '0.9rem',
                 }}
               />
             </Box>
           </Stack>
 
-          <Divider />
+          <Divider sx={{ borderColor: 'rgba(0, 0, 0, 0.08)' }} />
 
-          <Grid container spacing={1}>
+          <Grid container spacing={2}>
             <InfoItem label="Account" value={user.username} />
             <InfoItem label="XUMM KYC" value={kycStatus || 'Loading...'} />
             <InfoItem label="Joined" value={joinedDate || 'Loading...'} />
@@ -285,14 +293,50 @@ const UserSummary = ({ user }) => {
             />
           </Grid>
 
-          <Stack direction="row" spacing={1} justifyContent="center" mt={2}>
-            <Button variant="contained" color="primary" onClick={() => handleSendTip(user)}>
+          <Stack direction="row" spacing={2} justifyContent="center" mt={2}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => handleSendTip(user)}
+              sx={{
+                borderRadius: '20px',
+                padding: '8px 16px',
+                fontWeight: 'bold',
+                textTransform: 'none',
+                fontSize: '0.9rem',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              }}
+            >
               Tip
             </Button>
-            <Button variant="outlined" color="secondary" onClick={handleTrade}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleTrade}
+              sx={{
+                borderRadius: '20px',
+                padding: '8px 16px',
+                fontWeight: 'bold',
+                textTransform: 'none',
+                fontSize: '0.9rem',
+                borderWidth: '2px',
+              }}
+            >
               Trade
             </Button>
-            <Button variant="contained" color="secondary" onClick={() => handleSendMessage(user)}>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => handleSendMessage(user)}
+              sx={{
+                borderRadius: '20px',
+                padding: '8px 16px',
+                fontWeight: 'bold',
+                textTransform: 'none',
+                fontSize: '0.9rem',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              }}
+            >
               Message
             </Button>
           </Stack>
@@ -309,7 +353,7 @@ const UserSummary = ({ user }) => {
 
 const InfoItem = ({ label, value, valueColor }) => (
   <Grid item xs={6}>
-    <Typography variant="caption" display="block" color="text.secondary">
+    <Typography variant="caption" color="text.secondary" gutterBottom>
       {label}
     </Typography>
     <Typography variant="body2" fontWeight="medium" color={valueColor}>
