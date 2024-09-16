@@ -170,12 +170,6 @@ const NFTDisplay = ({ nftLink }) => {
         }
       } else {
         // Buy Offers
-        if (isOwner) {
-          // I am the Owner of NFT
-        } else {
-          // I am not the Owner of NFT
-        }
-
         if (!offer.destination || accountLogin === offer.destination)
           newOffers.push(offer);
       }
@@ -189,12 +183,13 @@ const NFTDisplay = ({ nftLink }) => {
     if (nft.dfile.video) {
       return (
         <video
-          width="100%"
-          height="auto"
-          controls
-          loop
+          width="auto"
+          height="30px"
           muted
-          style={{ maxWidth: '200px', maxHeight: '200px' }}
+          loop
+          autoPlay
+          playsInline
+          style={{ borderRadius: '3px' }}
         >
           <source
             src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.video}`}
@@ -209,10 +204,10 @@ const NFTDisplay = ({ nftLink }) => {
           src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.image}`}
           alt={nft.name}
           style={{
-            maxWidth: '200px',
-            maxHeight: '200px',
+            width: 'auto',
+            height: '30px',
             objectFit: 'contain',
-            borderRadius: '10px'
+            borderRadius: '3px'
           }}
         />
       );
@@ -394,7 +389,7 @@ const NFTDisplay = ({ nftLink }) => {
       <StyledTooltip
         title={
           <Paper elevation={0}>
-            <Box sx={{ p: 2 }}>
+            <Box sx={{ p: 1.5 }}>
               <Typography variant="h6" gutterBottom>
                 {nft ? nft.name : `${name} #${number}`}
               </Typography>
@@ -512,16 +507,15 @@ const NFTDisplay = ({ nftLink }) => {
         <Box
           sx={{
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
-            marginLeft: 1,
-            gap: 1
+            marginLeft: 0.5,
+            gap: 0.5
           }}
         >
           {getMediaPreview()}
           <Typography
             variant="caption"
-            sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}
+            sx={{ color: theme.palette.primary.main, fontWeight: 'bold', fontSize: '0.75rem' }}
           >
             {nft ? nft.name : `${name} #${number}`}
           </Typography>
