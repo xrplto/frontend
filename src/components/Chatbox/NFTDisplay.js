@@ -180,77 +180,76 @@ const NFTDisplay = ({ nftLink }) => {
     return newOffers;
   };
 
+  /**
+   * Updated getMediaPreview to utilize the files array for image display.
+   * Prioritizes displaying the small thumbnail if available.
+   */
   const getMediaPreview = () => {
-    if (!nft) return null;
-    let mediaUrl = null;
-    if (nft.dfile) {
-      if (nft.dfile.video) {
-        if (nft.ufileIPFSPath && nft.ufileIPFSPath.video) {
-          mediaUrl = `https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.video}`;
-        } else if (nft.ufile && nft.ufile.video) {
-          mediaUrl = nft.ufile.video.startsWith('http')
-            ? nft.ufile.video
-            : `https://gateway.xrpnft.com/ipfs/${nft.ufile.video}`;
-        } else if (nft.meta && nft.meta.video) {
-          mediaUrl = nft.meta.video;
-        }
-        if (mediaUrl) {
-          return (
-            <video
-              width="auto"
-              height="30px"
-              muted
-              loop
-              autoPlay
-              playsInline
-              style={{ borderRadius: '3px' }}
-            >
-              <source src={mediaUrl} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          );
-        }
-      } else if (nft.dfile.image) {
-        if (nft.ufileIPFSPath && nft.ufileIPFSPath.image) {
-          mediaUrl = `https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.image}`;
-        } else if (nft.ufile && nft.ufile.image) {
-          mediaUrl = nft.ufile.image.startsWith('http')
-            ? nft.ufile.image
-            : `https://gateway.xrpnft.com/ipfs/${nft.ufile.image}`;
-        } else if (nft.meta && nft.meta.image) {
-          mediaUrl = nft.meta.image;
-        }
-        if (mediaUrl) {
-          return (
-            <img
-              src={mediaUrl}
-              alt={nft.name}
-              style={{
-                width: 'auto',
-                height: '30px',
-                objectFit: 'contain',
-                borderRadius: '3px'
-              }}
-            />
-          );
-        }
-      }
-    } else if (nft.meta && nft.meta.image) {
-      mediaUrl = nft.meta.image;
+    if (!nft || !nft.files || nft.files.length === 0) return null;
+
+    // Find the first image file in the files array
+    const imageFile = nft.files.find(file => file.type === 'image');
+
+    if (!imageFile) return null;
+
+    // Determine the URL to use for the image
+    let mediaUrl = '';
+
+    // Prefer the small thumbnail if available
+    if (imageFile.small) {
+      mediaUrl = `https://s2.xrpnft.com/d1/${imageFile.small}`;
+    } 
+    // Fallback to the big thumbnail
+    else if (imageFile.big) {
+      mediaUrl = `https://s2.xrpnft.com/d1/${imageFile.big}`;
+    } 
+    // Fallback to the converted file
+    else if (imageFile.convertedFile) {
+      mediaUrl = `https://s2.xrpnft.com/d1/${imageFile.convertedFile}`;
+    } 
+    // Fallback to the parsedUrl with a gateway
+    else if (imageFile.parsedUrl) {
+      // Replace 'ipfs://' with the gateway URL
+      mediaUrl = imageFile.parsedUrl.replace('ipfs://', 'https://gateway.xrpnft.com/ipfs/');
+    } 
+    // Fallback to a default image or return null
+    else {
+      mediaUrl = null;
+    }
+
+    if (!mediaUrl) return null;
+
+    // Check if the file is a video
+    if (imageFile.parsedType === 'video') {
       return (
-        <img
-          src={mediaUrl}
-          alt={nft.name}
-          style={{
-            width: 'auto',
-            height: '30px',
-            objectFit: 'contain',
-            borderRadius: '3px'
-          }}
-        />
+        <video
+          width="auto"
+          height="30px"
+          muted
+          loop
+          autoPlay
+          playsInline
+          style={{ borderRadius: '3px' }}
+        >
+          <source src={mediaUrl} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       );
     }
-    return null;
+
+    // Otherwise, render an image
+    return (
+      <img
+        src={mediaUrl}
+        alt={nft.name}
+        style={{
+          width: 'auto',
+          height: '30px',
+          objectFit: 'contain',
+          borderRadius: '3px'
+        }}
+      />
+    );
   };
 
   const handleCreateSellOffer = () => {

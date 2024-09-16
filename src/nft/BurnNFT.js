@@ -47,13 +47,13 @@ export default function BurnNFT({ nft, onHandleBurn }) {
     const [openConfirm, setOpenConfirm] = useState(false);
 
     const {
-        flag,
-        account,
-        NFTokenID
-    } = nft;
+        flag = 0,
+        account = '',
+        NFTokenID = ''
+    } = nft || {};
 
     // const isBurnable = (flag & 0x00000001) > 0;
-    const isBurnable = accountLogin === account;
+    const isBurnable = accountLogin === account && account !== '';
 
     useEffect(() => {
         var timer = null;
@@ -216,7 +216,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
                 color='warning'
                 startIcon={<Icon icon='ps:feedburner' />}
                 onClick={() => handleBurnNFT()}
-                disabled={!accountLogin || !isBurnable} // you cannot burn NFToken if you are not owner
+                disabled={!accountLogin || !isBurnable || !nft} // Added !nft check
             >
                 Burn
             </Button>
