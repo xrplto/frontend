@@ -70,9 +70,7 @@ function getCostFromOffers(nftOwner, offers, isSellOffer) {
         xrpCost = cost;
       }
     } else {
-      if (noXrpCost) {
-        // Do nothing for now.
-      } else {
+      if (!noXrpCost) {
         noXrpCost = cost;
       }
     }
@@ -106,36 +104,39 @@ const NFTDisplay = ({ nftLink }) => {
   const [nextUrl, setNextUrl] = useState(null);
   const [qrType, setQrType] = useState('NFTokenAcceptOffer');
 
-  const match = nftLink.match(/\[NFT: (.*?) #(\d+) \((.*?)\)\]/);
-  const [_, name, number, tokenId] = match || [null, null, null, null];
+  // Adjusted regex to match the nftLink format
+  const match = nftLink.match(/\[NFT: (.*?) \((.*?)\)\]/);
+  const [_, name, tokenId] = match || [null, null, null];
 
   useEffect(() => {
     if (tokenId) {
       async function fetchNFT() {
-        const res = await axios.get(`${BASE_URL}/nft/${tokenId}`);
-        setNFT(res.data.nft);
-        setBurnt(res.data.nft.status === NFToken.BURNT);
+        try {
+          const res = await axios.get(`${BASE_URL}/nft/${tokenId}`);
+          setNFT(res.data.nft);
+          setBurnt(res.data.nft.status === NFToken.BURNT);
+        } catch (error) {
+          console.error('Error fetching NFT:', error);
+        }
       }
       fetchNFT();
     }
   }, [tokenId]);
 
   useEffect(() => {
-    function getOffers() {
-      axios
-        .get(`${BASE_URL}/offers/${tokenId}`)
-        .then((res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            const offers = ret.sellOffers;
-            const nftOwner = nft.account;
-            setCost(getCostFromOffers(nftOwner, offers, true));
-            setSellOffers(getValidOffers(ret.sellOffers, true));
-          }
-        })
-        .catch((err) => {
-          console.log('Error on getting nft offers list!!!', err);
-        });
+    async function getOffers() {
+      try {
+        const res = await axios.get(`${BASE_URL}/offers/${tokenId}`);
+        if (res.status === 200) {
+          const ret = res.data;
+          const offers = ret.sellOffers;
+          const nftOwner = nft.account;
+          setCost(getCostFromOffers(nftOwner, offers, true));
+          setSellOffers(getValidOffers(ret.sellOffers, true));
+        }
+      } catch (err) {
+        console.log('Error on getting NFT offers list:', err);
+      }
     }
 
     if (tokenId && nft) {
@@ -170,8 +171,9 @@ const NFTDisplay = ({ nftLink }) => {
         }
       } else {
         // Buy Offers
-        if (!offer.destination || accountLogin === offer.destination)
+        if (!offer.destination || accountLogin === offer.destination) {
           newOffers.push(offer);
+        }
       }
     }
 
@@ -180,28 +182,64 @@ const NFTDisplay = ({ nftLink }) => {
 
   const getMediaPreview = () => {
     if (!nft) return null;
-    if (nft.dfile.video) {
-      return (
-        <video
-          width="auto"
-          height="30px"
-          muted
-          loop
-          autoPlay
-          playsInline
-          style={{ borderRadius: '3px' }}
-        >
-          <source
-            src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.video}`}
-            type="video/mp4"
-          />
-          Your browser does not support the video tag.
-        </video>
-      );
-    } else if (nft.dfile.image) {
+    let mediaUrl = null;
+    if (nft.dfile) {
+      if (nft.dfile.video) {
+        if (nft.ufileIPFSPath && nft.ufileIPFSPath.video) {
+          mediaUrl = `https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.video}`;
+        } else if (nft.ufile && nft.ufile.video) {
+          mediaUrl = nft.ufile.video.startsWith('http')
+            ? nft.ufile.video
+            : `https://gateway.xrpnft.com/ipfs/${nft.ufile.video}`;
+        } else if (nft.meta && nft.meta.video) {
+          mediaUrl = nft.meta.video;
+        }
+        if (mediaUrl) {
+          return (
+            <video
+              width="auto"
+              height="30px"
+              muted
+              loop
+              autoPlay
+              playsInline
+              style={{ borderRadius: '3px' }}
+            >
+              <source src={mediaUrl} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          );
+        }
+      } else if (nft.dfile.image) {
+        if (nft.ufileIPFSPath && nft.ufileIPFSPath.image) {
+          mediaUrl = `https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.image}`;
+        } else if (nft.ufile && nft.ufile.image) {
+          mediaUrl = nft.ufile.image.startsWith('http')
+            ? nft.ufile.image
+            : `https://gateway.xrpnft.com/ipfs/${nft.ufile.image}`;
+        } else if (nft.meta && nft.meta.image) {
+          mediaUrl = nft.meta.image;
+        }
+        if (mediaUrl) {
+          return (
+            <img
+              src={mediaUrl}
+              alt={nft.name}
+              style={{
+                width: 'auto',
+                height: '30px',
+                objectFit: 'contain',
+                borderRadius: '3px'
+              }}
+            />
+          );
+        }
+      }
+    } else if (nft.meta && nft.meta.image) {
+      mediaUrl = nft.meta.image;
       return (
         <img
-          src={`https://gateway.xrpnft.com/ipfs/${nft.ufileIPFSPath.image}`}
+          src={mediaUrl}
           alt={nft.name}
           style={{
             width: 'auto',
@@ -260,7 +298,7 @@ const NFTDisplay = ({ nftLink }) => {
     if (isAcceptOrCancel) {
       // Accept mode
       if (accountLogin === owner) {
-        openSnackbar('You are the owner of this offer, you can not accept it.', 'error');
+        openSnackbar('You are the owner of this offer, you cannot accept it.', 'error');
         return;
       }
     } else {
@@ -354,6 +392,9 @@ const NFTDisplay = ({ nftLink }) => {
             }
           });
           break;
+        default:
+          openSnackbar('Unsupported wallet type', 'error');
+          break;
       }
     } catch (err) {
       console.error(err);
@@ -391,28 +432,34 @@ const NFTDisplay = ({ nftLink }) => {
           <Paper elevation={0}>
             <Box sx={{ p: 1.5 }}>
               <Typography variant="h6" gutterBottom>
-                {nft ? nft.name : `${name} #${number}`}
+                {nft ? nft.name : name}
               </Typography>
               <Divider sx={{ my: 1 }} />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2">Collection:</Typography>
-                <Typography variant="body2" fontWeight="bold">
-                  {nft?.collection}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2">Rarity Rank:</Typography>
-                <Typography variant="body2" fontWeight="bold">
-                  {nft?.rarity_rank} / {nft?.total}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2">Royalty:</Typography>
-                <Typography variant="body2" fontWeight="bold">
-                  {nft ? `${(nft.royalty / 1000).toFixed(2)}%` : 'N/A'}
-                </Typography>
-              </Box>
-              {nft?.props && (
+              {nft?.collection && (
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2">Collection:</Typography>
+                  <Typography variant="body2" fontWeight="bold">
+                    {nft.collection}
+                  </Typography>
+                </Box>
+              )}
+              {nft?.rarity_rank && (
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2">Rarity Rank:</Typography>
+                  <Typography variant="body2" fontWeight="bold">
+                    {nft.rarity_rank} / {nft.total}
+                  </Typography>
+                </Box>
+              )}
+              {nft?.royalty && (
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography variant="body2">Royalty:</Typography>
+                  <Typography variant="body2" fontWeight="bold">
+                    {(nft.royalty / 1000).toFixed(2)}%
+                  </Typography>
+                </Box>
+              )}
+              {nft?.props && nft.props.length > 0 && (
                 <>
                   <Divider sx={{ my: 1 }} />
                   <Typography variant="subtitle2" gutterBottom>
@@ -517,7 +564,7 @@ const NFTDisplay = ({ nftLink }) => {
             variant="caption"
             sx={{ color: theme.palette.primary.main, fontWeight: 'bold', fontSize: '0.75rem' }}
           >
-            {nft ? nft.name : `${name} #${number}`}
+            {nft ? nft.name : name}
           </Typography>
         </Box>
       </StyledTooltip>
