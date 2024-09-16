@@ -15,41 +15,30 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-// ----------------------------------------------------------------------
-const ConfirmDialog = styled(Dialog) (({ theme }) => ({
-    backdropFilter: 'blur(1px)',
-    WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
-    '& .MuiDialogContent-root': {
-        padding: theme.spacing(2),
+import { alpha } from '@mui/material/styles';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+
+const ConfirmDialog = styled(Dialog)(({ theme }) => ({
+    '& .MuiDialog-paper': {
+        borderRadius: 16,
+        boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.08)}`,
     },
-    '& .MuiDialogActions-root': {
-        padding: theme.spacing(1),
-    },
+    backdropFilter: 'blur(5px)',
+    WebkitBackdropFilter: 'blur(5px)',
 }));
 
-const ConfirmDialogTitle = (props) => {
-    const { children, onClose, ...other } = props;
+const ConfirmDialogTitle = styled(DialogTitle)(({ theme }) => ({
+    background: theme.palette.background.default,
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    padding: theme.spacing(3),
+}));
 
-    return (
-        <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
-            {children}
-            {onClose ? (
-                <IconButton
-                    aria-label="close"
-                    onClick={onClose}
-                    sx={{
-                        position: 'absolute',
-                        right: 8,
-                        top: 8,
-                        color: (theme) => theme.palette.grey[500],
-                    }}
-                >
-                    <CloseIcon />
-                </IconButton>
-            ) : null}
-        </DialogTitle>
-    );
-};
+const StyledButton = styled(Button)(({ theme }) => ({
+    borderRadius: 25,
+    padding: theme.spacing(1, 4),
+    textTransform: 'none',
+    fontWeight: 600,
+}));
 
 export default function ConfirmPurchaseDialog({open, setOpen, onContinue }) {
     const theme = useTheme();
@@ -79,36 +68,35 @@ export default function ConfirmPurchaseDialog({open, setOpen, onContinue }) {
             disableScrollLock
             disablePortal
             keepMounted
+            PaperProps={{ elevation: 0 }}
         >
             <ConfirmDialogTitle id="customized-dialog-title" onClose={handleClose}>
-                <Stack direction="row" spacing={1}>
-                    <ErrorOutlineIcon color="error" />
-                    <Typography variant="p4" color="error">Confirm</Typography>
+                <Stack direction="row" spacing={2} alignItems="center">
+                    <ShoppingCartIcon color="primary" fontSize="large" />
+                    <Typography variant="h5" fontWeight="bold">Confirm Purchase</Typography>
                 </Stack>
             </ConfirmDialogTitle>
 
-            <DialogContent>
-                <Stack sx={{pl:1, pr:1}}>
-                    <Typography variant="p5" sx={{mt: 2}}>Are you sure to buy this rank?</Typography>
+            <DialogContent sx={{ p: 4 }}>
+                <Typography variant="body1" sx={{ mb: 3 }}>
+                    Are you sure you want to proceed with this purchase? This action cannot be undone.
+                </Typography>
 
-                    <Stack direction='row' spacing={2} justifyContent="center" sx={{mt:3, mb:4}}>
-                        <Button
-                            variant="contained"
-                            onClick={handleNo}
-                            color='primary'
-                            // size='medium'
-                        >
-                            No
-                        </Button>
-                        <Button
-                            variant="outlined"
-                            onClick={handleYes}
-                            color='primary'
-                            // size='medium'
-                        >
-                            Yes
-                        </Button>
-                    </Stack>
+                <Stack direction="row" spacing={2} justifyContent="flex-end">
+                    <StyledButton
+                        variant="outlined"
+                        onClick={handleNo}
+                        color="primary"
+                    >
+                        Cancel
+                    </StyledButton>
+                    <StyledButton
+                        variant="contained"
+                        onClick={handleYes}
+                        color="primary"
+                    >
+                        Confirm Purchase
+                    </StyledButton>
                 </Stack>
             </DialogContent>
         </ConfirmDialog>

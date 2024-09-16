@@ -29,6 +29,7 @@ import axios from 'axios';
 import sdk from "@crossmarkio/sdk";
 import { ProgressBar } from 'react-loader-spinner';
 import QRDialog from 'src/components/QRDialog';
+import { alpha } from '@mui/material/styles';
 
 const ranks = [
   {
@@ -256,22 +257,30 @@ function Store() {
               },
               ...(item.id === 'verified' && {
                 border: `2px solid ${item.color}`,
-                boxShadow: `0 0 10px ${item.color}`
-              })
+                boxShadow: `0 0 10px ${alpha(item.color, 0.5)}`
+              }),
+              borderRadius: 2,
+              overflow: 'hidden'
             }}
           >
+            <Box sx={{ 
+              bgcolor: alpha(item.color, 0.1), 
+              p: 2, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between'
+            }}>
+              <Avatar sx={{ bgcolor: item.color, width: 36, height: 36 }}>
+                <item.icon sx={{ fontSize: 20 }} />
+              </Avatar>
+              <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'bold', color: item.color }}>
+                {item.name}
+                {item.id === 'verified' && (
+                  <VerifiedIcon sx={{ ml: 1, verticalAlign: 'middle', fontSize: 16 }} />
+                )}
+              </Typography>
+            </Box>
             <CardContent sx={{ flexGrow: 1, p: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Avatar sx={{ bgcolor: item.color, mr: 1, width: 32, height: 32 }}>
-                  <item.icon fontSize="small" />
-                </Avatar>
-                <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-                  {item.name}
-                  {item.id === 'verified' && (
-                    <VerifiedIcon sx={{ ml: 1, color: item.color, verticalAlign: 'middle' }} />
-                  )}
-                </Typography>
-              </Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: '0.8rem' }}>
                 {item.description}
               </Typography>
@@ -279,20 +288,20 @@ function Store() {
                 variant="subtitle1"
                 sx={{ fontWeight: 'bold', color: theme.palette.secondary.main }}
               >
-                Price: 0.0001P
+                Price: 0.0001 XRP
               </Typography>
             </CardContent>
             <CardActions sx={{ justifyContent: 'center', p: 1 }}>
               <Button
                 variant="contained"
+                fullWidth
                 size="small"
                 onClick={() => chooseRank(item)}
                 sx={{
-                  backgroundColor: item.color,
+                  bgcolor: item.color,
                   color: '#fff',
                   '&:hover': {
-                    backgroundColor: theme.palette.augmentColor({ color: { main: item.color } })
-                      .dark
+                    bgcolor: theme.palette.augmentColor({ color: { main: item.color } }).dark
                   }
                 }}
               >
@@ -331,16 +340,21 @@ function Store() {
           nextUrl={nextUrl}
         />
         <Typography
-          variant="h5"
+          variant="h6"
           gutterBottom
-          sx={{ fontWeight: 'bold', color: theme.palette.primary.main, mb: 2 }}
+          sx={{ 
+            fontWeight: 'bold', 
+            color: theme.palette.primary.main, 
+            mb: 2,
+            textAlign: 'center'
+          }}
         >
-          XRP Ledger Chat Store
+          XRP Ledger Chat Premium Features
         </Typography>
 
         <Accordion expanded={expandedCategory === 'ranks'} onChange={handleCategoryChange('ranks')}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="h6">XRP Ledger Chat Ranks</Typography>
+            <Typography variant="subtitle1">XRP Ledger Chat Ranks</Typography>
           </AccordionSummary>
           <AccordionDetails>{renderContent(ranks)}</AccordionDetails>
         </Accordion>
@@ -350,7 +364,7 @@ function Store() {
           onChange={handleCategoryChange('verified')}
         >
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="h6">Special Status</Typography>
+            <Typography variant="subtitle1">Special Status</Typography>
           </AccordionSummary>
           <AccordionDetails>{renderContent([verifiedStatus])}</AccordionDetails>
         </Accordion>

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react';
-import { Box, Grid, Typography, Stack, Button } from '@mui/material';
+import { Box, Grid, Typography, Stack, Button, Paper } from '@mui/material';
 import { AppContext } from 'src/AppContext';
 import axios from 'axios';
 import { PulseLoader } from 'react-spinners';
@@ -59,42 +59,50 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
     };
 
     return (
-        <Box
+        <Paper
+            elevation={3}
             ref={scrollRef}
             sx={{
-                padding: "5px",
-                pt: 1,
-                height: "240px",
-                width: "240px",
+                padding: "16px",
+                pt: 2,
+                height: "300px",
+                width: "280px",
                 overflow: "auto",
+                borderRadius: "12px",
+                backgroundColor: (theme) => theme.palette.background.paper,
                 "&::-webkit-scrollbar": {
-                    width: "6px !important"
+                    width: "8px"
                 },
                 "&::-webkit-scrollbar-thumb": {
-                    borderRadius: "10px",
-                    boxShadow: "inset 0 0 6px rgba(0,0,0,.7)",
+                    borderRadius: "8px",
+                    backgroundColor: (theme) => theme.palette.primary.main,
                 },
             }}
         >
             {selectedCollection && (
-                <Box display="flex" justifyContent="start" mb={1}>
-                    <Button size="small" onClick={handleBack}>
-                        <ArrowBackIcon fontSize="small" />
-                        <Typography variant="caption">Back</Typography>
+                <Box display="flex" justifyContent="start" mb={2}>
+                    <Button
+                        size="small"
+                        onClick={handleBack}
+                        startIcon={<ArrowBackIcon fontSize="small" />}
+                        variant="outlined"
+                        sx={{ borderRadius: '20px' }}
+                    >
+                        <Typography variant="button">Back</Typography>
                     </Button>
                 </Box>
             )}
             {loading ? (
                 <Stack alignItems="center" justifyContent="center" height="100%">
-                    <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
+                    <PulseLoader color={(theme) => theme.palette.primary.main} size={12} />
                 </Stack>
             ) : nfts.length === 0 ? (
                 <Stack alignItems="center" justifyContent="center" height="100%">
-                    <ErrorOutlineIcon fontSize="small" sx={{ mb: 1 }} />
-                    <Typography variant="body2" color="text.secondary">No NFTs found</Typography>
+                    <ErrorOutlineIcon fontSize="large" sx={{ mb: 2, color: 'text.secondary' }} />
+                    <Typography variant="body1" color="text.secondary">No NFTs found</Typography>
                 </Stack>
             ) : (
-                <Grid container spacing={1}>
+                <Grid container spacing={2}>
                     {nfts.map((nft, index) => (
                         <Grid item key={index} xs={6}>
                             {selectedCollection ? (
@@ -112,7 +120,7 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
                     ))}
                 </Grid>
             )}
-        </Box>
+        </Paper>
     );
 };
 
