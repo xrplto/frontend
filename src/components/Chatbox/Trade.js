@@ -49,6 +49,11 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 
 const Trade = ({ open, onClose, tradePartner }) => {
   const { accountProfile } = useContext(AppContext);
+  // Add this check at the beginning of the component
+  if (!accountProfile || !tradePartner) {
+    return null; // or return a loading indicator
+  }
+
   const [selectedLoggedInUserAssets, setSelectedLoggedInUserAssets] = useState([]);
   const [selectedPartnerAssets, setSelectedPartnerAssets] = useState([]);
   const [loggedInUserXrpBalance, setLoggedInUserXrpBalance] = useState(0);
