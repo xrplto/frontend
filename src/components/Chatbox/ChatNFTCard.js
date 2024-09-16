@@ -1,46 +1,56 @@
-import { useContext } from 'react';
-import { Card, CardMedia, CardContent, Typography, Box } from '@mui/material';
-import { AppContext } from 'src/AppContext';
-import { getNftCoverUrl } from "src/utils/parse/utils";
+import React from 'react';
+import { Card, CardMedia, CardContent, Typography, CardActionArea } from '@mui/material';
 
-const ChatNFTCard = ({ nft, onSelect }) => {
-    const { darkMode } = useContext(AppContext);
+const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
 
-    const imgUrl = getNftCoverUrl(nft, 'small');
-    const name = nft.meta?.name || nft.meta?.Name || 'No Name';
-    const nftId = nft.NFTokenID || nft.nftokenID || nft.id || 'Unknown';
-    const nftLink = `[NFT: ${name} (${nftId})]`;
+function ChatNFTCard({ nft, onSelect }) {
+  const handleSelect = () => {
+    if (onSelect) {
+      const nftName = nft.name || nft.meta?.name || 'Unnamed NFT';
+      const nftLink = `[NFT: ${nftName} (${nft.NFTokenID})]`;
+      onSelect(nftLink);
+    }
+  };
 
-    return (
-        <Card 
-            onClick={() => onSelect(nftLink)}
-            sx={{ 
-                cursor: 'pointer', 
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                bgcolor: darkMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)',
-                '&:hover': {
-                    bgcolor: darkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.2)',
-                }
-            }}
-        >
-            <CardMedia
-                component="img"
-                image={imgUrl}
-                alt={name}
-                sx={{
-                    height: 40,
-                    objectFit: 'cover'
-                }}
-            />
-            <CardContent sx={{ p: 0.5, flexGrow: 1 }}>
-                <Typography variant="caption" component="div" noWrap>
-                    {name} ({nftId})
-                </Typography>
-            </CardContent>
-        </Card>
-    );
-};
+  // Determine the image URL
+  let imageUrl = null;
+  if (nft.ufile && nft.ufile.image) {
+    if (nft.isIPFS && !nft.ufile.image.startsWith('http')) {
+      // If it's an IPFS path, construct the URL
+      imageUrl = IPFS_GATEWAY + nft.ufile.image;
+    } else {
+      // If it's a full URL, use it as is
+      imageUrl = nft.ufile.image;
+    }
+  } else if (nft.ufileIPFSPath && nft.ufileIPFSPath.image) {
+    if (!nft.ufileIPFSPath.image.startsWith('http')) {
+      imageUrl = IPFS_GATEWAY + nft.ufileIPFSPath.image;
+    } else {
+      imageUrl = nft.ufileIPFSPath.image;
+    }
+  } else if (nft.meta && nft.meta.image) {
+    imageUrl = nft.meta.image;
+  }
+
+  return (
+    <Card onClick={handleSelect} sx={{ cursor: 'pointer' }}>
+      <CardActionArea>
+        {imageUrl && (
+          <CardMedia
+            component="img"
+            height="140"
+            image={imageUrl}
+            alt={nft.name || nft.meta?.name || 'Unnamed NFT'}
+          />
+        )}
+        <CardContent>
+          <Typography gutterBottom variant="h6" component="div" noWrap>
+            {nft.name || nft.meta?.name || 'Unnamed NFT'}
+          </Typography>
+        </CardContent>
+      </CardActionArea>
+    </Card>
+  );
+}
 
 export default ChatNFTCard;

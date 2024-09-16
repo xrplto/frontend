@@ -99,25 +99,25 @@ function EmojiPicker({ onSelect }) {
 
 const FormattedNFT = ({ nftLink, onRemove }) => {
   const theme = useTheme();
-  const match = nftLink.match(/\[NFT: (.*?) #(\d+) \((.*?)\)\]/);
+  const match = nftLink.match(/\[NFT: (.*?) \((.*?)\)\]/);
 
   if (!match) return null;
 
-  const [_, name, number, tokenId] = match;
+  const [_, name, tokenId] = match;
 
   return (
     <Tooltip
       title={
         <Box>
-          <Typography variant="body2">{`${name} #${number}`}</Typography>
+          <Typography variant="body2">{`${name}`}</Typography>
           <Typography variant="caption" color="textSecondary">{tokenId}</Typography>
         </Box>
       }
       arrow
     >
       <Chip
-        icon={<img src="/static/crossmark.webp" alt={`${name} #${number}`} style={{ width: '16px', height: '16px' }} />}
-        label={`${name} #${number}`}
+        icon={<img src="/static/crossmark.webp" alt={`${name}`} style={{ width: '16px', height: '16px' }} />}
+        label={`${name}`}
         onDelete={onRemove}
         size="small"
         sx={{
@@ -142,7 +142,7 @@ const CustomInput = ({ value, onChange, onNFTRemove, onKeyPress }) => {
   useEffect(() => {
     const newNftParts = value.match(/\[NFT:.*?\]/g) || [];
     setNftParts(newNftParts);
-    const textParts = value.split(/(\[NFT:.*?\])/).filter(part => !part.startsWith('[NFT:'));
+    const textParts = value.split(/\[NFT:.*?\]/g);
     setLocalValue(textParts.join(''));
   }, [value]);
 
@@ -150,14 +150,14 @@ const CustomInput = ({ value, onChange, onNFTRemove, onKeyPress }) => {
     const newTextValue = e.target.value;
     setLocalValue(newTextValue);
 
-    const newFullValue = [...nftParts, newTextValue].join('');
+    const newFullValue = nftParts.join('') + newTextValue;
     onChange(newFullValue);
   };
 
   const handleNFTRemove = (nftLink) => {
     const newNftParts = nftParts.filter(part => part !== nftLink);
     setNftParts(newNftParts);
-    const newFullValue = [...newNftParts, localValue].join('');
+    const newFullValue = newNftParts.join('') + localValue;
     onChange(newFullValue);
     onNFTRemove && onNFTRemove(nftLink);
   };
@@ -307,7 +307,7 @@ function Chatbox() {
   };
 
   const addNFT = (nftLink) => {
-    setMessage((prevMessage) => prevMessage + ` ${nftLink}`);
+    setMessage((prevMessage) => nftLink + prevMessage);
     setShowEmojiPicker(false);
   };
 
@@ -315,8 +315,8 @@ function Chatbox() {
     dispatch(toggleChatOpen());
   };
 
-  const handleNFTRemove = (index) => {
-    // You can add any additional logic here if needed
+  const handleNFTRemove = (nftLink) => {
+    // Logic handled within CustomInput
   };
 
   const handleMessageChange = (newMessage) => {
@@ -487,8 +487,8 @@ function Chatbox() {
                     </Box>
                   )}
                 </Box>
-                <IconButton 
-                  onClick={sendMessage} 
+                <IconButton
+                  onClick={sendMessage}
                   color="primary"
                   disabled={message.trim().length === 0}
                   sx={{
