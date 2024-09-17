@@ -162,7 +162,7 @@ export default function TokenListHead({
   orderBy,
   onRequestSort,
   scrollLeft,
-  tokens,
+  tokens = [], // Provide a default empty array
   scrollTopLength
 }) {
   const theme = useTheme();
@@ -197,7 +197,7 @@ export default function TokenListHead({
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
             zIndex: 1001,
-            left: tokens.length > 0 ? (isMobile ? 28 : 52) : isMobile ? 8 : 32,
+            left: (tokens?.length ?? 0) > 0 ? (isMobile ? 28 : 52) : isMobile ? 8 : 32,
             background: darkMode ? '#000000' : '#FFFFFF',
             '&:before':
               isMobile && scrollLeft

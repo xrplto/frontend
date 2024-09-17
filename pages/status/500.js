@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
     Box,
     Typography,
@@ -46,9 +46,9 @@ const TypographySecondary = styled(Typography)(
 export default function Status500() {
     const [pending, setPending] = useState(false);
     
-    function handleClick() {
+    const handleClick = useCallback(() => {
         setPending(true);
-    }
+    }, []);
 
     return (
         <>

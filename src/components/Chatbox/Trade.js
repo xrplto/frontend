@@ -49,11 +49,6 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 
 const Trade = ({ open, onClose, tradePartner }) => {
   const { accountProfile } = useContext(AppContext);
-  // Add this check at the beginning of the component
-  if (!accountProfile || !tradePartner) {
-    return null; // or return a loading indicator
-  }
-
   const [selectedLoggedInUserAssets, setSelectedLoggedInUserAssets] = useState([]);
   const [selectedPartnerAssets, setSelectedPartnerAssets] = useState([]);
   const [loggedInUserXrpBalance, setLoggedInUserXrpBalance] = useState(0);
@@ -62,7 +57,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const [partnerXrpOffer, setPartnerXrpOffer] = useState(0);
 
   useEffect(() => {
-    if (open) {
+    if (open && accountProfile && tradePartner) {
       fetchXrpBalances();
     }
   }, [open, accountProfile, tradePartner]);
@@ -147,6 +142,11 @@ const Trade = ({ open, onClose, tradePartner }) => {
       ))}
     </Box>
   );
+
+  // Move the check here, after all hooks have been called
+  if (!accountProfile || !tradePartner) {
+    return null; // or return a loading indicator
+  }
 
   return (
     <StyledDialog

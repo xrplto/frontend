@@ -23,8 +23,8 @@ import SearchToolbar from './SearchToolbar';
 import { TokenRow } from './TokenRow';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 import TrustSetDialog from 'src/components/TrustSetDialog';
-import { FixedSizeList as List } from 'react-window';
-import AutoSizer from 'react-virtualized-auto-sizer';
+import React, { memo } from 'react';
+import { debounce } from 'lodash';
 
 const useStyles = makeStyles({
   tableContainer: {
@@ -44,12 +44,14 @@ const useStyles = makeStyles({
   }
 });
 
+const MemoizedTokenRow = memo(TokenRow);
+
 export default function TokenList({
   showWatchList,
   tag,
   tagName,
   tags,
-  initialTokens,
+  tokens,
   setTokens,
   tMap
 }) {
@@ -83,8 +85,6 @@ export default function TokenList({
   const [scrollLeft, setScrollLeft] = useState(0);
   const [scrollTopLength, setScrollTopLength] = useState(0);
 
-  const [tokens, setLocalTokens] = useState(initialTokens);
-
   useEffect(() => {
     const handleScrollX = () => {
       setScrollLeft(tableContainerRef.current?.scrollLeft > 0);
@@ -112,6 +112,8 @@ export default function TokenList({
       window.removeEventListener('scroll', handleScrollY);
     };
   }, []);
+
+  const [watchList, setWatchList] = useState([]);
 
   const { sendJsonMessage } = useWebSocket(WSS_FEED_URL, {
     shouldReconnect: () => true,
@@ -141,29 +143,31 @@ export default function TokenList({
     }
   }, [applyTokenChanges, dispatch]);
 
-  const loadTokens = useCallback(() => {
-    const start = page * rows + 1;
-    const ntag = tag || '';
-    const watchAccount = showWatchList ? accountProfile?.account || '' : '';
+  const debouncedLoadTokens = useCallback(
+    debounce(() => {
+      const start = page * rows + 1;
+      const ntag = tag || '';
+      const watchAccount = showWatchList ? accountProfile?.account || '' : '';
 
-    axios
-      .get(`${BASE_URL}/tokens?tag=${ntag}&watchlist=${watchAccount}&start=${start}&limit=${rows}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}`)
-      .then((res) => {
-        if (res.status === 200 && res.data) {
-          const ret = res.data;
-          dispatch(update_metrics(ret));
-          dispatch(update_filteredCount(ret));
-          setLocalTokens(prevTokens => [...prevTokens, ...ret.tokens]);
-          setTokens(prevTokens => [...prevTokens, ...ret.tokens]);
-        }
-      })
-      .catch((err) => console.log('err->>', err))
-      .finally(() => setSearch(filterName));
-  }, [accountProfile, filterName, order, orderBy, page, rows, showDate, showNew, showSlug, showWatchList, tag, dispatch, setTokens]);
+      axios
+        .get(`${BASE_URL}/tokens?tag=${ntag}&watchlist=${watchAccount}&start=${start}&limit=${rows}&sortBy=${orderBy}&sortType=${order}&filter=${filterName}&showNew=${showNew}&showSlug=${showSlug}&showDate=${showDate}`)
+        .then((res) => {
+          if (res.status === 200 && res.data) {
+            const ret = res.data;
+            dispatch(update_metrics(ret));
+            dispatch(update_filteredCount(ret));
+            setTokens(ret.tokens);
+          }
+        })
+        .catch((err) => console.log('err->>', err))
+        .finally(() => setSearch(filterName));
+    }, 300),
+    [accountProfile, filterName, order, orderBy, page, rows, showDate, showNew, showSlug, showWatchList, tag, dispatch, setTokens]
+  );
 
   useEffect(() => {
-    if (sync > 0) loadTokens();
-  }, [loadTokens, sync]);
+    if (sync > 0) debouncedLoadTokens();
+  }, [debouncedLoadTokens, sync]);
 
   useEffect(() => {
     const getWatchList = () => {
@@ -267,26 +271,6 @@ export default function TokenList({
     setSync(sync + 1);
   };
 
-  const Row = ({ index, style }) => {
-    const row = tokens[index];
-    return (
-      <div style={style}>
-        <TokenRow
-          time={row.time}
-          idx={index + page * rows}
-          token={row}
-          setEditToken={setEditToken}
-          setTrustToken={setTrustToken}
-          watchList={watchList}
-          onChangeWatchList={onChangeWatchList}
-          scrollLeft={scrollLeft}
-          activeFiatCurrency={activeFiatCurrency}
-          exchRate={exchRate}
-        />
-      </div>
-    );
-  };
-
   return (
     <>
       {editToken && (
@@ -325,18 +309,21 @@ export default function TokenList({
             scrollTopLength={scrollTopLength}
           />
           <TableBody>
-            <AutoSizer>
-              {({ height, width }) => (
-                <List
-                  height={height || 400} // Provide a default height
-                  itemCount={tokens.length}
-                  itemSize={50} // Adjust this value based on your row height
-                  width={width}
-                >
-                  {Row}
-                </List>
-              )}
-            </AutoSizer>
+            {tokens.slice(0, rows).map((row, idx) => (
+              <MemoizedTokenRow
+                key={row.md5} // Changed from idx to row.md5 for better key uniqueness
+                time={row.time}
+                idx={idx + page * rows}
+                token={row}
+                setEditToken={setEditToken}
+                setTrustToken={setTrustToken}
+                watchList={watchList}
+                onChangeWatchList={onChangeWatchList}
+                scrollLeft={scrollLeft}
+                activeFiatCurrency={activeFiatCurrency}
+                exchRate={exchRate}
+              />
+            ))}
           </TableBody>
         </Table>
       </Box>

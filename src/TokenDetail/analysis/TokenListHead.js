@@ -13,7 +13,7 @@ import {
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import InfoIcon from '@mui/icons-material/Info'; // Import InfoIcon from Material-UI Icons
-import { Typography, Box } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 
 const SmallInfoIcon = (props) => (
     <InfoIcon {...props} fontSize="smaller" /> // Make the icon smaller by setting fontSize="small"
