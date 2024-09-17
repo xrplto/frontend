@@ -1,6 +1,6 @@
 import axios from 'axios'
 import PropTypes from 'prop-types';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
 // Material
 import { withStyles } from '@mui/styles';
@@ -45,9 +45,6 @@ import { useRef } from 'react';
 // ----------------------------------------------------------------------
 import StackStyle from 'src/components/StackStyle'; //Maybe need to disable?
 // ----------------------------------------------------------------------
-
-import { alpha } from '@mui/material/styles';
-import { useTheme } from '@mui/material/styles';
 
 const BuyTypography = withStyles({
     root: {
@@ -108,8 +105,6 @@ export default function Orders({pair}) {
     const curr1 = pair.curr1;
     const curr2 = pair.curr2;
 
-    const theme = useTheme();
-
     useEffect(() => {
         function getOffers() {
             const accountAddress = accountProfile?.account;
@@ -149,7 +144,7 @@ export default function Orders({pair}) {
                 const res = ret.data.data.response;
                 /*
                 {
-                    "hex": "120008228000000024043DCAC32019043DCAC2201B04483488684000000000000000F732103924E47158D3980DDAF7479A838EF3C0AE53D953BD2A526E658AC5F3EF0FA7D2174473045022100D10E91E2704A4BDAB510B599B8258956F9F34592B2B62BE383ED3E4DBF57DE2B02204837DD77A787D4E0DC43DCC53A7BBE160B164617FE3D0FFCFF9F6CC808D46DEE811406598086E863F1FF42AD87DCBE2E1B5F5A8B5EB8",
+                    "hex": "120008228000000024043DCAC32019043DCAC2201B0448348868400000000000000F732103924E47158D3980DDAF7479A838EF3C0AE53D953BD2A526E658AC5F3EF0FA7D2174473045022100D10E91E2704A4BDAB510B599B8258956F9F34592B2B62BE383ED3E4DBF57DE2B02204837DD77A787D4E0DC43DCC53A7BBE160B164617FE3D0FFCFF9F6CC808D46DEE811406598086E863F1FF42AD87DCBE2E1B5F5A8B5EB8",
                     "txid": "EC13B221808A21EA1012C95FB0EF53BF0110D7AB2EB17104154A27E5E70C39C5",
                     "resolved_at": "2022-05-23T07:45:37.000Z",
                     "dispatched_to": "wss://s2.ripple.com",
@@ -249,109 +244,8 @@ export default function Orders({pair}) {
 
     // https://api.sologenic.org/api/v1/trades?symbol=534F4C4F00000000000000000000000000000000%2BrsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz%2FXRP&account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
 
-    const memoizedOrders = useMemo(() => {
-        return offers.map((row) => {
-            const {
-                _id,
-                account,
-                seq,
-                flags,
-                gets,
-                pays,
-                expire,
-                chash,
-                ctime,
-                mhash,
-                mtime
-            } = row;
-
-            const expired = checkExpiration(expire);
-
-            let exch = 0;
-
-            let buy;
-            if (pays.issuer === curr1.issuer && pays.currency === curr1.currency) {
-                // BUY
-                buy = true;
-                exch = new Decimal(gets.value).div(pays.value).toNumber();
-            } else {
-                // SELL
-                buy = false;
-                exch = new Decimal(pays.value).div(gets.value).toNumber();
-            }
-
-            return (
-                <TableRow
-                    key={_id}
-                    sx={{
-                        [`& .${tableCellClasses.root}`]: {
-                            color: (buy ? theme.palette.success.main : theme.palette.error.main)
-                        },
-                        "&:hover": {
-                            "& .MuiTableCell-root": {
-                                backgroundColor: darkMode 
-                                    ? alpha(theme.palette.action.hover, 0.1)
-                                    : alpha(theme.palette.action.hover, 0.05)
-                            }
-                        },
-                        transition: 'background-color 0.2s ease-in-out'
-                    }}
-                >
-                    <TableCell align="left" sx={{
-                        position: "sticky",
-                        zIndex: 1001,
-                        left: 0,
-                        background: darkMode ? theme.palette.background.paper : theme.palette.background.default,
-                        '&:before': (scrollLeft ? {
-                            content: "''",
-                            boxShadow: "inset 10px 0 8px -8px #00000026",
-                            position: "absolute",
-                            top: "0",
-                            right: "0",
-                            bottom: "-1px",
-                            width: "30px",
-                            transform: "translate(100%)",
-                            transition: "box-shadow .3s",
-                            pointerEvents: "none",
-                        } : {})
-                    }}>
-                        {
-                            buy ? (
-                                <BuyTypography variant="caption">
-                                    BUY
-                                </BuyTypography>
-                            ):(
-                                <SellTypography variant="caption">
-                                    SELL
-                                </SellTypography>
-                            )
-                        }
-                    </TableCell>
-                    <TableCell align="left">{exch}</TableCell>
-                    <TableCell align="left">
-                        <Typography variant="h6" noWrap>{gets.value} <Typography variant="small">{gets.name}</Typography></Typography>
-                    </TableCell>
-
-                    <TableCell align="left">
-                        <Typography variant="h6" noWrap>{pays.value} <Typography variant="small">{pays.name}</Typography></Typography>
-                    </TableCell>
-
-                    <TableCell align="left">
-                        <IconButton color='error' onClick={e=>handleCancel(e, seq)} aria-label="cancel">
-                            <CancelIcon fontSize='small'/>
-                        </IconButton>
-                    </TableCell>
-                </TableRow>
-            );
-        });
-    }, [offers, curr1, curr2, theme, darkMode, scrollLeft, handleCancel]);
-
-    const handleOrderClick = useCallback(() => {
-        // Order click logic
-    }, [/* dependencies */]);
-
     return (
-        <Stack spacing={2}>
+        <Stack>{/*<StackStyle>*/}
             <QRDialog
                 open={openScanQR}
                 type="OfferCancel"
@@ -370,9 +264,6 @@ export default function Orders({pair}) {
                         scrollSnapAlign: "center",
                     },
                     "::-webkit-scrollbar": { display: "none" },
-                    boxShadow: `0px 0px 15px ${alpha(theme.palette.primary.main, 0.1)}`,
-                    borderRadius: 2,
-                    bgcolor: darkMode ? 'background.paper' : 'background.default',
                 }}
                 ref={tableRef}
             >
@@ -381,8 +272,8 @@ export default function Orders({pair}) {
                         "& .MuiTableCell-root": {
                             borderBottom: "none",
                             boxShadow: darkMode
-                                ? `inset 0 -1px 0 ${alpha(theme.palette.common.white, 0.1)}`
-                                : `inset 0 -1px 0 ${alpha(theme.palette.common.black, 0.1)}`,
+                                ? "inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)"
+                                : "inset 0 -1px 0 #dadee3",
                         }
                     }}
                 >
@@ -392,8 +283,7 @@ export default function Orders({pair}) {
                                 position: "sticky",
                                 zIndex: 1001,
                                 left: 0,
-                                background: darkMode ? theme.palette.background.paper : theme.palette.background.default,
-                                fontWeight: 'bold',
+                                background: darkMode ? "#000000" : '#FFFFFF',
                                 '&:before': (scrollLeft ? {
                                     content: "''",
                                     boxShadow: "inset 10px 0 8px -8px #00000026",
@@ -407,14 +297,125 @@ export default function Orders({pair}) {
                                     pointerEvents: "none",
                                 } : {})
                             }}>Side</TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Price</TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Taker Gets</TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Taker Pays</TableCell>
-                            <TableCell align="left" sx={{ fontWeight: 'bold' }}>Cancel</TableCell>
+                            <TableCell align="left">Price</TableCell>
+                            <TableCell align="left">Taker Gets</TableCell>
+                            <TableCell align="left">Taker Pays</TableCell>
+                            <TableCell align="left">Cancel</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {memoizedOrders}
+                    {
+                        offers.map((row) => {
+
+                                /*{
+                                    "_id": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm_71158478",
+                                    "account": "r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm",
+                                    "seq": 71158478,
+                                    "flags": 0,
+                                    "gets": {
+                                        "issuer": "XRPL",
+                                        "currency": "XRP",
+                                        "name": "XRP",
+                                        "value": "5"
+                                    },
+                                    "pays": {
+                                        "issuer": "rLpunkscgfzS8so59bUCJBVqZ3eHZue64r",
+                                        "currency": "4C656467657250756E6B73000000000000000000",
+                                        "name": "LedgerPunks",
+                                        "value": "5000"
+                                    },
+                                    "pair": "1e766311a6e689cd7225b5923ed5811c"
+                                },*/
+                                const {
+                                    _id,
+                                    account,
+                                    seq,
+                                    flags,
+                                    gets,
+                                    pays,
+                                    expire,
+                                    chash,
+                                    ctime,
+                                    mhash,
+                                    mtime
+                                } = row;
+
+                                const expired = checkExpiration(expire);
+
+                                let exch = 0;
+
+                                let buy;
+                                if (pays.issuer === curr1.issuer && pays.currency === curr1.currency) {
+                                    // BUY
+                                    buy = true;
+                                    exch = new Decimal(gets.value).div(pays.value).toNumber();
+                                } else {
+                                    // SELL
+                                    buy = false;
+                                    exch = new Decimal(pays.value).div(gets.value).toNumber();
+                                }
+
+                                return (
+                                    <TableRow
+                                        key={_id}
+                                        sx={{
+                                            [`& .${tableCellClasses.root}`]: {
+                                                color: (buy ? '#007B55' : '#B72136')  // this places color on table items in Open Orders
+                                            },
+                                            "&:hover": {
+                                                "& .MuiTableCell-root": {
+                                                    backgroundColor: darkMode ? "#232326 !important" : "#D9DCE0 !important"
+                                                }
+                                            }
+                                        }}
+                                    >
+                                        <TableCell align="left" sx={{
+                                            position: "sticky",
+                                            zIndex: 1001,
+                                            left: 0,
+                                            background: darkMode ? "#000000" : '#FFFFFF',
+                                            '&:before': (scrollLeft ? {
+                                                content: "''",
+                                                boxShadow: "inset 10px 0 8px -8px #00000026",
+                                                position: "absolute",
+                                                top: "0",
+                                                right: "0",
+                                                bottom: "-1px",
+                                                width: "30px",
+                                                transform: "translate(100%)",
+                                                transition: "box-shadow .3s",
+                                                pointerEvents: "none",
+                                            } : {})
+                                        }}>
+                                            {
+                                                buy ? (
+                                                    <BuyTypography variant="caption">
+                                                        BUY
+                                                    </BuyTypography>
+                                                ):(
+                                                    <SellTypography variant="caption">
+                                                        SELL
+                                                    </SellTypography>
+                                                )
+                                            }
+                                        </TableCell>
+                                        <TableCell align="left">{exch}</TableCell>
+                                        <TableCell align="left">
+                                            <Typography variant="h6" noWrap>{gets.value} <Typography variant="small">{gets.name}</Typography></Typography>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            <Typography variant="h6" noWrap>{pays.value} <Typography variant="small">{pays.name}</Typography></Typography>
+                                        </TableCell>
+
+                                        <TableCell align="left">
+                                            <IconButton color='error' onClick={e=>handleCancel(e, seq)} aria-label="cancel">
+                                                <CancelIcon fontSize='small'/>
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
                     </TableBody>
                 </Table>
             </Box>
@@ -424,9 +425,6 @@ export default function Orders({pair}) {
                         sx={{
                             display: 'flex',
                             alignItems: 'center',
-                            bgcolor: alpha(theme.palette.error.main, 0.1),
-                            p: 2,
-                            borderRadius: 1,
                         }}
                     >
                         <ErrorOutlineIcon fontSize='small' sx={{ mr: '5px' }} />
@@ -436,18 +434,15 @@ export default function Orders({pair}) {
                 :
                 loading ?
                     <Stack alignItems="center" sx={{mt: 5, mb: 5}}>
-                        <PuffLoader color={darkMode ? theme.palette.primary.main : theme.palette.secondary.main} size={35} sx={{ mt: 5, mb: 5 }} />
+                        <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={35} sx={{ mt: 5, mb: 5 }} />
                     </Stack>
                     :
                     offers.length === 0 ?
                         <ConnectWalletContainer>
-                            <Typography variant='subtitle2' color='text.secondary'
+                            <Typography variant='subtitle2' color='error'
                                 sx={{
                                     display: 'flex',
                                     alignItems: 'center',
-                                    bgcolor: alpha(theme.palette.info.main, 0.1),
-                                    p: 2,
-                                    borderRadius: 1,
                                 }}
                             >
                                 <ErrorOutlineIcon fontSize='small' sx={{ mr: '5px' }} />

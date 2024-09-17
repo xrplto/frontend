@@ -12,17 +12,25 @@ import ChartOptions from './ChartOptions';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
-import { useMemo } from 'react';
-import { median } from 'src/utils/median';
 
 // ----------------------------------------------------------------------
 
-function getChartData(offers, limit = 30) {
-    return offers.slice(0, limit).map(o => [o.price, o.sumAmount]);
+var triggerFormatting = 0; //adding trimming for very small
+
+function getChartData(offers) {
+    let data = [];
+    for (var o of offers.slice(0, 30)) {
+        data.push([o.price, o.sumAmount]);
+        if (!triggerFormatting && o.price < 0.000001 ) {
+			triggerFormatting = 1;
+		}
+    }
+    
+    return data;
 }
 
 export default function BidAskChart({asks, bids}) {
-    const chartData = useMemo(() => [
+    const CHART_DATA = [
         {
             name: 'BID',
             type: 'area',
@@ -33,35 +41,35 @@ export default function BidAskChart({asks, bids}) {
             type: 'area',
             data: getChartData(asks)
         },
-    ], [asks, bids]);
+    ];
 
-    const medianPrice = useMemo(() => median([...asks, ...bids].map(o => o.price)), [asks, bids]);
-    const shouldTriggerFormatting = medianPrice < 0.000001;
-
-    const chartOptions = useMemo(() => {
-        const options = ChartOptions(chartData);
-        
-        if (shouldTriggerFormatting) {
-            Object.assign(options, {
-                xaxis: {
-                    ...options.xaxis,
-                    labels: {
-                        ...options.xaxis.labels,
-                        trim: true,
-                        offsetX: 3,
-                        formatter: fNumber,
-                        style: {
-                            cssClass: 'apexcharts-xaxis-label-infini',
-                        }
-                    }
-                },
-            });
-        }
-        
-        return options;
-    }, [chartData, shouldTriggerFormatting]);
+    const CHART_OPTION = ChartOptions(CHART_DATA);
+    
+    if (triggerFormatting)
+		Object.assign(CHART_OPTION, {
+			xaxis: {
+				type: 'numeric',
+				tickAmount: 1,
+				axisBorder: { show: false },
+				axisTicks: { show: false },
+				/* above from ChartOptions */
+				labels: { // webxtor too small numbers are shown as 0 fix 
+					trim: true,
+					/*rotate: -45, //to better fit the screen
+					rotateAlways: true,	
+					maxHeight: 50,*/
+					offsetX: 3,
+					formatter: function(val, index) {
+						return fNumber(val);
+					},
+					style: {
+						cssClass: 'apexcharts-xaxis-label-infini', // CSS in zMain.css or need to install style-sx
+					}
+				}
+			},
+	});
     
     return (
-        <Chart series={chartData} options={chartOptions} height={256} />
+        <Chart series={CHART_DATA} options={CHART_OPTION} height={256} />
     );
 }

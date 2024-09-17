@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { styled, alpha } from '@mui/material/styles';
+import { styled, alpha, useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import {
   Avatar, Box, Button, Card, Chip, Container, Grid, IconButton, Link, Stack, Tooltip, Typography
 } from '@mui/material';
@@ -30,14 +31,20 @@ const OverviewWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   flex: 1,
   overflowX: 'hidden',
-
-  color: '#ffffff', // White text color for contrast
+  color: theme.palette.text.primary, // Use theme text color
   padding: theme.spacing(4),
+  backgroundColor: theme.palette.background.default, // Use theme background color
 }));
 
 const Label = styled(Typography)(({ theme }) => ({
   color: alpha('#637381', 0.99),
   marginBottom: theme.spacing(1),
+}));
+
+const TruncatedTypography = styled(Typography)(({ theme }) => ({
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 }));
 
 const normalizeTag = (tag) => tag && tag.length > 0
@@ -64,6 +71,9 @@ const TrustLine = (props) => {
   const marketcap = token.amount * token.exch / metrics.USD;
   const voldivmarket = marketcap > 0 ? Decimal.div(token.vol24hxrp, marketcap).toNumber() : 0;
   const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     if (!uuid) return;
@@ -171,7 +181,7 @@ const TrustLine = (props) => {
           </Typography>
         </Stack>
 
-        <Card sx={{ mt: 3, mb: 8, p: 3, borderRadius: 2, backgroundColor: '#1E1E1E' }}>
+        <Card sx={{ mt: 3, mb: 8, p: 3, borderRadius: 2, backgroundColor: (theme) => theme.palette.background.paper }}>
           <Stack alignItems="center" spacing={4}>
             <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
               <Avatar alt={`${user} ${token.name} Logo`} src={imgUrl} sx={{ width: 64, height: 64 }} />
@@ -297,7 +307,9 @@ const TrustLine = (props) => {
                 <Link underline="none" color="inherit" target="_blank" href={`https://bithomp.com/explorer/${token.issuer}`} rel="noreferrer noopener nofollow" sx={{ flexGrow: 1 }}>
                   <Stack direction="row" spacing={1.5} alignItems="center">
                     <PersonIcon style={{ color: '#B72136', fontSize: 'medium' }} />
-                    <Typography variant="subtitle2" sx={{ flexGrow: 1 }}>{token.issuer}</Typography>
+                    <TruncatedTypography variant="subtitle2" sx={{ flexGrow: 1, maxWidth: isMobile ? '200px' : 'none' }}>
+                      {token.issuer}
+                    </TruncatedTypography>
                     <IconButton edge="end" aria-label="bithomp">
                       <Avatar alt={`${user} ${token.name} Bithomp Explorer`} src="/static/bithomp.ico" sx={{ width: 24, height: 24 }} />
                     </IconButton>
@@ -307,7 +319,9 @@ const TrustLine = (props) => {
 
               <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
                 <LocalAtmIcon style={{ color: '#B72136', fontSize: 'medium' }} />
-                <Typography variant="subtitle2" sx={{ flexGrow: 1 }}>{token.currency}</Typography>
+                <TruncatedTypography variant="subtitle2" sx={{ flexGrow: 1, maxWidth: isMobile ? '200px' : 'none' }}>
+                  {token.currency}
+                </TruncatedTypography>
                 <CopyToClipboard text={token.currency} onCopy={() => openSnackbar('Copied!', 'success')}>
                   <Tooltip title="Click to copy">
                     <IconButton>
@@ -378,8 +392,8 @@ const TrustLine = (props) => {
 
         <Label>TAGS</Label>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2, mb: 2 }}>
-          {token.tags && token.tags.map((tag, index) => (
-            <Link key={index} href={`/view/${normalizeTag(tag)}`} underline="none" target="_blank" rel="noreferrer noopener">
+          {token.tags && token.tags.map((tag) => (
+            <Link key={normalizeTag(tag)} href={`/view/${normalizeTag(tag)}`} underline="none" target="_blank" rel="noreferrer noopener">
               <Chip label={tag} variant="outlined" size="small" sx={{ mb: 1 }} clickable />
             </Link>
           ))}
@@ -414,10 +428,10 @@ export async function getServerSideProps(ctx) {
   const token = data.token;
   const ogp = {
     canonical: `https://xrpl.to/trustset/${token.slug}`,
-    title: `Establish a ${token.name} Trustline on the XRP Ledger`,
+    title: `Establish a ${token.user} ${token.name} Trustline on the XRP Ledger`,
     url: `https://xrpl.to/trustset/${token.slug}`,
     imgUrl: `https://s1.xrpl.to/token/${token.md5}`,
-    desc: `Easily set up a ${token.name} Trustline on the XRPL for secure and streamlined transactions.`,
+    desc: `Easily set up a ${token.user} ${token.name} Trustline on the XRPL for secure and streamlined transactions.`,
   };
 
   return {
