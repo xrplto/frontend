@@ -10,7 +10,7 @@ import ChatCollectionCard from './ChatCollectionCard';
 
 const BASE_URL = 'https://api.xrpnft.com/api';
 
-const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallSize = false }) => {
+const NFTs = ({ account, collection, type = 'collected', limit, onSelect, smallSize = false }) => {
   const scrollRef = useRef(null);
   const { darkMode } = useContext(AppContext);
 
@@ -33,8 +33,8 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
       filter: 0,
       limit,
       page: 0,
-      search: "",
-      subFilter: "pricexrpasc",
+      search: '',
+      subFilter: 'pricexrpasc',
       type,
       collection: selectedCollection
     };
@@ -42,9 +42,10 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
     setLoading(true);
     try {
       const res = await axios.post(`${BASE_URL}/account/collectedCreated`, body);
+      console.log('Received NFTs:', res.data.nfts); // Log the received NFT data
       setNFTs(res.data.nfts);
     } catch (err) {
-      console.error("Error fetching NFTs:", err);
+      console.error('Error fetching NFTs:', err);
     } finally {
       setLoading(false);
     }
@@ -63,20 +64,20 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
       elevation={3}
       ref={scrollRef}
       sx={{
-        padding: "16px",
+        padding: '16px',
         pt: 2,
-        height: "300px",
-        width: "280px",
-        overflow: "auto",
-        borderRadius: "12px",
+        height: '300px',
+        width: '280px',
+        overflow: 'auto',
+        borderRadius: '12px',
         backgroundColor: (theme) => theme.palette.background.paper,
-        "&::-webkit-scrollbar": {
-          width: "8px"
+        '&::-webkit-scrollbar': {
+          width: '8px'
         },
-        "&::-webkit-scrollbar-thumb": {
-          borderRadius: "8px",
-          backgroundColor: (theme) => theme.palette.primary.main,
-        },
+        '&::-webkit-scrollbar-thumb': {
+          borderRadius: '8px',
+          backgroundColor: (theme) => theme.palette.primary.main
+        }
       }}
     >
       {selectedCollection && (
@@ -99,22 +100,18 @@ const NFTs = ({ account, collection, type = "collected", limit, onSelect, smallS
       ) : nfts.length === 0 ? (
         <Stack alignItems="center" justifyContent="center" height="100%">
           <ErrorOutlineIcon fontSize="large" sx={{ mb: 2, color: 'text.secondary' }} />
-          <Typography variant="body1" color="text.secondary">No NFTs found</Typography>
+          <Typography variant="body1" color="text.secondary">
+            No NFTs found
+          </Typography>
         </Stack>
       ) : (
         <Grid container spacing={2}>
           {nfts.map((nft, index) => (
             <Grid item key={index} xs={6}>
               {selectedCollection ? (
-                <ChatNFTCard 
-                  nft={nft}
-                  onSelect={onSelect}
-                />
+                <ChatNFTCard nft={nft} onSelect={onSelect} />
               ) : (
-                <ChatCollectionCard 
-                  collectionData={nft} 
-                  onSelect={handleCollectionSelect}
-                />
+                <ChatCollectionCard collectionData={nft} onSelect={handleCollectionSelect} />
               )}
             </Grid>
           ))}
