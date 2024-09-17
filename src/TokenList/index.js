@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import useWebSocket from 'react-use-websocket';
 import {
   Box,
@@ -25,6 +25,7 @@ import EditTokenDialog from 'src/components/EditTokenDialog';
 import TrustSetDialog from 'src/components/TrustSetDialog';
 import React, { memo } from 'react';
 import { debounce } from 'lodash';
+import { throttle } from 'lodash';
 
 const useStyles = makeStyles({
   tableContainer: {
@@ -85,63 +86,93 @@ export default function TokenList({
   const [scrollLeft, setScrollLeft] = useState(0);
   const [scrollTopLength, setScrollTopLength] = useState(0);
 
-  useEffect(() => {
-    const handleScrollX = () => {
-      setScrollLeft(tableContainerRef.current?.scrollLeft > 0);
-    };
+  const handleScrollX = useCallback(throttle(() => {
+    if (tableContainerRef.current) {
+      setScrollLeft(tableContainerRef.current.scrollLeft > 0);
+    }
+  }, 100), []);
 
-    const handleScrollY = () => {
-      const tableOffsetTop = tableRef.current?.offsetTop;
-      const tableHeight = tableRef.current?.clientHeight;
+  const handleScrollY = useCallback(throttle(() => {
+    if (tableRef.current) {
+      const tableOffsetTop = tableRef.current.offsetTop;
+      const tableHeight = tableRef.current.clientHeight;
       const scrollTop = window.scrollY;
       const anchorTop = tableOffsetTop;
       const anchorBottom = tableOffsetTop + tableHeight;
 
       if (scrollTop > anchorTop && scrollTop < anchorBottom) {
         setScrollTopLength(scrollTop - anchorTop);
-      } else {
+      } else if (scrollTopLength !== 0) {
         setScrollTopLength(0);
       }
-    };
+    }
+  }, 100), [scrollTopLength]);
 
-    tableContainerRef.current?.addEventListener('scroll', handleScrollX);
+  useEffect(() => {
+    const tableContainer = tableContainerRef.current;
+    if (tableContainer) {
+      tableContainer.addEventListener('scroll', handleScrollX);
+    }
     window.addEventListener('scroll', handleScrollY);
 
     return () => {
-      tableContainerRef.current?.removeEventListener('scroll', handleScrollX);
+      if (tableContainer) {
+        tableContainer.removeEventListener('scroll', handleScrollX);
+      }
       window.removeEventListener('scroll', handleScrollY);
     };
-  }, []);
+  }, [handleScrollX, handleScrollY]);
 
   const [watchList, setWatchList] = useState([]);
 
+  const [lastJsonMessage, setLastJsonMessage] = useState(null);
+
   const { sendJsonMessage } = useWebSocket(WSS_FEED_URL, {
     shouldReconnect: () => true,
-    onMessage: (event) => processMessages(event)
+    onMessage: (event) => {
+      try {
+        const json = JSON.parse(event.data);
+        setLastJsonMessage(json);
+      } catch (err) {
+        console.error('Error parsing WebSocket message:', err);
+      }
+    }
   });
 
+  useEffect(() => {
+    if (lastJsonMessage) {
+      dispatch(update_metrics(lastJsonMessage));
+      if (lastJsonMessage.tokens && lastJsonMessage.tokens.length > 0) {
+        applyTokenChanges(lastJsonMessage.tokens);
+      }
+    }
+  }, [lastJsonMessage, dispatch, applyTokenChanges]);
+
+  const tokenMap = useMemo(() => new Map(tokens.map(token => [token.md5, token])), [tokens]);
+
   const applyTokenChanges = useCallback((newTokens) => {
-    newTokens.forEach(t => {
-      const token = tMap.get(t.md5);
-      if (token) {
-        token.time = Date.now();
-        token.bearbull = token.exch > t.exch ? -1 : 1;
-        Object.assign(token, t);
+    let hasChanges = false;
+    newTokens.forEach(newToken => {
+      const existingToken = tokenMap.get(newToken.md5);
+      if (existingToken) {
+        const updatedToken = {
+          ...existingToken,
+          ...newToken,
+          time: Date.now(),
+          bearbull: existingToken.exch > newToken.exch ? -1 : 1
+        };
+        
+        if (JSON.stringify(existingToken) !== JSON.stringify(updatedToken)) {
+          tokenMap.set(newToken.md5, updatedToken);
+          hasChanges = true;
+        }
       }
     });
-  }, [tMap]);
 
-  const processMessages = useCallback((event) => {
-    try {
-      const json = JSON.parse(event.data);
-      dispatch(update_metrics(json));
-      if (json.tokens && json.tokens.length > 0) {
-        applyTokenChanges(json.tokens);
-      }
-    } catch (err) {
-      console.error(err);
+    if (hasChanges) {
+      setTokens(Array.from(tokenMap.values()));
     }
-  }, [applyTokenChanges, dispatch]);
+  }, [tokenMap]);
 
   const debouncedLoadTokens = useCallback(
     debounce(() => {
@@ -189,7 +220,7 @@ export default function TokenList({
     getWatchList();
   }, [accountProfile, sync]);
 
-  const onChangeWatchList = async (md5) => {
+  const onChangeWatchList = useCallback(async (md5) => {
     const account = accountProfile?.account;
     const accountToken = accountProfile?.token;
 
@@ -198,7 +229,17 @@ export default function TokenList({
       return;
     }
 
-    setLoading(true);
+    // Optimistically update the local state
+    const newWatchList = watchList.includes(md5)
+      ? watchList.filter(item => item !== md5)
+      : [...watchList, md5];
+    setWatchList(newWatchList);
+
+    // If in watchlist view, update the tokens list immediately
+    if (showWatchList) {
+      setTokens(prevTokens => prevTokens.filter(token => newWatchList.includes(token.md5)));
+    }
+
     try {
       const action = watchList.includes(md5) ? 'remove' : 'add';
       const body = { md5, account, action };
@@ -210,20 +251,27 @@ export default function TokenList({
       if (res.status === 200) {
         const ret = res.data;
         if (ret.status) {
-          setWatchList(ret.watchlist);
-          openSnackbar('Successful!', 'success');
-          if (showWatchList) {
-            setSync(sync + 1);
-          }
+          // Server confirmed the change, no need to update state again
+          openSnackbar('Watchlist updated successfully!', 'success');
         } else {
-          openSnackbar(ret.err, 'error');
+          // Revert the local change if server update failed
+          setWatchList(watchList);
+          if (showWatchList) {
+            setSync(prev => prev + 1); // Trigger a re-fetch of tokens
+          }
+          openSnackbar(ret.err || 'Failed to update watchlist', 'error');
         }
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
+      // Revert the local change if request failed
+      setWatchList(watchList);
+      if (showWatchList) {
+        setSync(prev => prev + 1); // Trigger a re-fetch of tokens
+      }
+      openSnackbar('Failed to update watchlist', 'error');
     }
-    setLoading(false);
-  };
+  }, [accountProfile, watchList, showWatchList, setTokens, openSnackbar, setSync]);
 
   const handleRequestSort = (event, id) => {
     const isDesc = orderBy === id && order === 'desc';
@@ -271,6 +319,10 @@ export default function TokenList({
     setSync(sync + 1);
   };
 
+  const visibleTokens = useMemo(() => {
+    return tokens.slice(0, rows);
+  }, [tokens, rows]);
+
   return (
     <>
       {editToken && (
@@ -309,9 +361,9 @@ export default function TokenList({
             scrollTopLength={scrollTopLength}
           />
           <TableBody>
-            {tokens.slice(0, rows).map((row, idx) => (
+            {visibleTokens.map((row, idx) => (
               <MemoizedTokenRow
-                key={row.md5} // Changed from idx to row.md5 for better key uniqueness
+                key={row.md5}
                 time={row.time}
                 idx={idx + page * rows}
                 token={row}
