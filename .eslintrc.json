@@ -22,7 +22,5 @@
     }],
     "react/jsx-no-constructed-context-values": "error",
     "react/no-array-index-key": "warn"
-  },
-  "cache": true,
-  "cacheLocation": ".eslintcache"
+  }
 }

@@ -23,6 +23,8 @@ import SearchToolbar from './SearchToolbar';
 import { TokenRow } from './TokenRow';
 import EditTokenDialog from 'src/components/EditTokenDialog';
 import TrustSetDialog from 'src/components/TrustSetDialog';
+import { FixedSizeList as List } from 'react-window';
+import AutoSizer from 'react-virtualized-auto-sizer';
 
 const useStyles = makeStyles({
   tableContainer: {
@@ -47,7 +49,7 @@ export default function TokenList({
   tag,
   tagName,
   tags,
-  tokens,
+  initialTokens,
   setTokens,
   tMap
 }) {
@@ -81,6 +83,8 @@ export default function TokenList({
   const [scrollLeft, setScrollLeft] = useState(0);
   const [scrollTopLength, setScrollTopLength] = useState(0);
 
+  const [tokens, setLocalTokens] = useState(initialTokens);
+
   useEffect(() => {
     const handleScrollX = () => {
       setScrollLeft(tableContainerRef.current?.scrollLeft > 0);
@@ -108,8 +112,6 @@ export default function TokenList({
       window.removeEventListener('scroll', handleScrollY);
     };
   }, []);
-
-  const [watchList, setWatchList] = useState([]);
 
   const { sendJsonMessage } = useWebSocket(WSS_FEED_URL, {
     shouldReconnect: () => true,
@@ -151,7 +153,8 @@ export default function TokenList({
           const ret = res.data;
           dispatch(update_metrics(ret));
           dispatch(update_filteredCount(ret));
-          setTokens(ret.tokens);
+          setLocalTokens(prevTokens => [...prevTokens, ...ret.tokens]);
+          setTokens(prevTokens => [...prevTokens, ...ret.tokens]);
         }
       })
       .catch((err) => console.log('err->>', err))
@@ -264,6 +267,26 @@ export default function TokenList({
     setSync(sync + 1);
   };
 
+  const Row = ({ index, style }) => {
+    const row = tokens[index];
+    return (
+      <div style={style}>
+        <TokenRow
+          time={row.time}
+          idx={index + page * rows}
+          token={row}
+          setEditToken={setEditToken}
+          setTrustToken={setTrustToken}
+          watchList={watchList}
+          onChangeWatchList={onChangeWatchList}
+          scrollLeft={scrollLeft}
+          activeFiatCurrency={activeFiatCurrency}
+          exchRate={exchRate}
+        />
+      </div>
+    );
+  };
+
   return (
     <>
       {editToken && (
@@ -302,21 +325,18 @@ export default function TokenList({
             scrollTopLength={scrollTopLength}
           />
           <TableBody>
-            {tokens.slice(0, rows).map((row, idx) => (
-              <TokenRow
-                key={idx}
-                time={row.time}
-                idx={idx + page * rows}
-                token={row}
-                setEditToken={setEditToken}
-                setTrustToken={setTrustToken}
-                watchList={watchList}
-                onChangeWatchList={onChangeWatchList}
-                scrollLeft={scrollLeft}
-                activeFiatCurrency={activeFiatCurrency}
-                exchRate={exchRate}
-              />
-            ))}
+            <AutoSizer>
+              {({ height, width }) => (
+                <List
+                  height={height || 400} // Provide a default height
+                  itemCount={tokens.length}
+                  itemSize={50} // Adjust this value based on your row height
+                  width={width}
+                >
+                  {Row}
+                </List>
+              )}
+            </AutoSizer>
           </TableBody>
         </Table>
       </Box>
