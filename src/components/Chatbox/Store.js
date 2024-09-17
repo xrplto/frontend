@@ -84,6 +84,7 @@ const verifiedStatus = {
 };
 
 const chatURL = "http://65.108.136.237:5000";
+const BASE_URL = process.env.API_URL;
 
 function Store() {
   const theme = useTheme();
@@ -130,7 +131,6 @@ function Store() {
           Destination: "rhsxg4xH8FtYc3eR53XDSjTGfKQsaAGaqm",
           Fee: "12",
           SourceTag: 20221212,
-          DestinationTag: 20221212,
         }
         if (wallet_type == "xaman") {
           const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
