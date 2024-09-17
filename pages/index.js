@@ -38,6 +38,16 @@ async function fetchInitialTokens(count) {
     }
 }
 
+async function fetchTags() {
+    try {
+        const response = await axios.get(`${process.env.API_URL}/tags`);
+        return response.data.tags;
+    } catch (error) {
+        console.error('Error fetching tags:', error);
+        return [];
+    }
+}
+
 function Overview({ initialTokens, tags }) {
     const [tokens, setTokens] = useState(initialTokens);
     const tMap = new Map(tokens.map(t => [t.md5, t]));
@@ -62,25 +72,12 @@ function Overview({ initialTokens, tags }) {
               <Summary />
             </Grid>
             <Grid item xs={12} md={12} lg={12}>
-              {data && data.tags ? ( 
-                <>
-                  <TokenList
-                    tags={data.tags}
-                    tokens={tokens}
-                    tMap={tMap}
-                    setTokens={setTokens}
-                  />
-                  {/* <CryptoHeatmap
-                    tokens={tokens}
-                  /> */}
-                </>
-              ) : (
-                <>
-                
-                
-                
-                </>
-              )}
+              <TokenList
+                tags={tags}
+                initialTokens={tokens}
+                tMap={tMap}
+                setTokens={setTokens}
+              />
             </Grid>
             <Grid item xs={12} md={12} lg={12}>
               <HowWeWork />
@@ -100,7 +97,7 @@ export default Overview;
 export async function getStaticProps() {
     const initialTokenCount = 100; // Adjust this number as needed
     const initialTokens = await fetchInitialTokens(initialTokenCount);
-    const tags = await fetchTags(); // Implement this function to fetch tags
+    const tags = await fetchTags();
 
     return {
         props: {
