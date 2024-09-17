@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo, useCallback, useMemo } from 'react';
 
 // Material
 import {
@@ -35,6 +35,113 @@ const LoaderContainer = styled('div')({
 
 const ORDER_TYPE_BIDS = 1;
 const ORDER_TYPE_ASKS = 2;
+
+const MemoizedTableRow = memo(({ isBid, level, idx, onMouseOver, onMouseLeave, onClick, selected, isNew, pair }) => {
+    const theme = useTheme();
+    const depth = getIndicatorProgress(level.amount);
+    const currName1 = pair?.curr1.name;
+    const currName2 = pair?.curr2.name;
+    
+    let price = level.price;
+    let avgPrice = level.avgPrice;
+    let amount = level.amount;
+    const value = level.value.toFixed(2);
+    let sumAmount = level.sumAmount;
+    const sumValue = level.sumValue;
+    
+    avgPrice = fNumber(avgPrice);
+    price = fNumber(price);
+    amount = fNumber(amount);
+    sumAmount = fNumber(sumAmount);
+    sumValue = fNumber(sumValue);
+    
+    let backgroundColor;
+    if (isNew)
+        backgroundColor = `#00AB5588`;
+    else
+        backgroundColor = `linear-gradient(to ${isBid ? 'right' : 'left'}, #${isBid ? '00AB55' : 'FF4842'}33, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`;
+
+    if (isBid && idx < selected[0])
+        backgroundColor = `#00AB5588`;
+
+    if (!isBid && idx < selected[1])
+        backgroundColor = `#FF484288`;
+
+    return (
+        <Tooltip
+            key={`Tooltip${isBid ? 'Bid' : 'Ask'}${idx}`}
+            title={
+                <Table
+                    sx={{
+                        [`& .${tableCellClasses.root}`]: {
+                            borderBottom: "0px solid",
+                            borderBottomColor: theme.palette.divider
+                        }
+                    }}
+                >
+                    <TableBody>
+                        <TableRow>
+                            <TableCell align='right' width='30px' sx={{pt:1, pb:1}}>
+                                <Typography variant='body2'>Avg Price:</Typography>
+                            </TableCell>
+                            <TableCell sx={{pt:1, pb:1}}>
+                                <Typography variant='body2'>≈  <NumberTooltip number={avgPrice} /></Typography>
+                            </TableCell>
+                        </TableRow>
+
+                        <TableRow>
+                            <TableCell align='right' sx={{pt:1, pb:1}}>
+                                <Typography variant='body2' noWrap>Sum {currName1}:</Typography>
+                            </TableCell>
+                            <TableCell sx={{pt:1, pb:1}}>
+                                <Typography variant='body2'>{sumAmount}</Typography>
+                            </TableCell>
+                        </TableRow>
+
+                        <TableRow>
+                            <TableCell sx={{pt:1, pb:1}} align='right'>
+                                <Typography variant='body2' noWrap>Sum {currName2}:</Typography>
+                            </TableCell>
+                            <TableCell sx={{pt:1, pb:1}}>
+                                <Typography variant='body2'>{sumValue}</Typography>
+                            </TableCell>
+                        </TableRow>
+
+                    </TableBody>
+                </Table>
+            }
+            placement='right-end' arrow
+        >
+            <TableRow
+                hover
+                sx={{
+                    cursor: 'pointer',
+                    background: `${backgroundColor}`,
+                    "&:hover": {
+                        background: `${isBid ? "#00AB5588" : "#FF484288"} !important`
+                    }
+                }}
+                onMouseOver={e=>onMouseOver(e, idx)}
+                onMouseLeave={e=>onMouseLeave(e, idx)}
+                onClick={e=>onClick(e, idx)}
+            >
+                {isBid ?
+                    <>
+                        <TableCell sx={{ p:0 }} align="right">{sumAmount}</TableCell>
+                        <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
+                        <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selected[0] > idx?'':'#118860'}`}}><NumberTooltip number={price} pos='bottom' /></TableCell>
+                    </>
+                :
+                    <>
+                        <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selected[1] > idx?'':'#bb3336'}`}}><NumberTooltip number={price} pos='bottom' /></TableCell>
+                        <TableCell sx={{ p:0 }}>{amount}</TableCell>
+                        <TableCell sx={{ p:0 }}>{sumAmount}</TableCell>
+                    </>
+                }
+            </TableRow>
+        </Tooltip>
+    );
+});
 
 export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
     const theme = useTheme();
@@ -124,151 +231,25 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
         setSelected([0, 0]);
     }
 
-    const buildPriceLevels = (levels, orderType = ORDER_TYPE_BIDS) => {
-        return (
-            levels.slice(0, 30).map((level, idx) => {
-                // const id = level.id;
-                let price = level.price;//fNumber(level.price);
-                let avgPrice = level.avgPrice;
-                let amount = level.amount; // fNumber(level.amount);
-                const value = level.value.toFixed(2); // fNumber(level.value);
-                let sumAmount = level.sumAmount; // fNumber(level.sumAmount);
-                const sumValue = level.sumValue; // fNumber(level.sumValue);
-                const isNew = level.isNew;
-                const isBid = orderType === ORDER_TYPE_BIDS;
-                const depth = getIndicatorProgress(level.amount);
-                const currName1 = pair?.curr1.name;
-                const currName2 = pair?.curr2.name;
-                
-                avgPrice = fNumber(avgPrice);//fmNumber(avgPrice, 5);
-                price = fNumber(price);//fmNumber(price, 5);
-                amount = fNumber(amount);//fmNumber(amount, 2);
-                sumAmount = fNumber(sumAmount);//fmNumber(sumAmount, 2);
-                sumValue = fNumber(sumValue);//fmNumber(sumValue, 2);
-              
-                let bidBackgroundColor;
-                if (isNew)
-                    bidBackgroundColor = `#00AB5588`;
-                else
-                    bidBackgroundColor = `linear-gradient(to right, #00AB5533, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`;
-                    // bidBackgroundColor = `#00AB55${depth}`;
+    const buildPriceLevels = useCallback((levels, orderType = ORDER_TYPE_BIDS) => {
+        return levels.slice(0, 30).map((level, idx) => (
+            <MemoizedTableRow
+                key={`${orderType}-${level.price}-${level.amount}`}
+                isBid={orderType === ORDER_TYPE_BIDS}
+                level={level}
+                idx={idx}
+                onMouseOver={orderType === ORDER_TYPE_BIDS ? onBidMouseOver : onAskMouseOver}
+                onMouseLeave={onMouseLeave}
+                onClick={orderType === ORDER_TYPE_BIDS ? onBidClick : onAskClick}
+                selected={selected}
+                isNew={level.isNew}
+                pair={pair}
+            />
+        ));
+    }, [selected, pair, onBidMouseOver, onAskMouseOver, onMouseLeave, onBidClick, onAskClick]);
 
-                let askBackgroundColor;
-                if (isNew)
-                    askBackgroundColor = `#FF484288`;
-                else
-                    askBackgroundColor = `linear-gradient(to left, #FF484233, rgba(0, 0, 0, 0.0) ${depth}%, rgba(0, 0, 0, 0.0))`;
-                    // askBackgroundColor = `#FF4842${depth}`;
-
-                if (idx < selected[0])
-                    bidBackgroundColor = `#00AB5588`;
-
-                if (idx < selected[1])
-                    askBackgroundColor = `#FF484288`;
-
-                // TableRow
-                // sx={{
-                //     cursor: 'pointer',
-                //     background: `${bidBackgroundColor}`,
-                //     "&:hover": {
-                //         background: "#00AB5588 !important"
-                //     },
-                //     transition: "all .3s ease",
-                //     WebkitTransition: "all .3s ease",
-                //     MozTransition: "all .3s ease",
-                // }}
-
-                return (
-                    <Tooltip
-                        key={`Tooltip${orderType}${idx}`}
-                        title={
-                            <Table
-                                sx={{
-                                    [`& .${tableCellClasses.root}`]: {
-                                        borderBottom: "0px solid",
-                                        borderBottomColor: theme.palette.divider
-                                    }
-                                }}
-                            >
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell align='right' width='30px' sx={{pt:1, pb:1}}>
-                                            <Typography variant='body2'>Avg Price:</Typography>
-                                        </TableCell>
-                                        <TableCell sx={{pt:1, pb:1}}>
-                                            <Typography variant='body2'>≈  <NumberTooltip number={avgPrice} /></Typography>
-                                        </TableCell>
-                                    </TableRow>
-
-                                    <TableRow>
-                                        <TableCell align='right' sx={{pt:1, pb:1}}>
-                                            <Typography variant='body2' noWrap>Sum {currName1}:</Typography>
-                                        </TableCell>
-                                        <TableCell sx={{pt:1, pb:1}}>
-                                            <Typography variant='body2'>{sumAmount}</Typography>
-                                        </TableCell>
-                                    </TableRow>
-
-                                    <TableRow>
-                                        <TableCell sx={{pt:1, pb:1}} align='right'>
-                                            <Typography variant='body2' noWrap>Sum {currName2}:</Typography>
-                                        </TableCell>
-                                        <TableCell sx={{pt:1, pb:1}}>
-                                            <Typography variant='body2'>{sumValue}</Typography>
-                                        </TableCell>
-                                    </TableRow>
-
-                                </TableBody>
-                            </Table>
-                        }
-                        placement='right-end' arrow
-                    >
-                    {isBid ?
-                        <TableRow
-                            hover
-                            sx={{
-                                cursor: 'pointer',
-                                background: `${bidBackgroundColor}`,
-                                "&:hover": {
-                                    background: "#00AB5588 !important"
-                                }
-                            }}
-                            onMouseOver={e=>onBidMouseOver(e, idx)}
-                            onMouseLeave={e=>onMouseLeave(e, idx)}
-                            onClick={e=>onBidClick(e, idx)}
-                        >
-                            <TableCell sx={{ p:0 }} align="right">{sumAmount}</TableCell>
-                            {/* <TableCell sx={{ p:0 }} align="right">{value}</TableCell> */}
-                            <TableCell sx={{ p:0 }} align="right">{amount}</TableCell>
-                            {/* <TableCell sx={{ p:0, pr:1 }} align="right">{price}</TableCell> */}
-                            <TableCell sx={{ p:0, pr:1 }} align="right" style={{color: `${isNew || selected[0] > idx?'':'#118860'}`}}><NumberTooltip number={price} pos='bottom' /></TableCell>
-                        </TableRow>
-                    :
-                        <TableRow
-                            hover
-                            sx={{
-                                cursor: 'pointer',
-                                background: `${askBackgroundColor}`,
-                                "&:hover": {
-                                    background: "#FF484288 !important"
-                                },
-                            }}
-                            onMouseOver={e=>onAskMouseOver(e, idx)}
-                            onMouseLeave={e=>onMouseLeave(e, idx)}
-                            onClick={e=>onAskClick(e, idx)}
-                        >
-                            {/* <TableCell sx={{ p:0, pl:1 }}>{price}</TableCell> */}
-                            <TableCell sx={{ p:0, pl:1 }} style={{color: `${isNew || selected[1] > idx?'':'#bb3336'}`}}><NumberTooltip number={price} pos='bottom' /></TableCell>
-                            <TableCell sx={{ p:0 }}>{amount}</TableCell>
-                            {/* <TableCell sx={{ p:0 }}>{value}</TableCell> */}
-                            <TableCell sx={{ p:0 }}>{sumAmount}</TableCell>
-                        </TableRow>
-                    }
-                    </Tooltip>
-                );
-            })
-        );
-    };
+    const bidLevels = useMemo(() => buildPriceLevels(bids, ORDER_TYPE_BIDS), [bids, buildPriceLevels]);
+    const askLevels = useMemo(() => buildPriceLevels(asks, ORDER_TYPE_ASKS), [asks, buildPriceLevels]);
 
     if (isPageVisible) {
         return (
@@ -301,13 +282,12 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                                 }}
                             >
                                 <TableCell align="right" sx={{ p:0 }}>Sum</TableCell>
-                                {/* <TableCell align="right" sx={{ p:0 }}>Value</TableCell> */}
                                 <TableCell align="right" sx={{ p:0 }}>Amount ({pair.curr1.name})</TableCell>
                                 <TableCell align="right" sx={{ p:0, pr: 1 }}>Bid ({pair.curr2.name})</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {buildPriceLevels(bids, ORDER_TYPE_BIDS)}
+                            {bidLevels}
                         </TableBody>
                     </Table>
                 </Grid>
@@ -335,12 +315,11 @@ export default function OrderBook({pair, asks, bids, onAskClick, onBidClick}) {
                             >
                                 <TableCell align="left" sx={{ p:0, pl: 1 }}>Ask ({pair.curr2.name})</TableCell>
                                 <TableCell align="left" sx={{ p:0 }}>Amount ({pair.curr1.name})</TableCell>
-                                {/* <TableCell align="left" sx={{ p:0 }}>Value</TableCell> */}
                                 <TableCell align="left" sx={{ p:0 }}>Sum</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {buildPriceLevels(asks, ORDER_TYPE_ASKS)}
+                            {askLevels}
                         </TableBody>
                     </Table>
                 </Grid>

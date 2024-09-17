@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Decimal from 'decimal.js';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 // Material
 import {
@@ -26,61 +26,30 @@ import { AppContext } from 'src/AppContext'
 export default function AccountBalance({pair, accountPairBalance, setAccountPairBalance}) {
     const theme = useTheme();
     const BASE_URL = process.env.API_URL;
-    const { accountProfile, doLogIn, setLoading, sync, setSync } = useContext(AppContext);
-    const { darkMode } = useContext(AppContext);
-    let curr1 = pair.curr1;
-    let curr2 = pair.curr2;
+    const { accountProfile, sync, darkMode } = useContext(AppContext);
+    const curr1 = useMemo(() => pair.curr1, [pair]);
+    const curr2 = useMemo(() => pair.curr2, [pair]);
 
-    /*
-        {
-            "currency": "534F4C4F00000000000000000000000000000000",
-            "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-            "value": "0.0199999",
-            "md5": "0413ca7cfc258dfaf698c02fe304e607",
-            "name": "SOLO",
-            "user": "Sologenic",
-            "domain": "sologenic.com",
-            "verified": true,
-            "twitter": "realSologenic"
-        },
-        {
-            "currency": "XRP",
-            "issuer": "XRPL",
-            "value": 408593.89259000024,
-            "md5": "84e5efeb89c4eae8f68188982dc290d8",
-            "name": "XRP"
+    const getAccountInfo = useCallback(() => {
+        if (!accountProfile?.account || !pair) {
+            setAccountPairBalance(null);
+            return;
         }
-    */
+
+        const account = accountProfile.account;
+        axios.get(`${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`)
+            .then(res => {
+                if (res.status === 200) {
+                    setAccountPairBalance(res.data.pair);
+                }
+            }).catch(err => {
+                console.error("Error on getting account pair balance info.", err);
+            });
+    }, [accountProfile, pair, curr1, curr2, BASE_URL, setAccountPairBalance]);
 
     useEffect(() => {
-        function getAccountInfo() {
-            if (!accountProfile || !accountProfile.account) {
-                setAccountPairBalance(null);
-                return;
-            }
-
-            if (!pair) return;
-
-            const curr1 = pair.curr1;
-            const curr2 = pair.curr2;
-            const account = accountProfile.account;
-            // https://api.xrpl.to/api/account/info/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=XRPL
-            axios.get(`${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`)
-                .then(res => {
-                    let ret = res.status === 200 ? res.data : undefined;
-                    if (ret) {
-                        setAccountPairBalance(ret.pair);
-                    }
-                }).catch(err => {
-                    console.log("Error on getting account pair balance info.", err);
-                }).then(function () {
-                    // always executed
-                });
-        }
-        // console.log('account_info')
         getAccountInfo();
-
-    }, [accountProfile, pair, sync]);
+    }, [getAccountInfo, sync]);
 
     return (
         <>

@@ -1,6 +1,8 @@
-
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+import { debounce } from 'lodash';
 
 // Material
 import {
@@ -25,8 +27,7 @@ import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
+
 // ----------------------------------------------------------------------
 
 const CustomSelect = styled(Select)(({ theme }) => ({
@@ -65,79 +66,60 @@ const StackDexStyle = styled(Stack)(({ theme }) => ({
     padding: '0px 12px'
 }));
 
-export default function PairsSelect({ token, pair, setPair}) {
+const PairsSelect = memo(({ token, pair, setPair }) => {
     const BASE_URL = process.env.API_URL;
     const { darkMode } = useContext(AppContext);
     const [pairs, setPairs] = useState([]);
 
-    useEffect(() => {
-        function getPairs() {
-            // https://api.xrpl.to/api/pairs?md5=0413ca7cfc258dfaf698c02fe304e607
-            axios.get(`${BASE_URL}/pairs?md5=${token.md5}`)
-                .then(res => {
-                    let ret = res.status === 200 ? res.data : undefined;
-                    if (ret) {
-                        /*{
-                            "pair": "fa99aff608a10186d3b1ff33b5cd665f",
-                            "curr1": {
-                                "currency": "534F4C4F00000000000000000000000000000000",
-                                "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-                                "value": 460186.2755587654,
-                                "md5": "0413ca7cfc258dfaf698c02fe304e607",
-                                "name": "SOLO",
-                                "user": "Sologenic",
-                                "domain": "sologenic.com",
-                                "verified": true,
-                                "twitter": "realSologenic"
-                            },
-                            "curr2": {
-                                "currency": "XRP",
-                                "issuer": "XRPL",
-                                "value": 328571.7821960003,
-                                "md5": "84e5efeb89c4eae8f68188982dc290d8",
-                                "name": "XRP"
-                            },
-                            "count": 1697,
-                            "id": 1
-                        }*/
-                        const newPairs = ret.pairs;
-                        setPairs(newPairs);
-                        if (!pair) { // Not required
-                            setPair(newPairs[0]);
-                        } else { // Not required
-                            const check = newPairs.find(e => e.pair === pair.pair);
-                            if (!check) {
-                                setPair(newPairs[0]);
-                            }
-                        }
+    const getPairs = useCallback(() => {
+        axios.get(`${BASE_URL}/pairs?md5=${token.md5}`)
+            .then(res => {
+                if (res.status === 200 && res.data) {
+                    const newPairs = res.data.pairs;
+                    setPairs(newPairs);
+                    if (!pair || !newPairs.find(e => e.pair === pair.pair)) {
+                        setPair(newPairs[0]);
                     }
-                }).catch(err => {
-                    console.log("Error on getting pairs!!!", err);
-                }).then(function () {
-                    // always executed
-                });
-        }
+                }
+            }).catch(err => {
+                console.log("Error on getting pairs!!!", err);
+            });
+    }, [token.md5, pair, setPair, BASE_URL]);
 
+    useEffect(() => {
         if (pairs.length === 0) {
             getPairs();
         }
 
         const timer = setInterval(getPairs, 10000);
 
-        return () => {
-            clearInterval(timer);
-        }
+        return () => clearInterval(timer);
+    }, [pairs.length, getPairs]);
 
-    }, [token, pairs]);
-
-    const handleChangePair = (event, value) => {
-        //const idx = parseInt(event.target.value, 10);
+    const handleChangePair = useCallback((event) => {
         const strPair = event.target.value;
         const newPair = pairs.find(e => e.pair === strPair);
-        if (newPair)
-            setPair(newPair);
-    }
-    
+        if (newPair) setPair(newPair);
+    }, [pairs, setPair]);
+
+    const menuItems = useMemo(() => pairs.map((row) => {
+        const { id, pair, curr1, curr2 } = row;
+        const name1 = curr1.name;
+        const name2 = curr2.name;
+
+        return (
+            <MenuItem key={id} value={pair}>
+                <Stack direction="row" alignItems='center'>
+                    <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
+                    <Icon icon={arrowsExchange} width="16" height="16"/>
+                    <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{name2}</Typography>
+                    <span style={badge24hStyle}>24h</span>
+                    <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{fNumber(curr1.value)}</Typography>
+                </Stack>
+            </MenuItem>
+        );
+    }), [pairs, darkMode]);
+
     const curr1 = pair.curr1;
     const curr2 = pair.curr2;
 
@@ -160,40 +142,15 @@ export default function PairsSelect({ token, pair, setPair}) {
             <Grid item>
                 <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
                     <InputLabel id="demo-select-small">Pairs</InputLabel>
-                        <CustomSelect
-                            labelId="demo-select-small"
-                            id="demo-select-small"
-                            value={pair.pair}
-                            label="Pair"
-                            onChange={handleChangePair}
-                        >
-                            {
-                                pairs.map((row) => {
-                                    const {
-                                        id,
-                                        pair,
-                                        curr1,
-                                        curr2
-                                    } = row;
-
-                                    const name1 = curr1.name;
-                                    const name2 = curr2.name;
-
-                                    return (
-                                        <MenuItem key={id} value={pair}>
-                                            <Stack direction="row" alignItems='center'>
-                                                <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{name1}</Typography>
-                                                <Icon icon={arrowsExchange} width="16" height="16"/>
-                                              
-                                              <Typography variant="subtitle2" sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>{name2}</Typography>
-                                                <span style={badge24hStyle}>24h</span>
-                                                <Typography variant="subtitle2" sx={{ color: '#B72136' }}>{fNumber(curr1.value)}</Typography>
-                                            </Stack>
-                                        </MenuItem>
-                                    );
-                                })
-                            }
-                        </CustomSelect>
+                    <CustomSelect
+                        labelId="demo-select-small"
+                        id="demo-select-small"
+                        value={pair.pair}
+                        label="Pair"
+                        onChange={handleChangePair}
+                    >
+                        {menuItems}
+                    </CustomSelect>
                 </FormControl>
             </Grid>
 
@@ -262,4 +219,6 @@ export default function PairsSelect({ token, pair, setPair}) {
             </Grid>
         </Grid>
     );
-}
+});
+
+export default PairsSelect;

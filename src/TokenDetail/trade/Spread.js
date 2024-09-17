@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 // Material UI components
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -11,21 +11,15 @@ import infoFilled from '@iconify/icons-ep/info-filled';
 const formatNumber = (number) => new Intl.NumberFormat('en-US').format(number);
 
 const Spread = ({ bids, asks }) => {
-    // Function to get the highest bid price
-    const getHighestBid = (bids) => Math.max(...bids.map(bid => bid.price));
-
-    // Function to get the lowest ask price
-    const getLowestAsk = (asks) => Math.min(...asks.map(ask => ask.price));
-
-    // Function to calculate the spread amount
-    const getSpreadAmount = (bids, asks) => Math.abs(getHighestBid(bids) - getLowestAsk(asks));
-
-    // Function to calculate spread percentage
-    const getSpreadPercentage = (spread, highestBid) => `(${((spread / highestBid) * 100).toFixed(2)}%)`;
-
-    // Calculate spread amount and spread percentage
-    const spreadAmount = getSpreadAmount(bids, asks);
-    const spreadPercentage = getSpreadPercentage(spreadAmount, getHighestBid(bids));
+    const { spreadAmount, spreadPercentage } = useMemo(() => {
+        const getHighestBid = (bids) => Math.max(...bids.map(bid => bid.price));
+        const getLowestAsk = (asks) => Math.min(...asks.map(ask => ask.price));
+        const highestBid = getHighestBid(bids);
+        const lowestAsk = getLowestAsk(asks);
+        const spreadAmount = Math.abs(highestBid - lowestAsk);
+        const spreadPercentage = `(${((spreadAmount / highestBid) * 100).toFixed(2)}%)`;
+        return { spreadAmount, spreadPercentage };
+    }, [bids, asks]);
 
     return (
         <>
@@ -46,4 +40,4 @@ const Spread = ({ bids, asks }) => {
     );
 };
 
-export default Spread;
+export default React.memo(Spread);

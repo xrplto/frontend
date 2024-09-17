@@ -17,9 +17,14 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Typography
+  Typography,
+  alpha,
+  Chip,
+  Tooltip
 } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import LaunchIcon from '@mui/icons-material/Launch';
 
 // Loader
 import { PuffLoader } from 'react-spinners';
@@ -82,6 +87,22 @@ const ConnectWalletContainer = styled(Box)({
   alignItems: 'flex-end',
   height: '10vh'
 });
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+  color: theme.palette.text.primary,
+  fontWeight: 'bold',
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: alpha(theme.palette.action.hover, 0.04),
+  },
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.action.hover, 0.08),
+  },
+}));
 
 // ----------------------------------------------------------------------
 
@@ -152,7 +173,7 @@ export default function History({ token }) {
   }, []);
 
   return (
-    <>
+    <Box sx={{ borderRadius: 2, overflow: 'hidden', boxShadow: 3 }}>
       <Box
         sx={{
           display: 'flex',
@@ -167,252 +188,130 @@ export default function History({ token }) {
         }}
         ref={tableRef}
       >
-        <Table
-          stickyHeader
-          sx={{
-            '& .MuiTableCell-root': {
-              borderBottom: 'none',
-              boxShadow: darkMode
-                ? 'inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)'
-                : 'inset 0 -1px 0 #dadee3'
-            }
-          }}
-        >
+        <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell
-                align="left"
-                sx={{
-                  position: 'sticky',
-                  zIndex: 1001,
-                  left: 0,
-                  background: darkMode ? '#000000' : '#FFFFFF'
-                }}
-              >
+              <StyledTableCell align="left" sx={{ position: 'sticky', zIndex: 1001, left: 0 }}>
                 #
-              </TableCell>
-              <TableCell
-                align="left"
-                sx={{
-                  position: 'sticky',
-                  zIndex: 1002,
-                  left: hists.length > 0 ? 48 : 40,
-                  background: darkMode ? '#000000' : '#FFFFFF',
-                  '&:before': scrollLeft
-                    ? {
-                        content: "''",
-                        boxShadow: 'inset 10px 0 8px -8px #00000026',
-                        position: 'absolute',
-                        top: '0',
-                        right: '0',
-                        bottom: '-1px',
-                        width: '30px',
-                        transform: 'translate(100%)',
-                        transition: 'box-shadow .3s',
-                        pointerEvents: 'none'
-                      }
-                    : {}
-                }}
-              >
+              </StyledTableCell>
+              <StyledTableCell align="left" sx={{ position: 'sticky', zIndex: 1002, left: hists.length > 0 ? 48 : 40 }}>
                 Time
-              </TableCell>
-              <TableCell align="left">Price</TableCell>
-              <TableCell align="left">Taker Paid</TableCell>
-              <TableCell align="left">Taker Got</TableCell>
-              <TableCell align="left">Taker</TableCell>
-              <TableCell align="left">Maker</TableCell>
-              <TableCell align="left">Ledger</TableCell>
-              <TableCell align="left">Hash</TableCell>
+              </StyledTableCell>
+              <StyledTableCell align="left">Price</StyledTableCell>
+              <StyledTableCell align="left">Taker Paid</StyledTableCell>
+              <StyledTableCell align="left">Taker Got</StyledTableCell>
+              <StyledTableCell align="left">Taker</StyledTableCell>
+              <StyledTableCell align="left">Maker</StyledTableCell>
+              <StyledTableCell align="left">Ledger</StyledTableCell>
+              <StyledTableCell align="left">Hash</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {
-              // {
-              //     "_id": "23304962_1",
-              //     "dir": "buy",
-              //     "account": "rHmaZbZGqKWN7D45ue7J5cRu8yxyNdHeN2",
-              //     "paid": {
-              //         "issuer": "XRPL",
-              //         "currency": "XRP",
-              //         "name": "XRP",
-              //         "value": "179999.9982"
-              //     },
-              //     "got": {
-              //         "issuer": "rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B",
-              //         "currency": "USD",
-              //         "name": "USD",
-              //         "value": "1096.755823946603"
-              //     },
-              //     "pair": "21e8e9b61d766f6187cb9009fda56e9e",
-              //     "hash": "98229608E154559663CBA8A78AF42AF7E803B40E5814CFABC639CA238A9E8DFE",
-              //     "ledger": 23304962,
-              //     "time": 1471034710000
-              // },
-              hists.map((row, idx) => {
-                const {
-                  _id,
-                  maker,
-                  taker,
-                  seq,
-                  paid,
-                  got,
-                  ledger,
-                  hash,
-                  time
-                } = row;
+            {hists.map((row, idx) => {
+              const {
+                _id,
+                maker,
+                taker,
+                seq,
+                paid,
+                got,
+                ledger,
+                hash,
+                time
+              } = row;
 
-                const paidName = normalizeCurrencyCodeXummImpl(paid.currency);
-                const gotName = normalizeCurrencyCodeXummImpl(got.currency);
-                const md51 = getMD5(paid.issuer, paid.currency);
-                // const md52 = getMD5(got.issuer, got.currency);
+              const paidName = normalizeCurrencyCodeXummImpl(paid.currency);
+              const gotName = normalizeCurrencyCodeXummImpl(got.currency);
+              const md51 = getMD5(paid.issuer, paid.currency);
+              // const md52 = getMD5(got.issuer, got.currency);
 
-                let exch;
-                let name;
+              let exch;
+              let name;
 
-                if (md51 === token.md5) {
-                  // volume = got.value;
-                  exch = Decimal.div(got.value, paid.value).toNumber();
-                  name = gotName;
-                } else {
-                  // volume = paid.value;
-                  exch = Decimal.div(paid.value, got.value).toNumber();
-                  name = paidName;
-                }
+              if (md51 === token.md5) {
+                // volume = got.value;
+                exch = Decimal.div(got.value, paid.value).toNumber();
+                name = gotName;
+              } else {
+                // volume = paid.value;
+                exch = Decimal.div(paid.value, got.value).toNumber();
+                name = paidName;
+              }
 
-                const strDateTime = formatDateTime(time);
+              const strDateTime = formatDateTime(time);
 
-                return (
-                  <TableRow
-                    key={_id}
-                    sx={{
-                      '&:hover': {
-                        '& .MuiTableCell-root': {
-                          backgroundColor: darkMode
-                            ? '#232326 !important'
-                            : '#D9DCE0 !important'
-                        }
-                      }
-                    }}
-                  >
-                    <TableCell
-                      align="left"
-                      sx={{
-                        position: 'sticky',
-                        zIndex: 1001,
-                        left: 0,
-                        background: darkMode ? '#000000' : '#FFFFFF'
-                      }}
+              return (
+                <StyledTableRow key={_id}>
+                  <TableCell align="left" sx={{ position: 'sticky', zIndex: 1001, left: 0 }}>
+                    <Typography variant="subtitle2">{idx + page * rows + 1}</Typography>
+                  </TableCell>
+                  <TableCell align="left" sx={{ position: 'sticky', zIndex: 1002, left: 48 }}>
+                    <Tooltip title={strDateTime}>
+                      <Typography variant="caption">{formatDateTime(time, 'short')}</Typography>
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell align="left">
+                    <Chip
+                      label={`${fNumber(exch)} ${name}`}
+                      color={exch > 0 ? 'success' : 'error'}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell align="left">
+                    {fNumber(paid.value)}{' '}
+                    <Typography variant="caption">{paidName}</Typography>
+                  </TableCell>
+
+                  <TableCell align="left">
+                    {fNumber(got.value)}{' '}
+                    <Typography variant="caption">{gotName}</Typography>
+                  </TableCell>
+
+                  <TableCell align="left">
+                    <Link
+                      // underline="none"
+                      // color="inherit"
+                      target="_blank"
+                      href={`https://bithomp.com/explorer/${taker}`}
+                      rel="noreferrer noopener nofollow"
                     >
-                      <Typography variant="subtitle2">
-                        {idx + page * rows + 1}
-                      </Typography>
-                    </TableCell>
-                    <TableCell
-                      align="left"
-                      sx={{
-                        position: 'sticky',
-                        zIndex: 1002,
-                        left: 48,
-                        background: darkMode ? '#000000' : '#FFFFFF',
-                        '&:before': scrollLeft
-                          ? {
-                              content: "''",
-                              boxShadow: 'inset 10px 0 8px -8px #00000026',
-                              position: 'absolute',
-                              top: '0',
-                              right: '0',
-                              bottom: '-1px',
-                              width: '30px',
-                              transform: 'translate(100%)',
-                              transition: 'box-shadow .3s',
-                              pointerEvents: 'none'
-                            }
-                          : {}
-                      }}
+                      {truncate(taker, 12)}
+                    </Link>
+                  </TableCell>
+
+                  <TableCell align="left">
+                    <Link
+                      // underline="none"
+                      // color="inherit"
+                      target="_blank"
+                      href={`https://bithomp.com/explorer/${maker}`}
+                      rel="noreferrer noopener nofollow"
                     >
-                      <Typography variant="caption">{strDateTime}</Typography>
-                    </TableCell>
-                    <TableCell align="left">
+                      {truncate(maker, 12)}
+                    </Link>
+                  </TableCell>
+                  <TableCell align="left">{ledger}</TableCell>
+                  <TableCell align="left">
+                    <Stack direction="row" spacing={1}>
+                      <Tooltip title="View transaction details">
+                        <IconButton
+                          size="small"
+                          href={`https://xrpscan.com/tx/${hash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <LaunchIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                       <Typography variant="caption">
-                        {fNumber(exch)} {name}
+                        {truncate(hash, 8)}
                       </Typography>
-                    </TableCell>
-                    <TableCell align="left">
-                      {fNumber(paid.value)}{' '}
-                      <Typography variant="caption">{paidName}</Typography>
-                    </TableCell>
-
-                    <TableCell align="left">
-                      {fNumber(got.value)}{' '}
-                      <Typography variant="caption">{gotName}</Typography>
-                    </TableCell>
-
-                    <TableCell align="left">
-                      <Link
-                        // underline="none"
-                        // color="inherit"
-                        target="_blank"
-                        href={`https://bithomp.com/explorer/${taker}`}
-                        rel="noreferrer noopener nofollow"
-                      >
-                        {truncate(taker, 12)}
-                      </Link>
-                    </TableCell>
-
-                    <TableCell align="left">
-                      <Link
-                        // underline="none"
-                        // color="inherit"
-                        target="_blank"
-                        href={`https://bithomp.com/explorer/${maker}`}
-                        rel="noreferrer noopener nofollow"
-                      >
-                        {truncate(maker, 12)}
-                      </Link>
-                    </TableCell>
-                    <TableCell align="left">{ledger}</TableCell>
-                    <TableCell align="left">
-                      <Stack direction="row" alignItems="center">
-                        <Link
-                          // underline="none"
-                          // color="inherit"
-                          target="_blank"
-                          href={`https://bithomp.com/explorer/${hash}`}
-                          rel="noreferrer noopener nofollow"
-                        >
-                          <Stack direction="row" alignItems="center">
-                            {truncate(hash, 16)}
-                            <IconButton edge="end" aria-label="bithomp">
-                              <Avatar
-                                alt="Bithomp Explorer"
-                                src="/static/bithomp.ico"
-                                sx={{ width: 16, height: 16 }}
-                              />
-                            </IconButton>
-                          </Stack>
-                        </Link>
-
-                        <Link
-                          // underline="none"
-                          // color="inherit"
-                          target="_blank"
-                          href={`https://livenet.xrpl.org/transactions/${hash}`}
-                          rel="noreferrer noopener nofollow"
-                        >
-                          <IconButton edge="end" aria-label="bithomp">
-                            <Avatar
-                              alt="livenet.xrpl.org Explorer"
-                              src="/static/livenetxrplorg.ico"
-                              sx={{ width: 16, height: 16 }}
-                            />
-                          </IconButton>
-                        </Link>
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            }
+                    </Stack>
+                  </TableCell>
+                </StyledTableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </Box>
@@ -444,6 +343,6 @@ export default function History({ token }) {
           </Typography>
         </ConnectWalletContainer>
       )}
-    </>
+    </Box>
   );
 }

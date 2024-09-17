@@ -6,10 +6,10 @@ import {
 // Utils
 import { fCurrency5, fNumber, fNumberWithSuffix } from 'src/utils/formatNumber';
 
-// ----------------------------------------------------------------------
-/*function expo(x, f) {
-    return Number.parseFloat(x).toExponential(f);
-}*/
+// Memoize the formatter functions
+const memoizedFNumber = memoize(fNumber);
+const memoizedFNumberWithSuffix = memoize(fNumberWithSuffix);
+const memoizedFCurrency5 = memoize(fCurrency5);
 
 export default function ChartOptions(series) {
     const theme = useTheme();
@@ -77,9 +77,7 @@ export default function ChartOptions(series) {
             axisBorder: { show: false },
             axisTicks: { show: false },
 			labels: { // webxtor adding formatting for the labels
-				formatter: function(val, index) {
-					return fNumber(val);
-				},
+				formatter: memoizedFNumber,
 			}
         },
         // Y Axis
@@ -93,17 +91,8 @@ export default function ChartOptions(series) {
                 * @param { String } val - The generated value of the y-axis tick
                 * @param { index } index of the tick / currently executing iteration in yaxis labels array
                 */
-                formatter: function(val, index) {
-                    if (val > 1000) {
-						return fNumberWithSuffix(val); //webxtor: no more exp in Y axis
-                        /*val /= 1000;
-                        let label = val.toFixed(0) + 'k';
-                        if (label.length > 8)
-                            label = expo(val, 0);
-                        return label;*/
-                    }
-                        
-                    return fNumber(val);
+                formatter: function(val) {
+                    return val > 1000 ? memoizedFNumberWithSuffix(val) : memoizedFNumber(val);
                 }
             }
         },
@@ -150,23 +139,7 @@ export default function ChartOptions(series) {
                 format: '',
             },
             y: {
-                formatter: (y) => {
-                    if (typeof y !== 'undefined') {
-                        /*if (y > 1000) { // webxor: no more expo
-                            const expo = (x, f) => {
-                                return Number.parseFloat(x).toExponential(f);
-                            }
-                            y /= 1000;
-                            let label = y.toFixed(0) + 'k';
-                            if (label.length > 8)
-                                label = expo(y, 0);
-                            return label;
-                        }*/
-                            
-                        return fCurrency5(y);
-                    }
-                    return y;
-                },
+                formatter: memoizedFCurrency5,
                 title: {
                     formatter: (seriesName) => {
                         return seriesName;
@@ -258,5 +231,19 @@ export default function ChartOptions(series) {
                 }
             }
         ]
+    };
+}
+
+// Memoization helper function
+function memoize(fn) {
+    const cache = new Map();
+    return function(...args) {
+        const key = args.join(',');
+        if (cache.has(key)) {
+            return cache.get(key);
+        }
+        const result = fn.apply(this, args);
+        cache.set(key, result);
+        return result;
     };
 }
