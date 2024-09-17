@@ -100,6 +100,100 @@ function Store() {
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
 
+  useEffect(() => {
+    var timer = null;
+    var isRunning = false;
+    var counter = 150;
+    var dispatchTimer = null;
+
+    async function getDispatchResult() {
+      try {
+        const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+        const res = ret.data.data.response;
+        // const account = res.account;
+
+        return res;
+      } catch (err) { }
+    }
+
+    const startInterval = () => {
+      let times = 0;
+
+      dispatchTimer = setInterval(async () => {
+        const result = await getDispatchResult();
+
+        if (result && result.dispatched_result === 'tesSUCCESS') {
+          const response = await fetch(`${chatURL}/api/purchase-chat-feature`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              account: accountProfile.account,
+              feature: `${rank.id}`,
+              transactionHash: result?.txid
+            })
+          });
+
+          if (response.ok) {
+            setSnackbarMessage(`Successfully purchased ${rank.name} rank!`);
+          } else {
+            setSnackbarMessage(`Purchasing is failed`);
+          }
+
+          stopInterval();
+          return;
+        }
+
+        times++;
+
+        if (times >= 10) {
+          setSnackbarMessage(`Purchasing is failed`);
+          stopInterval();
+          return;
+        }
+      }, 1000);
+    };
+
+
+    // Stop the interval
+    const stopInterval = () => {
+      clearInterval(dispatchTimer);
+      setOpenScanQR(false);
+      handleClose();
+    };
+
+    async function getPayload() {
+      // console.log(counter + " " + isRunning, uuid);
+      if (isRunning) return;
+      isRunning = true;
+      try {
+        const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+        const res = ret.data.data.response;
+        // const account = res.account;
+        const resolved_at = res.resolved_at;
+        if (resolved_at) {
+          startInterval();
+          return;
+        }
+      } catch (err) { }
+      isRunning = false;
+      counter--;
+      if (counter <= 0) {
+        openSnackbar('Timeout!', 'error');
+        handleScanQRClose();
+      }
+    }
+    if (openScanQR) {
+      timer = setInterval(getPayload, 2000);
+    }
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [openScanQR, uuid]);
+
   const handlePurchase = async () => {
     if (!accountProfile?.account) {
       setSnackbarMessage('Please connect your XRP wallet to make a purchase.');
