@@ -81,6 +81,7 @@ function getCostFromOffers(nftOwner, offers, isSellOffer) {
 
 const NFTDisplay = ({ nftLink }) => {
   const BASE_URL = 'https://api.xrpnft.com/api';
+  const IMAGE_BASE_URL = 'https://s2.xrpnft.com/d1/'; // Base URL for images
   const theme = useTheme();
   const dispatch = useDispatch();
   const { accountProfile, openSnackbar } = useContext(AppContext);
@@ -183,44 +184,36 @@ const NFTDisplay = ({ nftLink }) => {
   /**
    * Updated getMediaPreview to utilize the files array for image display.
    * Prioritizes displaying the small thumbnail if available.
+   * Uses the https://s2.xrpnft.com/d1/ base URL for all image sources.
+   * Removes IPFS-related logic.
+   * Updates video type check to use file.type === 'video'.
+   * Incorporates logic from ChatNFTCard to ensure consistent media handling.
    */
   const getMediaPreview = () => {
     if (!nft || !nft.files || nft.files.length === 0) return null;
 
-    // Find the first image file in the files array
-    const imageFile = nft.files.find(file => file.type === 'image');
+    // Use the first file in the files array (similar to ChatNFTCard)
+    const file = nft.files[0];
 
-    if (!imageFile) return null;
+    if (!file) return null;
 
-    // Determine the URL to use for the image
-    let mediaUrl = '';
+    // Determine the image URL based on priority
+    let mediaUrl = null;
 
-    // Prefer the small thumbnail if available
-    if (imageFile.small) {
-      mediaUrl = `https://s2.xrpnft.com/d1/${imageFile.small}`;
-    } 
-    // Fallback to the big thumbnail
-    else if (imageFile.big) {
-      mediaUrl = `https://s2.xrpnft.com/d1/${imageFile.big}`;
-    } 
-    // Fallback to the converted file
-    else if (imageFile.convertedFile) {
-      mediaUrl = `https://s2.xrpnft.com/d1/${imageFile.convertedFile}`;
-    } 
-    // Fallback to the parsedUrl with a gateway
-    else if (imageFile.parsedUrl) {
-      // Replace 'ipfs://' with the gateway URL
-      mediaUrl = imageFile.parsedUrl.replace('ipfs://', 'https://gateway.xrpnft.com/ipfs/');
-    } 
-    // Fallback to a default image or return null
-    else {
-      mediaUrl = null;
+    if (file.thumbnail?.small) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.small}`;
+    } else if (file.thumbnail?.big) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.big}`;
+    } else if (file.convertedFile) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.convertedFile}`;
+    } else if (file.dfile) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.dfile}`;
     }
 
     if (!mediaUrl) return null;
 
     // Check if the file is a video
-    if (imageFile.parsedType === 'video') {
+    if (file.type === 'video') {
       return (
         <video
           width="auto"
@@ -241,7 +234,7 @@ const NFTDisplay = ({ nftLink }) => {
     return (
       <img
         src={mediaUrl}
-        alt={nft.name}
+        alt={nft.name || 'Unnamed NFT'}
         style={{
           width: 'auto',
           height: '30px',
