@@ -18,7 +18,7 @@ import { Client } from 'xrpl';
 import Trade from './Trade';
 import { AppContext } from 'src/AppContext';
 
-const UserSummary = ({ user }) => {
+const UserSummary = ({ user,activeColor }) => {
   const theme = useTheme();
   const [tokenCount, setTokenCount] = useState(0);
   const [nft, setNFT] = useState(0);
@@ -253,7 +253,7 @@ const UserSummary = ({ user }) => {
               }}
             />
             <Box>
-              <Typography variant="h5" fontWeight="bold" noWrap gutterBottom>
+              <Typography variant="h5" fontWeight="bold" noWrap gutterBottom sx={{ color: activeColor}}>
                 {truncateUsername(username)}
               </Typography>
               <Chip

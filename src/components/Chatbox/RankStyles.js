@@ -11,6 +11,15 @@ export const rankColors = (theme) => ({
   Bot: theme.palette.info.main
 });
 
+export const activeRankColors = {
+  riddler: '#FFD700',
+  rippler: '#4CAF50',
+  validator: '#2196F3',
+  escrow: '#9C27B0',
+  ledger: '#F44336',
+  verified: '#1DA1F2'
+};
+
 export const rankGlowEffect = (theme) => ({
   Member: 'none',
   VIP: `0 0 5px ${theme.palette.mode === 'dark' ? '#FFD700' : '#DAA520'}`,

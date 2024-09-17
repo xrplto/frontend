@@ -22,7 +22,7 @@ import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import UserSummary from './UserSummary';
-import { rankColors, rankGlowEffect, lightningEffect } from './RankStyles';
+import { rankColors, rankGlowEffect, lightningEffect, activeRankColors } from './RankStyles';
 import NFTDisplay from './NFTDisplay'; // Import the extracted component
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
@@ -75,6 +75,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   const { accountProfile } = useContext(AppContext);
   const chatContainerRef = useRef(null);
   const [userImages, setUserImages] = useState({});
+  const [activeRanks, setActiveRanks] = useState({});
 
   // Inject lightningEffect into the document's head
   const styleElement = document.createElement('style');
@@ -98,7 +99,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
       const imagePromises = uniqueUsers.map(async (account) => {
         try {
           const response = await axios.get(
-            `http://localhost:5000/api/set-user-image?account=${account}`
+            `http://65.108.136.237:5000/api/set-user-image?account=${account}`
           );
           if (response.data.user) {
             const user = response.data.user;
@@ -127,6 +128,17 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
       fetchUserImages();
     }
   }, [chats]);
+
+  useEffect(() => {
+
+    async function fetchActiveRanks() {
+      const res = await axios.get('http://65.108.136.237:5000/api/fetch-active-ranks');
+      setActiveRanks(res.data);
+    }
+
+    fetchActiveRanks();
+
+  }, [])
 
   return (
     <CustomScrollBox
@@ -204,12 +216,12 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                   />
                   <Box sx={{ flexGrow: 1 }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <CustomWidthTooltip title={<UserSummary user={chat} />} arrow placement="right">
+                      <CustomWidthTooltip title={<UserSummary user={chat} activeColor={activeRankColors[activeRanks[chat.username]] || theme.palette.text.primary} />} arrow placement="right">
                         <Typography
                           variant="subtitle2"
                           sx={{
                             fontWeight: 'bold',
-                            color: rankColors(theme)[chat.rank] || theme.palette.text.primary,
+                            color: activeRankColors[activeRanks[chat.username]] || theme.palette.text.primary,
                             textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
                             cursor: 'pointer'
                           }}
