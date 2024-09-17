@@ -1,8 +1,7 @@
 import axios from 'axios';
 import {MD5} from "crypto-js";
 import Decimal from 'decimal.js';
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { FixedSizeList as List } from 'react-window';
+import { useState, useEffect } from 'react';
 
 // Material
 import {
@@ -22,12 +21,13 @@ import { fNumber } from 'src/utils/formatNumber';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 
 import NumberTooltip from 'src/components/NumberTooltip';
+// ----------------------------------------------------------------------
 
 function getMD5(issuer, currency) {
     return MD5(issuer  + '_' +  currency).toString();
 }
 
-const convertTrade = (md5, trades) => {
+function convertTrade(md5, trades) {
     if (!trades || trades.length < 1) return [];
     /*
     {
@@ -119,7 +119,7 @@ const convertTrade = (md5, trades) => {
     }
 
     return ctrades.reverse();
-};
+}
 
 export default function ExchHistory({pair, md5}) {
     const BASE_URL = process.env.API_URL;
@@ -127,66 +127,30 @@ export default function ExchHistory({pair, md5}) {
 
     const [tradeExchs, setTradeExchs] = useState([]);
 
-    // Move memoizedConvertTrade inside the component
-    const memoizedConvertTrade = useCallback((md5, trades) => convertTrade(md5, trades), []);
-
-    const getTradeExchanges = useCallback(() => {
-        if (!pair) return;
-        axios.get(`${BASE_URL}/last_trades?md5=${md5}&issuer=${pair.curr2.issuer}&currency=${pair.curr2.currency}&limit=40`)
-            .then(res => {
-                let ret = res.status === 200 ? res.data : undefined;
-                if (ret) {
-                    setTradeExchs(memoizedConvertTrade(md5, ret.trades));
-                }
-            }).catch(err => {
-                console.log("Error on getting exchanges!!!", err);
-            });
-    }, [pair, md5, memoizedConvertTrade, BASE_URL]);
-
     useEffect(() => {
-        getTradeExchanges();
-        const timer = setInterval(getTradeExchanges, 10000);
-        return () => clearInterval(timer);
-    }, [getTradeExchanges]);
-
-    const memoizedTradeExchs = useMemo(() => tradeExchs.slice(0, 30), [tradeExchs]);
-
-    const Row = useCallback(({ index, style }) => {
-        const row = memoizedTradeExchs[index];
-        const {
-            _id,
-            exch,
-            amount,
-            color,
-            time
-        } = row;
-
-        const nDate = new Date(time);
-        const strTime = nDate.toLocaleTimeString('en-US', { hour12: false });
-
-        return (
-            <TableRow
-                hover
-                key={_id}
-                style={style}
-                sx={{
-                    [`& .${tableCellClasses.root}`]: {
-                        color
+        function getTradeExchanges() {
+            if (!pair) return;
+            // https://api.xrpl.to/api/last_trades?md5=b56a99b1c7d21a2bd621e3a2561f596b&issuer=XRPL&currency=XRP&limit=40
+            axios.get(`${BASE_URL}/last_trades?md5=${md5}&issuer=${pair.curr2.issuer}&currency=${pair.curr2.currency}&limit=40`)
+                .then(res => {
+                    let ret = res.status === 200 ? res.data : undefined;
+                    if (ret) {
+                        setTradeExchs(convertTrade(md5, ret.trades));
                     }
-                }}
-            >
-                <TableCell align="left" sx={{ p:0 }}>
-                    <Typography variant="subtitle2"><NumberTooltip number={fNumber(exch)} pos='bottom' /></Typography>
-                </TableCell>
-                <TableCell align="left" colSpan={2} sx={{ p:0 }}>
-                    {amount}
-                </TableCell>
-                <TableCell align="left" sx={{ p:0 }}>
-                    <Typography variant="subtitle2">{strTime}</Typography>
-                </TableCell>
-            </TableRow>
-        );
-    }, [memoizedTradeExchs]);
+                }).catch(err => {
+                    console.log("Error on getting exchanges!!!", err);
+                }).then(function () {
+                    // always executed
+                });
+        }
+        getTradeExchanges();
+
+        const timer = setInterval(getTradeExchanges, 10000);
+
+        return () => {
+            clearInterval(timer);
+        }
+    }, [pair]);
 
     return (
         <Stack>
@@ -214,14 +178,49 @@ export default function ExchHistory({pair, md5}) {
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    <List
-                        height={400}
-                        itemCount={memoizedTradeExchs.length}
-                        itemSize={35}
-                        width="100%"
-                    >
-                        {Row}
-                    </List>
+                {
+                    tradeExchs.slice(0, 30).map((row) => {
+                            const {
+                                _id,
+                                exch,
+                                amount,
+                                color,
+                                time
+                            } = row;
+
+                            const nDate = new Date(time);
+
+                            const hour = nDate.getHours().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+                            const min = nDate.getMinutes().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+                            const sec = nDate.getSeconds().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping: false});
+
+                            const strTime = `${hour}:${min}:${sec}`;
+                            return (
+                                <TableRow
+                                    hover
+                                    key={_id}
+                                    sx={{
+                                        [`& .${tableCellClasses.root}`]: {
+                                            color
+                                        }
+                                    }}
+                                >
+                                    <TableCell align="left" sx={{ p:0 }}>
+                                        <Typography variant="subtitle2"><NumberTooltip number={fNumber(exch)} pos='bottom' /></Typography>
+                                    </TableCell>
+                                    <TableCell align="left" colSpan={2} sx={{ p:0 }}>
+                                        {amount}
+                                    </TableCell>
+
+                                    <TableCell align="left" sx={{ p:0 }}>
+                                        <Stack>
+                                            <Typography variant="subtitle2">{strTime}</Typography>
+                                            {/* <Typography variant="caption">{strDate}</Typography> */}
+                                        </Stack>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                 </TableBody>
             </Table>
         </Stack>

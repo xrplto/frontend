@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
 
 // Material
@@ -20,47 +20,15 @@ import ConnectWallet from 'src/components/ConnectWallet';
 import QRDialog from 'src/components/QRDialog';
 import { enqueueSnackbar } from 'notistack';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
-
-// Move this outside the component to avoid re-creation on each render
+// ----------------------------------------------------------------------
 const DisabledButton = withStyles({
   root: {
     '&.Mui-disabled': {
-      pointerEvents: 'unset',
-      cursor: 'not-allowed'
+      pointerEvents: 'unset', // allow :hover styles to be triggered
+      cursor: 'not-allowed' // and custom cursor can be defined without :hover state
     }
   }
 })(Button);
-
-// Helper function moved outside the component
-const calculateSufficientBalance = (isLoggedIn, amount, value, accountPairBalance, buySell) => {
-  if (isLoggedIn && amount && value) {
-    const fAmount = Number(amount);
-    const fValue = Number(value);
-
-    if (fAmount > 0 && fValue > 0) {
-      const accountAmount = new Decimal(
-        accountPairBalance.curr1.value
-      ).toNumber();
-      const accountValue = new Decimal(
-        accountPairBalance.curr2.value
-      ).toNumber();
-      if (buySell === 'BUY') {
-        if (accountValue >= fValue) {
-          return { isSufficientBalance: true, errMsg: '' };
-        } else {
-          return { isSufficientBalance: false, errMsg: 'Insufficient wallet balance' };
-        }
-      } else {
-        if (accountAmount >= fAmount) {
-          return { isSufficientBalance: true, errMsg: '' };
-        } else {
-          return { isSufficientBalance: false, errMsg: 'Insufficient wallet balance' };
-        }
-      }
-    }
-  }
-  return { isSufficientBalance: false, errMsg: isLoggedIn ? '' : 'Connect your wallet!' };
-};
 
 export default function PlaceOrder({
   marketLimit,
@@ -79,15 +47,61 @@ export default function PlaceOrder({
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
 
-  const isLoggedIn = useMemo(() => 
-    accountProfile && accountProfile.account && accountPairBalance,
-    [accountProfile, accountPairBalance]
-  );
+  const isLoggedIn =
+    accountProfile && accountProfile.account && accountPairBalance;
+  let isSufficientBalance = false;
+  let errMsg = '';
 
-  const { isSufficientBalance, errMsg } = useMemo(() => 
-    calculateSufficientBalance(isLoggedIn, amount, value, accountPairBalance, buySell),
-    [isLoggedIn, amount, value, accountPairBalance, buySell]
-  );
+  if (isLoggedIn && amount && value) {
+    /* accountPairBalance
+        {
+            "curr1": {
+                "currency": "534F4C4F00000000000000000000000000000000",
+                "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+                "value": "0.00000383697235788"
+            },
+            "curr2": {
+                "currency": "XRP",
+                "issuer": "XRPL",
+                "value": 26.733742000000007
+            }
+        }
+        */
+    const fAmount = Number(amount); // SOLO
+    const fValue = Number(value); // XRP
+
+    if (fAmount > 0 && fValue > 0) {
+      const accountAmount = new Decimal(
+        accountPairBalance.curr1.value
+      ).toNumber();
+      const accountValue = new Decimal(
+        accountPairBalance.curr2.value
+      ).toNumber();
+      if (buySell === 'BUY') {
+        if (accountValue >= fValue) {
+          isSufficientBalance = true;
+          errMsg = '';
+        } else {
+          isSufficientBalance = false;
+          errMsg = 'Insufficient wallet balance';
+        }
+      } else {
+        if (accountAmount >= fAmount) {
+          isSufficientBalance = true;
+          errMsg = '';
+        } else {
+          isSufficientBalance = false;
+          errMsg = 'Insufficient wallet balance';
+        }
+      }
+    }
+  } else {
+    errMsg = '';
+    isSufficientBalance = false;
+    if (!isLoggedIn) {
+      errMsg = 'Connect your wallet!';
+    }
+  }
 
   const canPlaceOrder = isLoggedIn && isSufficientBalance;
 
@@ -101,6 +115,7 @@ export default function PlaceOrder({
       try {
         const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
         const res = ret.data.data.response;
+        // const account = res.account;
         const dispatched_result = res.dispatched_result;
 
         return dispatched_result;
@@ -137,11 +152,13 @@ export default function PlaceOrder({
     };
 
     async function getPayload() {
+      // console.log(counter + " " + isRunning, uuid);
       if (isRunning) return;
       isRunning = true;
       try {
         const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
         const res = ret.data.data.response;
+        // const account = res.account;
         const resolved_at = res.resolved_at;
         if (resolved_at) {
           startInterval();
@@ -162,12 +179,13 @@ export default function PlaceOrder({
         clearInterval(timer);
       }
     };
-  }, [dispatch, openScanQR, uuid, sync, setSync, openSnackbar]);
+  }, [dispatch, openScanQR, uuid]);
 
-  const onOfferCreateXumm = useCallback(async () => {
+  const onOfferCreateXumm = async () => {
     try {
       const curr1 = pair.curr1;
       const curr2 = pair.curr2;
+      // const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
       let TakerGets, TakerPays;
@@ -231,7 +249,7 @@ export default function PlaceOrder({
         if (buySell === 'BUY') Flags = OfferCreate.tfImmediateOrCancel;
         else Flags = OfferCreate.tfSell | OfferCreate.tfImmediateOrCancel;
       }
-      const body = { TakerGets, TakerPays, Flags, user_token };
+      const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
 
       switch (wallet_type) {
         case "xaman":
@@ -288,34 +306,41 @@ export default function PlaceOrder({
           })
           break;
         case "crossmark":
-          if (TakerGets.currency === 'XRP') {
-            TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
-          }
-
-          if (TakerPays.currency === 'XRP') {
-            TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
-          }
-          const offer = {
-            Flags: Flags,
-            TakerGets: TakerGets,
-            TakerPays: TakerPays,
-            Account: accountProfile?.account
-          }
-  
-          dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait({
-            ...offer,
-            TransactionType: 'OfferCreate'
-          }).then(({ response }) => {
-            if (response.data.meta.isSuccess) {
-              dispatch(updateProcess(2));
-              dispatch(updateTxHash(response.data.resp.result?.hash));
-
-            } else {
-              dispatch(updateProcess(3));
+          // if (!window.xrpl) {
+          //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
+          //   return;
+          // }
+          // const { isCrossmark } = window.xrpl;
+          // if (isCrossmark) {
+            if (TakerGets.currency === 'XRP') {
+              TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
             }
-            setSync(sync + 1);
-          });
+
+            if (TakerPays.currency === 'XRP') {
+              TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
+            }
+            const offer = {
+              Flags: Flags,
+              TakerGets: TakerGets,
+              TakerPays: TakerPays,
+              Account: accountProfile?.account
+            }
+  
+            dispatch(updateProcess(1));
+            await sdk.methods.signAndSubmitAndWait({
+              ...offer,
+              TransactionType: 'OfferCreate'
+            }).then(({ response }) => {
+              if (response.data.meta.isSuccess) {
+                dispatch(updateProcess(2));
+                dispatch(updateTxHash(response.data.resp.result?.hash));
+
+              } else {
+                dispatch(updateProcess(3));
+              }
+              setSync(sync + 1);
+            });
+          // }
           break;
       }
     } catch (err) {
@@ -323,9 +348,9 @@ export default function PlaceOrder({
       dispatch(updateProcess(0));
     }
     setLoading(false);
-  }, [accountProfile, pair, buySell, amount, value, marketLimit, dispatch, sync, setSync, setLoading]);
+  };
 
-  const onDisconnectXumm = useCallback(async (uuid) => {
+  const onDisconnectXumm = async (uuid) => {
     setLoading(true);
     try {
       const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
@@ -334,25 +359,50 @@ export default function PlaceOrder({
       }
     } catch (err) { }
     setLoading(false);
-  }, [setLoading]);
+  };
 
-  const handleScanQRClose = useCallback(() => {
+  const handleScanQRClose = () => {
     setOpenScanQR(false);
     onDisconnectXumm(uuid);
-  }, [onDisconnectXumm, uuid]);
+  };
 
-  const handlePlaceOrder = useCallback((e) => {
+  const handlePlaceOrder = (e) => {
     const fAmount = Number(amount);
     const fValue = Number(value);
     if (fAmount > 0 && fValue > 0) onOfferCreateXumm();
     else {
       openSnackbar('Invalid values!', 'error');
     }
-  }, [amount, value, onOfferCreateXumm, openSnackbar]);
+
+    // if (accountProfile && accountProfile.account) {
+    //     // Create offer
+    //     /*{
+    //         "TransactionType": "OfferCreate",
+    //         "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
+    //         "Fee": "12",
+    //         "Flags": 0,
+    //         "LastLedgerSequence": 7108682,
+    //         "Sequence": 8,
+    //         "TakerGets": "6000000",
+    //         "TakerPays": {
+    //           "currency": "GKO",
+    //           "issuer": "ruazs5h1qEsqpke88pcqnaseXdm6od2xc",
+    //           "value": "2"
+    //         }
+    //     }*/
+    //     onOfferCreateXumm();
+
+    // } else {
+    //     setShowAccountAlert(true);
+    //     setTimeout(() => {
+    //         setShowAccountAlert(false);
+    //     }, 2000);
+    // }
+  };
 
   return (
     <Stack alignItems="center">
-      {isLoggedIn ? (
+      {accountProfile && accountProfile.account ? (
         <>
           {errMsg && <Typography variant="s2">{errMsg}</Typography>}
           {canPlaceOrder ? (
@@ -368,6 +418,7 @@ export default function PlaceOrder({
             <DisabledButton
               variant="outlined"
               sx={{ mt: 1.5 }}
+              // onClick={()=>openSnackbar('Please connect wallet!', 'error')}
               disabled
             >
               PLACE ORDER

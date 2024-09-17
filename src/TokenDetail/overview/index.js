@@ -1,8 +1,11 @@
-import React, { useState, useContext, useMemo } from 'react';
-import dynamic from "next/dynamic";
 import axios from 'axios';
+import React from 'react';
+import dynamic from "next/dynamic";
+import { useState, useEffect } from 'react';
+
 import MarkdownIt from 'markdown-it';
-// import ReactMarkdown from "react-markdown"; // Removed as it's not being used
+import ReactMarkdown from "react-markdown";
+import "react-markdown-editor-lite/lib/index.css"; // import style manually
 
 const MDEditor = dynamic(() => import("react-markdown-editor-lite"), {
     ssr: false
@@ -11,10 +14,15 @@ const MDEditor = dynamic(() => import("react-markdown-editor-lite"), {
 // Material
 import {
     Grid,
+    Stack,
     useTheme, useMediaQuery,
+    Typography,
+    Paper,
+    Button
 } from '@mui/material';
 
 // Context
+import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Components
@@ -22,8 +30,8 @@ import PriceChart from './PriceChart';
 import PriceStatistics from './PriceStatistics';
 import Description from './Description';
 import TrendingTokens from './TrendingTokens';
-import Swap from './Swap';
-import Poll from './Poll';
+import Swap from './Swap'; // Import Swap component
+import Poll from './Poll'; // Import Poll component
 
 // ----------------------------------------------------------------------
 
@@ -37,39 +45,50 @@ export default function Overview({ token }) {
     const [showEditor, setShowEditor] = useState(false);
     const [description, setDescription] = useState(token.description || "");
 
-    // Memoize the markdown parser
-    const mdParser = useMemo(() => new MarkdownIt(/* Markdown-it options */), []);
+    // Initialize a markdown parser
+    const mdParser = new MarkdownIt(/* Markdown-it options */);
 
-    // Memoize the editor change handler
-    const handleEditorChange = useMemo(() => ({ text }) => {
+    const handleEditorChange = ({ html, text }) => {
+        // console.log('handleEditorChange', html, text);
         setDescription(text);
-    }, []);
+    }
 
-    // Memoize the apply description function
-    const onApplyDescription = useMemo(() => async () => {
+    const onApplyDescription = async () => {
         if (token.description === description) return;
 
+        let finish = false;
         setLoading(true);
         try {
-            const { account: accountAdmin, token: accountToken } = accountProfile;
-            const { data } = await axios.post(`${BASE_URL}/admin/update_description`, 
-                { md5: token.md5, description }, 
-                { headers: { 'x-access-account': accountAdmin, 'x-access-token': accountToken } }
-            );
+            let res;
 
-            if (data.status) {
-                token.description = description;
-                openSnackbar('Successful!', 'success');
-                setShowEditor(false);
-            } else {
-                openSnackbar(data.err, 'error');
+            const accountAdmin = accountProfile.account;
+            const accountToken = accountProfile.token;
+
+            const body = { md5: token.md5, description };
+
+            res = await axios.post(`${BASE_URL}/admin/update_description`, body, {
+                headers: { 'x-access-account': accountAdmin, 'x-access-token': accountToken }
+            });
+
+            if (res.status === 200) {
+                const ret = res.data;
+                if (ret.status) {
+                    token.description = description;
+                    openSnackbar('Successful!', 'success');
+                    finish = true;
+                } else {
+                    // { status: false, data: null, err: 'ERR_URL_SLUG' }
+                    const err = ret.err;
+                    openSnackbar(err, 'error');
+                }
             }
         } catch (err) {
-            console.error(err);
-            openSnackbar('An error occurred', 'error');
+            console.log(err);
         }
         setLoading(false);
-    }, [token, description, accountProfile, BASE_URL, openSnackbar, setLoading]);
+        if (finish)
+            setShowEditor(false);
+    };
 
     let user = token.user;
     if (!user) user = token.name;

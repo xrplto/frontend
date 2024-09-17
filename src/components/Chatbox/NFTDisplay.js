@@ -81,6 +81,7 @@ function getCostFromOffers(nftOwner, offers, isSellOffer) {
 
 const NFTDisplay = ({ nftLink }) => {
   const BASE_URL = 'https://api.xrpnft.com/api';
+  const IMAGE_BASE_URL = 'https://s2.xrpnft.com/d1/'; // Base URL for images
   const theme = useTheme();
   const dispatch = useDispatch();
   const { accountProfile, openSnackbar } = useContext(AppContext);
@@ -183,44 +184,36 @@ const NFTDisplay = ({ nftLink }) => {
   /**
    * Updated getMediaPreview to utilize the files array for image display.
    * Prioritizes displaying the small thumbnail if available.
+   * Uses the https://s2.xrpnft.com/d1/ base URL for all image sources.
+   * Removes IPFS-related logic.
+   * Updates video type check to use file.type === 'video'.
+   * Incorporates logic from ChatNFTCard to ensure consistent media handling.
    */
   const getMediaPreview = () => {
     if (!nft || !nft.files || nft.files.length === 0) return null;
 
-    // Find the first image file in the files array
-    const imageFile = nft.files.find(file => file.type === 'image');
+    // Use the first file in the files array (similar to ChatNFTCard)
+    const file = nft.files[0];
 
-    if (!imageFile) return null;
+    if (!file) return null;
 
-    // Determine the URL to use for the image
-    let mediaUrl = '';
+    // Determine the image URL based on priority
+    let mediaUrl = null;
 
-    // Prefer the small thumbnail if available
-    if (imageFile.small) {
-      mediaUrl = `https://s2.xrpnft.com/d1/${imageFile.small}`;
-    } 
-    // Fallback to the big thumbnail
-    else if (imageFile.big) {
-      mediaUrl = `https://s2.xrpnft.com/d1/${imageFile.big}`;
-    } 
-    // Fallback to the converted file
-    else if (imageFile.convertedFile) {
-      mediaUrl = `https://s2.xrpnft.com/d1/${imageFile.convertedFile}`;
-    } 
-    // Fallback to the parsedUrl with a gateway
-    else if (imageFile.parsedUrl) {
-      // Replace 'ipfs://' with the gateway URL
-      mediaUrl = imageFile.parsedUrl.replace('ipfs://', 'https://gateway.xrpnft.com/ipfs/');
-    } 
-    // Fallback to a default image or return null
-    else {
-      mediaUrl = null;
+    if (file.thumbnail?.small) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.small}`;
+    } else if (file.thumbnail?.big) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.big}`;
+    } else if (file.convertedFile) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.convertedFile}`;
+    } else if (file.dfile) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.dfile}`;
     }
 
     if (!mediaUrl) return null;
 
     // Check if the file is a video
-    if (imageFile.parsedType === 'video') {
+    if (file.type === 'video') {
       return (
         <video
           width="auto"
@@ -241,12 +234,72 @@ const NFTDisplay = ({ nftLink }) => {
     return (
       <img
         src={mediaUrl}
-        alt={nft.name}
+        alt={nft.name || 'Unnamed NFT'}
         style={{
           width: 'auto',
           height: '30px',
           objectFit: 'contain',
           borderRadius: '3px'
+        }}
+      />
+    );
+  };
+
+  /**
+   * New function to get the full-size image for the tooltip.
+   * This ensures that the tooltip displays a larger version of the NFT image.
+   */
+  const getFullSizeMedia = () => {
+    if (!nft || !nft.files || nft.files.length === 0) return null;
+
+    // Use the first file in the files array (similar to ChatNFTCard)
+    const file = nft.files[0];
+
+    if (!file) return null;
+
+    // Determine the image URL based on priority
+    let mediaUrl = null;
+
+    if (file.thumbnail?.small) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.small}`;
+    } else if (file.thumbnail?.big) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.big}`;
+    } else if (file.convertedFile) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.convertedFile}`;
+    } else if (file.dfile) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.dfile}`;
+    }
+
+    if (!mediaUrl) return null;
+
+    // Check if the file is a video
+    if (file.type === 'video') {
+      return (
+        <video
+          width="100%"
+          height="auto"
+          muted
+          loop
+          controls
+          style={{ borderRadius: '3px', marginBottom: theme.spacing(1) }}
+        >
+          <source src={mediaUrl} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      );
+    }
+
+    // Otherwise, render an image
+    return (
+      <img
+        src={mediaUrl}
+        alt={nft.name || 'Unnamed NFT'}
+        style={{
+          width: '100%',
+          height: 'auto',
+          objectFit: 'contain',
+          borderRadius: '3px',
+          marginBottom: theme.spacing(1)
         }}
       />
     );
@@ -430,6 +483,10 @@ const NFTDisplay = ({ nftLink }) => {
         title={
           <Paper elevation={0}>
             <Box sx={{ p: 1.5 }}>
+              {/* Full-size media in tooltip */}
+              {getFullSizeMedia()}
+              
+              {/* NFT Name with gutterBottom */}
               <Typography variant="h6" gutterBottom>
                 {nft ? nft.name : name}
               </Typography>
@@ -612,6 +669,66 @@ const NFTDisplay = ({ nftLink }) => {
         nextUrl={nextUrl}
       />
     </>
+  );
+};
+
+/**
+ * Helper function to render the full-size media for the tooltip.
+ * This ensures that the tooltip displays a larger version of the NFT image or video.
+ */
+const getFullSizeMedia = (nft, IMAGE_BASE_URL, theme) => {
+  if (!nft || !nft.files || nft.files.length === 0) return null;
+
+  // Use the first file in the files array
+  const file = nft.files[0];
+
+  if (!file) return null;
+
+  // Determine the image URL based on priority
+  let mediaUrl = null;
+
+  if (file.thumbnail?.small) {
+    mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.small}`;
+  } else if (file.thumbnail?.big) {
+    mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.big}`;
+  } else if (file.convertedFile) {
+    mediaUrl = `${IMAGE_BASE_URL}${file.convertedFile}`;
+  } else if (file.dfile) {
+    mediaUrl = `${IMAGE_BASE_URL}${file.dfile}`;
+  }
+
+  if (!mediaUrl) return null;
+
+  // Check if the file is a video
+  if (file.type === 'video') {
+    return (
+      <video
+        width="100%"
+        height="auto"
+        muted
+        loop
+        controls
+        style={{ borderRadius: '3px', marginBottom: theme.spacing(1) }}
+      >
+        <source src={mediaUrl} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    );
+  }
+
+  // Otherwise, render an image
+  return (
+    <img
+      src={mediaUrl}
+      alt={nft.name || 'Unnamed NFT'}
+      style={{
+        width: '100%',
+        height: 'auto',
+        objectFit: 'contain',
+        borderRadius: '3px',
+        marginBottom: theme.spacing(1)
+      }}
+    />
   );
 };
 

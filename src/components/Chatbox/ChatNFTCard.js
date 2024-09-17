@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardMedia, CardContent, Typography, CardActionArea } from '@mui/material';
 
-const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
+const XRPNFT_IMAGE_BASE_URL = 'https://s2.xrpnft.com/d1/';
 
 function ChatNFTCard({ nft, onSelect }) {
   const handleSelect = () => {
@@ -14,22 +14,15 @@ function ChatNFTCard({ nft, onSelect }) {
 
   // Determine the image URL
   let imageUrl = null;
-  if (nft.ufile && nft.ufile.image) {
-    if (nft.isIPFS && !nft.ufile.image.startsWith('http')) {
-      // If it's an IPFS path, construct the URL
-      imageUrl = IPFS_GATEWAY + nft.ufile.image;
-    } else {
-      // If it's a full URL, use it as is
-      imageUrl = nft.ufile.image;
+  if (nft.files && nft.files.length > 0) {
+    const file = nft.files[0];
+    if (file.thumbnail && file.thumbnail.small) {
+      imageUrl = XRPNFT_IMAGE_BASE_URL + file.thumbnail.small;
+    } else if (file.convertedFile) {
+      imageUrl = XRPNFT_IMAGE_BASE_URL + file.convertedFile;
+    } else if (file.dfile) {
+      imageUrl = XRPNFT_IMAGE_BASE_URL + file.dfile;
     }
-  } else if (nft.ufileIPFSPath && nft.ufileIPFSPath.image) {
-    if (!nft.ufileIPFSPath.image.startsWith('http')) {
-      imageUrl = IPFS_GATEWAY + nft.ufileIPFSPath.image;
-    } else {
-      imageUrl = nft.ufileIPFSPath.image;
-    }
-  } else if (nft.meta && nft.meta.image) {
-    imageUrl = nft.meta.image;
   }
 
   return (
