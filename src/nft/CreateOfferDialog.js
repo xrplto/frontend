@@ -45,8 +45,12 @@ import { useDispatch, useSelector } from 'react-redux';
 
 // ----------------------------------------------------------------------
 const OfferDialog = styled(Dialog)(({ theme }) => ({
-    backdropFilter: 'blur(1px)',
-    WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
+    '& .MuiDialog-paper': {
+        margin: 0,
+        width: '100%',
+        maxWidth: 'sm',
+        borderRadius: theme.shape.borderRadius,
+    },
     '& .MuiDialogContent-root': {
         padding: theme.spacing(2),
     },
@@ -372,7 +376,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer }) {
     return (
         <>
             <Backdrop
-                sx={{ color: "#000", zIndex: 1303 }}
+                sx={{ color: "#000", zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={loading}
             >
                 <PulseLoader color={"#FF4842"} size={10} />
@@ -382,16 +386,12 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer }) {
                 fullScreen={fullScreen}
                 onClose={handleClose}
                 open={open}
-                hideBackdrop={true}
                 disableScrollLock
-                disablePortal
+                disablePortal={false}
                 keepMounted
-                PaperProps={{
-                    sx: {
-                        borderRadius: 2,
-                        maxWidth: 'sm',
-                        width: '100%',
-                    }
+                TransitionProps={{
+                    enter: true,
+                    exit: true,
                 }}
             >
                 <OfferDialogTitle id="customized-dialog-title" onClose={handleClose}>
