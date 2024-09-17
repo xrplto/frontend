@@ -1,19 +1,16 @@
-// Material
+import { memo } from 'react';
 import { Divider, Grid, Stack, useMediaQuery, useTheme } from '@mui/material';
-
-// Components
 import UserDesc from './UserDesc';
 import PriceDesc from './PriceDesc';
 import ExtraDesc from './ExtraDesc';
 import ExtraButtons from './ExtraButtons';
-// ----------------------------------------------------------------------
 
-export default function Common({ token }) {
+const Common = memo(({ token }) => {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
-    <Grid container direction="row" justify="center" alignItems="stretch">
+    <Grid container direction="row" justifyContent="center" alignItems="stretch">
       <Grid item xs={12} md={6} lg={5} sx={{ mt: 3 }}>
         <UserDesc token={token} />
       </Grid>
@@ -41,4 +38,8 @@ export default function Common({ token }) {
       </Grid>
     </Grid>
   );
-}
+});
+
+Common.displayName = 'Common';
+
+export default Common;

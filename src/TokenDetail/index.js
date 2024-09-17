@@ -1,7 +1,8 @@
 import dynamic from 'next/dynamic';
 import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
-import { useState, useEffect, useRef, useContext } from 'react';
+import { useState, useEffect, useRef, useContext, useMemo, useCallback } from 'react';
+import { motion } from 'framer-motion';
 
 // Material
 import {
@@ -16,21 +17,16 @@ import {
 // Components
 import LinkCascade from './LinkCascade';
 import Common from './common';
-import Overview from './overview';
-import Market from './market';
-import Trade from './trade';
-import Analysis from './analysis';
-import History from './history';
-import RichList from './richlist';
-import Wallet from './wallet';
 import { AppContext } from 'src/AppContext';
 
-// const DynamicOverview = dynamic(() => import('./overview'));
-// const DynamicMarket = dynamic(() => import('./market'));
-// const DynamicTrade = dynamic(() => import('./trade'));
-// const DynamicHistory = dynamic(() => import('./history'));
-// const DynamicRichList = dynamic(() => import('./richlist'));
-// const DynamicWallet = dynamic(() => import('./wallet'));
+// Lazy load components
+const Overview = dynamic(() => import('./overview'));
+const Market = dynamic(() => import('./market'));
+const Trade = dynamic(() => import('./trade'));
+const Analysis = dynamic(() => import('./analysis'));
+const History = dynamic(() => import('./history'));
+const RichList = dynamic(() => import('./richlist'));
+const Wallet = dynamic(() => import('./wallet'));
 
 // ---------------------------------------------------
 
@@ -108,7 +104,7 @@ export default function TokenDetail({ token, tab }) {
   const [isFixed, setIsFixed] = useState(false);
   const tabRef = useRef(null);
 
-  const gotoTabView = (event) => {
+  const gotoTabView = useCallback((event) => {
     const anchor = (event.target.ownerDocument || document).querySelector(
       '#back-to-top-tab-anchor'
     );
@@ -119,38 +115,45 @@ export default function TokenDetail({ token, tab }) {
         block: 'start'
       });
     }
-  };
+  }, []);
 
-  const handleChangeTab = (event, newID) => {
+  const handleChangeTab = useCallback((event, newID) => {
     let url = '';
     if (newID > 0) url = `/token/${token.slug}/${tabValues[newID]}`;
     else url = `/token/${token.slug}/`;
     window.history.pushState({}, null, url);
     setTabID(newID);
     gotoTabView(event);
-  };
+  }, [token.slug, gotoTabView]);
 
   useEffect(() => {
     const handleScroll = () => {
-      const tableOffsetTop = tabRef?.current?.offsetTop;
-      const tableHeight = tabRef?.current?.clientHeight;
-      const scrollTop = window.scrollY;
-      const anchorTop = tableOffsetTop;
-      const anchorBottom = tableOffsetTop + tableHeight;
-
-      if (scrollTop > anchorTop && scrollTop < anchorBottom) {
-        setIsFixed(true);
-      } else {
-        setIsFixed(false);
+      if (tabRef.current) {
+        const { offsetTop, clientHeight } = tabRef.current;
+        const scrollTop = window.scrollY;
+        setIsFixed(scrollTop > offsetTop && scrollTop < offsetTop + clientHeight);
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    const throttledHandleScroll = throttle(handleScroll, 100);
+
+    window.addEventListener('scroll', throttledHandleScroll);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', throttledHandleScroll);
     };
   }, []);
+
+  const tabStyle = useMemo(() => 
+    isFixed ? {
+      position: 'fixed',
+      top: 0,
+      zIndex: 1000,
+      boxShadow: `5px 2px 5px ${!darkMode ? '#fff' : '#000'}`,
+      backgroundColor: !darkMode ? '#fff' : '#000000',
+      width: '100%'
+    } : null
+  , [isFixed, darkMode]);
 
   return (
     <>
@@ -178,18 +181,7 @@ export default function TokenDetail({ token, tab }) {
           variant="scrollable"
           scrollButtons="auto"
           aria-label="token-tabs"
-          style={
-            isFixed
-              ? {
-                  position: 'fixed',
-                  top: 0,
-                  zIndex: 1000,
-                  boxShadow: `5px 2px 5px ${!darkMode ? '#fff' : '#000'}`,
-                  backgroundColor: !darkMode ? '#fff' : '#000000',
-                  width: '100%'
-                }
-              : null
-          }
+          style={tabStyle}
         >
           <Tab value={0} label={tabLabels[0]} {...a11yProps(0)} />
           <Tab value={1} label={tabLabels[1]} {...a11yProps(1)} />
@@ -223,4 +215,18 @@ export default function TokenDetail({ token, tab }) {
       </Box>
     </>
   );
+}
+
+// Utility function for throttling
+function throttle(func, limit) {
+  let inThrottle;
+  return function() {
+    const args = arguments;
+    const context = this;
+    if (!inThrottle) {
+      func.apply(context, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  }
 }

@@ -101,7 +101,7 @@ import {
 						}
 					  }
 					}}
-					key={index}
+					key={id} // Change this line
 				  >
 					<TableCell align="left">
 					  <Link
@@ -173,4 +173,4 @@ import {
   };
   
   export default TrendingTokens;
-  
+

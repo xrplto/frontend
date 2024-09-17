@@ -13,6 +13,7 @@ import {
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import InfoIcon from '@mui/icons-material/Info'; // Import InfoIcon from Material-UI Icons
+import { Typography, Box } from '@material-ui/core';
 
 const SmallInfoIcon = (props) => (
     <InfoIcon {...props} fontSize="smaller" /> // Make the icon smaller by setting fontSize="small"
@@ -107,7 +108,6 @@ const TABLE_HEAD = [
     { no: 10, id: 'historyGraph', label: 'Last 7 Days', align: 'right', width: '13%' },
     { id: '' }
 ];
-
 
 export default function TokenListHead({ scrollLeft, tokens }) {
     console.log("spotlight---->", scrollLeft)

@@ -100,9 +100,9 @@ export default function AnalysisData({ token }) {
                 <StyledTable darkMode={darkMode}>
                     {count > 0 && <TokenListHead scrollLeft={scrollLeft} tokens={tokens} />}
                     <TableBody>
-                        {tokens.map((row, idx) => (
+                        {tokens.map((row) => (
                             <TokenRow
-                                key={idx}
+                                key={`${row.currency}-${row.issuer}`}
                                 token={row}
                                 admin={isAdmin}
                                 setEditToken={setEditToken}

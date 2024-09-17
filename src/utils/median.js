@@ -1,50 +1,64 @@
-MedianFilter = function (size) {
+class MedianFilter {
+	constructor(size = 7) {
+		this.values = [];
+		this.size = size;
+		this.middleIndex = Math.floor(size / 2);
+	}
 
-    var that = this;
-    that.vales = [];
-    that.sorted = [];
-    that.size = size || 7;
-    that.middelIndex = Math.round(that.size / 2);
+	input(val) {
+		// If it's empty, fill it up
+		if (this.values.length === 0) {
+			this.fill(val);
+			return val;
+		}
 
-};
+		// Remove oldest value and add new value
+		this.values.shift();
+		this.values.push(val);
 
-MedianFilter.prototype = {};
+		// Use a more efficient sorting algorithm
+		const sorted = this.quickSelect(this.values.slice(), this.middleIndex);
+		
+		// Return median value
+		return sorted[this.middleIndex];
+	}
 
-MedianFilter.prototype.input = function (val) {
+	fill(val) {
+		this.values = new Array(this.size).fill(val);
+	}
 
-    var that = this;
+	// Implement QuickSelect algorithm for finding the median
+	quickSelect(arr, k) {
+		const partition = (low, high) => {
+			const pivot = arr[high];
+			let i = low - 1;
 
-    //If it's empty fill it up
-    if (that.vales.length === 0) {
-        that.fill(val);
-        return val;
-    }
+			for (let j = low; j < high; j++) {
+				if (arr[j] <= pivot) {
+					i++;
+					[arr[i], arr[j]] = [arr[j], arr[i]];
+				}
+			}
 
-    //Remove last
-    that.vales.shift();
-    //Add new value
-    that.vales.push(val);
+			[arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
+			return i + 1;
+		};
 
-    //Sort
-    that.sorted = that.vales.slice(0);
-    that.sorted = that.sorted.sort(function (a, b) { return a - b; });
-    //return medium value
-    return that.sorted[that.middelIndex];
+		const select = (low, high) => {
+			if (low === high) return;
 
-};
+			const pivotIndex = partition(low, high);
 
-MedianFilter.prototype.fill = function (val) {
+			if (k === pivotIndex) return;
+			else if (k < pivotIndex) select(low, pivotIndex - 1);
+			else select(pivotIndex + 1, high);
+		};
 
-    var that = this;
-    if (that.vales.length === 0) {
-        for (var i = 0; i < that.size; i++) {
-            that.vales.push(val);
-        }
-    }
-
-};
+		select(0, arr.length - 1);
+		return arr;
+	}
+}
 
 // Usage
-
-var toucheFix = new MedianFilter(10); //Number is size of array to get median value from, default 7
-var val = toucheFix.input(touches); //Apply a median filter to this to make it more stable
+const touchFix = new MedianFilter(10);
+const val = touchFix.input(touches);
