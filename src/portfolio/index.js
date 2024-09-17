@@ -37,6 +37,7 @@ import { alpha } from '@mui/material/styles';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import Ranks from "./Ranks";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -349,6 +350,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                         <Tabs value={activeTab} onChange={handleChange} aria-label="wrapped label tabs example">
                                             <Tab label="Tokens" value="0" />
                                             <Tab label="NFTs" value="1" />
+                                            <Tab label="Ranks" value="2" />
                                         </Tabs>
                                     </Box>
 
@@ -389,6 +391,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                                                 </TableBody>
                                             </Table>
                                         </Paper>
+                                    </TabPanel>
+                                    <TabPanel sx={{ p: 0 }} value="2">
+                                        <Ranks profileAccount={account}/>
                                     </TabPanel>
                                 </TabContext>
                             </CardContent>
