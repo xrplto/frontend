@@ -117,7 +117,7 @@ function Store() {
         },
         body: JSON.stringify({
           account: accountProfile.account,
-          feature: `rank_${rank.id}`,
+          feature: `${rank.id}`,
         })
       });
 
@@ -160,7 +160,7 @@ function Store() {
                     },
                     body: JSON.stringify({
                       account: accountProfile.account,
-                      feature: `rank_${rank.id}`,
+                      feature: `${rank.id}`,
                       transactionHash: result?.hash
                     })
                   });
@@ -190,7 +190,7 @@ function Store() {
                 },
                 body: JSON.stringify({
                   account: accountProfile.account,
-                  feature: `rank_${rank.id}`,
+                  feature: `${rank.id}`,
                   transactionHash: response.data.resp.result?.hash
                 })
               });
