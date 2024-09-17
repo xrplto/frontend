@@ -197,6 +197,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
               <TradeNFTPicker 
                 onSelect={handleLoggedInUserAssetSelect} 
                 account={accountProfile.account}
+                isPartner={false}
               />
               <Box mt={2}>
                 <Typography variant="subtitle1" gutterBottom>Selected Assets:</Typography>
@@ -227,6 +228,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
               <TradeNFTPicker 
                 onSelect={handlePartnerAssetSelect}
                 account={tradePartner.username}
+                isPartner={true}
               />
               <Box mt={2}>
                 <Typography variant="subtitle1" gutterBottom>Selected Assets:</Typography>

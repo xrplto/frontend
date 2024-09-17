@@ -28,34 +28,44 @@ import ChatSettings from './ChatSettings';
 import StoreIcon from '@mui/icons-material/Store';
 import Store from './Store';
 
+// Styled component for custom scrollbar
 const CustomScrollBox = styled(Box)(({ theme }) => ({
   '&::-webkit-scrollbar': {
     width: '8px'
   },
   '&::-webkit-scrollbar-track': {
-    background: '#a9a9a94d',
+    background: theme.palette.mode === 'dark' ? '#555' : '#a9a9a94d',
     borderRadius: '10px'
   },
   '&::-webkit-scrollbar-thumb': {
-    background: 'darkgrey',
+    background: theme.palette.mode === 'dark' ? 'darkgrey' : 'darkgrey',
     borderRadius: '10px'
   },
   '&::-webkit-scrollbar-thumb:hover': {
-    background: '#a9a9a9d4',
+    background: theme.palette.mode === 'dark' ? '#a9a9a9d4' : '#a9a9a9d4',
     cursor: 'pointer'
   }
 }));
 
 const drawerWidth = 400;
 const chatURL = "http://65.108.136.237:5000";
+
+// Initialize socket outside the component to avoid multiple connections
 const socket = io(chatURL, {
-  path: "/chat"
+  path: "/chat",
+  autoConnect: false, // We'll handle connection manually
+  reconnectionAttempts: 5, // Number of reconnection attempts
+  reconnectionDelay: 1000, // Delay between reconnections
 });
 
+// Emoji Picker Component with Dynamic Styling
 function EmojiPicker({ onSelect }) {
   const theme = useTheme();
-  const backgroundColor = 'black';
-  const hoverColor = '#333';
+  
+  // Determine colors based on the current theme
+  const backgroundColor = theme.palette.mode === 'dark' ? '#333' : '#f0f0f0';
+  const hoverColor = theme.palette.mode === 'dark' ? '#444' : '#e0e0e0';
+  const emojiColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
 
   const emojis = ["😀", "😂", "😍", "👍", "🙏", "🔥", "🎉", "❤️", "😎", "🤔", "🥳", "😇", "😭", "💪", "😜", "🥰", "🤩", "👏"];
 
@@ -82,7 +92,7 @@ function EmojiPicker({ onSelect }) {
             cursor: 'pointer',
             userSelect: 'none',
             textAlign: 'center',
-            color: 'white',
+            color: emojiColor,
             '&:hover': {
               backgroundColor: hoverColor,
               borderRadius: '5px',
@@ -97,6 +107,7 @@ function EmojiPicker({ onSelect }) {
   );
 }
 
+// Formatted NFT Chip Component
 const FormattedNFT = ({ nftLink, onRemove }) => {
   const theme = useTheme();
   const match = nftLink.match(/\[NFT: (.*?) \((.*?)\)\]/);
@@ -134,6 +145,7 @@ const FormattedNFT = ({ nftLink, onRemove }) => {
   );
 };
 
+// Custom Input Component with NFT support
 const CustomInput = ({ value, onChange, onNFTRemove, onKeyPress }) => {
   const inputRef = useRef(null);
   const [localValue, setLocalValue] = useState('');
@@ -215,6 +227,13 @@ function Chatbox() {
 
   const emojiPickerRef = useRef(null);
 
+  // Debugging: Clear localStorage and sessionStorage on mount
+  useEffect(() => {
+    // Uncomment the lines below to clear storage for debugging
+    // localStorage.clear();
+    // sessionStorage.clear();
+  }, []);
+
   const handleMenuClick = (event) => {
     event.preventDefault();
     setAnchorEl(event.currentTarget);
@@ -252,41 +271,76 @@ function Chatbox() {
     };
   }, [showEmojiPicker]);
 
+  // Initialize and manage socket connection
   useEffect(() => {
-    socket.on('init', (msg) => {
+    // Connect the socket
+    socket.connect();
+
+    // Socket event handlers
+    const handleInit = (msg) => {
       console.log("init", msg);
       setChatHistory((previousHistory) => [...previousHistory, ...msg]);
-    });
+    };
 
-    socket.on("chat message", (msg) => {
+    const handleChatMessage = (msg) => {
       console.log("chat message", msg);
       setChatHistory((previousHistory) => [...previousHistory, msg]);
-    });
+    };
 
-    socket.on("private message", (msg) => {
+    const handlePrivateMessage = (msg) => {
       console.log("private message", msg);
       setChatHistory((previousHistory) => [...previousHistory, msg]);
-    });
+    };
 
+    const handleSocketConnect = () => {
+      console.log('Socket connected');
+    };
+
+    const handleSocketDisconnect = (reason) => {
+      console.log('Socket disconnected:', reason);
+      if (reason !== 'io client disconnect') {
+        console.log('Attempting to reconnect...');
+        socket.connect();
+      }
+    };
+
+    const handleSocketError = (error) => {
+      console.error('Socket encountered error:', error);
+    };
+
+    // Register socket event listeners
+    socket.on('init', handleInit);
+    socket.on("chat message", handleChatMessage);
+    socket.on("private message", handlePrivateMessage);
+    socket.on('connect', handleSocketConnect);
+    socket.on('disconnect', handleSocketDisconnect);
+    socket.on('error', handleSocketError);
+
+    // Cleanup on unmount
     return () => {
-      socket.off("init");
-      socket.off("chat message");
-      socket.off("private message");
+      socket.off('init', handleInit);
+      socket.off('chat message', handleChatMessage);
+      socket.off('private message', handlePrivateMessage);
+      socket.off('connect', handleSocketConnect);
+      socket.off('disconnect', handleSocketDisconnect);
+      socket.off('error', handleSocketError);
+      socket.disconnect();
     };
   }, []);
 
   const sendMessage = () => {
     if (accountProfile?.account && message.trim().length > 0) {
+      const trimmedMessage = message.trim();
       if (recipient) {
         socket.emit("private message", {
           to: recipient,
-          message: message.trim(),
+          message: trimmedMessage,
           username: accountProfile.account,
           isPrivate: true
         });
       } else {
         socket.emit("chat message", {
-          message: message.trim(),
+          message: trimmedMessage,
           username: accountProfile.account,
           rank: "Member",
           group: "Member"
@@ -296,7 +350,7 @@ function Chatbox() {
       setMessage('');
       setRecipient(null);
     }
-  }
+  };
 
   const startPrivateMessage = (username) => {
     setRecipient(username);
@@ -463,12 +517,13 @@ function Chatbox() {
                         bottom: '100%',
                         right: 0,
                         zIndex: 1000,
-                        backgroundColor: 'background.paper',
+                        backgroundColor: theme.palette.background.paper,
                         borderRadius: '4px',
                         border: '1px solid',
                         borderColor: 'divider',
                         boxShadow: 3,
                         p: 1,
+                        mt: 1,
                       }}
                     >
                       <Tabs

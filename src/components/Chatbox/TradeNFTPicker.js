@@ -1,19 +1,5 @@
-import { useContext, useEffect, useRef, useState } from 'react';
-import {
-  Box,
-  Grid,
-  Typography,
-  Stack,
-  Button,
-  Card,
-  CardMedia,
-  CardContent,
-  Skeleton,
-  Chip,
-  styled,
-  useTheme,
-  useMediaQuery
-} from '@mui/material';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import { Client } from 'xrpl';
 import { AppContext } from 'src/AppContext';
 import axios from 'axios';
 import { PulseLoader } from 'react-spinners';
@@ -22,6 +8,21 @@ import ArrowBackIcon from '@mui/icons-material/KeyboardBackspace';
 import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
 import { getNftCoverUrl } from 'src/utils/parse/utils';
 import { fIntNumber } from 'src/utils/formatNumber';
+import {
+  Box,
+  Card,
+  CardContent,
+  CardMedia,
+  Typography,
+  Chip,
+  Button,
+  Stack,
+  Grid,
+  Skeleton,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 const BASE_URL = 'https://api.xrpnft.com/api';
 
@@ -289,8 +290,7 @@ const ProfileNFTs = ({
   );
 };
 
-function ProfileNFTPicker({ onSelect }) {
-  const { accountProfile } = useContext(AppContext);
+function TradeNFTPicker({ onSelect, account, isPartner }) {
   const [selectedNFT, setSelectedNFT] = useState(null);
 
   const handleNFTSelect = (nft) => {
@@ -301,7 +301,7 @@ function ProfileNFTPicker({ onSelect }) {
   return (
     <Box>
       <ProfileNFTs
-        account={accountProfile?.account}
+        account={account}
         type="collected"
         limit={20}
         onSelect={handleNFTSelect}
@@ -310,4 +310,4 @@ function ProfileNFTPicker({ onSelect }) {
   );
 }
 
-export default ProfileNFTPicker;
+export default TradeNFTPicker;
