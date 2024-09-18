@@ -144,7 +144,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
       const imagePromises = uniqueUsers.map(async (account) => {
         try {
           const response = await axios.get(
-            `http://65.108.136.237:5000/api/set-user-image?account=${account}`
+            `http://127.0.0.1:5000/api/set-user-image?account=${account}`  //http://65.108.136.237:5000
           );
           if (response.data.user) {
             const user = response.data.user;
@@ -177,7 +177,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   useEffect(() => {
 
     async function fetchActiveRanks() {
-      const res = await axios.get('http://65.108.136.237:5000/api/fetch-active-ranks');
+      const res = await axios.get('http://127.0.0.1:5000/api/fetch-active-ranks'); //http://65.108.136.237:5000
       setActiveRanks(res.data);
     }
 

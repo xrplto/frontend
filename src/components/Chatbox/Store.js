@@ -26,7 +26,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ConfirmPurchaseDialog from './ConfirmPurchaseDialog';
 import { isInstalled, submitTransaction } from '@gemwallet/api';
 import axios from 'axios';
-import sdk from "@crossmarkio/sdk";
+import sdk from '@crossmarkio/sdk';
 import { ProgressBar } from 'react-loader-spinner';
 import QRDialog from 'src/components/QRDialog';
 import { alpha } from '@mui/material/styles';
@@ -83,7 +83,7 @@ const verifiedStatus = {
   color: '#1DA1F2'
 };
 
-const chatURL = "http://65.108.136.237:5000";
+const chatURL = 'http://127.0.0.1:5000'; //http://65.108.136.237:5000
 const BASE_URL = process.env.API_URL;
 
 function Store() {
@@ -113,7 +113,7 @@ function Store() {
         // const account = res.account;
 
         return res;
-      } catch (err) { }
+      } catch (err) {}
     }
 
     const startInterval = () => {
@@ -155,7 +155,6 @@ function Store() {
       }, 1000);
     };
 
-
     // Stop the interval
     const stopInterval = () => {
       clearInterval(dispatchTimer);
@@ -176,7 +175,7 @@ function Store() {
           startInterval();
           return;
         }
-      } catch (err) { }
+      } catch (err) {}
       isRunning = false;
       counter--;
       if (counter <= 0) {
@@ -203,8 +202,8 @@ function Store() {
     const wallet_type = accountProfile?.wallet_type;
     setPageLoading(true);
     try {
-      // Here you would integrate with XUMM, Crossmark, or GEM wallet for XRP payment
-      // For this example, we'll just simulate a successful purchase
+      console.log('Account Profile:', accountProfile); // Log the entire account profile
+
       const response = await fetch(`${chatURL}/api/request-new-chat-feature`, {
         method: 'POST',
         headers: {
@@ -212,22 +211,27 @@ function Store() {
         },
         body: JSON.stringify({
           account: accountProfile.account,
-          feature: `${rank.id}`,
+          feature: `${rank.id}`
         })
       });
 
       if (response.ok) {
-        // setSnackbarMessage(`Successfully purchased ${rank.name} rank!`);
+        console.log('Feature request successful');
         let body = {
-          TransactionType: "Payment",
+          TransactionType: 'Payment',
           Account: accountProfile.account,
           Amount: `${rank.price * 1000000}`,
-          Destination: "rhsxg4xH8FtYc3eR53XDSjTGfKQsaAGaqm",
-          Fee: "12",
-          SourceTag: 20221212,
-        }
-        if (wallet_type == "xaman") {
+          Destination: 'rhsxg4xH8FtYc3eR53XDSjTGfKQsaAGaqm',
+          Fee: '12',
+          SourceTag: 20221212
+        };
+        console.log('Transaction body:', body); // Log the transaction body
+
+        if (wallet_type == 'xaman') {
+          console.log('Initiating XUMM transfer');
           const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
+          console.log('XUMM transfer response:', res2.data); // Log the XUMM response
+
           if (res2.status === 200) {
             const uuid = res2.data.data.uuid;
             const qrlink = res2.data.data.qrUrl;
@@ -238,15 +242,13 @@ function Store() {
             setNextUrl(nextlink);
             setOpenScanQR(true);
           }
-        }
-
-        else if (wallet_type == "gem") {
+        } else if (wallet_type == 'gem') {
           await isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               await submitTransaction({
                 transaction: body
               }).then(async ({ type, result }) => {
-                if (type === "response") {
+                if (type === 'response') {
                   const response = await fetch(`${chatURL}/api/purchase-chat-feature`, {
                     method: 'POST',
                     headers: {
@@ -268,13 +270,11 @@ function Store() {
                 }
               });
             } else {
-              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
+              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
               setPageLoading(false);
             }
           });
-        }
-
-        else if (wallet_type == "crossmark") {
+        } else if (wallet_type == 'crossmark') {
           await sdk.methods.signAndSubmitAndWait(body).then(async ({ response }) => {
             if (response.data.meta.isSuccess) {
               const response = await fetch(`${chatURL}/api/purchase-chat-feature`, {
@@ -299,6 +299,7 @@ function Store() {
           });
         }
       } else {
+        console.log('Feature request failed');
         setSnackbarMessage('Failed to purchase rank. Please check your XRP balance and try again.');
       }
     } catch (error) {
@@ -317,7 +318,7 @@ function Store() {
       if (res.status === 200) {
         setUuid(null);
       }
-    } catch (err) { }
+    } catch (err) {}
     setPageLoading(false);
   };
 
@@ -329,7 +330,7 @@ function Store() {
   const chooseRank = (item) => {
     setRank(item);
     setOpenConfirm(true);
-  }
+  };
 
   const handleCategoryChange = (category) => (event, isExpanded) => {
     setExpandedCategory(isExpanded ? category : null);
@@ -357,17 +358,23 @@ function Store() {
               overflow: 'hidden'
             }}
           >
-            <Box sx={{ 
-              bgcolor: alpha(item.color, 0.1), 
-              p: 2, 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between'
-            }}>
+            <Box
+              sx={{
+                bgcolor: alpha(item.color, 0.1),
+                p: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+            >
               <Avatar sx={{ bgcolor: item.color, width: 36, height: 36 }}>
                 <item.icon sx={{ fontSize: 20 }} />
               </Avatar>
-              <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'bold', color: item.color }}>
+              <Typography
+                variant="subtitle1"
+                component="div"
+                sx={{ fontWeight: 'bold', color: item.color }}
+              >
                 {item.name}
                 {item.id === 'verified' && (
                   <VerifiedIcon sx={{ ml: 1, verticalAlign: 'middle', fontSize: 16 }} />
@@ -425,7 +432,11 @@ function Store() {
         />
       </Backdrop>
       <Box sx={{ p: 2, backgroundColor: theme.palette.background.default }}>
-        <ConfirmPurchaseDialog open={openConfirm} setOpen={setOpenConfirm} onContinue={handlePurchase} />
+        <ConfirmPurchaseDialog
+          open={openConfirm}
+          setOpen={setOpenConfirm}
+          onContinue={handlePurchase}
+        />
         <QRDialog
           open={openScanQR}
           type="Payment"
@@ -436,9 +447,9 @@ function Store() {
         <Typography
           variant="h6"
           gutterBottom
-          sx={{ 
-            fontWeight: 'bold', 
-            color: theme.palette.primary.main, 
+          sx={{
+            fontWeight: 'bold',
+            color: theme.palette.primary.main,
             mb: 2,
             textAlign: 'center'
           }}
@@ -470,7 +481,6 @@ function Store() {
           onClose={() => setSnackbarOpen(false)}
           message={snackbarMessage}
         />
-
       </Box>
     </>
   );
