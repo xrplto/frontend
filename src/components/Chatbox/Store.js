@@ -2,13 +2,8 @@ import React, { useState, useContext, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Button,
   Grid,
-  Card,
-  CardContent,
-  CardActions,
   Snackbar,
-  Avatar,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -16,12 +11,6 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
-import PsychologyIcon from '@mui/icons-material/Psychology';
-import WaterIcon from '@mui/icons-material/Water';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import LockIcon from '@mui/icons-material/Lock';
-import SecurityIcon from '@mui/icons-material/Security';
-import VerifiedIcon from '@mui/icons-material/Verified';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ConfirmPurchaseDialog from './ConfirmPurchaseDialog';
 import { isInstalled, submitTransaction } from '@gemwallet/api';
@@ -29,61 +18,10 @@ import axios from 'axios';
 import sdk from '@crossmarkio/sdk';
 import { ProgressBar } from 'react-loader-spinner';
 import QRDialog from 'src/components/QRDialog';
-import { alpha } from '@mui/material/styles';
+import { ranks, verifiedStatus } from './RankItems';
+import RankItem from './RankItem';
 
-const ranks = [
-  {
-    id: 'riddler',
-    name: 'Riddler',
-    price: 5,
-    description: 'Entry-level rank for XRP puzzle solvers',
-    icon: PsychologyIcon,
-    color: '#FFD700'
-  },
-  {
-    id: 'rippler',
-    name: 'Rippler',
-    price: 0.0001,
-    description: 'Intermediate rank for XRP enthusiasts',
-    icon: WaterIcon,
-    color: '#4CAF50'
-  },
-  {
-    id: 'validator',
-    name: 'Validator',
-    price: 0.0001,
-    description: 'Advanced rank with enhanced features',
-    icon: VerifiedUserIcon,
-    color: '#2196F3'
-  },
-  {
-    id: 'escrow',
-    name: 'Escrow Master',
-    price: 0.0001,
-    description: 'Elite rank with exclusive XRP-themed perks',
-    icon: LockIcon,
-    color: '#9C27B0'
-  },
-  {
-    id: 'ledger',
-    name: 'Ledger Guardian',
-    price: 0.0001,
-    description: 'Legendary rank for true XRP aficionados',
-    icon: SecurityIcon,
-    color: '#F44336'
-  }
-];
-
-const verifiedStatus = {
-  id: 'verified',
-  name: 'Verified',
-  price: 0.0001,
-  description: 'Exclusive verified status with premium benefits',
-  icon: VerifiedIcon,
-  color: '#1DA1F2'
-};
-
-const chatURL = 'http://127.0.0.1:5000'; //http://65.108.136.237:5000
+const chatURL = 'http://127.0.0.1:5000';
 const BASE_URL = process.env.API_URL;
 
 function Store() {
@@ -110,10 +48,11 @@ function Store() {
       try {
         const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
         const res = ret.data.data.response;
-        // const account = res.account;
-
         return res;
-      } catch (err) {}
+      } catch (err) {
+        console.error('Error getting dispatch result:', err);
+        return null;
+      }
     }
 
     const startInterval = () => {
@@ -137,8 +76,10 @@ function Store() {
 
           if (response.ok) {
             setSnackbarMessage(`Successfully purchased ${rank.name} rank!`);
+            setSnackbarOpen(true);
           } else {
-            setSnackbarMessage(`Purchasing is failed`);
+            setSnackbarMessage(`Purchase failed. Please try again.`);
+            setSnackbarOpen(true);
           }
 
           stopInterval();
@@ -148,7 +89,8 @@ function Store() {
         times++;
 
         if (times >= 10) {
-          setSnackbarMessage(`Purchasing is failed`);
+          setSnackbarMessage(`Purchase timed out. Please try again.`);
+          setSnackbarOpen(true);
           stopInterval();
           return;
         }
@@ -159,17 +101,14 @@ function Store() {
     const stopInterval = () => {
       clearInterval(dispatchTimer);
       setOpenScanQR(false);
-      handleClose();
     };
 
     async function getPayload() {
-      // console.log(counter + " " + isRunning, uuid);
       if (isRunning) return;
       isRunning = true;
       try {
         const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
         const res = ret.data.data.response;
-        // const account = res.account;
         const resolved_at = res.resolved_at;
         if (resolved_at) {
           startInterval();
@@ -191,7 +130,7 @@ function Store() {
         clearInterval(timer);
       }
     };
-  }, [openScanQR, uuid]);
+  }, [openScanQR, uuid, accountProfile, rank]);
 
   const handlePurchase = async () => {
     if (!accountProfile?.account) {
@@ -202,7 +141,7 @@ function Store() {
     const wallet_type = accountProfile?.wallet_type;
     setPageLoading(true);
     try {
-      console.log('Account Profile:', accountProfile); // Log the entire account profile
+      console.log('Account Profile:', accountProfile);
 
       const response = await fetch(`${chatURL}/api/request-new-chat-feature`, {
         method: 'POST',
@@ -225,12 +164,12 @@ function Store() {
           Fee: '12',
           SourceTag: 20221212
         };
-        console.log('Transaction body:', body); // Log the transaction body
+        console.log('Transaction body:', body);
 
         if (wallet_type == 'xaman') {
           console.log('Initiating XUMM transfer');
           const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
-          console.log('XUMM transfer response:', res2.data); // Log the XUMM response
+          console.log('XUMM transfer response:', res2.data);
 
           if (res2.status === 200) {
             const uuid = res2.data.data.uuid;
@@ -241,6 +180,8 @@ function Store() {
             setQrUrl(qrlink);
             setNextUrl(nextlink);
             setOpenScanQR(true);
+            setSnackbarMessage('Please complete the payment in XUMM.');
+            setSnackbarOpen(true);
           }
         } else if (wallet_type == 'gem') {
           await isInstalled().then(async (response) => {
@@ -262,8 +203,10 @@ function Store() {
                   });
                   if (response.ok) {
                     setSnackbarMessage(`Successfully purchased ${rank.name} rank!`);
+                    setSnackbarOpen(true);
                   } else {
-                    setSnackbarMessage(`Purchasing is failed`);
+                    setSnackbarMessage(`Purchase failed. Please try again.`);
+                    setSnackbarOpen(true);
                   }
                 } else {
                   setPageLoading(false);
@@ -290,8 +233,10 @@ function Store() {
               });
               if (response.ok) {
                 setSnackbarMessage(`Successfully purchased ${rank.name} rank!`);
+                setSnackbarOpen(true);
               } else {
-                setSnackbarMessage(`Purchasing is failed`);
+                setSnackbarMessage(`Purchase failed. Please try again.`);
+                setSnackbarOpen(true);
               }
             } else {
               setPageLoading(false);
@@ -301,13 +246,14 @@ function Store() {
       } else {
         console.log('Feature request failed');
         setSnackbarMessage('Failed to purchase rank. Please check your XRP balance and try again.');
+        setSnackbarOpen(true);
       }
     } catch (error) {
       console.error('Error purchasing rank:', error);
       setSnackbarMessage('An error occurred. Please try again later.');
+      setSnackbarOpen(true);
     }
 
-    setSnackbarOpen(true);
     setPageLoading(false);
   };
 
@@ -340,76 +286,7 @@ function Store() {
     <Grid container spacing={2}>
       {items.map((item) => (
         <Grid item xs={12} sm={6} key={item.id}>
-          <Card
-            sx={{
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              transition: 'transform 0.3s, box-shadow 0.3s',
-              '&:hover': {
-                transform: 'translateY(-3px)',
-                boxShadow: theme.shadows[5]
-              },
-              ...(item.id === 'verified' && {
-                border: `2px solid ${item.color}`,
-                boxShadow: `0 0 10px ${alpha(item.color, 0.5)}`
-              }),
-              borderRadius: 2,
-              overflow: 'hidden'
-            }}
-          >
-            <Box
-              sx={{
-                bgcolor: alpha(item.color, 0.1),
-                p: 2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-              }}
-            >
-              <Avatar sx={{ bgcolor: item.color, width: 36, height: 36 }}>
-                <item.icon sx={{ fontSize: 20 }} />
-              </Avatar>
-              <Typography
-                variant="subtitle1"
-                component="div"
-                sx={{ fontWeight: 'bold', color: item.color }}
-              >
-                {item.name}
-                {item.id === 'verified' && (
-                  <VerifiedIcon sx={{ ml: 1, verticalAlign: 'middle', fontSize: 16 }} />
-                )}
-              </Typography>
-            </Box>
-            <CardContent sx={{ flexGrow: 1, p: 2 }}>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontSize: '0.8rem' }}>
-                {item.description}
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 'bold', color: theme.palette.secondary.main }}
-              >
-                Price: 0.0001 XRP
-              </Typography>
-            </CardContent>
-            <CardActions sx={{ justifyContent: 'center', p: 1 }}>
-              <Button
-                variant="contained"
-                fullWidth
-                size="small"
-                onClick={() => chooseRank(item)}
-                sx={{
-                  bgcolor: item.color,
-                  color: '#fff',
-                  '&:hover': {
-                    bgcolor: theme.palette.augmentColor({ color: { main: item.color } }).dark
-                  }
-                }}
-              >
-                Purchase
-              </Button>
-            </CardActions>
-          </Card>
+          <RankItem item={item} onPurchase={chooseRank} />
         </Grid>
       ))}
     </Grid>
