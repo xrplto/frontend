@@ -22,7 +22,7 @@ import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import UserSummary from './UserSummary';
-import { rankColors, rankGlowEffect, lightningEffect, activeRankColors } from './RankStyles';
+import { rankGlowEffect, lightningEffect, activeRankColors } from './RankStyles';
 import NFTDisplay from './NFTDisplay'; // Import the extracted component
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
@@ -69,6 +69,51 @@ const CustomScrollBox = styled(Stack)(({ theme }) => ({
     cursor: 'pointer'
   }
 }));
+
+const ranks = {
+  riddler: {
+    id: 'riddler',
+    name: 'Riddler',
+    price: 5,
+    description: 'Entry-level rank for XRP puzzle solvers',
+    color: '#FFD700'
+  },
+  rippler: {
+    id: 'rippler',
+    name: 'Rippler',
+    price: 0.0001,
+    description: 'Intermediate rank for XRP enthusiasts',
+    color: '#4CAF50'
+  },
+  validator: {
+    id: 'validator',
+    name: 'Validator',
+    price: 0.0001,
+    description: 'Advanced rank with enhanced features',
+    color: '#2196F3'
+  },
+  escrow: {
+    id: 'escrow',
+    name: 'Escrow Master',
+    price: 0.0001,
+    description: 'Elite rank with exclusive XRP-themed perks',
+    color: '#9C27B0'
+  },
+  ledger: {
+    id: 'ledger',
+    name: 'Ledger Guardian',
+    price: 0.0001,
+    description: 'Legendary rank for true XRP aficionados',
+    color: '#F44336'
+  },
+  verified: {
+    id: 'verified',
+    name: 'Verified',
+    price: 0.0001,
+    description: 'Exclusive verified status with premium benefits',
+    color: '#1DA1F2'
+  }
+};
 
 const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   const theme = useTheme();
@@ -216,7 +261,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                   />
                   <Box sx={{ flexGrow: 1 }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <CustomWidthTooltip title={<UserSummary user={chat} activeColor={activeRankColors[activeRanks[chat.username]] || theme.palette.text.primary} />} arrow placement="right">
+                      <CustomWidthTooltip title={<UserSummary user={chat} activeColor={activeRankColors[activeRanks[chat.username]] || theme.palette.text.primary} rankName={ranks[activeRanks[chat.username]]?.name} rank={activeRanks[chat.username]}/>} arrow placement="right">
                         <Typography
                           variant="subtitle2"
                           sx={{

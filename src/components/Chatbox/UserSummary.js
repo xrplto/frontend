@@ -13,12 +13,12 @@ import {
 } from '@mui/material';
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { rankColors, rankGlowEffect } from './RankStyles';
+import { activeRankColors, rankColors, rankGlowEffect } from './RankStyles';
 import { Client } from 'xrpl';
 import Trade from './Trade';
 import { AppContext } from 'src/AppContext';
 
-const UserSummary = ({ user,activeColor }) => {
+const UserSummary = ({ user, activeColor, rankName = "Member", rank }) => {
   const theme = useTheme();
   const [tokenCount, setTokenCount] = useState(0);
   const [nft, setNFT] = useState(0);
@@ -29,7 +29,6 @@ const UserSummary = ({ user,activeColor }) => {
   const [issuedTokens, setIssuedTokens] = useState([]);
   const [lastActive, setLastActive] = useState(null);
   const [kycStatus, setKycStatus] = useState(null);
-  const [rank, setRank] = useState('Member'); // Default rank
   const [xrpBalance, setXrpBalance] = useState(null);
   const [availableXrpBalance, setAvailableXrpBalance] = useState(null);
   const [reserveXrp, setReserveXrp] = useState(null);
@@ -181,14 +180,6 @@ const UserSummary = ({ user,activeColor }) => {
       }
     };
 
-    const setUserRank = () => {
-      if (user.rank && rankColors(theme)[user.rank]) {
-        setRank(user.rank);
-      } else {
-        setRank('Member');
-      }
-    };
-
     const fetchNFTs = async () => {
       try {
         const response = await axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}/nfts`);
@@ -199,7 +190,6 @@ const UserSummary = ({ user,activeColor }) => {
       }
     };
 
-    setUserRank();
     fetchTokenLines();
     fetchUserImage();
     fetchAccountInfo();
@@ -248,8 +238,8 @@ const UserSummary = ({ user,activeColor }) => {
               sx={{
                 width: 90,
                 height: 90,
-                border: `3px solid ${rankColors(theme)[rank]}`,
-                boxShadow: `0 0 15px ${rankColors(theme)[rank]}`,
+                border: `3px solid ${activeRankColors[rank]}`,
+                boxShadow: `0 0 15px ${activeRankColors[rank]}`,
               }}
             />
             <Box>
@@ -257,9 +247,9 @@ const UserSummary = ({ user,activeColor }) => {
                 {truncateUsername(username)}
               </Typography>
               <Chip
-                label={rank}
+                label={rankName}
                 sx={{
-                  bgcolor: rankColors(theme)[rank],
+                  bgcolor: activeRankColors[rank],
                   color: '#fff',
                   fontWeight: 'bold',
                   boxShadow: rankGlowEffect(theme)[rank],
