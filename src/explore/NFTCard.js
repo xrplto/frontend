@@ -44,7 +44,7 @@ const CardWrapper = styled(Card)(({ theme }) => ({
     transform: 'translateY(-5px)',
     boxShadow: '0 12px 40px 0 rgba(31, 38, 135, 0.5)'
   },
-  height: 340, // Reduced from 400
+  height: 300, // Reduced from 340
 }));
 
 export default function NFTCard({ nft, handleRemove }) {
@@ -76,7 +76,7 @@ export default function NFTCard({ nft, handleRemove }) {
 
   return (
     <Link href={`/nft/${NFTokenID}`} underline="none" sx={{ position: 'relative' }}>
-      <CardWrapper sx={{ margin: 'auto', maxWidth: 240, height: 340 }}>
+      <CardWrapper sx={{ margin: 'auto', maxWidth: 240, height: 300 }}>
         {isAdmin && (
           <CloseIcon
             sx={{
@@ -108,12 +108,13 @@ export default function NFTCard({ nft, handleRemove }) {
           />
           <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
 
-          {/* Offer and Minimalist Event Display on top right corner */}
+          {/* Offer, Event Display, Buy Now button, and Ranking */}
           <Stack
             direction="column"
             alignItems="flex-end"
             justifyContent="flex-start"
-            sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1500 }}
+            spacing={0.5}
+            sx={{ position: 'absolute', top: 8, right: 8, left: 8, zIndex: 1500 }}
           >
             {costb && costb.amount && (
               <Box
@@ -152,6 +153,40 @@ export default function NFTCard({ nft, handleRemove }) {
                 </Typography>
               </Box>
             )}
+            
+            <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
+              {showBuyNowButton && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{
+                    boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)',
+                    borderRadius: '6px',
+                    transition: 'transform 0.2s',
+                    '&:hover': { transform: 'scale(1.02)' },
+                    padding: '2px 6px',
+                    fontSize: '0.7rem',
+                    minHeight: '24px',
+                    maxWidth: '80px'
+                  }}
+                >
+                  Buy Now
+                </Button>
+              )}
+              {rarity_rank > 0 && (
+                <Chip
+                  variant="filled"
+                  color="secondary"
+                  icon={<LeaderboardOutlinedIcon sx={{ width: '12px' }} />}
+                  label={<Typography variant="caption" sx={{ fontSize: '0.65rem' }}>{fIntNumber(rarity_rank)}</Typography>}
+                  size="small"
+                  sx={{
+                    height: '20px',
+                    '& .MuiChip-label': { px: 0.5 }
+                  }}
+                />
+              )}
+            </Stack>
           </Stack>
         </Box>
 
@@ -162,73 +197,35 @@ export default function NFTCard({ nft, handleRemove }) {
             flexGrow: 1,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between'
+            justifyContent: 'flex-start'
           }}
         >
-          <Box>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 'bold',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                display: '-webkit-box',
-                WebkitLineClamp: 1,
-                WebkitBoxOrient: 'vertical',
-                fontSize: '0.8rem'
-              }}
-            >
-              {name}
+          <Typography
+            variant="subtitle2"
+            sx={{
+              fontWeight: 'bold',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 1,
+              WebkitBoxOrient: 'vertical',
+              fontSize: '0.8rem'
+            }}
+          >
+            {name}
+          </Typography>
+          {cost && (
+            <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: '0.7rem' }}>
+              {cost.currency === 'XRP'
+                ? `✕ ${fNumber(cost.amount)}`
+                : `${fNumber(cost.amount)} ${normalizeCurrencyCodeXummImpl(cost.currency)}`}
             </Typography>
-            {cost && (
-              <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: '0.7rem' }}>
-                {cost.currency === 'XRP'
-                  ? `✕ ${fNumber(cost.amount)}`
-                  : `${fNumber(cost.amount)} ${normalizeCurrencyCodeXummImpl(cost.currency)}`}
-              </Typography>
-            )}
-          </Box>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" mt={0.5}>
-            <Box flexGrow={1} mr={1}>
-              {showBuyNowButton ? (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  sx={{
-                    boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)',
-                    borderRadius: '6px',
-                    transition: 'transform 0.2s',
-                    '&:hover': { transform: 'scale(1.02)' },
-                    padding: '2px 6px',
-                    fontSize: '0.7rem',
-                    minHeight: '24px'
-                  }}
-                >
-                  Buy Now
-                </Button>
-              ) : destination && getMinterName(account) ? (
-                <Tooltip title={`Sold & Transfer`}>
-                  <SportsScoreIcon color="primary" sx={{ fontSize: '1rem' }} />
-                </Tooltip>
-              ) : (
-                <Box />
-              )}
-            </Box>
-            {rarity_rank > 0 && (
-              <Chip
-                variant="filled"
-                color="secondary"
-                icon={<LeaderboardOutlinedIcon sx={{ width: '12px' }} />}
-                label={<Typography variant="caption" sx={{ fontSize: '0.65rem' }}>{fIntNumber(rarity_rank)}</Typography>}
-                size="small"
-                sx={{
-                  height: '20px',
-                  '& .MuiChip-label': { px: 0.5 }
-                }}
-              />
-            )}
-          </Stack>
+          )}
+          {destination && getMinterName(account) && (
+            <Tooltip title={`Sold & Transfer`}>
+              <SportsScoreIcon color="primary" sx={{ fontSize: '1rem', mt: 0.5 }} />
+            </Tooltip>
+          )}
         </CardContent>
       </CardWrapper>
     </Link>

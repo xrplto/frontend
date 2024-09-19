@@ -1,11 +1,5 @@
 import axios from 'axios';
-import React, {
-    useState,
-    useEffect,
-    useContext,
-    useCallback,
-    useMemo
-} from 'react';
+import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import debounce from 'lodash.debounce';
@@ -31,6 +25,8 @@ import NFTCard from './NFTCard';
 import FilterDetail from './FilterDetail';
 import { AppContext } from 'src/AppContext';
 
+const MemoizedNFTCard = React.memo(NFTCard);
+
 export default function NFTs({ collection }) {
     const BASE_URL = 'https://api.xrpnft.com/api';
 
@@ -52,7 +48,7 @@ export default function NFTs({ collection }) {
 
     const fetchNfts = useCallback(() => {
         setLoading(true);
-        const limit = 32; // 20 per page
+        const limit = 32;
         const body = {
             page,
             limit,
@@ -67,7 +63,6 @@ export default function NFTs({ collection }) {
         axios
             .post(`${BASE_URL}/nfts`, body)
             .then((res) => {
-                console.log('API response from xrpnft:', res.data); // Added console.log
                 const newNfts = res.data.nfts;
                 const length = newNfts.length;
                 setHasMore(length === limit);
@@ -80,29 +75,33 @@ export default function NFTs({ collection }) {
             .finally(() => {
                 setLoading(false);
             });
-    }/*, [page, flag, search, filter, subFilter, filterAttrs, collection?.uuid]*/);
+    }, [page, flag, search, filter, subFilter, filterAttrs, collection?.uuid, setDeletingNfts]);
 
     useEffect(() => {
         setNfts([]);
         setDeletingNfts([]);
         setPage(0);
         setHasMore(true);
-        ///setSync((prevSync) => prevSync + 1); // webxtor: disable duplicate loading on start
-    }, [flag, search, filter, subFilter, attrSync, filterAttrs]);
+    }, [flag, search, filter, subFilter, attrSync, filterAttrs, setDeletingNfts]);
 
     useEffect(() => {
         fetchNfts();
-    }, [sync/*, fetchNfts*/, flag, search, filter, subFilter, attrSync, filterAttrs]);
+    }, [fetchNfts]);
 
-    const handleChangeSearch = (e) => {
-        setSearch(e.target.value);
-    };
+    const debouncedSearch = useMemo(
+        () => debounce((value) => setSearch(value), 300),
+        []
+    );
 
-    const handleShowFilter = () => {
+    const handleChangeSearch = useCallback((e) => {
+        debouncedSearch(e.target.value);
+    }, [debouncedSearch]);
+
+    const handleShowFilter = useCallback(() => {
         setShowFilter((prevShow) => !prevShow);
-    };
+    }, []);
 
-    const handleRemove = (NFTokenID) => {
+    const handleRemove = useCallback((NFTokenID) => {
         setLoading(true);
         axios
             .delete(`${BASE_URL}/nfts`, {
@@ -113,7 +112,7 @@ export default function NFTs({ collection }) {
                     idsToDelete: NFTokenID
                 }
             })
-            .then((res) => {
+            .then(() => {
                 location.reload();
             })
             .catch((err) => {
@@ -122,7 +121,7 @@ export default function NFTs({ collection }) {
             .finally(() => {
                 setLoading(false);
             });
-    };
+    }, [collection]);
 
     // useMemo to avoid unnecessary re-renders
     const inputProps = useMemo(
@@ -140,6 +139,11 @@ export default function NFTs({ collection }) {
         }),
         [loading]
     );
+
+    const loadMore = useCallback(() => {
+        setPage((prevPage) => prevPage + 1);
+        setSync((prevSync) => prevSync + 1);
+    }, []);
 
     return (
         <>
@@ -185,12 +189,10 @@ export default function NFTs({ collection }) {
                 >
                     <InfiniteScroll
                         dataLength={nfts.length}
-                        next={() => {
-                            setPage((prevPage) => prevPage + 1);
-                            setSync((prevSync) => prevSync + 1);
-                        }}
+                        next={loadMore}
                         hasMore={hasMore}
-                        scrollThreshold={0.6}
+                        scrollThreshold={0.9}
+                        loader={<ClipLoader color="#ff0000" size={20} />}
                     >
                         <Grid container spacing={1}>
                             {nfts.map((nft, index) => (
@@ -201,17 +203,18 @@ export default function NFTs({ collection }) {
                                     md={3}
                                     lg={2.4}
                                     xl={1.5}
-                                    key={index}
+                                    key={nft.id || index}
                                 >
-                                    <NFTCard
+                                    <MemoizedNFTCard
                                         nft={nft}
                                         handleRemove={handleRemove}
-                                        // Assuming NFTCard accepts a component for the image
                                         imageComponent={
                                             <LazyLoadImage
-                                                src={nft.imageUrl} // Replace with your image source
+                                                src={nft.imageUrl}
                                                 alt={nft.name}
-                                                effect="blur" // Optional: add a blur effect while loading
+                                                effect="blur"
+                                                width="100%"
+                                                height="auto"
                                             />
                                         }
                                     />

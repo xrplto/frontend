@@ -10,15 +10,28 @@ import {
     RadioGroup,
     Stack,
     Tooltip,
-    Typography
+    Typography,
+    Box,
+    Chip
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
-
-// Iconify
 import { Icon } from '@iconify/react';
 import infoFilled from '@iconify/icons-ep/info-filled';
+import { styled } from '@mui/material/styles';
+
+// Styled components
+const StyledAccordion = styled(Accordion)(({ theme }) => ({
+    backgroundColor: theme.palette.background.default,
+    '&:before': {
+        display: 'none',
+    },
+}));
+
+const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
+    borderBottom: `1px solid ${theme.palette.divider}`,
+}));
 
 // Components
 import AttributeFilter from './AttributeFilter';
@@ -63,31 +76,33 @@ export default function FilterDetail({
     };
 
     return (
-        <>
-            <Stack sx={{ pr: 0 }}>
-                <Accordion defaultExpanded>
-                    <AccordionSummary
+        <Box sx={{ bgcolor: 'background.paper', borderRadius: 2, boxShadow: 3, p: 2 }}>
+            <Stack spacing={2}>
+                <StyledAccordion defaultExpanded>
+                    <StyledAccordionSummary
                         expandIcon={<ExpandMoreIcon />}
-                        aria-controls="panel2bh-content"
-                        id="panel2bh-header"
+                        aria-controls="panel1bh-content"
+                        id="panel1bh-header"
                     >
-                        <Stack spacing={2} direction="row">
-                            <FactCheckIcon />
-                            <Typography variant="s3">Status</Typography>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                            <FactCheckIcon color="primary" />
+                            <Typography variant="h6" color="primary">Status</Typography>
                         </Stack>
-                    </AccordionSummary>
+                    </StyledAccordionSummary>
                     <AccordionDetails>
-                        <FormGroup sx={{ flexDirection: 'col' }}>
+                        <FormGroup>
                             {type === 'bulk' && (
                                 <FormControlLabel
                                     label={
-                                        <Stack direction="row" spacing={0.5}>
-                                            <Typography variant="s3">
-                                                Buy with Mints{' '}
-                                                <Typography variant="s7">
-                                                    ({extra?.buyWithMints})
-                                                </Typography>
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                            <Typography variant="body1">
+                                                Buy with Mints
                                             </Typography>
+                                            <Chip
+                                                label={extra?.buyWithMints}
+                                                size="small"
+                                                color="primary"
+                                            />
                                             <Tooltip title="Disabled on Spinning collections, only enabled on Bulk collections.">
                                                 <Icon icon={infoFilled} />
                                             </Tooltip>
@@ -98,6 +113,7 @@ export default function FilterDetail({
                                         <Checkbox
                                             checked={(filter & 1) !== 0}
                                             onChange={handleFlagChange}
+                                            color="primary"
                                         />
                                     }
                                 />
@@ -105,13 +121,15 @@ export default function FilterDetail({
                             {type !== 'normal' && (
                                 <FormControlLabel
                                     label={
-                                        <Stack direction="row" spacing={0.5}>
-                                            <Typography variant="s3">
-                                                Recently Minted{' '}
-                                                <Typography variant="s7">
-                                                    ({extra?.boughtWithMints})
-                                                </Typography>
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                            <Typography variant="body1">
+                                                Recently Minted
                                             </Typography>
+                                            <Chip
+                                                label={extra?.boughtWithMints}
+                                                size="small"
+                                                color="primary"
+                                            />
                                             <Tooltip title="Display recently Minted NFTs and being transferred to users. Or NFTs that pending to be accepted by users.">
                                                 <Icon icon={infoFilled} />
                                             </Tooltip>
@@ -122,30 +140,37 @@ export default function FilterDetail({
                                         <Checkbox
                                             checked={(filter & 2) !== 0}
                                             onChange={handleFlagChange}
+                                            color="primary"
                                         />
                                     }
                                 />
                             )}
                             <FormControlLabel
                                 label={
-                                    <Typography variant="s3">
-                                        Buy Now{' '}
-                                        <Typography variant="s7">
-                                            ({extra?.onSaleCount})
+                                    <Stack direction="row" spacing={1} alignItems="center">
+                                        <Typography variant="body1">
+                                            Buy Now
                                         </Typography>
-                                    </Typography>
+                                        <Chip
+                                            label={extra?.onSaleCount}
+                                            size="small"
+                                            color="primary"
+                                        />
+                                    </Stack>
                                 }
                                 value={4}
                                 control={
                                     <Checkbox
                                         checked={(filter & 4) !== 0}
                                         onChange={handleFlagChange}
+                                        color="primary"
                                     />
                                 }
                             />
 
                             {(filter & 0x04) !== 0 && (
-                                <FormControl sx={{ ml: 5, mt: 2 }}>
+                                <FormControl sx={{ ml: 4, mt: 1, border: 1, borderColor: 'divider', borderRadius: 1, p: 1 }}>
+                                    <Typography variant="subtitle2" gutterBottom>Sort by:</Typography>
                                     <RadioGroup
                                         aria-labelledby="on-sale-sub-filter"
                                         name="on-sale-sub-filter"
@@ -154,18 +179,18 @@ export default function FilterDetail({
                                     >
                                         <FormControlLabel
                                             value="pricenoxrp"
-                                            control={<Radio />}
-                                            label="Price No XRP"
+                                            control={<Radio color="primary" />}
+                                            label={<Typography variant="body2">Price No XRP</Typography>}
                                         />
                                         <FormControlLabel
                                             value="pricexrpasc"
-                                            control={<Radio />}
-                                            label="Price Low"
+                                            control={<Radio color="primary" />}
+                                            label={<Typography variant="body2">Price Low</Typography>}
                                         />
                                         <FormControlLabel
                                             value="pricexrpdesc"
-                                            control={<Radio />}
-                                            label="Price High"
+                                            control={<Radio color="primary" />}
+                                            label={<Typography variant="body2">Price High</Typography>}
                                         />
                                     </RadioGroup>
                                 </FormControl>
@@ -174,8 +199,8 @@ export default function FilterDetail({
 
                             <FormControlLabel
                                 label={
-                                    <Stack direction="row" spacing={0.5}>
-                                        <Typography variant="s3">
+                                    <Stack direction="row" spacing={1} alignItems="center">
+                                        <Typography variant="body1">
                                             Rarity
                                         </Typography>
                                         <Tooltip title="Sort NFTs with rarity">
@@ -188,32 +213,30 @@ export default function FilterDetail({
                                     <Checkbox
                                         checked={(filter & 16) !== 0}
                                         onChange={handleFlagChange}
+                                        color="primary"
                                     />
                                 }
                             />
                         </FormGroup>
                     </AccordionDetails>
-                </Accordion>
-            </Stack>
-            <Stack sx={{ pr: 0, mt: 1 }}>
-                <Accordion defaultExpanded style={{ margin: 0 }}>
-                    <AccordionSummary
+                </StyledAccordion>
+
+                <StyledAccordion defaultExpanded>
+                    <StyledAccordionSummary
                         expandIcon={<ExpandMoreIcon />}
                         aria-controls="panel2bh-content"
                         id="panel2bh-header2"
                     >
-                        <Stack spacing={2} direction="row">
-                            <BookmarkAddedIcon />
-                            <Typography variant="s3">Attributes</Typography>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                            <BookmarkAddedIcon color="primary" />
+                            <Typography variant="h6" color="primary">Attributes</Typography>
                         </Stack>
-                    </AccordionSummary>
-                    <AccordionDetails style={{ padding: 0 }}>
+                    </StyledAccordionSummary>
+                    <AccordionDetails>
                         {!attrs || attrs.length === 0 ? (
-                            <Stack alignItems="center">
-                                <Typography variant="s7" mt={2} mb={2}>
-                                    No Attributes
-                                </Typography>
-                            </Stack>
+                            <Typography variant="body2" color="text.secondary" align="center">
+                                No Attributes Available
+                            </Typography>
                         ) : (
                             <AttributeFilter
                                 setFilterAttrs={setFilterAttrs}
@@ -221,8 +244,8 @@ export default function FilterDetail({
                             />
                         )}
                     </AccordionDetails>
-                </Accordion>
+                </StyledAccordion>
             </Stack>
-        </>
+        </Box>
     );
 }

@@ -1,34 +1,36 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
-// import ModalImage from "react-modal-image";
-import { Lightbox } from "react-modal-image";
-import {CopyToClipboard} from 'react-copy-to-clipboard';
+import { useState, useEffect, useContext } from 'react';
+import { Lightbox } from 'react-modal-image';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 
-// Material
 import { withStyles } from '@mui/styles';
 import {
-    styled, useTheme,
-    Avatar,
-    Backdrop,
-    Box,
-    Button,
-    CardMedia,
-    Container,
-    IconButton,
-    Link,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    ToggleButton,
-    ToggleButtonGroup,
-    Tooltip,
-    Typography,
-    Divider
+  styled,
+  useTheme,
+  Avatar,
+  Backdrop,
+  Box,
+  Button,
+  CardMedia,
+  Container,
+  IconButton,
+  Link,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+  Divider,
+  Paper,
+  Chip,
+  Skeleton
 } from '@mui/material';
-import { tableCellClasses } from "@mui/material/TableCell";
+import { tableCellClasses } from '@mui/material/TableCell';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -53,323 +55,363 @@ import AnimationIcon from '@mui/icons-material/Animation';
 import PaymentIcon from '@mui/icons-material/Payment';
 import TransferWithinAStationIcon from '@mui/icons-material/TransferWithinAStation';
 import PagesIcon from '@mui/icons-material/Pages';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 
-// Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-// Utils
 import { getNftCoverUrl } from 'src/utils/parse/utils';
 import { formatDateTime } from 'src/utils/formatTime';
 import { Activity } from 'src/utils/constants';
 import { normalizeAmount, normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 
-// Loader
-import { PulseLoader, ClockLoader } from "react-spinners";
+import { PulseLoader, ClockLoader } from 'react-spinners';
 import { RotatingSquare, Vortex } from 'react-loader-spinner';
 
-// Components
 import ListToolbar from './ListToolbar';
 import FlagsContainer from 'src/components/Flags';
 
-// ----------------------------------------------------------------------
-export default function CollectionActivity({collection}) {
-    const theme = useTheme();
-    const BASE_URL = 'https://api.xrpnft.com/api';
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: theme.palette.background.paper,
+    color: theme.palette.text.primary,
+    fontWeight: 600
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 14
+  }
+}));
 
-    const { openSnackbar } = useContext(AppContext);
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: theme.palette.action.hover
+  },
+  '&:last-child td, &:last-child th': {
+    border: 0
+  }
+}));
 
-    const [page, setPage] = useState(0);
-    const [rows, setRows] = useState(10);
-    const [total, setTotal] = useState(0);
-    const [hists, setHists] = useState([]);
+export default function CollectionActivity({ collection }) {
+  const theme = useTheme();
+  const BASE_URL = 'https://api.xrpnft.com/api';
 
-    const [loading, setLoading] = useState(true);
+  const { openSnackbar } = useContext(AppContext);
 
-    const [open, setOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rows, setRows] = useState(10);
+  const [total, setTotal] = useState(0);
+  const [hists, setHists] = useState([]);
+  const [filteredHists, setFilteredHists] = useState([]);
+  const [activeFilter, setActiveFilter] = useState('ALL');
 
-    const [lightBoxImgUrl, setLightBoxImgUrl] = useState('');
+  const [loading, setLoading] = useState(true);
 
-    const closeLightbox = () => {
-        setOpen(false);
+  const [open, setOpen] = useState(false);
+
+  const [lightBoxImgUrl, setLightBoxImgUrl] = useState('');
+
+  const closeLightbox = () => {
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    function getActivities() {
+      setLoading(true);
+
+      axios
+        .get(`${BASE_URL}/collectionhistory/?cid=${collection.uuid}&page=${page}&limit=${rows}`)
+        .then((res) => {
+          let ret = res.status === 200 ? res.data : undefined;
+          if (ret) {
+            setTotal(ret.total);
+            setHists(ret.hists);
+          }
+        })
+        .catch((err) => {
+          console.log('Error on getting collection history list!!!', err);
+        })
+        .then(function () {
+          // always executed
+          setLoading(false);
+        });
     }
+    getActivities();
+  }, [page, rows]);
 
-    useEffect(() => {
-        function getActivities() {
-            setLoading(true);
+  useEffect(() => {
+    if (hists.length > 0) {
+      if (activeFilter === 'ALL') {
+        setFilteredHists(hists);
+      } else {
+        const filtered = hists.filter((hist) => hist.type === activeFilter);
+        setFilteredHists(filtered);
+      }
+    }
+  }, [hists, activeFilter]);
 
-            axios.get(`${BASE_URL}/collectionhistory/?cid=${collection.uuid}&page=${page}&limit=${rows}`)
-                .then(res => {
-                    let ret = res.status === 200 ? res.data : undefined;
-                    if (ret) {
-                        setTotal(ret.total);
-                        setHists(ret.hists);
-                    }
-                }).catch(err => {
-                    console.log("Error on getting collection history list!!!", err);
-                }).then(function () {
-                    // always executed
-                    setLoading(false);
-                });
-        }
-        getActivities();
-    }, [page, rows]);
+  const handleFilter = (type) => {
+    setActiveFilter(type === activeFilter ? 'ALL' : type);
+  };
 
-    return (
-        <Container maxWidth="lg" sx={{pl: 0, pr: 0}}>
-            {loading ? (
-                <Stack alignItems="center">
-                    <PulseLoader color='#00AB55' size={10} />
-                </Stack>
-            ):(
-                hists && hists.length === 0 &&
-                    <Stack alignItems="center" sx={{mt: 5}}>
-                        <Typography variant="s7">No Activities</Typography>
-                    </Stack>
-            )
-            }
-            <Box
-                sx={{
-                    display: "flex",
-                    gap: 1,
-                    py: 1,
-                    overflow: "auto",
-                    width: "100%",
-                    "& > *": {
-                        scrollSnapAlign: "center",
-                    },
-                    "::-webkit-scrollbar": { display: "none" },
-                }}
-            >
-                <Table stickyHeader sx={{
-                    [`& .${tableCellClasses.root}`]: {
-                        borderBottom: "0px solid",
-                        borderColor: theme.palette.divider
-                    }
-                }}>
-                    <TableBody>
-                    {
-                        hists && hists.map((row, idx) => {
-                            const {
-                                type,
-                                uuid,
-                                NFTokenID,
-                                account,
-                                cid,
-                                name,
-                                meta,
-                                dfile,
-                                files,
-                                cost,
-                                quantity,
-                                time
-                            } = row;
+  const getUniqueEventTypes = () => {
+    const types = new Set(hists.map((hist) => hist.type));
+    return ['ALL', ...Array.from(types)];
+  };
 
-                            // type: BUY_MINT, MINTED, BURN, CREATE_SELL_OFFER, CREATE_BUY_OFFER, CANCEL_SELL_OFFER, CANCEL_BUY_OFFER, TRANSFER, SALE
+  return (
+    <Container maxWidth={false} sx={{ pl: 0, pr: 0, maxWidth: '2000px' }}>
+      <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
+        <Typography variant="h4" gutterBottom>
+          {collection.name} Activity
+        </Typography>
 
-                            const isVideo = meta?.video?true:false;
+        <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          {getUniqueEventTypes().map((type) => (
+            <Chip
+              key={type}
+              label={type === 'ALL' ? 'All Events' : type}
+              onClick={() => handleFilter(type)}
+              color={activeFilter === type ? 'primary' : 'default'}
+              variant={activeFilter === type ? 'filled' : 'outlined'}
+            />
+          ))}
+        </Box>
 
-                            const imgUrl = getNftCoverUrl({files}, 'small');
+        {loading ? (
+          <Stack spacing={2}>
+            {[...Array(5)].map((_, index) => (
+              <Skeleton key={index} variant="rectangular" height={60} />
+            ))}
+          </Stack>
+        ) : filteredHists.length === 0 ? (
+          <Stack alignItems="center" sx={{ mt: 5 }}>
+            <Typography variant="h6">No Activities</Typography>
+          </Stack>
+        ) : (
+          <Table stickyHeader>
+            <TableHead>
+              <TableRow>
+                <StyledTableCell>Type</StyledTableCell>
+                <StyledTableCell>Details</StyledTableCell>
+                <StyledTableCell>Price</StyledTableCell>
+                <StyledTableCell>Account</StyledTableCell>
+                <StyledTableCell>Time</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredHists.map((row, idx) => {
+                const {
+                  type,
+                  uuid,
+                  NFTokenID,
+                  account,
+                  cid,
+                  name,
+                  meta,
+                  dfile,
+                  files,
+                  cost,
+                  quantity,
+                  time
+                } = row;
 
-                            const strDateTime = formatDateTime(time);
+                const isVideo = meta?.video ? true : false;
 
-                            const amount = normalizeAmount(row.amount);
+                const imgUrl = getNftCoverUrl({ files }, 'small');
 
-                            let strActivity = '';
-                            let componentIcon = (<TaskAltIcon />);
-                            switch (type) {
-                                case 'BUY_MINT':
-                                    strActivity = 'Buy Mint';
-                                    componentIcon = (<ShoppingBagIcon />);
-                                    break;
+                const strDateTime = formatDateTime(time);
 
-                                case 'MINTED':
-                                    strActivity = 'Mint a NFT';
-                                    componentIcon = (<PagesIcon />);
-                                    break;
+                const amount = normalizeAmount(row.amount);
 
-                                case 'BURN':
-                                    componentIcon = (<FireplaceIcon />);
-                                    strActivity = 'Burnt a NFT';
-                                    break;
+                let strActivity = '';
+                let componentIcon = <TaskAltIcon />;
+                switch (type) {
+                  case 'BUY_MINT':
+                    strActivity = 'Buy Mint';
+                    componentIcon = <ShoppingBagIcon />;
+                    break;
 
-                                case 'CREATE_SELL_OFFER':
-                                    componentIcon = (<LocalOfferIcon />);
-                                    strActivity = 'Create Sell Offer';
-                                    break;
+                  case 'MINTED':
+                    strActivity = 'Mint a NFT';
+                    componentIcon = <PagesIcon />;
+                    break;
 
-                                case 'CREATE_BUY_OFFER':
-                                    componentIcon = (<LocalOfferIcon />);
-                                    strActivity = 'Create Buy Offer';
-                                    break;
+                  case 'BURN':
+                    componentIcon = <FireplaceIcon />;
+                    strActivity = 'Burnt a NFT';
+                    break;
 
-                                case 'CANCEL_SELL_OFFER':
-                                    componentIcon = (<HighlightOffIcon />);
-                                    strActivity = 'Cancel Sell Offer';
-                                    break;
+                  case 'CREATE_SELL_OFFER':
+                    componentIcon = <LocalOfferIcon />;
+                    strActivity = 'Create Sell Offer';
+                    break;
 
-                                case 'CANCEL_BUY_OFFER':
-                                    componentIcon = (<HighlightOffIcon />);
-                                    strActivity = 'Cancel Buy Offer';
-                                    break;
+                  case 'CREATE_BUY_OFFER':
+                    componentIcon = <LocalOfferIcon />;
+                    strActivity = 'Create Buy Offer';
+                    break;
 
-                                case 'TRANSFER':
-                                    strActivity = 'Transfer';
-                                    componentIcon = (<TransferWithinAStationIcon />);
-                                    break;
+                  case 'CANCEL_SELL_OFFER':
+                    componentIcon = <HighlightOffIcon />;
+                    strActivity = 'Cancel Sell Offer';
+                    break;
 
-                                case 'SALE':
-                                    strActivity = 'Sale';
-                                    componentIcon = (<PaymentIcon />);
-                                    break;
+                  case 'CANCEL_BUY_OFFER':
+                    componentIcon = <HighlightOffIcon />;
+                    strActivity = 'Cancel Buy Offer';
+                    break;
 
-                                default:
-                                    strActivity = `Unhandled Activity: ${type}`;
-                                    componentIcon = (<HelpOutlineIcon />);
-                                    break;
-                            }
+                  case 'TRANSFER':
+                    strActivity = 'Transfer';
+                    componentIcon = <TransferWithinAStationIcon />;
+                    break;
 
-                            return (
-                                <TableRow
-                                    // hover
-                                    key={time + "" + idx}
-                                    sx={{
-                                        [`& .${tableCellClasses.root}`]: {
-                                            // color: (error ? '#B72136' : '#B72136')
-                                        }
-                                    }}
-                                >
-                                    {/* <TableCell align="left"><Typography variant="subtitle2">{id}</Typography></TableCell> */}
-                                    <TableCell align="left" width='5%' sx={{pt:1, pb:1}}>
-                                        {componentIcon}
-                                    </TableCell>
+                  case 'SALE':
+                    strActivity = 'Sale';
+                    componentIcon = <PaymentIcon />;
+                    break;
 
-                                    <TableCell align="left" sx={{pt:1, pb:1}}>
-                                        <Typography variant='s11' noWrap>{strActivity}</Typography>
-                                    </TableCell>
+                  default:
+                    strActivity = `Unhandled Activity: ${type}`;
+                    componentIcon = <HelpOutlineIcon />;
+                    break;
+                }
 
-                                    <TableCell align="left" sx={{pt:1, pb:1}}>
-                                        {type === 'BUY_MINT' ?
-                                            <Stack direction="row" spacing={1} alignItems="center">
-                                                <Avatar alt="C" src={`https://s1.xrpl.to/token/${cost?.md5}`} />
+                return (
+                  <StyledTableRow key={time + '' + idx}>
+                    <StyledTableCell>
+                      <Chip
+                        icon={componentIcon}
+                        label={strActivity}
+                        color="primary"
+                        variant="outlined"
+                        size="small"
+                      />
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {type === 'BUY_MINT' ? (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Avatar alt="C" src={`https://s1.xrpl.to/token/${cost?.md5}`} />
 
-                                                <Stack>
-                                                    <Stack direction='row' spacing={0.8} alignItems="center">
-                                                        <Typography variant="s7">Price: </Typography>
-                                                        <Typography variant='s11'>{cost?.amount} {cost?.name}</Typography>
-                                                    </Stack>
-                                                    <Stack direction="row" spacing={1}>
-                                                        <Typography variant="s7">Quantity: </Typography>
-                                                        <Typography variant="s11">{quantity}</Typography>
-                                                    </Stack>
-                                                </Stack>
-                                            </Stack>
-                                            :
-                                            <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="center">
-                                                <Stack direction="row" spacing={1} alignItems="center">
-                                                    <Link
-                                                        component="button"
-                                                        underline="none"
-                                                        onClick={() => {
-                                                            if (!isVideo) {
-                                                                setLightBoxImgUrl(imgUrl);
-                                                                setOpen(true)
-                                                            }
-                                                        }}
-                                                    >
-                                                        <CardMedia
-                                                            component={isVideo?'video':'img'}
-                                                            image={imgUrl}
-                                                            alt={'NFT'}
-                                                            // controls={isVideo}
-                                                            autoPlay={isVideo}
-                                                            loop={isVideo}
-                                                            muted
-                                                            style={{
-                                                                width:'48px'
-                                                            }}
-                                                        />
-                                                    </Link>
-                                                    <Link
-                                                        // color="inherit"
-                                                        // target="_blank"
-                                                        href={`/nft/${NFTokenID}`}
-                                                        rel="noreferrer noopener nofollow"
-                                                    >
-                                                        <Typography variant="s6" noWrap>{name}</Typography>
-                                                    </Link>
-                                                </Stack>
-                                                {/* <Stack direction="row" spacing={1} alignItems="center">
-                                                    <FlagsContainer Flags={flag}/>
-                                                </Stack> */}
-                                            </Stack>
-                                        }
-                                    </TableCell>
+                          <Stack>
+                            <Stack direction="row" spacing={0.8} alignItems="center">
+                              <Typography variant="body2">Price: </Typography>
+                              <Typography variant="body1">
+                                {cost?.amount} {cost?.name}
+                              </Typography>
+                            </Stack>
+                            <Stack direction="row" spacing={1}>
+                              <Typography variant="body2">Quantity: </Typography>
+                              <Typography variant="body1">{quantity}</Typography>
+                            </Stack>
+                          </Stack>
+                        </Stack>
+                      ) : (
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          justifyContent="space-between"
+                          alignItems="center"
+                        >
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Link
+                              component="button"
+                              underline="none"
+                              onClick={() => {
+                                if (!isVideo) {
+                                  setLightBoxImgUrl(imgUrl);
+                                  setOpen(true);
+                                }
+                              }}
+                            >
+                              <CardMedia
+                                component={isVideo ? 'video' : 'img'}
+                                image={imgUrl}
+                                alt={'NFT'}
+                                autoPlay={isVideo}
+                                loop={isVideo}
+                                muted
+                                style={{
+                                  width: '48px'
+                                }}
+                              />
+                            </Link>
+                            <Link href={`/nft/${NFTokenID}`} rel="noreferrer noopener nofollow">
+                              <Typography variant="body1" noWrap>
+                                {name}
+                              </Typography>
+                            </Link>
+                          </Stack>
+                        </Stack>
+                      )}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {type === 'SALE' ? (
+                        <Typography variant="body2" noWrap>
+                          {cost.amount} {normalizeCurrencyCodeXummImpl(cost.currency)}
+                        </Typography>
+                      ) : (
+                        <>
+                          {type === 'CREATE_SELL_OFFER' ||
+                          type === 'CREATE_BUY_OFFER' ||
+                          type === 'CANCEL_SELL_OFFER' ||
+                          type === 'CANCEL_SELL_OFFER' ? (
+                            <Typography variant="body2" noWrap>
+                              {amount.amount} {normalizeCurrencyCodeXummImpl(amount.currency)}
+                            </Typography>
+                          ) : (
+                            <Typography variant="body2" noWrap>
+                              - - -
+                            </Typography>
+                          )}
+                        </>
+                      )}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      <Stack direction="row" spacing={0.2} alignItems="center">
+                        <Link href={`/account/${account}`}>
+                          <Typography variant="body2" noWrap>
+                            {' '}
+                            {account}
+                          </Typography>
+                        </Link>
+                        <CopyToClipboard
+                          text={account}
+                          onCopy={() => openSnackbar('Copied!', 'success')}
+                        >
+                          <Tooltip title="Click to copy">
+                            <IconButton size="small">
+                              <ContentCopyIcon fontSize="small" sx={{ width: 16, height: 16 }} />
+                            </IconButton>
+                          </Tooltip>
+                        </CopyToClipboard>
+                      </Stack>
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      <Typography variant="body2" noWrap>
+                        {strDateTime}
+                      </Typography>
+                    </StyledTableCell>
+                  </StyledTableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </Paper>
+      {total > 0 && (
+        <ListToolbar count={total} rows={rows} setRows={setRows} page={page} setPage={setPage} />
+      )}
 
-                                    <TableCell align="left" width='15%' sx={{pt:0.5, pb:0.5}}>
-                                        {type === 'SALE' ?
-                                            <Typography variant='s11' noWrap>{cost.amount} {normalizeCurrencyCodeXummImpl(cost.currency)}</Typography>
-                                            :
-                                            <>
-                                                {type === 'CREATE_SELL_OFFER' || type === 'CREATE_BUY_OFFER' || type === 'CANCEL_SELL_OFFER' || type === 'CANCEL_SELL_OFFER' ?
-                                                    <Typography variant='s11' noWrap>{amount.amount} {normalizeCurrencyCodeXummImpl(amount.currency)}</Typography>
-                                                    :
-                                                    <Typography variant='s11' noWrap>- - -</Typography>
-                                                }
-                                            </>
-                                        }
-
-                                    </TableCell>
-
-                                    <TableCell align="left" width='15%' sx={{pt:1, pb:1}}>
-                                        <Stack direction="row" spacing={0.2} alignItems="center">
-                                            <Link
-                                                // color="inherit"
-                                                // target="_blank"
-                                                href={`/account/${account}`}
-                                                // rel="noreferrer noopener nofollow"
-                                            >
-                                                <Typography variant='s11' noWrap> {account}</Typography>
-                                            </Link>
-                                            <CopyToClipboard text={account} onCopy={()=>openSnackbar('Copied!', 'success')}>
-                                                <Tooltip title='Click to copy'>
-                                                    <IconButton size="small">
-                                                        <ContentCopyIcon fontSize="small" sx={{ width: 16, height: 16 }}/>
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </CopyToClipboard>
-                                        </Stack>
-                                    </TableCell>
-
-                                    <TableCell align="left" sx={{pt:1, pb:1}}>
-                                        <Typography variant='s7' noWrap>{strDateTime}</Typography>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })
-                    }
-                    </TableBody>
-                </Table>
-            </Box>
-            { total > 0 &&
-                <ListToolbar
-                    count={total}
-                    rows={rows}
-                    setRows={setRows}
-                    page={page}
-                    setPage={setPage}
-                />
-            }
-
-            {open &&
-                <Lightbox
-                    small={lightBoxImgUrl}
-                    large={lightBoxImgUrl}
-                    hideDownload
-                    hideZoom
-                    onClose={closeLightbox}
-                />
-            }
-        </Container>
-    );
+      {open && (
+        <Lightbox
+          small={lightBoxImgUrl}
+          large={lightBoxImgUrl}
+          hideDownload
+          hideZoom
+          onClose={closeLightbox}
+        />
+      )}
+    </Container>
+  );
 }
