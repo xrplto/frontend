@@ -286,15 +286,20 @@ function Store() {
 
   const renderContent = (items) => (
     <Grid container spacing={2}>
-      {items.map((item) => (
-        <Grid item xs={12} sm={6} key={item.id}>
-          <RankItem 
-            item={item} 
-            onPurchase={chooseRank} 
-            isPurchased={purchasedFeatures.includes(item.id)}
-          />
-        </Grid>
-      ))}
+      {items.map((item) => {
+        const purchasedFeature = purchasedFeatures.find(f => f.id === item.id);
+        return (
+          <Grid item xs={12} sm={6} key={item.id}>
+            <RankItem 
+              item={item} 
+              onPurchase={chooseRank} 
+              isPurchased={!!purchasedFeature}
+              purchaseDate={purchasedFeature?.purchaseDate}
+              transactionHash={purchasedFeature?.transactionHash}
+            />
+          </Grid>
+        );
+      })}
     </Grid>
   );
 
@@ -311,7 +316,15 @@ function Store() {
           });
           if (response.ok) {
             const data = await response.json();
-            setPurchasedFeatures(data.chatFeatures.map(feature => feature.feature));
+            // Update this to include more details about each feature
+            setPurchasedFeatures(data.chatFeatures
+              .filter(feature => feature.status)
+              .map(feature => ({
+                id: feature.feature,
+                purchaseDate: feature.purchaseDate || null,
+                transactionHash: feature.transactionHash || null
+              }))
+            );
           }
         } catch (error) {
           console.error('Error fetching purchased features:', error);
