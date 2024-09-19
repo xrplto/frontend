@@ -268,7 +268,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                           variant="subtitle2"
                           sx={{
                             fontWeight: 'bold',
-                            color: activeRankColors[activeRanks[chat.username]] || theme.palette.text.primary,
+                            color: activeRankColors[activeRanks[chat.username]] || '#808080', // Default to gray if no rank
                             textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
                             cursor: 'pointer',
                             display: 'flex',

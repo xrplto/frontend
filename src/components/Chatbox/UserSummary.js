@@ -250,7 +250,7 @@ const UserSummary = ({ user, activeColor, rankName = "Member", rank }) => {
                 noWrap 
                 gutterBottom 
                 sx={{ 
-                  color: activeColor,
+                  color: activeRankColors[rank] || '#808080', // Default to gray if no rank
                   display: 'flex',
                   alignItems: 'center',
                 }}
