@@ -611,33 +611,38 @@ export default function NFTActions({ nft }) {
             />
 
             {self &&
-                <Stack direction="row" spacing={2} justifyContent="space-between" sx={{ mt: 1, mb: 1 }}>
-                    <Stack>
-                        <Stack direction="row" spacing={1}>
+                <Stack direction="row" spacing={2} justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
+                    <Stack spacing={1}>
+                        <Stack direction="row" spacing={1} alignItems="center">
                             <Link href={`/collection/${cslug}`} underline='none'>
-                                <Typography variant="s5" sx={{ pl: 0 }}>{collectionName}</Typography>
+                                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>{collectionName}</Typography>
                             </Link>
                             {cverified === 'yes' &&
                                 <Tooltip title='Verified'>
-                                    <VerifiedIcon fontSize="small" style={{ color: "#4589ff" }} />
+                                    <VerifiedIcon fontSize="small" sx={{ color: "primary.main" }} />
                                 </Tooltip>
                             }
                         </Stack>
 
-                        <Stack direction="row" spacing={0.5} alignItems='center'>
-                            <Typography variant="s7" noWrap>Global Floor</Typography>
-                            <Typography>✕</Typography>
-                            <Typography variant="s7" noWrap>{fNumber(floorPrice)}</Typography>
+                        <Stack direction="row" spacing={1} alignItems='center'>
+                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>Global Floor</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{fNumber(floorPrice)} XRP</Typography>
                         </Stack>
                     </Stack>
 
-                    <Stack direction="row" alignItems="center" spacing={1}>
+                    <Stack direction="row" alignItems="center" spacing={2}>
                         <Tooltip title="Share">
-                            <IconButton size='medium' sx={{ padding: 1 }}
+                            <IconButton 
+                                size='large'
+                                sx={{ 
+                                    bgcolor: 'background.paper',
+                                    boxShadow: 1,
+                                    '&:hover': { bgcolor: 'primary.lighter' }
+                                }}
                                 ref={anchorRef}
                                 onClick={handleOpenShare}
                             >
-                                <ShareIcon />
+                                <ShareIcon sx={{ color: 'primary.main' }} />
                             </IconButton>
                         </Tooltip>
 
@@ -648,17 +653,11 @@ export default function NFTActions({ nft }) {
                             anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                             transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                             PaperProps={{
-                                sx: {
-                                    // mt: 1.5,
-                                    // ml: 0.5,
-                                    // overflow: 'inherit',
-                                    // boxShadow: (theme) => theme.customShadows.z20,
-                                    // border: (theme) => `solid 1px ${alpha('#919EAB', 0.08)}`,
-                                    // width: 'auto',
-                                }
+                                elevation: 3,
+                                sx: { borderRadius: 2, p: 1 }
                             }}
                         >
-                            <Stack direction="row" spacing={2} sx={{ pt: 1.5, pl: 1, pr: 1, pb: 1 }}>
+                            <Stack direction="row" spacing={2}>
                                 <FacebookShareButton
                                     url={shareUrl}
                                     quote={shareTitle}
@@ -666,7 +665,7 @@ export default function NFTActions({ nft }) {
                                     description={shareDesc}
                                     onClick={handleCloseShare}
                                 >
-                                    <FacebookIcon size={24} round />
+                                    <FacebookIcon size={32} round />
                                 </FacebookShareButton>
                                 <TwitterShareButton
                                     title={shareTitle}
@@ -674,7 +673,7 @@ export default function NFTActions({ nft }) {
                                     hashtag={"#"}
                                     onClick={handleCloseShare}
                                 >
-                                    <TwitterIcon size={24} round />
+                                    <TwitterIcon size={32} round />
                                 </TwitterShareButton>
                             </Stack>
                         </Popover>
@@ -739,51 +738,122 @@ export default function NFTActions({ nft }) {
                     <>
                         {destination && getMinterName(account) ? (
                             <>
-                                {destination === accountLogin ?
-                                    <Typography variant="s5">This NFT is being transferred to you. Click <CheckCircleOutlineIcon color='success' /> to accept it.</Typography>
-                                    :
-                                    <Typography variant="s5">This NFT is being transferred to &nbsp;
+                                {destination === accountLogin ? (
+                                    <Box sx={{ 
+                                        backgroundColor: '#f0f8ff', 
+                                        borderRadius: '8px', 
+                                        padding: '16px', 
+                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                                    }}>
+                                        <Typography variant="h6" sx={{ fontWeight: 600, marginBottom: '8px' }}>
+                                            Incoming NFT Transfer
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
+                                            This NFT is being transferred to you. 
+                                            <Button 
+                                                variant="contained" 
+                                                color="success" 
+                                                size="small" 
+                                                startIcon={<CheckCircleOutlineIcon />}
+                                                sx={{ marginLeft: '8px', textTransform: 'none' }}
+                                            >
+                                                Accept Transfer
+                                            </Button>
+                                        </Typography>
+                                    </Box>
+                                ) : (
+                                    <Box sx={{ 
+                                        backgroundColor: '#f0f8ff', 
+                                        borderRadius: '8px', 
+                                        padding: '16px', 
+                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                                    }}>
+                                        <Typography variant="h6" sx={{ fontWeight: 600, marginBottom: '8px' }}>
+                                            Outgoing NFT Transfer
+                                        </Typography>
+                                        <Typography variant="body1">
+                                            This NFT is being transferred to:
+                                        </Typography>
                                         <Link
-                                            color="inherit"
-                                            target="_blank"
                                             href={`https://bithomp.com/explorer/${destination}`}
+                                            target="_blank"
                                             rel="noreferrer noopener nofollow"
+                                            sx={{ 
+                                                textDecoration: 'none', 
+                                                '&:hover': { textDecoration: 'underline' } 
+                                            }}
                                         >
-                                            <Typography variant="s3" color="#33C2FF">{destination}</Typography>
-                                        </Link>.
-                                    </Typography>
-                                }
+                                            <Typography variant="body1" sx={{ 
+                                                color: '#1976d2', 
+                                                fontWeight: 500,
+                                                wordBreak: 'break-all'
+                                            }}>
+                                                {destination}
+                                            </Typography>
+                                        </Link>
+                                    </Box>
+                                )}
                             </>
                         ) : (
                             isOwner ? (
                                 <Box sx={{
                                     display: 'flex',
                                     justifyContent: 'space-around',
-                                    gap: 1
+                                    gap: 2,
+                                    padding: '20px',
+                                    backgroundColor: '#f8f9fa',
+                                    borderRadius: '12px',
+                                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
                                 }}>
                                     <Button
                                         fullWidth
-                                        // sx={{ minWidth: 150 }}
-                                        variant='outlined'
+                                        variant='contained'
                                         startIcon={<LocalOfferIcon />}
                                         onClick={handleCreateSellOffer}
-                                        color='success'
+                                        color='primary'
                                         disabled={!accountLogin || burnt}
+                                        sx={{
+                                            height: '48px',
+                                            fontWeight: 'bold',
+                                            textTransform: 'none',
+                                            borderRadius: '8px',
+                                            '&:hover': {
+                                                backgroundColor: '#0056b3'
+                                            }
+                                        }}
                                     >
-                                        Sell
+                                        List for Sale
                                     </Button>
                                     <Button
                                         fullWidth
-                                        // sx={{ minWidth: 150 }}
                                         variant='outlined'
                                         startIcon={<SendIcon />}
                                         onClick={handleTransfer}
-                                        color='info'
+                                        color='secondary'
                                         disabled={!accountLogin || burnt}
+                                        sx={{
+                                            height: '48px',
+                                            fontWeight: 'bold',
+                                            textTransform: 'none',
+                                            borderRadius: '8px',
+                                            borderWidth: '2px',
+                                            '&:hover': {
+                                                borderWidth: '2px'
+                                            }
+                                        }}
                                     >
-                                        Transfer
+                                        Transfer Asset
                                     </Button>
-                                    <BurnNFT nft={nft} onHandleBurn={onHandleBurn} />
+                                    <BurnNFT 
+                                        nft={nft} 
+                                        onHandleBurn={onHandleBurn} 
+                                        sx={{
+                                            height: '48px',
+                                            fontWeight: 'bold',
+                                            textTransform: 'none',
+                                            borderRadius: '8px'
+                                        }}
+                                    />
                                 </Box>
                             ) : (
                                 <Grid container>
