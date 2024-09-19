@@ -3,6 +3,7 @@ import React, { useState, useEffect, useContext, useCallback, useMemo } from 're
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import debounce from 'lodash.debounce';
+import { alpha } from '@mui/material/styles';
 
 // Material
 import {
@@ -128,16 +129,16 @@ export default function NFTs({ collection }) {
         () => ({
             startAdornment: (
                 <InputAdornment position="start" sx={{ mr: 0.7 }}>
-                    <SearchIcon />
+                    <SearchIcon color="primary" />
                 </InputAdornment>
             ),
             endAdornment: (
-                <InputAdornment position="start">
-                    {loading && <ClipLoader color="#ff0000" size={15} />}
+                <InputAdornment position="end">
+                    {loading && <ClipLoader color={theme.palette.primary.main} size={15} />}
                 </InputAdornment>
             )
         }),
-        [loading]
+        [loading, theme.palette.primary.main]
     );
 
     const loadMore = useCallback(() => {
@@ -146,30 +147,51 @@ export default function NFTs({ collection }) {
     }, []);
 
     return (
-        <>
-            <Box display="flex" alignItems="center">
-                <IconButton aria-label="filter" onClick={handleShowFilter}>
-                    <FilterListIcon fontSize="large" />
+        <Box sx={{ p: 3, backgroundColor: alpha(theme.palette.background.paper, 0.8) }}>
+            <Box display="flex" alignItems="center" mb={3}>
+                <IconButton 
+                    aria-label="filter" 
+                    onClick={handleShowFilter}
+                    sx={{ 
+                        mr: 2, 
+                        backgroundColor: theme.palette.primary.main,
+                        color: theme.palette.primary.contrastText,
+                        '&:hover': {
+                            backgroundColor: theme.palette.primary.dark,
+                        }
+                    }}
+                >
+                    <FilterListIcon />
                 </IconButton>
                 <TextField
                     id="textFilter"
                     fullWidth
                     variant="outlined"
                     placeholder="Search by name or attribute"
-                    margin="dense"
                     onChange={handleChangeSearch}
-                    autoComplete="new-password"
-                    inputProps={{ autoComplete: 'off' }}
+                    autoComplete="off"
                     value={search}
                     onFocus={(event) => event.target.select()}
-                    sx={{ pl: 2, pr: 0, pt: 0, pb: 0, mt: 0 }}
                     onKeyDown={(e) => e.stopPropagation()}
                     InputProps={inputProps}
+                    sx={{
+                        '& .MuiOutlinedInput-root': {
+                            borderRadius: 2,
+                            backgroundColor: theme.palette.background.paper,
+                            transition: theme.transitions.create(['box-shadow']),
+                            '&:hover': {
+                                boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+                            },
+                            '&.Mui-focused': {
+                                boxShadow: `0 0 0 2px ${theme.palette.primary.main}`,
+                            },
+                        },
+                    }}
                 />
             </Box>
-            <Grid container spacing={1} justifyContent="space-between" mt={1}>
+            <Grid container spacing={3} justifyContent="space-between">
                 {showFilter && (
-                    <Grid item xs={12} md={3} xl={2} pt={0.5}>
+                    <Grid item xs={12} md={3} xl={2}>
                         <FilterDetail
                             collection={collection}
                             filter={filter}
@@ -192,9 +214,13 @@ export default function NFTs({ collection }) {
                         next={loadMore}
                         hasMore={hasMore}
                         scrollThreshold={0.9}
-                        loader={<ClipLoader color="#ff0000" size={20} />}
+                        loader={
+                            <Box display="flex" justifyContent="center" my={4}>
+                                <ClipLoader color={theme.palette.primary.main} size={30} />
+                            </Box>
+                        }
                     >
-                        <Grid container spacing={1}>
+                        <Grid container spacing={3}>
                             {nfts.map((nft, index) => (
                                 <Grid
                                     item
@@ -202,7 +228,7 @@ export default function NFTs({ collection }) {
                                     sm={4}
                                     md={3}
                                     lg={2.4}
-                                    xl={1.5}
+                                    xl={2}
                                     key={nft.id || index}
                                 >
                                     <MemoizedNFTCard
@@ -224,6 +250,6 @@ export default function NFTs({ collection }) {
                     </InfiniteScroll>
                 </Grid>
             </Grid>
-        </>
+        </Box>
     );
 }

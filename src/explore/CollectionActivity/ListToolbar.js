@@ -1,4 +1,3 @@
-// Material
 import {
     styled,
     Grid,
@@ -6,28 +5,46 @@ import {
     Pagination,
     Select,
     Stack,
-    Toolbar,
-    Typography
+    Typography,
+    useTheme
 } from '@mui/material';
 
-// ----------------------------------------------------------------------
+// Remove the RootStyle definition since it's not being used
 
-const RootStyle = styled(Toolbar)(({ theme }) => ({
-    height: 64,
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: theme.spacing(0, 1, 0, 3)
-}));
-
-
-// ----------------------------------------------------------------------
 const CustomSelect = styled(Select)(({ theme }) => ({
-    '& .MuiOutlinedInput-notchedOutline' : {
+    '& .MuiOutlinedInput-notchedOutline': {
         border: 'none'
+    },
+    '& .MuiSelect-select': {
+        paddingRight: theme.spacing(4),
+        fontWeight: 600,
+        color: theme.palette.primary.main
+    },
+    '&:hover': {
+        backgroundColor: theme.palette.action.hover
     }
 }));
 
-export default function NftListToolbar({ count, rows, setRows, page, setPage}) {
+const StyledTypography = styled(Typography)(({ theme }) => ({
+    fontWeight: 600,
+    color: theme.palette.text.secondary
+}));
+
+const StyledPagination = styled(Pagination)(({ theme }) => ({
+    '& .MuiPaginationItem-root': {
+        color: theme.palette.primary.main,
+        '&.Mui-selected': {
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.common.white,
+            '&:hover': {
+                backgroundColor: theme.palette.primary.dark
+            }
+        }
+    }
+}));
+
+export default function NftListToolbar({ count, rows, setRows, page, setPage }) {
+    const theme = useTheme();
     const num = count / rows;
     let page_count = Math.floor(num)
     if (num % 1 != 0) page_count++;
@@ -59,26 +76,27 @@ export default function NftListToolbar({ count, rows, setRows, page, setPage}) {
     };
 
     return (
-        <Grid container rowSpacing={2} alignItems="center" sx={{mt: 0}}>
-            <Grid container item xs={12} sx={{ display: { xs: 'block', md: 'none' } }}>
+        <Grid container spacing={2} alignItems="center" sx={{ mt: 2, mb: 2 }}>
+            <Grid item xs={12} md={4}>
+                <StyledTypography variant="body2">
+                    Showing {start} - {end} out of {count}
+                </StyledTypography>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
                 <Stack alignItems='center'>
-                    <Pagination page={page+1} onChange={handleChangePage} count={page_count} size="small"/>
+                    <StyledPagination 
+                        page={page + 1} 
+                        onChange={handleChangePage} 
+                        count={page_count}
+                        size={theme.breakpoints.down('md') ? "small" : "medium"}
+                    />
                 </Stack>
             </Grid>
 
-            <Grid container item xs={6} md={4} lg={4}>
-                Showing {start} - {end} out of {count}
-            </Grid>
-
-            <Grid container item xs={0} md={4} lg={4} sx={{ display: { xs: 'none', md: 'block' } }}>
-                <Stack alignItems='center'>
-                    <Pagination page={page+1} onChange={handleChangePage} count={page_count}/>
-                </Stack>
-            </Grid>
-
-            <Grid container item xs={6} md={4} lg={4} justifyContent="flex-end">
-                <Stack direction='row' alignItems='center'>
-                    Show Rows
+            <Grid item xs={12} md={4}>
+                <Stack direction='row' alignItems='center' justifyContent="flex-end">
+                    <StyledTypography variant="body2" sx={{ mr: 1 }}>Show Rows</StyledTypography>
                     <CustomSelect
                         value={rows}
                         onChange={handleChangeRows}
