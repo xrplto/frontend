@@ -9,6 +9,7 @@ import SecurityIcon from '@mui/icons-material/Security';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import axios from "axios";
 import { PulseLoader } from "react-spinners";
+import { useRouter } from 'next/router';
 
 const ranks = {
   riddler: {
@@ -70,38 +71,49 @@ const Ranks = ({ profileAccount }) => {
   const [purchased, setPurchased] = useState([]);
   const [activeRank, setActiveRank] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
 
     async function getPurchasedRanks() {
       setLoading(true);
-      const res = await axios.post(`${chatURL}/api/get-purchased-ranks`, {
-        account: accountProfile?.account
-      });
+      const accountToUse = profileAccount || router.query.slug;
+      
+      if (!accountToUse) {
+        setLoading(false);
+        return;
+      }
 
-      const result = res.data;
-      console.log('Response from /api/get-purchased-ranks:', result);
-      // Filter chatFeatures to include only items with status: true
-      const activePurchases = result.chatFeatures.filter(feature => feature.status === true);
-      setPurchased(activePurchases);
-      setActiveRank(result.activeRank);
-      setLoading(false);
+      try {
+        const res = await axios.post(`${chatURL}/api/get-purchased-ranks`, {
+          account: accountToUse
+        });
+
+        const result = res.data;
+        console.log('Response from /api/get-purchased-ranks:', result);
+        const activePurchases = result.chatFeatures.filter(feature => feature.status === true);
+        setPurchased(activePurchases);
+        setActiveRank(result.activeRank);
+      } catch (error) {
+        console.error('Error fetching purchased ranks:', error);
+        openSnackbar('Failed to fetch ranks', 'error');
+      } finally {
+        setLoading(false);
+      }
     }
 
-    if (accountProfile?.account) {
-      getPurchasedRanks();
-    }
-  }, [accountProfile])
+    getPurchasedRanks();
+  }, [profileAccount, router.query.slug]);
 
   const updateActiveRank = async(rank) => {
 
     if (!accountProfile?.account) {
-      openSnackbar('Please login', 'error');
+      openSnackbar('Please login to change active rank', 'error');
       return;
     }
 
     if (profileAccount !== accountProfile?.account) {
-      openSnackbar('This is not your profile', 'error');
+      openSnackbar('You can only change the active rank on your own profile', 'error');
       return;
     }
 
@@ -109,14 +121,12 @@ const Ranks = ({ profileAccount }) => {
       await axios.post(`${chatURL}/api/set-active-rank`, {
         account: accountProfile.account,
         rank
-      }).then(res => {
-        setActiveRank(rank);
-        openSnackbar(`Selected ${ranks[rank].name} as active rank successfully!`, 'success');
-      }).catch(err => {
-        openSnackbar('Failed', "error");
       });
+      setActiveRank(rank);
+      openSnackbar(`Selected ${ranks[rank].name} as active rank successfully!`, 'success');
     } catch(err) {
-
+      console.error('Error updating active rank:', err);
+      openSnackbar('Failed to update active rank', 'error');
     }
   }
 
