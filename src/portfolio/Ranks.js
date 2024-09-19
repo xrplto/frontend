@@ -80,7 +80,10 @@ const Ranks = ({ profileAccount }) => {
       });
 
       const result = res.data;
-      setPurchased(result.chatFeatures);
+      console.log('Response from /api/get-purchased-ranks:', result);
+      // Filter chatFeatures to include only items with status: true
+      const activePurchases = result.chatFeatures.filter(feature => feature.status === true);
+      setPurchased(activePurchases);
       setActiveRank(result.activeRank);
       setLoading(false);
     }
@@ -185,10 +188,10 @@ const Ranks = ({ profileAccount }) => {
                       </Grid>
                     );
                   }
-                  return "";
+                  return null;
                 })}
               </Grid>
-            ) : <Typography>No Purchased Ranks</Typography>
+            ) : <Typography>No Active Purchased Ranks</Typography>
           }
         </>
       }
