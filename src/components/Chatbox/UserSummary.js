@@ -4,13 +4,14 @@ import {
   Avatar,
   Typography,
   Box,
-  Button,
   Grid,
   useTheme,
   Paper,
-  Divider,
-  Chip
+  Chip,
+  Divider,  // Add this import
+  Button  // Add this import as well, since it's used in the component
 } from '@mui/material';
+import { Verified as VerifiedIcon } from '@mui/icons-material';
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { activeRankColors, rankColors, rankGlowEffect } from './RankStyles';
@@ -243,8 +244,27 @@ const UserSummary = ({ user, activeColor, rankName = "Member", rank }) => {
               }}
             />
             <Box>
-              <Typography variant="h5" fontWeight="bold" noWrap gutterBottom sx={{ color: activeColor}}>
+              <Typography 
+                variant="h5" 
+                fontWeight="bold" 
+                noWrap 
+                gutterBottom 
+                sx={{ 
+                  color: activeColor,
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
                 {truncateUsername(username)}
+                {rank === 'verified' && (
+                  <VerifiedIcon
+                    sx={{
+                      fontSize: '1.2rem',
+                      ml: 0.5,
+                      color: '#1DA1F2', // Twitter blue color for verified icon
+                    }}
+                  />
+                )}
               </Typography>
               <Chip
                 label={rankName}

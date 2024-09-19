@@ -6,24 +6,23 @@ import {
   Typography,
   Tooltip,
   Box,
-  Button,
   useTheme,
   tooltipClasses,
   IconButton,
   Link,
-  Divider,
-  alpha
+  alpha,
 } from '@mui/material';
 import { parseISO } from 'date-fns';
 import {
   ChatBubbleOutline as ChatBubbleOutlineIcon,
+  Verified as VerifiedIcon,
 } from '@mui/icons-material';
 import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import UserSummary from './UserSummary';
 import { rankGlowEffect, lightningEffect, activeRankColors } from './RankStyles';
-import NFTDisplay from './NFTDisplay'; // Import the extracted component
+import NFTDisplay from './NFTDisplay';
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -232,6 +231,8 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
               }
             }
 
+            const isVerified = activeRanks[chat.username] === 'verified';
+
             return (
               <Paper
                 key={index}
@@ -268,10 +269,21 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                             fontWeight: 'bold',
                             color: activeRankColors[activeRanks[chat.username]] || theme.palette.text.primary,
                             textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
                           }}
                         >
                           {displayUsername}
+                          {isVerified && (
+                            <VerifiedIcon
+                              sx={{
+                                fontSize: '1rem',
+                                ml: 0.5,
+                                color: '#1DA1F2', // Twitter blue color for verified icon
+                              }}
+                            />
+                          )}
                           {chat.isPrivate && (
                             <>
                               {' → '}
