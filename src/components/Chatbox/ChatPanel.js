@@ -254,10 +254,11 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                   <Avatar
                     alt={chat.username}
                     src={userImages[chat.username] || '/static/crossmark.webp'}
-                    sx={{ 
+                    sx={{
                       width: 32, // Reduced size from 40 to 32
                       height: 32, // Reduced size from 40 to 32
-                      border: `1px solid ${theme.palette.primary.main}`, // Reduced border from 2px to 1px
+                      border: `3px solid ${activeRankColors[activeRanks[chat.username]] || '#808080'}`, // Circle border according to rank, default to gray
+                      boxShadow: `0 0 15px ${activeRankColors[activeRanks[chat.username]] || '#808080'}`, // Glow effect similar to UserSummary, default to gray
                     }}
                   />
                   <Box sx={{ flexGrow: 1 }}>

@@ -239,8 +239,8 @@ const UserSummary = ({ user, activeColor, rankName = "Member", rank }) => {
               sx={{
                 width: 90,
                 height: 90,
-                border: `3px solid ${activeRankColors[rank]}`,
-                boxShadow: `0 0 15px ${activeRankColors[rank]}`,
+                border: `3px solid ${activeRankColors[rank] || '#808080'}`, // Circle border according to rank, default to gray
+                boxShadow: `0 0 15px ${activeRankColors[rank] || '#808080'}`, // Glow effect similar to ChatPanel, default to gray
               }}
             />
             <Box>
@@ -269,10 +269,10 @@ const UserSummary = ({ user, activeColor, rankName = "Member", rank }) => {
               <Chip
                 label={rankName}
                 sx={{
-                  bgcolor: activeRankColors[rank],
+                  bgcolor: activeRankColors[rank] || '#808080', // Default to gray if no rank
                   color: '#fff',
                   fontWeight: 'bold',
-                  boxShadow: rankGlowEffect(theme)[rank],
+                  boxShadow: rankGlowEffect(theme)[rank] || 'none',
                   padding: '6px 10px',
                   fontSize: '0.9rem',
                 }}
