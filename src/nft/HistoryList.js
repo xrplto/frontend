@@ -11,7 +11,9 @@ import {
     TableBody,
     TableCell,
     TableRow,
-    Typography
+    Typography,
+    Paper,
+    Chip
 } from '@mui/material';
 import { tableCellClasses } from "@mui/material/TableCell";
 
@@ -76,60 +78,51 @@ export default function HistoryList({ nft }) {
     }, [sync]);
 
     return (
-        <>
-            {loading ?
-                <Stack alignItems="center" mt={1}>
-                    <PulseLoader color='#00AB55' size={10} />
+        <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+            {loading ? (
+                <Stack alignItems="center" justifyContent="center" height={200}>
+                    <PulseLoader color={theme.palette.primary.main} size={10} />
                 </Stack>
-            :
-                <Stack mt={1}>
-                    <Box
-                        sx={{
-                            display: "flex",
-                            gap: 1,
-                            py: 1,
-                            overflow: "auto",
-                            width: "100%",
-                            "& > *": {
-                                scrollSnapAlign: "center",
-                            },
-                            "::-webkit-scrollbar": { display: "none" },
-                        }}
-                    >
-                        <Table stickyHeader sx={{
-                            [`& .${tableCellClasses.root}`]: {
-                                borderBottom: "0px solid",
-                                borderColor: theme.palette.divider
-                            }
-                        }}>
-                            <TableBody>
-                                {hists && hists.slice().reverse().map((row) => (
-                                    <TableRow key={row.uuid}>
-                                        <TableCell align="left" width='15%' sx={{pt:0.5, pb:0.5}}>
-                                            <Typography variant='body2' noWrap>{row.type}</Typography>
-                                        </TableCell>
-                                        <TableCell align="left" width='15%' sx={{pt:0.5, pb:0.5}}>
-                                            <Link href={`/account/${row.account}`}>
-                                                <Typography variant='body2' noWrap>{truncate(row.account, 16)}</Typography>
-                                            </Link>
-                                        </TableCell>
-                                        <TableCell align="left" width='15%' sx={{pt:0.5, pb:0.5}}>
-                                            {row.type === 'SALE' ?
-                                                <Typography variant='body2' noWrap>{formatAmount(row.cost.amount)} {normalizeCurrencyCodeXummImpl(row.cost.currency)}</Typography>
-                                                :
-                                                <Typography variant='body2' noWrap>- - -</Typography>
-                                            }
-                                        </TableCell>
-                                        <TableCell align="left" sx={{pt:0.5, pb:0.5}}>
-                                            <Typography variant='body2' noWrap>{formatDateTime(row.time)}</Typography>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </Box>
-                </Stack>
-            }
-        </>
+            ) : (
+                <Box sx={{ maxHeight: 400, overflow: 'auto' }}>
+                    <Table stickyHeader sx={{
+                        [`& .${tableCellClasses.root}`]: {
+                            borderBottom: `1px solid ${theme.palette.divider}`,
+                        }
+                    }}>
+                        <TableBody>
+                            {hists && hists.slice().reverse().map((row) => (
+                                <TableRow key={row.uuid} hover>
+                                    <TableCell align="left" sx={{ py: 2 }}>
+                                        <Chip
+                                            label={row.type}
+                                            color={row.type === 'SALE' ? 'success' : 'primary'}
+                                            size="small"
+                                        />
+                                    </TableCell>
+                                    <TableCell align="left" sx={{ py: 2 }}>
+                                        <Link href={`/account/${row.account}`} underline="hover">
+                                            <Typography variant='body2' noWrap>{truncate(row.account, 16)}</Typography>
+                                        </Link>
+                                    </TableCell>
+                                    <TableCell align="left" sx={{ py: 2 }}>
+                                        {row.type === 'SALE' ? (
+                                            <Typography variant='body2' fontWeight="bold">
+                                                {formatAmount(row.cost.amount)} {normalizeCurrencyCodeXummImpl(row.cost.currency)}
+                                            </Typography>
+                                        ) : (
+                                            <Typography variant='body2' color="text.secondary">- - -</Typography>
+                                        )}
+                                    </TableCell>
+                                    <TableCell align="left" sx={{ py: 2 }}>
+                                        <Typography variant='body2' color="text.secondary">{formatDateTime(row.time)}</Typography>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </Box>
+            )}
+        </Paper>
     );
 }

@@ -1,5 +1,4 @@
 import * as React from 'react';
-// import ModalImage from "react-modal-image";
 import { Lightbox } from "react-modal-image";
 import { useState, useContext } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -56,8 +55,12 @@ import {
     Card,
     CardMedia,
     Link,
-    Typography
+    Typography,
+    Box,
+    IconButton,
 } from '@mui/material';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 // Utils
 import { getNftFilesUrls/*, nftName*/ } from 'src/utils/parse/utils';
@@ -86,21 +89,23 @@ export default function NFTPreview({ nft }) {
     function Arrow(props) {
       const disabled = props.disabled ? " arrow--disabled" : ""
       return (
-        <svg
+        <IconButton
           onClick={props.onClick}
-          className={`arrow ${
-            props.left ? "arrow--left" : "arrow--right"
-          } ${disabled}`}
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
+          disabled={props.disabled}
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            [props.left ? 'left' : 'right']: 8,
+            color: 'white',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            },
+          }}
         >
-          {props.left && (
-            <path d="M16.67 0l2.83 2.829-9.339 9.175 9.339 9.167-2.83 2.829-12.17-11.996z" />
-          )}
-          {!props.left && (
-            <path d="M5 3l3.057-3 11.943 12-11.943 12-3.057-3 9-9z" />
-          )}
-        </svg>
+          {props.left ? <ArrowBackIosNewIcon /> : <ArrowForwardIosIcon />}
+        </IconButton>
       )
     }
 
@@ -280,172 +285,160 @@ export default function NFTPreview({ nft }) {
     )
 
     return <>
-    <Card>
-    {contentTabList.length > 1 &&
-      <div style={{ height: "31px", margin: "18px" }}>
-        <span className='tabs-inline' style={{ float: "left" }}>
-          <Tabs
-            tabList={contentTabList}
-            tab={contentTab}
-            setTab={setContentTab}
-            name="content"
-            style={{ margin: 0 }}
-          />
-        </span>
-        <span style={{ float: "right", padding: "4px 0px" }}>
-          <Link href={clUrl[contentTab]} target="_blank" rel="noreferrer">
-            <Typography variant='body1' noWrap>{t("tabs." + contentTab)} Link</Typography>
-          </Link>
-        </span>
-      </div>
-    }
-
-    {((imageUrl && contentTab === 'image') || (animationUrl && contentTab === 'animation')) && (
-      <>
-        {(typeof imgOrAnimUrl === 'object' && imgOrAnimUrl.length > 1) ? (
-          <div className="navigation-wrapper">
-            <div ref={sliderRef} className="keen-slider">
-              {imgOrAnimUrl.map((file, index) => (
-                <div key={index} className={`keen-slider__slide number-slide${index + 1}`}>
-                  {renderImageLink(file)}
-                </div>
-              ))}
-            </div>
-            {loadedSlider && instanceRef.current && (
-              <>
-                <Arrow
-                  left
-                  onClick={(e) =>
-                    e.stopPropagation() || instanceRef.current?.prev()
-                  }
-                  disabled={currentSlide === 0}
-                />
-
-                <Arrow
-                  onClick={(e) =>
-                    e.stopPropagation() || instanceRef.current?.next()
-                  }
-                  disabled={
-                    currentSlide === instanceRef.current.track.details.slides.length - 1
-                  }
-                />
-              </>
-            )}
-
-            {loadedSlider && instanceRef.current && (
-              <div className="dots">
-                {[
-                  ...Array(instanceRef.current.track.details.slides.length).keys(),
-                ].map((idx) => {
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        instanceRef.current?.moveToIdx(idx)
-                      }}
-                      className={"dot" + (currentSlide === idx ? " active" : "")}
-                    ></button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        ) : renderImageLink(typeof imgOrAnimUrl === 'string' ? imgOrAnimUrl : imgOrAnimUrl[0])}
-        {openImage && (
-          <Lightbox
-            small={selectedImageUrl}
-            large={selectedImageUrl}
-            hideDownload
-            hideZoom
-            onClose={() => setOpenImage(false)}
-            imageBackgroundColor={ darkMode ? "rgb(33, 37, 43)" : "rgb(244, 245, 251)"}
-          />
-        )}
-      </>
+    <Card sx={{ borderRadius: 2, overflow: 'hidden', boxShadow: 3 }}>
+    {contentTabList.length > 1 && (
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2, borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs
+          tabList={contentTabList}
+          tab={contentTab}
+          setTab={setContentTab}
+          name="content"
+          sx={{ '& .MuiTab-root': { minWidth: 'auto' } }}
+        />
+        <Link href={clUrl[contentTab]} target="_blank" rel="noreferrer" sx={{ textDecoration: 'none' }}>
+          <Typography variant='body2' color="primary">{t("tabs." + contentTab)} Link</Typography>
+        </Link>
+      </Box>
     )}
 
-    {videoUrl && defaultTab === 'video' &&
-      <video
-        poster={videoUrl[currentSlide].thumbnail ? 'https://s2.xrpnft.com/d1/' + (videoUrl[currentSlide].thumbnail?.big || videoUrl[currentSlide].thumbnail?.static ) : ''}
-        playsInline
-        muted
-        loop
-        controls
-        style={{ width: "100%", height: "auto", verticalAlign: 'bottom' }}
-      >{/*autoPlay*/}
-        <source src={videoUrl[currentSlide]?.cachedUrl} type="video/mp4" />
-      </video>
-    }
-    {modelUrl && defaultTab === 'model' &&
-      <>
-        {modelState === "loading" &&
-          <div style={style}><span className="waiting"></span><br />{t("general.loading")}</div>
-        }
-        {modelState !== "ready" &&
-          <>
-            <Head>
-              <script
-                type="module"
-                src="/js/model-viewer.min.js"
-                defer
-              />
-            </Head>
-            <model-viewer
-              className="model-viewer"
-              src={modelUrl[currentSlide]?.cachedUrl}
-              camera-controls
-              auto-rotate
-              ar
-              poster={LoadingGif}
-              autoplay
-              {
-              ...modelAttr?.reduce((prev, curr) => {
-                prev[curr.attribute] = curr.value
-                return prev;
-              }, {})
-              }
-            >
-            </model-viewer>
-          </>
-        }
-      </>
-    }
-    {contentTabList.length < 2 && defaultUrl &&
-      <span style={{ padding: "4px 0px" }}>
-        <Link href={defaultUrl} target="_blank" rel="noreferrer">
-          <Typography style={{ /*marginLeft: "18px",*/ padding: "18px" }} variant='body1' noWrap>{t("tabs." + defaultTab)} Link</Typography>
-        </Link>
-      </span>
-    }
+    <Box sx={{ position: 'relative' }}>
+      {((imageUrl && contentTab === 'image') || (animationUrl && contentTab === 'animation')) && (
+        <>
+          {(typeof imgOrAnimUrl === 'object' && imgOrAnimUrl.length > 1) ? (
+            <div className="navigation-wrapper">
+              <div ref={sliderRef} className="keen-slider">
+                {imgOrAnimUrl.map((file, index) => (
+                  <div key={index} className={`keen-slider__slide number-slide${index + 1}`}>
+                    {renderImageLink(file)}
+                  </div>
+                ))}
+              </div>
+              {loadedSlider && instanceRef.current && (
+                <>
+                  <Arrow
+                    left
+                    onClick={(e) =>
+                      e.stopPropagation() || instanceRef.current?.prev()
+                    }
+                    disabled={currentSlide === 0}
+                  />
 
-    {defaultTab !== 'model' /*&& defaultTab !== 'video'*/ && audioUrl &&
-      <>
-        <audio src={audioUrl[currentSlide]?.cachedUrl} controls style={{ display: 'block', margin: "20px auto", marginBottom: "0px" }}></audio>
-        <span style={{ padding: "4px 0px" }}>
-          <Link href={clUrl.audio} target="_blank" rel="noreferrer">
-            <Typography style={{ /*marginLeft: "18px",*/ padding: "18px" }} variant='body1' noWrap>{t("tabs.audio")} Link</Typography>
+                  <Arrow
+                    onClick={(e) =>
+                      e.stopPropagation() || instanceRef.current?.next()
+                    }
+                    disabled={
+                      currentSlide === instanceRef.current.track.details.slides.length - 1
+                    }
+                  />
+                </>
+              )}
+
+              {loadedSlider && instanceRef.current && (
+                <div className="dots">
+                  {[
+                    ...Array(instanceRef.current.track.details.slides.length).keys(),
+                  ].map((idx) => {
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          instanceRef.current?.moveToIdx(idx)
+                        }}
+                        className={"dot" + (currentSlide === idx ? " active" : "")}
+                      ></button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          ) : renderImageLink(typeof imgOrAnimUrl === 'string' ? imgOrAnimUrl : imgOrAnimUrl[0])}
+          {openImage && (
+            <Lightbox
+              small={selectedImageUrl}
+              large={selectedImageUrl}
+              hideDownload
+              hideZoom
+              onClose={() => setOpenImage(false)}
+              imageBackgroundColor={ darkMode ? "rgb(33, 37, 43)" : "rgb(244, 245, 251)"}
+            />
+          )}
+        </>
+      )}
+
+      {videoUrl && defaultTab === 'video' && (
+        <Box sx={{ p: 2 }}>
+          <video
+            poster={videoUrl[currentSlide].thumbnail ? 'https://s2.xrpnft.com/d1/' + (videoUrl[currentSlide].thumbnail?.big || videoUrl[currentSlide].thumbnail?.static ) : ''}
+            playsInline
+            muted
+            loop
+            controls
+            style={{ width: "100%", height: "auto", borderRadius: 8 }}
+          >
+            <source src={videoUrl[currentSlide]?.cachedUrl} type="video/mp4" />
+          </video>
+        </Box>
+      )}
+      {modelUrl && defaultTab === 'model' &&
+        <>
+          {modelState === "loading" &&
+            <div style={style}><span className="waiting"></span><br />{t("general.loading")}</div>
+          }
+          {modelState !== "ready" &&
+            <>
+              <Head>
+                <script
+                  type="module"
+                  src="/js/model-viewer.min.js"
+                  defer
+                />
+              </Head>
+              <model-viewer
+                className="model-viewer"
+                src={modelUrl[currentSlide]?.cachedUrl}
+                camera-controls
+                auto-rotate
+                ar
+                poster={LoadingGif}
+                autoplay
+                {
+                ...modelAttr?.reduce((prev, curr) => {
+                  prev[curr.attribute] = curr.value
+                  return prev;
+                }, {})
+                }
+              >
+              </model-viewer>
+            </>
+          }
+        </>
+      }
+      {contentTabList.length < 2 && defaultUrl &&
+        <Box sx={{ p: 2 }}>
+          <Link href={defaultUrl} target="_blank" rel="noreferrer">
+            <Typography variant='body1' noWrap>{t("tabs." + defaultTab)} Link</Typography>
           </Link>
-        </span>
-      </>
-    }
-    {viewerUrl &&
-      <span style={{ padding: "4px 0px", float: "right" }}>
-        <Link href={viewerUrl[currentSlide]?.cachedUrl} target="_blank" rel="noreferrer">
-          <Typography style={{ /*marginLeft: "18px",*/ padding: "18px" }} variant='s11' noWrap>{t("general.viewer")}</Typography>
-        </Link>
-      </span>
-    }
-    {/*(!nft.uri && !(nft.metadata)) ?
-      <div className="center bold" style={errorStyle}>{t("general.no-uri")}</div>
-      :
-      <>
-        {!(imageUrl || videoUrl || audioUrl || modelUrl) &&
-          <div className="center bold" style={errorStyle}>{t("general.no-media")}</div>
-        }
-      </>
-      */}
-     {/*<div style={{ height: "15px" }}></div>*/}
-    </Card>
-  </>
+        </Box>
+      }
+
+      {defaultTab !== 'model' && audioUrl && (
+        <Box sx={{ p: 2, textAlign: 'center' }}>
+          <audio src={audioUrl[currentSlide]?.cachedUrl} controls style={{ width: '100%', marginBottom: 16 }}></audio>
+          <Link href={clUrl.audio} target="_blank" rel="noreferrer" sx={{ textDecoration: 'none' }}>
+            <Typography variant='body2' color="primary">{t("tabs.audio")} Link</Typography>
+          </Link>
+        </Box>
+      )}
+      {viewerUrl && (
+        <Box sx={{ p: 2, textAlign: 'right' }}>
+          <Link href={viewerUrl[currentSlide]?.cachedUrl} target="_blank" rel="noreferrer" sx={{ textDecoration: 'none' }}>
+            <Typography variant='body2' color="primary">{t("general.viewer")}</Typography>
+          </Link>
+        </Box>
+      )}
+    </Box>
+  </Card>
+</>
 
 }

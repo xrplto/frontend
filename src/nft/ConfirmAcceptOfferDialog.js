@@ -15,10 +15,18 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { alpha } from '@mui/material/styles';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+
 // ----------------------------------------------------------------------
 const ConfirmDialog = styled(Dialog) (({ theme }) => ({
-    backdropFilter: 'blur(1px)',
-    WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
+    '& .MuiDialog-paper': {
+        borderRadius: 16,
+        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        border: '1px solid rgba(255, 255, 255, 0.18)',
+    },
     '& .MuiDialogContent-root': {
         padding: theme.spacing(2),
     },
@@ -81,34 +89,43 @@ export default function ConfirmAcceptOfferDialog({open, setOpen, offer, onContin
             disableScrollLock
             disablePortal
             keepMounted
+            PaperProps={{
+                style: {
+                    background: alpha(theme.palette.background.paper, 0.8),
+                },
+            }}
         >
             <ConfirmDialogTitle id="customized-dialog-title" onClose={handleClose}>
-                <Stack direction="row" spacing={1}>
-                    <ErrorOutlineIcon color="error" />
-                    <Typography variant="p4" color="error">Confirm</Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                    <CheckCircleOutlineIcon color="primary" />
+                    <Typography variant="h6" color="primary.main">Confirm Offer</Typography>
                 </Stack>
             </ConfirmDialogTitle>
 
             <DialogContent>
-                <Stack sx={{pl:1, pr:1}}>
-                    <Typography variant="p5" sx={{mt: 2}}>Are you sure to accept offer with <Typography variant='s3' color='#33C2FF'>{price.amount} {price.name}</Typography> ?</Typography>
-
-                    <Stack direction='row' spacing={2} justifyContent="center" sx={{mt:3, mb:4}}>
-                        <Button
-                            variant="contained"
-                            onClick={handleNo}
-                            color='primary'
-                            // size='medium'
-                        >
-                            No
-                        </Button>
+                <Stack spacing={3} sx={{ px: 2 }}>
+                    <Typography variant="body1" align="center">
+                        Are you sure you want to accept the offer of
+                    </Typography>
+                    <Typography variant="h4" color="primary.main" align="center" fontWeight="bold">
+                        {price.amount} {price.name}
+                    </Typography>
+                    <Stack direction="row" spacing={2} justifyContent="center">
                         <Button
                             variant="outlined"
-                            onClick={handleYes}
-                            color='primary'
-                            // size='medium'
+                            onClick={handleNo}
+                            color="primary"
+                            size="large"
                         >
-                            Yes
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="contained"
+                            onClick={handleYes}
+                            color="primary"
+                            size="large"
+                        >
+                            Accept Offer
                         </Button>
                     </Stack>
                 </Stack>
