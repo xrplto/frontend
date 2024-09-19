@@ -39,6 +39,17 @@ function Store() {
   const [nextUrl, setNextUrl] = useState(null);
   const [purchasedFeatures, setPurchasedFeatures] = useState([]);
 
+  const updatePurchasedFeatures = (newFeature) => {
+    setPurchasedFeatures(prevFeatures => [
+      ...prevFeatures,
+      {
+        id: newFeature.id,
+        purchaseDate: new Date().toISOString(),
+        transactionHash: newFeature.transactionHash
+      }
+    ]);
+  };
+
   useEffect(() => {
     var timer = null;
     var isRunning = false;
@@ -78,6 +89,7 @@ function Store() {
           if (response.ok) {
             setSnackbarMessage(`Successfully purchased ${rank.name} rank!`);
             setSnackbarOpen(true);
+            updatePurchasedFeatures({ id: rank.id, transactionHash: result?.txid });
           } else {
             setSnackbarMessage(`Purchase failed. Please try again.`);
             setSnackbarOpen(true);
@@ -206,6 +218,7 @@ function Store() {
                   if (response.ok) {
                     setSnackbarMessage(`Successfully purchased ${rank.name} rank!`);
                     setSnackbarOpen(true);
+                    updatePurchasedFeatures({ id: rank.id, transactionHash: result?.hash });
                   } else {
                     setSnackbarMessage(`Purchase failed. Please try again.`);
                     setSnackbarOpen(true);
@@ -236,6 +249,7 @@ function Store() {
               if (response.ok) {
                 setSnackbarMessage(`Successfully purchased ${rank.name} rank!`);
                 setSnackbarOpen(true);
+                updatePurchasedFeatures({ id: rank.id, transactionHash: response.data.resp.result?.hash });
               } else {
                 setSnackbarMessage(`Purchase failed. Please try again.`);
                 setSnackbarOpen(true);
