@@ -37,6 +37,7 @@ function Store() {
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
+  const [purchasedFeatures, setPurchasedFeatures] = useState([]);
 
   useEffect(() => {
     var timer = null;
@@ -287,11 +288,39 @@ function Store() {
     <Grid container spacing={2}>
       {items.map((item) => (
         <Grid item xs={12} sm={6} key={item.id}>
-          <RankItem item={item} onPurchase={chooseRank} />
+          <RankItem 
+            item={item} 
+            onPurchase={chooseRank} 
+            isPurchased={purchasedFeatures.includes(item.id)}
+          />
         </Grid>
       ))}
     </Grid>
   );
+
+  useEffect(() => {
+    const fetchPurchasedFeatures = async () => {
+      if (accountProfile?.account) {
+        try {
+          const response = await fetch(`${chatURL}/api/get-purchased-ranks`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ account: accountProfile.account })
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setPurchasedFeatures(data.chatFeatures.map(feature => feature.feature));
+          }
+        } catch (error) {
+          console.error('Error fetching purchased features:', error);
+        }
+      }
+    };
+
+    fetchPurchasedFeatures();
+  }, [accountProfile]);
 
   return (
     <>

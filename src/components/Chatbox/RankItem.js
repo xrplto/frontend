@@ -4,7 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import VerifiedIcon from '@mui/icons-material/Verified';
 
-function RankItem({ item, onPurchase }) {
+function RankItem({ item, onPurchase, isPurchased }) {
   const theme = useTheme();
 
   return (
@@ -63,9 +63,11 @@ function RankItem({ item, onPurchase }) {
       <CardActions sx={{ justifyContent: 'center', p: 1 }}>
         <Button
           variant="contained"
+          color="primary"
           fullWidth
           size="small"
           onClick={() => onPurchase(item)}
+          disabled={isPurchased}
           sx={{
             bgcolor: item.color,
             color: '#fff',
@@ -74,7 +76,7 @@ function RankItem({ item, onPurchase }) {
             }
           }}
         >
-          Purchase
+          {isPurchased ? 'Purchased' : 'Purchase'}
         </Button>
       </CardActions>
     </Card>
