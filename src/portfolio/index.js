@@ -127,6 +127,7 @@ export default function Portfolio({ account, limit, collection, type }) {
 
     const volumeOptions = {
         responsive: true,
+        maintainAspectRatio: false, // Add this line
         interaction: {
             mode: 'index',
             intersect: false,
@@ -300,7 +301,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                         <Typography sx={{ color: theme.palette.success.main, mt: 1 }} variant="h4">$109,325.8132</Typography>
                                     </Box>
 
-                                    <Box sx={{ mt: 2, mb: 3 }}>
+                                    <Box sx={{ mt: 2, mb: 3, height: 300 }}> {/* Adjust height as needed */}
                                         <Line data={volumeData} options={volumeOptions} />
                                     </Box>
 
