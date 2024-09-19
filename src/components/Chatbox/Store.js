@@ -118,7 +118,8 @@ function Store() {
       isRunning = false;
       counter--;
       if (counter <= 0) {
-        openSnackbar('Timeout!', 'error');
+        setSnackbarMessage('Timeout!');
+        setSnackbarOpen(true);
         handleScanQRClose();
       }
     }
