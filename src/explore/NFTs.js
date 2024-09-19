@@ -67,6 +67,7 @@ export default function NFTs({ collection }) {
         axios
             .post(`${BASE_URL}/nfts`, body)
             .then((res) => {
+                console.log('API response from xrpnft:', res.data); // Added console.log
                 const newNfts = res.data.nfts;
                 const length = newNfts.length;
                 setHasMore(length === limit);

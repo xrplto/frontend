@@ -1,188 +1,236 @@
-import { normalizeCurrencyCodeXummImpl } from "src/utils/normalizers";
-import { useContext, useState } from "react";
+import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
+import { useContext, useState } from 'react';
 import {
-    styled, useTheme,
-    Box,
-    CardMedia,
-    Chip,
-    Link,
-    Stack,
-    Tooltip,
-    Typography,
-    Skeleton,
-    Card,
-    Grid,
-    CardContent,
-    Button
+  styled,
+  useTheme,
+  Box,
+  CardMedia,
+  Chip,
+  Link,
+  Stack,
+  Tooltip,
+  Typography,
+  Skeleton,
+  Card,
+  Grid,
+  CardContent,
+  Button
 } from '@mui/material';
 import SportsScoreIcon from '@mui/icons-material/SportsScore';
 import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import { Icon } from '@iconify/react';
 
-import { getMinterName } from "src/utils/constants";
+import { getMinterName } from 'src/utils/constants';
 import { fNumber, fIntNumber } from 'src/utils/formatNumber';
 import { getNftCoverUrl } from 'src/utils/parse/utils';
 import Label from './Label';
-import { AppContext } from "src/AppContext";
+import { AppContext } from 'src/AppContext';
+import { alpha } from '@mui/material/styles';
 
 const CardWrapper = styled(Card)(({ theme }) => ({
-    borderRadius: 10,
-    backdropFilter: 'blur(50px)',
-    cursor: 'pointer',
-    transition: 'border-color 0.3s', // removed transform from transition
-    overflow: 'hidden',
-    paddingBottom: 5,
-    border: `2px solid transparent`, // default border
-    '&:hover': {
-        borderColor: theme.palette.primary.main, // change border color on hover
-    },
+  borderRadius: 16,
+  backdropFilter: 'blur(20px)',
+  backgroundColor: alpha(theme.palette.background.paper, 0.8),
+  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+  border: '1px solid rgba(255, 255, 255, 0.18)',
+  padding: 0,
+  cursor: 'pointer',
+  transition: 'all 0.3s ease-in-out',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+  '&:hover': {
+    transform: 'translateY(-5px)',
+    boxShadow: '0 12px 40px 0 rgba(31, 38, 135, 0.5)'
+  },
+  height: 340, // Reduced from 400
 }));
 
 export default function NFTCard({ nft, handleRemove }) {
-    const theme = useTheme();
-    const { accountProfile } = useContext(AppContext);
-    const isAdmin = accountProfile?.admin;
+  const theme = useTheme();
+  const { accountProfile } = useContext(AppContext);
+  const isAdmin = accountProfile?.admin;
 
-    const [colors, setColors] = useState([]);
-    const [loadingImg, setLoadingImg] = useState(true);
+  const [loadingImg, setLoadingImg] = useState(true);
 
-    const {
-        uuid,
-        account,
-        cost,
-        costb,
-        meta,
-        NFTokenID,
-        destination,
-        rarity_rank,
-        updateEvent,
-    } = nft;
+  const { uuid, account, cost, costb, meta, NFTokenID, destination, rarity_rank, updateEvent } =
+    nft;
 
-    const isSold = false;
-    const imgUrl = getNftCoverUrl(nft, 'small');
-    const name = nft.meta?.name || meta?.Name || 'No Name';
+  const isSold = false;
+  const imgUrl = getNftCoverUrl(nft, 'small');
+  const name = nft.meta?.name || meta?.Name || 'No Name';
 
-    const getColors = colors => {
-        setColors(c => [...c, ...colors]);
-    };
+  const onImageLoaded = () => {
+    setLoadingImg(false);
+  };
 
-    const onImageLoaded = () => {
-        setLoadingImg(false);
-    };
+  const handleRemoveNft = (e) => {
+    e.preventDefault();
+    if (!isAdmin) return;
+    if (!confirm(`Are you sure you want to remove "${name}"?`)) return;
+    handleRemove(NFTokenID);
+  };
 
-    const handleRemoveNft = (e) => {
-        e.preventDefault();
-        if (!isAdmin) return;
-        if (!confirm(`Are you sure you want to remove "${name}"?`)) return;
-        handleRemove(NFTokenID);
-    };
+  const showBuyNowButton = cost && cost.issuer === 'XRPL' && cost.currency === 'XRP' && cost.amount;
 
-    return (
-        <Link href={`/nft/{NFTokenID}`} underline='none' sx={{ position: 'relative' }}>
-            <CardWrapper sx={{ margin: 'auto', maxWidth: 280, aspectRatio: '9 / 15' }}>
-                {isAdmin && (
-                    <CloseIcon
-                        sx={{ position: 'absolute', top: 0, right: 0, zIndex: 1500 }}
-                        onClick={(e) => handleRemoveNft(e)}
-                    />
-                )}
-                {isSold && (
-                    <Label
-                        variant="filled"
-                        color="error"
-                        sx={{ zIndex: 9, top: 24, right: 24, position: 'absolute', textTransform: 'uppercase' }}
-                    >
-                        SOLD
-                    </Label>
-                )}
-                <CardMedia
-                    component={loadingImg ? Skeleton : 'img'}
-                    image={imgUrl}
-                    loading={loadingImg.toString()}
-                    alt={'NFT' + uuid}
-                    sx={{ width: '100%', height: '76.1%', maxHeight: 240, objectFit: 'cover' }}
-                />
-                <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
+  return (
+    <Link href={`/nft/${NFTokenID}`} underline="none" sx={{ position: 'relative' }}>
+      <CardWrapper sx={{ margin: 'auto', maxWidth: 240, height: 340 }}>
+        {isAdmin && (
+          <CloseIcon
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              zIndex: 1500,
+              color: theme.palette.grey[300]
+            }}
+            onClick={(e) => handleRemoveNft(e)}
+          />
+        )}
+        {isSold && (
+          <Label
+            variant="filled"
+            color="error"
+            sx={{ zIndex: 9, top: 24, right: 24, position: 'absolute', textTransform: 'uppercase' }}
+          >
+            SOLD
+          </Label>
+        )}
+        <Box sx={{ position: 'relative', height: '60%' }}>
+          <CardMedia
+            component={loadingImg ? Skeleton : 'img'}
+            image={imgUrl}
+            loading={loadingImg.toString()}
+            alt={'NFT' + uuid}
+            sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px 16px 0 0' }}
+          />
+          <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
 
-                {/* Offer and Minimalist Event Display on top right corner */}
-                <Stack direction="column" alignItems="flex-end" justifyContent="flex-start" sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1500 }}>
-                    {costb && costb.amount && (
-                        <Box sx={{ backgroundColor: theme.palette.primary.main, borderRadius: '8px', padding: '4px 8px', marginBottom: '8px', boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)' }}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#fff', textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)' }} noWrap>
-                                Offer ✕ {fNumber(costb.amount)}
-                            </Typography>
-                        </Box>
-                    )}
-                    {updateEvent && (
-                        <Box sx={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', borderRadius: '8px', padding: '2px 6px', boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)' }}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#fff' }} noWrap>
-                                {updateEvent}
-                            </Typography>
-                        </Box>
-                    )}
-                </Stack>
+          {/* Offer and Minimalist Event Display on top right corner */}
+          <Stack
+            direction="column"
+            alignItems="flex-end"
+            justifyContent="flex-start"
+            sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1500 }}
+          >
+            {costb && costb.amount && (
+              <Box
+                sx={{
+                  backgroundColor: theme.palette.primary.main,
+                  borderRadius: '8px',
+                  padding: '4px 8px',
+                  marginBottom: '8px',
+                  boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 'bold',
+                    color: '#fff',
+                    textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)'
+                  }}
+                  noWrap
+                >
+                  Offer ✕ {fNumber(costb.amount)}
+                </Typography>
+              </Box>
+            )}
+            {updateEvent && (
+              <Box
+                sx={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  borderRadius: '8px',
+                  padding: '2px 6px',
+                  boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)'
+                }}
+              >
+                <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#fff' }} noWrap>
+                  {updateEvent}
+                </Typography>
+              </Box>
+            )}
+          </Stack>
+        </Box>
 
-                <CardContent sx={{ padding: 1, pb: 0.5 }}>
-                    <Box display='flex' justifyContent='space-between' alignItems='center'>
-                        <Typography variant="h6" noWrap sx={{ mt: 0.5, mb: 0.4, textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                            {name}
-                        </Typography>
-                    </Box>
-                    {destination && getMinterName(account) ? (
-                        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0 }}>
-                            <Tooltip title="Sold & Transfer">
-                                <SportsScoreIcon />
-                            </Tooltip>
-                            {rarity_rank > 0 && (
-                                <Chip
-                                    variant="outlined"
-                                    icon={<LeaderboardOutlinedIcon sx={{ width: 11 }} />}
-                                    label={<Typography variant="caption">{fIntNumber(rarity_rank)}</Typography>}
-                                    sx={{ height: 18 }}
-                                />
-                            )}
-                        </Stack>
-                    ) : (
-                        <Grid container alignItems="center" spacing={0.1}>
-                            <Grid item xs={12}>
-                                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0 }}>
-                                    {cost && (
-                                        cost.currency === "XRP" ? (
-                                            <Stack direction="row" spacing={0.5} alignItems="center">
-                                                <Typography>✕</Typography>
-                                                <Typography variant="body2" noWrap>{fNumber(cost.amount)}</Typography>
-                                            </Stack>
-                                        ) : (
-                                            <Typography variant="body2" noWrap>
-                                                {fNumber(cost.amount)} {normalizeCurrencyCodeXummImpl(cost.currency)}
-                                            </Typography>
-                                        )
-                                    )}
-                                    {rarity_rank > 0 && (
-                                        <Chip
-                                            variant="outlined"
-                                            icon={<LeaderboardOutlinedIcon sx={{ width: 11 }} />}
-                                            label={<Typography variant="caption">{fIntNumber(rarity_rank)}</Typography>}
-                                            sx={{ height: 18 }}
-                                        />
-                                    )}
-                                </Stack>
-                            </Grid>
-                        </Grid>
-                    )}
-                    {/* Buy Now button below Event */}
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        fullWidth
-                        sx={{ mt: 1, boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)', borderRadius: '8px', transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.02)' } }}
-                    >
-                        Buy Now
-                    </Button>
-                </CardContent>
-            </CardWrapper>
-        </Link>
-    );
+        <CardContent
+          sx={{
+            padding: 1,
+            background: theme.palette.background.default,
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
+          }}
+        >
+          <Box>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 'bold',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 1,
+                WebkitBoxOrient: 'vertical',
+                fontSize: '0.8rem'
+              }}
+            >
+              {name}
+            </Typography>
+            {cost && (
+              <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: '0.7rem' }}>
+                {cost.currency === 'XRP'
+                  ? `✕ ${fNumber(cost.amount)}`
+                  : `${fNumber(cost.amount)} ${normalizeCurrencyCodeXummImpl(cost.currency)}`}
+              </Typography>
+            )}
+          </Box>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" mt={0.5}>
+            <Box flexGrow={1} mr={1}>
+              {showBuyNowButton ? (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  sx={{
+                    boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)',
+                    borderRadius: '6px',
+                    transition: 'transform 0.2s',
+                    '&:hover': { transform: 'scale(1.02)' },
+                    padding: '2px 6px',
+                    fontSize: '0.7rem',
+                    minHeight: '24px'
+                  }}
+                >
+                  Buy Now
+                </Button>
+              ) : destination && getMinterName(account) ? (
+                <Tooltip title={`Sold & Transfer`}>
+                  <SportsScoreIcon color="primary" sx={{ fontSize: '1rem' }} />
+                </Tooltip>
+              ) : (
+                <Box />
+              )}
+            </Box>
+            {rarity_rank > 0 && (
+              <Chip
+                variant="filled"
+                color="secondary"
+                icon={<LeaderboardOutlinedIcon sx={{ width: '12px' }} />}
+                label={<Typography variant="caption" sx={{ fontSize: '0.65rem' }}>{fIntNumber(rarity_rank)}</Typography>}
+                size="small"
+                sx={{
+                  height: '20px',
+                  '& .MuiChip-label': { px: 0.5 }
+                }}
+              />
+            )}
+          </Stack>
+        </CardContent>
+      </CardWrapper>
+    </Link>
+  );
 }
