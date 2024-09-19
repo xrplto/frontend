@@ -22,7 +22,6 @@ import CloseIcon from '@mui/icons-material/Close';
 // Iconify
 import { Icon } from '@iconify/react';
 
-
 // Utils
 import { getMinterName } from "src/utils/constants";
 import { fNumber, fIntNumber } from 'src/utils/formatNumber';
@@ -32,16 +31,24 @@ import Label from './Label';
 import { AppContext } from "src/AppContext";
 import { useRouter } from "next/router";
 
+import { alpha } from '@mui/material/styles';
+
 const CardWrapper = styled(Card)(
     ({ theme }) => `
-        border-radius: 10px;
-        backdrop-filter: blur(50px);
-        padding: 0px;
+        border-radius: 16px;
+        backdrop-filter: blur(20px);
+        background-color: ${alpha(theme.palette.background.paper, 0.8)};
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 0;
         cursor: pointer;
-        transition: width 1s ease-in-out, height .5s ease-in-out !important;
-        -webkit-tap-highlight-color: transparent;
+        transition: all 0.3s ease-in-out;
         overflow: hidden;
-        padding-bottom: 5px;
+        
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+        }
   `
 );
 
@@ -53,6 +60,9 @@ export default function CollectionCard({ collectionData, type, account, handleRe
 
     const [loadingImg, setLoadingImg] = useState(true);
     const [colors, setColors] = useState([]);
+
+    console.log('CollectionCard - collectionData:', collectionData);
+    console.log('CollectionCard - collection:', collectionData.collection);
 
     const collection = collectionData.collection;
     if (!collection) return null;
@@ -68,6 +78,18 @@ export default function CollectionCard({ collectionData, type, account, handleRe
         rarity,
         rarity_rank
     } = collection;
+
+    console.log('CollectionCard - Destructured collection properties:', {
+        uuid,
+        cost,
+        costb,
+        meta,
+        dfile,
+        NFTokenID,
+        destination,
+        rarity,
+        rarity_rank
+    });
 
     const isSold = false;
     const imgUrl = `https://s1.xrpnft.com/collection/${collection.logoImage}`;
@@ -109,7 +131,7 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                     marginRight: 'auto',
                     width: '100%',
                     maxWidth: 280,
-                    aspectRatio: '9 / 15',
+                    aspectRatio: '9 / 13', // Changed from '9 / 15' to make the card shorter
                 }}
             >
                 {isAdmin &&
@@ -145,7 +167,8 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                                 variant='rectangular'
                                 sx={{
                                     width: '100%',
-                                    height: '75%'
+                                    height: '75%', // Increased back to 75% as we're reducing overall card height
+                                    borderRadius: '16px 16px 0 0',
                                 }}
                             /> :
                             isVideo ? 'video' : 'img'}
@@ -154,9 +177,10 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                     alt={'NFT' + uuid}
                     sx={{
                         width: '100%',
-                        height: '75%',
+                        height: '75%', // Increased back to 75%
                         maxWidth: 280,
-                        objectFit: 'cover'
+                        objectFit: 'cover',
+                        borderRadius: '16px 16px 0 0',
                     }}
                 />
                 <img src={imgUrl}
@@ -170,78 +194,55 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                     />
                 }
                 <CardContent
-                    sx={{ padding: 0 }}
+                    sx={{ 
+                        padding: 1.5,
+                        background: theme.palette.background.default,
+                        height: '25%', // Reduced from 30% to 25%
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                    }}
                 >
-                    <Box display={'flex'} flexDirection='column' justifyContent={'space-evenly'} px={1}>
-                        {name.length > 20 ?
-                            <Box display='flex'>
-                                <Typography
-                                    variant="s15"
-                                    textOverflow='ellipsis'
-                                    overflow='hidden'
-                                    whiteSpace='nowrap'
-                                    sx={{ mt: 0.5, mb: 0.4 }}
-                                >
-                                    {name.slice(0, -5)}
-                                </Typography>
-                                <Typography
-                                    variant="s15"
-                                    sx={{ mt: 0.5, mb: 0.4, width: 45 }}
-                                >
-                                    {name.slice(-5)}
-                                </Typography>
-                            </Box>
-                            :
-                            <Typography
-                                variant="s15"
-                                sx={{ mt: 0.5, mb: 0.4 }}
-                            >
-                                {name}
-                            </Typography>
-                        }
-                        {destination && getMinterName(account) ? (
-                            <Stack direction="row" alignItems='center' justifyContent='space-between' sx={{ mt: 0, pl: 0, pr: 0 }}>
-                                <Tooltip title={`Sold & Transfer`}>
-                                    <SportsScoreIcon />
-                                </Tooltip>
-
-                                {rarity_rank > 0 &&
-                                    <Chip
-                                        variant="outlined"
-                                        icon={<LeaderboardOutlinedIcon sx={{ width: '11px' }} />}
-                                        label={<Typography variant="s12">{fIntNumber(rarity_rank)}</Typography>}
-                                        sx={{
-                                            height: '18px',
-                                            pt: 0
-                                        }}
-                                    />
-                                }
-                            </Stack>
-                        ) : (
-                            <Grid container alignItems='center' spacing={0.1}>
-                                <Grid item xs={12}>
-                                    <Stack direction="row" alignItems='center' justifyContent='space-between' sx={{ mt: 0, pl: 0, pr: 0 }}>
-                                        <Typography variant='s7'>{collectionData.nftCount} item(s)</Typography>
-
-                                        {rarity_rank > 0 &&
-                                            <Chip
-                                                variant="outlined"
-                                                icon={<LeaderboardOutlinedIcon sx={{ width: '11px' }} />}
-                                                label={<Typography variant="s12">{fIntNumber(rarity_rank)}</Typography>}
-                                                sx={{
-                                                    height: '18px',
-                                                    pt: 0
-                                                }}
-                                            />
-                                        }
-                                    </Stack>
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <Typography variant='s7'>{collectionData.nftsForSale} listed</Typography>
-                                </Grid>
-                            </Grid>
-                        )}
+                    <Box>
+                        <Typography
+                            variant="subtitle2"
+                            sx={{
+                                fontWeight: 'bold',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 1,
+                                WebkitBoxOrient: 'vertical',
+                            }}
+                        >
+                            {name}
+                        </Typography>
+                        <Typography variant='caption' color="text.secondary">
+                            {collectionData.nftCount} item(s)
+                        </Typography>
                     </Box>
+                    <Stack direction="row" alignItems='center' justifyContent='space-between'>
+                        {destination && getMinterName(account) ? (
+                            <Tooltip title={`Sold & Transfer`}>
+                                <SportsScoreIcon color="primary" fontSize="small" />
+                            </Tooltip>
+                        ) : (
+                            <Box /> // Empty box to maintain layout
+                        )}
+                        {rarity_rank > 0 &&
+                            <Chip
+                                variant="filled"
+                                color="secondary"
+                                icon={<LeaderboardOutlinedIcon sx={{ width: '14px' }} />}
+                                label={<Typography variant="caption">{fIntNumber(rarity_rank)}</Typography>}
+                                size="small"
+                                sx={{
+                                    height: '20px',
+                                    '& .MuiChip-label': { px: 0.5 },
+                                }}
+                            />
+                        }
+                    </Stack>
                 </CardContent>
             </CardWrapper>
         </Stack >
