@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     useTheme,
     Box,
@@ -24,6 +24,7 @@ import {
     Paper,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Verified as VerifiedIcon } from '@mui/icons-material';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import styled from '@emotion/styled';
@@ -38,6 +39,8 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import Ranks from "./Ranks";
+import { activeRankColors, rankGlowEffect } from 'src/components/Chatbox/RankStyles';
+import axios from 'axios';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -110,6 +113,7 @@ const volumeData = {
 
 export default function Portfolio({ account, limit, collection, type }) {
     const theme = useTheme();
+    const [activeRanks, setActiveRanks] = useState({});
 
     // Fallback value for theme.palette.divider
     const dividerColor = theme?.palette?.divider || '#ccc';
@@ -213,6 +217,19 @@ export default function Portfolio({ account, limit, collection, type }) {
         "/icons/nft16.png"
     ];
 
+    useEffect(() => {
+        async function fetchActiveRanks() {
+            try {
+                const res = await axios.get('http://127.0.0.1:5000/api/fetch-active-ranks');
+                setActiveRanks(res.data);
+            } catch (error) {
+                console.error('Error fetching active ranks:', error);
+            }
+        }
+
+        fetchActiveRanks();
+    }, []);
+
     return (
         <OverviewWrapper>
             <Container maxWidth="xl" sx={{ mt: 4 }}>
@@ -241,10 +258,37 @@ export default function Portfolio({ account, limit, collection, type }) {
                                         }}
                                     >
                                         <Chip
-                                            avatar={<Avatar src={getHashIcon(account)} />}
-                                            label={account}
-                                            color="secondary"
-                                            sx={{ fontSize: "1rem", color: theme.palette.text.primary }}
+                                            avatar={
+                                                <Avatar
+                                                    src={getHashIcon(account)}
+                                                    sx={{
+                                                        border: `3px solid ${activeRankColors[activeRanks[account]] || '#808080'}`,
+                                                        boxShadow: `0 0 15px ${activeRankColors[activeRanks[account]] || '#808080'}`,
+                                                    }}
+                                                />
+                                            }
+                                            label={
+                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                    {account}
+                                                    {activeRanks[account] === 'verified' && (
+                                                        <VerifiedIcon
+                                                            sx={{
+                                                                fontSize: '1.2rem',
+                                                                ml: 0.5,
+                                                                color: '#1DA1F2', // Twitter blue color for verified icon
+                                                            }}
+                                                        />
+                                                    )}
+                                                </Box>
+                                            }
+                                            sx={{
+                                                fontSize: "1rem",
+                                                color: activeRankColors[activeRanks[account]] || '#808080',
+                                                bgcolor: 'transparent',
+                                                '& .MuiChip-label': {
+                                                    color: activeRankColors[activeRanks[account]] || '#808080',
+                                                },
+                                            }}
                                         />
                                     </Box>
 
