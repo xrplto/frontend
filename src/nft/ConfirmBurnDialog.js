@@ -12,6 +12,9 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { alpha } from '@mui/material/styles';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+
 // ----------------------------------------------------------------------
 const ConfirmDialog = styled(Dialog) (({ theme }) => ({
     backdropFilter: 'blur(1px)',
@@ -22,6 +25,18 @@ const ConfirmDialog = styled(Dialog) (({ theme }) => ({
     '& .MuiDialogActions-root': {
         padding: theme.spacing(1),
     },
+}));
+
+const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
+    background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.background.paper, 0.95)})`,
+    backdropFilter: 'blur(10px)',
+    borderRadius: theme.shape.borderRadius,
+    padding: theme.spacing(4),
+}));
+
+const WarningIcon = styled(LocalFireDepartmentIcon)(({ theme }) => ({
+    fontSize: 48,
+    color: theme.palette.error.main,
 }));
 
 const ConfirmDialogTitle = (props) => {
@@ -76,37 +91,43 @@ export default function ConfirmBurnDialog({open, setOpen, onContinue }) {
             disableScrollLock
             disablePortal
             keepMounted
+            PaperProps={{
+                style: {
+                    borderRadius: 16,
+                    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+                },
+            }}
         >
-            <ConfirmDialogTitle id="customized-dialog-title" onClose={handleClose}>
-                <Stack direction="row" spacing={1}>
-                    <ErrorOutlineIcon color="error" />
-                    <Typography variant="p4" color="error">Warning!</Typography>
-                </Stack>
-            </ConfirmDialogTitle>
-
-            <DialogContent>
-                <Stack sx={{pl:1, pr:1}}>
-                    <Typography variant="p5" sx={{mt: 2}}>Do you really want to burn your NFT?</Typography>
-                    <Stack direction='row' spacing={2} justifyContent="center" sx={{mt:3, mb:4}}>
-                        <Button
-                            variant="contained"
-                            onClick={handleNo}
-                            color='primary'
-                            // size='medium'
-                        >
-                            No
-                        </Button>
+            <StyledDialogContent>
+                <Stack spacing={3} alignItems="center">
+                    <WarningIcon />
+                    <Typography variant="h5" fontWeight="bold" textAlign="center">
+                        Confirm NFT Burn
+                    </Typography>
+                    <Typography variant="body1" textAlign="center">
+                        Are you absolutely certain you want to burn this NFT? This action cannot be undone.
+                    </Typography>
+                    <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2 }}>
                         <Button
                             variant="outlined"
-                            onClick={handleYes}
-                            color='primary'
-                            // size='medium'
+                            onClick={handleNo}
+                            color="primary"
+                            size="large"
                         >
-                            Yes
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="contained"
+                            onClick={handleYes}
+                            color="error"
+                            size="large"
+                            startIcon={<LocalFireDepartmentIcon />}
+                        >
+                            Burn NFT
                         </Button>
                     </Stack>
                 </Stack>
-            </DialogContent>
+            </StyledDialogContent>
         </ConfirmDialog>
     );
 }
