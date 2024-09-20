@@ -23,65 +23,82 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { motion } from 'framer-motion';
+import { alpha } from '@mui/material/styles';
 
 const BASE_URL = 'https://api.xrpnft.com/api';
 
 // Implement ChatNFTCard directly in this file
 const ChatNFTCard = ({ nft, onSelect, isSelected }) => {
   const { darkMode } = useContext(AppContext);
+  const theme = useTheme();
 
   const imgUrl = getNftCoverUrl(nft, 'small');
   const name = nft.meta?.name || nft.meta?.Name || 'No Name';
   const nftId = nft.NFTokenID || nft.nftokenID || nft.id || 'Unknown';
 
   return (
-    <Card
-      onClick={() => onSelect(nft)}
-      sx={{
-        cursor: 'pointer',
-        border: isSelected ? '2px solid #007B55' : 'none',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        bgcolor: darkMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)',
-        '&:hover': {
-          bgcolor: darkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.2)'
-        }
-      }}
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
     >
-      <CardMedia
-        component="img"
-        image={imgUrl}
-        alt={name}
+      <Card
+        onClick={() => onSelect(nft)}
         sx={{
-          height: 40,
-          objectFit: 'cover'
+          cursor: 'pointer',
+          border: isSelected ? `2px solid ${theme.palette.primary.main}` : 'none',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          bgcolor: darkMode ? alpha(theme.palette.background.paper, 0.1) : alpha(theme.palette.background.paper, 0.8),
+          backdropFilter: 'blur(8px)',
+          transition: 'all 0.3s ease-in-out',
+          '&:hover': {
+            boxShadow: theme.shadows[10],
+            bgcolor: darkMode ? alpha(theme.palette.background.paper, 0.2) : alpha(theme.palette.background.paper, 0.9),
+          }
         }}
-      />
-      <CardContent sx={{ p: 0.5, flexGrow: 1 }}>
-        <Typography variant="caption" component="div" noWrap>
-          {name} ({nftId})
-        </Typography>
-      </CardContent>
-    </Card>
+      >
+        <CardMedia
+          component="img"
+          image={imgUrl}
+          alt={name}
+          sx={{
+            height: 40,
+            objectFit: 'cover'
+          }}
+        />
+        <CardContent sx={{ p: 0.5, flexGrow: 1 }}>
+          <Typography variant="caption" component="div" noWrap>
+            {name} ({nftId})
+          </Typography>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 
 // Implement ChatCollectionCard directly in this file
-const CardWrapper = styled(Card)(
+const CardWrapper = styled(motion.div)(
   ({ theme }) => `
-        border-radius: 8px;
-        padding: 0px;
-        cursor: pointer;
-        overflow: hidden;
-        height: 100px;
-        width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 120px;
+    width: 100%;
+    background: ${alpha(theme.palette.background.paper, 0.8)};
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease-in-out;
+    &:hover {
+      box-shadow: ${theme.shadows[10]};
+      background: ${alpha(theme.palette.background.paper, 0.9)};
+    }
   `
 );
 
 const ChatCollectionCard = ({ collectionData, onSelect }) => {
   const { accountProfile } = useContext(AppContext);
   const [loadingImg, setLoadingImg] = useState(true);
+  const theme = useTheme();
 
   const collection = collectionData.collection;
   if (!collection) return null;
@@ -100,7 +117,11 @@ const ChatCollectionCard = ({ collectionData, onSelect }) => {
   };
 
   return (
-    <CardWrapper onClick={handleClick}>
+    <CardWrapper
+      onClick={handleClick}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+    >
       <Box display="flex" flexDirection="column" alignItems="center" height="100%" p={1}>
         {loadingImg ? (
           <Skeleton variant="rectangular" width={40} height={40} sx={{ mb: 1 }} />
@@ -230,7 +251,7 @@ const ProfileNFTs = ({
         pt: 0,
         height: isMobile ? '300px' : '240px',
         width: '100%',
-        maxWidth: isMobile ? '100%' : '320px',
+        maxWidth: '100%', // Changed to 100% to use full width
         overflow: 'auto',
         '&::-webkit-scrollbar': {
           width: '6px !important'
@@ -272,7 +293,7 @@ const ProfileNFTs = ({
       ) : (
         <Grid container spacing={2}>
           {nfts.map((nft, index) => (
-            <Grid item key={index} xs={6} sm={4} md={3}>
+            <Grid item key={index} xs={6} sm={4} md={3} lg={2} xl={1}>
               {selectedCollection ? (
                 <ChatNFTCard
                   nft={nft}
@@ -292,14 +313,17 @@ const ProfileNFTs = ({
 
 function TradeNFTPicker({ onSelect, account, isPartner }) {
   const [selectedNFT, setSelectedNFT] = useState(null);
+  const theme = useTheme();
 
   const handleNFTSelect = (nft) => {
     setSelectedNFT(nft);
     onSelect(nft);
   };
-
   return (
-    <Box>
+    <Box sx={{ width: '100%', p: 2, borderRadius: 2, bgcolor: (theme) => alpha(theme.palette.background.paper, 0.6) }}>
+      <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'primary.main' }}>
+        Select NFT for Trade
+      </Typography>
       <ProfileNFTs
         account={account}
         type="collected"
