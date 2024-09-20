@@ -35,7 +35,6 @@ const ChatNFTCard = ({ nft, onSelect, isSelected }) => {
 
   const imgUrl = getNftCoverUrl(nft, 'small');
   const name = nft.meta?.name || nft.meta?.Name || 'No Name';
-  const nftId = nft.NFTokenID || nft.nftokenID || nft.id || 'Unknown';
 
   return (
     <motion.div
@@ -56,7 +55,11 @@ const ChatNFTCard = ({ nft, onSelect, isSelected }) => {
           '&:hover': {
             boxShadow: theme.shadows[10],
             bgcolor: darkMode ? alpha(theme.palette.background.paper, 0.2) : alpha(theme.palette.background.paper, 0.9),
-          }
+          },
+          width: '100%',
+          aspectRatio: '1 / 1',
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
         <CardMedia
@@ -64,15 +67,44 @@ const ChatNFTCard = ({ nft, onSelect, isSelected }) => {
           image={imgUrl}
           alt={name}
           sx={{
-            height: 40,
-            objectFit: 'cover'
+            width: '110%',
+            height: '110%',
+            objectFit: 'cover',
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
           }}
         />
-        <CardContent sx={{ p: 0.5, flexGrow: 1 }}>
-          <Typography variant="caption" component="div" noWrap>
-            {name} ({nftId})
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            padding: '4px',
+          }}
+        >
+          <Typography 
+            variant="caption"
+            component="div" 
+            sx={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              lineHeight: 1.2,
+              textAlign: 'center',
+              width: '100%',
+              fontSize: '0.7rem',
+              color: 'white',
+            }}
+          >
+            {name}
           </Typography>
-        </CardContent>
+        </Box>
       </Card>
     </motion.div>
   );
@@ -83,7 +115,7 @@ const CardWrapper = styled(motion.div)(
   ({ theme }) => `
     border-radius: 12px;
     overflow: hidden;
-    height: 120px;
+    height: 140px;
     width: 100%;
     background: ${alpha(theme.palette.background.paper, 0.8)};
     backdrop-filter: blur(8px);
@@ -122,35 +154,48 @@ const ChatCollectionCard = ({ collectionData, onSelect }) => {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
-      <Box display="flex" flexDirection="column" alignItems="center" height="100%" p={1}>
+      <Box display="flex" flexDirection="column" alignItems="center" height="100%" p={1.5}>
         {loadingImg ? (
-          <Skeleton variant="rectangular" width={40} height={40} sx={{ mb: 1 }} />
+          <Skeleton variant="rectangular" width={60} height={60} sx={{ mb: 1.5 }} />
         ) : (
-          <CardMedia
-            component="img"
-            image={imgUrl}
-            alt={name}
+          <Box
             sx={{
-              width: '40px',
-              height: '40px',
-              objectFit: 'cover',
+              width: '60px',
+              height: '60px',
+              position: 'relative',
+              overflow: 'hidden',
               borderRadius: '4px',
-              mb: 1
+              mb: 1.5
             }}
-            onLoad={onImageLoaded}
-          />
+          >
+            <CardMedia
+              component="img"
+              image={imgUrl}
+              alt={name}
+              sx={{
+                width: '110%',
+                height: '110%',
+                objectFit: 'cover',
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+              }}
+              onLoad={onImageLoaded}
+            />
+          </Box>
         )}
         <Typography
           variant="caption"
           sx={{
-            fontSize: '0.65rem',
+            fontSize: '0.75rem',
             lineHeight: 1.2,
             textAlign: 'center',
             maxWidth: '100%',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
-            mb: 0.5
+            mb: 0.75
           }}
         >
           {name}
@@ -158,15 +203,15 @@ const ChatCollectionCard = ({ collectionData, onSelect }) => {
         {collection.rarity_rank > 0 && (
           <Chip
             variant="outlined"
-            icon={<LeaderboardOutlinedIcon sx={{ width: '10px', height: '10px' }} />}
+            icon={<LeaderboardOutlinedIcon sx={{ width: '12px', height: '12px' }} />}
             label={
-              <Typography variant="caption" sx={{ fontSize: '0.6rem' }}>
+              <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
                 {fIntNumber(collection.rarity_rank)}
               </Typography>
             }
             sx={{
-              height: '16px',
-              '& .MuiChip-label': { padding: '0 4px' }
+              height: '20px',
+              '& .MuiChip-label': { padding: '0 6px' }
             }}
           />
         )}
@@ -249,9 +294,9 @@ const ProfileNFTs = ({
       sx={{
         padding: '10px',
         pt: 0,
-        height: isMobile ? '300px' : '240px',
+        height: isMobile ? '420px' : '360px',
         width: '100%',
-        maxWidth: '100%', // Changed to 100% to use full width
+        maxWidth: '100%',
         overflow: 'auto',
         '&::-webkit-scrollbar': {
           width: '6px !important'
@@ -291,9 +336,9 @@ const ProfileNFTs = ({
           </Typography>
         </Stack>
       ) : (
-        <Grid container spacing={2}>
+        <Grid container spacing={3}>
           {nfts.map((nft, index) => (
-            <Grid item key={index} xs={6} sm={4} md={3} lg={2} xl={1}>
+            <Grid item key={index} xs={6} sm={4} md={3} lg={3} xl={2}>
               {selectedCollection ? (
                 <ChatNFTCard
                   nft={nft}
