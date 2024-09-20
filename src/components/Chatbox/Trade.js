@@ -12,10 +12,13 @@ import {
   Paper,
   Divider,
   IconButton,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import TradeNFTPicker from './TradeNFTPicker';
 import { AppContext } from 'src/AppContext';
 import { Client } from 'xrpl';
@@ -25,19 +28,21 @@ const OWNER_RESERVE = 2;
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
-    borderRadius: 16,
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+    borderRadius: 24,
+    boxShadow: '0 12px 48px rgba(0, 0, 0, 0.12)',
   },
 }));
 
 const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
-  background: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
-  padding: theme.spacing(2, 3),
+  background: theme.palette.background.default,
+  color: theme.palette.text.primary,
+  padding: theme.spacing(3, 4),
+  borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   padding: theme.spacing(4),
+  background: theme.palette.background.default,
 }));
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -45,6 +50,15 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
+  borderRadius: 16,
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+  background: theme.palette.background.paper,
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  borderRadius: 20,
+  textTransform: 'none',
+  fontWeight: 600,
 }));
 
 const Trade = ({ open, onClose, tradePartner }) => {
@@ -53,16 +67,18 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const [selectedPartnerAssets, setSelectedPartnerAssets] = useState([]);
   const [loggedInUserXrpBalance, setLoggedInUserXrpBalance] = useState(0);
   const [partnerXrpBalance, setPartnerXrpBalance] = useState(0);
-  const [loggedInUserXrpOffer, setLoggedInUserXrpOffer] = useState(0);
-  const [partnerXrpOffer, setPartnerXrpOffer] = useState(0);
+  const [loggedInUserTokens, setLoggedInUserTokens] = useState([]);
+  const [partnerTokens, setPartnerTokens] = useState([]);
+  const [loggedInUserOffers, setLoggedInUserOffers] = useState([{ currency: 'XRP', amount: 0 }]);
+  const [partnerOffers, setPartnerOffers] = useState([{ currency: 'XRP', amount: 0 }]);
 
   useEffect(() => {
     if (open && accountProfile && tradePartner) {
-      fetchXrpBalances();
+      fetchBalances();
     }
   }, [open, accountProfile, tradePartner]);
 
-  const fetchXrpBalances = async () => {
+  const fetchBalances = async () => {
     const client = new Client('wss://s1.ripple.com');
     try {
       await client.connect();
@@ -86,8 +102,20 @@ const Trade = ({ open, onClose, tradePartner }) => {
       const partnerOwnerCount = partnerInfo.result.account_data.OwnerCount;
       const partnerReserve = BASE_RESERVE + (partnerOwnerCount * OWNER_RESERVE);
       setPartnerXrpBalance(Math.max(0, partnerTotalBalance - partnerReserve));
+
+      const loggedInUserLines = await client.request({
+        command: 'account_lines',
+        account: accountProfile.account,
+      });
+      setLoggedInUserTokens(loggedInUserLines.result.lines);
+
+      const partnerLines = await client.request({
+        command: 'account_lines',
+        account: tradePartner.username,
+      });
+      setPartnerTokens(partnerLines.result.lines);
     } catch (error) {
-      console.error('Error fetching XRP balances:', error);
+      console.error('Error fetching balances:', error);
     } finally {
       client.disconnect();
     }
@@ -115,12 +143,41 @@ const Trade = ({ open, onClose, tradePartner }) => {
     });
   };
 
+  const handleAddOffer = (isLoggedInUser) => {
+    if (isLoggedInUser) {
+      setLoggedInUserOffers([...loggedInUserOffers, { currency: 'XRP', amount: 0 }]);
+    } else {
+      setPartnerOffers([...partnerOffers, { currency: 'XRP', amount: 0 }]);
+    }
+  };
+
+  const handleRemoveOffer = (index, isLoggedInUser) => {
+    if (isLoggedInUser) {
+      setLoggedInUserOffers(loggedInUserOffers.filter((_, i) => i !== index));
+    } else {
+      setPartnerOffers(partnerOffers.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleOfferChange = (index, field, value, isLoggedInUser) => {
+    const updateOffers = (offers) => 
+      offers.map((offer, i) => 
+        i === index ? { ...offer, [field]: value } : offer
+      );
+
+    if (isLoggedInUser) {
+      setLoggedInUserOffers(updateOffers(loggedInUserOffers));
+    } else {
+      setPartnerOffers(updateOffers(partnerOffers));
+    }
+  };
+
   const handleTrade = () => {
     console.log('Trade initiated', {
       loggedInUserAssets: selectedLoggedInUserAssets,
       partnerAssets: selectedPartnerAssets,
-      loggedInUserXrpOffer,
-      partnerXrpOffer
+      loggedInUserOffers,
+      partnerOffers
     });
     // Implement trade logic here
   };
@@ -128,8 +185,8 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const handleClose = () => {
     setSelectedLoggedInUserAssets([]);
     setSelectedPartnerAssets([]);
-    setLoggedInUserXrpOffer(0);
-    setPartnerXrpOffer(0);
+    setLoggedInUserOffers([{ currency: 'XRP', amount: 0 }]);
+    setPartnerOffers([{ currency: 'XRP', amount: 0 }]);
     onClose();
   };
 
@@ -140,6 +197,45 @@ const Trade = ({ open, onClose, tradePartner }) => {
           {asset.meta?.name || asset.meta?.Name || 'Unnamed NFT'} ({asset.NFTokenID || asset.nftokenID || asset.id})
         </Typography>
       ))}
+    </Box>
+  );
+
+  const renderOffers = (offers, tokens, isLoggedInUser) => (
+    <Box>
+      {offers.map((offer, index) => (
+        <Box key={index} display="flex" alignItems="center" mb={2}>
+          <Select
+            value={offer.currency}
+            onChange={(e) => handleOfferChange(index, 'currency', e.target.value, isLoggedInUser)}
+            sx={{ width: '40%', mr: 1, borderRadius: 2 }}
+          >
+            <MenuItem value="XRP">XRP</MenuItem>
+            {tokens.map((token) => (
+              <MenuItem key={`${token.currency}-${token.issuer}`} value={`${token.currency}-${token.issuer}`}>
+                {token.currency}
+              </MenuItem>
+            ))}
+          </Select>
+          <TextField
+            type="number"
+            value={offer.amount}
+            onChange={(e) => handleOfferChange(index, 'amount', Number(e.target.value), isLoggedInUser)}
+            inputProps={{ min: 0, step: 0.000001 }}
+            sx={{ width: '40%', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+          />
+          <IconButton onClick={() => handleRemoveOffer(index, isLoggedInUser)} sx={{ ml: 1 }}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      ))}
+      <StyledButton 
+        onClick={() => handleAddOffer(isLoggedInUser)} 
+        variant="outlined" 
+        size="small"
+        startIcon={<AddCircleOutlineIcon />}
+      >
+        Add Token
+      </StyledButton>
     </Box>
   );
 
@@ -158,15 +254,15 @@ const Trade = ({ open, onClose, tradePartner }) => {
       disableBackdropClick
     >
       <StyledDialogTitle>
-        Asset Exchange
+        <Typography variant="h5" fontWeight="bold">Asset Exchange</Typography>
         <IconButton
           aria-label="close"
           onClick={handleClose}
           sx={{
             position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500],
+            right: 16,
+            top: 16,
+            color: (theme) => theme.palette.text.secondary,
           }}
         >
           <CloseIcon />
@@ -176,78 +272,62 @@ const Trade = ({ open, onClose, tradePartner }) => {
         <Grid container spacing={4}>
           <Grid item xs={6}>
             <StyledPaper elevation={3}>
-              <Typography variant="h6" gutterBottom>{accountProfile.username}'s Portfolio</Typography>
-              <Typography variant="body2" color="text.secondary" mb={2}>
-                Available XRP: {loggedInUserXrpBalance.toFixed(2)} XRP
+              <Typography variant="h6" fontWeight="bold" gutterBottom>{accountProfile.username}'s Portfolio</Typography>
+              <Typography variant="body1" color="text.secondary" mb={2}>
+                Available XRP: <Box component="span" fontWeight="bold">{loggedInUserXrpBalance.toFixed(6)} XRP</Box>
               </Typography>
-              <TextField
-                type="number"
-                label="XRP to offer"
-                value={loggedInUserXrpOffer}
-                onChange={(e) => setLoggedInUserXrpOffer(Number(e.target.value))}
-                inputProps={{ min: 0, max: loggedInUserXrpBalance, step: 0.000001 }}
-                fullWidth
-                margin="normal"
-                variant="outlined"
-              />
-              <Box mt={2} mb={2}>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Tokens to Offer:</Typography>
+              {renderOffers(loggedInUserOffers, loggedInUserTokens, true)}
+              <Box mt={3} mb={3}>
                 <Divider />
               </Box>
-              <Typography variant="subtitle1" gutterBottom>Select Assets to Offer:</Typography>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Select Assets to Offer:</Typography>
               <TradeNFTPicker 
                 onSelect={handleLoggedInUserAssetSelect} 
                 account={accountProfile.account}
                 isPartner={false}
               />
-              <Box mt={2}>
-                <Typography variant="subtitle1" gutterBottom>Selected Assets:</Typography>
+              <Box mt={3}>
+                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Selected Assets:</Typography>
                 {renderSelectedAssets(selectedLoggedInUserAssets)}
               </Box>
             </StyledPaper>
           </Grid>
           <Grid item xs={6}>
             <StyledPaper elevation={3}>
-              <Typography variant="h6" gutterBottom>{tradePartner.username}'s Portfolio</Typography>
-              <Typography variant="body2" color="text.secondary" mb={2}>
-                Available XRP: {partnerXrpBalance.toFixed(2)} XRP
+              <Typography variant="h6" fontWeight="bold" gutterBottom>{tradePartner.username}'s Portfolio</Typography>
+              <Typography variant="body1" color="text.secondary" mb={2}>
+                Available XRP: <Box component="span" fontWeight="bold">{partnerXrpBalance.toFixed(6)} XRP</Box>
               </Typography>
-              <TextField
-                type="number"
-                label="XRP to request"
-                value={partnerXrpOffer}
-                onChange={(e) => setPartnerXrpOffer(Number(e.target.value))}
-                inputProps={{ min: 0, max: partnerXrpBalance, step: 0.000001 }}
-                fullWidth
-                margin="normal"
-                variant="outlined"
-              />
-              <Box mt={2} mb={2}>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Tokens to Request:</Typography>
+              {renderOffers(partnerOffers, partnerTokens, false)}
+              <Box mt={3} mb={3}>
                 <Divider />
               </Box>
-              <Typography variant="subtitle1" gutterBottom>Select Assets to Request:</Typography>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Select Assets to Request:</Typography>
               <TradeNFTPicker 
                 onSelect={handlePartnerAssetSelect}
                 account={tradePartner.username}
                 isPartner={true}
               />
-              <Box mt={2}>
-                <Typography variant="subtitle1" gutterBottom>Selected Assets:</Typography>
+              <Box mt={3}>
+                <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Selected Assets:</Typography>
                 {renderSelectedAssets(selectedPartnerAssets)}
               </Box>
             </StyledPaper>
           </Grid>
         </Grid>
       </StyledDialogContent>
-      <DialogActions sx={{ padding: (theme) => theme.spacing(3) }}>
-        <Button onClick={handleClose} variant="outlined">Cancel</Button>
-        <Button 
+      <DialogActions sx={{ padding: (theme) => theme.spacing(3), borderTop: (theme) => `1px solid ${theme.palette.divider}` }}>
+        <StyledButton onClick={handleClose} variant="outlined">Cancel</StyledButton>
+        <StyledButton 
           onClick={handleTrade} 
           variant="contained" 
           color="primary" 
           startIcon={<SwapHorizIcon />}
         >
           Propose Exchange
-        </Button>
+        </StyledButton>
       </DialogActions>
     </StyledDialog>
   );
