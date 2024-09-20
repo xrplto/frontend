@@ -22,6 +22,8 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import TradeNFTPicker from './TradeNFTPicker';
 import { AppContext } from 'src/AppContext';
 import { Client } from 'xrpl';
+import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
+import CryptoJS from 'crypto-js';
 
 const BASE_RESERVE = 10;
 const OWNER_RESERVE = 2;
@@ -71,6 +73,8 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const [partnerTokens, setPartnerTokens] = useState([]);
   const [loggedInUserOffers, setLoggedInUserOffers] = useState([{ currency: 'XRP', amount: 0 }]);
   const [partnerOffers, setPartnerOffers] = useState([{ currency: 'XRP', amount: 0 }]);
+  const [loggedInUserLines, setLoggedInUserLines] = useState([]);
+  const [partnerLines, setPartnerLines] = useState([]);
 
   useEffect(() => {
     if (open && accountProfile && tradePartner) {
@@ -107,18 +111,39 @@ const Trade = ({ open, onClose, tradePartner }) => {
         command: 'account_lines',
         account: accountProfile.account,
       });
-      setLoggedInUserTokens(loggedInUserLines.result.lines);
+      setLoggedInUserLines(loggedInUserLines.result.lines);
 
       const partnerLines = await client.request({
         command: 'account_lines',
         account: tradePartner.username,
       });
-      setPartnerTokens(partnerLines.result.lines);
+      setPartnerLines(partnerLines.result.lines);
+
+      // Process the lines to set tokens
+      setLoggedInUserTokens(processLines(loggedInUserLines.result.lines, accountProfile.account));
+      setPartnerTokens(processLines(partnerLines.result.lines, tradePartner.username));
+
     } catch (error) {
       console.error('Error fetching balances:', error);
     } finally {
       client.disconnect();
     }
+  };
+
+  const processLines = (lines, account) => {
+    return lines.map(line => {
+      const { currency, issuer } = line;
+      const balance = account === line.account ? Math.abs(Number(line.balance)) : Number(line.balance);
+      const currencyName = normalizeCurrencyCodeXummImpl(currency);
+      const md5 = CryptoJS.MD5(issuer + "_" + currency).toString();
+      
+      return {
+        currency: currencyName,
+        issuer,
+        balance,
+        md5,
+      };
+    });
   };
 
   const handleLoggedInUserAssetSelect = (nft) => {
@@ -212,7 +237,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
             <MenuItem value="XRP">XRP</MenuItem>
             {tokens.map((token) => (
               <MenuItem key={`${token.currency}-${token.issuer}`} value={`${token.currency}-${token.issuer}`}>
-                {token.currency}
+                {token.currency} ({token.balance.toFixed(6)})
               </MenuItem>
             ))}
           </Select>
