@@ -739,11 +739,10 @@ export default function NFTActions({ nft }) {
                         {destination && getMinterName(account) ? (
                             <>
                                 {destination === accountLogin ? (
-                                    <Box sx={{ 
-                                        backgroundColor: '#f0f8ff', 
+                                    <Paper elevation={3} sx={{ 
+                                        backgroundColor: 'transparent', 
                                         borderRadius: '8px', 
-                                        padding: '16px', 
-                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                                        padding: '16px'
                                     }}>
                                         <Typography variant="h6" sx={{ fontWeight: 600, marginBottom: '8px' }}>
                                             Incoming NFT Transfer
@@ -760,13 +759,12 @@ export default function NFTActions({ nft }) {
                                                 Accept Transfer
                                             </Button>
                                         </Typography>
-                                    </Box>
+                                    </Paper>
                                 ) : (
-                                    <Box sx={{ 
-                                        backgroundColor: '#f0f8ff', 
+                                    <Paper elevation={3} sx={{ 
+                                        backgroundColor: 'transparent', 
                                         borderRadius: '8px', 
-                                        padding: '16px', 
-                                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                                        padding: '16px'
                                     }}>
                                         <Typography variant="h6" sx={{ fontWeight: 600, marginBottom: '8px' }}>
                                             Outgoing NFT Transfer
@@ -791,7 +789,7 @@ export default function NFTActions({ nft }) {
                                                 {destination}
                                             </Typography>
                                         </Link>
-                                    </Box>
+                                    </Paper>
                                 )}
                             </>
                         ) : (
