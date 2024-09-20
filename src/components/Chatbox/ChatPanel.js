@@ -220,6 +220,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
             const displayRecipient = truncateString(privateMessageRecipient);
 
             const isCurrentUser = chat.username === accountProfile?.account;
+            const recipientRankColor = activeRankColors[activeRanks[privateMessageRecipient]] || '#808080';
 
             // Parse NewsBot message
             let newsData = null;
@@ -288,7 +289,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                           {chat.isPrivate && (
                             <>
                               {' → '}
-                              <span style={{ color: theme.palette.text.secondary }}>
+                              <span style={{ color: recipientRankColor }}>
                                 {displayRecipient}
                               </span>
                             </>
