@@ -27,6 +27,8 @@ import Terminal from './Terminal';
 import ChatSettings from './ChatSettings';
 import StoreIcon from '@mui/icons-material/Store';
 import Store from './Store';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import Trades from './Trades';
 
 // Styled component for custom scrollbar
 const CustomScrollBox = styled(Box)(({ theme }) => ({
@@ -419,6 +421,12 @@ function Chatbox() {
                 </ListItemIcon>
                 <ListItemText>Terminal</ListItemText>
               </MenuItem>
+              <MenuItem onClick={() => handleOptionSelect('Trades')}>
+                <ListItemIcon>
+                  <SwapHorizIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Trades</ListItemText>
+              </MenuItem>
               <MenuItem onClick={() => handleOptionSelect('Store')}>
                 <ListItemIcon>
                   <StoreIcon fontSize="small" />
@@ -456,6 +464,7 @@ function Chatbox() {
           />
         )}
         {selectedOption === 'Terminal' && <Terminal />}
+        {selectedOption === 'Trades' && <Trades />}
         {selectedOption === 'Store' && <Store />}
         {selectedOption === 'Settings' && <ChatSettings />}
       </CustomScrollBox>
