@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
-import { Client } from 'xrpl';
-import { AppContext } from 'src/AppContext';
+// TradeNFTPicker.js
+import React, { useEffect, useContext } from 'react';
 import axios from 'axios';
 import { PulseLoader } from 'react-spinners';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -22,16 +21,38 @@ import {
   useTheme,
   useMediaQuery
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
+import { styled, alpha } from '@mui/material/styles';
 import { motion } from 'framer-motion';
-import { alpha } from '@mui/material/styles';
+import PropTypes from 'prop-types';
+import { AppContext } from 'src/AppContext';
 
+// Constants
 const BASE_URL = 'https://api.xrpnft.com/api';
 
-// Implement ChatNFTCard directly in this file
+// Styled overlay to indicate selection
+const SelectedOverlay = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'rgba(0, 255, 0, 0.3)', // Semi-transparent green overlay
+  borderRadius: theme.shape.borderRadius,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: '#fff',
+  fontWeight: 'bold',
+  fontSize: '1.2rem',
+}));
+
+// ChatNFTCard Component
 const ChatNFTCard = ({ nft, onSelect, isSelected }) => {
   const { darkMode } = useContext(AppContext);
   const theme = useTheme();
+
+  // Use unique identifier, e.g., NFTokenID
+  const uniqueId = nft.NFTokenID || nft.id;
 
   const imgUrl = getNftCoverUrl(nft, 'small');
   const name = nft.meta?.name || nft.meta?.Name || 'No Name';
@@ -45,7 +66,7 @@ const ChatNFTCard = ({ nft, onSelect, isSelected }) => {
         onClick={() => onSelect(nft)}
         sx={{
           cursor: 'pointer',
-          border: isSelected ? `2px solid ${theme.palette.primary.main}` : 'none',
+          border: isSelected ? `2px solid ${theme.palette.success.main}` : '1px solid #ccc',
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
@@ -76,6 +97,7 @@ const ChatNFTCard = ({ nft, onSelect, isSelected }) => {
             transform: 'translate(-50%, -50%)',
           }}
         />
+        {isSelected && <SelectedOverlay>Selected</SelectedOverlay>}
         <Box
           sx={{
             position: 'absolute',
@@ -110,7 +132,13 @@ const ChatNFTCard = ({ nft, onSelect, isSelected }) => {
   );
 };
 
-// Implement ChatCollectionCard directly in this file
+ChatNFTCard.propTypes = {
+  nft: PropTypes.object.isRequired,
+  onSelect: PropTypes.func.isRequired,
+  isSelected: PropTypes.bool.isRequired,
+};
+
+// ChatCollectionCard Component
 const CardWrapper = styled(motion.div)(
   ({ theme }) => `
     border-radius: 12px;
@@ -129,7 +157,7 @@ const CardWrapper = styled(motion.div)(
 
 const ChatCollectionCard = ({ collectionData, onSelect }) => {
   const { accountProfile } = useContext(AppContext);
-  const [loadingImg, setLoadingImg] = useState(true);
+  const [loadingImg, setLoadingImg] = React.useState(true);
   const theme = useTheme();
 
   const collection = collectionData.collection;
@@ -164,7 +192,7 @@ const ChatCollectionCard = ({ collectionData, onSelect }) => {
               height: '60px',
               position: 'relative',
               overflow: 'hidden',
-              borderRadius: '8px', // Increased from 4px to 8px for slightly more rounded corners
+              borderRadius: '8px',
               mb: 1.5
             }}
           >
@@ -216,28 +244,35 @@ const ChatCollectionCard = ({ collectionData, onSelect }) => {
           />
         )}
       </Box>
-      <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
+      <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} alt={name} />
     </CardWrapper>
   );
 };
 
+ChatCollectionCard.propTypes = {
+  collectionData: PropTypes.object.isRequired,
+  onSelect: PropTypes.func.isRequired,
+};
+
+// ProfileNFTs Component
 const ProfileNFTs = ({
   account,
   collection,
   type = 'collected',
   limit,
   onSelect,
+  selectedAssets,
   smallSize = false
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const scrollRef = useRef(null);
+  const scrollRef = React.useRef(null);
   const { darkMode } = useContext(AppContext);
 
-  const [nfts, setNFTs] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedCollection, setSelectedCollection] = useState(null);
-  const [selectedNFT, setSelectedNFT] = useState(null);
+  const [nfts, setNFTs] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [selectedCollection, setSelectedCollection] = React.useState(null);
+  const [selectedNFT, setSelectedNFT] = React.useState(null);
 
   useEffect(() => {
     if (account) {
@@ -246,6 +281,7 @@ const ProfileNFTs = ({
         scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account, collection, type, selectedCollection]);
 
   const getNFTs = async () => {
@@ -277,7 +313,6 @@ const ProfileNFTs = ({
   };
 
   const handleNFTSelect = (nft) => {
-    setSelectedNFT(nft);
     onSelect(nft);
   };
 
@@ -338,13 +373,13 @@ const ProfileNFTs = ({
         </Stack>
       ) : (
         <Grid container spacing={3}>
-          {nfts.map((nft, index) => (
-            <Grid item key={index} xs={6} sm={4} md={3} lg={3} xl={2}>
+          {nfts.map((nft) => (
+            <Grid item key={nft.NFTokenID || nft.id} xs={6} sm={4} md={3} lg={3} xl={2}>
               {selectedCollection ? (
                 <ChatNFTCard
                   nft={nft}
                   onSelect={handleNFTSelect}
-                  isSelected={selectedNFT && selectedNFT.id === nft.id}
+                  isSelected={selectedAssets.some(asset => asset.NFTokenID === nft.NFTokenID)}
                 />
               ) : (
                 <ChatCollectionCard collectionData={nft} onSelect={handleCollectionSelect} />
@@ -357,16 +392,22 @@ const ProfileNFTs = ({
   );
 };
 
-function TradeNFTPicker({ onSelect, account, isPartner }) {
-  const [selectedNFT, setSelectedNFT] = useState(null);
+ProfileNFTs.propTypes = {
+  account: PropTypes.string.isRequired,
+  collection: PropTypes.string,
+  type: PropTypes.string,
+  limit: PropTypes.number.isRequired,
+  onSelect: PropTypes.func.isRequired,
+  selectedAssets: PropTypes.arrayOf(PropTypes.object).isRequired,
+  smallSize: PropTypes.bool,
+};
+
+// TradeNFTPicker Component
+function TradeNFTPicker({ onSelect, account, isPartner, selectedAssets }) {
   const theme = useTheme();
 
-  const handleNFTSelect = (nft) => {
-    setSelectedNFT(nft);
-    onSelect(nft);
-  };
   return (
-    <Box sx={{ width: '100%', p: 2, borderRadius: 2, bgcolor: (theme) => alpha(theme.palette.background.paper, 0.6) }}>
+    <Box sx={{ width: '100%', p: 2, borderRadius: 2, bgcolor: alpha(theme.palette.background.paper, 0.6) }}>
       <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'primary.main' }}>
         Select NFT for Trade
       </Typography>
@@ -374,10 +415,18 @@ function TradeNFTPicker({ onSelect, account, isPartner }) {
         account={account}
         type="collected"
         limit={20}
-        onSelect={handleNFTSelect}
+        onSelect={onSelect}
+        selectedAssets={selectedAssets}
       />
     </Box>
   );
 }
+
+TradeNFTPicker.propTypes = {
+  onSelect: PropTypes.func.isRequired,
+  account: PropTypes.string.isRequired,
+  isPartner: PropTypes.bool.isRequired,
+  selectedAssets: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
 
 export default TradeNFTPicker;

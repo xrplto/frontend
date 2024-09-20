@@ -1,3 +1,4 @@
+// Trade.js
 import React, { useState, useContext, useEffect } from 'react';
 import {
   Dialog,
@@ -146,24 +147,30 @@ const Trade = ({ open, onClose, tradePartner }) => {
     });
   };
 
+  // Selection handler for Logged-In User
   const handleLoggedInUserAssetSelect = (nft) => {
     setSelectedLoggedInUserAssets((prev) => {
-      const index = prev.findIndex(item => item.id === nft.id);
-      if (index === -1) {
-        return [...prev, nft];
+      const exists = prev.some(asset => asset.NFTokenID === nft.NFTokenID);
+      if (exists) {
+        // Deselect the NFT
+        return prev.filter(asset => asset.NFTokenID !== nft.NFTokenID);
       } else {
-        return prev.filter(item => item.id !== nft.id);
+        // Select the NFT
+        return [...prev, nft];
       }
     });
   };
 
+  // Selection handler for Partner
   const handlePartnerAssetSelect = (nft) => {
     setSelectedPartnerAssets((prev) => {
-      const index = prev.findIndex(item => item.id === nft.id);
-      if (index === -1) {
-        return [...prev, nft];
+      const exists = prev.some(asset => asset.NFTokenID === nft.NFTokenID);
+      if (exists) {
+        // Deselect the NFT
+        return prev.filter(asset => asset.NFTokenID !== nft.NFTokenID);
       } else {
-        return prev.filter(item => item.id !== nft.id);
+        // Select the NFT
+        return [...prev, nft];
       }
     });
   };
@@ -218,8 +225,8 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const renderSelectedAssets = (assets) => (
     <Box>
       {assets.map((asset) => (
-        <Typography key={asset.id} variant="body2">
-          {asset.meta?.name || asset.meta?.Name || 'Unnamed NFT'} ({asset.NFTokenID || asset.nftokenID || asset.id})
+        <Typography key={asset.NFTokenID || asset.id} variant="body2">
+          {asset.meta?.name || asset.meta?.Name || 'Unnamed NFT'} ({asset.NFTokenID || asset.id})
         </Typography>
       ))}
     </Box>
@@ -311,6 +318,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
                 onSelect={handleLoggedInUserAssetSelect} 
                 account={accountProfile.account}
                 isPartner={false}
+                selectedAssets={selectedLoggedInUserAssets} // Pass selected assets
               />
               <Box mt={3}>
                 <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Selected Assets:</Typography>
@@ -334,6 +342,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
                 onSelect={handlePartnerAssetSelect}
                 account={tradePartner.username}
                 isPartner={true}
+                selectedAssets={selectedPartnerAssets} // Pass selected assets
               />
               <Box mt={3}>
                 <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Selected Assets:</Typography>
