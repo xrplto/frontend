@@ -156,7 +156,7 @@ const ChatCollectionCard = ({ collectionData, onSelect }) => {
     >
       <Box display="flex" flexDirection="column" alignItems="center" height="100%" p={1.5}>
         {loadingImg ? (
-          <Skeleton variant="rectangular" width={60} height={60} sx={{ mb: 1.5 }} />
+          <Skeleton variant="rectangular" width={60} height={60} sx={{ mb: 1.5, borderRadius: '8px' }} />
         ) : (
           <Box
             sx={{
@@ -164,7 +164,7 @@ const ChatCollectionCard = ({ collectionData, onSelect }) => {
               height: '60px',
               position: 'relative',
               overflow: 'hidden',
-              borderRadius: '4px',
+              borderRadius: '8px', // Increased from 4px to 8px for slightly more rounded corners
               mb: 1.5
             }}
           >
