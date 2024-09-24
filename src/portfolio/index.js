@@ -221,7 +221,7 @@ export default function Portfolio({ account, limit, collection, type }) {
     useEffect(() => {
         async function fetchActiveRanks() {
             try {
-                const res = await axios.get('http://127.0.0.1:5000/api/fetch-active-ranks');
+                const res = await axios.get('http://65.108.136.237:5000/api/fetch-active-ranks');
                 setActiveRanks(res.data);
             } catch (error) {
                 console.error('Error fetching active ranks:', error);
