@@ -23,6 +23,7 @@ import { AppContext } from 'src/AppContext';
 import UserSummary from './UserSummary';
 import { rankGlowEffect, lightningEffect, activeRankColors } from './RankStyles';
 import NFTDisplay from './NFTDisplay';
+import Trade from './Trade';
 
 const CustomWidthTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
@@ -120,6 +121,9 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   const chatContainerRef = useRef(null);
   const [userImages, setUserImages] = useState({});
   const [activeRanks, setActiveRanks] = useState({});
+  const [tradeModalOpen, setTradeModalOpen] = useState(false);
+  const [trader, setTrader] = useState({});
+
 
   // Inject lightningEffect into the document's head
   const styleElement = document.createElement('style');
@@ -151,8 +155,8 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
               [account]: user.imageUrl
                 ? `https://s2.xrpnft.com/d1/${user.imageUrl}`
                 : user.nftTokenId
-                ? `https://s2.xrpnft.com/d1/${user.nftTokenId}`
-                : null
+                  ? `https://s2.xrpnft.com/d1/${user.nftTokenId}`
+                  : null
             };
           } else {
             console.log(`No user data found for ${account}`);
@@ -251,7 +255,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                   }
                 }}
               >
-                <Stack direction="row" spacing={1} alignItems="flex-start"> 
+                <Stack direction="row" spacing={1} alignItems="flex-start">
                   <Avatar
                     alt={chat.username}
                     src={userImages[chat.username] || '/static/crossmark.webp'}
@@ -264,7 +268,18 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                   />
                   <Box sx={{ flexGrow: 1 }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <CustomWidthTooltip title={<UserSummary user={chat} activeColor={activeRankColors[activeRanks[chat.username]] || theme.palette.text.primary} rankName={ranks[activeRanks[chat.username]]?.name} rank={activeRanks[chat.username]}/>} arrow placement="right">
+                      <CustomWidthTooltip
+                        title={
+                          <UserSummary
+                            user={chat}
+                            activeColor={activeRankColors[activeRanks[chat.username]] || theme.palette.text.primary}
+                            rankName={ranks[activeRanks[chat.username]]?.name}
+                            rank={activeRanks[chat.username]}
+                            handleTrade = {() => {
+                              setTrader(chat);
+                              setTradeModalOpen(true);
+                            }}
+                          />} arrow placement="right">
                         <Typography
                           variant="subtitle2"
                           sx={{
@@ -338,8 +353,8 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                                 newsData.sentiment === 'Bullish'
                                   ? 'green'
                                   : newsData.sentiment === 'Bearish'
-                                  ? 'red'
-                                  : 'inherit'
+                                    ? 'red'
+                                    : 'inherit'
                             }}
                           >
                             • {newsData.sentiment}
@@ -385,6 +400,11 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
           No messages to display.
         </Typography>
       )}
+      <Trade
+        open={tradeModalOpen}
+        onClose={() => setTradeModalOpen(false)}
+        tradePartner={trader} // This is the user profile being viewed
+      />
     </CustomScrollBox>
   );
 };

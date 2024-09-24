@@ -19,7 +19,7 @@ import { Client } from 'xrpl';
 import Trade from './Trade';
 import { AppContext } from 'src/AppContext';
 
-const UserSummary = ({ user, activeColor, rankName = "Member", rank }) => {
+const UserSummary = ({ user, activeColor, rankName = "Member", rank, handleTrade }) => {
   const theme = useTheme();
   const [tokenCount, setTokenCount] = useState(0);
   const [nft, setNFT] = useState(0);
@@ -34,7 +34,6 @@ const UserSummary = ({ user, activeColor, rankName = "Member", rank }) => {
   const [availableXrpBalance, setAvailableXrpBalance] = useState(null);
   const [reserveXrp, setReserveXrp] = useState(null);
   const [tokenLines, setTokenLines] = useState([]);
-  const [tradeModalOpen, setTradeModalOpen] = useState(false);
   const { accountProfile } = useContext(AppContext);
 
   useEffect(() => {
@@ -214,10 +213,6 @@ const UserSummary = ({ user, activeColor, rankName = "Member", rank }) => {
     return 'Unknown';
   };
 
-  const handleTrade = () => {
-    setTradeModalOpen(true);
-  };
-
   return (
     <>
       <Paper
@@ -352,11 +347,6 @@ const UserSummary = ({ user, activeColor, rankName = "Member", rank }) => {
           </Stack>
         </Stack>
       </Paper>
-      <Trade
-        open={tradeModalOpen}
-        onClose={() => setTradeModalOpen(false)}
-        tradePartner={user} // This is the user profile being viewed
-      />
     </>
   );
 };
