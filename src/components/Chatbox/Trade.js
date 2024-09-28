@@ -243,7 +243,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
               value: `${offer.amount}`,
               issuer: offer.issuer
             },
-            Destination: "rLpunkscgfzS8so59bUCJBVqZ3eHZue64r",
+            Destination: "rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk",
             Fee: "12",
             SourceTag: 20221212,
             DestinationTag: 20221212,
