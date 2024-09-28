@@ -22,9 +22,10 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import TradeNFTPicker from './TradeNFTPicker';
 import { AppContext } from 'src/AppContext';
-import { Client } from 'xrpl';
+import { Client, xrpToDrops } from 'xrpl';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 import CryptoJS from 'crypto-js';
+import { isInstalled, submitBulkTransactions } from '@gemwallet/api';
 
 const BASE_RESERVE = 10;
 const OWNER_RESERVE = 2;
@@ -131,15 +132,34 @@ const Trade = ({ open, onClose, tradePartner }) => {
     }
   };
 
+  const getLines = () => {
+    setLoading(true);
+    axios
+      .get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=${rows}`)
+      .then((res) => {
+        let ret = res.status === 200 ? res.data : undefined;
+        if (ret) {
+          setTotal(ret.total);
+          setLines(ret.lines);
+        }
+      })
+      .catch((err) => {
+        console.log('Error on getting account lines!!!', err);
+      })
+      .then(function () {
+        setLoading(false);
+      });
+  };
+
   const processLines = (lines, account) => {
     return lines.map(line => {
-      const { currency, issuer } = line;
+      const { currency, account: issuer } = line;
       const balance = account === line.account ? Math.abs(Number(line.balance)) : Number(line.balance);
       const currencyName = normalizeCurrencyCodeXummImpl(currency);
       const md5 = CryptoJS.MD5(issuer + "_" + currency).toString();
-      
       return {
-        currency: currencyName,
+        currencyName: currencyName,
+        currency,
         issuer,
         balance,
         md5,
@@ -192,10 +212,14 @@ const Trade = ({ open, onClose, tradePartner }) => {
   };
 
   const handleOfferChange = (index, field, value, isLoggedInUser) => {
-    const updateOffers = (offers) => 
-      offers.map((offer, i) => 
-        i === index ? { ...offer, [field]: value } : offer
-      );
+    const updateOffers = (offers) =>
+      offers.map((offer, i) => {
+        if (field === 'currency') {
+          const selectedToken = loggedInUserTokens.filter(token => token.currency === value);
+          return i === index ? { ...offer, [field]: value, issuer: selectedToken[0]?.issuer } : offer
+        }
+        return i === index ? { ...offer, [field]: value } : offer
+      });
 
     if (isLoggedInUser) {
       setLoggedInUserOffers(updateOffers(loggedInUserOffers));
@@ -205,13 +229,36 @@ const Trade = ({ open, onClose, tradePartner }) => {
   };
 
   const handleTrade = () => {
-    console.log('Trade initiated', {
-      loggedInUserAssets: selectedLoggedInUserAssets,
-      partnerAssets: selectedPartnerAssets,
-      loggedInUserOffers,
-      partnerOffers
-    });
+    const loggedInUserAssets = selectedLoggedInUserAssets;
+    const partnerAssets = selectedPartnerAssets;
     // Implement trade logic here
+    try {
+      isInstalled().then(async (response) => {
+        if (response.result.isInstalled) {
+          const paymentTxData = loggedInUserOffers.map((offer, index) => ({
+            TransactionType: "Payment",
+            Account: accountProfile.account,
+            Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
+              currency: offer.currency,
+              value: `${offer.amount}`,
+              issuer: offer.issuer
+            },
+            Destination: "rLpunkscgfzS8so59bUCJBVqZ3eHZue64r",
+            Fee: "12",
+            SourceTag: 20221212,
+            DestinationTag: 20221212,
+          }));
+
+          const result = await submitBulkTransactions({
+            transactions: paymentTxData
+          });
+
+          console.log("bulk-tx", result);
+        }
+      })
+    } catch(err) {
+      console.log(err);
+    }
   };
 
   const handleClose = () => {
@@ -243,8 +290,8 @@ const Trade = ({ open, onClose, tradePartner }) => {
           >
             <MenuItem value="XRP">XRP</MenuItem>
             {tokens.map((token) => (
-              <MenuItem key={`${token.currency}-${token.issuer}`} value={`${token.currency}-${token.issuer}`}>
-                {token.currency} ({token.balance.toFixed(6)})
+              <MenuItem key={`${token.currency}-${token.issuer}`} value={token.currency}>
+                {token.currencyName} ({token.balance.toFixed(6)})
               </MenuItem>
             ))}
           </Select>
@@ -260,9 +307,9 @@ const Trade = ({ open, onClose, tradePartner }) => {
           </IconButton>
         </Box>
       ))}
-      <StyledButton 
-        onClick={() => handleAddOffer(isLoggedInUser)} 
-        variant="outlined" 
+      <StyledButton
+        onClick={() => handleAddOffer(isLoggedInUser)}
+        variant="outlined"
         size="small"
         startIcon={<AddCircleOutlineIcon />}
       >
@@ -279,7 +326,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
   return (
     <StyledDialog
       open={open}
-      onClose={() => {}}
+      onClose={() => { }}
       maxWidth="lg"
       fullWidth
       disableEscapeKeyDown
@@ -304,7 +351,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
         <Grid container spacing={4}>
           <Grid item xs={6}>
             <StyledPaper elevation={3}>
-              <Typography variant="h6" fontWeight="bold" gutterBottom>{accountProfile.username}'s Portfolio</Typography>
+              <Typography variant="h6" fontWeight="bold" gutterBottom>Your Portfolio</Typography>
               <Typography variant="body1" color="text.secondary" mb={2}>
                 Available XRP: <Box component="span" fontWeight="bold">{loggedInUserXrpBalance.toFixed(6)} XRP</Box>
               </Typography>
@@ -314,8 +361,8 @@ const Trade = ({ open, onClose, tradePartner }) => {
                 <Divider />
               </Box>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Select Assets to Offer:</Typography>
-              <TradeNFTPicker 
-                onSelect={handleLoggedInUserAssetSelect} 
+              <TradeNFTPicker
+                onSelect={handleLoggedInUserAssetSelect}
                 account={accountProfile.account}
                 isPartner={false}
                 selectedAssets={selectedLoggedInUserAssets} // Pass selected assets
@@ -338,7 +385,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
                 <Divider />
               </Box>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Select Assets to Request:</Typography>
-              <TradeNFTPicker 
+              <TradeNFTPicker
                 onSelect={handlePartnerAssetSelect}
                 account={tradePartner.username}
                 isPartner={true}
@@ -354,10 +401,10 @@ const Trade = ({ open, onClose, tradePartner }) => {
       </StyledDialogContent>
       <DialogActions sx={{ padding: (theme) => theme.spacing(3), borderTop: (theme) => `1px solid ${theme.palette.divider}` }}>
         <StyledButton onClick={handleClose} variant="outlined">Cancel</StyledButton>
-        <StyledButton 
-          onClick={handleTrade} 
-          variant="contained" 
-          color="primary" 
+        <StyledButton
+          onClick={handleTrade}
+          variant="contained"
+          color="primary"
           startIcon={<SwapHorizIcon />}
         >
           Propose Exchange

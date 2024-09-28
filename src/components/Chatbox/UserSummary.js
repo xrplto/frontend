@@ -14,12 +14,11 @@ import {
 import { Verified as VerifiedIcon } from '@mui/icons-material';
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { activeRankColors, rankColors, rankGlowEffect } from './RankStyles';
+import { activeRankColors, rankGlowEffect } from './RankStyles';
 import { Client } from 'xrpl';
-import Trade from './Trade';
 import { AppContext } from 'src/AppContext';
 
-const UserSummary = ({ user, activeColor, rankName = "Member", rank, handleTrade }) => {
+const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
   const theme = useTheme();
   const [tokenCount, setTokenCount] = useState(0);
   const [nft, setNFT] = useState(0);
