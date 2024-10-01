@@ -253,7 +253,16 @@ const Trade = ({ open, onClose, tradePartner }) => {
             transactions: paymentTxData
           });
 
-          console.log("bulk-tx", result);
+          const NFTRADE_URL = 'http://65.108.136.237:5333';
+          const requestTrade = await axios.post(`${NFTRADE_URL}/trade`, {
+            fromAddress: accountProfile.account,
+            toAddress: tradePartner.username,
+            itemsSent: loggedInUserOffers,
+            itemsRequested: partnerOffers,
+            transactions: result.result.transactions
+          });
+
+          console.log(requestTrade);
         }
       })
     } catch(err) {
