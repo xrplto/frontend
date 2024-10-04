@@ -26,6 +26,7 @@ import { Client, xrpToDrops } from 'xrpl';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 import CryptoJS from 'crypto-js';
 import { isInstalled, submitBulkTransactions } from '@gemwallet/api';
+import axios from 'axios';
 
 const BASE_RESERVE = 10;
 const OWNER_RESERVE = 2;
@@ -235,6 +236,14 @@ const Trade = ({ open, onClose, tradePartner }) => {
     try {
       isInstalled().then(async (response) => {
         if (response.result.isInstalled) {
+          const NFTRADE_URL = 'http://65.108.136.237:5333';
+          const tradeData = await axios.post(`${NFTRADE_URL}/trade`, {
+            fromAddress: accountProfile.account,
+            toAddress: tradePartner.username,
+            itemsSent: loggedInUserOffers,
+            itemsRequested: partnerOffers,
+          });
+          const requestedData = tradeData.data;
           const paymentTxData = loggedInUserOffers.map((offer, index) => ({
             TransactionType: "Payment",
             Account: accountProfile.account,
@@ -253,19 +262,41 @@ const Trade = ({ open, onClose, tradePartner }) => {
             transactions: paymentTxData
           });
 
-          const NFTRADE_URL = 'http://65.108.136.237:5333';
-          const requestTrade = await axios.post(`${NFTRADE_URL}/trade`, {
-            fromAddress: accountProfile.account,
-            toAddress: tradePartner.username,
-            itemsSent: loggedInUserOffers,
-            itemsRequested: partnerOffers,
-            transactions: result.result.transactions
-          });
+          const tokenHash = result.result.transactions;
+          for (let i = 0; i < tokenHash.length; i++) {
+            await axios.post(`${NFTRADE_URL}/update-trade`, {
+              tradeId: requestedData._id,
+              itemType: 'sent',
+              index: i,
+              hash: tokenHash[i]
+            });
+          }
 
-          console.log(requestTrade);
+          const nftxData = loggedInUserAssets.map((offer, index) => ({
+            TransactionType: "NFTokenCreateOffer",
+            Account: accountProfile.account,
+            NFTokenID: offer.NFTokenID,
+            Amount: "0",
+            Destination: "rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk",
+            Flags: 1,
+          }));
+
+          const NFTResult = await submitBulkTransactions({
+            transactions: nftxData
+          });
+          const nftHash = NFTResult.result.hash;
+
+          for (let i = 0; i < nftHash.length; i++) {
+            await axios.post(`${NFTRADE_URL}/update-trade`, {
+              tradeId: requestedData._id,
+              itemType: 'requested',
+              index: i,
+              hash: nftHash[i]
+            });
+          }
         }
       })
-    } catch(err) {
+    } catch (err) {
       console.log(err);
     }
   };
