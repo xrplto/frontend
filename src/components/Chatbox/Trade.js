@@ -15,7 +15,9 @@ import {
   IconButton,
   Select,
   MenuItem,
+  Snackbar
 } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
 import { styled } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
@@ -27,6 +29,12 @@ import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 import CryptoJS from 'crypto-js';
 import { isInstalled, submitBulkTransactions } from '@gemwallet/api';
 import axios from 'axios';
+import {
+  Edit as EditIcon,
+  Save as SaveIcon,
+  Cancel as CancelIcon,
+  Notifications as NotificationsIcon,
+} from '@mui/icons-material';
 
 const BASE_RESERVE = 10;
 const OWNER_RESERVE = 2;
@@ -78,11 +86,25 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const [partnerOffers, setPartnerOffers] = useState([{ currency: 'XRP', amount: 0 }]);
   const [loggedInUserLines, setLoggedInUserLines] = useState([]);
   const [partnerLines, setPartnerLines] = useState([]);
+  const [notifications, setNotifications] = useState(true);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const showNotification = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   useEffect(() => {
     if (open && accountProfile && tradePartner) {
       fetchBalances();
     }
+    console.log(open, "open = open", tradePartner)
   }, [open, accountProfile, tradePartner]);
 
   const fetchBalances = async () => {
@@ -230,6 +252,13 @@ const Trade = ({ open, onClose, tradePartner }) => {
   };
 
   const handleTrade = () => {
+    loggedInUserOffers.map((tokenInfo, index) => {
+      console.log(tokenInfo, "tokenInfo", index)
+      if(tokenInfo.amount === 0) {
+        showNotification(`Invalid token amount for ${tokenInfo.currency}`, 'error');
+        return false;
+      }
+    })
     const loggedInUserAssets = selectedLoggedInUserAssets;
     const partnerAssets = selectedPartnerAssets;
     // Implement trade logic here
@@ -450,6 +479,13 @@ const Trade = ({ open, onClose, tradePartner }) => {
           Propose Exchange
         </StyledButton>
       </DialogActions>
+
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <MuiAlert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </MuiAlert>
+      </Snackbar>
+
     </StyledDialog>
   );
 };
