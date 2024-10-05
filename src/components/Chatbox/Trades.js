@@ -21,9 +21,9 @@ const StyledButton = styled(Button)(({ theme }) => ({
   fontSize: '0.875rem',
 }));
 
-function TradeOffer({ status, statusDate, isOutgoing }) {
+function TradeOffer({ status, timestamp, fromAddress, toAddress, isOutgoing }) {
   const offer = isOutgoing ? {
-    toAddress: 'rReceiverXRPAddressHere',
+    toAddress: toAddress,
     offering: {
       xrp: 150,
       coreum: 300,
@@ -40,7 +40,7 @@ function TradeOffer({ status, statusDate, isOutgoing }) {
       ]
     }
   } : {
-    fromAddress: 'rSenderXRPAddressHere',
+    fromAddress: fromAddress,
     offering: {
       xrp: 100,
       solo: 500,
@@ -74,7 +74,7 @@ function TradeOffer({ status, statusDate, isOutgoing }) {
   };
 
   const renderStatusInfo = () => {
-    const formattedDate = statusDate ? format(new Date(statusDate), 'MMM d, yyyy HH:mm') : '';
+    const formattedDate = timestamp ? format(new Date(timestamp), 'MMM d, yyyy HH:mm') : '';
 
     switch (status) {
       case 'accepted':
@@ -211,7 +211,7 @@ function Trades() {
       tradeType: newTabValue
     })
     .then((res) => {
-      setTradeHistory(res);
+      setTradeHistory(res.data);
     });
   }
 
@@ -227,14 +227,20 @@ function Trades() {
         </Tabs>
       </Box>
       <TabPanel value={tabValue} index={0}>
-        <TradeOffer status="pending" isOutgoing={false} />
-        <TradeOffer status="accepted" statusDate="2023-04-15T14:30:00Z" isOutgoing={false} />
-        <TradeOffer status="rejected" statusDate="2023-04-14T09:45:00Z" isOutgoing={false} />
+        {
+          (tradeHistory.length > 0 && tabValue === 0) &&  
+          tradeHistory.map((trade, index) => 
+            <TradeOffer key={index} {...trade} isOutgoing={false} />
+          )
+        }
       </TabPanel>
       <TabPanel value={tabValue} index={1}>
-        <TradeOffer status="pending" isOutgoing={true} />
-        <TradeOffer status="accepted" statusDate="2023-04-16T10:15:00Z" isOutgoing={true} />
-        <TradeOffer status="rejected" statusDate="2023-04-17T11:30:00Z" isOutgoing={true} />
+        {
+          tabValue === 1 &&  (
+          tradeHistory.map((trade, index) => 
+            <TradeOffer key={index} {...trade} isOutgoing={true} />
+          ))
+        }
       </TabPanel>
     </Box>
   );
