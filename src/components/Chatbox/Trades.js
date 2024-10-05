@@ -206,12 +206,12 @@ function Trades() {
   
   const fetchTradesHistory = async(newTabValue) => {
     const NFTRADE_URL = 'http://65.108.136.237:5333';
-    const tradeData = await axios.post(`${NFTRADE_URL}/trades`, {
+    await axios.post(`${NFTRADE_URL}/trades`, {
       userAddress: accountProfile.account,
       tradeType: newTabValue
     })
     .then((res) => {
-      console.log(res, "Offer history")
+      setTradeHistory(res);
     });
   }
 
