@@ -469,7 +469,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
         </Grid>
       </StyledDialogContent>
       <DialogActions sx={{ padding: (theme) => theme.spacing(3), borderTop: (theme) => `1px solid ${theme.palette.divider}` }}>
-        <StyledButton onClick={handleClose} variant="outlined">Cancel</StyledButton>
+        <StyledButton onClick={handleClose} variant="outlined">Close</StyledButton>
         <StyledButton
           onClick={handleTrade}
           variant="contained"

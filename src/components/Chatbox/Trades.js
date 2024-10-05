@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Box, Typography, Button, Grid, Paper, Divider, Chip, Tabs, Tab } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { format } from 'date-fns'; // Make sure to install this package if not already present
+import axios from 'axios';
+import { AppContext } from 'src/AppContext';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -125,6 +127,7 @@ function TradeOffer({ status, statusDate, isOutgoing }) {
             ))}
           </Box>
         </Grid>
+
         <Grid item xs={6}>
           <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
             {isOutgoing ? "You want:" : "They want:"}
@@ -188,11 +191,29 @@ function a11yProps(index) {
 }
 
 function Trades() {
+  const { accountProfile } = useContext(AppContext);
   const [tabValue, setTabValue] = useState(0);
+  const [tradeHistory, setTradeHistory] = useState([]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
+    fetchTradesHistory(newValue);
   };
+
+  useEffect(() => {
+    fetchTradesHistory(tabValue);
+  }, []);
+  
+  const fetchTradesHistory = async(newTabValue) => {
+    const NFTRADE_URL = 'http://65.108.136.237:5333';
+    const tradeData = await axios.post(`${NFTRADE_URL}/trades`, {
+      userAddress: accountProfile.account,
+      tradeType: newTabValue
+    })
+    .then((res) => {
+      console.log(res, "Offer history")
+    });
+  }
 
   return (
     <Box sx={{ p: 4 }}>
