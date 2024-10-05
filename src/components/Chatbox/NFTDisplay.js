@@ -37,7 +37,7 @@ const StyledTooltip = styled(({ className, ...props }) => (
     color: theme.palette.text.primary,
     maxWidth: 350,
     fontSize: theme.typography.pxToRem(12),
-    border: '1px solid #dadde9'
+    // border: '1px solid #dadde9'
   }
 }));
 
