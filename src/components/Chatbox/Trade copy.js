@@ -82,8 +82,8 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const [partnerXrpBalance, setPartnerXrpBalance] = useState(0);
   const [loggedInUserTokens, setLoggedInUserTokens] = useState([]);
   const [partnerTokens, setPartnerTokens] = useState([]);
-  const [loggedInUserOffers, setLoggedInUserOffers] = useState([{ currency: 'XRP', amount: 0, token_type: 'token' }]);
-  const [partnerOffers, setPartnerOffers] = useState([{ currency: 'XRP', amount: 0, token_type: 'token' }]);
+  const [loggedInUserOffers, setLoggedInUserOffers] = useState([{ currency: 'XRP', amount: 0 }]);
+  const [partnerOffers, setPartnerOffers] = useState([{ currency: 'XRP', amount: 0 }]);
   const [loggedInUserLines, setLoggedInUserLines] = useState([]);
   const [partnerLines, setPartnerLines] = useState([]);
   const [notifications, setNotifications] = useState(true);
@@ -220,9 +220,9 @@ const Trade = ({ open, onClose, tradePartner }) => {
 
   const handleAddOffer = (isLoggedInUser) => {
     if (isLoggedInUser) {
-      setLoggedInUserOffers([...loggedInUserOffers, { currency: 'XRP', amount: 0, token_type: 'token', token_address: '', token_icon: '' }]);
+      setLoggedInUserOffers([...loggedInUserOffers, { currency: 'XRP', amount: 0 }]);
     } else {
-      setPartnerOffers([...partnerOffers, { currency: 'XRP', amount: 0, token_type: 'token', token_address: '', token_icon: '' }]);
+      setPartnerOffers([...partnerOffers, { currency: 'XRP', amount: 0 }]);
     }
   };
 
@@ -243,7 +243,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
         }
         return i === index ? { ...offer, [field]: value } : offer
       });
-      
+      console.log(loggedInUserOffers, "loggedInUserOffers", updateOffers(loggedInUserOffers) )
     if (isLoggedInUser) {
       setLoggedInUserOffers(updateOffers(loggedInUserOffers));
     } else {
@@ -252,56 +252,33 @@ const Trade = ({ open, onClose, tradePartner }) => {
   };
 
   const handleTrade = () => {
-    // const loggedInUserAssets = selectedLoggedInUserAssets;
+    const loggedInUserAssets = selectedLoggedInUserAssets;
+    const partnerAssets = selectedPartnerAssets;
     let validateTrade = true;
     loggedInUserOffers.map((tokenInfo, index) => {
+      console.log(tokenInfo, "tokenInfo", index)
       if(tokenInfo.amount === 0) {
         showNotification(`Invalid token amount for ${tokenInfo.currency}`, 'error');
         validateTrade = false;
       }
     });
-    console.log(loggedInUserOffers, "loggedInUserOffers")
+    console.log(loggedInUserOffers, "loggedInUserOffers", loggedInUserAssets)
     if(!validateTrade)
       return false;
+    return false;
     
     // Implement trade logic here
     try {
       isInstalled().then(async (response) => {
         if (response.result.isInstalled) {
           const NFTRADE_URL = 'http://65.108.136.237:5333';
-          let itemsSent = loggedInUserOffers;
-          if(selectedLoggedInUserAssets.length > 0) {
-            selectedLoggedInUserAssets.map((item, index) => {
-              let temp = new Array();
-              temp.currency = item.name;
-              temp.amount = 0;
-              temp.token_type = 'NFT';
-              temp.token_address = item.NFTokenID;
-              temp.token_icon = item.ufile.image;
-              itemsSent.push(temp)
-            })
-          }
-
-          if(selectedPartnerAssets.length > 0) {  
-            selectedPartnerAssets.map((item, index) => {
-              let temp = new Array();
-              temp.currency = item.name;
-              temp.amount = 0;
-              temp.token_type = 'NFT';
-              temp.token_address = item.NFTokenID;
-              temp.token_icon = item.ufile.image;
-              partnerOffers.push(temp)
-            })
-          }
-
-          const tradeData = await axios.post(`${NFTRADE_URL}/trade1`, {
+          const tradeData = await axios.post(`${NFTRADE_URL}/trade`, {
             fromAddress: accountProfile.account,
             toAddress: tradePartner.username,
-            itemsSent: itemsSent,
+            itemsSent: loggedInUserOffers,
             itemsRequested: partnerOffers,
           });
           const requestedData = tradeData.data;
-          
           const paymentTxData = loggedInUserOffers.map((offer, index) => ({
             TransactionType: "Payment",
             Account: accountProfile.account,
@@ -315,18 +292,9 @@ const Trade = ({ open, onClose, tradePartner }) => {
             SourceTag: 20221212,
             DestinationTag: 20221212,
           }));
-          console.log(paymentTxData, "paymentTxData = ", loggedInUserOffers)
-          const nftxData = selectedLoggedInUserAssets.map((offer, index) => ({
-            TransactionType: "NFTokenCreateOffer",
-            Account: accountProfile.account,
-            NFTokenID: offer.NFTokenID,
-            Amount: "0",
-            Destination: "rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk",
-            Flags: 1,
-          }));
-         
+
           const result = await submitBulkTransactions({
-            transactions: paymentTxData.concat(nftxData)
+            transactions: paymentTxData
           });
 
           const tokenHash = result.result.transactions;
@@ -339,19 +307,28 @@ const Trade = ({ open, onClose, tradePartner }) => {
             });
           }
 
-          // const NFTResult = await submitBulkTransactions({
-          //   transactions: nftxData
-          // });
-          // const nftHash = NFTResult.result.hash;
+          const nftxData = loggedInUserAssets.map((offer, index) => ({
+            TransactionType: "NFTokenCreateOffer",
+            Account: accountProfile.account,
+            NFTokenID: offer.NFTokenID,
+            Amount: "0",
+            Destination: "rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk",
+            Flags: 1,
+          }));
 
-          // for (let i = 0; i < nftHash.length; i++) {
-          //   await axios.post(`${NFTRADE_URL}/update-trade`, {
-          //     tradeId: requestedData._id,
-          //     itemType: 'requested',
-          //     index: i,
-          //     hash: nftHash[i]
-          //   });
-          // }
+          const NFTResult = await submitBulkTransactions({
+            transactions: nftxData
+          });
+          const nftHash = NFTResult.result.hash;
+
+          for (let i = 0; i < nftHash.length; i++) {
+            await axios.post(`${NFTRADE_URL}/update-trade`, {
+              tradeId: requestedData._id,
+              itemType: 'requested',
+              index: i,
+              hash: nftHash[i]
+            });
+          }
         }
       })
     } catch (err) {
@@ -362,8 +339,8 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const handleClose = () => {
     setSelectedLoggedInUserAssets([]);
     setSelectedPartnerAssets([]);
-    setLoggedInUserOffers([{ currency: 'XRP', amount: 0, token_type: 'token' }]);
-    setPartnerOffers([{ currency: 'XRP', amount: 0, token_type: 'token' }]);
+    setLoggedInUserOffers([{ currency: 'XRP', amount: 0 }]);
+    setPartnerOffers([{ currency: 'XRP', amount: 0 }]);
     onClose();
   };
 

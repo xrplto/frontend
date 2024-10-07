@@ -21,7 +21,14 @@ const StyledButton = styled(Button)(({ theme }) => ({
   fontSize: '0.875rem',
 }));
 
-function TradeOffer({ status, timestamp, fromAddress, toAddress, isOutgoing }) {
+const NFTRADE_URL = 'http://65.108.136.237:5333';
+
+function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing, itemsSent, itemsRequested }) {
+  // let data_sent = itemsSent.map((item, index) => {
+  //     console.log(item, index);
+  //   }
+  // )
+  // console.log(data_sent, "data_sent")
   const offer = isOutgoing ? {
     toAddress: toAddress,
     offering: {
@@ -58,17 +65,21 @@ function TradeOffer({ status, timestamp, fromAddress, toAddress, isOutgoing }) {
     }
   };
 
-  const handleAccept = () => {
+  const handleReactions = async(tradeId, actionType) => {
     // Implement accept trade logic here
-    console.log('Trade accepted');
+    console.log('Trade accepted', tradeId, actionType);
+    await axios.post(`${NFTRADE_URL}/trades/reactions`, {
+      tradeId: tradeId,
+      actionType: actionType,
+    });
   };
 
-  const handleReject = () => {
+  const handleReject = (tradeId) => {
     // Implement reject trade logic here
     console.log('Trade rejected');
   };
 
-  const handleReturnItems = () => {
+  const handleReturnItems = (tradeId) => {
     // Implement return items logic here
     console.log('Returning items');
   };
@@ -149,15 +160,15 @@ function TradeOffer({ status, timestamp, fromAddress, toAddress, isOutgoing }) {
         {status === 'pending' && (
           <Box sx={{ display: 'flex', gap: 1 }}>
             {isOutgoing ? (
-              <StyledButton variant="outlined" color="error" onClick={handleReturnItems} size="small">
+              <StyledButton variant="outlined" color="error" onClick={() => handleReactions(_id, 'return')} size="small">
                 Return items
               </StyledButton>
             ) : (
               <>
-                <StyledButton variant="outlined" color="error" onClick={handleReject} size="small">
+                <StyledButton variant="outlined" color="error" onClick={() => handleReactions(_id, 'reject')} size="small">
                   Decline
                 </StyledButton>
-                <StyledButton variant="contained" color="primary" onClick={handleAccept} size="small">
+                <StyledButton variant="contained" color="primary" onClick={() => handleReactions(_id, 'accept')} size="small">
                   Accept Trade
                 </StyledButton>
               </>
@@ -205,7 +216,6 @@ function Trades() {
   }, []);
   
   const fetchTradesHistory = async(newTabValue) => {
-    const NFTRADE_URL = 'http://65.108.136.237:5333';
     await axios.post(`${NFTRADE_URL}/trades`, {
       userAddress: accountProfile.account,
       tradeType: newTabValue
@@ -226,22 +236,27 @@ function Trades() {
           <Tab label="Outgoing" {...a11yProps(1)} />
         </Tabs>
       </Box>
-      <TabPanel value={tabValue} index={0}>
-        {
-          (tradeHistory.length > 0 && tabValue === 0) &&  
-          tradeHistory.map((trade, index) => 
-            <TradeOffer key={index} {...trade} isOutgoing={false} />
-          )
-        }
-      </TabPanel>
-      <TabPanel value={tabValue} index={1}>
-        {
-          tabValue === 1 &&  (
-          tradeHistory.map((trade, index) => 
-            <TradeOffer key={index} {...trade} isOutgoing={true} />
-          ))
-        }
-      </TabPanel>
+      {
+        tradeHistory.length > 0 && 
+        <>
+          <TabPanel value={tabValue} index={0}>
+            {
+              tabValue === 0 &&  
+              tradeHistory.map((trade, index) => 
+                <TradeOffer key={index} {...trade} isOutgoing={false} />
+              )
+            }
+          </TabPanel>
+          <TabPanel value={tabValue} index={1}>
+            {
+              tabValue === 1 &&  (
+              tradeHistory.map((trade, index) => 
+                <TradeOffer key={index} {...trade} isOutgoing={true} />
+              ))
+            }
+          </TabPanel>
+        </>
+      }
     </Box>
   );
 }
