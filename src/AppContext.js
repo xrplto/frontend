@@ -1,4 +1,4 @@
-import { useState, createContext, useEffect } from 'react';
+import { useState, createContext, useEffect, useMemo } from 'react';
 import axios from 'axios';
 
 import { Backdrop } from '@mui/material';
@@ -266,52 +266,57 @@ export function ContextProvider({ children, data, openSnackbar }) {
     getAccountInfo();
   }, [accountProfile, sync]);
 
+  const contextValue = useMemo(() => ({
+    toggleTheme,
+    darkMode,
+    setDarkMode,
+    accountProfile,
+    setActiveProfile,
+    profiles,
+    removeProfile,
+    doLogIn,
+    doLogOut,
+    setLoading,
+    openSnackbar,
+    sync,
+    setSync,
+    activeFiatCurrency,
+    toggleFiatCurrency,
+    open,
+    setOpen,
+    openLogin,
+    setOpenLogin,
+    openWalletModal,
+    setOpenWalletModal,
+    uuid,
+    setUuid,
+    qrUrl,
+    setQrUrl,
+    nextUrl,
+    setNextUrl,
+    accountBalance,
+    setAccountBalance,
+    onConnectXumm, 
+    onCancelLoginXumm, 
+    onLogoutXumm, 
+    handleOpen,
+    handleClose,
+    handleLogin,
+    handleLogout,
+    handleLoginClose,
+    connecting,
+    setConnecting,
+    deletingNfts,
+    setDeletingNfts
+  }), [
+    darkMode, accountProfile, profiles, sync, activeFiatCurrency,
+    open, openLogin, openWalletModal, uuid, qrUrl, nextUrl,
+    accountBalance, connecting, deletingNfts
+    // Add any other dependencies that should trigger a re-creation of the context value
+  ]);
+
   return (
-    <AppContext.Provider
-      value={{
-        toggleTheme,
-        darkMode,
-        setDarkMode,
-        accountProfile,
-        setActiveProfile,
-        profiles,
-        removeProfile,
-        doLogIn,
-        doLogOut,
-        setLoading,
-        openSnackbar,
-        sync,
-        setSync,
-        activeFiatCurrency,
-        toggleFiatCurrency,
-        open,
-        setOpen,
-        openLogin,
-        setOpenLogin,
-        openWalletModal,
-        setOpenWalletModal,
-        uuid,
-        setUuid,
-        qrUrl,
-        setQrUrl,
-        nextUrl,
-        setNextUrl,
-        accountBalance,
-        setAccountBalance,
-        onConnectXumm, 
-        onCancelLoginXumm, 
-        onLogoutXumm, 
-        handleOpen,
-        handleClose ,
-        handleLogin ,
-        handleLogout,
-        handleLoginClose,
-        connecting,
-        setConnecting,
-        deletingNfts,
-        setDeletingNfts
-      }}
-    >
+    <AppContext.Provider value={contextValue}>
       <Backdrop
         sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 202 }}
         open={loading}
