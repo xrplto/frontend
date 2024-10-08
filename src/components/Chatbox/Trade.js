@@ -220,9 +220,9 @@ const Trade = ({ open, onClose, tradePartner }) => {
 
   const handleAddOffer = (isLoggedInUser) => {
     if (isLoggedInUser) {
-      setLoggedInUserOffers([...loggedInUserOffers, { currency: 'XRP', amount: 0, token_type: 'token', token_address: '', token_icon: '' }]);
+      setLoggedInUserOffers([...loggedInUserOffers, { currency: 'XRP', amount: 0, token_type: 'token' }]);
     } else {
-      setPartnerOffers([...partnerOffers, { currency: 'XRP', amount: 0, token_type: 'token', token_address: '', token_icon: '' }]);
+      setPartnerOffers([...partnerOffers, { currency: 'XRP', amount: 0, token_type: 'token' }]);
     }
   };
 
@@ -239,7 +239,8 @@ const Trade = ({ open, onClose, tradePartner }) => {
       offers.map((offer, i) => {
         if (field === 'currency') {
           const selectedToken = loggedInUserTokens.filter(token => token.currency === value);
-          return i === index ? { ...offer, [field]: value, issuer: selectedToken[0]?.issuer } : offer
+          console.log(selectedToken, "selectedToken")
+          return i === index ? { ...offer, [field]: value, issuer: selectedToken[0]?.issuer, token_type: 'token' } : offer
         }
         return i === index ? { ...offer, [field]: value } : offer
       });
@@ -294,7 +295,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
             })
           }
 
-          const tradeData = await axios.post(`${NFTRADE_URL}/trade1`, {
+          const tradeData = await axios.post(`${NFTRADE_URL}/trade`, {
             fromAddress: accountProfile.account,
             toAddress: tradePartner.username,
             itemsSent: itemsSent,
@@ -316,6 +317,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
             DestinationTag: 20221212,
           }));
           console.log(paymentTxData, "paymentTxData = ", loggedInUserOffers)
+
           const nftxData = selectedLoggedInUserAssets.map((offer, index) => ({
             TransactionType: "NFTokenCreateOffer",
             Account: accountProfile.account,
@@ -339,19 +341,6 @@ const Trade = ({ open, onClose, tradePartner }) => {
             });
           }
 
-          // const NFTResult = await submitBulkTransactions({
-          //   transactions: nftxData
-          // });
-          // const nftHash = NFTResult.result.hash;
-
-          // for (let i = 0; i < nftHash.length; i++) {
-          //   await axios.post(`${NFTRADE_URL}/update-trade`, {
-          //     tradeId: requestedData._id,
-          //     itemType: 'requested',
-          //     index: i,
-          //     hash: nftHash[i]
-          //   });
-          // }
         }
       })
     } catch (err) {
