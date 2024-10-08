@@ -6,6 +6,7 @@ import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { format } from 'date-fns'; // Make sure to install this package if not already present
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
+import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -24,45 +25,14 @@ const StyledButton = styled(Button)(({ theme }) => ({
 const NFTRADE_URL = 'http://65.108.136.237:5333';
 
 function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing, itemsSent, itemsRequested }) {
-  // let data_sent = itemsSent.map((item, index) => {
-  //     console.log(item, index);
-  //   }
-  // )
-  // console.log(data_sent, "data_sent")
   const offer = isOutgoing ? {
     toAddress: toAddress,
-    offering: {
-      xrp: 150,
-      coreum: 300,
-      nfts: [
-        { name: 'xMoon', id: '#4444' },
-        { name: 'xStar', id: '#5555' }
-      ]
-    },
-    wanting: {
-      xrp: 50,
-      solo: 1000,
-      nfts: [
-        { name: 'xRocket', id: '#7' }
-      ]
-    }
+    offering: itemsSent,
+    wanting: itemsRequested
   } : {
     fromAddress: fromAddress,
-    offering: {
-      xrp: 100,
-      solo: 500,
-      nfts: [
-        { name: 'xPunks', id: '#2222' },
-        { name: 'xShroom', id: '#3323' }
-      ]
-    },
-    wanting: {
-      xrp: 100,
-      xspectar: 200,
-      nfts: [
-        { name: 'xPEPE', id: '#1' }
-      ]
-    }
+    offering: itemsSent,
+    wanting: itemsRequested
   };
 
   const handleReactions = async(tradeId, actionType) => {
@@ -128,14 +98,19 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
             {isOutgoing ? "You're offering:" : "They're offering:"}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {Object.entries(offer.offering).map(([key, value]) => 
-              key !== 'nfts' ? (
-                <Chip key={key} label={`${value} ${key.toUpperCase()}`} color="primary" variant="outlined" />
-              ) : null
-            )}
-            {offer.offering.nfts.map((nft, index) => (
+            { 
+              offer.offering.map((item, key) => {
+                  if(!item.currency)
+                      return false;
+                  return (item.token_type !== 'NFT') ? (
+                    <Chip key={key} label={`${item.amount} ${normalizeCurrencyCodeXummImpl(item.currency).toUpperCase()}`} color="primary" variant="outlined" />
+                  ) : <NFTDisplay key={key} nftLink={item.token_icon} />
+                }
+              )
+            }
+            {/* {offer.offering.nfts.map((nft, index) => (
               <Chip key={index} label={`${nft.name} ${nft.id}`} color="primary" variant="outlined" />
-            ))}
+            ))} */}
           </Box>
         </Grid>
 
@@ -144,14 +119,19 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
             {isOutgoing ? "You want:" : "They want:"}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {Object.entries(offer.wanting).map(([key, value]) => 
-              key !== 'nfts' ? (
-                <Chip key={key} label={`${value} ${key.toUpperCase()}`} color="secondary" variant="outlined" />
-              ) : null
-            )}
-            {offer.wanting.nfts.map((nft, index) => (
+            {
+              offer.wanting.map((item, key) => {
+                if(!item.currency)
+                    return false;
+                return (item.token_type !== 'NFT') ? (
+                  <Chip key={key} label={`${item.amount} ${normalizeCurrencyCodeXummImpl(item.currency).toUpperCase()}`} color="secondary" variant="outlined" />
+                ) : <NFTDisplay key={key} nftLink={item.token_icon} />
+                }
+              )
+            }
+            {/* {offer.wanting.nfts.map((nft, index) => (
               <Chip key={index} label={`${nft.name} ${nft.id}`} color="secondary" variant="outlined" />
-            ))}
+            ))} */}
           </Box>
         </Grid>
       </Grid>

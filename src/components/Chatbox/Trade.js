@@ -36,6 +36,9 @@ import {
   Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 
+const BASE_URL = 'https://api.xrpl.to/api';
+const NFTRADE_URL = 'http://65.108.136.237:5333';
+
 const BASE_RESERVE = 10;
 const OWNER_RESERVE = 2;
 
@@ -252,16 +255,66 @@ const Trade = ({ open, onClose, tradePartner }) => {
     }
   };
 
-  const handleTrade = () => {
+  const addTrustLine = (async(wallet_address, currency) => {
+    axios
+        .get(`${NFTRADE_URL}/trustline/add/${wallet_address}/${currency}`)
+        .then(async(res) => {
+          let ret = res.status === 200 ? res.data : undefined;
+          if (ret) {
+            console.log(ret, "message from trustline");
+          }
+        })
+        .catch((err) => {
+          console.log('Error on setting account lines!!!', err);
+        })
+  });
+
+  const getTrustLines = async(currency) => {
+    const MIDDLEMAN_ADDRESS = 'rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk';
+    axios
+        .get(`${BASE_URL}/account/lines/${MIDDLEMAN_ADDRESS}`)
+        .then(async(res) => {
+          let ret = res.status === 200 ? res.data : undefined;
+          if (ret) {
+            const trustlines = ret.lines;
+
+            const trustlineStatus = await trustlines.find((trustline) => {
+              return (
+                (trustline.LowLimit.issuer === MIDDLEMAN_ADDRESS ||
+                  trustline.HighLimit.issuer) &&
+                trustline.LowLimit.currency === currency
+              );
+            });
+            console.log(trustlineStatus, "trustlineStatus from")
+            if(trustlineStatus === undefined) {
+              // add trust line
+              await addTrustLine(MIDDLEMAN_ADDRESS, currency)
+            }
+          }
+        })
+        .catch((err) => {
+          console.log('Error on getting account lines!!!', err);
+        })
+  }
+        
+  const handleTrade = async() => {
     // const loggedInUserAssets = selectedLoggedInUserAssets;
+    
     let validateTrade = true;
     loggedInUserOffers.map((tokenInfo, index) => {
+      if(tokenInfo.currency !== 'XRP')
+         getTrustLines(tokenInfo.currency);
+
       if(tokenInfo.amount === 0) {
         showNotification(`Invalid token amount for ${tokenInfo.currency}`, 'error');
         validateTrade = false;
       }
     });
+
+    // console.log(tet, "check tet");
     console.log(loggedInUserOffers, "loggedInUserOffers")
+    
+    // check trust line
     if(!validateTrade)
       return false;
     
@@ -269,7 +322,6 @@ const Trade = ({ open, onClose, tradePartner }) => {
     try {
       isInstalled().then(async (response) => {
         if (response.result.isInstalled) {
-          const NFTRADE_URL = 'http://65.108.136.237:5333';
           let itemsSent = loggedInUserOffers;
           if(selectedLoggedInUserAssets.length > 0) {
             selectedLoggedInUserAssets.map((item, index) => {
@@ -294,14 +346,13 @@ const Trade = ({ open, onClose, tradePartner }) => {
               partnerOffers.push(temp)
             })
           }
-
+          console.log(itemsSent, " check token sfor itemsSent")
           const tradeData = await axios.post(`${NFTRADE_URL}/trade`, {
             fromAddress: accountProfile.account,
             toAddress: tradePartner.username,
             itemsSent: itemsSent,
             itemsRequested: partnerOffers,
           });
-          const requestedData = tradeData.data;
           
           const paymentTxData = loggedInUserOffers.map((offer, index) => ({
             TransactionType: "Payment",
@@ -317,6 +368,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
             DestinationTag: 20221212,
           }));
           console.log(paymentTxData, "paymentTxData = ", loggedInUserOffers)
+          
 
           const nftxData = selectedLoggedInUserAssets.map((offer, index) => ({
             TransactionType: "NFTokenCreateOffer",
@@ -331,13 +383,14 @@ const Trade = ({ open, onClose, tradePartner }) => {
             transactions: paymentTxData.concat(nftxData)
           });
 
+          const requestedData = tradeData.data;
           const tokenHash = result.result.transactions;
           for (let i = 0; i < tokenHash.length; i++) {
             await axios.post(`${NFTRADE_URL}/update-trade`, {
-              tradeId: requestedData._id,
+              tradeId: requestedData.tradeId,
               itemType: 'sent',
               index: i,
-              hash: tokenHash[i]
+              hash: tokenHash[i]['hash']
             });
           }
 
