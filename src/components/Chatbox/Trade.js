@@ -329,24 +329,28 @@ const Trade = ({ open, onClose, tradePartner }) => {
               temp.currency = item.name;
               temp.amount = 0;
               temp.token_type = 'NFT';
+              temp.issuer = '';
               temp.token_address = item.NFTokenID;
               temp.token_icon = item.ufile.image;
               itemsSent.push(temp)
             })
           }
-
-          if(selectedPartnerAssets.length > 0) {  
+          let itemsRequested = partnerOffers;
+          if(selectedPartnerAssets.length > 0) {
             selectedPartnerAssets.map((item, index) => {
               let temp = new Array();
               temp.currency = item.name;
               temp.amount = 0;
               temp.token_type = 'NFT';
+              temp.issuer = '';
               temp.token_address = item.NFTokenID;
               temp.token_icon = item.ufile.image;
-              partnerOffers.push(temp)
+              itemsRequested.push(temp)
             })
           }
+
           console.log(itemsSent, " check token sfor itemsSent")
+          console.log(partnerOffers, " check token sfor partnerOffers")
           const tradeData = await axios.post(`${NFTRADE_URL}/trade`, {
             fromAddress: accountProfile.account,
             toAddress: tradePartner.username,

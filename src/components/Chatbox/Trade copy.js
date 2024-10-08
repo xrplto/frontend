@@ -265,7 +265,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
     console.log(loggedInUserOffers, "loggedInUserOffers", loggedInUserAssets)
     if(!validateTrade)
       return false;
-    return false;
+    // return false;
     
     // Implement trade logic here
     try {

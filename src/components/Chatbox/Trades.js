@@ -7,6 +7,7 @@ import { format } from 'date-fns'; // Make sure to install this package if not a
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
+import { isInstalled, submitBulkTransactions } from '@gemwallet/api';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -35,23 +36,66 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
     wanting: itemsRequested
   };
 
-  const handleReactions = async(tradeId, actionType) => {
+  const handleReactions = async(tradeId, actionType, fromAddress) => {
     // Implement accept trade logic here
-    console.log('Trade accepted', tradeId, actionType);
-    await axios.post(`${NFTRADE_URL}/trades/reactions`, {
-      tradeId: tradeId,
-      actionType: actionType,
-    });
+    console.log('Trade accepted', tradeId, actionType, fromAddress);
+    if(actionType === 'accept') {
+      await handleTradeAccept(tradeId, itemsRequested);
+    }
+    // await axios.post(`${NFTRADE_URL}/trades/reactions`, {
+    //   tradeId: tradeId,
+    //   actionType: actionType,
+    // });
   };
+    
+  const handleTradeAccept = async(tradeId, itemsRequested) => {
+    // Implement trade logic here
+    try {
+      isInstalled().then(async (response) => {
+        if (response.result.isInstalled) {
+          const paymentTxData = itemsRequested.map((offer, index) => ({
+            TransactionType: "Payment",
+            Account: accountProfile.account,
+            Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
+              currency: offer.currency,
+              value: `${offer.amount}`,
+              issuer: offer.issuer
+            },
+            Destination: "rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk",
+            Fee: "12",
+            SourceTag: 20221212,
+            DestinationTag: 20221212,
+          }));
+          console.log(paymentTxData, "paymentTxData = ", itemsRequested)
+          
+          const nftxData = selectedLoggedInUserAssets.map((offer, index) => ({
+            TransactionType: "NFTokenCreateOffer",
+            Account: accountProfile.account,
+            NFTokenID: offer.NFTokenID,
+            Amount: "0",
+            Destination: "rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk",
+            Flags: 1,
+          }));
+         
+          const result = await submitBulkTransactions({
+            transactions: paymentTxData.concat(nftxData)
+          });
 
-  const handleReject = (tradeId) => {
-    // Implement reject trade logic here
-    console.log('Trade rejected');
-  };
+          const tokenHash = result.result.transactions;
+          for (let i = 0; i < tokenHash.length; i++) {
+            await axios.post(`${NFTRADE_URL}/update-trade`, {
+              tradeId: tradeId,
+              itemType: 'requested',
+              index: i,
+              hash: tokenHash[i]['hash']
+            });
+          }
 
-  const handleReturnItems = (tradeId) => {
-    // Implement return items logic here
-    console.log('Returning items');
+        }
+      })
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const renderStatusInfo = () => {
@@ -145,7 +189,7 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
               </StyledButton>
             ) : (
               <>
-                <StyledButton variant="outlined" color="error" onClick={() => handleReactions(_id, 'reject')} size="small">
+                <StyledButton variant="outlined" color="error" onClick={() => handleReactions(_id, 'decline')} size="small">
                   Decline
                 </StyledButton>
                 <StyledButton variant="contained" color="primary" onClick={() => handleReactions(_id, 'accept')} size="small">
