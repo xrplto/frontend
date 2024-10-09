@@ -29,7 +29,7 @@ const NFTRADE_URL = 'http://65.108.136.237:5333';
 
 function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing, itemsSent, itemsRequested }) {
   const { accountProfile } = useContext(AppContext);
-
+  const [tradeStatus, setTradeStatus] = useState(status);
   const offer = isOutgoing ? {
     toAddress: toAddress,
     offering: itemsSent,
@@ -49,14 +49,16 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
       if(!payRequested)
         return false;
     }
-    let { status } = await axios.post(`${NFTRADE_URL}/trades/reactions`, {
+    
+    let action_ret = await axios.post(`${NFTRADE_URL}/trades/reactions`, {
       tradeId: tradeId,
       actionType: actionType,
     });
-console.log(status, "status from middleware")
-    if(status === "success") {
+    console.log(action_ret, "status from middleware")
+    setTradeStatus(actionType);
 
-    }
+    // if(status === "success") {
+    // }
   };
     
   const handleTradeAccept = async(tradeId, itemsRequested, fromAddress) => {
@@ -116,28 +118,58 @@ console.log(status, "status from middleware")
 
   const renderStatusInfo = () => {
     const formattedDate = timestamp ? format(new Date(timestamp), 'MMM d, yyyy HH:mm') : '';
-
-    switch (status) {
-      case 'accepted':
+    console.log(formattedDate, tradeStatus, "here is render status info");
+    switch (tradeStatus) {
+      case 'completed':
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main', mt: 2 }}>
             <CheckCircleOutlineIcon sx={{ mr: 1 }} />
             <Box>
-              <Typography variant="body2">Trade Accepted</Typography>
-              <Typography variant="caption">{formattedDate}</Typography>
+              <Typography variant="body2">Trade Completed</Typography>
+              {/* <Typography variant="caption">{formattedDate}</Typography> */}
             </Box>
           </Box>
         );
-      case 'rejected':
+      case 'decline':
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', color: 'error.main', mt: 2 }}>
             <CancelOutlinedIcon sx={{ mr: 1 }} />
             <Box>
-              <Typography variant="body2">Trade Rejected</Typography>
-              <Typography variant="caption">{formattedDate}</Typography>
+              <Typography variant="body2">Trade declined</Typography>
+              {/* <Typography variant="caption">{formattedDate}</Typography> */}
             </Box>
           </Box>
         );
+      case 'return':
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', color: 'error.main', mt: 2 }}>
+            <CancelOutlinedIcon sx={{ mr: 1 }} />
+            <Box>
+              <Typography variant="body2">Trade returned</Typography>
+              {/* <Typography variant="caption">{formattedDate}</Typography> */}
+            </Box>
+          </Box>
+        );
+      case 'pending':
+        return (
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {isOutgoing ? (
+              <StyledButton variant="outlined" color="error" onClick={() => handleReactions(_id, 'return')} size="small">
+                Return items
+              </StyledButton>
+            ) : (
+              <>
+                <StyledButton variant="outlined" color="error" onClick={() => handleReactions(_id, 'decline')} size="small">
+                  Decline
+                </StyledButton>
+                <StyledButton variant="contained" color="primary" onClick={() => handleReactions(_id, 'accept')} size="small">
+                  Accept Trade
+                </StyledButton>
+              </>
+            )}
+          </Box>
+        );
+      case 'accepted':
       default:
         return null;
     }
@@ -147,19 +179,6 @@ console.log(status, "status from middleware")
     <StyledPaper>
       <Typography variant="h6" gutterBottom fontWeight="bold">
         Trade Offer
-              <Typography
-                variant="h4"
-                color="text.secondary"
-                fontWeight="normal"
-                align='right'
-              >
-               {
-                 status !== "pending" &&
-                 <StyledButton color="warning" size="small" variant="outlined">
-                  {status.toUpperCase()}
-                </StyledButton>
-                }
-              </Typography>
       </Typography>
       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
         {isOutgoing ? `To: ${offer.toAddress}` : `From: ${offer.fromAddress}`}
@@ -211,24 +230,6 @@ console.log(status, "status from middleware")
       </Grid>
       <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {renderStatusInfo()}
-        {status === 'pending' && (
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            {isOutgoing ? (
-              <StyledButton variant="outlined" color="error" onClick={() => handleReactions(_id, 'return')} size="small">
-                Return items
-              </StyledButton>
-            ) : (
-              <>
-                <StyledButton variant="outlined" color="error" onClick={() => handleReactions(_id, 'decline')} size="small">
-                  Decline
-                </StyledButton>
-                <StyledButton variant="contained" color="primary" onClick={() => handleReactions(_id, 'accept')} size="small">
-                  Accept Trade
-                </StyledButton>
-              </>
-            )}
-          </Box>
-        )}
       </Box>
     </StyledPaper>
   );
