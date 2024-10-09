@@ -9,6 +9,7 @@ import { AppContext } from 'src/AppContext';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 import { isInstalled, submitBulkTransactions } from '@gemwallet/api';
 import { Client, xrpToDrops } from 'xrpl';
+import NFTDisplay from './NFTDisplay';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -172,11 +173,12 @@ console.log(status, "status from middleware")
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             { 
               offer.offering.map((item, key) => {
+                console.log(item.token_type, "item.token_type", item)
                   if(!item.currency)
                       return false;
                   return (item.token_type !== 'NFT') ? (
                     <Chip key={key} label={`${item.amount} ${normalizeCurrencyCodeXummImpl(item.currency).toUpperCase()}`} color="primary" variant="outlined" />
-                  ) : <NFTDisplay key={key} nftLink={item.token_icon} />
+                  ) : <Chip key={key} label={`NFT ${item.currency}`} color="primary" variant="outlined" />
                 }
               )
             }
@@ -197,7 +199,7 @@ console.log(status, "status from middleware")
                     return false;
                 return (item.token_type !== 'NFT') ? (
                   <Chip key={key} label={`${item.amount} ${normalizeCurrencyCodeXummImpl(item.currency).toUpperCase()}`} color="secondary" variant="outlined" />
-                ) : <NFTDisplay key={key} nftLink={item.token_icon} />
+                ) : <Chip key={key} label={`NFT ${item.currency}`} color="secondary" variant="outlined" />
                 }
               )
             }

@@ -408,7 +408,7 @@ function TradeNFTPicker({ onSelect, account, isPartner, selectedAssets }) {
   const { accountProfile } = useContext(AppContext);
 
   // Determine which account to use for fetching NFTs
-  const nftAccount = isPartner ? account : accountProfile.address;
+  // const nftAccount = isPartner ? account : accountProfile.address;
 
   return (
     <Box sx={{ width: '100%', p: 2, borderRadius: 2, bgcolor: alpha(theme.palette.background.paper, 0.6) }}>
@@ -416,7 +416,7 @@ function TradeNFTPicker({ onSelect, account, isPartner, selectedAssets }) {
         {isPartner ? "Partner's NFTs" : "Your NFTs"}
       </Typography>
       <ProfileNFTs
-        account={nftAccount}
+        account={account}
         type="collected"
         limit={20}
         onSelect={onSelect}

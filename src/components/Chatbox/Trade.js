@@ -24,10 +24,10 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import TradeNFTPicker from './TradeNFTPicker';
 import { AppContext } from 'src/AppContext';
-import { Client, xrpToDrops } from 'xrpl';
+import { Client, xrpToDrops, isoTimeToRippleTime } from 'xrpl';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 import CryptoJS from 'crypto-js';
-import { isInstalled, submitBulkTransactions } from '@gemwallet/api';
+import { isInstalled, submitBulkTransactions, submitTransaction } from '@gemwallet/api';
 import axios from 'axios';
 import {
   Edit as EditIcon,
@@ -35,6 +35,7 @@ import {
   Cancel as CancelIcon,
   Notifications as NotificationsIcon,
 } from '@mui/icons-material';
+import { configureMemos } from 'src/utils/parse/OfferChanges';
 
 const BASE_URL = 'https://api.xrpl.to/api';
 const NFTRADE_URL = 'http://65.108.136.237:5333';
@@ -241,7 +242,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
     const updateOffers = (offers) =>
       offers.map((offer, i) => {
         if (field === 'currency') {
-          const selectedToken = loggedInUserTokens.filter(token => token.currency === value);
+          const selectedToken = isLoggedInUser ? loggedInUserTokens.filter(token => token.currency === value) : partnerTokens.filter(token => token.currency === value);
           console.log(selectedToken, "selectedToken")
           return i === index ? { ...offer, [field]: value, issuer: selectedToken[0]?.issuer, token_type: 'token' } : offer
         }
@@ -297,11 +298,11 @@ const Trade = ({ open, onClose, tradePartner }) => {
   }
         
   const handleTrade = async() => {
-    const wallet_address = 'rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk';
+    const middle_wallet_address = 'rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk';
     let validateTrade = true;
     loggedInUserOffers.map(async(tokenInfo, index) => {
-      if(tokenInfo.currency !== 'XRP')
-         await getTrustLines(wallet_address, tokenInfo.currency, tokenInfo.issuer);
+      if(tokenInfo.currency !== 'XRP' && tokenInfo.token_type !== 'NFT')
+         await getTrustLines(middle_wallet_address, tokenInfo.currency, tokenInfo.issuer);
 
       if(tokenInfo.amount === 0) {
         showNotification(`Invalid token amount for ${normalizeCurrencyCodeXummImpl(tokenInfo.currency)}`, 'error');
@@ -309,7 +310,6 @@ const Trade = ({ open, onClose, tradePartner }) => {
       }
     });
 
-    // console.log(tet, "check tet");
     console.log(loggedInUserOffers, "loggedInUserOffers")
     
     // check trust line
@@ -323,26 +323,28 @@ const Trade = ({ open, onClose, tradePartner }) => {
           let itemsSent = loggedInUserOffers;
           if(selectedLoggedInUserAssets.length > 0) {
             selectedLoggedInUserAssets.map((item, index) => {
-              let temp = new Array();
-              temp.currency = item.name;
-              temp.amount = 0;
-              temp.token_type = 'NFT';
-              temp.issuer = '';
-              temp.token_address = item.NFTokenID;
-              temp.token_icon = item.ufile.image;
+              let temp = {
+                currency : item.name,
+                amount : 0,
+                token_type : 'NFT',
+                issuer : item.issuer,
+                token_address : item.NFTokenID,
+                token_icon : item.ufile.image,
+              }
               itemsSent.push(temp)
             })
           }
           let itemsRequested = partnerOffers;
           if(selectedPartnerAssets.length > 0) {
             selectedPartnerAssets.map((item, index) => {
-              let temp = new Array();
-              temp.currency = item.name;
-              temp.amount = 0;
-              temp.token_type = 'NFT';
-              temp.issuer = '';
-              temp.token_address = item.NFTokenID;
-              temp.token_icon = item.ufile.image;
+              let temp = {
+                currency : item.name,
+                amount : 0,
+                token_type : 'NFT',
+                issuer : item.issuer,
+                token_address : item.NFTokenID,
+                token_icon : item.ufile.image,
+              }
               itemsRequested.push(temp)
             })
           }
@@ -352,45 +354,49 @@ const Trade = ({ open, onClose, tradePartner }) => {
           //   }
           // )
           console.log(itemsSent, " check token sfor itemsSent")
-          console.log(partnerOffers, " check token sfor partnerOffers")
+          console.log(itemsRequested, " check token sfor partnerOffers")
+          
           const tradeData = await axios.post(`${NFTRADE_URL}/trade`, {
             fromAddress: accountProfile.account,
             toAddress: tradePartner.username,
             itemsSent: itemsSent,
             itemsRequested: itemsRequested,
           });
-          
-          const paymentTxData = loggedInUserOffers.map((offer, index) => ({
-            TransactionType: "Payment",
-            Account: accountProfile.account,
-            Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
-              currency: offer.currency,
-              value: `${offer.amount}`,
-              issuer: offer.issuer
-            },
-            Destination: "rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk",
-            Fee: "12",
-            SourceTag: 20221212,
-            DestinationTag: 20221212,
-          }));
-          console.log(paymentTxData, "paymentTxData = ", loggedInUserOffers)
-          
-
-          const nftxData = selectedLoggedInUserAssets.map((offer, index) => ({
-            TransactionType: "NFTokenCreateOffer",
-            Account: accountProfile.account,
-            NFTokenID: offer.NFTokenID,
-            Amount: "0",
-            Destination: "rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk",
-            Flags: 1,
-          }));
          
+          const paymentTxData = itemsSent.map((offer, index) => (
+            offer.token_type === 'NFT' ? 
+            {
+              TransactionType: "NFTokenCreateOffer",
+              Account: accountProfile.account,
+              NFTokenID: offer.token_address,
+              Amount: "0",
+              Flags: 1,
+              Destination: middle_wallet_address,
+              Memos: configureMemos('XRPNFT-nft-create-sell-offer', '', `https://xrpnft.com/nft/${offer.token_address}`)
+            }
+             : 
+            {
+              TransactionType: "Payment",
+              Account: accountProfile.account,
+              Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
+                currency: offer.currency,
+                value: `${offer.amount}`,
+                issuer: offer.issuer
+              },
+              Destination: middle_wallet_address,
+              Fee: "12",
+              SourceTag: 20221212,
+              DestinationTag: 20221212,
+            }
+          ))
+          console.log(paymentTxData, "paymentTxData")
           const result = await submitBulkTransactions({
-            transactions: paymentTxData.concat(nftxData)
+            transactions: paymentTxData
           });
 
           const requestedData = tradeData.data;
           const tokenHash = result.result.transactions;
+          console.log(tokenHash, "tokenHash")
           for (let i = 0; i < tokenHash.length; i++) {
             await axios.post(`${NFTRADE_URL}/update-trade`, {
               tradeId: requestedData.tradeId,
