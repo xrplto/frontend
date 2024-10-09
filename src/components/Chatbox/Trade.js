@@ -405,15 +405,27 @@ const Trade = ({ open, onClose, tradePartner }) => {
           });
 
           const requestedData = tradeData.data;
-          const tokenHash = result.result.transactions;
-          console.log(tokenHash, "tokenHash")
-          for (let i = 0; i < tokenHash.length; i++) {
+          console.log(result, "tokenHash")
+
+          if(result.result === undefined) {
             await axios.post(`${NFTRADE_URL}/update-trade`, {
               tradeId: requestedData.tradeId,
-              itemType: 'sent',
-              index: i,
-              hash: tokenHash[i]['hash']
+              itemType: 'rejected',
+              index: 0,
+              hash: 'rejected-hash',
             });
+          }else {
+            const tokenHash = result.result.transactions;
+            for (let i = 0; i < tokenHash.length; i++) {
+              if(tokenHash[i]['hash'].length === 64) {
+                await axios.post(`${NFTRADE_URL}/update-trade`, {
+                  tradeId: requestedData.tradeId,
+                  itemType: 'sent',
+                  index: i,
+                  hash: tokenHash[i]['hash']
+                });
+              }
+            }
           }
 
         }

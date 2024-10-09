@@ -135,7 +135,7 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
           <Box sx={{ display: 'flex', alignItems: 'center', color: 'error.main', mt: 2 }}>
             <CancelOutlinedIcon sx={{ mr: 1 }} />
             <Box>
-              <Typography variant="body2">Trade declined</Typography>
+              <Typography variant="body2">Trade Declined</Typography>
               {/* <Typography variant="caption">{formattedDate}</Typography> */}
             </Box>
           </Box>
@@ -145,7 +145,7 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
           <Box sx={{ display: 'flex', alignItems: 'center', color: 'error.main', mt: 2 }}>
             <CancelOutlinedIcon sx={{ mr: 1 }} />
             <Box>
-              <Typography variant="body2">Trade returned</Typography>
+              <Typography variant="body2">Trade Canceled</Typography>
               {/* <Typography variant="caption">{formattedDate}</Typography> */}
             </Box>
           </Box>
@@ -193,7 +193,7 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
             { 
               offer.offering.map((item, key) => {
                 console.log(item.token_type, "item.token_type", item)
-                  if(!item.currency)
+                  if(!item.currency || item.hash === '')
                       return false;
                   return (item.token_type !== 'NFT') ? (
                     <Chip key={key} label={`${item.amount} ${normalizeCurrencyCodeXummImpl(item.currency).toUpperCase()}`} color="primary" variant="outlined" />
@@ -214,8 +214,9 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {
               offer.wanting.map((item, key) => {
-                if(!item.currency)
+                  if(!item.currency)
                     return false;
+
                 return (item.token_type !== 'NFT') ? (
                   <Chip key={key} label={`${item.amount} ${normalizeCurrencyCodeXummImpl(item.currency).toUpperCase()}`} color="secondary" variant="outlined" />
                 ) : <Chip key={key} label={`NFT ${item.currency}`} color="secondary" variant="outlined" />
