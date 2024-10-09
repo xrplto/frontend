@@ -43,18 +43,25 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
     // Implement accept trade logic here
     console.log('Trade accepted', tradeId, actionType, fromAddress);
     if(actionType === 'accept') {
-      await handleTradeAccept(tradeId, itemsRequested, fromAddress);
+      let payRequested = await handleTradeAccept(tradeId, itemsRequested, fromAddress);
+      console.log(payRequested, "payRequested")
+      if(!payRequested)
+        return false;
     }
-    // await axios.post(`${NFTRADE_URL}/trades/reactions`, {
-    //   tradeId: tradeId,
-    //   actionType: actionType,
-    // });
+    let { status } = await axios.post(`${NFTRADE_URL}/trades/reactions`, {
+      tradeId: tradeId,
+      actionType: actionType,
+    });
+
+    if(status === "success") {
+      
+    }
   };
     
   const handleTradeAccept = async(tradeId, itemsRequested, fromAddress) => {
     // Implement trade logic here
     try {
-      isInstalled().then(async (response) => {
+      return isInstalled().then(async (response) => {
         if (response.result.isInstalled) {
           const paymentTxData = itemsRequested.map((offer, index) => (
             offer.token_type === 'token' ?
@@ -97,11 +104,12 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
               hash: tokenHash[i]['hash']
             });
           }
-
         }
+        return true;
       })
     } catch (err) {
       console.log(err);
+      return false;
     }
   };
 
@@ -138,6 +146,19 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
     <StyledPaper>
       <Typography variant="h6" gutterBottom fontWeight="bold">
         Trade Offer
+              <Typography
+                variant="h4"
+                color="text.secondary"
+                fontWeight="normal"
+                align='right'
+              >
+               {
+                 status !== "pending" &&
+                 <StyledButton color="warning" size="small" variant="outlined">
+                  {status.toUpperCase()}
+                </StyledButton>
+                }
+              </Typography>
       </Typography>
       <Typography variant="subtitle2" color="text.secondary" gutterBottom>
         {isOutgoing ? `To: ${offer.toAddress}` : `From: ${offer.fromAddress}`}
