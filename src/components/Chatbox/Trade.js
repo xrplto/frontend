@@ -255,9 +255,9 @@ const Trade = ({ open, onClose, tradePartner }) => {
     }
   };
 
-  const addTrustLine = (async(wallet_address, currency) => {
+  const addTrustLine = (async(wallet_address, currency, issuer) => {
     axios
-        .get(`${NFTRADE_URL}/trustline/add/${wallet_address}/${currency}`)
+        .get(`${NFTRADE_URL}/trustline/add/${wallet_address}/${currency}/${issuer}`)
         .then(async(res) => {
           let ret = res.status === 200 ? res.data : undefined;
           if (ret) {
@@ -269,10 +269,9 @@ const Trade = ({ open, onClose, tradePartner }) => {
         })
   });
 
-  const getTrustLines = async(currency) => {
-    const MIDDLEMAN_ADDRESS = 'rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk';
+  const getTrustLines = async(wallet_address, currency, issuer) => {
     axios
-        .get(`${BASE_URL}/account/lines/${MIDDLEMAN_ADDRESS}`)
+        .get(`${BASE_URL}/account/lines/${wallet_address}`)
         .then(async(res) => {
           let ret = res.status === 200 ? res.data : undefined;
           if (ret) {
@@ -280,7 +279,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
 
             const trustlineStatus = await trustlines.find((trustline) => {
               return (
-                (trustline.LowLimit.issuer === MIDDLEMAN_ADDRESS ||
+                (trustline.LowLimit.issuer === wallet_address ||
                   trustline.HighLimit.issuer) &&
                 trustline.LowLimit.currency === currency
               );
@@ -288,7 +287,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
             console.log(trustlineStatus, "trustlineStatus from")
             if(trustlineStatus === undefined) {
               // add trust line
-              await addTrustLine(MIDDLEMAN_ADDRESS, currency)
+              await addTrustLine(wallet_address, currency, issuer)
             }
           }
         })
@@ -298,15 +297,14 @@ const Trade = ({ open, onClose, tradePartner }) => {
   }
         
   const handleTrade = async() => {
-    // const loggedInUserAssets = selectedLoggedInUserAssets;
-    
+    const wallet_address = 'rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk';
     let validateTrade = true;
-    loggedInUserOffers.map((tokenInfo, index) => {
+    loggedInUserOffers.map(async(tokenInfo, index) => {
       if(tokenInfo.currency !== 'XRP')
-         getTrustLines(tokenInfo.currency);
+         await getTrustLines(wallet_address, tokenInfo.currency, tokenInfo.issuer);
 
       if(tokenInfo.amount === 0) {
-        showNotification(`Invalid token amount for ${tokenInfo.currency}`, 'error');
+        showNotification(`Invalid token amount for ${normalizeCurrencyCodeXummImpl(tokenInfo.currency)}`, 'error');
         validateTrade = false;
       }
     });

@@ -52,9 +52,9 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
       tradeId: tradeId,
       actionType: actionType,
     });
-
+console.log(status, "status from middleware")
     if(status === "success") {
-      
+
     }
   };
     
