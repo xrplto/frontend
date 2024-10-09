@@ -241,12 +241,22 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const handleOfferChange = (index, field, value, isLoggedInUser) => {
     const updateOffers = (offers) =>
       offers.map((offer, i) => {
-        if (field === 'currency') {
-          const selectedToken = isLoggedInUser ? loggedInUserTokens.filter(token => token.currency === value) : partnerTokens.filter(token => token.currency === value);
-          console.log(selectedToken, "selectedToken")
-          return i === index ? { ...offer, [field]: value, issuer: selectedToken[0]?.issuer, token_type: 'token' } : offer
+        if (i === index) {
+          if (field === 'currency') {
+            const selectedToken = isLoggedInUser 
+              ? loggedInUserTokens.find(token => token.currency === value)
+              : partnerTokens.find(token => token.currency === value);
+            return { 
+              ...offer, 
+              [field]: value, 
+              issuer: selectedToken?.issuer, 
+              token_type: 'token' 
+            };
+          } else if (field === 'amount') {
+            return { ...offer, [field]: value === '' ? '' : Number(value) };
+          }
         }
-        return i === index ? { ...offer, [field]: value } : offer
+        return offer;
       });
       
     if (isLoggedInUser) {
@@ -449,10 +459,18 @@ const Trade = ({ open, onClose, tradePartner }) => {
           </Select>
           <TextField
             type="number"
-            value={offer.amount}
-            onChange={(e) => handleOfferChange(index, 'amount', Number(e.target.value), isLoggedInUser)}
+            value={offer.amount || ''}
+            onChange={(e) => handleOfferChange(index, 'amount', e.target.value === '' ? '' : Number(e.target.value), isLoggedInUser)}
             inputProps={{ min: 0, step: 0.000001 }}
-            sx={{ width: '40%', '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            placeholder="0"
+            sx={{
+              width: '40%',
+              '& .MuiOutlinedInput-root': { borderRadius: 2 },
+              '& input::placeholder': {
+                color: 'text.disabled',
+                opacity: 1,
+              },
+            }}
           />
           <IconButton onClick={() => handleRemoveOffer(index, isLoggedInUser)} sx={{ ml: 1 }}>
             <CloseIcon />
