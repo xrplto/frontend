@@ -346,14 +346,18 @@ const Trade = ({ open, onClose, tradePartner }) => {
               itemsRequested.push(temp)
             })
           }
-
+          
+          // await partnerOffers.map(async(item) => {
+          //   await getTrustLines(accountProfile.account, item.currency, item.issuer);
+          //   }
+          // )
           console.log(itemsSent, " check token sfor itemsSent")
           console.log(partnerOffers, " check token sfor partnerOffers")
           const tradeData = await axios.post(`${NFTRADE_URL}/trade`, {
             fromAddress: accountProfile.account,
             toAddress: tradePartner.username,
             itemsSent: itemsSent,
-            itemsRequested: partnerOffers,
+            itemsRequested: itemsRequested,
           });
           
           const paymentTxData = loggedInUserOffers.map((offer, index) => ({
