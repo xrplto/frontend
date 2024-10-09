@@ -8,6 +8,7 @@ import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 import { isInstalled, submitBulkTransactions } from '@gemwallet/api';
+import { Client, xrpToDrops } from 'xrpl';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -26,6 +27,8 @@ const StyledButton = styled(Button)(({ theme }) => ({
 const NFTRADE_URL = 'http://65.108.136.237:5333';
 
 function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing, itemsSent, itemsRequested }) {
+  const { accountProfile } = useContext(AppContext);
+
   const offer = isOutgoing ? {
     toAddress: toAddress,
     offering: itemsSent,
@@ -36,11 +39,11 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
     wanting: itemsRequested
   };
 
-  const handleReactions = async(tradeId, actionType, fromAddress) => {
+  const handleReactions = async(tradeId, actionType) => {
     // Implement accept trade logic here
     console.log('Trade accepted', tradeId, actionType, fromAddress);
     if(actionType === 'accept') {
-      await handleTradeAccept(tradeId, itemsRequested);
+      await handleTradeAccept(tradeId, itemsRequested, fromAddress);
     }
     // await axios.post(`${NFTRADE_URL}/trades/reactions`, {
     //   tradeId: tradeId,
@@ -48,38 +51,42 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
     // });
   };
     
-  const handleTradeAccept = async(tradeId, itemsRequested) => {
+  const handleTradeAccept = async(tradeId, itemsRequested, fromAddress) => {
     // Implement trade logic here
     try {
       isInstalled().then(async (response) => {
         if (response.result.isInstalled) {
-          const paymentTxData = itemsRequested.map((offer, index) => ({
-            TransactionType: "Payment",
-            Account: accountProfile.account,
-            Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
-              currency: offer.currency,
-              value: `${offer.amount}`,
-              issuer: offer.issuer
-            },
-            Destination: "rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk",
-            Fee: "12",
-            SourceTag: 20221212,
-            DestinationTag: 20221212,
-          }));
+          const paymentTxData = itemsRequested.map((offer, index) => (
+            offer.token_type === 'token' ?
+              {
+                TransactionType: "Payment",
+                Account: accountProfile.account,
+                Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
+                  currency: offer.currency,
+                  value: `${offer.amount}`,
+                  issuer: offer.issuer
+                },
+                Destination: fromAddress,
+                Fee: "12",
+                SourceTag: 20221212,
+                DestinationTag: 20221212,
+              }
+               : 
+              {
+                TransactionType: "NFTokenCreateOffer",
+                Account: accountProfile.account,
+                NFTokenID: offer.token_address,
+                Amount: "0",
+                Destination: fromAddress,
+                Flags: 1,
+              }
+          ));
+
           console.log(paymentTxData, "paymentTxData = ", itemsRequested)
-          
-          const nftxData = selectedLoggedInUserAssets.map((offer, index) => ({
-            TransactionType: "NFTokenCreateOffer",
-            Account: accountProfile.account,
-            NFTokenID: offer.NFTokenID,
-            Amount: "0",
-            Destination: "rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk",
-            Flags: 1,
-          }));
-         
           const result = await submitBulkTransactions({
-            transactions: paymentTxData.concat(nftxData)
+            transactions: paymentTxData
           });
+          console.log(result, "result = ")
 
           const tokenHash = result.result.transactions;
           for (let i = 0; i < tokenHash.length; i++) {
