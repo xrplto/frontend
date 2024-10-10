@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { Box, Typography, Button, Grid, Paper, Divider, Chip, Tabs, Tab } from '@mui/material';
+import { Box, Typography, Button, Grid, Paper, Divider, Chip, Tabs, Tab, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
@@ -9,7 +9,7 @@ import { AppContext } from 'src/AppContext';
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 import { isInstalled, submitBulkTransactions } from '@gemwallet/api';
 import { Client, xrpToDrops } from 'xrpl';
-import NFTDisplay from './NFTDisplay';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -293,7 +293,7 @@ function Trades() {
         </Tabs>
       </Box>
       {
-        tradeHistory.length > 0 && 
+        tradeHistory.length > 0 ? 
         <>
           <TabPanel value={tabValue} index={0}>
             {
@@ -312,6 +312,13 @@ function Trades() {
             }
           </TabPanel>
         </>
+        :
+        <Stack alignItems="center" mt={10} justifyContent="center" height="100%">
+          <ErrorOutlineIcon fontSize="large" sx={{ mb: 2, color: 'text.secondary' }} />
+          <Typography variant="body1" color="text.secondary">
+            No Trades found
+          </Typography>
+        </Stack>
       }
     </Box>
   );

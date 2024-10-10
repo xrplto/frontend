@@ -359,10 +359,6 @@ const Trade = ({ open, onClose, tradePartner }) => {
             })
           }
           
-          // await partnerOffers.map(async(item) => {
-          //   await getTrustLines(accountProfile.account, item.currency, item.issuer);
-          //   }
-          // )
           console.log(itemsSent, " check token sfor itemsSent")
           console.log(itemsRequested, " check token sfor partnerOffers")
           
