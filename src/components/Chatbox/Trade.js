@@ -36,6 +36,7 @@ import {
   Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
+import sdk from "@crossmarkio/sdk";
 
 const BASE_URL = 'https://api.xrpl.to/api';
 const NFTRADE_URL = 'http://65.108.136.237:5333';
@@ -92,7 +93,9 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const [partnerLines, setPartnerLines] = useState([]);
   const [notifications, setNotifications] = useState(true);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  
+  const [xamanStep, setXamanStep] = useState(0);
+  const [xamanTitle, setXamanTitle] = useState(0);
+
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -328,8 +331,6 @@ const Trade = ({ open, onClose, tradePartner }) => {
     
     // Implement trade logic here
     try {
-      isInstalled().then(async (response) => {
-        if (response.result.isInstalled) {
           let itemsSent = loggedInUserOffers;
           if(selectedLoggedInUserAssets.length > 0) {
             selectedLoggedInUserAssets.map((item, index) => {
@@ -396,41 +397,61 @@ const Trade = ({ open, onClose, tradePartner }) => {
             }
           ))
           console.log(paymentTxData, "paymentTxData")
-          const result = await submitBulkTransactions({
-            transactions: paymentTxData
-          });
-
           const requestedData = tradeData.data;
-          console.log(result, "tokenHash")
+          
+          const wallet_type = accountProfile.wallet_type;
+          console.log(wallet_type, "wallet type")
+          switch (wallet_type) {
+            case "xaman":
 
-          if(result.result === undefined) {
-            await axios.post(`${NFTRADE_URL}/update-trade`, {
-              tradeId: requestedData.tradeId,
-              itemType: 'rejected',
-              index: 0,
-              hash: 'rejected-hash',
-            });
-          }else {
-            const tokenHash = result.result.transactions;
-            for (let i = 0; i < tokenHash.length; i++) {
-              if(tokenHash[i]['hash'].length === 64) {
-                await axios.post(`${NFTRADE_URL}/update-trade`, {
-                  tradeId: requestedData.tradeId,
-                  itemType: 'sent',
-                  index: i,
-                  hash: tokenHash[i]['hash']
+            case "gem":
+            isInstalled().then(async (response) => {
+              if (response.result.isInstalled) {
+                const result = await submitBulkTransactions({
+                  transactions: paymentTxData
                 });
+                console.log(result, "tokenHash")
+                await processTxhash(result, requestedData.tradeId);
               }
-            }
+            })
+            case "crossmark":
+              await sdk.methods.bulkSignAndSubmitAndWait(paymentTxData).then(async ({ response }) => {
+                console.log(response, "crossmark response");
+                if (response.data.meta.isSuccess) {
+                  await processTxhash(response, requestedData.tradeId);
+                } else {
+                  
+                }
+              });
           }
-
-        }
-      })
+          
+          
     } catch (err) {
       console.log(err);
     }
   };
-
+  const processTxhash = async(paymentResult, tradeId) => {
+    if(paymentResult.result === undefined) {
+      await axios.post(`${NFTRADE_URL}/update-trade`, {
+        tradeId: tradeId,
+        itemType: 'rejected',
+        index: 0,
+        hash: 'rejected-hash',
+      });
+    }else {
+      const tokenHash = paymentResult.result.transactions;
+      for (let i = 0; i < tokenHash.length; i++) {
+        if(tokenHash[i]['hash'].length === 64) {
+          await axios.post(`${NFTRADE_URL}/update-trade`, {
+            tradeId: tradeId,
+            itemType: 'sent',
+            index: i,
+            hash: tokenHash[i]['hash']
+          });
+        }
+      }
+    }
+  }
   const handleClose = () => {
     setSelectedLoggedInUserAssets([]);
     setSelectedPartnerAssets([]);
