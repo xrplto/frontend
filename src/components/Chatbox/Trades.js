@@ -10,6 +10,7 @@ import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
 import { isInstalled, submitBulkTransactions } from '@gemwallet/api';
 import { Client, xrpToDrops } from 'xrpl';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import sdk from "@crossmarkio/sdk";
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -60,6 +61,29 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
     // if(status === "success") {
     // }
   };
+
+  const processTxhash = async(paymentResult, tradeId) => {
+    if(paymentResult.result === undefined) {
+      await axios.post(`${NFTRADE_URL}/update-trade`, {
+        tradeId: tradeId,
+        itemType: 'rejected',
+        index: 0,
+        hash: 'rejected-hash',
+      });
+    }else {
+      const tokenHash = paymentResult.result.transactions;
+      for (let i = 0; i < tokenHash.length; i++) {
+        if(tokenHash[i]['hash'].length === 64) {
+          await axios.post(`${NFTRADE_URL}/update-trade`, {
+            tradeId: tradeId,
+            itemType: 'requested',
+            index: i,
+            hash: tokenHash[i]['hash']
+          });
+        }
+      }
+    }
+  }
     
   const handleTradeAccept = async(tradeId, itemsRequested, fromAddress) => {
     // Implement trade logic here
@@ -98,15 +122,36 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
           });
           console.log(result, "result = ")
 
-          const tokenHash = result.result.transactions;
-          for (let i = 0; i < tokenHash.length; i++) {
-            await axios.post(`${NFTRADE_URL}/update-trade`, {
-              tradeId: tradeId,
-              itemType: 'requested',
-              index: i,
-              hash: tokenHash[i]['hash']
-            });
+          const wallet_type = accountProfile.wallet_type;
+          console.log(wallet_type, "wallet type")
+
+          switch (wallet_type) {
+            case "xaman":
+
+            case "gem":
+              isInstalled().then(async (response) => {
+                if (response.result.isInstalled) {
+                  const result = await submitBulkTransactions({
+                    transactions: paymentTxData
+                  });
+                  console.log(result, "tokenHash")
+                  if (response.data.meta.isSuccess) {
+                    await processTxhash(result, requestedData.tradeId);
+                  }
+                }
+              })
+
+            case "crossmark":
+              await sdk.methods.bulkSignAndSubmitAndWait(paymentTxData).then(async ({ response }) => {
+                console.log(response, "crossmark response");
+                if (response.data.meta.isSuccess) {
+                  await processTxhash(response, requestedData.tradeId);
+                } else {
+                  
+                }
+              });
           }
+        
         }
         return true;
       })

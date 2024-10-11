@@ -411,7 +411,9 @@ const Trade = ({ open, onClose, tradePartner }) => {
                   transactions: paymentTxData
                 });
                 console.log(result, "tokenHash")
-                await processTxhash(result, requestedData.tradeId);
+                if (response.data.meta.isSuccess) {
+                  await processTxhash(result, requestedData.tradeId);
+                }
               }
             })
             case "crossmark":
