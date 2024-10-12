@@ -412,15 +412,19 @@ const Trade = ({ open, onClose, tradePartner }) => {
                 });
                 console.log(result, "tokenHash")
                 if (response.data.meta.isSuccess) {
-                  await processTxhash(result, requestedData.tradeId);
+                  const hashes = result.result.transactions.map((item) => item.hash);
+                  await processTxhash(hashes, requestedData.tradeId);
                 }
               }
             })
             case "crossmark":
-              await sdk.methods.bulkSignAndSubmitAndWait(paymentTxData).then(async ({ response }) => {
+              await sdk.methods.bulkSignAndSubmitAndWait(paymentTxData, {
+                isModifiable: false
+              }).then(async ({ response }) => {
                 console.log(response, "crossmark response");
                 if (response.data.meta.isSuccess) {
-                  await processTxhash(response, requestedData.tradeId);
+                  const hashes = response.data.resp.map((item) => item.result.hash);
+                  await processTxhash(hashes, requestedData.tradeId);
                 } else {
                   
                 }
@@ -433,7 +437,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
     }
   };
   const processTxhash = async(paymentResult, tradeId) => {
-    if(paymentResult.result === undefined) {
+    if(!paymentResult) {
       await axios.post(`${NFTRADE_URL}/update-trade`, {
         tradeId: tradeId,
         itemType: 'rejected',
@@ -441,7 +445,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
         hash: 'rejected-hash',
       });
     }else {
-      const tokenHash = paymentResult.result.transactions;
+      const tokenHash = paymentResult;
       for (let i = 0; i < tokenHash.length; i++) {
         if(tokenHash[i]['hash'].length === 64) {
           await axios.post(`${NFTRADE_URL}/update-trade`, {
