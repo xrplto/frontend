@@ -49,6 +49,14 @@ We have language bindings in Shell, JavaScript, Python and Ruby! You can view co
 curl -sS "https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter="
 \`\`\`
 
+\`\`\`javascript
+const axios = require('axios');
+
+const res = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
+
+const tokens = res.data;
+\`\`\`
+
 This endpoint retrieves tokens.
 
 #### HTTP Request
@@ -65,6 +73,110 @@ This endpoint retrieves tokens.
 | sortType | desc | asc, desc |
 
 The parameter \`amount\` in JSON object is Total Supply value, \`supply\` is Circulating Supply Value.
+
+#### Response
+
+The above command returns JSON structured like this:
+
+\`\`\`json
+{
+  "result": "success",
+  "took": "18.70",
+  "exch": {
+    "USD": 2.559408291448575,
+    "EUR": 2.6770493364433525,
+    "JPY": 0.045246821410082315,
+    "CNY": 0.3705075954057058
+  },
+  "H24": {
+    "_id": "METRICS_24H",
+    "activeAddresses24H": 12290,
+    "tradedTokens24H": 447,
+    "tradedXRP24H": 3565973.664622,
+    "transactions24H": 15546
+  },
+  "global": {
+    "_id": "METRICS_GLOBAL",
+    "gDexVolume": 3565973.664622,
+    "gDexVolumePro": -18.842402030897333,
+    "gMarketcap": 120827548.02265854,
+    "gMarketcapPro": 0.12402123412199728,
+    "gScamVolume": 87.23683099999998,
+    "gScamVolumePro": 0.002446367786320914,
+    "gStableVolume": 490506.24331000005,
+    "gStableVolumePro": 13.755184121977937,
+    "gXRPdominance": 0,
+    "gXRPdominancePro": 0
+  },
+  "total": 8416,
+  "count": 8416,
+  "tagName": "",
+  "start": 0,
+  "limit": 1,
+  "sortBy": "vol24hxrp",
+  "sortType": "desc",
+  "filter": "",
+  "tokens": [
+    {
+      "_id": "0413ca7cfc258dfaf698c02fe304e607",
+      "md5": "0413ca7cfc258dfaf698c02fe304e607",
+      "amount": "399211088.84308900115",
+      "currency": "534F4C4F00000000000000000000000000000000",
+      "date": "2019-12-07",
+      "dateon": 1654094361537,
+      "domain": "sologenic.com",
+      "holders": 237778,
+      "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
+      "kyc": false,
+      "offers": 5913,
+      "social": {
+        "twitter": "realSologenic",
+        "facebook": "realsologenic",
+        "linkedin": "realsologenic",
+        "instagram": "realsologenic",
+        "telegram": "CoinFieldCHAT",
+        "discord": "uSdE6tS67B",
+        "youtube": "c/GoSOLOTV",
+        "medium": "@sologenic",
+        "tiktok": "@sologenic.official",
+        "reddit": "r/Sologenic"
+      },
+      "trustlines": 288429,
+      "urlSlug": "sologenic-solo",
+      "user": "Sologenic",
+      "verified": true,
+      "imgExt": "jpg",
+      "name": "SOLO",
+      "tags": [
+        "Payment",
+        "Market",
+        "Collectables & NFTs",
+        "Tokenized Stocks"
+      ],
+      "whitepaper": "https://www.sologenic.com/downloads/sologenic-whitepaper.pdf",
+      "exch": 0.41949763333333334,
+      "marketcap": 68304369.66850857,
+      "maxMin24h": [
+        0.19057847838771405,
+        0.15721754517708283
+      ],
+      "p24h": -0.02042820490359476,
+      "p7d": -0.02816231645870154,
+      "pro24h": -12.463507027255588,
+      "pro7d": -17.182186625955396,
+      "vol24h": 3358118.9322646316,
+      "vol24htx": 4123,
+      "vol24hx": 3345545.1935411547,
+      "vol24hxrp": 1454435.640453,
+      "id": 1,
+      "supply": "399211088.84308900115",
+      "usd": "0.16390414719486037532",
+      "time": 1678372110000,
+      "lines": 288434
+    }
+  ]
+}
+\`\`\`
 
 ### Get a Specific Token Info
 
@@ -323,10 +435,16 @@ const ApiDocs = () => {
         .map((section) => document.getElementById(section.id))
         .filter(Boolean);
 
-      const currentSection = sectionElements.find((element) => {
+      // Find the current section
+      let currentSection = null;
+      for (let i = sectionElements.length - 1; i >= 0; i--) {
+        const element = sectionElements[i];
         const rect = element.getBoundingClientRect();
-        return rect.top <= 100 && rect.bottom > 100;
-      });
+        if (rect.top <= 100) {
+          currentSection = element;
+          break;
+        }
+      }
 
       if (currentSection) {
         setActiveSection(currentSection.id);
@@ -523,124 +641,124 @@ const ApiDocs = () => {
           </Toolbar>
         </AppBar>
 
-        <Container maxWidth="xl" sx={{ flexGrow: 1, py: 6 }}>
-          <Grid container spacing={4}>
-            <Grid item xs={12} md={3}>
-              <Paper
-                elevation={3}
-                sx={{
-                  p: 3,
-                  position: 'sticky',
-                  top: 24,
-                  borderRadius: 2,
-                  bgcolor: 'background.paper'
-                }}
-              >
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  placeholder="Search documentation..."
-                  value={searchTerm}
-                  onChange={handleSearch}
+        <Box sx={{ display: 'flex', flexGrow: 1 }}>
+          <Box
+            component="nav"
+            sx={{
+              width: 280,
+              flexShrink: 0,
+              p: 3,
+              borderRight: 1,
+              borderColor: 'divider',
+              bgcolor: 'background.paper',
+              overflowY: 'auto',
+              height: 'calc(100vh - 64px)', // Subtract AppBar height
+              position: 'sticky',
+              top: 64 // AppBar height
+            }}
+          >
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Search documentation..."
+              value={searchTerm}
+              onChange={handleSearch}
+              sx={{ mb: 3 }}
+            />
+            {(searchResults.length > 0 || fullTextSearchResults.length > 0) && (
+              <Paper elevation={1} sx={{ mb: 2, maxHeight: 400, overflow: 'auto' }}>
+                {searchResults.length > 0 && (
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ p: 1, bgcolor: 'grey.100' }}>
+                      Sections
+                    </Typography>
+                    <List>
+                      {searchResults.map((result) => (
+                        <ListItem
+                          key={result.id}
+                          button
+                          onClick={() => handleSearchResultClick(result.id)}
+                        >
+                          <ListItemText primary={result.title} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                )}
+                {fullTextSearchResults.length > 0 && (
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ p: 1, bgcolor: 'grey.100' }}>
+                      Content
+                    </Typography>
+                    <List>
+                      {fullTextSearchResults.map((result) => (
+                        <ListItem
+                          key={`line-${result.lineNumber}`}
+                          button
+                          onClick={() => handleFullTextResultClick(result.lineNumber)}
+                        >
+                          <ListItemText
+                            primary={`Line ${result.lineNumber}: ${result.line.substring(
+                              0,
+                              50
+                            )}...`}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                )}
+              </Paper>
+            )}
+            <List>
+              {sections.map((section) => (
+                <MotionListItem
+                  key={section.id}
+                  button
+                  selected={activeSection === section.id}
+                  onClick={() => handleSectionClick(section.id)}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
                   sx={{
-                    mb: 3,
-                    '& .MuiOutlinedInput-root': {
-                      '& fieldset': {
-                        borderColor: alpha(theme.palette.primary.main, 0.3)
-                      },
-                      '&:hover fieldset': {
-                        borderColor: theme.palette.primary.main
-                      }
+                    borderRadius: 1,
+                    mb: 1,
+                    '&.Mui-selected': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      color: theme.palette.primary.main,
+                      fontWeight: 600
                     }
                   }}
-                />
-                {(searchResults.length > 0 || fullTextSearchResults.length > 0) && (
-                  <Paper elevation={1} sx={{ mb: 2, maxHeight: 400, overflow: 'auto' }}>
-                    {searchResults.length > 0 && (
-                      <Box>
-                        <Typography variant="subtitle1" sx={{ p: 1, bgcolor: 'grey.100' }}>
-                          Sections
-                        </Typography>
-                        <List>
-                          {searchResults.map((result) => (
-                            <ListItem
-                              key={result.id}
-                              button
-                              onClick={() => handleSearchResultClick(result.id)}
-                            >
-                              <ListItemText primary={result.title} />
-                            </ListItem>
-                          ))}
-                        </List>
-                      </Box>
-                    )}
-                    {fullTextSearchResults.length > 0 && (
-                      <Box>
-                        <Typography variant="subtitle1" sx={{ p: 1, bgcolor: 'grey.100' }}>
-                          Content
-                        </Typography>
-                        <List>
-                          {fullTextSearchResults.map((result) => (
-                            <ListItem
-                              key={`line-${result.lineNumber}`}
-                              button
-                              onClick={() => handleFullTextResultClick(result.lineNumber)}
-                            >
-                              <ListItemText
-                                primary={`Line ${result.lineNumber}: ${result.line.substring(
-                                  0,
-                                  50
-                                )}...`}
-                              />
-                            </ListItem>
-                          ))}
-                        </List>
-                      </Box>
-                    )}
-                  </Paper>
-                )}
-                <List>
-                  {sections.map((section) => (
-                    <MotionListItem
-                      key={section.id}
-                      button
-                      selected={activeSection === section.id}
-                      onClick={() => handleSectionClick(section.id)}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.98 }}
-                      sx={{
-                        borderRadius: 1,
-                        mb: 1,
-                        '&.Mui-selected': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                          color: theme.palette.primary.main,
-                          fontWeight: 600
-                        }
-                      }}
-                    >
-                      <ListItemText primary={section.title} />
-                    </MotionListItem>
-                  ))}
-                </List>
-              </Paper>
-            </Grid>
-            <Grid item xs={12} md={9}>
-              <Paper elevation={3} sx={{ p: 4, borderRadius: 2, bgcolor: 'background.paper' }}>
-                <ReactMarkdown
-                  components={components}
-                  remarkPlugins={[remarkGfm]} // Enable GFM
                 >
-                  {apiDocumentation}
-                </ReactMarkdown>
-              </Paper>
-            </Grid>
-          </Grid>
-        </Container>
+                  <ListItemText primary={section.title} />
+                </MotionListItem>
+              ))}
+            </List>
+          </Box>
 
-        <Box
-          component="footer"
-          sx={{ bgcolor: 'background.paper', color: 'text.primary', py: 3, mt: 6 }}
-        >
+          <Box sx={{ flexGrow: 1, display: 'flex' }}>
+            <Box sx={{ flexGrow: 1, p: 4, maxWidth: '50%', overflowY: 'auto' }}>
+              <ReactMarkdown components={components} remarkPlugins={[remarkGfm]}>
+                {apiDocumentation}
+              </ReactMarkdown>
+            </Box>
+            <Box sx={{ flexGrow: 1, p: 4, bgcolor: '#2d2d2d', color: 'white', overflowY: 'auto' }}>
+              <Typography variant="h6" gutterBottom>
+                Code Examples
+              </Typography>
+              {/* Add code examples here */}
+              <SyntaxHighlighter language="javascript" style={tomorrow}>
+                {`const axios = require('axios');
+
+const res = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
+
+const tokens = res.data;`}
+              </SyntaxHighlighter>
+              {/* Add more code examples as needed */}
+            </Box>
+          </Box>
+        </Box>
+
+        <Box component="footer" sx={{ bgcolor: 'background.paper', color: 'text.primary', py: 3 }}>
           <Container maxWidth="lg">
             <Typography variant="body2" align="center">
               &copy; {new Date().getFullYear()} XRPL.to. All rights reserved.
