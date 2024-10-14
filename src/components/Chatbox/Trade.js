@@ -246,14 +246,14 @@ const Trade = ({ open, onClose, tradePartner }) => {
       offers.map((offer, i) => {
         if (i === index) {
           if (field === 'currency') {
-            const selectedToken = isLoggedInUser 
+            const selectedToken = isLoggedInUser
               ? loggedInUserTokens.find(token => token.currency === value)
               : partnerTokens.find(token => token.currency === value);
-            return { 
-              ...offer, 
-              [field]: value, 
-              issuer: selectedToken?.issuer, 
-              token_type: 'token' 
+            return {
+              ...offer,
+              [field]: value,
+              issuer: selectedToken?.issuer,
+              token_type: 'token'
             };
           } else if (field === 'amount') {
             return { ...offer, [field]: value === '' ? '' : Number(value) };
@@ -261,7 +261,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
         }
         return offer;
       });
-      
+
     if (isLoggedInUser) {
       setLoggedInUserOffers(updateOffers(loggedInUserOffers));
     } else {
@@ -269,185 +269,186 @@ const Trade = ({ open, onClose, tradePartner }) => {
     }
   };
 
-  const addTrustLine = (async(wallet_address, currency, issuer) => {
+  const addTrustLine = (async (wallet_address, currency, issuer) => {
     axios
-        .get(`${NFTRADE_URL}/trustline/add/${wallet_address}/${currency}/${issuer}`)
-        .then(async(res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            console.log(ret, "message from trustline");
-          }
-        })
-        .catch((err) => {
-          console.log('Error on setting account lines!!!', err);
-        })
+      .get(`${NFTRADE_URL}/trustline/add/${wallet_address}/${currency}/${issuer}`)
+      .then(async (res) => {
+        let ret = res.status === 200 ? res.data : undefined;
+        if (ret) {
+          console.log(ret, "message from trustline");
+        }
+      })
+      .catch((err) => {
+        console.log('Error on setting account lines!!!', err);
+      })
   });
 
-  const getTrustLines = async(wallet_address, currency, issuer) => {
+  const getTrustLines = async (wallet_address, currency, issuer) => {
     axios
-        .get(`${BASE_URL}/account/lines/${wallet_address}`)
-        .then(async(res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            const trustlines = ret.lines;
+      .get(`${BASE_URL}/account/lines/${wallet_address}`)
+      .then(async (res) => {
+        let ret = res.status === 200 ? res.data : undefined;
+        if (ret) {
+          const trustlines = ret.lines;
 
-            const trustlineStatus = await trustlines.find((trustline) => {
-              return (
-                (trustline.LowLimit.issuer === wallet_address ||
-                  trustline.HighLimit.issuer) &&
-                trustline.LowLimit.currency === currency
-              );
-            });
-            console.log(trustlineStatus, "trustlineStatus from")
-            if(trustlineStatus === undefined) {
-              // add trust line
-              await addTrustLine(wallet_address, currency, issuer)
-            }
+          const trustlineStatus = await trustlines.find((trustline) => {
+            return (
+              (trustline.LowLimit.issuer === wallet_address ||
+                trustline.HighLimit.issuer) &&
+              trustline.LowLimit.currency === currency
+            );
+          });
+          console.log(trustlineStatus, "trustlineStatus from")
+          if (trustlineStatus === undefined) {
+            // add trust line
+            await addTrustLine(wallet_address, currency, issuer)
           }
-        })
-        .catch((err) => {
-          console.log('Error on getting account lines!!!', err);
-        })
+        }
+      })
+      .catch((err) => {
+        console.log('Error on getting account lines!!!', err);
+      })
   }
-        
-  const handleTrade = async() => {
+
+  const handleTrade = async () => {
     const middle_wallet_address = 'rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk';
     let validateTrade = true;
-    loggedInUserOffers.map(async(tokenInfo, index) => {
-      if(tokenInfo.currency !== 'XRP' && tokenInfo.token_type !== 'NFT')
-         await getTrustLines(middle_wallet_address, tokenInfo.currency, tokenInfo.issuer);
+    loggedInUserOffers.map(async (tokenInfo, index) => {
+      if (tokenInfo.currency !== 'XRP' && tokenInfo.token_type !== 'NFT')
+        await getTrustLines(middle_wallet_address, tokenInfo.currency, tokenInfo.issuer);
 
-      if(tokenInfo.amount === 0) {
+      if (tokenInfo.amount === 0) {
         showNotification(`Invalid token amount for ${normalizeCurrencyCodeXummImpl(tokenInfo.currency)}`, 'error');
         validateTrade = false;
       }
     });
 
     console.log(loggedInUserOffers, "loggedInUserOffers")
-    
+
     // check trust line
-    if(!validateTrade)
+    if (!validateTrade)
       return false;
-    
+
     // Implement trade logic here
     try {
-          let itemsSent = loggedInUserOffers;
-          if(selectedLoggedInUserAssets.length > 0) {
-            selectedLoggedInUserAssets.map((item, index) => {
-              let temp = {
-                currency : item.name,
-                amount : 0,
-                token_type : 'NFT',
-                issuer : item.issuer,
-                token_address : item.NFTokenID,
-                token_icon : item.ufile.image,
-              }
-              itemsSent.push(temp)
-            })
+      let itemsSent = loggedInUserOffers;
+      if (selectedLoggedInUserAssets.length > 0) {
+        selectedLoggedInUserAssets.map((item, index) => {
+          let temp = {
+            currency: item.name,
+            amount: 0,
+            token_type: 'NFT',
+            issuer: item.issuer,
+            token_address: item.NFTokenID,
+            token_icon: item.ufile.image,
           }
-          let itemsRequested = partnerOffers;
-          if(selectedPartnerAssets.length > 0) {
-            selectedPartnerAssets.map((item, index) => {
-              let temp = {
-                currency : item.name,
-                amount : 0,
-                token_type : 'NFT',
-                issuer : item.issuer,
-                token_address : item.NFTokenID,
-                token_icon : item.ufile.image,
-              }
-              itemsRequested.push(temp)
-            })
+          itemsSent.push(temp)
+        })
+      }
+      let itemsRequested = partnerOffers;
+      if (selectedPartnerAssets.length > 0) {
+        selectedPartnerAssets.map((item, index) => {
+          let temp = {
+            currency: item.name,
+            amount: 0,
+            token_type: 'NFT',
+            issuer: item.issuer,
+            token_address: item.NFTokenID,
+            token_icon: item.ufile.image,
           }
-          
-          console.log(itemsSent, " check token sfor itemsSent")
-          console.log(itemsRequested, " check token sfor partnerOffers")
-          
-          const tradeData = await axios.post(`${NFTRADE_URL}/trade`, {
-            fromAddress: accountProfile.account,
-            toAddress: tradePartner.username,
-            itemsSent: itemsSent,
-            itemsRequested: itemsRequested,
-          });
-         
-          const paymentTxData = itemsSent.map((offer, index) => (
-            offer.token_type === 'NFT' ? 
-            {
-              TransactionType: "NFTokenCreateOffer",
-              Account: accountProfile.account,
-              NFTokenID: offer.token_address,
-              Amount: "0",
-              Flags: 1,
-              Destination: middle_wallet_address,
-              Memos: configureMemos('XRPNFT-nft-create-sell-offer', '', `https://xrpnft.com/nft/${offer.token_address}`)
-            }
-             : 
-            {
-              TransactionType: "Payment",
-              Account: accountProfile.account,
-              Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
-                currency: offer.currency,
-                value: `${offer.amount}`,
-                issuer: offer.issuer
-              },
-              Destination: middle_wallet_address,
-              Fee: "12",
-              SourceTag: 20221212,
-              DestinationTag: 20221212,
-            }
-          ))
-          console.log(paymentTxData, "paymentTxData")
-          const requestedData = tradeData.data;
-          
-          const wallet_type = accountProfile.wallet_type;
-          console.log(wallet_type, "wallet type")
-          switch (wallet_type) {
-            case "xaman":
+          itemsRequested.push(temp)
+        })
+      }
 
-            case "gem":
-            isInstalled().then(async (response) => {
-              if (response.result.isInstalled) {
-                const result = await submitBulkTransactions({
-                  transactions: paymentTxData
-                });
-                console.log(result, "tokenHash")
-                if (response.data.meta.isSuccess) {
-                  const hashes = result.result.transactions.map((item) => item.hash);
-                  await processTxhash(hashes, requestedData.tradeId);
-                }
-              }
-            })
-            case "crossmark":
-              await sdk.methods.bulkSignAndSubmitAndWait(paymentTxData, {
-                isModifiable: false
-              }).then(async ({ response }) => {
-                console.log(response, "crossmark response");
-                if (response.data.meta.isSuccess) {
-                  const hashes = response.data.resp.map((item) => item.result.hash);
-                  await processTxhash(hashes, requestedData.tradeId);
-                } else {
-                  
-                }
-              });
+      console.log(itemsSent, " check token sfor itemsSent")
+      console.log(itemsRequested, " check token sfor partnerOffers")
+
+      const tradeData = await axios.post(`${NFTRADE_URL}/trade`, {
+        fromAddress: accountProfile.account,
+        toAddress: tradePartner.username,
+        itemsSent: itemsSent,
+        itemsRequested: itemsRequested,
+      });
+
+      const paymentTxData = itemsSent.map((offer, index) => (
+        offer.token_type === 'NFT' ?
+          {
+            TransactionType: "NFTokenCreateOffer",
+            Account: accountProfile.account,
+            NFTokenID: offer.token_address,
+            Amount: "0",
+            Flags: 1,
+            Destination: middle_wallet_address,
+            Memos: configureMemos('XRPNFT-nft-create-sell-offer', '', `https://xrpnft.com/nft/${offer.token_address}`)
           }
-          
-          
+          :
+          {
+            TransactionType: "Payment",
+            Account: accountProfile.account,
+            Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
+              currency: offer.currency,
+              value: `${offer.amount}`,
+              issuer: offer.issuer
+            },
+            Destination: middle_wallet_address,
+            Fee: "12",
+            SourceTag: 20221212,
+            DestinationTag: 20221212,
+          }
+      ))
+      const requestedData = tradeData.data;
+
+      const wallet_type = accountProfile.wallet_type;
+      switch (wallet_type) {
+        case "xaman":
+          break;
+
+        case "gem":
+          isInstalled().then(async (response) => {
+            if (response.result.isInstalled) {
+              const result = await submitBulkTransactions({
+                transactions: paymentTxData
+              });
+              console.log(result, "tokenHash")
+              if (response.data.meta.isSuccess) {
+                const hashes = result.result.transactions.map((item) => item.hash);
+                await processTxhash(hashes, requestedData.tradeId);
+              }
+            }
+          });
+          break;
+        case "crossmark":
+          await sdk.methods.bulkSignAndSubmitAndWait(paymentTxData, {
+            isModifiable: false
+          }).then(async ({ response }) => {
+            console.log(response, "crossmark response");
+            if (response.data.meta.isSuccess) {
+              const hashes = response.data.resp.map((item) => item.result.hash);
+              await processTxhash(hashes, requestedData.tradeId);
+            } else {
+
+            }
+          });
+          break;
+      }
+
+
     } catch (err) {
       console.log(err);
     }
   };
-  const processTxhash = async(paymentResult, tradeId) => {
-    if(!paymentResult) {
+  const processTxhash = async (paymentResult, tradeId) => {
+    if (!paymentResult) {
       await axios.post(`${NFTRADE_URL}/update-trade`, {
         tradeId: tradeId,
         itemType: 'rejected',
         index: 0,
         hash: 'rejected-hash',
       });
-    }else {
+    } else {
       const tokenHash = paymentResult;
       for (let i = 0; i < tokenHash.length; i++) {
-        if(tokenHash[i]['hash'].length === 64) {
+        if (tokenHash[i]['hash'].length === 64) {
           await axios.post(`${NFTRADE_URL}/update-trade`, {
             tradeId: tradeId,
             itemType: 'sent',
