@@ -610,11 +610,39 @@ const tokens = res.data;`;
       .catch((err) => console.error('Failed to copy text: ', err));
   };
 
-  // Define the components object inside the ApiDocs component
+  // Add this new component for section headers
+  const SectionHeader = ({ children }) => (
+    <Typography
+      variant="h2"
+      sx={{
+        mt: 6,
+        mb: 3,
+        pb: 2,
+        borderBottom: `2px solid ${theme.palette.primary.main}`,
+        color: theme.palette.primary.main
+      }}
+    >
+      {children}
+    </Typography>
+  );
+
+  // Update the components object to include the new SectionHeader
   const components = {
     h1: createHeadingComponent(motion.h1),
-    h2: createHeadingComponent(motion.h2),
-    h3: createHeadingComponent(motion.h3),
+    h2: ({ node, ...props }) => <SectionHeader {...props} />,
+    h3: createHeadingComponent(({ children, ...props }) => (
+      <Typography
+        variant="h3"
+        sx={{
+          mt: 4,
+          mb: 2,
+          color: theme.palette.secondary.main
+        }}
+        {...props}
+      >
+        {children}
+      </Typography>
+    )),
     code: ({ node, inline, className, children, ...props }) => {
       const match = /language-(\w+)/.exec(className || '');
       return !inline && match ? (
@@ -810,34 +838,40 @@ const tokens = res.data;`;
             </List>
           </Box>
 
-          <Box sx={{ flexGrow: 1, display: 'flex' }}>
-            <Box sx={{ flexGrow: 1, p: 4, maxWidth: '50%', overflowY: 'auto' }}>
-              <ReactMarkdown components={components} remarkPlugins={[remarkGfm]}>
-                {apiDocumentation}
-              </ReactMarkdown>
-            </Box>
-            <Box sx={{ flexGrow: 1, p: 4, bgcolor: '#2d2d2d', color: 'white', overflowY: 'auto' }}>
-              <Typography variant="h6" gutterBottom>
-                Code Examples
-              </Typography>
-              <Tabs
-                value={codeLanguage}
-                onChange={handleCodeLanguageChange}
-                aria-label="code language tabs"
-                sx={{ mb: 2 }}
-              >
-                <Tab label="JavaScript" value="javascript" />
-                <Tab label="Python" value="python" />
-                <Tab label="Shell" value="shell" />
-                <Tab label="Ruby" value="ruby" />
-              </Tabs>
-              <SyntaxHighlighter language={codeLanguage} style={tomorrow}>
-                {getCodeExample(codeLanguage)}
-              </SyntaxHighlighter>
-              <Button variant="contained" color="primary" onClick={handleOpenModal} sx={{ mt: 2 }}>
-                Try it out
-              </Button>
-            </Box>
+          <Box
+            sx={{
+              flexGrow: 1,
+              p: 4,
+              maxWidth: '50%',
+              overflowY: 'auto',
+              borderRight: `1px solid ${theme.palette.divider}`
+            }}
+          >
+            <ReactMarkdown components={components} remarkPlugins={[remarkGfm]}>
+              {apiDocumentation}
+            </ReactMarkdown>
+          </Box>
+          <Box sx={{ flexGrow: 1, p: 4, bgcolor: '#2d2d2d', color: 'white', overflowY: 'auto' }}>
+            <Typography variant="h6" gutterBottom>
+              Code Examples
+            </Typography>
+            <Tabs
+              value={codeLanguage}
+              onChange={handleCodeLanguageChange}
+              aria-label="code language tabs"
+              sx={{ mb: 2 }}
+            >
+              <Tab label="JavaScript" value="javascript" />
+              <Tab label="Python" value="python" />
+              <Tab label="Shell" value="shell" />
+              <Tab label="Ruby" value="ruby" />
+            </Tabs>
+            <SyntaxHighlighter language={codeLanguage} style={tomorrow}>
+              {getCodeExample(codeLanguage)}
+            </SyntaxHighlighter>
+            <Button variant="contained" color="primary" onClick={handleOpenModal} sx={{ mt: 2 }}>
+              Try it out
+            </Button>
           </Box>
         </Box>
 
