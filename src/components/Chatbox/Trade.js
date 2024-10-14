@@ -241,12 +241,13 @@ const Trade = ({ open, onClose, tradePartner }) => {
     }
   };
 
-  const handleOfferChange = (index, field, value, isLoggedInUser) => {
-    const updateOffers = (offers) =>
-      offers.map((offer, i) => {
+  const handleOfferChange = async (index, field, value, isLoggedInUser) => {
+    const updateOffers = async (offers) => {
+      let selectedToken;
+      let _offers = offers.map((offer, i) => {
         if (i === index) {
           if (field === 'currency') {
-            const selectedToken = isLoggedInUser
+            selectedToken = isLoggedInUser
               ? loggedInUserTokens.find(token => token.currency === value)
               : partnerTokens.find(token => token.currency === value);
             return {
@@ -261,11 +262,23 @@ const Trade = ({ open, onClose, tradePartner }) => {
         }
         return offer;
       });
+      if (field === 'currency') {
+        const fee = await axios.get(`https://api.xrpl.to/api/token/${selectedToken?.md5}`);
+        _offers[index] = {
+          ..._offers[index],
+          fee: fee.data.token.issuer_info.transferRate
+        };
+      }
+
+      console.log(_offers, selectedToken);
+
+      return _offers;
+    }
 
     if (isLoggedInUser) {
-      setLoggedInUserOffers(updateOffers(loggedInUserOffers));
+      setLoggedInUserOffers(await updateOffers(loggedInUserOffers));
     } else {
-      setPartnerOffers(updateOffers(partnerOffers));
+      setPartnerOffers(await updateOffers(partnerOffers));
     }
   };
 
@@ -387,13 +400,17 @@ const Trade = ({ open, onClose, tradePartner }) => {
             Account: accountProfile.account,
             Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
               currency: offer.currency,
+              value: `${offer.amount - offer.amount * offer.fee / 100}`,
+              issuer: offer.issuer
+            },
+            SendMax: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
+              currency: offer.currency,
               value: `${offer.amount}`,
               issuer: offer.issuer
             },
             Destination: middle_wallet_address,
             Fee: "12",
             SourceTag: 20221212,
-            DestinationTag: 20221212,
           }
       ))
       const requestedData = tradeData.data;
