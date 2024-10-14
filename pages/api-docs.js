@@ -26,11 +26,20 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip
+  Chip,
+  Tabs,
+  Tab,
+  Button,
+  Modal,
+  CircularProgress,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import Logo from 'src/components/Logo';
 import { motion } from 'framer-motion';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import axios from 'axios';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const apiDocumentation = `
 # XRPL.to API Documentation
@@ -319,7 +328,6 @@ The XRPL.to API uses the following error codes:
 | 403 | Forbidden -- The token requested is hidden for administrators only. |
 | 404 | Not Found -- The specified token could not be found. |
 | 405 | Method Not Allowed -- You tried to access a token with an invalid method. |
-| 406 | Not Acceptable -- You requested a format that isn't json. |
 | 410 | Gone -- The token requested has been removed from our servers. |
 | 418 | I'm a teapot. |
 | 429 | Too Many Requests -- You're requesting too many tokens! Slow down! |
@@ -428,6 +436,42 @@ const ApiDocs = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [highlightedSection, setHighlightedSection] = useState(null);
   const [fullTextSearchResults, setFullTextSearchResults] = useState([]);
+  const [codeLanguage, setCodeLanguage] = useState('javascript');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [apiResponse, setApiResponse] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  const handleCodeLanguageChange = (event, newValue) => {
+    setCodeLanguage(newValue);
+  };
+
+  const getCodeExample = (language) => {
+    switch (language) {
+      case 'shell':
+        return `curl -sS "https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter="`;
+      case 'ruby':
+        return `require 'net/http'
+require 'json'
+
+uri = URI('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=')
+response = Net::HTTP.get(uri)
+tokens = JSON.parse(response)`;
+      case 'python':
+        return `import requests
+
+response = requests.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=')
+tokens = response.json()`;
+      case 'javascript':
+        return `const axios = require('axios');
+
+const res = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
+
+const tokens = res.data;`;
+      default:
+        return '';
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -533,6 +577,37 @@ const ApiDocs = () => {
       element.classList.add('bg-yellow-200');
       setTimeout(() => element.classList.remove('bg-yellow-200'), 3000);
     }
+  };
+
+  const handleOpenModal = async () => {
+    setIsModalOpen(true);
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        'https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter='
+      );
+      setApiResponse(response.data);
+    } catch (error) {
+      console.error('Error fetching API data:', error);
+      setApiResponse({ error: 'Failed to fetch data' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setApiResponse(null);
+  };
+
+  const handleCopyResponse = () => {
+    navigator.clipboard
+      .writeText(JSON.stringify(apiResponse, null, 2))
+      .then(() => {
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      })
+      .catch((err) => console.error('Failed to copy text: ', err));
   };
 
   // Define the components object inside the ApiDocs component
@@ -745,18 +820,73 @@ const ApiDocs = () => {
               <Typography variant="h6" gutterBottom>
                 Code Examples
               </Typography>
-              {/* Add code examples here */}
-              <SyntaxHighlighter language="javascript" style={tomorrow}>
-                {`const axios = require('axios');
-
-const res = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
-
-const tokens = res.data;`}
+              <Tabs
+                value={codeLanguage}
+                onChange={handleCodeLanguageChange}
+                aria-label="code language tabs"
+                sx={{ mb: 2 }}
+              >
+                <Tab label="JavaScript" value="javascript" />
+                <Tab label="Python" value="python" />
+                <Tab label="Shell" value="shell" />
+                <Tab label="Ruby" value="ruby" />
+              </Tabs>
+              <SyntaxHighlighter language={codeLanguage} style={tomorrow}>
+                {getCodeExample(codeLanguage)}
               </SyntaxHighlighter>
-              {/* Add more code examples as needed */}
+              <Button variant="contained" color="primary" onClick={handleOpenModal} sx={{ mt: 2 }}>
+                Try it out
+              </Button>
             </Box>
           </Box>
         </Box>
+
+        <Modal
+          open={isModalOpen}
+          onClose={handleCloseModal}
+          aria-labelledby="api-response-modal"
+          aria-describedby="api-response-description"
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '80%',
+              maxHeight: '80%',
+              bgcolor: 'background.paper',
+              border: '2px solid #000',
+              boxShadow: 24,
+              p: 4,
+              overflowY: 'auto'
+            }}
+          >
+            <Typography
+              id="api-response-modal"
+              variant="h6"
+              component="h2"
+              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
+              API Response
+              {!isLoading && apiResponse && (
+                <Tooltip title={copySuccess ? 'Copied!' : 'Copy to clipboard'}>
+                  <IconButton onClick={handleCopyResponse} size="small">
+                    <ContentCopyIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Typography>
+            {isLoading ? (
+              <CircularProgress />
+            ) : (
+              <SyntaxHighlighter language="json" style={tomorrow}>
+                {JSON.stringify(apiResponse, null, 2)}
+              </SyntaxHighlighter>
+            )}
+            <Button onClick={handleCloseModal}>Close</Button>
+          </Box>
+        </Modal>
 
         <Box component="footer" sx={{ bgcolor: 'background.paper', color: 'text.primary', py: 3 }}>
           <Container maxWidth="lg">
