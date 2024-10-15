@@ -319,42 +319,44 @@ const ApiDocs = () => {
   };
 
   const getCodeExample = (language, section) => {
-    if (section === 'get-all-tokens') {
-      switch (language) {
-        case 'shell':
-          return `curl -sS "https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter="`;
-        case 'ruby':
-          return `require 'net/http'
+    switch (section) {
+      case 'get-all-tokens':
+        switch (language) {
+          case 'shell':
+            return `curl -sS "https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter="`;
+          case 'ruby':
+            return `require 'net/http'
 require 'json'
 
 uri = URI('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=')
 response = Net::HTTP.get(uri)
 tokens = JSON.parse(response)`;
-        case 'python':
-          return `import requests
+          case 'python':
+            return `import requests
 
 response = requests.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=')
 tokens = response.json()`;
-        case 'javascript':
-          return `const axios = require('axios');
+          case 'javascript':
+            return `const axios = require('axios');
 
 const res = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
 
 const tokens = res.data;`;
-        default:
-          return '';
-      }
-    } else if (section === 'get-specific-token-info') {
-      switch (language) {
-        case 'shell':
-          return `# Using issuer_currencyCode (recommended)
+          default:
+            return '';
+        }
+
+      case 'get-specific-token-info':
+        switch (language) {
+          case 'shell':
+            return `# Using issuer_currencyCode (recommended)
 curl -sS "https://api.xrpl.to/api/token/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD"
 
 # Alternatively, you can use a slug or md5 value
 slug="your_slug_here"
 curl -sS "https://api.xrpl.to/api/token/$slug?desc=no"`;
-        case 'javascript':
-          return `const axios = require('axios');
+          case 'javascript':
+            return `const axios = require('axios');
 
 async function getTokenInfo(issuer, currency) {
   try {
@@ -370,8 +372,8 @@ async function getTokenInfo(issuer, currency) {
 getTokenInfo('rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq', 'USD')
   .then(tokenInfo => console.log(tokenInfo))
   .catch(error => console.error(error));`;
-        case 'python':
-          return `import requests
+          case 'python':
+            return `import requests
 
 def get_token_info(issuer, currency):
     try:
@@ -388,8 +390,8 @@ currency = "USD"
 token_info = get_token_info(issuer, currency)
 if token_info:
     print(token_info)`;
-        case 'ruby':
-          return `require 'net/http'
+          case 'ruby':
+            return `require 'net/http'
 require 'json'
 
 def get_token_info(issuer, currency)
@@ -406,11 +408,189 @@ issuer = "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
 currency = "USD"
 token_info = get_token_info(issuer, currency)
 puts token_info if token_info`;
-        default:
-          return '';
-      }
+          default:
+            return '';
+        }
+
+      case 'get-sparkline-of-a-token':
+        switch (language) {
+          case 'shell':
+            return `curl -sS "https://api.xrpl.to/api/sparkline/0413ca7cfc258dfaf698c02fe304e607"`;
+          case 'javascript':
+            return `const axios = require('axios');
+
+const md5 = '0413ca7cfc258dfaf698c02fe304e607';
+const res = await axios.get(\`https://api.xrpl.to/api/sparkline/\${md5}\`);
+const sparklineData = res.data;`;
+          case 'python':
+            return `import requests
+
+md5 = '0413ca7cfc258dfaf698c02fe304e607'
+response = requests.get(f'https://api.xrpl.to/api/sparkline/{md5}')
+sparkline_data = response.json()`;
+          case 'ruby':
+            return `require 'net/http'
+require 'json'
+
+md5 = '0413ca7cfc258dfaf698c02fe304e607'
+uri = URI("https://api.xrpl.to/api/sparkline/#{md5}")
+response = Net::HTTP.get(uri)
+sparkline_data = JSON.parse(response)`;
+          default:
+            return '';
+        }
+
+      case 'get-md5-value-of-the-token':
+        switch (language) {
+          case 'javascript':
+            return `const CryptoJS = require('crypto-js');
+
+const issuer = 'rXXXXXXXXXXXXXXXXXXXXXXXXXXX';
+const currency = 'USD';
+const md5 = CryptoJS.MD5(issuer + '_' + currency).toString();
+console.log(md5);`;
+          case 'python':
+            return `import hashlib
+
+issuer = 'rXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+currency = 'USD'
+md5 = hashlib.md5(f'{issuer}_{currency}'.encode()).hexdigest()
+print(md5)`;
+          case 'ruby':
+            return `require 'digest'
+
+issuer = 'rXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+currency = 'USD'
+md5 = Digest::MD5.hexdigest("#{issuer}_#{currency}")
+puts md5`;
+          default:
+            return 'MD5 calculation is typically done on the client-side. See other language examples.';
+        }
+
+      case 'get-rich-list-of-a-token':
+        switch (language) {
+          case 'shell':
+            return `curl -sS "https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=20"`;
+          case 'javascript':
+            return `const axios = require('axios');
+
+const md5 = '0413ca7cfc258dfaf698c02fe304e607';
+const start = 0;
+const limit = 20;
+const res = await axios.get(\`https://api.xrpl.to/api/richlist/\${md5}?start=\${start}&limit=\${limit}\`);
+const richList = res.data;`;
+          case 'python':
+            return `import requests
+
+md5 = '0413ca7cfc258dfaf698c02fe304e607'
+start = 0
+limit = 20
+response = requests.get(f'https://api.xrpl.to/api/richlist/{md5}?start={start}&limit={limit}')
+rich_list = response.json()`;
+          case 'ruby':
+            return `require 'net/http'
+require 'json'
+
+md5 = '0413ca7cfc258dfaf698c02fe304e607'
+start = 0
+limit = 20
+uri = URI("https://api.xrpl.to/api/richlist/#{md5}?start=#{start}&limit=#{limit}")
+response = Net::HTTP.get(uri)
+rich_list = JSON.parse(response)`;
+          default:
+            return '';
+        }
+
+      case 'get-exchange-history-of-a-token':
+        switch (language) {
+          case 'shell':
+            return `curl -sS "https://api.xrpl.to/api/history?md5=0413ca7cfc258dfaf698c02fe304e607&page=0&limit=10"`;
+          case 'javascript':
+            return `const axios = require('axios');
+
+const md5 = '0413ca7cfc258dfaf698c02fe304e607';
+const page = 0;
+const limit = 10;
+const res = await axios.get(\`https://api.xrpl.to/api/history?md5=\${md5}&page=\${page}&limit=\${limit}\`);
+const exchangeHistory = res.data;`;
+          case 'python':
+            return `import requests
+
+md5 = '0413ca7cfc258dfaf698c02fe304e607'
+page = 0
+limit = 10
+response = requests.get(f'https://api.xrpl.to/api/history?md5={md5}&page={page}&limit={limit}')
+exchange_history = response.json()`;
+          case 'ruby':
+            return `require 'net/http'
+require 'json'
+
+md5 = '0413ca7cfc258dfaf698c02fe304e607'
+page = 0
+limit = 10
+uri = URI("https://api.xrpl.to/api/history?md5=#{md5}&page=#{page}&limit=#{limit}")
+response = Net::HTTP.get(uri)
+exchange_history = JSON.parse(response)`;
+          default:
+            return '';
+        }
+
+      case 'get-the-current-status':
+        switch (language) {
+          case 'shell':
+            return `curl -sS "https://api.xrpl.to/api/status"`;
+          case 'javascript':
+            return `const axios = require('axios');
+
+const res = await axios.get('https://api.xrpl.to/api/status');
+const currentStatus = res.data;`;
+          case 'python':
+            return `import requests
+
+response = requests.get('https://api.xrpl.to/api/status')
+current_status = response.json()`;
+          case 'ruby':
+            return `require 'net/http'
+require 'json'
+
+uri = URI('https://api.xrpl.to/api/status')
+response = Net::HTTP.get(uri)
+current_status = JSON.parse(response)`;
+          default:
+            return '';
+        }
+
+      case 'get-account-offers':
+        switch (language) {
+          case 'shell':
+            return `curl -sS "https://api.xrpl.to/api/account/offers/rXXXXXXXXXXXXXXXXXXXXXXXXXXX"`;
+          case 'javascript':
+            return `const axios = require('axios');
+
+const account = 'rXXXXXXXXXXXXXXXXXXXXXXXXXXX';
+const res = await axios.get(\`https://api.xrpl.to/api/account/offers/\${account}\`);
+const accountOffers = res.data;`;
+          case 'python':
+            return `import requests
+
+account = 'rXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+response = requests.get(f'https://api.xrpl.to/api/account/offers/{account}')
+account_offers = response.json()`;
+          case 'ruby':
+            return `require 'net/http'
+require 'json'
+
+account = 'rXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+uri = URI("https://api.xrpl.to/api/account/offers/#{account}")
+response = Net::HTTP.get(uri)
+account_offers = JSON.parse(response)`;
+          default:
+            return '';
+        }
+
+      default:
+        return '';
     }
-    // Add more sections as needed
   };
 
   useEffect(() => {
@@ -818,6 +998,12 @@ puts token_info if token_info`;
             >
               <Tab label="Get All Tokens" value="get-all-tokens" />
               <Tab label="Get Specific Token Info" value="get-specific-token-info" />
+              <Tab label="Get Sparkline" value="get-sparkline-of-a-token" />
+              <Tab label="Get MD5 Value" value="get-md5-value-of-the-token" />
+              <Tab label="Get Rich List" value="get-rich-list-of-a-token" />
+              <Tab label="Get Exchange History" value="get-exchange-history-of-a-token" />
+              <Tab label="Get Current Status" value="get-the-current-status" />
+              <Tab label="Get Account Offers" value="get-account-offers" />
             </Tabs>
             <Tabs
               value={codeLanguage}
