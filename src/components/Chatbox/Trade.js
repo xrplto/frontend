@@ -328,7 +328,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
     let validateTrade = true;
     loggedInUserOffers.map(async (tokenInfo, index) => {
       if (tokenInfo.currency !== 'XRP' && tokenInfo.token_type !== 'NFT')
-        await getTrustLines(middle_wallet_address, tokenInfo.currency, tokenInfo.issuer);
+        // await getTrustLines(middle_wallet_address, tokenInfo.currency, tokenInfo.issuer);
 
       if (tokenInfo.amount === 0) {
         showNotification(`Invalid token amount for ${normalizeCurrencyCodeXummImpl(tokenInfo.currency)}`, 'error');
@@ -383,9 +383,9 @@ const Trade = ({ open, onClose, tradePartner }) => {
         itemsRequested: itemsRequested,
       });
 
-      const paymentTxData = itemsSent.map((offer, index) => (
-        offer.token_type === 'NFT' ?
-          {
+      const paymentTxData = itemsSent.map((offer, index) => {
+        if (offer.token_type === 'NFT') {
+          return {
             TransactionType: "NFTokenCreateOffer",
             Account: accountProfile.account,
             NFTokenID: offer.token_address,
@@ -394,8 +394,8 @@ const Trade = ({ open, onClose, tradePartner }) => {
             Destination: middle_wallet_address,
             Memos: configureMemos('XRPNFT-nft-create-sell-offer', '', `https://xrpnft.com/nft/${offer.token_address}`)
           }
-          :
-          {
+        } else {
+          let txData = {
             TransactionType: "Payment",
             Account: accountProfile.account,
             Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
@@ -403,16 +403,25 @@ const Trade = ({ open, onClose, tradePartner }) => {
               value: `${offer.amount - offer.amount * offer.fee / 100}`,
               issuer: offer.issuer
             },
-            SendMax: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
-              currency: offer.currency,
-              value: `${offer.amount}`,
-              issuer: offer.issuer
-            },
             Destination: middle_wallet_address,
             Fee: "12",
             SourceTag: 20221212,
+          };
+
+          if (offer.currency !== 'XRP') {
+            txData = {
+              ...txData,
+              SendMax: {
+                currency: offer.currency,
+                value: `${offer.amount}`,
+                issuer: offer.issuer
+              },
+            };
           }
-      ))
+
+          return txData;
+        }
+      })
       const requestedData = tradeData.data;
 
       const wallet_type = accountProfile.wallet_type;
@@ -427,7 +436,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
                 transactions: paymentTxData
               });
               console.log(result, "tokenHash")
-              if (response.data.meta.isSuccess) {
+              if (response.data?.meta?.isSuccess) {
                 const hashes = result.result.transactions.map((item) => item.hash);
                 await processTxhash(hashes, requestedData.tradeId);
               }
