@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm'; // Import the remark-gfm plugin
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import unified from 'unified';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { useRouter } from 'next/router';
@@ -294,7 +296,7 @@ const highlightText = (text, searchTerm) => {
   const regex = new RegExp(`(${searchTerm})`, 'gi');
   return text.split(regex).map((part, index) =>
     regex.test(part) ? (
-      <mark key={`highlight-${index}`} style={{ backgroundColor: '#FFD54F' }}>
+      <mark key={`highlight-${part}-${index}`} style={{ backgroundColor: '#FFD54F' }}>
         {part}
       </mark>
     ) : (
@@ -320,6 +322,7 @@ const ApiDocs = () => {
   const [currentSection, setCurrentSection] = useState('get-all-tokens');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [codeSampleRef, setCodeSampleRef] = useState(null);
+  const [markdownError, setMarkdownError] = useState(null);
 
   const handleCodeLanguageChange = (event, newValue) => {
     setCodeLanguage(newValue);
@@ -924,6 +927,25 @@ account_offers = JSON.parse(response)`;
     hr: ({ node, ...props }) => <Divider sx={{ my: 4 }} {...props} />
   };
 
+  const safeRemarkGfm = () => {
+    try {
+      return remarkGfm();
+    } catch (error) {
+      console.error('Error in remarkGfm:', error);
+      return [];
+    }
+  };
+
+  const safeParse = (content) => {
+    try {
+      return unified().use(remarkParse).use(safeRemarkGfm).parse(content);
+    } catch (error) {
+      console.error('Error parsing markdown:', error);
+      setMarkdownError('There was an error parsing the documentation. Please try again later.');
+      return null;
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -1071,9 +1093,17 @@ account_offers = JSON.parse(response)`;
               borderRight: { xs: 'none', md: `1px solid ${theme.palette.divider}` }
             }}
           >
-            <ReactMarkdown components={components} remarkPlugins={[remarkGfm]}>
-              {apiDocumentation}
-            </ReactMarkdown>
+            {markdownError ? (
+              <Typography color="error">{markdownError}</Typography>
+            ) : (
+              <ReactMarkdown
+                components={components}
+                remarkPlugins={[safeRemarkGfm]}
+                parserOptions={{ parse: safeParse }}
+              >
+                {apiDocumentation}
+              </ReactMarkdown>
+            )}
           </Box>
 
           <Divider sx={{ display: { xs: 'block', md: 'none' }, my: 2 }} />
