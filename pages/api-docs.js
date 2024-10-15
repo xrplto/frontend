@@ -43,6 +43,8 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 
 const apiDocumentation = `
 # XRPL.to API Documentation
@@ -227,18 +229,18 @@ const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#3a7bd5'
+      main: '#25A768' // XRP Ledger green
     },
     secondary: {
-      main: '#00d2ff'
+      main: '#3E4348' // XRP Ledger dark gray
     },
     background: {
-      default: '#121212',
-      paper: '#1e1e1e'
+      default: '#000000',
+      paper: '#1E2329'
     },
     text: {
       primary: '#ffffff',
-      secondary: '#b0b0b0'
+      secondary: '#B7BDC6'
     }
   },
   typography: {
@@ -260,8 +262,8 @@ const theme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          background: 'linear-gradient(45deg, #3a7bd5 0%, #00d2ff 100%)',
-          boxShadow: 'none'
+          background: 'linear-gradient(90deg, #000000 0%, #000000 60%, #25A768 100%)', // Dark black with XRP Ledger green gradient on the right
+          boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
         }
       }
     },
@@ -316,6 +318,7 @@ const ApiDocs = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [currentSection, setCurrentSection] = useState('get-all-tokens');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleCodeLanguageChange = (event, newValue) => {
     setCodeLanguage(newValue);
@@ -709,25 +712,37 @@ account_offers = JSON.parse(response)`;
       let response;
       switch (currentSection) {
         case 'get-all-tokens':
-          response = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
+          response = await axios.get(
+            'https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter='
+          );
           break;
         case 'get-specific-token-info':
-          response = await axios.get('https://api.xrpl.to/api/token/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD');
+          response = await axios.get(
+            'https://api.xrpl.to/api/token/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD'
+          );
           break;
         case 'get-sparkline-of-a-token':
-          response = await axios.get('https://api.xrpl.to/api/sparkline/0413ca7cfc258dfaf698c02fe304e607');
+          response = await axios.get(
+            'https://api.xrpl.to/api/sparkline/0413ca7cfc258dfaf698c02fe304e607'
+          );
           break;
         case 'get-rich-list-of-a-token':
-          response = await axios.get('https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=20');
+          response = await axios.get(
+            'https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=20'
+          );
           break;
         case 'get-exchange-history-of-a-token':
-          response = await axios.get('https://api.xrpl.to/api/history?md5=0413ca7cfc258dfaf698c02fe304e607&page=0&limit=10');
+          response = await axios.get(
+            'https://api.xrpl.to/api/history?md5=0413ca7cfc258dfaf698c02fe304e607&page=0&limit=10'
+          );
           break;
         case 'get-the-current-status':
           response = await axios.get('https://api.xrpl.to/api/status');
           break;
         case 'get-account-offers':
-          response = await axios.get('https://api.xrpl.to/api/account/offers/rXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+          response = await axios.get(
+            'https://api.xrpl.to/api/account/offers/rXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+          );
           break;
         default:
           throw new Error('Invalid section');
@@ -758,6 +773,10 @@ account_offers = JSON.parse(response)`;
 
   const handleSectionChange = (section) => {
     setCurrentSection(section);
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
   };
 
   // Add this new component for section headers
@@ -894,40 +913,69 @@ account_offers = JSON.parse(response)`;
         <Head>
           <title>XRPL.to API Documentation</title>
           <meta name="description" content="API documentation for XRPL.to" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
         </Head>
 
-        <AppBar position="static">
-          <Toolbar>
-            <Logo style={{ marginRight: 2, height: 40 }} />
-            <Typography variant="h6" sx={{ ml: 2, fontWeight: 600 }}>
-              API Documentation
-            </Typography>
+        <AppBar position="sticky">
+          <Toolbar sx={{ justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                onClick={toggleSidebar}
+                sx={{ mr: 2, display: { sm: 'none' } }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Logo style={{ height: 28, marginRight: 2 }} />
+              <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 600 }}>
+                API Docs
+              </Typography>
+            </Box>
+            <Box sx={{ width: '30%', height: 4, background: 'linear-gradient(90deg, transparent 0%, #25A768 100%)' }} />
           </Toolbar>
         </AppBar>
 
-        <Box sx={{ display: 'flex', flexGrow: 1 }}>
+        <Box sx={{ display: 'flex', flexGrow: 1, flexDirection: { xs: 'column', md: 'row' } }}>
           <Box
             component="nav"
             sx={{
-              width: 280,
+              width: { sm: 280 },
               flexShrink: 0,
-              p: 3,
+              display: { xs: isSidebarOpen ? 'block' : 'none', sm: 'block' },
+              position: { xs: 'fixed', sm: 'sticky' },
+              top: 0,
+              left: 0,
+              height: '100vh',
+              overflowY: 'auto',
+              zIndex: 1200,
+              bgcolor: 'background.paper',
               borderRight: 1,
               borderColor: 'divider',
-              bgcolor: 'background.paper',
-              overflowY: 'auto',
-              height: 'calc(100vh - 64px)', // Subtract AppBar height
-              position: 'sticky',
-              top: 64 // AppBar height
+              p: 3
             }}
           >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+                API Docs
+              </Typography>
+              <IconButton
+                onClick={toggleSidebar}
+                sx={{ display: { sm: 'none' } }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
             <TextField
               fullWidth
+              size="small"
               variant="outlined"
               placeholder="Search documentation..."
               value={searchTerm}
               onChange={handleSearch}
-              sx={{ mb: 3 }}
+              sx={{ mb: 2 }}
             />
             {(searchResults.length > 0 || fullTextSearchResults.length > 0) && (
               <Paper elevation={1} sx={{ mb: 2, maxHeight: 400, overflow: 'auto' }}>
@@ -1002,26 +1050,30 @@ account_offers = JSON.parse(response)`;
           <Box
             sx={{
               flexGrow: 1,
-              p: 4,
-              maxWidth: '50%',
+              p: { xs: 2, sm: 4 },
+              width: { xs: '100%', md: '50%' },
               overflowY: 'auto',
-              borderRight: `1px solid ${theme.palette.divider}`
+              borderRight: { xs: 'none', md: `1px solid ${theme.palette.divider}` }
             }}
           >
             <ReactMarkdown components={components} remarkPlugins={[remarkGfm]}>
               {apiDocumentation}
             </ReactMarkdown>
           </Box>
-          <Box 
-            sx={{ 
-              flexGrow: 1, 
-              p: 2, 
-              bgcolor: '#2d2d2d', 
-              color: 'white', 
+
+          <Divider sx={{ display: { xs: 'block', md: 'none' }, my: 2 }} />
+
+          <Box
+            sx={{
+              flexGrow: 1,
+              p: 2,
+              bgcolor: '#2d2d2d',
+              color: 'white',
               overflowY: 'auto',
               display: 'flex',
               flexDirection: 'column',
-              height: 'calc(100vh - 64px)', // Subtract AppBar height
+              height: { xs: 'auto', md: 'calc(100vh - 64px)' }, // Adjust height for mobile
+              width: { xs: '100%', md: '50%' }
             }}
           >
             <Typography variant="h6" gutterBottom>
@@ -1029,19 +1081,19 @@ account_offers = JSON.parse(response)`;
             </Typography>
             <TabContext value={currentSection}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <TabList 
+                <TabList
                   onChange={(event, newValue) => handleSectionChange(newValue)}
                   aria-label="code section tabs"
                   variant="scrollable"
                   scrollButtons="auto"
                   allowScrollButtonsMobile
-                  sx={{ 
+                  sx={{
                     maxWidth: '100%',
-                    '& .MuiTab-root': { 
+                    '& .MuiTab-root': {
                       minHeight: '48px',
                       fontSize: '0.8rem',
-                      textTransform: 'none',
-                    },
+                      textTransform: 'none'
+                    }
                   }}
                 >
                   <Tab label="Get All Tokens" value="get-all-tokens" />
@@ -1054,7 +1106,10 @@ account_offers = JSON.parse(response)`;
                   <Tab label="Get Account Offers" value="get-account-offers" />
                 </TabList>
               </Box>
-              <TabPanel value={currentSection} sx={{ p: 0, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+              <TabPanel
+                value={currentSection}
+                sx={{ p: 0, flexGrow: 1, display: 'flex', flexDirection: 'column' }}
+              >
                 <Tabs
                   value={codeLanguage}
                   onChange={handleCodeLanguageChange}
@@ -1062,13 +1117,13 @@ account_offers = JSON.parse(response)`;
                   variant="scrollable"
                   scrollButtons="auto"
                   allowScrollButtonsMobile
-                  sx={{ 
+                  sx={{
                     mb: 2,
-                    '& .MuiTab-root': { 
+                    '& .MuiTab-root': {
                       minHeight: '36px',
                       fontSize: '0.8rem',
-                      textTransform: 'none',
-                    },
+                      textTransform: 'none'
+                    }
                   }}
                 >
                   <Tab label="JavaScript" value="javascript" />
@@ -1076,19 +1131,19 @@ account_offers = JSON.parse(response)`;
                   <Tab label="Shell" value="shell" />
                   <Tab label="Ruby" value="ruby" />
                 </Tabs>
-                <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-                  <SyntaxHighlighter 
-                    language={codeLanguage} 
+                <Box sx={{ flexGrow: 1, overflow: 'auto', maxHeight: { xs: '300px', md: 'none' } }}>
+                  <SyntaxHighlighter
+                    language={codeLanguage}
                     style={tomorrow}
                     customStyle={{ fontSize: '0.9rem' }}
                   >
                     {getCodeExample(codeLanguage, currentSection)}
                   </SyntaxHighlighter>
                 </Box>
-                <Button 
-                  variant="contained" 
-                  color="primary" 
-                  onClick={handleOpenModal} 
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleOpenModal}
                   sx={{ mt: 2, alignSelf: 'flex-start' }}
                 >
                   Try it out
@@ -1110,12 +1165,12 @@ account_offers = JSON.parse(response)`;
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: '80%',
+              width: { xs: '90%', sm: '80%' },
               maxHeight: '80%',
               bgcolor: 'background.paper',
               border: '2px solid #000',
               boxShadow: 24,
-              p: 4,
+              p: { xs: 2, sm: 4 },
               overflowY: 'auto'
             }}
           >
