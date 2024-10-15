@@ -133,10 +133,6 @@ const md5 = CryptoJS.MD5(issuer + '_' + currency).toString();
 
 ### Get Rich List of a Token
 
-\`\`\`shell
-md5="your_md5_here"
-curl -sS "https://api.xrpl.to/api/richlist/your_md5_here?start=0&limit=20"
-\`\`\`
 
 This endpoint retrieves rich list of the specific token.
 
@@ -156,10 +152,7 @@ You can see the example of Richlist here: https://xrpl.to/token/sologenic-solo/t
 
 ### Get Exchange history of a Token
 
-\`\`\`shell
-md5="your_md5_value"
-curl -s "https://api.xrpl.to/api/history?md5=your_md5_value&page=0&limit=10" | jq -r '.data.hists'
-\`\`\`
+
 
 This endpoint retrieves exchange history of the specific token.
 
@@ -179,10 +172,6 @@ You can see the example of Exchange History here: https://xrpl.to/token/sologeni
 
 ### Get the current status
 
-\`\`\`shell
-curl -s "https://api.xrpl.to/api/status" | jq -r '.data'
-\`\`\`
-
 This endpoint retrieves the current status of the platform, or XRPL. It returns the metrics of 24 hours and Global, and the current exchange rates compared to XRP.
 
 #### HTTP Request
@@ -191,10 +180,7 @@ This endpoint retrieves the current status of the platform, or XRPL. It returns 
 
 ### Get Account Offers
 
-\`\`\`shell
-account="your_account_here"
-curl -s "https://api.xrpl.to/api/account/your_account_here" | jq -r '.data.offers'
-\`\`\`
+
 
 This endpoint retrieves all offers of the account.
 
