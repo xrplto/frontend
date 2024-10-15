@@ -46,25 +46,26 @@ const apiDocumentation = `
 
 ## Introduction
 
-Welcome to the XRPL.to API! You can use our API to access XRPL.to API endpoints, which can get information on various tokens' metrics in our database.
+Welcome to the XRPL.to API! Our comprehensive API provides access to XRPL.to endpoints, offering a wide range of XRP Ledger data, metrics, and insights. Whether you're building a trading platform, analytics tool, or researching the XRP ecosystem, our API delivers the data you need.
 
-We have language bindings in Shell, JavaScript, Python and Ruby! You can view code examples in the dark area to the right, and you can switch the programming language of the examples with the tabs in the top right.
+Key Features:
+
+1. **Comprehensive Token Support**: Access data for all tokens on the XRP Ledger, including popular assets and newly issued tokens.
+2. **Multi-Currency Price Feeds**: Get token prices in multiple fiat currencies for global market analysis.
+3. **DEX and AMM Volume Tracking**: Monitor decentralized exchange (DEX) and Automated Market Maker (AMM) trading volumes for all XRP Ledger tokens.
+4. **XRP On-chain Statistics**: Retrieve detailed on-chain data for XRP, including transaction volumes and network metrics.
+5. **Trading Data**: Access comprehensive trading information, including price charts and historical data.
+6. **Project Information**: Get rich metadata for tokens and projects, including logos, descriptions, and social links.
+
+Our API is designed for developers, researchers, and businesses looking to integrate XRP Ledger data into their applications or analysis. We offer language bindings in Shell, JavaScript, Python, and Ruby to facilitate easy integration into your preferred development environment.
+
+You can view code examples in the dark area to the right and switch the programming language of the examples with the tabs in the top right.
+
+Let's explore how to leverage the power of XRP Ledger data in your projects with the XRPL.to API!
 
 ## Tokens
 
 ### Get All Tokens
-
-\`\`\`shell
-curl -sS "https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter="
-\`\`\`
-
-\`\`\`javascript
-const axios = require('axios');
-
-const res = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
-
-const tokens = res.data;
-\`\`\`
 
 This endpoint retrieves tokens.
 
@@ -83,122 +84,10 @@ This endpoint retrieves tokens.
 
 The parameter \`amount\` in JSON object is Total Supply value, \`supply\` is Circulating Supply Value.
 
-#### Response
-
-The above command returns JSON structured like this:
-
-\`\`\`json
-{
-  "result": "success",
-  "took": "18.70",
-  "exch": {
-    "USD": 2.559408291448575,
-    "EUR": 2.6770493364433525,
-    "JPY": 0.045246821410082315,
-    "CNY": 0.3705075954057058
-  },
-  "H24": {
-    "_id": "METRICS_24H",
-    "activeAddresses24H": 12290,
-    "tradedTokens24H": 447,
-    "tradedXRP24H": 3565973.664622,
-    "transactions24H": 15546
-  },
-  "global": {
-    "_id": "METRICS_GLOBAL",
-    "gDexVolume": 3565973.664622,
-    "gDexVolumePro": -18.842402030897333,
-    "gMarketcap": 120827548.02265854,
-    "gMarketcapPro": 0.12402123412199728,
-    "gScamVolume": 87.23683099999998,
-    "gScamVolumePro": 0.002446367786320914,
-    "gStableVolume": 490506.24331000005,
-    "gStableVolumePro": 13.755184121977937,
-    "gXRPdominance": 0,
-    "gXRPdominancePro": 0
-  },
-  "total": 8416,
-  "count": 8416,
-  "tagName": "",
-  "start": 0,
-  "limit": 1,
-  "sortBy": "vol24hxrp",
-  "sortType": "desc",
-  "filter": "",
-  "tokens": [
-    {
-      "_id": "0413ca7cfc258dfaf698c02fe304e607",
-      "md5": "0413ca7cfc258dfaf698c02fe304e607",
-      "amount": "399211088.84308900115",
-      "currency": "534F4C4F00000000000000000000000000000000",
-      "date": "2019-12-07",
-      "dateon": 1654094361537,
-      "domain": "sologenic.com",
-      "holders": 237778,
-      "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-      "kyc": false,
-      "offers": 5913,
-      "social": {
-        "twitter": "realSologenic",
-        "facebook": "realsologenic",
-        "linkedin": "realsologenic",
-        "instagram": "realsologenic",
-        "telegram": "CoinFieldCHAT",
-        "discord": "uSdE6tS67B",
-        "youtube": "c/GoSOLOTV",
-        "medium": "@sologenic",
-        "tiktok": "@sologenic.official",
-        "reddit": "r/Sologenic"
-      },
-      "trustlines": 288429,
-      "urlSlug": "sologenic-solo",
-      "user": "Sologenic",
-      "verified": true,
-      "imgExt": "jpg",
-      "name": "SOLO",
-      "tags": [
-        "Payment",
-        "Market",
-        "Collectables & NFTs",
-        "Tokenized Stocks"
-      ],
-      "whitepaper": "https://www.sologenic.com/downloads/sologenic-whitepaper.pdf",
-      "exch": 0.41949763333333334,
-      "marketcap": 68304369.66850857,
-      "maxMin24h": [
-        0.19057847838771405,
-        0.15721754517708283
-      ],
-      "p24h": -0.02042820490359476,
-      "p7d": -0.02816231645870154,
-      "pro24h": -12.463507027255588,
-      "pro7d": -17.182186625955396,
-      "vol24h": 3358118.9322646316,
-      "vol24htx": 4123,
-      "vol24hx": 3345545.1935411547,
-      "vol24hxrp": 1454435.640453,
-      "id": 1,
-      "supply": "399211088.84308900115",
-      "usd": "0.16390414719486037532",
-      "time": 1678372110000,
-      "lines": 288434
-    }
-  ]
-}
-\`\`\`
-
 ### Get a Specific Token Info
 
-\`\`\`shell
-# Using issuer_currencyCode (recommended)
-curl -sS "https://api.xrpl.to/api/token/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD" | jq -r '.token'
 
-# Alternatively, you can use a slug or md5 value
-slug="your_slug_here"
-curl -sS "https://api.xrpl.to/api/token/your_slug_here?desc=no" | jq -r '.token'
-\`\`\`
-
-This endpoint retrieves a specific token.
+This endpoint retrieves information about a specific token.
 
 #### HTTP Request
 
@@ -213,14 +102,10 @@ or
 | Parameter | Default | Description |
 | --------- | ------- | ----------- |
 | issuer_currencyCode | | The issuer address followed by an underscore and the currency code. This is the recommended method. |
-| slug | | Alternatively, you can use the URL slug of the token to retrieve or md5 value of the token. Use the method described below to get the md5 value. |
+| slug | | Alternatively, you can use the URL slug of the token to retrieve or md5 value of the token. |
 | desc | no | yes or no, if yes, returns the description of the token in markdown language. |
 
-#### Example
 
-\`https://api.xrpl.to/api/token/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD\`
-
-This example retrieves information about the USD token issued by GateHub (issuer address: rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq).
 
 ### Get Sparkline of a token
 
@@ -441,36 +326,105 @@ const ApiDocs = () => {
   const [apiResponse, setApiResponse] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [currentSection, setCurrentSection] = useState('get-all-tokens');
 
   const handleCodeLanguageChange = (event, newValue) => {
     setCodeLanguage(newValue);
   };
 
-  const getCodeExample = (language) => {
-    switch (language) {
-      case 'shell':
-        return `curl -sS "https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter="`;
-      case 'ruby':
-        return `require 'net/http'
+  const getCodeExample = (language, section) => {
+    if (section === 'get-all-tokens') {
+      switch (language) {
+        case 'shell':
+          return `curl -sS "https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter="`;
+        case 'ruby':
+          return `require 'net/http'
 require 'json'
 
 uri = URI('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=')
 response = Net::HTTP.get(uri)
 tokens = JSON.parse(response)`;
-      case 'python':
-        return `import requests
+        case 'python':
+          return `import requests
 
 response = requests.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=')
 tokens = response.json()`;
-      case 'javascript':
-        return `const axios = require('axios');
+        case 'javascript':
+          return `const axios = require('axios');
 
 const res = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
 
 const tokens = res.data;`;
-      default:
-        return '';
+        default:
+          return '';
+      }
+    } else if (section === 'get-specific-token-info') {
+      switch (language) {
+        case 'shell':
+          return `# Using issuer_currencyCode (recommended)
+curl -sS "https://api.xrpl.to/api/token/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD"
+
+# Alternatively, you can use a slug or md5 value
+slug="your_slug_here"
+curl -sS "https://api.xrpl.to/api/token/$slug?desc=no"`;
+        case 'javascript':
+          return `const axios = require('axios');
+
+async function getTokenInfo(issuer, currency) {
+  try {
+    const response = await axios.get(\`https://api.xrpl.to/api/token/\${issuer}_\${currency}\`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching token info:', error);
+    return null;
+  }
+}
+
+// Example usage
+getTokenInfo('rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq', 'USD')
+  .then(tokenInfo => console.log(tokenInfo))
+  .catch(error => console.error(error));`;
+        case 'python':
+          return `import requests
+
+def get_token_info(issuer, currency):
+    try:
+        response = requests.get(f"https://api.xrpl.to/api/token/{issuer}_{currency}")
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching token info: {e}")
+        return None
+
+# Example usage
+issuer = "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
+currency = "USD"
+token_info = get_token_info(issuer, currency)
+if token_info:
+    print(token_info)`;
+        case 'ruby':
+          return `require 'net/http'
+require 'json'
+
+def get_token_info(issuer, currency)
+  uri = URI("https://api.xrpl.to/api/token/#{issuer}_#{currency}")
+  response = Net::HTTP.get(uri)
+  JSON.parse(response)
+rescue => e
+  puts "Error fetching token info: #{e.message}"
+  nil
+end
+
+# Example usage
+issuer = "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
+currency = "USD"
+token_info = get_token_info(issuer, currency)
+puts token_info if token_info`;
+        default:
+          return '';
+      }
     }
+    // Add more sections as needed
   };
 
   useEffect(() => {
@@ -610,6 +564,10 @@ const tokens = res.data;`;
       .catch((err) => console.error('Failed to copy text: ', err));
   };
 
+  const handleSectionChange = (section) => {
+    setCurrentSection(section);
+  };
+
   // Add this new component for section headers
   const SectionHeader = ({ children }) => (
     <Typography
@@ -652,7 +610,18 @@ const tokens = res.data;`;
           </SyntaxHighlighter>
         </Paper>
       ) : (
-        <code className={className} {...props}>
+        <code
+          className={className}
+          {...props}
+          style={{
+            backgroundColor: '#2d2d2d',
+            color: '#e6e6e6',
+            padding: '2px 4px',
+            borderRadius: '4px',
+            fontFamily: '"Roboto Mono", monospace',
+            fontSize: '0.9em'
+          }}
+        >
           {typeof children === 'string' ? highlightText(children, searchTerm) : children}
         </code>
       );
@@ -856,6 +825,15 @@ const tokens = res.data;`;
               Code Examples
             </Typography>
             <Tabs
+              value={currentSection}
+              onChange={(event, newValue) => handleSectionChange(newValue)}
+              aria-label="code section tabs"
+              sx={{ mb: 2 }}
+            >
+              <Tab label="Get All Tokens" value="get-all-tokens" />
+              <Tab label="Get Specific Token Info" value="get-specific-token-info" />
+            </Tabs>
+            <Tabs
               value={codeLanguage}
               onChange={handleCodeLanguageChange}
               aria-label="code language tabs"
@@ -867,7 +845,7 @@ const tokens = res.data;`;
               <Tab label="Ruby" value="ruby" />
             </Tabs>
             <SyntaxHighlighter language={codeLanguage} style={tomorrow}>
-              {getCodeExample(codeLanguage)}
+              {getCodeExample(codeLanguage, currentSection)}
             </SyntaxHighlighter>
             <Button variant="contained" color="primary" onClick={handleOpenModal} sx={{ mt: 2 }}>
               Try it out
