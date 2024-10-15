@@ -319,6 +319,7 @@ const ApiDocs = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [currentSection, setCurrentSection] = useState('get-all-tokens');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [codeSampleRef, setCodeSampleRef] = useState(null);
 
   const handleCodeLanguageChange = (event, newValue) => {
     setCodeLanguage(newValue);
@@ -773,6 +774,23 @@ account_offers = JSON.parse(response)`;
 
   const handleSectionChange = (section) => {
     setCurrentSection(section);
+    // Scroll to the corresponding section in the documentation
+    const sectionElement = document.getElementById(section);
+    if (sectionElement) {
+      const appBarHeight = 64; // Adjust this value if you've changed the AppBar height
+      const elementPosition = sectionElement.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - appBarHeight - 16;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+
+    // Scroll the code sample section to the top
+    if (codeSampleRef) {
+      codeSampleRef.scrollTop = 0;
+    }
   };
 
   const toggleSidebar = () => {
@@ -956,10 +974,7 @@ account_offers = JSON.parse(response)`;
               p: 3
             }}
           >
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
-                API Docs
-              </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
               <IconButton
                 onClick={toggleSidebar}
                 sx={{ display: { sm: 'none' } }}
@@ -1069,12 +1084,15 @@ account_offers = JSON.parse(response)`;
               p: 2,
               bgcolor: '#2d2d2d',
               color: 'white',
-              overflowY: 'auto',
               display: 'flex',
               flexDirection: 'column',
-              height: { xs: 'auto', md: 'calc(100vh - 64px)' }, // Adjust height for mobile
-              width: { xs: '100%', md: '50%' }
+              height: { xs: 'auto', md: 'calc(100vh - 64px)' },
+              width: { xs: '100%', md: '50%' },
+              position: { md: 'sticky' },
+              top: { md: 64 }, // AppBar height
+              alignSelf: { md: 'flex-start' }
             }}
+            ref={setCodeSampleRef}
           >
             <Typography variant="h6" gutterBottom>
               Code Examples
@@ -1108,7 +1126,7 @@ account_offers = JSON.parse(response)`;
               </Box>
               <TabPanel
                 value={currentSection}
-                sx={{ p: 0, flexGrow: 1, display: 'flex', flexDirection: 'column' }}
+                sx={{ p: 0, flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}
               >
                 <Tabs
                   value={codeLanguage}
