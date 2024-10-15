@@ -169,6 +169,9 @@ function FTokenRow({
         },
         '& .MuiTypography-root': {
           fontSize: isMobile ? '14px' : 'inherit'
+        },
+        '& .MuiTableCell-root': {
+          padding: '8px 16px' // Reduce vertical padding to make rows smaller
         }
       }}
       onClick={handleRowClick}
@@ -217,10 +220,9 @@ function FTokenRow({
         <TableCell
           align="left"
           sx={{
-            p: 0,
+            p: '8px 0', // Adjust padding for this specific cell
             position: 'sticky',
             zIndex: 1001,
-            // left: isMobile ? 28 : 99,
             background: darkMode ? '#000000' : '#FFFFFF',
             '&:before': scrollLeft
               ? {
@@ -238,13 +240,13 @@ function FTokenRow({
               : {}
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={2} sx={{ p: 0 }}>
+          <Stack direction="row" alignItems="center" spacing={1} sx={{ p: 0 }}> {/* Reduce spacing */}
             <Box>
               {isAdmin ? (
                 <AdminImage
                   src={imgUrl}
-                  width={isMobile ? 26 : 46}
-                  height={isMobile ? 26 : 46}
+                  width={isMobile ? 18 : 28} // Slightly reduce image size
+                  height={isMobile ? 18 : 28} // Slightly reduce image size
                   onClick={handleEditToken}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
                   alt={`${user} ${name} Logo`}
@@ -252,8 +254,8 @@ function FTokenRow({
               ) : (
                 <TokenImage
                   src={imgUrl}
-                  width={isMobile ? 26 : 46}
-                  height={isMobile ? 26 : 46}
+                  width={isMobile ? 18 : 28} // Slightly reduce image size
+                  height={isMobile ? 18 : 28} // Slightly reduce image size
                   onError={(event) => (event.target.src = '/static/alt.webp')}
                   alt={`${user} ${name} Logo`}
                 />
@@ -266,10 +268,10 @@ function FTokenRow({
               href={`/token/${slug}`}
               rel="noreferrer noopener nofollow"
             >
-              <Stack>
+              <Stack spacing={0.5}> {/* Reduce spacing between name and user */}
                 <Typography
                   variant="token"
-                  sx={{ fontWeight: '700' }}
+                  sx={{ fontWeight: '700', fontSize: isMobile ? '0.75rem' : '0.85rem', lineHeight: 1.2 }} // Adjust font size and line height
                   color={
                     isOMCF !== 'yes'
                       ? darkMode
@@ -287,13 +289,12 @@ function FTokenRow({
                 </Typography>
                 <Typography
                   variant="p2"
-                  sx={{ fontWeight: '600' }}
+                  sx={{ fontWeight: '600', fontSize: isMobile ? '0.65rem' : '0.75rem', lineHeight: 1.2 }} // Adjust font size and line height
                   color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                   noWrap={!isMobile}
                 >
                   {isMobile && <span style={badge24hStyle}>{id}</span>}
                   {truncate(user, 15)}
-
                 </Typography>
               </Stack>
             </Link>
