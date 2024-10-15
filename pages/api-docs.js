@@ -40,6 +40,9 @@ import { motion } from 'framer-motion';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import axios from 'axios';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import TabContext from '@mui/lab/TabContext';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
 
 const apiDocumentation = `
 # XRPL.to API Documentation
@@ -703,9 +706,32 @@ account_offers = JSON.parse(response)`;
     setIsModalOpen(true);
     setIsLoading(true);
     try {
-      const response = await axios.get(
-        'https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter='
-      );
+      let response;
+      switch (currentSection) {
+        case 'get-all-tokens':
+          response = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=');
+          break;
+        case 'get-specific-token-info':
+          response = await axios.get('https://api.xrpl.to/api/token/rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq_USD');
+          break;
+        case 'get-sparkline-of-a-token':
+          response = await axios.get('https://api.xrpl.to/api/sparkline/0413ca7cfc258dfaf698c02fe304e607');
+          break;
+        case 'get-rich-list-of-a-token':
+          response = await axios.get('https://api.xrpl.to/api/richlist/0413ca7cfc258dfaf698c02fe304e607?start=0&limit=20');
+          break;
+        case 'get-exchange-history-of-a-token':
+          response = await axios.get('https://api.xrpl.to/api/history?md5=0413ca7cfc258dfaf698c02fe304e607&page=0&limit=10');
+          break;
+        case 'get-the-current-status':
+          response = await axios.get('https://api.xrpl.to/api/status');
+          break;
+        case 'get-account-offers':
+          response = await axios.get('https://api.xrpl.to/api/account/offers/rXXXXXXXXXXXXXXXXXXXXXXXXXXX');
+          break;
+        default:
+          throw new Error('Invalid section');
+      }
       setApiResponse(response.data);
     } catch (error) {
       console.error('Error fetching API data:', error);
@@ -986,42 +1012,89 @@ account_offers = JSON.parse(response)`;
               {apiDocumentation}
             </ReactMarkdown>
           </Box>
-          <Box sx={{ flexGrow: 1, p: 4, bgcolor: '#2d2d2d', color: 'white', overflowY: 'auto' }}>
+          <Box 
+            sx={{ 
+              flexGrow: 1, 
+              p: 2, 
+              bgcolor: '#2d2d2d', 
+              color: 'white', 
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              height: 'calc(100vh - 64px)', // Subtract AppBar height
+            }}
+          >
             <Typography variant="h6" gutterBottom>
               Code Examples
             </Typography>
-            <Tabs
-              value={currentSection}
-              onChange={(event, newValue) => handleSectionChange(newValue)}
-              aria-label="code section tabs"
-              sx={{ mb: 2 }}
-            >
-              <Tab label="Get All Tokens" value="get-all-tokens" />
-              <Tab label="Get Specific Token Info" value="get-specific-token-info" />
-              <Tab label="Get Sparkline" value="get-sparkline-of-a-token" />
-              <Tab label="Get MD5 Value" value="get-md5-value-of-the-token" />
-              <Tab label="Get Rich List" value="get-rich-list-of-a-token" />
-              <Tab label="Get Exchange History" value="get-exchange-history-of-a-token" />
-              <Tab label="Get Current Status" value="get-the-current-status" />
-              <Tab label="Get Account Offers" value="get-account-offers" />
-            </Tabs>
-            <Tabs
-              value={codeLanguage}
-              onChange={handleCodeLanguageChange}
-              aria-label="code language tabs"
-              sx={{ mb: 2 }}
-            >
-              <Tab label="JavaScript" value="javascript" />
-              <Tab label="Python" value="python" />
-              <Tab label="Shell" value="shell" />
-              <Tab label="Ruby" value="ruby" />
-            </Tabs>
-            <SyntaxHighlighter language={codeLanguage} style={tomorrow}>
-              {getCodeExample(codeLanguage, currentSection)}
-            </SyntaxHighlighter>
-            <Button variant="contained" color="primary" onClick={handleOpenModal} sx={{ mt: 2 }}>
-              Try it out
-            </Button>
+            <TabContext value={currentSection}>
+              <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <TabList 
+                  onChange={(event, newValue) => handleSectionChange(newValue)}
+                  aria-label="code section tabs"
+                  variant="scrollable"
+                  scrollButtons="auto"
+                  allowScrollButtonsMobile
+                  sx={{ 
+                    maxWidth: '100%',
+                    '& .MuiTab-root': { 
+                      minHeight: '48px',
+                      fontSize: '0.8rem',
+                      textTransform: 'none',
+                    },
+                  }}
+                >
+                  <Tab label="Get All Tokens" value="get-all-tokens" />
+                  <Tab label="Get Specific Token Info" value="get-specific-token-info" />
+                  <Tab label="Get Sparkline" value="get-sparkline-of-a-token" />
+                  <Tab label="Get MD5 Value" value="get-md5-value-of-the-token" />
+                  <Tab label="Get Rich List" value="get-rich-list-of-a-token" />
+                  <Tab label="Get Exchange History" value="get-exchange-history-of-a-token" />
+                  <Tab label="Get Current Status" value="get-the-current-status" />
+                  <Tab label="Get Account Offers" value="get-account-offers" />
+                </TabList>
+              </Box>
+              <TabPanel value={currentSection} sx={{ p: 0, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                <Tabs
+                  value={codeLanguage}
+                  onChange={handleCodeLanguageChange}
+                  aria-label="code language tabs"
+                  variant="scrollable"
+                  scrollButtons="auto"
+                  allowScrollButtonsMobile
+                  sx={{ 
+                    mb: 2,
+                    '& .MuiTab-root': { 
+                      minHeight: '36px',
+                      fontSize: '0.8rem',
+                      textTransform: 'none',
+                    },
+                  }}
+                >
+                  <Tab label="JavaScript" value="javascript" />
+                  <Tab label="Python" value="python" />
+                  <Tab label="Shell" value="shell" />
+                  <Tab label="Ruby" value="ruby" />
+                </Tabs>
+                <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
+                  <SyntaxHighlighter 
+                    language={codeLanguage} 
+                    style={tomorrow}
+                    customStyle={{ fontSize: '0.9rem' }}
+                  >
+                    {getCodeExample(codeLanguage, currentSection)}
+                  </SyntaxHighlighter>
+                </Box>
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  onClick={handleOpenModal} 
+                  sx={{ mt: 2, alignSelf: 'flex-start' }}
+                >
+                  Try it out
+                </Button>
+              </TabPanel>
+            </TabContext>
           </Box>
         </Box>
 
