@@ -294,7 +294,14 @@ const Trade = ({ open, onClose, tradePartner }) => {
               token_type: 'token'
             };
           } else if (field === 'amount') {
-            return { ...offer, [field]: value === '' ? '' : Number(value) };
+            // Add a decimal point to the first zero, but not to subsequent zeros
+            let newValue = value;
+            if (value === '0' && (!offer.amount || offer.amount === '')) {
+              newValue = '0.';
+            } else if (value === '0' && offer.amount === '0.') {
+              newValue = '0.'; // Keep it as '0.' if a second zero is entered
+            }
+            return { ...offer, [field]: newValue === '' ? '' : newValue };
           }
         }
         return offer;
@@ -721,9 +728,15 @@ const Trade = ({ open, onClose, tradePartner }) => {
               ))}
             </Select>
             <TextField
-              type="number"
-              value={offer.amount || ''}
-              onChange={(e) => handleOfferChange(index, 'amount', e.target.value === '' ? '' : Number(e.target.value), isLoggedInUser)}
+              type="text" // Changed from "number" to "text" to allow for the decimal point
+              value={offer.amount !== undefined ? offer.amount : ''}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow numbers and one decimal point
+                if (/^[0-9]*\.?[0-9]*$/.test(value)) {
+                  handleOfferChange(index, 'amount', value, isLoggedInUser);
+                }
+              }}
               inputProps={{ min: 0, step: 0.000001 }}
               placeholder="0"
               sx={{
@@ -764,10 +777,10 @@ const Trade = ({ open, onClose, tradePartner }) => {
     </Box>
   );
 
-  // Modify the isTradeValid function to check for balance warnings only for logged-in user
+  // Update the isTradeValid function
   const isTradeValid = () => {
-    const loggedInUserHasItem = loggedInUserOffers.some(offer => offer.amount > 0) || selectedLoggedInUserAssets.length > 0;
-    const partnerHasItem = partnerOffers.some(offer => offer.amount > 0) || selectedPartnerAssets.length > 0;
+    const loggedInUserHasItem = loggedInUserOffers.some(offer => offer.amount !== undefined) || selectedLoggedInUserAssets.length > 0;
+    const partnerHasItem = partnerOffers.some(offer => offer.amount !== undefined) || selectedPartnerAssets.length > 0;
     const noBalanceWarnings = Object.keys(loggedInUserBalanceWarnings).length === 0;
     const noTrustlineWarnings = Object.keys(trustlineWarnings).length === 0;
     return loggedInUserHasItem && partnerHasItem && noBalanceWarnings && noTrustlineWarnings;
