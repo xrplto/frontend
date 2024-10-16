@@ -695,7 +695,7 @@ const ApiDocs = () => {
               height: { xs: 'auto', md: 'calc(100vh - 64px)' },
               width: { xs: '100%', md: '50%' },
               position: { md: 'sticky' },
-              top: { md: 64 }, // AppBar height
+              top: { md: 64 },
               alignSelf: { md: 'flex-start' }
             }}
             ref={setCodeSampleRef}
@@ -767,35 +767,19 @@ const ApiDocs = () => {
                     style={tomorrow}
                     customStyle={{ fontSize: '0.9rem' }}
                   >
-                    {currentSection === 'get-md5-value-of-the-token'
-                      ? `
-// Example of creating an MD5 value for a token
-const CryptoJS = require('crypto-js');
-
-const issuer = 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq';
-const currency = 'USD';
-
-const md5 = CryptoJS.MD5(issuer + '_' + currency).toString();
-console.log('MD5 value:', md5);
-
-// Use this MD5 value in your API requests
-// For example:
-// fetch(\`https://api.xrpl.to/api/token/\${md5}\`)
-//   .then(response => response.json())
-//   .then(data => console.log(data))
-//   .catch(error => console.error('Error:', error));
-`
-                      : getCodeExample(codeLanguage, currentSection)}
+                    {getCodeExample(codeLanguage, currentSection)}
                   </SyntaxHighlighter>
                 </Box>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleOpenModal}
-                  sx={{ mt: 2, alignSelf: 'flex-start' }}
-                >
-                  Try it out
-                </Button>
+                {currentSection !== 'get-md5-value-of-the-token' && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleOpenModal}
+                    sx={{ mt: 2, alignSelf: 'flex-start' }}
+                  >
+                    Try it out
+                  </Button>
+                )}
               </TabPanel>
             </TabContext>
           </Box>

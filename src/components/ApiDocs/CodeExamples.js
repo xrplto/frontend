@@ -392,6 +392,87 @@ puts offers if offers`;
             return '';
         }
 
+      case 'get-md5-value-of-the-token':
+        switch (language) {
+          case 'javascript':
+            return `const CryptoJS = require('crypto-js');
+
+function getMD5Value(issuer, currency) {
+  const combinedString = \`\${issuer}_\${currency}\`;
+  return CryptoJS.MD5(combinedString).toString();
+}
+
+// Example usage
+const issuer = 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq';
+const currency = 'USD';
+const md5Value = getMD5Value(issuer, currency);
+console.log('MD5 value:', md5Value);
+
+// Use this MD5 value in your API requests
+// For example:
+// fetch(\`https://api.xrpl.to/api/token/\${md5Value}\`)
+//   .then(response => response.json())
+//   .then(data => console.log(data))
+//   .catch(error => console.error('Error:', error));`;
+
+          case 'python':
+            return `import hashlib
+
+def get_md5_value(issuer, currency):
+    combined_string = f"{issuer}_{currency}"
+    return hashlib.md5(combined_string.encode()).hexdigest()
+
+# Example usage
+issuer = "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
+currency = "USD"
+md5_value = get_md5_value(issuer, currency)
+print("MD5 value:", md5_value)
+
+# Use this MD5 value in your API requests
+# For example:
+# import requests
+# response = requests.get(f"https://api.xrpl.to/api/token/{md5_value}")
+# data = response.json()
+# print(data)`;
+
+          case 'ruby':
+            return `require 'digest'
+
+def get_md5_value(issuer, currency)
+  combined_string = "#{issuer}_#{currency}"
+  Digest::MD5.hexdigest(combined_string)
+end
+
+# Example usage
+issuer = "rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
+currency = "USD"
+md5_value = get_md5_value(issuer, currency)
+puts "MD5 value: #{md5_value}"
+
+# Use this MD5 value in your API requests
+# For example:
+# require 'net/http'
+# require 'json'
+# uri = URI("https://api.xrpl.to/api/token/#{md5_value}")
+# response = Net::HTTP.get(uri)
+# data = JSON.parse(response)
+# puts data`;
+
+          case 'shell':
+            return `# Using OpenSSL to generate MD5 hash
+issuer="rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq"
+currency="USD"
+md5_value=$(echo -n "${issuer}_${currency}" | openssl dgst -md5 | awk '{print $2}')
+echo "MD5 value: $md5_value"
+
+# Use this MD5 value in your API requests
+# For example:
+# curl -sS "https://api.xrpl.to/api/token/$md5_value"`;
+
+          default:
+            return '';
+        }
+
       default:
         return '';
     }
