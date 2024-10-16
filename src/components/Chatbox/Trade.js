@@ -95,6 +95,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [xamanStep, setXamanStep] = useState(0);
   const [xamanTitle, setXamanTitle] = useState(0);
+  const [allowedTokens, setAllowedTokens] = useState([]);
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
@@ -110,6 +111,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
   useEffect(() => {
     if (open && accountProfile && tradePartner) {
       fetchBalances();
+      fetchAllowedTokens();
     }
     console.log(open, "open = open", tradePartner)
   }, [open, accountProfile, tradePartner]);
@@ -567,6 +569,27 @@ const Trade = ({ open, onClose, tradePartner }) => {
     </Box>
   );
 
+  const fetchAllowedTokens = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/account/lines/rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk?page=0&limit=100`);
+      if (response.data.result === "success") {
+        const tokens = response.data.lines.map(line => ({
+          currency: line.Balance.currency,
+          issuer: line._token2
+        }));
+        setAllowedTokens(tokens);
+      }
+    } catch (error) {
+      console.error('Error fetching allowed tokens:', error);
+    }
+  };
+
+  const isTokenAllowed = (currency, issuer) => {
+    return allowedTokens.some(token => 
+      token.currency === currency && token.issuer === issuer
+    );
+  };
+
   const renderOffers = (offers, tokens, isLoggedInUser) => (
     <Box>
       {offers.map((offer, index) => (
@@ -577,7 +600,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
             sx={{ width: '40%', mr: 1, borderRadius: 2 }}
           >
             <MenuItem value="XRP">XRP</MenuItem>
-            {tokens.map((token) => (
+            {tokens.filter(token => isTokenAllowed(token.currency, token.issuer)).map((token) => (
               <MenuItem key={`${token.currency}-${token.issuer}`} value={token.currency}>
                 {token.currencyName} ({token.balance.toFixed(6)})
               </MenuItem>

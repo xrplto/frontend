@@ -9,6 +9,7 @@ import {
   useMediaQuery,
   Avatar,
   Box,
+  Button,
   Card,
   CardHeader,
   IconButton,
@@ -107,7 +108,7 @@ const ToggleContent = styled('div')(
 `
 );
 
-export default function Converter({ token }) {
+export default function TradeUI({ token }) {
   const theme = useTheme();
   const { accountProfile, activeFiatCurrency } = useContext(AppContext);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -149,12 +150,8 @@ export default function Converter({ token }) {
   let color1, color2;
   if (typeof theme !== 'undefined' && theme.currency) {
     //webxtor SEO fix
-    /*const */ color1 = revert
-      ? theme.currency.background2
-      : theme.currency.background1;
-    /*const */ color2 = revert
-      ? theme.currency.background1
-      : theme.currency.background2;
+    /*const */ color1 = revert ? theme.currency.background2 : theme.currency.background1;
+    /*const */ color2 = revert ? theme.currency.background1 : theme.currency.background2;
   }
   const handleChangeAmount1 = (e) => {
     const amt = e.target.value;
@@ -178,14 +175,15 @@ export default function Converter({ token }) {
     setAmount1(fNumber(cexch));
   };
 
+  const handleBuy = () => {
+    // Implement buy logic here
+    console.log(`Buying ${amount1} ${name} for ${amount2} XRP`);
+  };
+
   return (
     <Stack>
-      <Typography
-        variant="h3"
-        fontSize="1.1rem"
-        sx={{ mt: { xs: 4, md: 0 }, mb: 3 }}
-      >
-        {`${name} to XRP Converter`}
+      <Typography variant="h3" fontSize="1.1rem" sx={{ mt: { xs: 4, md: 0 }, mb: 3 }}>
+        {`Trade ${name}`}
       </Typography>
 
       <ConverterFrame>
@@ -195,14 +193,10 @@ export default function Converter({ token }) {
             backgroundColor: color1
           }}
         >
-          <Avatar
-            alt={`${user} ${name}`}
-            src={imgUrl1}
-            sx={{ mr: 1.3, width: 32, height: 32 }}
-          />
+          <Avatar alt={`${user} ${name}`} src={imgUrl1} sx={{ mr: 1.3, width: 32, height: 32 }} />
           <Stack spacing={0}>
             <Typography variant="s7">{name}</Typography>
-            <Typography variant="s8">{user}</Typography>
+            <Typography variant="s8">Amount to buy</Typography>
           </Stack>
           <InputContent>
             <Input
@@ -233,14 +227,10 @@ export default function Converter({ token }) {
             backgroundColor: color2
           }}
         >
-          <Avatar
-            alt="XRP"
-            src={imgUrl2}
-            sx={{ mr: 1.3, width: 32, height: 32 }}
-          />
+          <Avatar alt="XRP" src={imgUrl2} sx={{ mr: 1.3, width: 32, height: 32 }} />
           <Stack spacing={0}>
             <Typography variant="s7">XRP</Typography>
-            <Typography variant="s8">XRP</Typography>
+            <Typography variant="s8">Cost</Typography>
           </Stack>
           <InputContent>
             <Input
@@ -281,6 +271,10 @@ export default function Converter({ token }) {
           </IconButton>
         </ToggleContent>
       </ConverterFrame>
+
+      <Button variant="contained" color="primary" fullWidth onClick={handleBuy} sx={{ mt: 2 }}>
+        Buy {name}
+      </Button>
     </Stack>
   );
 }

@@ -5,14 +5,7 @@ import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
 
 // Material
-import {
-  styled,
-  IconButton,
-  Link,
-  Stack,
-  Tooltip,
-  Typography
-} from '@mui/material';
+import { styled, IconButton, Link, Stack, Tooltip, Typography } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -106,7 +99,24 @@ export default function Description({
   const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
   const metrics = useSelector(selectMetrics);
-  const { id, name, amount, maxMin24h, pro24h, pro7d, p24h, supply, issuer, vol24h, vol24hx, vol24hxrp, slug, marketcap, exch, dom } = token;
+  const {
+    id,
+    name,
+    amount,
+    maxMin24h,
+    pro24h,
+    pro7d,
+    p24h,
+    supply,
+    issuer,
+    vol24h,
+    vol24hx,
+    vol24hxrp,
+    slug,
+    marketcap,
+    exch,
+    dom
+  } = token;
 
   let user = token.user;
   if (!user) user = name;
@@ -133,92 +143,76 @@ export default function Description({
   };
 
   const structuredData = {
-    "@context": "https://schema.org/",
-    "@type": "Cryptocurrency",
-    "name": `${user} ${name}`,
-    "description": description,
-    "tickerSymbol": name,
-    "currentExchangeRate": {
-      "@type": "MonetaryAmount",
-      "currency": activeFiatCurrency,
-      "value": price
+    '@context': 'https://schema.org/',
+    '@type': 'Cryptocurrency',
+    name: `${user} ${name}`,
+    description: description,
+    tickerSymbol: name,
+    currentExchangeRate: {
+      '@type': 'MonetaryAmount',
+      currency: activeFiatCurrency,
+      value: price
     },
-    "marketCap": {
-      "@type": "MonetaryAmount",
-      "currency": activeFiatCurrency,
-      "value": convertedMarketCap
+    marketCap: {
+      '@type': 'MonetaryAmount',
+      currency: activeFiatCurrency,
+      value: convertedMarketCap
     },
-    "supply": fNumber(supply, true),
-    "priceChangePercentage24h": strPro24h,
-    "priceChangePercentage7d": vpro7d,
-    "fiatChange24h": p24h,
-    "maxPrice24h": maxMin24h.max,
-    "minPrice24h": maxMin24h.min,
-    "tradingVolume24h": {
-      "@type": "MonetaryAmount",
-      "currency": "XRP",
-      "value": fNumber(vol24hxrp, true)
+    supply: fNumber(supply, true),
+    priceChangePercentage24h: strPro24h,
+    priceChangePercentage7d: vpro7d,
+    fiatChange24h: p24h,
+    maxPrice24h: maxMin24h.max,
+    minPrice24h: maxMin24h.min,
+    tradingVolume24h: {
+      '@type': 'MonetaryAmount',
+      currency: 'XRP',
+      value: fNumber(vol24hxrp, true)
     },
-    "marketDominance": dom
+    marketDominance: dom
   };
 
   return (
-    <Stack>
-      <script type="application/ld+json">
-        {JSON.stringify(structuredData)}
-      </script>
-      
+    <Stack spacing={2}>
+      <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+
       {issuer !== 'XRPL' && <Converter token={token} />}
 
       <Typography
         variant="h2"
-        fontSize="1.1rem"
-        sx={{ mt: 4 }}
+        fontSize="1.5rem"
+        fontWeight="bold"
+        sx={{ mt: 4, mb: 2 }}
       >{`${name} Price Live Data`}</Typography>
 
-      <Typography sx={{ mt: 3 }}>
-        Today's live {user} price is{' '}
-        <NumberTooltip
-          prepend={currencySymbols[activeFiatCurrency]}
-          number={price}
-        />{' '}
-        {activeFiatCurrency}, accompanied by a 24-hour trading volume of{' '}
-        {fNumber(vol24hx)} {name}. Our {name} to {activeFiatCurrency} price is
-        updated in real-time. In the last 24 hours, {user} has experienced a{' '}
-        {strPro24h} change. XRPL.to currently ranks it at #{id}, with a live
-        market cap of {currencySymbols[activeFiatCurrency]}
-        {fNumber(convertedMarketCap)} {activeFiatCurrency} and a circulating
-        supply of {fNumber(supply)} {name} tokens.
+      <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+        Today's live <strong>{user}</strong> price is{' '}
+        <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={price} />{' '}
+        {activeFiatCurrency}, accompanied by a 24-hour trading volume of <strong>{fNumber(vol24hx)} {name}</strong>.
+        Our {name} to {activeFiatCurrency} price is updated in real-time. In the last 24 hours,{' '}
+        {user} has experienced a <strong>{strPro24h}</strong> change. XRPL.to currently ranks it at <strong>#{id}</strong>, with a
+        live market cap of <strong>{currencySymbols[activeFiatCurrency]}
+        {fNumber(convertedMarketCap)} {activeFiatCurrency}</strong> and a circulating supply of{' '}
+        <strong>{fNumber(supply)} {name}</strong> tokens.
       </Typography>
 
-      <Typography sx={{ mt: 2, mb: 3 }}>
-        If you're interested in purchasing {user}, the top XRPL DEX platform for
-        trading {user} tokens is currently:
+      <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
+        If you're interested in purchasing {user}, the top XRPL DEX platform for trading {user}{' '}
+        tokens is currently:
         <Link
           color={darkMode ? '#22B14C' : '#3366FF'}
-          underline="none"
+          underline="hover"
           href={`/token/${slug}/trade`}
+          sx={{ fontWeight: 'bold', ml: 1 }}
         >
-          {' xrpl.to DEX'}
-        </Link>{' '}
-        {/*and
-                <Link color={ darkMode ? '#22B14C': '#3366FF' } underline="none"
-                    href={`https://sologenic.org/trade?network=mainnet&market=${currency}%2B${issuer}%2FXRP`}
-                >{' Sologenic DEX'}</Link>.
-        */}
+          xrpl.to DEX
+        </Link>
       </Typography>
 
       {isAdmin && (
-        <Stack direction="row" sx={{ mt: 0, mb: 0 }}>
-          <Tooltip
-            title={showEditor ? 'Apply changes' : 'Click to edit description'}
-          >
-            <IconButton
-              onClick={handleClickEdit}
-              edge="end"
-              aria-label="edit"
-              size="small"
-            >
+        <Stack direction="row" sx={{ mt: 2, mb: 2 }}>
+          <Tooltip title={showEditor ? 'Apply changes' : 'Click to edit description'}>
+            <IconButton onClick={handleClickEdit} edge="end" aria-label="edit" size="small">
               {showEditor ? <CloseIcon color="error" /> : <EditIcon />}
             </IconButton>
           </Tooltip>
@@ -227,8 +221,17 @@ export default function Description({
 
       {!showEditor && description && (
         <ReadMore>
-          <ReactMarkdown
+          <ReactMarkdown 
             className={darkMode ? 'reactMarkDowndark' : 'reactMarkDownlight'}
+            components={{
+              p: ({ node, ...props }) => <Typography variant="body1" sx={{ mb: 2 }} {...props} />,
+              h1: ({ node, ...props }) => <Typography variant="h4" sx={{ mt: 3, mb: 2 }} {...props} />,
+              h2: ({ node, ...props }) => <Typography variant="h5" sx={{ mt: 3, mb: 2 }} {...props} />,
+              h3: ({ node, ...props }) => <Typography variant="h6" sx={{ mt: 3, mb: 2 }} {...props} />,
+              ul: ({ node, ...props }) => <ul style={{ marginBottom: '1rem' }} {...props} />,
+              ol: ({ node, ...props }) => <ol style={{ marginBottom: '1rem' }} {...props} />,
+              li: ({ node, ...props }) => <li style={{ marginBottom: '0.5rem' }} {...props} />
+            }}
           >
             {description}
           </ReactMarkdown>
