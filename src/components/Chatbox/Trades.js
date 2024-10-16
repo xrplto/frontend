@@ -29,8 +29,14 @@ const StyledButton = styled(Button)(({ theme }) => ({
 const NFTRADE_URL = 'http://65.108.136.237:5333';
 
 function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing, itemsSent, itemsRequested }) {
+  console.log('TradeOffer props:', { _id, status, timestamp, fromAddress, toAddress, isOutgoing, itemsSent, itemsRequested });
+
   const { accountProfile } = useContext(AppContext);
+  console.log('accountProfile:', accountProfile);
+
   const [tradeStatus, setTradeStatus] = useState(status);
+  console.log('tradeStatus:', tradeStatus);
+
   const offer = isOutgoing ? {
     toAddress: toAddress,
     offering: itemsSent,
@@ -40,11 +46,13 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
     offering: itemsSent,
     wanting: itemsRequested
   };
+  console.log('offer:', offer);
 
   // Add this console.log statement to log the trade offer details
   console.log('Trade Offer:', { _id, status, timestamp, fromAddress, toAddress, isOutgoing, itemsSent, itemsRequested, offer });
 
   const handleReactions = async(tradeId, actionType) => {
+    console.log('handleReactions called with:', { tradeId, actionType });
     // Implement accept trade logic here
     console.log('Trade accepted', tradeId, actionType, fromAddress);
     if(actionType === 'accept') {
@@ -66,6 +74,7 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
   };
 
   const processTxhash = async(paymentResult, tradeId) => {
+    console.log('processTxhash called with:', { paymentResult, tradeId });
     console.log('Processing transaction hash:', paymentResult);
 
     if (!paymentResult || !paymentResult.result || !paymentResult.result.transactions) {
@@ -109,8 +118,10 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
   }
     
   const handleTradeAccept = async (tradeId, itemsRequested, fromAddress) => {
+    console.log('handleTradeAccept called with:', { tradeId, itemsRequested, fromAddress });
     try {
       return isInstalled().then(async (response) => {
+        console.log('isInstalled response:', response);
         if (response.result.isInstalled) {
           const paymentTxData = itemsRequested.map((offer, index) => (
             offer.token_type === 'token' ?
@@ -138,28 +149,26 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
               }
           ));
 
-          console.log(paymentTxData, "paymentTxData = ", itemsRequested)
-          const result = await submitBulkTransactions({
-            transactions: paymentTxData
-          });
-          console.log(result, "result = ")
+          console.log('paymentTxData:', paymentTxData);
 
           const wallet_type = accountProfile.wallet_type;
-          console.log(wallet_type, "wallet type")
+          console.log('wallet_type:', wallet_type);
 
           switch (wallet_type) {
             case "xaman":
             case "gem":
+              console.log('Submitting bulk transactions for xaman/gem');
               const result = await submitBulkTransactions({
                 transactions: paymentTxData
               });
-              console.log(result, "tokenHash")
+              console.log('submitBulkTransactions result:', result);
               await processTxhash(result, tradeId);
               break;
 
             case "crossmark":
+              console.log('Submitting bulk transactions for crossmark');
               await sdk.methods.bulkSignAndSubmitAndWait(paymentTxData).then(async ({ response }) => {
-                console.log(response, "crossmark response");
+                console.log('crossmark response:', response);
                 await processTxhash(response, tradeId);
               });
               break;
@@ -178,6 +187,7 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
 
   const renderStatusInfo = () => {
     const formattedDate = timestamp ? format(new Date(timestamp), 'MMM d, yyyy HH:mm') : '';
+    console.log('renderStatusInfo:', { formattedDate, tradeStatus });
     console.log(formattedDate, tradeStatus, "here is render status info");
     switch (tradeStatus) {
       case 'completed':
@@ -329,25 +339,37 @@ function a11yProps(index) {
 
 function Trades() {
   const { accountProfile } = useContext(AppContext);
+  console.log('Trades component accountProfile:', accountProfile);
+
   const [tabValue, setTabValue] = useState(0);
+  console.log('tabValue:', tabValue);
+
   const [tradeHistory, setTradeHistory] = useState([]);
+  console.log('tradeHistory:', tradeHistory);
 
   const handleTabChange = (event, newValue) => {
+    console.log('handleTabChange called with newValue:', newValue);
     setTabValue(newValue);
     fetchTradesHistory(newValue);
   };
 
   useEffect(() => {
+    console.log('Trades component useEffect called');
     fetchTradesHistory(tabValue);
   }, []);
   
   const fetchTradesHistory = async(newTabValue) => {
+    console.log('fetchTradesHistory called with newTabValue:', newTabValue);
     await axios.post(`${NFTRADE_URL}/trades`, {
       userAddress: accountProfile.account,
       tradeType: newTabValue
     })
     .then((res) => {
+      console.log('fetchTradesHistory response:', res.data);
       setTradeHistory(res.data);
+    })
+    .catch((error) => {
+      console.error('Error fetching trade history:', error);
     });
   }
 
