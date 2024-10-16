@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import sdk from "@crossmarkio/sdk";
+import WarningIcon from '@mui/icons-material/Warning';
 
 const BASE_URL = 'https://api.xrpl.to/api';
 const NFTRADE_URL = 'http://65.108.136.237:5333';
@@ -96,6 +97,9 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const [xamanStep, setXamanStep] = useState(0);
   const [xamanTitle, setXamanTitle] = useState(0);
   const [allowedTokens, setAllowedTokens] = useState([]);
+  const [nftWarning, setNftWarning] = useState('');
+  const [loggedInUserBalanceWarnings, setLoggedInUserBalanceWarnings] = useState({});
+  const [partnerBalanceWarnings, setPartnerBalanceWarnings] = useState({});
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
@@ -203,13 +207,22 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const handleLoggedInUserAssetSelect = (nft) => {
     setSelectedLoggedInUserAssets((prev) => {
       const exists = prev.some(asset => asset.NFTokenID === nft.NFTokenID);
+      let newSelection;
       if (exists) {
-        // Deselect the NFT
-        return prev.filter(asset => asset.NFTokenID !== nft.NFTokenID);
+        newSelection = prev.filter(asset => asset.NFTokenID !== nft.NFTokenID);
       } else {
-        // Select the NFT
-        return [...prev, nft];
+        newSelection = [...prev, nft];
       }
+      
+      // Check if there's enough XRP for the reserve
+      const requiredReserve = newSelection.length * 2;
+      if (loggedInUserXrpBalance < requiredReserve) {
+        setNftWarning(`Warning: You need at least ${requiredReserve} XRP in reserve to trade ${newSelection.length} NFT${newSelection.length > 1 ? 's' : ''}. Your current available balance is ${loggedInUserXrpBalance.toFixed(6)} XRP.`);
+      } else {
+        setNftWarning('');
+      }
+      
+      return newSelection;
     });
   };
 
@@ -285,6 +298,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
         }
         return offer;
       });
+
       if (field === 'currency') {
         const fee = await axios.get(`https://api.xrpl.to/api/token/${selectedToken?.md5}`);
         _offers[index] = {
@@ -293,7 +307,29 @@ const Trade = ({ open, onClose, tradePartner }) => {
         };
       }
 
-      console.log(_offers, selectedToken);
+      // Check balance and set warning only for logged-in user
+      if (field === 'amount' && isLoggedInUser) {
+        const offer = _offers[index];
+        let balance;
+        if (offer.currency === 'XRP') {
+          balance = loggedInUserXrpBalance;
+        } else {
+          const token = loggedInUserTokens.find(t => t.currency === offer.currency && t.issuer === offer.issuer);
+          balance = token ? token.balance : 0;
+        }
+        
+        if (Number(value) > balance) {
+          setLoggedInUserBalanceWarnings(prev => ({
+            ...prev,
+            [index]: `Insufficient balance. Available: ${balance.toFixed(6)} ${offer.currency}`
+          }));
+        } else {
+          setLoggedInUserBalanceWarnings(prev => {
+            const { [index]: _, ...rest } = prev;
+            return rest;
+          });
+        }
+      }
 
       return _offers;
     }
@@ -406,8 +442,32 @@ const Trade = ({ open, onClose, tradePartner }) => {
       console.log("Final itemsRequested:", itemsRequested);
 
       console.log("Preparing payment transaction data");
-      const paymentTxData = itemsSent.map(offer => {
-        console.log("Processing offer:", offer);
+      let paymentTxData = [];
+      
+      // Check for required trustlines and add TrustSet transactions if needed
+      for (const offer of itemsRequested) {
+        if (offer.currency !== 'XRP' && offer.token_type !== 'NFT') {
+          const trustlineExists = loggedInUserLines.some(line => 
+            line.currency === offer.currency && line.account === offer.issuer
+          );
+          
+          if (!trustlineExists) {
+            console.log(`Adding TrustSet transaction for ${offer.currency}`);
+            paymentTxData.push({
+              TransactionType: "TrustSet",
+              Account: accountProfile.account,
+              LimitAmount: {
+                currency: offer.currency,
+                issuer: offer.issuer,
+                value: "1000000000000" // Set a high limit, adjust as needed
+              }
+            });
+          }
+        }
+      }
+
+      // Add the existing payment transactions
+      paymentTxData = [...paymentTxData, ...itemsSent.map(offer => {
         if (offer.token_type === 'NFT') {
           console.log("Preparing NFT offer transaction");
           return {
@@ -444,7 +504,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
 
           return txData;
         }
-      });
+      })];
 
       console.log("Final payment transaction data:", paymentTxData);
 
@@ -593,37 +653,45 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const renderOffers = (offers, tokens, isLoggedInUser) => (
     <Box>
       {offers.map((offer, index) => (
-        <Box key={index} display="flex" alignItems="center" mb={2}>
-          <Select
-            value={offer.currency}
-            onChange={(e) => handleOfferChange(index, 'currency', e.target.value, isLoggedInUser)}
-            sx={{ width: '40%', mr: 1, borderRadius: 2 }}
-          >
-            <MenuItem value="XRP">XRP</MenuItem>
-            {tokens.filter(token => isTokenAllowed(token.currency, token.issuer)).map((token) => (
-              <MenuItem key={`${token.currency}-${token.issuer}`} value={token.currency}>
-                {token.currencyName} ({token.balance.toFixed(6)})
-              </MenuItem>
-            ))}
-          </Select>
-          <TextField
-            type="number"
-            value={offer.amount || ''}
-            onChange={(e) => handleOfferChange(index, 'amount', e.target.value === '' ? '' : Number(e.target.value), isLoggedInUser)}
-            inputProps={{ min: 0, step: 0.000001 }}
-            placeholder="0"
-            sx={{
-              width: '40%',
-              '& .MuiOutlinedInput-root': { borderRadius: 2 },
-              '& input::placeholder': {
-                color: 'text.disabled',
-                opacity: 1,
-              },
-            }}
-          />
-          <IconButton onClick={() => handleRemoveOffer(index, isLoggedInUser)} sx={{ ml: 1 }}>
-            <CloseIcon />
-          </IconButton>
+        <Box key={index} display="flex" flexDirection="column" mb={2}>
+          <Box display="flex" alignItems="center">
+            <Select
+              value={offer.currency}
+              onChange={(e) => handleOfferChange(index, 'currency', e.target.value, isLoggedInUser)}
+              sx={{ width: '40%', mr: 1, borderRadius: 2 }}
+            >
+              <MenuItem value="XRP">XRP</MenuItem>
+              {tokens.filter(token => isTokenAllowed(token.currency, token.issuer)).map((token) => (
+                <MenuItem key={`${token.currency}-${token.issuer}`} value={token.currency}>
+                  {token.currencyName} ({token.balance.toFixed(6)})
+                </MenuItem>
+              ))}
+            </Select>
+            <TextField
+              type="number"
+              value={offer.amount || ''}
+              onChange={(e) => handleOfferChange(index, 'amount', e.target.value === '' ? '' : Number(e.target.value), isLoggedInUser)}
+              inputProps={{ min: 0, step: 0.000001 }}
+              placeholder="0"
+              sx={{
+                width: '40%',
+                '& .MuiOutlinedInput-root': { borderRadius: 2 },
+                '& input::placeholder': {
+                  color: 'text.disabled',
+                  opacity: 1,
+                },
+              }}
+            />
+            <IconButton onClick={() => handleRemoveOffer(index, isLoggedInUser)} sx={{ ml: 1 }}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          {isLoggedInUser && loggedInUserBalanceWarnings[index] && (
+            <Typography variant="caption" color="error" display="flex" alignItems="center" mt={1}>
+              <WarningIcon fontSize="small" style={{ marginRight: 4 }} />
+              {loggedInUserBalanceWarnings[index]}
+            </Typography>
+          )}
         </Box>
       ))}
       <StyledButton
@@ -637,11 +705,12 @@ const Trade = ({ open, onClose, tradePartner }) => {
     </Box>
   );
 
-  // Add this new function to check if the trade is valid
+  // Modify the isTradeValid function to check for balance warnings only for logged-in user
   const isTradeValid = () => {
     const loggedInUserHasItem = loggedInUserOffers.some(offer => offer.amount > 0) || selectedLoggedInUserAssets.length > 0;
     const partnerHasItem = partnerOffers.some(offer => offer.amount > 0) || selectedPartnerAssets.length > 0;
-    return loggedInUserHasItem && partnerHasItem;
+    const noBalanceWarnings = Object.keys(loggedInUserBalanceWarnings).length === 0;
+    return loggedInUserHasItem && partnerHasItem && noBalanceWarnings;
   };
 
   // Move the check here, after all hooks have been called
@@ -691,8 +760,16 @@ const Trade = ({ open, onClose, tradePartner }) => {
                 onSelect={handleLoggedInUserAssetSelect}
                 account={accountProfile.account}
                 isPartner={false}
-                selectedAssets={selectedLoggedInUserAssets} // Pass selected assets
+                selectedAssets={selectedLoggedInUserAssets}
               />
+              {nftWarning && (
+                <Box mt={2} p={2} bgcolor="warning.light" borderRadius={2}>
+                  <Typography variant="body2" color="warning.dark" display="flex" alignItems="center">
+                    <WarningIcon fontSize="small" style={{ marginRight: 8 }} />
+                    {nftWarning}
+                  </Typography>
+                </Box>
+              )}
               <Box mt={3}>
                 <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Selected Assets:</Typography>
                 {renderSelectedAssets(selectedLoggedInUserAssets)}
