@@ -226,10 +226,31 @@ const Trade = ({ open, onClose, tradePartner }) => {
   };
 
   const handleAddOffer = (isLoggedInUser) => {
-    if (isLoggedInUser) {
-      setLoggedInUserOffers([...loggedInUserOffers, { currency: 'XRP', amount: 0, token_type: 'token' }]);
+    const tokens = isLoggedInUser ? loggedInUserTokens : partnerTokens;
+    let newOffer = { amount: 0, token_type: 'token' };
+
+    // Find the first non-XRP currency, or use XRP if it's the only option
+    const existingOffers = isLoggedInUser ? loggedInUserOffers : partnerOffers;
+    const xrpAlreadyOffered = existingOffers.some(offer => offer.currency === 'XRP');
+
+    if (xrpAlreadyOffered && tokens.length > 0) {
+      // Select the first non-XRP token
+      const firstNonXrpToken = tokens.find(token => token.currency !== 'XRP');
+      if (firstNonXrpToken) {
+        newOffer.currency = firstNonXrpToken.currency;
+        newOffer.issuer = firstNonXrpToken.issuer;
+      } else {
+        newOffer.currency = 'XRP';
+      }
     } else {
-      setPartnerOffers([...partnerOffers, { currency: 'XRP', amount: 0, token_type: 'token' }]);
+      // If XRP is not offered or there are no other tokens, default to XRP
+      newOffer.currency = 'XRP';
+    }
+
+    if (isLoggedInUser) {
+      setLoggedInUserOffers([...loggedInUserOffers, newOffer]);
+    } else {
+      setPartnerOffers([...partnerOffers, newOffer]);
     }
   };
 
@@ -324,67 +345,69 @@ const Trade = ({ open, onClose, tradePartner }) => {
   }
 
   const handleTrade = async () => {
+    console.log("Starting handleTrade function");
     const middle_wallet_address = 'rKxpqFqHWFWRzBuSkjZGHg9HXUYMGn6zbk';
     let validateTrade = true;
-    loggedInUserOffers.map(async (tokenInfo, index) => {
-      if (tokenInfo.currency !== 'XRP' && tokenInfo.token_type !== 'NFT')
-        // await getTrustLines(middle_wallet_address, tokenInfo.currency, tokenInfo.issuer);
 
-      if (tokenInfo.amount === 0) {
+    console.log("Validating trade offers");
+    loggedInUserOffers.forEach((tokenInfo, index) => {
+      console.log(`Validating offer ${index}:`, tokenInfo);
+      if (tokenInfo.currency !== 'XRP' && tokenInfo.token_type !== 'NFT' && tokenInfo.amount === 0) {
+        console.log(`Invalid token amount for ${normalizeCurrencyCodeXummImpl(tokenInfo.currency)}`);
         showNotification(`Invalid token amount for ${normalizeCurrencyCodeXummImpl(tokenInfo.currency)}`, 'error');
         validateTrade = false;
       }
     });
 
-    console.log(loggedInUserOffers, "loggedInUserOffers")
-
-    // check trust line
-    if (!validateTrade)
+    if (!validateTrade) {
+      console.log("Trade validation failed");
       return false;
+    }
 
-    // Implement trade logic here
     try {
-      let itemsSent = loggedInUserOffers;
-      if (selectedLoggedInUserAssets.length > 0) {
-        selectedLoggedInUserAssets.map((item, index) => {
-          let temp = {
-            currency: item.name,
-            amount: 0,
-            token_type: 'NFT',
-            issuer: item.issuer,
-            token_address: item.NFTokenID,
-            token_icon: item.ufile.image,
-          }
-          itemsSent.push(temp)
-        })
-      }
-      let itemsRequested = partnerOffers;
-      if (selectedPartnerAssets.length > 0) {
-        selectedPartnerAssets.map((item, index) => {
-          let temp = {
-            currency: item.name,
-            amount: 0,
-            token_type: 'NFT',
-            issuer: item.issuer,
-            token_address: item.NFTokenID,
-            token_icon: item.ufile.image,
-          }
-          itemsRequested.push(temp)
-        })
-      }
+      console.log("Preparing items to be sent");
+      let itemsSent = [...loggedInUserOffers];
+      console.log("Initial itemsSent:", itemsSent);
 
-      console.log(itemsSent, " check token sfor itemsSent")
-      console.log(itemsRequested, " check token sfor partnerOffers")
-
-      const tradeData = await axios.post(`${NFTRADE_URL}/trade`, {
-        fromAddress: accountProfile.account,
-        toAddress: tradePartner.username,
-        itemsSent: itemsSent,
-        itemsRequested: itemsRequested,
+      selectedLoggedInUserAssets.forEach(nft => {
+        console.log("Adding NFT to itemsSent:", nft);
+        itemsSent.push({
+          currency: nft.name,
+          amount: 0,
+          token_type: 'NFT',
+          issuer: nft.issuer,
+          token_address: nft.NFTokenID,
+          token_icon: nft.ufile?.image,
+        });
       });
 
-      const paymentTxData = itemsSent.map((offer, index) => {
+      console.log("Final itemsSent:", itemsSent);
+
+      console.log("Preparing items to be requested");
+      let itemsRequested = partnerOffers.filter(offer => 
+        offer.token_type === 'NFT' || (offer.token_type === 'token' && offer.amount > 0)
+      );
+      console.log("Initial itemsRequested:", itemsRequested);
+
+      selectedPartnerAssets.forEach(nft => {
+        console.log("Adding NFT to itemsRequested:", nft);
+        itemsRequested.push({
+          currency: nft.name,
+          amount: 0,
+          token_type: 'NFT',
+          issuer: nft.issuer,
+          token_address: nft.NFTokenID,
+          token_icon: nft.ufile?.image,
+        });
+      });
+
+      console.log("Final itemsRequested:", itemsRequested);
+
+      console.log("Preparing payment transaction data");
+      const paymentTxData = itemsSent.map(offer => {
+        console.log("Processing offer:", offer);
         if (offer.token_type === 'NFT') {
+          console.log("Preparing NFT offer transaction");
           return {
             TransactionType: "NFTokenCreateOffer",
             Account: accountProfile.account,
@@ -393,14 +416,15 @@ const Trade = ({ open, onClose, tradePartner }) => {
             Flags: 1,
             Destination: middle_wallet_address,
             Memos: configureMemos('XRPNFT-nft-create-sell-offer', '', `https://xrpnft.com/nft/${offer.token_address}`)
-          }
+          };
         } else {
+          console.log("Preparing token/XRP payment transaction");
           let txData = {
             TransactionType: "Payment",
             Account: accountProfile.account,
             Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
               currency: offer.currency,
-              value: `${offer.amount - offer.amount * offer.fee / 100}`,
+              value: `${offer.amount - offer.amount * (offer.fee || 0) / 100}`,
               issuer: offer.issuer
             },
             Destination: middle_wallet_address,
@@ -409,59 +433,99 @@ const Trade = ({ open, onClose, tradePartner }) => {
           };
 
           if (offer.currency !== 'XRP') {
-            txData = {
-              ...txData,
-              SendMax: {
-                currency: offer.currency,
-                value: `${offer.amount}`,
-                issuer: offer.issuer
-              },
+            txData.SendMax = {
+              currency: offer.currency,
+              value: `${offer.amount}`,
+              issuer: offer.issuer
             };
           }
 
           return txData;
         }
-      })
-      const requestedData = tradeData.data;
+      });
 
+      console.log("Final payment transaction data:", paymentTxData);
+
+      console.log("Processing wallet type:", accountProfile.wallet_type);
       const wallet_type = accountProfile.wallet_type;
+      let transactionHashes = [];
+
       switch (wallet_type) {
         case "xaman":
+          console.log("Xaman wallet not implemented yet");
           break;
 
         case "gem":
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              const result = await submitBulkTransactions({
-                transactions: paymentTxData
-              });
-              console.log(result, "tokenHash")
-              if (response.data?.meta?.isSuccess) {
-                const hashes = result.result.transactions.map((item) => item.hash);
-                await processTxhash(hashes, requestedData.tradeId);
-              }
-            }
-          });
-          break;
-        case "crossmark":
-          await sdk.methods.bulkSignAndSubmitAndWait(paymentTxData, {
-            isModifiable: false
-          }).then(async ({ response }) => {
-            console.log(response, "crossmark response");
-            if (response.data.meta.isSuccess) {
-              const hashes = response.data.resp.map((item) => item.result.hash);
-              await processTxhash(hashes, requestedData.tradeId);
+          console.log("Checking if GemWallet is installed");
+          const isGemInstalled = await isInstalled();
+          if (isGemInstalled.result.isInstalled) {
+            console.log("GemWallet is installed, submitting bulk transactions");
+            const result = await submitBulkTransactions({ transactions: paymentTxData });
+            console.log("Bulk transaction result:", result);
+            if (result.result.transactions.every(tx => tx.hash)) {
+              transactionHashes = result.result.transactions.map(tx => tx.hash);
+              console.log("Transaction hashes:", transactionHashes);
             } else {
-
+              console.log("Transaction failed or didn't return a hash");
+              showNotification("Transaction failed. Please try again.", "error");
+              return;
             }
-          });
+          } else {
+            console.log("GemWallet is not installed");
+            showNotification("GemWallet is not installed", "error");
+            return;
+          }
           break;
+
+        case "crossmark":
+          console.log("Processing with Crossmark wallet");
+          try {
+            const { response } = await sdk.methods.bulkSignAndSubmitAndWait(paymentTxData, { isModifiable: false });
+            console.log("Crossmark response:", response);
+            if (response.data.meta.isSuccess) {
+              transactionHashes = response.data.resp.map(item => item.result.hash);
+              console.log("Transaction hashes:", transactionHashes);
+            } else {
+              console.log("Transaction failed");
+              showNotification("Transaction failed. Please try again.", "error");
+              return;
+            }
+          } catch (error) {
+            console.error("Error with Crossmark transaction:", error);
+            showNotification("Transaction failed. Please try again.", "error");
+            return;
+          }
+          break;
+
+        default:
+          console.error("Unsupported wallet type:", wallet_type);
+          showNotification("Unsupported wallet type", "error");
+          return;
       }
 
+      // Only proceed if we have transaction hashes
+      if (transactionHashes.length > 0) {
+        console.log("Sending trade data to server");
+        const tradeData = await axios.post(`${NFTRADE_URL}/trade`, {
+          fromAddress: accountProfile.account,
+          toAddress: tradePartner.username,
+          itemsSent: itemsSent,
+          itemsRequested: itemsRequested,
+        });
+        console.log("Trade data response:", tradeData.data);
+
+        await processTxhash(transactionHashes, tradeData.data.tradeId);
+      } else {
+        console.log("No transaction hashes received");
+        showNotification("Failed to process the trade. Please try again.", "error");
+      }
 
     } catch (err) {
-      console.log(err);
+      console.error("Error in handleTrade:", err);
+      showNotification("An error occurred while processing the trade", "error");
     }
+
+    console.log("handleTrade function completed");
   };
   const processTxhash = async (paymentResult, tradeId) => {
     if (!paymentResult) {
@@ -549,6 +613,13 @@ const Trade = ({ open, onClose, tradePartner }) => {
       </StyledButton>
     </Box>
   );
+
+  // Add this new function to check if the trade is valid
+  const isTradeValid = () => {
+    const loggedInUserHasItem = loggedInUserOffers.some(offer => offer.amount > 0) || selectedLoggedInUserAssets.length > 0;
+    const partnerHasItem = partnerOffers.some(offer => offer.amount > 0) || selectedPartnerAssets.length > 0;
+    return loggedInUserHasItem && partnerHasItem;
+  };
 
   // Move the check here, after all hooks have been called
   if (!accountProfile || !tradePartner) {
@@ -638,6 +709,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
           variant="contained"
           color="primary"
           startIcon={<SwapHorizIcon />}
+          disabled={!isTradeValid()} // Disable the button if the trade is not valid
         >
           Propose Exchange
         </StyledButton>

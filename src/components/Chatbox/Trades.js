@@ -41,6 +41,9 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
     wanting: itemsRequested
   };
 
+  // Add this console.log statement to log the trade offer details
+  console.log('Trade Offer:', { _id, status, timestamp, fromAddress, toAddress, isOutgoing, itemsSent, itemsRequested, offer });
+
   const handleReactions = async(tradeId, actionType) => {
     // Implement accept trade logic here
     console.log('Trade accepted', tradeId, actionType, fromAddress);
@@ -63,30 +66,49 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
   };
 
   const processTxhash = async(paymentResult, tradeId) => {
-    if(paymentResult.result === undefined) {
+    console.log('Processing transaction hash:', paymentResult);
+
+    if (!paymentResult || !paymentResult.result || !paymentResult.result.transactions) {
+      console.error('Invalid payment result structure:', paymentResult);
       await axios.post(`${NFTRADE_URL}/update-trade`, {
         tradeId: tradeId,
         itemType: 'rejected',
         index: 0,
         hash: 'rejected-hash',
       });
-    }else {
-      const tokenHash = paymentResult.result.transactions;
+      return;
+    }
+
+    const tokenHash = paymentResult.result.transactions;
+    console.log('Token hashes:', tokenHash);
+
+    if (Array.isArray(tokenHash)) {
       for (let i = 0; i < tokenHash.length; i++) {
-        if(tokenHash[i]['hash'].length === 64) {
+        if (tokenHash[i] && tokenHash[i].hash && tokenHash[i].hash.length === 64) {
           await axios.post(`${NFTRADE_URL}/update-trade`, {
             tradeId: tradeId,
             itemType: 'requested',
             index: i,
-            hash: tokenHash[i]['hash']
+            hash: tokenHash[i].hash
           });
+        } else {
+          console.warn(`Invalid hash at index ${i}:`, tokenHash[i]);
         }
       }
+    } else if (typeof tokenHash === 'object' && tokenHash.hash) {
+      // Handle case where tokenHash is a single object
+      await axios.post(`${NFTRADE_URL}/update-trade`, {
+        tradeId: tradeId,
+        itemType: 'requested',
+        index: 0,
+        hash: tokenHash.hash
+      });
+    } else {
+      console.error('Unexpected tokenHash structure:', tokenHash);
     }
   }
     
-  const handleTradeAccept = async(tradeId, itemsRequested, fromAddress) => {
-    // Implement trade logic here
+  const handleTradeAccept = async (tradeId, itemsRequested, fromAddress) => {
     try {
       return isInstalled().then(async (response) => {
         if (response.result.isInstalled) {
@@ -127,36 +149,29 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
 
           switch (wallet_type) {
             case "xaman":
-
             case "gem":
-              isInstalled().then(async (response) => {
-                if (response.result.isInstalled) {
-                  const result = await submitBulkTransactions({
-                    transactions: paymentTxData
-                  });
-                  console.log(result, "tokenHash")
-                  if (response.data.meta.isSuccess) {
-                    await processTxhash(result, requestedData.tradeId);
-                  }
-                }
-              })
+              const result = await submitBulkTransactions({
+                transactions: paymentTxData
+              });
+              console.log(result, "tokenHash")
+              await processTxhash(result, tradeId);
+              break;
 
             case "crossmark":
               await sdk.methods.bulkSignAndSubmitAndWait(paymentTxData).then(async ({ response }) => {
                 console.log(response, "crossmark response");
-                if (response.data.meta.isSuccess) {
-                  await processTxhash(response, requestedData.tradeId);
-                } else {
-                  
-                }
+                await processTxhash(response, tradeId);
               });
+              break;
+
+            default:
+              console.error("Unsupported wallet type:", wallet_type);
           }
-        
         }
         return true;
-      })
+      });
     } catch (err) {
-      console.log(err);
+      console.error("Error in handleTradeAccept:", err);
       return false;
     }
   };
@@ -235,20 +250,25 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
             {isOutgoing ? "You're offering:" : "They're offering:"}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            { 
-              offer.offering.map((item, key) => {
-                console.log(item.token_type, "item.token_type", item)
-                  if(!item.currency || item.hash === '')
-                      return false;
-                  return (item.token_type !== 'NFT') ? (
-                    <Chip key={key} label={`${item.amount} ${normalizeCurrencyCodeXummImpl(item.currency).toUpperCase()}`} color="primary" variant="outlined" />
-                  ) : <Chip key={key} label={`NFT ${item.currency}`} color="primary" variant="outlined" />
-                }
-              )
-            }
-            {/* {offer.offering.nfts.map((nft, index) => (
-              <Chip key={index} label={`${nft.name} ${nft.id}`} color="primary" variant="outlined" />
-            ))} */}
+            {offer.offering.map((item) => {
+              if (!item.currency) return null;
+              const uniqueKey = `${item.currency}-${item.amount}-${item.token_type}`;
+              return item.token_type !== 'NFT' ? (
+                <Chip
+                  key={uniqueKey}
+                  label={`${item.amount} ${normalizeCurrencyCodeXummImpl(item.currency).toUpperCase()}`}
+                  color="primary"
+                  variant="outlined"
+                />
+              ) : (
+                <Chip
+                  key={uniqueKey}
+                  label={`NFT ${item.currency}`}
+                  color="primary"
+                  variant="outlined"
+                />
+              );
+            })}
           </Box>
         </Grid>
 
@@ -257,20 +277,25 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
             {isOutgoing ? "You want:" : "They want:"}
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {
-              offer.wanting.map((item, key) => {
-                  if(!item.currency)
-                    return false;
-
-                return (item.token_type !== 'NFT') ? (
-                  <Chip key={key} label={`${item.amount} ${normalizeCurrencyCodeXummImpl(item.currency).toUpperCase()}`} color="secondary" variant="outlined" />
-                ) : <Chip key={key} label={`NFT ${item.currency}`} color="secondary" variant="outlined" />
-                }
-              )
-            }
-            {/* {offer.wanting.nfts.map((nft, index) => (
-              <Chip key={index} label={`${nft.name} ${nft.id}`} color="secondary" variant="outlined" />
-            ))} */}
+            {offer.wanting.map((item) => {
+              if (!item.currency) return null;
+              const uniqueKey = `${item.currency}-${item.amount}-${item.token_type}`;
+              return item.token_type !== 'NFT' ? (
+                <Chip
+                  key={uniqueKey}
+                  label={`${item.amount} ${normalizeCurrencyCodeXummImpl(item.currency).toUpperCase()}`}
+                  color="secondary"
+                  variant="outlined"
+                />
+              ) : (
+                <Chip
+                  key={uniqueKey}
+                  label={`NFT ${item.currency}`}
+                  color="secondary"
+                  variant="outlined"
+                />
+              );
+            })}
           </Box>
         </Grid>
       </Grid>
@@ -343,16 +368,16 @@ function Trades() {
           <TabPanel value={tabValue} index={0}>
             {
               tabValue === 0 &&  
-              tradeHistory.map((trade, index) => 
-                <TradeOffer key={index} {...trade} isOutgoing={false} />
+              tradeHistory.map((trade) => 
+                <TradeOffer key={trade._id} {...trade} isOutgoing={false} />
               )
             }
           </TabPanel>
           <TabPanel value={tabValue} index={1}>
             {
               tabValue === 1 &&  (
-              tradeHistory.map((trade, index) => 
-                <TradeOffer key={index} {...trade} isOutgoing={true} />
+              tradeHistory.map((trade) => 
+                <TradeOffer key={trade._id} {...trade} isOutgoing={true} />
               ))
             }
           </TabPanel>
