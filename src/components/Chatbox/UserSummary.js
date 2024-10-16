@@ -8,8 +8,8 @@ import {
   useTheme,
   Paper,
   Chip,
-  Divider,  // Add this import
-  Button  // Add this import as well, since it's used in the component
+  Divider, // Add this import
+  Button // Add this import as well, since it's used in the component
 } from '@mui/material';
 import { Verified as VerifiedIcon } from '@mui/icons-material';
 import { useState, useEffect, useContext } from 'react';
@@ -17,8 +17,9 @@ import axios from 'axios';
 import { activeRankColors, rankGlowEffect } from './RankStyles';
 import { Client } from 'xrpl';
 import { AppContext } from 'src/AppContext';
+import Send from './Send'; // Add this import
 
-const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
+const UserSummary = ({ user, rankName = 'Member', rank, handleTrade }) => {
   const theme = useTheme();
   const [tokenCount, setTokenCount] = useState(0);
   const [nft, setNFT] = useState(0);
@@ -35,6 +36,7 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
   const [tokenLines, setTokenLines] = useState([]);
   const { accountProfile, openSnackbar } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
+  const [sendDialogOpen, setSendDialogOpen] = useState(false); // Add this state
 
   useEffect(() => {
     const fetchTokenLines = async () => {
@@ -182,7 +184,9 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
 
     const fetchNFTs = async () => {
       try {
-        const response = await axios.get(`https://api.xrpscan.com/api/v1/account/${user.username}/nfts`);
+        const response = await axios.get(
+          `https://api.xrpscan.com/api/v1/account/${user.username}/nfts`
+        );
         setNftCount(response.data.length);
       } catch (error) {
         console.error('Error fetching NFTs:', error);
@@ -209,11 +213,19 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
     if (user.currentStatus) {
       return user.currentStatus;
     }
-    
+
     return 'Unknown';
   };
 
   const isOwnProfile = user.username === accountLogin;
+
+  const handleSend = () => {
+    setSendDialogOpen(true);
+  };
+
+  const handleCloseSendDialog = () => {
+    setSendDialogOpen(false);
+  };
 
   return (
     <>
@@ -225,7 +237,7 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
           width: '100%',
           border: '2px solid white',
           borderRadius: '20px',
-          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)'
         }}
       >
         <Stack spacing={3}>
@@ -237,19 +249,19 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
                 width: 90,
                 height: 90,
                 border: `3px solid ${activeRankColors[rank] || '#808080'}`, // Circle border according to rank, default to gray
-                boxShadow: `0 0 15px ${activeRankColors[rank] || '#808080'}`, // Glow effect similar to ChatPanel, default to gray
+                boxShadow: `0 0 15px ${activeRankColors[rank] || '#808080'}` // Glow effect similar to ChatPanel, default to gray
               }}
             />
             <Box>
-              <Typography 
-                variant="h5" 
-                fontWeight="bold" 
-                noWrap 
-                gutterBottom 
-                sx={{ 
+              <Typography
+                variant="h5"
+                fontWeight="bold"
+                noWrap
+                gutterBottom
+                sx={{
                   color: activeRankColors[rank] || '#808080', // Default to gray if no rank
                   display: 'flex',
-                  alignItems: 'center',
+                  alignItems: 'center'
                 }}
               >
                 {truncateUsername(username)}
@@ -258,7 +270,7 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
                     sx={{
                       fontSize: '1.2rem',
                       ml: 0.5,
-                      color: '#1DA1F2', // Twitter blue color for verified icon
+                      color: '#1DA1F2' // Twitter blue color for verified icon
                     }}
                   />
                 )}
@@ -271,7 +283,7 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
                   fontWeight: 'bold',
                   boxShadow: rankGlowEffect(theme)[rank] || 'none',
                   padding: '6px 10px',
-                  fontSize: '0.9rem',
+                  fontSize: '0.9rem'
                 }}
               />
             </Box>
@@ -306,17 +318,17 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => handleSendTip(user)}
+                  onClick={handleSend}
                   sx={{
                     borderRadius: '20px',
                     padding: '8px 16px',
                     fontWeight: 'bold',
                     textTransform: 'none',
                     fontSize: '0.9rem',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
                   }}
                 >
-                  Tip
+                  Send
                 </Button>
                 <Button
                   variant="outlined"
@@ -328,7 +340,7 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
                     fontWeight: 'bold',
                     textTransform: 'none',
                     fontSize: '0.9rem',
-                    borderWidth: '2px',
+                    borderWidth: '2px'
                   }}
                 >
                   Trade
@@ -343,7 +355,7 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
                     fontWeight: 'bold',
                     textTransform: 'none',
                     fontSize: '0.9rem',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
                   }}
                 >
                   Message
@@ -353,6 +365,12 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
           </Stack>
         </Stack>
       </Paper>
+
+      <Send
+        open={sendDialogOpen}
+        onClose={handleCloseSendDialog}
+        recipient={user}
+      />
     </>
   );
 };
@@ -369,7 +387,7 @@ const InfoItem = ({ label, value, valueColor }) => (
 );
 
 const handleSendTip = (user) => {
-  console.log(`Sending tip to ${user.username}`);
+  console.log(`Sending to ${user.username}`);
 };
 
 const handleSendMessage = (user) => {
