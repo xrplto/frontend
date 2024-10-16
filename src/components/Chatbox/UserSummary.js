@@ -33,7 +33,8 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
   const [availableXrpBalance, setAvailableXrpBalance] = useState(null);
   const [reserveXrp, setReserveXrp] = useState(null);
   const [tokenLines, setTokenLines] = useState([]);
-  const { accountProfile } = useContext(AppContext);
+  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const accountLogin = accountProfile?.account;
 
   useEffect(() => {
     const fetchTokenLines = async () => {
@@ -212,6 +213,8 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
     return 'Unknown';
   };
 
+  const isOwnProfile = user.username === accountLogin;
+
   return (
     <>
       <Paper
@@ -298,51 +301,55 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
           </Grid>
 
           <Stack direction="row" spacing={2} justifyContent="center" mt={2}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handleSendTip(user)}
-              sx={{
-                borderRadius: '20px',
-                padding: '8px 16px',
-                fontWeight: 'bold',
-                textTransform: 'none',
-                fontSize: '0.9rem',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              }}
-            >
-              Tip
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={handleTrade}
-              sx={{
-                borderRadius: '20px',
-                padding: '8px 16px',
-                fontWeight: 'bold',
-                textTransform: 'none',
-                fontSize: '0.9rem',
-                borderWidth: '2px',
-              }}
-            >
-              Trade
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => handleSendMessage(user)}
-              sx={{
-                borderRadius: '20px',
-                padding: '8px 16px',
-                fontWeight: 'bold',
-                textTransform: 'none',
-                fontSize: '0.9rem',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              }}
-            >
-              Message
-            </Button>
+            {!isOwnProfile && (
+              <>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => handleSendTip(user)}
+                  sx={{
+                    borderRadius: '20px',
+                    padding: '8px 16px',
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                    fontSize: '0.9rem',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  }}
+                >
+                  Tip
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleTrade}
+                  sx={{
+                    borderRadius: '20px',
+                    padding: '8px 16px',
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                    fontSize: '0.9rem',
+                    borderWidth: '2px',
+                  }}
+                >
+                  Trade
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => handleSendMessage(user)}
+                  sx={{
+                    borderRadius: '20px',
+                    padding: '8px 16px',
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                    fontSize: '0.9rem',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  }}
+                >
+                  Message
+                </Button>
+              </>
+            )}
           </Stack>
         </Stack>
       </Paper>
