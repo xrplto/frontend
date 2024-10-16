@@ -536,14 +536,20 @@ function PriceChart({ token }) {
   const options2 = {
     plotOptions: {
       candlestick: {
-        color: 'red',
-        lineColor: 'red',
-        upColor: 'green',
-        upLineColor: 'green'
+        color: '#ff6968',
+        lineColor: '#ff6968',
+        upColor: '#94caae',
+        upLineColor: '#94caae',
+        lineWidth: 1,
+        states: {
+          hover: {
+            lineWidth: 2
+          }
+        }
       }
     },
     rangeSelector: {
-      selected: 1
+      enabled: false
     },
     title: {
       text: null
@@ -584,47 +590,73 @@ function PriceChart({ token }) {
       type: "datetime",
       crosshair: {
         width: 1,
-        dashStyle: "Dot"
-      }
+        dashStyle: "Dot",
+        color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+      },
+      labels: {
+        style: {
+          color: theme.palette.text.primary
+        }
+      },
+      lineColor: theme.palette.divider,
+      tickColor: theme.palette.divider
     },
     yAxis: {
       crosshair: {
         width: 1,
-        dashStyle: "Dot"
+        dashStyle: "Dot",
+        color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
       },
       title: {
-        text: null // Remove y-axis title
+        text: null
       },
-      gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)', // Grid line color
+      labels: {
+        style: {
+          color: theme.palette.text.primary
+        },
+        formatter: function() {
+          return fCurrency5(this.value);
+        }
+      },
+      gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
     },
     series: [{
       type: 'candlestick',
-      name: 'USD to EUR',
+      name: `${user} ${name}`,
       data: dataOHLC
     }],
     tooltip: {
-      backgroundColor: '#3333338f',
-      borderRadius: 5,
+      backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+      borderRadius: 8,
       borderWidth: 0,
+      shadow: true,
       style: {
-        color: '#FFF',
-        fontSize: '16px',
-        fontWeight: 'bold'
+        color: darkMode ? '#FFF' : '#333',
+        fontSize: '12px'
       },
       formatter: function () {
-        return `<div>
-          <div style="display: flex; justify-content: space-between; gap: 10px;">
-            <span style="font-size: 12px;">${moment(this.x).format("MM/DD/YYYY")}</span>
-            <span style="font-size: 12px;">${moment(this.x).format("hh:mm:ss A")}</span>
+        const point = this.point;
+        const change = point.close - point.open;
+        const changePercent = (change / point.open) * 100;
+        const changeColor = change >= 0 ? '#94caae' : '#ff6968';
+        
+        return `<div style="padding: 8px;">
+          <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">
+            ${moment(point.x).format("MMM DD, YYYY HH:mm")}
           </div>
-          <p style="font-size: 11px;">Open: ${fCurrency5(this.point.open)}</p>
-          <p style="font-size: 11px;">High: ${fCurrency5(this.point.high)}</p>
-          <p style="font-size: 11px;">Low: ${fCurrency5(this.point.low)}</p>
-          <p style="font-size: 11px;">Close: ${fCurrency5(this.point.close)}</p>
-        </div>`
+          <table>
+            <tr><td>Open:</td><td style="text-align: right; padding-left: 10px;">${currencySymbols[activeFiatCurrency]}${fCurrency5(point.open)}</td></tr>
+            <tr><td>High:</td><td style="text-align: right; padding-left: 10px;">${currencySymbols[activeFiatCurrency]}${fCurrency5(point.high)}</td></tr>
+            <tr><td>Low:</td><td style="text-align: right; padding-left: 10px;">${currencySymbols[activeFiatCurrency]}${fCurrency5(point.low)}</td></tr>
+            <tr><td>Close:</td><td style="text-align: right; padding-left: 10px;">${currencySymbols[activeFiatCurrency]}${fCurrency5(point.close)}</td></tr>
+            <tr><td colspan="2" style="padding-top: 5px;">
+              <span style="color: ${changeColor};">
+                ${change >= 0 ? '▲' : '▼'} ${fCurrency5(Math.abs(change))} (${changePercent.toFixed(2)}%)
+              </span>
+            </td></tr>
+          </table>
+        </div>`;
       },
-      shared: true,
-      split: false,
       useHTML: true
     }
   };
