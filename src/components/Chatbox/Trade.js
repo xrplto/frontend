@@ -369,18 +369,19 @@ const Trade = ({ open, onClose, tradePartner }) => {
           
           if (!trustlineExists) {
             const requiredXRP = 2; // 2 XRP required for each new trustline
-            const availableXRP = loggedInUserXrpBalance - (Object.keys(trustlineWarnings).length * 2);
+            const existingTrustlineCount = Object.keys(trustlineWarnings).length;
+            const availableXRP = loggedInUserXrpBalance - (existingTrustlineCount * 2);
             
             if (availableXRP < requiredXRP) {
               setTrustlineWarnings(prev => ({
                 ...prev,
-                [index]: `Warning: You need 2 XRP to set up a trustline for ${value}. Your available balance (${availableXRP.toFixed(2)} XRP) is insufficient.`
+                [index]: `Warning: Insufficient XRP balance to set up a trustline for ${value}. You need at least ${requiredXRP} XRP, but only have ${availableXRP.toFixed(2)} XRP available.`
               }));
             } else {
-              setTrustlineWarnings(prev => {
-                const { [index]: _, ...rest } = prev;
-                return rest;
-              });
+              setTrustlineWarnings(prev => ({
+                ...prev,
+                [index]: `Note: A new trustline for ${value} will be set up, requiring 2 XRP from your balance.`
+              }));
             }
           } else {
             setTrustlineWarnings(prev => {
@@ -505,6 +506,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
       let paymentTxData = [];
       
       // Check for required trustlines and add TrustSet transactions if needed
+      let totalRequiredXRP = 0;
       for (const offer of itemsRequested) {
         if (offer.currency !== 'XRP' && offer.token_type !== 'NFT') {
           const trustlineExists = loggedInUserLines.some(line => 
@@ -512,6 +514,13 @@ const Trade = ({ open, onClose, tradePartner }) => {
           );
           
           if (!trustlineExists) {
+            totalRequiredXRP += 2;
+            if (loggedInUserXrpBalance < totalRequiredXRP) {
+              console.log(`Insufficient XRP balance for trustline: ${offer.currency}`);
+              showNotification(`Insufficient XRP balance to set up trustline for ${offer.currency}`, 'error');
+              return;
+            }
+            
             console.log(`Adding TrustSet transaction for ${offer.currency}`);
             paymentTxData.push({
               TransactionType: "TrustSet",
