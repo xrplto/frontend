@@ -100,6 +100,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
   const [nftWarning, setNftWarning] = useState('');
   const [loggedInUserBalanceWarnings, setLoggedInUserBalanceWarnings] = useState({});
   const [partnerBalanceWarnings, setPartnerBalanceWarnings] = useState({});
+  const [trustlineWarnings, setTrustlineWarnings] = useState({});
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
@@ -300,34 +301,86 @@ const Trade = ({ open, onClose, tradePartner }) => {
       });
 
       if (field === 'currency') {
-        const fee = await axios.get(`https://api.xrpl.to/api/token/${selectedToken?.md5}`);
-        _offers[index] = {
-          ..._offers[index],
-          fee: fee.data.token.issuer_info.transferRate
-        };
+        if (value === 'XRP') {
+          _offers[index] = {
+            ..._offers[index],
+            fee: 0
+          };
+        } else if (selectedToken) {
+          const fee = await axios.get(`https://api.xrpl.to/api/token/${selectedToken?.md5}`);
+          _offers[index] = {
+            ..._offers[index],
+            fee: fee.data.token.issuer_info.transferRate
+          };
+        }
       }
 
       // Check balance and set warning only for logged-in user
       if (field === 'amount' && isLoggedInUser) {
         const offer = _offers[index];
-        let balance;
-        if (offer.currency === 'XRP') {
-          balance = loggedInUserXrpBalance;
-        } else {
-          const token = loggedInUserTokens.find(t => t.currency === offer.currency && t.issuer === offer.issuer);
-          balance = token ? token.balance : 0;
-        }
-        
-        if (Number(value) > balance) {
-          setLoggedInUserBalanceWarnings(prev => ({
-            ...prev,
-            [index]: `Insufficient balance. Available: ${balance.toFixed(6)} ${offer.currency}`
-          }));
-        } else {
+        if (value === '') {
+          // Remove the warning if the input is empty
           setLoggedInUserBalanceWarnings(prev => {
             const { [index]: _, ...rest } = prev;
             return rest;
           });
+        } else {
+          let balance;
+          if (offer.currency === 'XRP') {
+            balance = loggedInUserXrpBalance;
+          } else {
+            const token = loggedInUserTokens.find(t => t.currency === offer.currency && t.issuer === offer.issuer);
+            balance = token ? token.balance : 0;
+          }
+          
+          if (Number(value) > balance) {
+            setLoggedInUserBalanceWarnings(prev => ({
+              ...prev,
+              [index]: `Insufficient balance. Available: ${balance.toFixed(6)} ${offer.currency}`
+            }));
+          } else {
+            setLoggedInUserBalanceWarnings(prev => {
+              const { [index]: _, ...rest } = prev;
+              return rest;
+            });
+          }
+        }
+      }
+
+      // Check for trustline and XRP balance only for partner offers (tokens requested by logged-in user)
+      if (!isLoggedInUser && field === 'currency') {
+        if (value === 'XRP') {
+          // Remove trustline warning when switching back to XRP
+          setTrustlineWarnings(prev => {
+            const { [index]: _, ...rest } = prev;
+            return rest;
+          });
+        } else {
+          const trustlineExists = loggedInUserLines.some(line => 
+            line.currency === value && line.account === _offers[index].issuer
+          );
+          
+          if (!trustlineExists) {
+            const requiredXRP = 2; // 2 XRP required for each new trustline
+            const availableXRP = loggedInUserXrpBalance - (Object.keys(trustlineWarnings).length * 2);
+            
+            if (availableXRP < requiredXRP) {
+              setTrustlineWarnings(prev => ({
+                ...prev,
+                [index]: `Warning: You need 2 XRP to set up a trustline for ${value}. Your available balance (${availableXRP.toFixed(2)} XRP) is insufficient.`
+              }));
+            } else {
+              setTrustlineWarnings(prev => {
+                const { [index]: _, ...rest } = prev;
+                return rest;
+              });
+            }
+          } else {
+            setTrustlineWarnings(prev => {
+              const { [index]: _, ...rest } = prev;
+              return rest;
+            });
+          }
         }
       }
 
@@ -686,10 +739,16 @@ const Trade = ({ open, onClose, tradePartner }) => {
               <CloseIcon />
             </IconButton>
           </Box>
-          {isLoggedInUser && loggedInUserBalanceWarnings[index] && (
+          {isLoggedInUser && loggedInUserBalanceWarnings[index] && offer.amount > 0 && (
             <Typography variant="caption" color="error" display="flex" alignItems="center" mt={1}>
               <WarningIcon fontSize="small" style={{ marginRight: 4 }} />
               {loggedInUserBalanceWarnings[index]}
+            </Typography>
+          )}
+          {!isLoggedInUser && trustlineWarnings[index] && offer.amount > 0 && (
+            <Typography variant="caption" color="error" display="flex" alignItems="center" mt={1}>
+              <WarningIcon fontSize="small" style={{ marginRight: 4 }} />
+              {trustlineWarnings[index]}
             </Typography>
           )}
         </Box>
@@ -710,7 +769,8 @@ const Trade = ({ open, onClose, tradePartner }) => {
     const loggedInUserHasItem = loggedInUserOffers.some(offer => offer.amount > 0) || selectedLoggedInUserAssets.length > 0;
     const partnerHasItem = partnerOffers.some(offer => offer.amount > 0) || selectedPartnerAssets.length > 0;
     const noBalanceWarnings = Object.keys(loggedInUserBalanceWarnings).length === 0;
-    return loggedInUserHasItem && partnerHasItem && noBalanceWarnings;
+    const noTrustlineWarnings = Object.keys(trustlineWarnings).length === 0;
+    return loggedInUserHasItem && partnerHasItem && noBalanceWarnings && noTrustlineWarnings;
   };
 
   // Move the check here, after all hooks have been called
