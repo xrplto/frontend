@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { Box, Typography, Button, Grid, Paper, Divider, Chip, Tabs, Tab, Stack } from '@mui/material';
+import { Box, Typography, Button, Grid, Paper, Divider, Chip, Tabs, Tab, Stack, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
@@ -50,6 +50,8 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
 
   // Add this console.log statement to log the trade offer details
   console.log('Trade Offer:', { _id, status, timestamp, fromAddress, toAddress, isOutgoing, itemsSent, itemsRequested, offer });
+
+  const [openDeclineDialog, setOpenDeclineDialog] = useState(false);
 
   const handleReactions = async(tradeId, actionType) => {
     console.log('handleReactions called with:', { tradeId, actionType });
@@ -206,6 +208,19 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
     }
   };
 
+  const handleDeclineClick = () => {
+    setOpenDeclineDialog(true);
+  };
+
+  const handleDeclineConfirm = () => {
+    setOpenDeclineDialog(false);
+    handleReactions(_id, 'decline');
+  };
+
+  const handleDeclineCancel = () => {
+    setOpenDeclineDialog(false);
+  };
+
   const renderStatusInfo = () => {
     const formattedDate = timestamp ? format(new Date(timestamp), 'MMM d, yyyy HH:mm') : '';
     console.log('renderStatusInfo:', { formattedDate, tradeStatus });
@@ -250,7 +265,7 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
               </StyledButton>
             ) : (
               <>
-                <StyledButton variant="outlined" color="error" onClick={() => handleReactions(_id, 'decline')} size="small">
+                <StyledButton variant="outlined" color="error" onClick={handleDeclineClick} size="small">
                   Decline
                 </StyledButton>
                 <StyledButton variant="contained" color="primary" onClick={() => handleReactions(_id, 'accept')} size="small">
@@ -333,6 +348,27 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
       <Box sx={{ mt: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         {renderStatusInfo()}
       </Box>
+      <Dialog
+        open={openDeclineDialog}
+        onClose={handleDeclineCancel}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Confirm Decline"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you would like to cancel this trade?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeclineCancel}>Cancel</Button>
+          <Button onClick={handleDeclineConfirm} autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </StyledPaper>
   );
 }
