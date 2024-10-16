@@ -53,24 +53,32 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
 
   const handleReactions = async(tradeId, actionType) => {
     console.log('handleReactions called with:', { tradeId, actionType });
-    // Implement accept trade logic here
-    console.log('Trade accepted', tradeId, actionType, fromAddress);
+    
     if(actionType === 'accept') {
       let payRequested = await handleTradeAccept(tradeId, itemsRequested, fromAddress);
-      console.log(payRequested, "payRequested")
-      if(!payRequested)
+      console.log(payRequested, "payRequested");
+      if(!payRequested) {
+        console.log('Trade acceptance failed or was cancelled');
+        // You could add some user feedback here, e.g.:
+        // setErrorMessage('Transaction was cancelled or failed. Please try again.');
         return false;
+      }
     }
     
-    let action_ret = await axios.post(`${NFTRADE_URL}/trades/reactions`, {
-      tradeId: tradeId,
-      actionType: actionType,
-    });
-    console.log(action_ret, "status from middleware")
-    setTradeStatus(actionType);
-
-    // if(status === "success") {
-    // }
+    // Only proceed with updating the trade status if it's not an 'accept' action
+    // or if the 'accept' action was successful (payRequested is true)
+    if (actionType !== 'accept' || payRequested) {
+      try {
+        let action_ret = await axios.post(`${NFTRADE_URL}/trades/reactions`, {
+          tradeId: tradeId,
+          actionType: actionType,
+        });
+        console.log(action_ret, "status from middleware");
+        setTradeStatus(actionType);
+      } catch (error) {
+        console.error('Error updating trade status:', error);
+      }
+    }
   };
 
   const processTxhash = async(paymentResult, tradeId) => {
@@ -120,65 +128,78 @@ function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing
   const handleTradeAccept = async (tradeId, itemsRequested, fromAddress) => {
     console.log('handleTradeAccept called with:', { tradeId, itemsRequested, fromAddress });
     try {
-      return isInstalled().then(async (response) => {
-        console.log('isInstalled response:', response);
-        if (response.result.isInstalled) {
-          const paymentTxData = itemsRequested.map((offer, index) => (
-            offer.token_type === 'token' ?
-              {
-                TransactionType: "Payment",
-                Account: accountProfile.account,
-                Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
-                  currency: offer.currency,
-                  value: `${offer.amount}`,
-                  issuer: offer.issuer
-                },
-                Destination: fromAddress,
-                Fee: "12",
-                SourceTag: 20221212,
-                DestinationTag: 20221212,
-              }
-               : 
-              {
-                TransactionType: "NFTokenCreateOffer",
-                Account: accountProfile.account,
-                NFTokenID: offer.token_address,
-                Amount: "0",
-                Destination: fromAddress,
-                Flags: 1,
-              }
-          ));
+      const response = await isInstalled();
+      console.log('isInstalled response:', response);
+      if (response.result.isInstalled) {
+        const paymentTxData = itemsRequested.map((offer, index) => (
+          offer.token_type === 'token' ?
+            {
+              TransactionType: "Payment",
+              Account: accountProfile.account,
+              Amount: offer.currency === 'XRP' ? xrpToDrops(`${offer.amount}`) : {
+                currency: offer.currency,
+                value: `${offer.amount}`,
+                issuer: offer.issuer
+              },
+              Destination: fromAddress,
+              Fee: "12",
+              SourceTag: 20221212,
+              DestinationTag: 20221212,
+            }
+             : 
+            {
+              TransactionType: "NFTokenCreateOffer",
+              Account: accountProfile.account,
+              NFTokenID: offer.token_address,
+              Amount: "0",
+              Destination: fromAddress,
+              Flags: 1,
+            }
+        ));
 
-          console.log('paymentTxData:', paymentTxData);
+        console.log('paymentTxData:', paymentTxData);
 
-          const wallet_type = accountProfile.wallet_type;
-          console.log('wallet_type:', wallet_type);
+        const wallet_type = accountProfile.wallet_type;
+        console.log('wallet_type:', wallet_type);
 
-          switch (wallet_type) {
-            case "xaman":
-            case "gem":
-              console.log('Submitting bulk transactions for xaman/gem');
-              const result = await submitBulkTransactions({
-                transactions: paymentTxData
-              });
-              console.log('submitBulkTransactions result:', result);
+        switch (wallet_type) {
+          case "xaman":
+          case "gem":
+            console.log('Submitting bulk transactions for xaman/gem');
+            const result = await submitBulkTransactions({
+              transactions: paymentTxData
+            });
+            console.log('submitBulkTransactions result:', result);
+            if (result.type === "reject") {
+              console.log('Transaction was rejected or cancelled by the user');
+              return false;
+            }
+            if (result && result.result && result.result.transactions) {
               await processTxhash(result, tradeId);
-              break;
+              return true;
+            }
+            break;
 
-            case "crossmark":
-              console.log('Submitting bulk transactions for crossmark');
-              await sdk.methods.bulkSignAndSubmitAndWait(paymentTxData).then(async ({ response }) => {
-                console.log('crossmark response:', response);
-                await processTxhash(response, tradeId);
-              });
-              break;
+          case "crossmark":
+            console.log('Submitting bulk transactions for crossmark');
+            try {
+              const crossmarkResult = await sdk.methods.bulkSignAndSubmitAndWait(paymentTxData);
+              console.log('crossmark response:', crossmarkResult);
+              if (crossmarkResult && crossmarkResult.response) {
+                await processTxhash(crossmarkResult, tradeId);
+                return true;
+              }
+            } catch (error) {
+              console.log('Crossmark transaction was rejected or cancelled:', error);
+              return false;
+            }
+            break;
 
-            default:
-              console.error("Unsupported wallet type:", wallet_type);
-          }
+          default:
+            console.error("Unsupported wallet type:", wallet_type);
         }
-        return true;
-      });
+      }
+      return false;
     } catch (err) {
       console.error("Error in handleTradeAccept:", err);
       return false;
