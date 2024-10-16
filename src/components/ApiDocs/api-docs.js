@@ -49,6 +49,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import ApiDocumentation from './ApiDocumentation';
 import CodeExamples from './CodeExamples';
+import CryptoJS from 'crypto-js';
 
 const sections = [
   { id: 'introduction', title: 'Introduction' },
@@ -342,6 +343,13 @@ const ApiDocs = () => {
 
   const handleSectionChange = (section) => {
     setCurrentSection(section);
+    // If the section is "get-md5-value-of-the-token", generate an example MD5
+    if (section === 'get-md5-value-of-the-token') {
+      const issuer = 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq';
+      const currency = 'USD';
+      const md5 = CryptoJS.MD5(issuer + '_' + currency).toString();
+      console.log('Example MD5:', md5);
+    }
     // Scroll to the corresponding section in the documentation
     const sectionElement = document.getElementById(section);
     if (sectionElement) {
@@ -759,7 +767,25 @@ const ApiDocs = () => {
                     style={tomorrow}
                     customStyle={{ fontSize: '0.9rem' }}
                   >
-                    {getCodeExample(codeLanguage, currentSection)}
+                    {currentSection === 'get-md5-value-of-the-token'
+                      ? `
+// Example of creating an MD5 value for a token
+const CryptoJS = require('crypto-js');
+
+const issuer = 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq';
+const currency = 'USD';
+
+const md5 = CryptoJS.MD5(issuer + '_' + currency).toString();
+console.log('MD5 value:', md5);
+
+// Use this MD5 value in your API requests
+// For example:
+// fetch(\`https://api.xrpl.to/api/token/\${md5}\`)
+//   .then(response => response.json())
+//   .then(data => console.log(data))
+//   .catch(error => console.error('Error:', error));
+`
+                      : getCodeExample(codeLanguage, currentSection)}
                   </SyntaxHighlighter>
                 </Box>
                 <Button
