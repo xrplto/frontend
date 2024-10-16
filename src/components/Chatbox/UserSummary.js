@@ -38,7 +38,7 @@ const UserSummary = ({ user, rankName = "Member", rank, handleTrade }) => {
 
   useEffect(() => {
     const fetchTokenLines = async () => {
-      const client = new Client('wss://s1.ripple.com'); // Use the appropriate server
+      const client = new Client('wss://ws.xrpl.to'); // Use the appropriate server
 
       try {
         await client.connect();

@@ -122,7 +122,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
   }, [open, accountProfile, tradePartner]);
 
   const fetchBalances = async () => {
-    const client = new Client('wss://s1.ripple.com');
+    const client = new Client('wss://ws.xrpl.to');
     try {
       await client.connect();
 
