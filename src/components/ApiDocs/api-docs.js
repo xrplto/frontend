@@ -310,7 +310,7 @@ const ApiDocs = () => {
           break;
         case 'get-account-offers':
           response = await axios.get(
-            'https://api.xrpl.to/api/account/offers/rXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+            'https://api.xrpl.to/api/account/offers/rapido5rxPmP4YkMZZEeXSHqWefxHEkqv6'
           );
           break;
         default:
@@ -538,7 +538,13 @@ const ApiDocs = () => {
                 API Docs
               </Typography>
             </Box>
-            <Box sx={{ width: '30%', height: 4, background: 'linear-gradient(90deg, transparent 0%, #25A768 100%)' }} />
+            <Box
+              sx={{
+                width: '30%',
+                height: 4,
+                background: 'linear-gradient(90deg, transparent 0%, #25A768 100%)'
+              }}
+            />
           </Toolbar>
         </AppBar>
 
@@ -562,10 +568,7 @@ const ApiDocs = () => {
             }}
           >
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2 }}>
-              <IconButton
-                onClick={toggleSidebar}
-                sx={{ display: { sm: 'none' } }}
-              >
+              <IconButton onClick={toggleSidebar} sx={{ display: { sm: 'none' } }}>
                 <CloseIcon />
               </IconButton>
             </Box>
@@ -721,7 +724,13 @@ const ApiDocs = () => {
               </Box>
               <TabPanel
                 value={currentSection}
-                sx={{ p: 0, flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}
+                sx={{
+                  p: 0,
+                  flexGrow: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'auto'
+                }}
               >
                 <Tabs
                   value={codeLanguage}
