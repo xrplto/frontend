@@ -176,7 +176,7 @@ export default function TokenList({
 
   const debouncedLoadTokens = useCallback(
     debounce(() => {
-      const start = page * rows + 1;
+      const start = page * rows;
       const ntag = tag || '';
       const watchAccount = showWatchList ? accountProfile?.account || '' : '';
 

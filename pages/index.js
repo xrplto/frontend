@@ -103,7 +103,7 @@ export async function getStaticProps() {
     try {
         var t1 = performance.now();
 
-        const res = await axios.get(`${BASE_URL}/tokens?start=1&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`);
+        const res = await axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`);
 
         data = res.data;
         //console.log('Response from API:', data);
