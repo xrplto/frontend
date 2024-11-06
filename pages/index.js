@@ -34,10 +34,63 @@ function getInitialTokens(data) {
     return [];
 }
 
+const MaintenanceMessage = styled(Box)(
+  ({ theme }) => `
+    text-align: center;
+    padding: ${theme.spacing(8)};
+    background: ${theme.palette.background.paper};
+    border-radius: ${theme.spacing(1)};
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    margin: ${theme.spacing(4)} 0;
+
+    h1 {
+      color: ${theme.palette.primary.main};
+      margin-bottom: ${theme.spacing(2)};
+    }
+
+    p {
+      color: ${theme.palette.text.secondary};
+      font-size: 1.1rem;
+    }
+`
+);
+
+function MaintenanceView({ isMobile }) {
+  return (
+    <OverviewWrapper>
+
+      <Container maxWidth="xl">
+        <Grid
+          container
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+          style={{ minHeight: '60vh' }}
+        >
+          <Grid item xs={12} sm={8} md={6}>
+            <MaintenanceMessage>
+              <h1>Under Maintenance</h1>
+              <p>We're currently performing some updates to improve our service.</p>
+              <p>Please check back soon!</p>
+            </MaintenanceMessage>
+          </Grid>
+        </Grid>
+      </Container>
+
+    </OverviewWrapper>
+  );
+}
+
 function Overview({ data }) {
     const [tokens, setTokens] = useState(() => getInitialTokens(data));
     const tMap = new Map();
     const isMobile = useMediaQuery('(max-width:600px)');
+
+    const MAINTENANCE_MODE = false; // Set to false to show normal view
+
+    if (MAINTENANCE_MODE) {
+      return <MaintenanceView isMobile={isMobile} />;
+    }
   
     for (var t of tokens) {
       tMap.set(t.md5, t);

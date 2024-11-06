@@ -153,9 +153,9 @@ function FTokenRow({
   }, [time, memoizedToken.bearbull]);
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-  const convertedMarketCap = Decimal.div(marketcap, exchRate).toNumber();
-  const convertedVolume = Decimal.div(vol24hxrp, exchRate).toNumber();
-  const supplyRate = Decimal.div(supply, amount).toNumber() * 100;
+  const convertedMarketCap = marketcap && exchRate ? Decimal.div(marketcap, exchRate).toNumber() : 0;
+  const convertedVolume = vol24hxrp && exchRate ? Decimal.div(vol24hxrp, exchRate).toNumber() : 0;
+  const supplyRate = amount && supply ? Decimal.div(supply, amount).toNumber() * 100 : 0;
 
   return (
     <TableRow

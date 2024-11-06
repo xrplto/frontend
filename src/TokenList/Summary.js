@@ -41,18 +41,26 @@ export default function Summary() {
   const { activeFiatCurrency } = useContext(AppContext);
   const [showContent, setShowContent] = useState(false);
 
+  if (!metrics.global || !metrics[activeFiatCurrency] || !metrics.global.gMarketcap || !metrics.global.gMarketcapPro || !metrics.global.gDexVolume || !metrics.global.gDexVolumePro
+    //|| !metrics.global.gScamVolume || !metrics.global.gStableVolume || !metrics.global.gStableVolumePro 
+    //|| !metrics.global.gXRPdominance || !metrics.global.gXRPdominancePro
+  ) {
+    console.log('----------->Empty metrics value detected (Summary block disabled): metrics.global', metrics.global, 'metrics[activeFiatCurrency]', metrics[activeFiatCurrency]);
+    //return null;
+  }
+
   const gMarketcap = new Decimal(metrics.global.gMarketcap)
     .div(metrics[activeFiatCurrency])
     .toFixed(2, Decimal.ROUND_DOWN);
-  const gMarketcapPro = new Decimal(metrics.global.gMarketcapPro).toNumber();
+  const gMarketcapPro = new Decimal(metrics.global.gMarketcapPro || 0).toNumber(); // may be infinity? and trigger Error: [DecimalError] Invalid argument: null
   const gDexVolume = new Decimal(metrics.global.gDexVolume)
     .div(metrics[activeFiatCurrency])
     .toNumber();
-  const gDexVolumePro = new Decimal(metrics.global.gDexVolumePro).toNumber();
+  const gDexVolumePro = new Decimal(metrics.global.gDexVolumePro || 0).toNumber(); // may be infinity and trigger Error: [DecimalError] Invalid argument: null
   const gScamVolume = new Decimal(metrics.global.gScamVolume)
     .div(metrics[activeFiatCurrency])
     .toNumber();
-  const gScamVolumePro = new Decimal(metrics.global.gScamVolumePro).toFixed(
+  const gScamVolumePro = new Decimal(metrics.global.gScamVolumePro || 0).toFixed(
     2,
     Decimal.ROUND_DOWN
   );
@@ -65,13 +73,13 @@ export default function Summary() {
   const gStableVolume = new Decimal(metrics.global.gStableVolume)
     .div(metrics[activeFiatCurrency])
     .toNumber();
-  const gStableVolumePro = new Decimal(metrics.global.gStableVolumePro).toFixed(
+  const gStableVolumePro = new Decimal(metrics.global.gStableVolumePro || 0).toFixed(
     2,
     Decimal.ROUND_DOWN
   );
   const gXRPdominance = new Decimal(metrics.global.gXRPdominance).toNumber();
   const gXRPdominancePro = new Decimal(
-    metrics.global.gXRPdominancePro
+    metrics.global.gXRPdominancePro || 0
   ).toNumber();
 
   // Format number with commas
