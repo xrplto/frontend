@@ -163,7 +163,7 @@ function FTokenRow({
   // const imgUrl = `/static/tokens/${md5}.${ext}`;
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
-  const convertedMarketCap = Decimal.div(marketcap, exchRate).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const convertedMarketCap = Decimal.div(marketcap || 0, exchRate || 0).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
   return (
     <TableRow
