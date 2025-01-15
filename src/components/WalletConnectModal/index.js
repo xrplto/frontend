@@ -27,7 +27,7 @@ const WalletItem = styled(Stack)(({ theme }) => ({
 
 
 const WalletConnectModal = () => {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
 
   const {
     darkMode,

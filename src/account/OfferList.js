@@ -92,7 +92,7 @@ function truncateAccount(str) {
 
 
 export default function OfferList({account}) {
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
     
     const { accountProfile, openSnackbar, sync, setSync, darkMode } = useContext(AppContext);
     const isLoggedIn = accountProfile && accountProfile.account;

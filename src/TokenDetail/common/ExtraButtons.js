@@ -29,7 +29,7 @@ import Decimal from 'decimal.js';
 
 // ----------------------------------------------------------------------
 export default function ExtraButtons({ token }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const [trustToken, setTrustToken] = useState(null);

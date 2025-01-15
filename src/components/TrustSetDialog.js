@@ -97,7 +97,7 @@ const Label = withStyles({
 export default function TrustSetDialog({ limit, token, setToken, balance }) {
   const theme = useTheme();
   const dispatch = useDispatch();
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
   const { accountProfile, openSnackbar, darkMode, sync, setSync } = useContext(AppContext);
 
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));

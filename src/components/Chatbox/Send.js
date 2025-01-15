@@ -28,7 +28,7 @@ import sdk from "@crossmarkio/sdk";
 import WarningIcon from '@mui/icons-material/Warning';
 import NFTPicker from './TradeNFTPicker'; // Assuming you have this component
 
-const BASE_URL = 'https://api.xrpl.to/api';
+const BASE_URL = process.env.API_URL;
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {

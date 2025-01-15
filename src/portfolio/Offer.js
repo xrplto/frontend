@@ -36,7 +36,7 @@ function truncate(str, n) {
 
 const Offer = ({ account }) => {
 
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     const dispatch = useDispatch();
     const { accountProfile, openSnackbar, sync, setSync, darkMode } = useContext(AppContext);

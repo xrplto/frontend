@@ -14,7 +14,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 const TrustLineRow = ({ limit, currencyName, balance, md5, exchRate, issuer, account, currency }) => {
 
-    const BASE_URL = 'https://api.xrpl.to/api';
+    const BASE_URL = process.env.API_URL;
 
     const dispatch = useDispatch();
     const { darkMode, activeFiatCurrency, openSnackbar, accountProfile, sync, setSync } = useContext(AppContext);

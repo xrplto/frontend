@@ -41,7 +41,7 @@ const trustlineFlags = {
 };
 
 export default function TrustLines({ account }) {
-  const BASE_URL = 'https://api.xrpl.to/api';
+  const BASE_URL = process.env.API_URL;
 
   const theme = useTheme();
   const { accountProfile, openSnackbar, sync, activeFiatCurrency, darkMode } = useContext(AppContext);
