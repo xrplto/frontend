@@ -1,10 +1,7 @@
 import Decimal from 'decimal.js';
 import { useState, useEffect, useContext, memo, useMemo, useCallback } from 'react';
 import React from 'react';
-import {
-  LazyLoadImage,
-  LazyLoadComponent
-} from 'react-lazy-load-image-component';
+import { LazyLoadImage, LazyLoadComponent } from 'react-lazy-load-image-component';
 import {
   styled,
   useMediaQuery,
@@ -28,11 +25,7 @@ import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import { AppContext } from 'src/AppContext';
 import TokenMoreMenu from './TokenMoreMenu';
 import BearBullLabel from 'src/components/BearBullLabel';
-import {
-  fNumber,
-  fIntNumber,
-  fNumberWithCurreny
-} from 'src/utils/formatNumber';
+import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
 import LoadChart from 'src/components/LoadChart';
@@ -107,10 +100,13 @@ function FTokenRow({
 
   const memoizedToken = useMemo(() => token, [token]);
 
-  const handleWatchlistClick = useCallback((e) => {
-    e.stopPropagation();
-    onChangeWatchList(md5);
-  }, [md5, onChangeWatchList]);
+  const handleWatchlistClick = useCallback(
+    (e) => {
+      e.stopPropagation();
+      onChangeWatchList(md5);
+    },
+    [md5, onChangeWatchList]
+  );
 
   const handleRowClick = useCallback(() => {
     router.replace(`/token/${slug}`);
@@ -153,7 +149,8 @@ function FTokenRow({
   }, [time, memoizedToken.bearbull]);
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-  const convertedMarketCap = marketcap && exchRate ? Decimal.div(marketcap, exchRate).toNumber() : 0;
+  const convertedMarketCap =
+    marketcap && exchRate ? Decimal.div(marketcap, exchRate).toNumber() : 0;
   const convertedVolume = vol24hxrp && exchRate ? Decimal.div(vol24hxrp, exchRate).toNumber() : 0;
   const supplyRate = amount && supply ? Decimal.div(supply, amount).toNumber() * 100 : 0;
 
@@ -168,10 +165,11 @@ function FTokenRow({
           cursor: 'pointer'
         },
         '& .MuiTypography-root': {
-          fontSize: isMobile ? '14px' : 'inherit'
+          fontSize: isMobile ? '13px' : '14px'
         },
         '& .MuiTableCell-root': {
-          padding: '8px 16px' // Reduce vertical padding to make rows smaller
+          padding: '4px 8px',
+          whiteSpace: 'nowrap'
         }
       }}
       onClick={handleRowClick}
@@ -182,7 +180,10 @@ function FTokenRow({
           position: 'sticky',
           zIndex: 1001,
           left: 0,
-          background: darkMode ? '#000000' : '#FFFFFF'
+          background: darkMode ? '#000000' : '#FFFFFF',
+          width: '32px',
+          minWidth: '32px',
+          padding: '4px'
         }}
       >
         {watchList.includes(md5) ? (
@@ -203,29 +204,32 @@ function FTokenRow({
           </Tooltip>
         )}
       </TableCell>
-      <LazyLoadComponent visibleByDefault={true}>
-        {!isMobile && (
-          <TableCell
-            align="left"
-            sx={{
-              position: 'sticky',
-              zIndex: 1001,
-              left: 52,
-              background: darkMode ? '#000000' : '#FFFFFF'
-            }}
-          >
-            {idx + 1}
-          </TableCell>
-        )}
+      {!isMobile && (
         <TableCell
           align="left"
           sx={{
-            p: '8px 0', // Adjust padding for this specific cell
             position: 'sticky',
             zIndex: 1001,
+            left: '32px',
             background: darkMode ? '#000000' : '#FFFFFF',
-            '&:before': scrollLeft
-              ? {
+            width: '40px',
+            minWidth: '40px',
+            padding: '4px 8px'
+          }}
+        >
+          {idx + 1}
+        </TableCell>
+      )}
+      <TableCell
+        align="left"
+        sx={{
+          p: '4px 8px',
+          position: 'sticky',
+          zIndex: 1001,
+          left: isMobile ? '32px' : '72px',
+          background: darkMode ? '#000000' : '#FFFFFF',
+          '&:before': scrollLeft
+            ? {
                 content: "''",
                 boxShadow: 'inset 10px 0 8px -8px #00000026',
                 position: 'absolute',
@@ -237,248 +241,218 @@ function FTokenRow({
                 transition: 'box-shadow .3s',
                 pointerEvents: 'none'
               }
-              : {}
-          }}
-        >
-          <Stack direction="row" alignItems="center" spacing={1} sx={{ p: 0 }}> {/* Reduce spacing */}
-            <Box>
-              {isAdmin ? (
-                <AdminImage
-                  src={imgUrl}
-                  width={isMobile ? 18 : 28} // Slightly reduce image size
-                  height={isMobile ? 18 : 28} // Slightly reduce image size
-                  onClick={handleEditToken}
-                  onError={(event) => (event.target.src = '/static/alt.webp')}
-                  alt={`${user} ${name} Logo`}
-                />
-              ) : (
-                <TokenImage
-                  src={imgUrl}
-                  width={isMobile ? 18 : 28} // Slightly reduce image size
-                  height={isMobile ? 18 : 28} // Slightly reduce image size
-                  onError={(event) => (event.target.src = '/static/alt.webp')}
-                  alt={`${user} ${name} Logo`}
-                />
-              )}
-            </Box>
-
-            <Link
-              underline="none"
-              color="inherit"
-              href={`/token/${slug}`}
-              rel="noreferrer noopener nofollow"
-            >
-              <Stack spacing={0.5}> {/* Reduce spacing between name and user */}
-                <Typography
-                  variant="token"
-                  sx={{ fontWeight: '700', fontSize: isMobile ? '0.75rem' : '0.85rem', lineHeight: 1.2 }} // Adjust font size and line height
-                  color={
-                    isOMCF !== 'yes'
-                      ? darkMode
-                        ? '#fff'
-                        : '#222531'
-                      : darkMode
-                        ? '#007B55'
-                        : slug === md5
-                          ? '#B72136'
-                          : ''
-                  }
-                  noWrap={!isMobile}
-                >
-                  {truncate(name, 13)}
-                </Typography>
-                <Typography
-                  variant="p2"
-                  sx={{ fontWeight: '600', fontSize: isMobile ? '0.65rem' : '0.75rem', lineHeight: 1.2 }} // Adjust font size and line height
-                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
-                  noWrap={!isMobile}
-                >
-                  {isMobile && <span style={badge24hStyle}>{id}</span>}
-                  {truncate(user, 15)}
-                </Typography>
-              </Stack>
-            </Link>
-          </Stack>
-        </TableCell>
-        <TableCell
-          align="right"
-          sx={{ color: priceColor }}
-        >
-          <TransitionTypo variant="h4" noWrap={!isMobile}>
-            <NumberTooltip
-              prepend={currencySymbols[activeFiatCurrency]}
-              number={fNumberWithCurreny(exch, exchRate)}
-            />
-          </TransitionTypo>
-          {/* <TransitionTypo variant="h6" noWrap={!isMobile}>
-            ✕ <NumberTooltip number={fNumber(exch)} />
-          </TransitionTypo> */}
-        </TableCell>
-        <TableCell align="right">
-          <BearBullLabel value={pro24h} variant="h4" />
-        </TableCell>
-        <TableCell align="right">
-          <BearBullLabel value={pro7d} variant="h4" />
-        </TableCell>
-        <TableCell align="right">
-          <Stack
-            direction="row"
-            spacing={0.5}
-            justifyContent="flex-end"
-            alignItems="center"
-          >
-            <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
-            <Typography variant="h4" noWrap={!isMobile}>
-              {fNumber(convertedVolume)}
-            </Typography>
-          </Stack>
-          <Stack
-            direction="row"
-            spacing={0.5}
-            justifyContent="flex-end"
-            alignItems="center"
-          >
-
-            <Typography variant="h6" color="primary.dark">
-              <NumberTooltip number={fNumber(vol24hx)} />
-              {' '}
-              {name}
-            </Typography>
-
-          </Stack>
-        </TableCell>
-        <TableCell align="right"><Typography variant="h4">{fNumber(vol24htx)}</Typography></TableCell>
-        <TableCell align="right">
-          <Typography variant="h4">
-            {currencySymbols[activeFiatCurrency]}
-            {fNumber(convertedMarketCap)}</Typography>
-        </TableCell>
-        <TableCell align="right"><Typography variant="h4">{fIntNumber(trustlines)}</Typography></TableCell>
-        <TableCell align="right">
-
-          <Typography variant="h4" noWrap={!isMobile}>
-            {fNumber(supply)}{' '}
-            {name}
-          </Typography>
-          <Box display="flex" alignItems="center" pt={1}>
-            <Box width="100%" sx={{ color: 'darkgrey' }}>
-              <Tooltip
-                title={
-                  <Table
-                    sx={{
-                      '& .MuiTableCell-root': {
-                        borderBottom: 'none'
-                      }
-                    }}
-                  >
-                    <TableBody>
-                      <TableRow>
-                        <TableCell
-                          align="right"
-                          width="100%"
-                          sx={{ pt: 0, pb: 0 }}
-                        >
-                          <Typography
-                            variant="small"
-                            noWrap
-                            sx={{ fontWeight: 'bold', m: 1 }}
-                          >
-                            Percentage:
-                          </Typography>
-                        </TableCell>
-                        <TableCell sx={{ pt: 0, pb: 0 }}>
-                          <Typography variant="small">
-                            {fNumber(supplyRate)}%
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell colSpan={2}>
-                          <Box sx={{ color: 'darkgrey' }}>
-                            <LinearProgress
-                              variant="determinate"
-                              value={supplyRate}
-                              color="inherit"
-                            />
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell
-                          align="right"
-                          width="100%"
-                          sx={{ pt: 0, pb: 0 }}
-                        >
-                          <Typography
-                            variant="small"
-                            noWrap
-                            sx={{ fontWeight: 'bold', m: 1 }}
-                          >
-                            Circulating supply:
-                          </Typography>
-                        </TableCell>
-                        <TableCell sx={{ pt: 0, pb: 0 }}>
-                          <Typography variant="small" noWrap >
-                            {fNumber(supply)} {name}
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
-                          <Typography
-                            variant="small"
-                            noWrap
-                            sx={{ fontWeight: 'bold', m: 1 }}
-                          >
-                            Total supply:
-                          </Typography>
-                        </TableCell>
-                        <TableCell sx={{ pt: 0, pb: 0 }}>
-                          <Typography variant="small" noWrap>
-                            {fNumber(amount)} {name}
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                }
-                placement="bottom-end"
-                arrow
-                fontSize="small"
-                componentsProps={{
-                  tooltip: {
-                    sx: {
-                      maxWidth: '500px'
-                    }
-                  }
-                }}
-              >
-                <LinearProgress
-                  variant="determinate"
-                  value={supplyRate}
-                  color="inherit"
-                />
-              </Tooltip>
-            </Box>
+            : {}
+        }}
+      >
+        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ p: 0 }}>
+          {' '}
+          {/* Reduce spacing */}
+          <Box>
+            {isAdmin ? (
+              <AdminImage
+                src={imgUrl}
+                width={isMobile ? 16 : 24}
+                height={isMobile ? 16 : 24}
+                onClick={handleEditToken}
+                onError={(event) => (event.target.src = '/static/alt.webp')}
+                alt={`${user} ${name} Logo`}
+              />
+            ) : (
+              <TokenImage
+                src={imgUrl}
+                width={isMobile ? 16 : 24}
+                height={isMobile ? 16 : 24}
+                onError={(event) => (event.target.src = '/static/alt.webp')}
+                alt={`${user} ${name} Logo`}
+              />
+            )}
           </Box>
-        </TableCell>
-        <TableCell
-          align="right"
-          sx={{
-            px: '0 !important',
-          }}
-        >
-          <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
-        </TableCell>
-        <TableCell align="right">
-          <TokenMoreMenu
-            token={memoizedToken}
-            admin={isAdmin}
-            setEditToken={setEditToken}
-            setTrustToken={setTrustToken}
+          <Link
+            underline="none"
+            color="inherit"
+            href={`/token/${slug}`}
+            rel="noreferrer noopener nofollow"
+          >
+            <Stack spacing={0.5}>
+              {' '}
+              {/* Reduce spacing between name and user */}
+              <Typography
+                variant="token"
+                sx={{
+                  fontWeight: '700',
+                  fontSize: isMobile ? '0.75rem' : '0.85rem',
+                  lineHeight: 1.2
+                }} // Adjust font size and line height
+                color={
+                  isOMCF !== 'yes'
+                    ? darkMode
+                      ? '#fff'
+                      : '#222531'
+                    : darkMode
+                    ? '#007B55'
+                    : slug === md5
+                    ? '#B72136'
+                    : ''
+                }
+                noWrap={!isMobile}
+              >
+                {truncate(name, 13)}
+              </Typography>
+              <Typography
+                variant="p2"
+                sx={{
+                  fontWeight: '600',
+                  fontSize: isMobile ? '0.65rem' : '0.75rem',
+                  lineHeight: 1.2
+                }} // Adjust font size and line height
+                color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
+                noWrap={!isMobile}
+              >
+                {isMobile && <span style={badge24hStyle}>{id}</span>}
+                {truncate(user, 15)}
+              </Typography>
+            </Stack>
+          </Link>
+        </Stack>
+      </TableCell>
+      <TableCell align="right" sx={{ color: priceColor }}>
+        <TransitionTypo variant="h4" noWrap={!isMobile}>
+          <NumberTooltip
+            prepend={currencySymbols[activeFiatCurrency]}
+            number={fNumberWithCurreny(exch, exchRate)}
           />
-        </TableCell>
-      </LazyLoadComponent>
+        </TransitionTypo>
+        {/* <TransitionTypo variant="h6" noWrap={!isMobile}>
+          ✕ <NumberTooltip number={fNumber(exch)} />
+        </TransitionTypo> */}
+      </TableCell>
+      <TableCell align="right">
+        <BearBullLabel value={pro24h} variant="h4" />
+      </TableCell>
+      <TableCell align="right">
+        <BearBullLabel value={pro7d} variant="h4" />
+      </TableCell>
+      <TableCell align="right">
+        <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
+          <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
+          <Typography variant="h4" noWrap={!isMobile}>
+            {fNumber(convertedVolume)}
+          </Typography>
+        </Stack>
+        <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
+          <Typography variant="h6" color="primary.dark">
+            <NumberTooltip number={fNumber(vol24hx)} /> {name}
+          </Typography>
+        </Stack>
+      </TableCell>
+      <TableCell align="right">
+        <Typography variant="h4">{fNumber(vol24htx)}</Typography>
+      </TableCell>
+      <TableCell align="right">
+        <Typography variant="h4">
+          {currencySymbols[activeFiatCurrency]}
+          {fNumber(convertedMarketCap)}
+        </Typography>
+      </TableCell>
+      <TableCell align="right">
+        <Typography variant="h4">{fIntNumber(trustlines)}</Typography>
+      </TableCell>
+      <TableCell align="right">
+        <Typography variant="h4" noWrap={!isMobile}>
+          {fNumber(supply)} {name}
+        </Typography>
+        <Box display="flex" alignItems="center" pt={1}>
+          <Box width="100%" sx={{ color: 'darkgrey' }}>
+            <Tooltip
+              title={
+                <Table
+                  sx={{
+                    '& .MuiTableCell-root': {
+                      borderBottom: 'none'
+                    }
+                  }}
+                >
+                  <TableBody>
+                    <TableRow>
+                      <TableCell align="right" width="100%" sx={{ pt: 0, pb: 0 }}>
+                        <Typography variant="small" noWrap sx={{ fontWeight: 'bold', m: 1 }}>
+                          Percentage:
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ pt: 0, pb: 0 }}>
+                        <Typography variant="small">{fNumber(supplyRate)}%</Typography>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell colSpan={2}>
+                        <Box sx={{ color: 'darkgrey' }}>
+                          <LinearProgress
+                            variant="determinate"
+                            value={supplyRate}
+                            color="inherit"
+                          />
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell align="right" width="100%" sx={{ pt: 0, pb: 0 }}>
+                        <Typography variant="small" noWrap sx={{ fontWeight: 'bold', m: 1 }}>
+                          Circulating supply:
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ pt: 0, pb: 0 }}>
+                        <Typography variant="small" noWrap>
+                          {fNumber(supply)} {name}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
+                        <Typography variant="small" noWrap sx={{ fontWeight: 'bold', m: 1 }}>
+                          Total supply:
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ pt: 0, pb: 0 }}>
+                        <Typography variant="small" noWrap>
+                          {fNumber(amount)} {name}
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              }
+              placement="bottom-end"
+              arrow
+              fontSize="small"
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    maxWidth: '500px'
+                  }
+                }
+              }}
+            >
+              <LinearProgress variant="determinate" value={supplyRate} color="inherit" />
+            </Tooltip>
+          </Box>
+        </Box>
+      </TableCell>
+      <TableCell
+        align="right"
+        sx={{
+          px: '0 !important'
+        }}
+      >
+        <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
+      </TableCell>
+      <TableCell align="right">
+        <TokenMoreMenu
+          token={memoizedToken}
+          admin={isAdmin}
+          setEditToken={setEditToken}
+          setTrustToken={setTrustToken}
+        />
+      </TableCell>
     </TableRow>
   );
 }
