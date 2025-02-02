@@ -8,8 +8,21 @@ import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import ChatPanel from "./ChatPanel";
-import { Button, Stack, TextField, Menu, MenuItem, ListItemIcon, ListItemText, Tabs, Tab, Tooltip, Chip, styled } from '@mui/material';
+import ChatPanel from './ChatPanel';
+import {
+  Button,
+  Stack,
+  TextField,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Tabs,
+  Tab,
+  Tooltip,
+  Chip,
+  styled
+} from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useDispatch, useSelector } from 'react-redux';
@@ -52,55 +65,75 @@ const CustomScrollBox = styled(Box)(({ theme }) => ({
 }));
 
 const drawerWidth = 400;
-const chatURL = "http://37.27.134.126:5000";  //http://37.27.134.126:5000
+const chatURL = 'http://37.27.134.126:5000'; //http://37.27.134.126:5000
 
 // Initialize socket outside the component to avoid multiple connections
 const socket = io(chatURL, {
-  path: "/chat",
+  path: '/chat',
   autoConnect: false, // We'll handle connection manually
   reconnectionAttempts: 5, // Number of reconnection attempts
-  reconnectionDelay: 1000, // Delay between reconnections
+  reconnectionDelay: 1000 // Delay between reconnections
 });
 
 // Emoji Picker Component with Dynamic Styling
 function EmojiPicker({ onSelect }) {
   const theme = useTheme();
-  
-  // Determine colors based on the current theme
-  const backgroundColor = theme.palette.mode === 'dark' ? '#333' : '#f0f0f0';
-  const hoverColor = theme.palette.mode === 'dark' ? '#444' : '#e0e0e0';
-  const emojiColor = theme.palette.mode === 'dark' ? '#fff' : '#000';
 
-  const emojis = ["😀", "😂", "😍", "👍", "🙏", "🔥", "🎉", "❤️", "😎", "🤔", "🥳", "😇", "😭", "💪", "😜", "🥰", "🤩", "👏"];
+  // Updated colors for dark theme appearance
+  const backgroundColor = '#000000';
+  const hoverColor = '#333333';
+  const emojiColor = '#ffffff';
+
+  const emojis = [
+    '😀',
+    '😂',
+    '😍',
+    '👍',
+    '🙏',
+    '🔥',
+    '🎉',
+    '❤️',
+    '😎',
+    '🤔',
+    '🥳',
+    '😇',
+    '😭',
+    '💪',
+    '😜',
+    '🥰',
+    '🤩',
+    '👏'
+  ];
 
   return (
     <Box
       sx={{
         display: 'grid',
         gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '8px',
+        gap: '12px', // Increased from 8px
         backgroundColor: backgroundColor,
-        boxShadow: '0px 0px 10px rgba(0,0,0,0.1)',
-        borderRadius: '10px',
-        padding: '10px',
-        maxWidth: '240px',
+        boxShadow: '0px 0px 10px rgba(0,0,0,0.3)',
+        borderRadius: '12px', // Increased from 10px
+        padding: '16px', // Increased from 10px
+        maxWidth: '280px', // Increased from 240px
         zIndex: 1000,
+        border: '1px solid #333333'
       }}
     >
       {emojis.map((emoji, index) => (
         <Box
           key={index}
           sx={{
-            fontSize: '24px',
-            padding: '5px',
+            fontSize: '28px', // Increased from 24px
+            padding: '8px', // Increased from 5px
             cursor: 'pointer',
             userSelect: 'none',
             textAlign: 'center',
             color: emojiColor,
             '&:hover': {
               backgroundColor: hoverColor,
-              borderRadius: '5px',
-            },
+              borderRadius: '8px' // Increased from 5px
+            }
           }}
           onClick={() => onSelect(emoji)}
         >
@@ -125,13 +158,21 @@ const FormattedNFT = ({ nftLink, onRemove }) => {
       title={
         <Box>
           <Typography variant="body2">{`${name}`}</Typography>
-          <Typography variant="caption" color="textSecondary">{tokenId}</Typography>
+          <Typography variant="caption" color="textSecondary">
+            {tokenId}
+          </Typography>
         </Box>
       }
       arrow
     >
       <Chip
-        icon={<img src="/static/crossmark.webp" alt={`${name}`} style={{ width: '16px', height: '16px' }} />}
+        icon={
+          <img
+            src="/static/crossmark.webp"
+            alt={`${name}`}
+            style={{ width: '16px', height: '16px' }}
+          />
+        }
         label={`${name}`}
         onDelete={onRemove}
         size="small"
@@ -139,10 +180,10 @@ const FormattedNFT = ({ nftLink, onRemove }) => {
           backgroundColor: theme.palette.background.paper,
           border: `1px solid ${theme.palette.primary.main}`,
           '& .MuiChip-label': {
-            color: theme.palette.primary.main,
+            color: theme.palette.primary.main
           },
           mr: 0.5,
-          my: 0.25,
+          my: 0.25
         }}
       />
     </Tooltip>
@@ -171,7 +212,7 @@ const CustomInput = ({ value, onChange, onNFTRemove, onKeyPress }) => {
   };
 
   const handleNFTRemove = (nftLink) => {
-    const newNftParts = nftParts.filter(part => part !== nftLink);
+    const newNftParts = nftParts.filter((part) => part !== nftLink);
     setNftParts(newNftParts);
     const newFullValue = newNftParts.join('') + localValue;
     onChange(newFullValue);
@@ -197,15 +238,13 @@ const CustomInput = ({ value, onChange, onNFTRemove, onKeyPress }) => {
       maxRows={4}
       InputProps={{
         startAdornment: (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', mr: 1 }}>
-            {renderNFTChips()}
-          </Box>
-        ),
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', mr: 1 }}>{renderNFTChips()}</Box>
+        )
       }}
       sx={{
         '& .MuiOutlinedInput-root': {
-          padding: '8px',
-        },
+          padding: '8px'
+        }
       }}
     />
   );
@@ -282,17 +321,17 @@ function Chatbox() {
 
     // Socket event handlers
     const handleInit = (msg) => {
-      console.log("init", msg);
+      console.log('init', msg);
       setChatHistory((previousHistory) => [...previousHistory, ...msg]);
     };
 
     const handleChatMessage = (msg) => {
-      console.log("chat message", msg);
+      console.log('chat message', msg);
       setChatHistory((previousHistory) => [...previousHistory, msg]);
     };
 
     const handlePrivateMessage = (msg) => {
-      console.log("private message", msg);
+      console.log('private message', msg);
       setChatHistory((previousHistory) => [...previousHistory, msg]);
     };
 
@@ -314,8 +353,8 @@ function Chatbox() {
 
     // Register socket event listeners
     socket.on('init', handleInit);
-    socket.on("chat message", handleChatMessage);
-    socket.on("private message", handlePrivateMessage);
+    socket.on('chat message', handleChatMessage);
+    socket.on('private message', handlePrivateMessage);
     socket.on('connect', handleSocketConnect);
     socket.on('disconnect', handleSocketDisconnect);
     socket.on('error', handleSocketError);
@@ -336,18 +375,18 @@ function Chatbox() {
     if (accountProfile?.account && message.trim().length > 0) {
       const trimmedMessage = message.trim();
       if (recipient) {
-        socket.emit("private message", {
+        socket.emit('private message', {
           to: recipient,
           message: trimmedMessage,
           username: accountProfile.account,
           isPrivate: true
         });
       } else {
-        socket.emit("chat message", {
+        socket.emit('chat message', {
           message: trimmedMessage,
           username: accountProfile.account,
-          rank: "Member",
-          group: "Member"
+          rank: 'Member',
+          group: 'Member'
         });
       }
 
@@ -391,7 +430,7 @@ function Chatbox() {
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <AppBar position="static" elevation={0} sx={{ backgroundColor: 'background.paper' }}>
-        <Toolbar sx={{ justifyContent: "space-between" }}>
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button
               endIcon={<ArrowDropDownIcon />}
@@ -400,17 +439,13 @@ function Chatbox() {
                 color: 'text.primary',
                 textTransform: 'none',
                 '&:active': {
-                  backgroundColor: 'action.selected',
-                },
+                  backgroundColor: 'action.selected'
+                }
               }}
             >
               {selectedOption}
             </Button>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-            >
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
               <MenuItem onClick={() => handleOptionSelect('Chatbox')}>
                 <ListItemIcon>
                   <ChatBubbleOutlineIcon fontSize="small" />
@@ -457,8 +492,8 @@ function Chatbox() {
               color: 'text.primary',
               mr: 2,
               '&:active': {
-                backgroundColor: 'action.selected',
-              },
+                backgroundColor: 'action.selected'
+              }
             }}
           >
             <CloseIcon />
@@ -467,10 +502,7 @@ function Chatbox() {
       </AppBar>
       <CustomScrollBox sx={{ flexGrow: 1, overflow: 'auto' }}>
         {selectedOption === 'Chatbox' && (
-          <ChatPanel
-            chats={chatHistory}
-            onStartPrivateMessage={startPrivateMessage}
-          />
+          <ChatPanel chats={chatHistory} onStartPrivateMessage={startPrivateMessage} />
         )}
         {selectedOption === 'AI Chat' && <AIChat />}
         {selectedOption === 'Trades' && <Trades />}
@@ -478,107 +510,113 @@ function Chatbox() {
         {selectedOption === 'Terminal' && <Terminal />} {/* Render Terminal */}
         {selectedOption === 'Settings' && <ChatSettings />}
       </CustomScrollBox>
-      {
-        accountProfile?.account && selectedOption === 'Chatbox' && (
-          <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
-            {recipient && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  mb: 2,
-                  p: 1,
-                  borderRadius: 1,
-                  backgroundColor: theme.palette.action.selected,
-                }}
+      {accountProfile?.account && selectedOption === 'Chatbox' && (
+        <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider' }}>
+          {recipient && (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 2,
+                p: 1,
+                borderRadius: 1,
+                backgroundColor: theme.palette.action.selected
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <PersonIcon sx={{ mr: 1, color: theme.palette.text.secondary }} />
+                <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                  To: <span style={{ color: theme.palette.primary.main }}>{recipient}</span>
+                </Typography>
+              </Box>
+              <IconButton
+                size="small"
+                onClick={() => setRecipient(null)}
+                sx={{ color: theme.palette.text.secondary }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <PersonIcon sx={{ mr: 1, color: theme.palette.text.secondary }} />
-                  <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                    To: <span style={{ color: theme.palette.primary.main }}>{recipient}</span>
-                  </Typography>
-                </Box>
-                <IconButton size="small" onClick={() => setRecipient(null)} sx={{ color: theme.palette.text.secondary }}>
-                  <CloseIcon fontSize="small" />
-                </IconButton>
-              </Box>
-            )}
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+          )}
 
-            <Stack direction="row" spacing={1} alignItems="flex-end">
-              <Box sx={{ flexGrow: 1 }}>
-                <CustomInput
-                  value={message}
-                  onChange={handleMessageChange}
-                  onNFTRemove={handleNFTRemove}
-                  onKeyPress={handleKeyPress}
-                />
-              </Box>
-              <Stack direction="row" spacing={1}>
-                <Box sx={{ position: 'relative' }}>
-                  <IconButton
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    sx={{
-                      color: showEmojiPicker ? 'primary.main' : 'text.secondary',
-                      backgroundColor: showEmojiPicker ? 'action.selected' : 'transparent',
-                      '&:hover': {
-                        backgroundColor: 'action.hover',
-                      },
-                    }}
-                  >
-                    <EmojiEmotionsIcon />
-                  </IconButton>
-                  {showEmojiPicker && (
-                    <Box
-                      ref={emojiPickerRef}
-                      sx={{
-                        position: 'absolute',
-                        bottom: '100%',
-                        right: 0,
-                        zIndex: 1000,
-                        backgroundColor: theme.palette.background.paper,
-                        borderRadius: '4px',
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        boxShadow: 3,
-                        p: 1,
-                        mt: 1,
-                      }}
-                    >
-                      <Tabs
-                        value={pickerType}
-                        onChange={(e, newValue) => setPickerType(newValue)}
-                        sx={{ minHeight: 32 }}
-                      >
-                        <Tab label="Emoji" value="emoji" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
-                        <Tab label="NFT" value="nft" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
-                      </Tabs>
-                      {pickerType === 'emoji' ? (
-                        <EmojiPicker onSelect={addEmoji} />
-                      ) : (
-                        <ChatNFTPicker onSelect={addNFT} />
-                      )}
-                    </Box>
-                  )}
-                </Box>
+          <Stack direction="row" spacing={1} alignItems="flex-end">
+            <Box sx={{ flexGrow: 1 }}>
+              <CustomInput
+                value={message}
+                onChange={handleMessageChange}
+                onNFTRemove={handleNFTRemove}
+                onKeyPress={handleKeyPress}
+              />
+            </Box>
+            <Stack direction="row" spacing={1}>
+              <Box sx={{ position: 'relative' }}>
                 <IconButton
-                  onClick={sendMessage}
-                  color="primary"
-                  disabled={message.trim().length === 0}
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                   sx={{
-                    color: message.trim().length === 0 ? 'action.disabled' : 'primary.main',
-                    '&.Mui-disabled': {
-                      color: 'action.disabled',
-                    },
+                    color: showEmojiPicker ? 'primary.main' : 'text.secondary',
+                    backgroundColor: showEmojiPicker ? 'action.selected' : 'transparent',
+                    '&:hover': {
+                      backgroundColor: 'action.hover'
+                    }
                   }}
                 >
-                  <SendIcon />
+                  <EmojiEmotionsIcon />
                 </IconButton>
-              </Stack>
+                {showEmojiPicker && (
+                  <Box
+                    ref={emojiPickerRef}
+                    sx={{
+                      position: 'absolute',
+                      bottom: '100%',
+                      right: 0,
+                      zIndex: 1000,
+                      backgroundColor: theme.palette.background.paper,
+                      borderRadius: '4px',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      boxShadow: 3,
+                      p: 1,
+                      mt: 1
+                    }}
+                  >
+                    <Tabs
+                      value={pickerType}
+                      onChange={(e, newValue) => setPickerType(newValue)}
+                      sx={{ minHeight: 32 }}
+                    >
+                      <Tab
+                        label="Emoji"
+                        value="emoji"
+                        sx={{ minHeight: 32, fontSize: '0.75rem' }}
+                      />
+                      <Tab label="NFT" value="nft" sx={{ minHeight: 32, fontSize: '0.75rem' }} />
+                    </Tabs>
+                    {pickerType === 'emoji' ? (
+                      <EmojiPicker onSelect={addEmoji} />
+                    ) : (
+                      <ChatNFTPicker onSelect={addNFT} />
+                    )}
+                  </Box>
+                )}
+              </Box>
+              <IconButton
+                onClick={sendMessage}
+                color="primary"
+                disabled={message.trim().length === 0}
+                sx={{
+                  color: message.trim().length === 0 ? 'action.disabled' : 'primary.main',
+                  '&.Mui-disabled': {
+                    color: 'action.disabled'
+                  }
+                }}
+              >
+                <SendIcon />
+              </IconButton>
             </Stack>
-          </Box>
-        )
-      }
+          </Stack>
+        </Box>
+      )}
     </Box>
   );
 
@@ -586,11 +624,11 @@ function Chatbox() {
     <SwipeableDrawer
       anchor="right"
       open={chatOpen}
-      onClose={() => { }}
-      onOpen={() => { }}
+      onClose={() => {}}
+      onOpen={() => {}}
       disableSwipeToOpen={true}
       sx={{
-        '& .MuiDrawer-paper': { width: drawerWidth, bgcolor: 'background.default' },
+        '& .MuiDrawer-paper': { width: drawerWidth, bgcolor: 'background.default' }
       }}
     >
       {drawer}
