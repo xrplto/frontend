@@ -95,7 +95,8 @@ function ChatSettings() {
           account: localProfile.account,
           username: tempUsername,
           imageUrl: localProfile.imageUrl,
-          nftTokenId: localProfile.nftTokenId
+          nftTokenId: localProfile.nftTokenId,
+          socialMedia: socialMedia
         })
       });
 
@@ -126,6 +127,12 @@ function ChatSettings() {
     setEditMode(false);
     setNftsAvailable(true); // Reset nftsAvailable
     setShowNFTPicker(false); // Close the NFT picker section
+    // Reset social media fields to original values
+    setSocialMedia({
+      telegram: localProfile?.socialMedia?.telegram || '',
+      discord: localProfile?.socialMedia?.discord || '',
+      x: localProfile?.socialMedia?.x || ''
+    });
   };
 
   const handleEditToggle = () => {

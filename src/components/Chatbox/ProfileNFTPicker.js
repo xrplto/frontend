@@ -28,6 +28,7 @@ const BASE_URL = 'https://api.xrpnft.com/api';
 // Implement ChatNFTCard directly in this file
 const ChatNFTCard = ({ nft, onSelect, isSelected }) => {
   const { darkMode } = useContext(AppContext);
+  const theme = useTheme();
 
   const imgUrl = getNftCoverUrl(nft, 'small');
   const name = nft.meta?.name || nft.meta?.Name || 'No Name';
@@ -38,30 +39,70 @@ const ChatNFTCard = ({ nft, onSelect, isSelected }) => {
       onClick={() => onSelect(nft)}
       sx={{
         cursor: 'pointer',
-        border: isSelected ? '2px solid #007B55' : 'none',
-        height: '100%',
+        border: isSelected ? `2px solid ${theme.palette.primary.main}` : 'none',
+        height: '70px',
         display: 'flex',
-        flexDirection: 'column',
         bgcolor: darkMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)',
         '&:hover': {
           bgcolor: darkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.2)'
-        }
+        },
+        transition: 'all 0.2s ease-in-out'
       }}
     >
-      <CardMedia
-        component="img"
-        image={imgUrl}
-        alt={name}
-        sx={{
-          height: 40,
-          objectFit: 'cover'
-        }}
-      />
-      <CardContent sx={{ p: 0.5, flexGrow: 1 }}>
-        <Typography variant="caption" component="div" noWrap>
-          {name} ({nftId})
-        </Typography>
-      </CardContent>
+      <Box display="flex" alignItems="center" p={1} width="100%">
+        <CardMedia
+          component="img"
+          image={imgUrl}
+          alt={name}
+          sx={{
+            width: '32px',
+            height: '32px',
+            objectFit: 'cover',
+            borderRadius: '4px',
+            mr: 1
+          }}
+        />
+        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+          <Typography
+            variant="caption"
+            sx={{
+              fontSize: '0.65rem',
+              lineHeight: 1.2,
+              display: 'block',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              mb: 0.5
+            }}
+          >
+            {name}
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              fontSize: '0.6rem',
+              color: 'text.secondary',
+              display: 'block',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            ID: {nftId.slice(0, 8)}...
+          </Typography>
+        </Box>
+        {isSelected && (
+          <Box
+            sx={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              bgcolor: theme.palette.primary.main,
+              ml: 1
+            }}
+          />
+        )}
+      </Box>
     </Card>
   );
 };
@@ -73,7 +114,7 @@ const CardWrapper = styled(Card)(
         padding: 0px;
         cursor: pointer;
         overflow: hidden;
-        height: 100px;
+        height: 70px;
         width: 100%;
   `
 );
@@ -100,54 +141,55 @@ const ChatCollectionCard = ({ collectionData, onSelect }) => {
 
   return (
     <CardWrapper onClick={handleClick}>
-      <Box display="flex" flexDirection="column" alignItems="center" height="100%" p={1}>
+      <Box display="flex" alignItems="center" height="100%" p={1}>
         {loadingImg ? (
-          <Skeleton variant="rectangular" width={40} height={40} sx={{ mb: 1 }} />
+          <Skeleton variant="rectangular" width={32} height={32} sx={{ mr: 1 }} />
         ) : (
           <CardMedia
             component="img"
             image={imgUrl}
             alt={name}
             sx={{
-              width: '40px',
-              height: '40px',
+              width: '32px',
+              height: '32px',
               objectFit: 'cover',
               borderRadius: '4px',
-              mb: 1
+              mr: 1
             }}
             onLoad={onImageLoaded}
           />
         )}
-        <Typography
-          variant="caption"
-          sx={{
-            fontSize: '0.65rem',
-            lineHeight: 1.2,
-            textAlign: 'center',
-            maxWidth: '100%',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            mb: 0.5
-          }}
-        >
-          {name}
-        </Typography>
-        {collection.rarity_rank > 0 && (
-          <Chip
-            variant="outlined"
-            icon={<LeaderboardOutlinedIcon sx={{ width: '10px', height: '10px' }} />}
-            label={
-              <Typography variant="caption" sx={{ fontSize: '0.6rem' }}>
-                {fIntNumber(collection.rarity_rank)}
-              </Typography>
-            }
+        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+          <Typography
+            variant="caption"
             sx={{
-              height: '16px',
-              '& .MuiChip-label': { padding: '0 4px' }
+              fontSize: '0.65rem',
+              lineHeight: 1.2,
+              display: 'block',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              mb: 0.5
             }}
-          />
-        )}
+          >
+            {name}
+          </Typography>
+          {collection.rarity_rank > 0 && (
+            <Chip
+              variant="outlined"
+              icon={<LeaderboardOutlinedIcon sx={{ width: '10px', height: '10px' }} />}
+              label={
+                <Typography variant="caption" sx={{ fontSize: '0.6rem' }}>
+                  {fIntNumber(collection.rarity_rank)}
+                </Typography>
+              }
+              sx={{
+                height: '16px',
+                '& .MuiChip-label': { padding: '0 4px' }
+              }}
+            />
+          )}
+        </Box>
       </Box>
       <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
     </CardWrapper>
@@ -208,6 +250,10 @@ const ProfileNFTs = ({
     setSelectedCollection(collectionData.collection.id);
   };
 
+  const getNFTId = (nft) => {
+    return nft.NFTokenID || nft.nftokenID || nft.id;
+  };
+
   const handleNFTSelect = (nft) => {
     setSelectedNFT(nft);
     onSelect(nft);
@@ -236,14 +282,15 @@ const ProfileNFTs = ({
         },
         '&::-webkit-scrollbar-thumb': {
           borderRadius: '10px',
-          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+          backgroundColor:
+            theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'
         }
       }}
     >
       {(selectedCollection || selectedNFT) && (
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Button 
-            size="small" 
+          <Button
+            size="small"
             onClick={handleBack}
             startIcon={<ArrowBackIcon fontSize="small" />}
             sx={{ color: theme.palette.text.secondary }}
@@ -269,14 +316,14 @@ const ProfileNFTs = ({
           </Typography>
         </Stack>
       ) : (
-        <Grid container spacing={2}>
+        <Grid container spacing={1}>
           {nfts.map((nft, index) => (
-            <Grid item key={index} xs={6} sm={4} md={3}>
+            <Grid item key={index} xs={12} sm={6}>
               {selectedCollection ? (
                 <ChatNFTCard
                   nft={nft}
                   onSelect={handleNFTSelect}
-                  isSelected={selectedNFT && selectedNFT.id === nft.id}
+                  isSelected={selectedNFT && getNFTId(selectedNFT) === getNFTId(nft)}
                 />
               ) : (
                 <ChatCollectionCard collectionData={nft} onSelect={handleCollectionSelect} />
