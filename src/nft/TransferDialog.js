@@ -102,6 +102,14 @@ const NFTPreview = styled('div')(({ theme }) => ({
   }
 }));
 
+const NFTName = styled(Typography)(({ theme }) => ({
+  textAlign: 'center',
+  fontWeight: 600,
+  color: theme.palette.text.primary,
+  marginBottom: theme.spacing(3),
+  marginTop: theme.spacing(-1)
+}));
+
 export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
   const theme = useTheme();
   const BASE_URL = 'https://api.xrpnft.com/api';
@@ -377,16 +385,19 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
 
         <StyledDialogContent>
           {nftImageUrl && (
-            <NFTPreview>
-              <img
-                src={nftImageUrl}
-                alt={nft?.name || 'NFT'}
-                style={{
-                  opacity: isLoading ? 0.7 : 1,
-                  transition: 'opacity 0.2s'
-                }}
-              />
-            </NFTPreview>
+            <>
+              <NFTPreview>
+                <img
+                  src={nftImageUrl}
+                  alt={nft?.name || 'NFT'}
+                  style={{
+                    opacity: isLoading ? 0.7 : 1,
+                    transition: 'opacity 0.2s'
+                  }}
+                />
+              </NFTPreview>
+              <NFTName variant="subtitle1">{nft?.name || 'Unnamed NFT'}</NFTName>
+            </>
           )}
 
           <Typography
