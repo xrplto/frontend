@@ -214,7 +214,7 @@ const Topbar = () => {
               <ThemeSwitcher />
               <Separator>|</Separator> {/* Add separator */}
               <APILabel onClick={() => dispatch(toggleChatOpen())}>Chatbox</APILabel> 
-              <APILabel href="https://docs.xrpl.to" target="_blank" rel="noopener noreferrer">API</APILabel> {/* Add API label with new window */}
+              <APILabel href="/api-docs" target="_blank" rel="noopener noreferrer">API</APILabel> {/* Add API label with new window */}
               {!fullSearch && isDesktop && (
               <Wallet style={{ marginRight: '9px' }} />
             )}

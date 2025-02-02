@@ -59,7 +59,7 @@ function Footer() {
                   links: [
                     { href: '/swap', label: 'Token Swap' },
                     { href: '/buy-xrp', label: 'Buy XRP' },
-                    { href: 'https://docs.xrpl.to', label: 'Token API' },
+                    { href: '/api-docs', label: 'Token API' },
                     { href: '/sitemap/tokens', label: 'Sitemap' }
                   ]
                 },
