@@ -35,9 +35,10 @@ const StyledTooltip = styled(({ className, ...props }) => (
   [`& .${tooltipClasses.tooltip}`]: {
     backgroundColor: theme.palette.background.paper,
     color: theme.palette.text.primary,
-    maxWidth: 350,
+    maxWidth: 400,
     fontSize: theme.typography.pxToRem(12),
-    // border: '1px solid #dadde9'
+    padding: 0,
+    boxShadow: theme.shadows[4]
   }
 }));
 
@@ -237,9 +238,9 @@ const NFTDisplay = ({ nftLink }) => {
         alt={nft.name || 'Unnamed NFT'}
         style={{
           width: 'auto',
-          height: '30px',
+          height: '35px',
           objectFit: 'contain',
-          borderRadius: '3px'
+          borderRadius: '4px'
         }}
       />
     );
@@ -482,12 +483,34 @@ const NFTDisplay = ({ nftLink }) => {
       <StyledTooltip
         title={
           <Paper elevation={0}>
-            <Box sx={{ p: 1.5 }}>
+            <Box
+              sx={{
+                p: 2,
+                maxHeight: '80vh',
+                overflowY: 'auto'
+              }}
+            >
               {/* Full-size media in tooltip */}
-              {getFullSizeMedia()}
-              
-              {/* NFT Name with gutterBottom */}
-              <Typography variant="h6" gutterBottom>
+              <Box
+                sx={{
+                  mb: 2,
+                  borderRadius: 1,
+                  overflow: 'hidden',
+                  boxShadow: theme.shadows[2]
+                }}
+              >
+                {getFullSizeMedia()}
+              </Box>
+
+              {/* NFT Name with improved typography */}
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{
+                  fontWeight: 600,
+                  color: theme.palette.primary.main
+                }}
+              >
                 {nft ? nft.name : name}
               </Typography>
               <Divider sx={{ my: 1 }} />
@@ -555,7 +578,8 @@ const NFTDisplay = ({ nftLink }) => {
                   sx={{
                     display: 'flex',
                     justifyContent: 'space-around',
-                    gap: 1
+                    gap: 1.5,
+                    mt: 2
                   }}
                 >
                   <Button
@@ -582,7 +606,7 @@ const NFTDisplay = ({ nftLink }) => {
                   <BurnNFT nft={nft} onHandleBurn={onHandleBurn} />
                 </Box>
               ) : (
-                <Stack spacing={{ xs: 1, sm: 2 }} direction="row">
+                <Stack spacing={2} direction="row" sx={{ mt: 2 }}>
                   <Button
                     fullWidth
                     disabled={!cost || burnt}
@@ -606,19 +630,31 @@ const NFTDisplay = ({ nftLink }) => {
         }
         arrow
         placement="right"
+        enterDelay={200}
+        leaveDelay={200}
       >
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
             marginLeft: 0.5,
-            gap: 0.5
+            gap: 1,
+            padding: '4px 8px',
+            borderRadius: 1,
+            '&:hover': {
+              backgroundColor: theme.palette.action.hover
+            },
+            transition: 'background-color 0.2s'
           }}
         >
           {getMediaPreview()}
           <Typography
             variant="caption"
-            sx={{ color: theme.palette.primary.main, fontWeight: 'bold', fontSize: '0.75rem' }}
+            sx={{
+              color: theme.palette.primary.main,
+              fontWeight: 600,
+              fontSize: '0.8rem'
+            }}
           >
             {nft ? nft.name : name}
           </Typography>
