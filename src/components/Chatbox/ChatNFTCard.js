@@ -1,9 +1,9 @@
 import React from 'react';
-import { Card, CardMedia, CardContent, Typography, CardActionArea } from '@mui/material';
+import { Card, CardMedia, CardContent, Typography, CardActionArea, Box } from '@mui/material';
 
 const XRPNFT_IMAGE_BASE_URL = 'https://s2.xrpnft.com/d1/';
 
-function ChatNFTCard({ nft, onSelect }) {
+const ChatNFTCard = ({ nft, onSelect }) => {
   const handleSelect = () => {
     if (onSelect) {
       const nftName = nft.name || nft.meta?.name || 'Unnamed NFT';
@@ -26,24 +26,49 @@ function ChatNFTCard({ nft, onSelect }) {
   }
 
   return (
-    <Card onClick={handleSelect} sx={{ cursor: 'pointer' }}>
-      <CardActionArea>
-        {imageUrl && (
-          <CardMedia
-            component="img"
-            height="140"
-            image={imageUrl}
-            alt={nft.name || nft.meta?.name || 'Unnamed NFT'}
-          />
-        )}
-        <CardContent>
-          <Typography gutterBottom variant="h6" component="div" noWrap>
-            {nft.name || nft.meta?.name || 'Unnamed NFT'}
-          </Typography>
-        </CardContent>
-      </CardActionArea>
-    </Card>
+    <Box
+      onClick={handleSelect}
+      sx={{
+        cursor: 'pointer',
+        '&:hover': {
+          opacity: 0.8
+        }
+      }}
+    >
+      <Box
+        component="img"
+        src={imageUrl}
+        alt={nft.name}
+        sx={{
+          width: '70%',
+          height: 'auto',
+          borderRadius: '8px',
+          aspectRatio: '1/1',
+          objectFit: 'cover',
+          display: 'block',
+          margin: '0 auto'
+        }}
+      />
+      <Typography
+        variant="caption"
+        sx={{
+          display: '-webkit-box',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          WebkitLineClamp: 1,
+          WebkitBoxOrient: 'vertical',
+          fontSize: '0.7rem',
+          mt: 0.5,
+          lineHeight: 1.2,
+          textAlign: 'center',
+          width: '70%',
+          margin: '0 auto'
+        }}
+      >
+        {nft.name}
+      </Typography>
+    </Box>
   );
-}
+};
 
 export default ChatNFTCard;
