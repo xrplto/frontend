@@ -260,18 +260,23 @@ function ChatSettings() {
   return (
     <Paper
       elevation={3}
-      sx={{ p: 3, borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}
+      sx={{ p: 2, borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}
     >
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5" component="h2">
-          Chat Settings
-        </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          mb: 1
+        }}
+      >
         <Button
           variant={editMode ? 'contained' : 'outlined'}
           startIcon={editMode ? <SaveIcon /> : <EditIcon />}
           onClick={editMode ? handleSave : handleEditToggle}
           color={editMode ? 'primary' : 'secondary'}
           disabled={isLoading}
+          size="small"
         >
           {editMode ? (isLoading ? 'Saving...' : 'Save Changes') : 'Edit Profile'}
         </Button>
@@ -279,7 +284,7 @@ function ChatSettings() {
 
       <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
         {/* User info section with profile image and NFT picker */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid container spacing={2} sx={{ mb: 2 }}>
           <Grid item xs={12} md={4}>
             <Box
               sx={{
