@@ -874,6 +874,7 @@ const NFTDisplay = ({ nftLink }) => {
         setOpen={setOpenCreateOffer}
         nft={nft}
         isSellOffer={isSellOffer}
+        nftImageUrl={getBestImageUrl()}
       />
 
       <TransferDialog
