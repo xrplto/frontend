@@ -40,6 +40,7 @@ function CryptoHeatmap({ exchRate }) {
               priceChange: token.pro24h,
               price: token.exch,
               slug: token.slug,
+              md5: token.md5,
               color: token.pro24h >= 0 ? '#16c784' : '#a4111a',
               trustlines: token.trustlines,
               holders: token.holders,
@@ -76,19 +77,17 @@ function CryptoHeatmap({ exchRate }) {
           style: {},
           formatter: function () {
             const price = this.point.displayValue;
-            const formattedPrice = price < 0.001 ? 
-              price.toFixed(8) : 
-              price < 1 ? 
-                price.toFixed(6) : 
-                fCurrency(price);
+            const formattedPrice =
+              price < 0.001 ? price.toFixed(8) : price < 1 ? price.toFixed(6) : fCurrency(price);
 
             if (this.point.shapeArgs.width > this.point.shapeArgs.height) {
               return `<div style="color: #fff;"> <div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 10
               }px;">${this.key}</div><div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 12
-              }px;">${currencySymbols[activeFiatCurrency]} ${formattedPrice
-              }</div><div style="text-align: center; font-size:${
+              }px;">${
+                currencySymbols[activeFiatCurrency]
+              } ${formattedPrice}</div><div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 12
               }px;">${fCurrency(this.point.priceChange)}% </div></div>`;
             } else {
@@ -96,8 +95,9 @@ function CryptoHeatmap({ exchRate }) {
                 this.point.shapeArgs.height / 10
               }px;">${this.key}</div><div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 12
-              }px;">${currencySymbols[activeFiatCurrency]} ${formattedPrice
-              }</div><div style="text-align: center; font-size:${
+              }px;">${
+                currencySymbols[activeFiatCurrency]
+              } ${formattedPrice}</div><div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 12
               }px;">${fCurrency(this.point.priceChange)}% </div></div>`;
             }
@@ -127,25 +127,36 @@ function CryptoHeatmap({ exchRate }) {
       },
       formatter: function () {
         const verifiedBadge = this.point.verified ? '✓ ' : '';
-        const kycBadge = this.point.kyc ? '🔒 ' : '';
         const holders = this.point.holders ? this.point.holders.toLocaleString() : '0';
         const trustlines = this.point.trustlines ? this.point.trustlines.toLocaleString() : '0';
         const nameDisplay = this.point.original
           ? `${this.point.name}: ${this.point.original}`
           : this.point.name;
-        
+
         const price = this.point.price;
-        const formattedPrice = price < 0.001 ? 
-          price.toFixed(8) : 
-          price < 1 ? 
-            price.toFixed(6) : 
-            fNumberWithCurreny(price, exchRate);
+        const formattedPrice =
+          price < 0.001
+            ? price.toFixed(8)
+            : price < 1
+            ? price.toFixed(6)
+            : fNumberWithCurreny(price, exchRate);
+
+        const tokenImage = this.point.md5
+          ? `<img src="https://s1.xrpl.to/token/${this.point.md5}" style="width:32px;height:32px;vertical-align:middle;margin-right:8px;">`
+          : '';
+
+        const priceChange = this.point.priceChange;
+        const changeColor = priceChange >= 0 ? '#16c784' : '#ea3943';
+        const changeSymbol = priceChange >= 0 ? '+' : '';
+        const formattedChange = `<span style="color:${changeColor}">${changeSymbol}${fCurrency(
+          priceChange
+        )}%</span>`;
 
         return `
           <p style="color:#9ab;font-family:DobloxSans,sans-serif;border-radius:3px;font-size:11px;text-align:left;margin:0;padding:10px;border:1px solid black;background-color:#151519">
             <strong style="color:#99a5bb;font-weight:normal;font-size:14px;">
-              ${verifiedBadge}${kycBadge}${nameDisplay}<br>
-              Price: ${currencySymbols[activeFiatCurrency]} ${formattedPrice}<br>
+              ${tokenImage}${verifiedBadge}${nameDisplay}<br>
+              Price: ${currencySymbols[activeFiatCurrency]} ${formattedPrice} ${formattedChange}<br>
               Volume: ${fCurrency(this.point.value)}<br>
               Holders: ${holders}<br>
               Trustlines: ${trustlines}
