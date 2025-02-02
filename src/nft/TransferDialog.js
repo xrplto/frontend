@@ -19,7 +19,10 @@ import {
   Stack,
   Typography,
   TextField,
-  CircularProgress
+  CircularProgress,
+  Avatar,
+  Divider,
+  Box
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
@@ -45,19 +48,42 @@ import { useDispatch, useSelector } from 'react-redux';
 // ----------------------------------------------------------------------
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
-    borderRadius: 16,
-    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-    backdropFilter: 'blur(4px)',
-    WebkitBackdropFilter: 'blur(4px)',
-    border: '1px solid rgba(255, 255, 255, 0.18)'
+    margin: 0,
+    width: '100%',
+    maxWidth: 'sm',
+    borderRadius: theme.shape.borderRadius
+  },
+  '& .MuiDialogContent-root': {
+    padding: theme.spacing(2)
+  },
+  '& .MuiDialogActions-root': {
+    padding: theme.spacing(1)
   }
 }));
 
-const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
-  background: theme.palette.background.default,
-  color: theme.palette.text.primary,
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-}));
+const StyledDialogTitle = (props) => {
+  const { children, onClose, ...other } = props;
+
+  return (
+    <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
+      {children}
+      {onClose ? (
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500]
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      ) : null}
+    </DialogTitle>
+  );
+};
 
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   padding: theme.spacing(4)
@@ -342,97 +368,116 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
 
   return (
     <>
-      <StyledBackdrop
-        open={isLoading}
-        transitionDuration={300}
-        invisible={false}
-        sx={{ position: 'fixed' }}
-      >
-        <PulseLoader color={'#FF4842'} size={10} speedMultiplier={0.8} />
-      </StyledBackdrop>
+      <Backdrop sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
+        <PulseLoader color={'#FF4842'} size={10} />
+      </Backdrop>
 
       <StyledDialog
         fullScreen={fullScreen}
         onClose={!isLoading ? handleClose : undefined}
-        fullWidth
-        maxWidth="xs"
         open={open}
-        keepMounted={false}
-        disableEscapeKeyDown={isLoading}
-        sx={{
-          '& .MuiDialog-paper': {
-            pointerEvents: isLoading ? 'none' : 'auto'
-          }
+        disableScrollLock
+        disablePortal={false}
+        keepMounted
+        TransitionProps={{
+          enter: true,
+          exit: true
         }}
       >
-        <StyledDialogTitle>
-          <Typography variant="h6" fontWeight="bold">
-            Transfer NFT
-          </Typography>
-          <IconButton
-            aria-label="close"
-            onClick={handleClose}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500]
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
+        <StyledDialogTitle onClose={!isLoading ? handleClose : undefined}>
+          <Typography variant="h6">Transfer NFT</Typography>
         </StyledDialogTitle>
 
-        <StyledDialogContent>
-          {nftImageUrl && (
-            <>
-              <NFTPreview>
-                <img
+        <Divider />
+
+        <DialogContent>
+          <Box sx={{ p: 2 }}>
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+              {nftImageUrl && (
+                <Avatar
                   src={nftImageUrl}
-                  alt={nft?.name || 'NFT'}
-                  style={{
-                    opacity: isLoading ? 0.7 : 1,
-                    transition: 'opacity 0.2s'
+                  variant="rounded"
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 1,
+                    boxShadow: (theme) => theme.shadows[1]
                   }}
                 />
-              </NFTPreview>
-              <NFTName variant="subtitle1">{nft?.name || 'Unnamed NFT'}</NFTName>
-            </>
-          )}
+              )}
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  {nft?.name}
+                </Typography>
+                {nft?.collection && (
+                  <Typography variant="body2" color="text.secondary">
+                    Collection: {nft.collection}
+                  </Typography>
+                )}
+                {nft?.rarity_rank && (
+                  <Typography variant="body2" color="text.secondary">
+                    Rank: {nft.rarity_rank} / {nft.total}
+                  </Typography>
+                )}
+              </Box>
+            </Stack>
 
-          <Typography
-            variant="body1"
-            sx={{
-              mb: 3,
-              opacity: isLoading ? 0.7 : 1,
-              transition: 'opacity 0.2s'
-            }}
-          >
-            For this transfer to be completed, the recipient must accept it through their wallet.
-          </Typography>
-          <StyledTextField
-            fullWidth
-            id="receive-account"
-            variant="outlined"
-            placeholder="Enter destination account"
-            onChange={handleChangeAccount}
-            value={destination}
-            onFocus={(event) => event.target.select()}
-            onKeyDown={(e) => e.stopPropagation()}
-            sx={{ mb: 4 }}
-            disabled={isLoading}
-          />
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mb: 3, opacity: isLoading ? 0.7 : 1 }}
+            >
+              For this transfer to be completed, the recipient must accept it through their wallet.
+            </Typography>
 
-          <StyledButton
-            variant="contained"
-            startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
-            onClick={handleTransferNFT}
-            disabled={isLoading}
-            fullWidth
-          >
-            {handleMsg()}
-          </StyledButton>
-        </StyledDialogContent>
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Destination Account{' '}
+                <Typography component="span" color="error">
+                  *
+                </Typography>
+              </Typography>
+
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Enter destination account"
+                onChange={handleChangeAccount}
+                value={destination}
+                onFocus={(event) => event.target.select()}
+                onKeyDown={(e) => e.stopPropagation()}
+                disabled={isLoading}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 1
+                  }
+                }}
+              />
+            </Box>
+
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+              <Button
+                variant="contained"
+                startIcon={
+                  isLoading ? (
+                    <CircularProgress disableShrink size={20} color="inherit" />
+                  ) : (
+                    <SendIcon />
+                  )
+                }
+                onClick={handleTransferNFT}
+                disabled={isLoading || !destination}
+                sx={{
+                  minWidth: 200,
+                  borderRadius: 1,
+                  textTransform: 'none'
+                }}
+              >
+                {handleMsg()}
+              </Button>
+            </Box>
+          </Box>
+        </DialogContent>
       </StyledDialog>
 
       <QRDialog
