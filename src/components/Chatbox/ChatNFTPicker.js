@@ -64,48 +64,52 @@ const NFTs = ({ account, collection, type = 'collected', limit, onSelect, smallS
       elevation={3}
       ref={scrollRef}
       sx={{
-        padding: '16px',
-        pt: 2,
-        height: '300px',
-        width: '280px',
+        padding: '12px',
+        pt: 1.5,
+        height: '320px',
+        width: '300px',
         overflow: 'auto',
-        borderRadius: '12px',
+        borderRadius: '10px',
         backgroundColor: (theme) => theme.palette.background.paper,
         '&::-webkit-scrollbar': {
-          width: '8px'
+          width: '6px'
         },
         '&::-webkit-scrollbar-thumb': {
-          borderRadius: '8px',
+          borderRadius: '6px',
           backgroundColor: (theme) => theme.palette.primary.main
         }
       }}
     >
       {selectedCollection && (
-        <Box display="flex" justifyContent="start" mb={2}>
+        <Box display="flex" justifyContent="start" mb={1}>
           <Button
             size="small"
             onClick={handleBack}
             startIcon={<ArrowBackIcon fontSize="small" />}
             variant="outlined"
-            sx={{ borderRadius: '20px' }}
+            sx={{
+              borderRadius: '16px',
+              py: 0.5,
+              minWidth: '80px'
+            }}
           >
-            <Typography variant="button">Back</Typography>
+            <Typography variant="caption">Back</Typography>
           </Button>
         </Box>
       )}
       {loading ? (
         <Stack alignItems="center" justifyContent="center" height="100%">
-          <PulseLoader color={(theme) => theme.palette.primary.main} size={12} />
+          <PulseLoader color={(theme) => theme.palette.primary.main} size={8} />
         </Stack>
       ) : nfts.length === 0 ? (
         <Stack alignItems="center" justifyContent="center" height="100%">
-          <ErrorOutlineIcon fontSize="large" sx={{ mb: 2, color: 'text.secondary' }} />
-          <Typography variant="body1" color="text.secondary">
+          <ErrorOutlineIcon sx={{ mb: 1, color: 'text.secondary', fontSize: '1.5rem' }} />
+          <Typography variant="caption" color="text.secondary">
             No NFTs found
           </Typography>
         </Stack>
       ) : (
-        <Grid container spacing={2}>
+        <Grid container spacing={1}>
           {nfts.map((nft, index) => (
             <Grid item key={index} xs={6}>
               {selectedCollection ? (
