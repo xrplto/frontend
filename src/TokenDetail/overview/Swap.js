@@ -17,7 +17,7 @@ import Decimal from 'decimal.js';
 import { fNumber } from 'src/utils/formatNumber';
 import useWebSocket from 'react-use-websocket';
 import { isInstalled, submitTransaction } from '@gemwallet/api';
-import sdk from "@crossmarkio/sdk";
+import sdk from '@crossmarkio/sdk';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { PuffLoader } from 'react-spinners';
@@ -129,7 +129,7 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
 }));
 
 const Swap = ({ token }) => {
-  const WSS_URL = 'wss://ws.xrpl.to';
+  const WSS_URL = 'wss://xrplcluster.com';
 
   const [sellAmount, setSellAmount] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
@@ -197,11 +197,11 @@ const Swap = ({ token }) => {
   const priceImpact =
     inputPrice > 0
       ? new Decimal(outputPrice)
-        .sub(inputPrice)
-        .mul(100)
-        .div(inputPrice)
-        .toDP(2, Decimal.ROUND_DOWN)
-        .toNumber()
+          .sub(inputPrice)
+          .mul(100)
+          .div(inputPrice)
+          .toDP(2, Decimal.ROUND_DOWN)
+          .toNumber()
       : 0;
 
   // const color1 = revert?theme.currency.background2:theme.currency.background1;
@@ -213,8 +213,7 @@ const Swap = ({ token }) => {
   //   /*const */color2 = theme.currency.background2;
   // }
 
-  const isLoggedIn =
-    accountProfile && accountProfile.account && accountPairBalance;
+  const isLoggedIn = accountProfile && accountProfile.account && accountPairBalance;
 
   let isSufficientBalance = false;
   let errMsg = '';
@@ -240,12 +239,8 @@ const Swap = ({ token }) => {
     try {
       const fAmount = new Decimal(amount || 0).toNumber();
       const fValue = new Decimal(value || 0).toNumber();
-      const accountAmount = new Decimal(
-        accountPairBalance.curr1.value
-      ).toNumber();
-      const accountValue = new Decimal(
-        accountPairBalance.curr2.value
-      ).toNumber();
+      const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
+      const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
 
       if (amount1 && amount2) {
         if (fAmount > 0 && fValue > 0) {
@@ -272,9 +267,13 @@ const Swap = ({ token }) => {
   const [asks, setAsks] = useState([]); // Orderbook Asks
 
   const [wsReady, setWsReady] = useState(false);
-  const { sendJsonMessage/*, getWebSocket*/ } = useWebSocket(WSS_URL, {
-    onOpen: () => { setWsReady(true); },
-    onClose: () => { setWsReady(false); },
+  const { sendJsonMessage /*, getWebSocket*/ } = useWebSocket(WSS_URL, {
+    onOpen: () => {
+      setWsReady(true);
+    },
+    onClose: () => {
+      setWsReady(false);
+    },
     shouldReconnect: (closeEvent) => true,
     onMessage: (event) => processMessages(event)
   });
@@ -326,7 +325,7 @@ const Swap = ({ token }) => {
         },
         ledger_index: 'validated',
         limit: 60
-      }
+      };
       const cmdBid = {
         id: reqID + 1,
         command: 'book_offers',
@@ -340,7 +339,7 @@ const Swap = ({ token }) => {
         },
         ledger_index: 'validated',
         limit: 60
-      }
+      };
       sendJsonMessage(cmdAsk);
       sendJsonMessage(cmdBid);
       reqID += 2;
@@ -352,8 +351,7 @@ const Swap = ({ token }) => {
 
     return () => {
       clearInterval(timer);
-    }
-
+    };
   }, [wsReady, pair, revert, sendJsonMessage]);
   // Orderbook related useEffect - END
 
@@ -459,7 +457,7 @@ const Swap = ({ token }) => {
         const dispatched_result = res.dispatched_result;
 
         return dispatched_result;
-      } catch (err) { }
+      } catch (err) {}
     }
 
     const startInterval = () => {
@@ -506,7 +504,7 @@ const Swap = ({ token }) => {
           startInterval();
           return;
         }
-      } catch (err) { }
+      } catch (err) {}
       isRunning = false;
       counter--;
       if (counter <= 0) {
@@ -570,7 +568,7 @@ const Swap = ({ token }) => {
       }
 
       switch (wallet_type) {
-        case "xaman":
+        case 'xaman':
           setLoading(true);
           const res = await axios.post(`${BASE_URL}/offer/create`, body);
 
@@ -586,7 +584,7 @@ const Swap = ({ token }) => {
           }
 
           break;
-        case "gem":
+        case 'gem':
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               if (TakerGets.currency === 'XRP') {
@@ -597,7 +595,7 @@ const Swap = ({ token }) => {
                 TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
               }
               let offerTxData = {
-                TransactionType: "OfferCreate",
+                TransactionType: 'OfferCreate',
                 Account,
                 Flags,
                 TakerGets,
@@ -610,26 +608,21 @@ const Swap = ({ token }) => {
               await submitTransaction({
                 transaction: offerTxData
               }).then(({ type, result }) => {
-                if (type == "response") {
+                if (type == 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
-                }
-
-                else {
+                } else {
                   dispatch(updateProcess(3));
                 }
 
                 setSwapped(!isSwapped);
               });
+            } else {
+              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
             }
-
-            else {
-              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
-            }
-          })
+          });
           break;
-        case "crossmark":
-
+        case 'crossmark':
           if (TakerGets.currency === 'XRP') {
             TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
           }
@@ -638,7 +631,7 @@ const Swap = ({ token }) => {
             TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
           }
           let offerTxData = {
-            TransactionType: "OfferCreate",
+            TransactionType: 'OfferCreate',
             Account,
             Flags,
             TakerGets,
@@ -647,23 +640,20 @@ const Swap = ({ token }) => {
           };
 
           dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(offerTxData)
-            .then(({ response }) => {
-              if (response.data.meta.isSuccess) {
-                dispatch(updateProcess(2));
-                dispatch(updateTxHash(response.data.resp.result?.hash));
-
-              } else {
-                dispatch(updateProcess(3));
-              }
-              setSwapped(!isSwapped);
-            });
+          await sdk.methods.signAndSubmitAndWait(offerTxData).then(({ response }) => {
+            if (response.data.meta.isSuccess) {
+              dispatch(updateProcess(2));
+              dispatch(updateTxHash(response.data.resp.result?.hash));
+            } else {
+              dispatch(updateProcess(3));
+            }
+            setSwapped(!isSwapped);
+          });
           // }
           break;
       }
-
     } catch (err) {
-      console.log("err", err);
+      console.log('err', err);
       dispatch(updateProcess(0));
     }
     setLoading(false);
@@ -676,7 +666,7 @@ const Swap = ({ token }) => {
       if (res.status === 200) {
         setUuid(null);
       }
-    } catch (err) { }
+    } catch (err) {}
     setLoading(false);
   };
 
@@ -690,34 +680,28 @@ const Swap = ({ token }) => {
          */
     try {
       amt = new Decimal(amount).toNumber();
-    } catch (e) { }
+    } catch (e) {}
 
-    if (amt === 0) return "";
+    if (amt === 0) return '';
 
     try {
       if (active === 'AMOUNT') {
         for (var bid of bids) {
           if (bid.sumAmount >= amt) {
-            val = new Decimal(bid.sumValue)
-              .mul(amt)
-              .div(bid.sumAmount)
-              .toNumber();
+            val = new Decimal(bid.sumValue).mul(amt).div(bid.sumAmount).toNumber();
             break;
           }
         }
       } else {
         for (var bid of bids) {
           if (bid.sumValue >= amt) {
-            val = new Decimal(bid.sumAmount)
-              .mul(amt)
-              .div(bid.sumValue)
-              .toNumber();
+            val = new Decimal(bid.sumAmount).mul(amt).div(bid.sumValue).toNumber();
             break;
           }
         }
       }
       return new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
-    } catch (e) { }
+    } catch (e) {}
 
     return 0;
   };
@@ -739,7 +723,7 @@ const Swap = ({ token }) => {
   const handleChangeAmount1 = (e) => {
     let value = e.target.value;
 
-    if (value == ".") value = "0.";
+    if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
 
     setAmount1(value);
@@ -749,7 +733,7 @@ const Swap = ({ token }) => {
   const handleChangeAmount2 = (e) => {
     const value = e.target.value;
 
-    if (value == ".") value = "0.";
+    if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
 
     setAmount2(value);
@@ -771,23 +755,19 @@ const Swap = ({ token }) => {
   };
 
   const handleMsg = () => {
-    if (isProcessing == 1) return "Pending Exchanging";
-    if (!amount1 || !amount2) return "Enter an Amount";
+    if (isProcessing == 1) return 'Pending Exchanging';
+    if (!amount1 || !amount2) return 'Enter an Amount';
     else if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
-    else return "Exchange";
-  }
+    else return 'Exchange';
+  };
 
   const onFillMax = () => {
     if (revert) {
-      if (accountPairBalance?.curr1.value > 0)
-        setAmount2(accountPairBalance?.curr1.value);
+      if (accountPairBalance?.curr1.value > 0) setAmount2(accountPairBalance?.curr1.value);
+    } else {
+      if (accountPairBalance?.curr1.value > 0) setAmount1(accountPairBalance?.curr1.value);
     }
-
-    else {
-      if (accountPairBalance?.curr1.value > 0)
-        setAmount1(accountPairBalance?.curr1.value);
-    }
-  }
+  };
 
   return (
     <Stack alignItems="center" width="100%">
@@ -796,7 +776,9 @@ const Swap = ({ token }) => {
           <CurrencyContent style={{ backgroundColor: color1 }}>
             <Box display="flex" flexDirection="column" flex="1" gap="5.4px">
               <Box display="flex" justifyContent="space-between" alignItems="top" width="100%">
-                <Typography lineHeight="1.4" variant="subtitle1">You sell</Typography>
+                <Typography lineHeight="1.4" variant="subtitle1">
+                  You sell
+                </Typography>
               </Box>
               <Stack direction="row" alignItems="center" spacing={0.5}>
                 <TokenImage
@@ -807,22 +789,25 @@ const Swap = ({ token }) => {
                 />
                 <Typography variant="h6">{curr1.name}</Typography>
               </Stack>
-              <Typography variant="body2" color="textSecondary">{curr1.user}</Typography>
+              <Typography variant="body2" color="textSecondary">
+                {curr1.user}
+              </Typography>
             </Box>
             <InputContent>
-              {
-                isLoggedIn &&
+              {isLoggedIn && (
                 <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
                   <Typography variant="s7">
                     Balance{' '}
-                    <Typography variant="s2" color="primary" >
+                    <Typography variant="s2" color="primary">
                       {accountPairBalance?.curr1.value}
                     </Typography>
                   </Typography>
 
-                  <Button sx={{ px: 0, py: 0, minWidth: 0 }} onClick={onFillMax}>MAX</Button>
+                  <Button sx={{ px: 0, py: 0, minWidth: 0 }} onClick={onFillMax}>
+                    MAX
+                  </Button>
                 </Stack>
-              }
+              )}
               <Input
                 placeholder="0"
                 autoComplete="new-password"
@@ -842,7 +827,9 @@ const Swap = ({ token }) => {
                   }
                 }}
               />
-              <Typography variant="body2" color="textSecondary">~{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}</Typography>
+              <Typography variant="body2" color="textSecondary">
+                ~{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}
+              </Typography>
             </InputContent>
           </CurrencyContent>
 
@@ -860,20 +847,21 @@ const Swap = ({ token }) => {
                 />
                 <Typography variant="h6">{curr2.name}</Typography>
               </Stack>
-              <Typography variant="body2" color="textSecondary">{curr2.user}</Typography>
+              <Typography variant="body2" color="textSecondary">
+                {curr2.user}
+              </Typography>
             </Box>
             <InputContent>
-              {
-                isLoggedIn &&
+              {isLoggedIn && (
                 <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
                   <Typography variant="s7">
                     Balance{' '}
-                    <Typography variant="s2" color="primary" >
+                    <Typography variant="s2" color="primary">
                       {accountPairBalance?.curr2.value}
                     </Typography>
                   </Typography>
                 </Stack>
-              }
+              )}
               <Input
                 placeholder="0"
                 autoComplete="new-password"
@@ -894,7 +882,9 @@ const Swap = ({ token }) => {
                   }
                 }}
               />
-              <Typography variant="body2" color="textSecondary">~{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}</Typography>
+              <Typography variant="body2" color="textSecondary">
+                ~{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}
+              </Typography>
             </InputContent>
           </CurrencyContent>
 
@@ -906,7 +896,7 @@ const Swap = ({ token }) => {
                 height="28"
                 style={{
                   color: theme.palette.text.primary,
-                  transform: 'rotate(90deg)',
+                  transform: 'rotate(90deg)'
                 }}
               />
             </IconButton>
@@ -914,28 +904,28 @@ const Swap = ({ token }) => {
         </ConverterFrame>
       </OverviewWrapper>
 
-      <Stack direction="row" alignItems="center" justifyContent="flex-start" spacing={0.5} sx={{ mt: 1, mb: 1, width: '100%' }}>
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="flex-start"
+        spacing={0.5}
+        sx={{ mt: 1, mb: 1, width: '100%' }}
+      >
         <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={20} />
         <Typography variant="body1">
-          1 {curr1.name} = {revert ? tokenExch2.toFixed(3) : (1 / tokenExch2).toFixed(3)} {curr2.name}
+          1 {curr1.name} = {revert ? tokenExch2.toFixed(3) : (1 / tokenExch2).toFixed(3)}{' '}
+          {curr2.name}
         </Typography>
       </Stack>
 
-      <Stack sx={{ width: "100%" }}>
-        {
-          accountProfile && accountProfile.account ? (
-            <ExchangeButton
-              variant="contained"
-
-              onClick={handlePlaceOrder}
-              sx={{ mt: 0 }}
-            >
-              {handleMsg()}
-            </ExchangeButton>
-          ) : (
-            <ConnectWallet pair={pair} />
-          )
-        }
+      <Stack sx={{ width: '100%' }}>
+        {accountProfile && accountProfile.account ? (
+          <ExchangeButton variant="contained" onClick={handlePlaceOrder} sx={{ mt: 0 }}>
+            {handleMsg()}
+          </ExchangeButton>
+        ) : (
+          <ConnectWallet pair={pair} />
+        )}
       </Stack>
 
       <QRDialog
@@ -945,7 +935,6 @@ const Swap = ({ token }) => {
         qrUrl={qrUrl}
         nextUrl={nextUrl}
       />
-
     </Stack>
   );
 };
@@ -959,7 +948,12 @@ const App = ({ token }) => {
 
   return (
     <Stack alignItems="center" width="100%">
-      <Button variant="outlined" onClick={toggleSwap} fullWidth startIcon={<Icon icon={showSwap ? hideIcon : swapIcon} />}>
+      <Button
+        variant="outlined"
+        onClick={toggleSwap}
+        fullWidth
+        startIcon={<Icon icon={showSwap ? hideIcon : swapIcon} />}
+      >
         {showSwap ? 'Hide Swap' : 'Swap Now'}
       </Button>
       {showSwap && <Swap token={token} />}
@@ -973,37 +967,32 @@ const ORDER_TYPE_BIDS = 1;
 const ORDER_TYPE_ASKS = 2;
 
 const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
+  if (offers.length < 1) return [];
 
-  if (offers.length < 1) return []
+  const getCurrency = offers[0].TakerGets?.currency || 'XRP';
+  const payCurrency = offers[0].TakerPays?.currency || 'XRP';
 
-  const getCurrency = offers[0].TakerGets?.currency || 'XRP'
-  const payCurrency = offers[0].TakerPays?.currency || 'XRP'
-
-  let multiplier = 1
-  const isBID = orderType === ORDER_TYPE_BIDS
+  let multiplier = 1;
+  const isBID = orderType === ORDER_TYPE_BIDS;
 
   // It's the same on each condition?
   if (isBID) {
-    if (getCurrency === 'XRP')
-      multiplier = 1_000_000
-    else if (payCurrency === 'XRP')
-      multiplier = 0.000_001
+    if (getCurrency === 'XRP') multiplier = 1_000_000;
+    else if (payCurrency === 'XRP') multiplier = 0.000_001;
   } else {
-    if (getCurrency === 'XRP')
-      multiplier = 1_000_000
-    else if (payCurrency === 'XRP')
-      multiplier = 0.000_001
+    if (getCurrency === 'XRP') multiplier = 1_000_000;
+    else if (payCurrency === 'XRP') multiplier = 0.000_001;
   }
 
   // let precision = maxDecimals(isBID ? Math.pow(offers[0].quality * multiplier, -1) : offers[0].quality * multiplier)
 
   // let index = 0
-  const array = []
+  const array = [];
   let sumAmount = 0;
   let sumValue = 0;
 
   for (let i = 0; i < offers.length; i++) {
-    const offer = offers[i]
+    const offer = offers[i];
     const obj = {
       id: '',
       price: 0,
@@ -1015,7 +1004,7 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
       sumGets: 0,
       sumPays: 0,
       isNew: false
-    }
+    };
 
     const id = `${offer.Account}:${offer.Sequence}`;
     const gets = offer.taker_gets_funded || offer.TakerGets;
@@ -1025,42 +1014,36 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS) => {
     const takerPays = pays.value || pays;
     const takerGets = gets.value || gets;
 
-    const amount = Number(isBID ? takerPays : takerGets)
-    const price = isBID ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier
+    const amount = Number(isBID ? takerPays : takerGets);
+    const price = isBID ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier;
     const value = amount * price;
 
     sumAmount += amount;
     sumValue += value;
     obj.id = id;
-    obj.price = price
-    obj.amount = amount // SOLO
-    obj.value = value // XRP
-    obj.sumAmount = sumAmount
-    obj.sumValue = sumValue
+    obj.price = price;
+    obj.amount = amount; // SOLO
+    obj.value = value; // XRP
+    obj.sumAmount = sumAmount;
+    obj.sumValue = sumValue;
 
-    if (sumAmount > 0)
-      obj.avgPrice = sumValue / sumAmount
-    else
-      obj.avgPrice = 0
+    if (sumAmount > 0) obj.avgPrice = sumValue / sumAmount;
+    else obj.avgPrice = 0;
 
     //obj.partial = partial
 
-    if (amount > 0)
-      array.push(obj)
-
+    if (amount > 0) array.push(obj);
   }
 
-  const sortedArrayByPrice = [...array].sort(
-    (a, b) => {
-      let result = 0;
-      if (orderType === ORDER_TYPE_BIDS) {
-        result = b.price - a.price;
-      } else {
-        result = a.price - b.price;
-      }
-      return result;
+  const sortedArrayByPrice = [...array].sort((a, b) => {
+    let result = 0;
+    if (orderType === ORDER_TYPE_BIDS) {
+      result = b.price - a.price;
+    } else {
+      result = a.price - b.price;
     }
-  );
+    return result;
+  });
 
   return sortedArrayByPrice;
-}
+};

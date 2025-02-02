@@ -41,11 +41,22 @@ export default function Summary() {
   const { activeFiatCurrency } = useContext(AppContext);
   const [showContent, setShowContent] = useState(false);
 
-  if (!metrics.global || !metrics[activeFiatCurrency] || !metrics.global.gMarketcap || !metrics.global.gMarketcapPro || !metrics.global.gDexVolume || !metrics.global.gDexVolumePro
-    //|| !metrics.global.gScamVolume || !metrics.global.gStableVolume || !metrics.global.gStableVolumePro 
+  if (
+    !metrics.global ||
+    !metrics[activeFiatCurrency] ||
+    !metrics.global.gMarketcap ||
+    !metrics.global.gMarketcapPro ||
+    !metrics.global.gDexVolume ||
+    !metrics.global.gDexVolumePro
+    //|| !metrics.global.gScamVolume || !metrics.global.gStableVolume || !metrics.global.gStableVolumePro
     //|| !metrics.global.gXRPdominance || !metrics.global.gXRPdominancePro
   ) {
-    console.log('----------->Empty metrics value detected (Summary block disabled): metrics.global', metrics.global, 'metrics[activeFiatCurrency]', metrics[activeFiatCurrency]);
+    console.log(
+      '----------->Empty metrics value detected (Summary block disabled): metrics.global',
+      metrics.global,
+      'metrics[activeFiatCurrency]',
+      metrics[activeFiatCurrency]
+    );
     //return null;
   }
 
@@ -67,9 +78,10 @@ export default function Summary() {
   const gNFTIOUVolume = new Decimal(metrics.global.gNFTIOUVolume || 0)
     .div(metrics[activeFiatCurrency])
     .toNumber();
-  const gNFTIOUVolumePro = new Decimal(
-    metrics.global.gNFTIOUVolumePro || 0
-  ).toFixed(2, Decimal.ROUND_DOWN);
+  const gNFTIOUVolumePro = new Decimal(metrics.global.gNFTIOUVolumePro || 0).toFixed(
+    2,
+    Decimal.ROUND_DOWN
+  );
   const gStableVolume = new Decimal(metrics.global.gStableVolume)
     .div(metrics[activeFiatCurrency])
     .toNumber();
@@ -78,9 +90,7 @@ export default function Summary() {
     Decimal.ROUND_DOWN
   );
   const gXRPdominance = new Decimal(metrics.global.gXRPdominance).toNumber();
-  const gXRPdominancePro = new Decimal(
-    metrics.global.gXRPdominancePro || 0
-  ).toNumber();
+  const gXRPdominancePro = new Decimal(metrics.global.gXRPdominancePro || 0).toNumber();
 
   // Format number with commas
   function formatNumberWithCommas(number) {
@@ -99,9 +109,7 @@ export default function Summary() {
 
   return (
     <Stack sx={{ mt: 2 }}>
-      <Typography variant="h1">
-        {t("Today's Top XRPL Token Prices by Volume")}
-      </Typography>
+      <Typography variant="h1">{t("Today's Top XRPL Token Prices by Volume")}</Typography>
 
       <ContentTypography variant="subtitle1" sx={{ mt: 2 }}>
         The global token market cap stands at{' '}
@@ -138,21 +146,20 @@ export default function Summary() {
             {fNumberWithSuffix(gDexVolume)}
           </strong>
           , marking a <BearBull value={gDexVolumePro} sx={{ pl: 1, pr: 1 }} />{' '}
-          {gDexVolumePro < 0 ? 'decrease' : 'increase'}. Currently, the total
-          volume in Collectibles & NFTs is{' '}
+          {gDexVolumePro < 0 ? 'decrease' : 'increase'}. Currently, the total volume in Collectibles
+          & NFTs is{' '}
           <strong>
             {currencySymbols[activeFiatCurrency]}
             {fNumberWithSuffix(gNFTIOUVolume)}
           </strong>
-          , accounting for <strong>{gNFTIOUVolumePro}%</strong> of the total
-          XRPL token market's 24-hour volume. The volume of all stablecoins
-          currently stands at{' '}
+          , accounting for <strong>{gNFTIOUVolumePro}%</strong> of the total XRPL token market's
+          24-hour volume. The volume of all stablecoins currently stands at{' '}
           <strong>
             {currencySymbols[activeFiatCurrency]}
             {fNumberWithSuffix(gStableVolume)}
           </strong>
-          , representing <strong>{gStableVolumePro}%</strong> of the total token
-          market's 24-hour volume.
+          , representing <strong>{gStableVolumePro}%</strong> of the total token market's 24-hour
+          volume.
         </ContentTypography>
         <ContentTypography variant="subtitle1" gutterBottom>
           The current XRP price is{' '}

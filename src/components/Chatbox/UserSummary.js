@@ -40,7 +40,7 @@ const UserSummary = ({ user, rankName = 'Member', rank, handleTrade }) => {
 
   useEffect(() => {
     const fetchTokenLines = async () => {
-      const client = new Client('wss://ws.xrpl.to'); // Use the appropriate server
+      const client = new Client('wss://xrplcluster.com'); // Use the appropriate server
 
       try {
         await client.connect();
@@ -366,11 +366,7 @@ const UserSummary = ({ user, rankName = 'Member', rank, handleTrade }) => {
         </Stack>
       </Paper>
 
-      <Send
-        open={sendDialogOpen}
-        onClose={handleCloseSendDialog}
-        recipient={user}
-      />
+      <Send open={sendDialogOpen} onClose={handleCloseSendDialog} recipient={user} />
     </>
   );
 };
