@@ -602,9 +602,10 @@ const NFTDisplay = ({ nftLink }) => {
                   <Typography
                     variant="subtitle2"
                     sx={{
-                      mb: 1.5,
+                      mb: 0.75,
                       fontWeight: 600,
-                      color: theme.palette.text.secondary
+                      color: theme.palette.text.secondary,
+                      fontSize: '0.75rem'
                     }}
                   >
                     Properties
@@ -612,16 +613,16 @@ const NFTDisplay = ({ nftLink }) => {
                   <Box
                     sx={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-                      gap: 0.75,
-                      mb: 1.5
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                      gap: 0.5,
+                      mb: 1
                     }}
                   >
                     {nft.props.map((prop, index) => (
                       <Box
                         key={index}
                         sx={{
-                          p: 1,
+                          p: 0.75,
                           borderRadius: 1,
                           backgroundColor:
                             theme.palette.mode === 'dark'
@@ -645,12 +646,24 @@ const NFTDisplay = ({ nftLink }) => {
                             color: theme.palette.text.secondary,
                             display: 'block',
                             mb: 0.25,
-                            fontSize: '0.7rem'
+                            fontSize: '0.65rem',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
                           }}
                         >
                           {prop.type}
                         </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: '0.7rem',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                          }}
+                        >
                           {prop.value}
                         </Typography>
                       </Box>
@@ -714,8 +727,8 @@ const NFTDisplay = ({ nftLink }) => {
                   >
                     Send
                   </Button>
-                  <BurnNFT 
-                    nft={nft} 
+                  <BurnNFT
+                    nft={nft}
                     onHandleBurn={onHandleBurn}
                     sx={{
                       minWidth: 'auto',
@@ -729,11 +742,7 @@ const NFTDisplay = ({ nftLink }) => {
                   />
                 </Box>
               ) : (
-                <Stack 
-                  spacing={1}
-                  direction="row" 
-                  sx={{ mt: 1.5 }}
-                >
+                <Stack spacing={1} direction="row" sx={{ mt: 1.5 }}>
                   <Button
                     fullWidth
                     disabled={!cost || burnt}
