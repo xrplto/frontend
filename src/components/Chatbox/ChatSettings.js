@@ -411,7 +411,19 @@ function ChatSettings() {
 
         {editMode && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-            <Button onClick={handleCancel} startIcon={<CancelIcon />} sx={{ mr: 1 }}>
+            <Button
+              onClick={handleCancel}
+              startIcon={<CancelIcon />}
+              variant="outlined"
+              color="error"
+              size="medium"
+              sx={{
+                minWidth: 120,
+                borderRadius: 1,
+                textTransform: 'none',
+                fontWeight: 500
+              }}
+            >
               Cancel
             </Button>
           </Box>
