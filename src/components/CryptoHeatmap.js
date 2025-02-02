@@ -76,14 +76,19 @@ function CryptoHeatmap({ exchRate }) {
           style: {},
           formatter: function () {
             const price = this.point.displayValue;
+            const formattedPrice = price < 0.001 ? 
+              price.toFixed(8) : 
+              price < 1 ? 
+                price.toFixed(6) : 
+                fCurrency(price);
+
             if (this.point.shapeArgs.width > this.point.shapeArgs.height) {
               return `<div style="color: #fff;"> <div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 10
               }px;">${this.key}</div><div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 12
-              }px;">${currencySymbols[activeFiatCurrency]} ${fCurrency(
-                price
-              )}</div><div style="text-align: center; font-size:${
+              }px;">${currencySymbols[activeFiatCurrency]} ${formattedPrice
+              }</div><div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 12
               }px;">${fCurrency(this.point.priceChange)}% </div></div>`;
             } else {
@@ -91,9 +96,8 @@ function CryptoHeatmap({ exchRate }) {
                 this.point.shapeArgs.height / 10
               }px;">${this.key}</div><div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 12
-              }px;">${currencySymbols[activeFiatCurrency]} ${fCurrency(
-                price
-              )}</div><div style="text-align: center; font-size:${
+              }px;">${currencySymbols[activeFiatCurrency]} ${formattedPrice
+              }</div><div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 12
               }px;">${fCurrency(this.point.priceChange)}% </div></div>`;
             }
@@ -129,15 +133,19 @@ function CryptoHeatmap({ exchRate }) {
         const nameDisplay = this.point.original
           ? `${this.point.name}: ${this.point.original}`
           : this.point.name;
+        
+        const price = this.point.price;
+        const formattedPrice = price < 0.001 ? 
+          price.toFixed(8) : 
+          price < 1 ? 
+            price.toFixed(6) : 
+            fNumberWithCurreny(price, exchRate);
 
         return `
           <p style="color:#9ab;font-family:DobloxSans,sans-serif;border-radius:3px;font-size:11px;text-align:left;margin:0;padding:10px;border:1px solid black;background-color:#151519">
             <strong style="color:#99a5bb;font-weight:normal;font-size:14px;">
               ${verifiedBadge}${kycBadge}${nameDisplay}<br>
-              Price: ${currencySymbols[activeFiatCurrency]} ${fNumberWithCurreny(
-          this.point.price,
-          exchRate
-        )}<br>
+              Price: ${currencySymbols[activeFiatCurrency]} ${formattedPrice}<br>
               Volume: ${fCurrency(this.point.value)}<br>
               Holders: ${holders}<br>
               Trustlines: ${trustlines}
