@@ -33,12 +33,16 @@ const StyledTooltip = styled(({ className, ...props }) => (
   <Tooltip {...props} classes={{ popper: className }} />
 ))(({ theme }) => ({
   [`& .${tooltipClasses.tooltip}`]: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.mode === 'dark' ? '#1A1A1A' : theme.palette.background.paper,
     color: theme.palette.text.primary,
-    maxWidth: 400,
+    maxWidth: 360,
     fontSize: theme.typography.pxToRem(12),
     padding: 0,
-    boxShadow: theme.shadows[4]
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+    borderRadius: 8,
+    border: `1px solid ${
+      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'
+    }`
   }
 }));
 
@@ -238,9 +242,10 @@ const NFTDisplay = ({ nftLink }) => {
         alt={nft.name || 'Unnamed NFT'}
         style={{
           width: 'auto',
-          height: '35px',
+          height: '32px',
           objectFit: 'contain',
-          borderRadius: '4px'
+          borderRadius: '6px',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
         }}
       />
     );
@@ -485,35 +490,77 @@ const NFTDisplay = ({ nftLink }) => {
           <Paper elevation={0}>
             <Box
               sx={{
-                p: 2,
+                p: 1.5,
                 maxHeight: '80vh',
-                overflowY: 'auto'
+                overflowY: 'auto',
+                '&::-webkit-scrollbar': {
+                  width: '4px'
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                  borderRadius: '2px'
+                }
               }}
             >
-              {/* Full-size media in tooltip */}
               <Box
                 sx={{
                   mb: 2,
-                  borderRadius: 1,
+                  borderRadius: 1.5,
                   overflow: 'hidden',
-                  boxShadow: theme.shadows[2]
+                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+                  position: 'relative',
+                  '&:hover': {
+                    '& .media-overlay': {
+                      opacity: 1
+                    }
+                  }
                 }}
               >
                 {getFullSizeMedia()}
+                <Box
+                  className="media-overlay"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.4) 100%)',
+                    opacity: 0,
+                    transition: 'opacity 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    padding: 1.5
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: '#fff',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                      fontSize: '0.7rem'
+                    }}
+                  >
+                    Click to view full size
+                  </Typography>
+                </Box>
               </Box>
 
-              {/* NFT Name with improved typography */}
               <Typography
-                variant="h6"
+                variant="subtitle1"
                 gutterBottom
                 sx={{
                   fontWeight: 600,
-                  color: theme.palette.primary.main
+                  color: theme.palette.primary.main,
+                  letterSpacing: '-0.02em',
+                  mb: 1.5
                 }}
               >
                 {nft ? nft.name : name}
               </Typography>
-              <Divider sx={{ my: 1 }} />
+
+              <Divider sx={{ my: 1.5, opacity: 0.6 }} />
+
               {nft?.collection && (
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                   <Typography variant="body2">Collection:</Typography>
@@ -538,25 +585,6 @@ const NFTDisplay = ({ nftLink }) => {
                   </Typography>
                 </Box>
               )}
-              {nft?.props && nft.props.length > 0 && (
-                <>
-                  <Divider sx={{ my: 1 }} />
-                  <Typography variant="subtitle2" gutterBottom>
-                    Properties:
-                  </Typography>
-                  {nft.props.map((prop, index) => (
-                    <Box
-                      key={index}
-                      sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}
-                    >
-                      <Typography variant="body2">{prop.type}:</Typography>
-                      <Typography variant="body2" fontWeight="bold">
-                        {prop.value}
-                      </Typography>
-                    </Box>
-                  ))}
-                </>
-              )}
               {nft?.cfloor && (
                 <>
                   <Divider sx={{ my: 1 }} />
@@ -569,6 +597,68 @@ const NFTDisplay = ({ nftLink }) => {
                 </>
               )}
               <Divider sx={{ my: 1 }} />
+              {nft?.props && nft.props.length > 0 && (
+                <>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      mb: 1.5,
+                      fontWeight: 600,
+                      color: theme.palette.text.secondary
+                    }}
+                  >
+                    Properties
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+                      gap: 0.75,
+                      mb: 1.5
+                    }}
+                  >
+                    {nft.props.map((prop, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          p: 1,
+                          borderRadius: 1,
+                          backgroundColor:
+                            theme.palette.mode === 'dark'
+                              ? 'rgba(255,255,255,0.05)'
+                              : 'rgba(0,0,0,0.02)',
+                          border: `1px solid ${
+                            theme.palette.mode === 'dark'
+                              ? 'rgba(255,255,255,0.1)'
+                              : 'rgba(0,0,0,0.05)'
+                          }`,
+                          transition: 'transform 0.2s ease',
+                          '&:hover': {
+                            transform: 'translateY(-1px)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                          }
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: theme.palette.text.secondary,
+                            display: 'block',
+                            mb: 0.25,
+                            fontSize: '0.7rem'
+                          }}
+                        >
+                          {prop.type}
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+                          {prop.value}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Box>
+                </>
+              )}
+              <Divider sx={{ my: 1 }} />
               <Typography variant="caption" color="textSecondary">
                 Token ID: {tokenId}
               </Typography>
@@ -577,41 +667,91 @@ const NFTDisplay = ({ nftLink }) => {
                 <Box
                   sx={{
                     display: 'flex',
-                    justifyContent: 'space-around',
-                    gap: 1.5,
-                    mt: 2
+                    gap: 1,
+                    mt: 1.5
                   }}
                 >
                   <Button
                     fullWidth
-                    variant="outlined"
-                    startIcon={<LocalOfferIcon />}
+                    variant="contained"
+                    startIcon={<LocalOfferIcon sx={{ fontSize: 16 }} />}
                     onClick={handleCreateSellOffer}
-                    color="success"
+                    color="primary"
                     disabled={!accountLogin || burnt}
+                    sx={{
+                      borderRadius: 1,
+                      py: 0.5,
+                      px: 1.5,
+                      minHeight: 0,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.75rem',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                      }
+                    }}
                   >
                     Sell
                   </Button>
                   <Button
                     fullWidth
-                    sx={{ padding: '8px 30px' }}
                     variant="outlined"
-                    startIcon={<SendIcon />}
+                    startIcon={<SendIcon sx={{ fontSize: 16 }} />}
                     onClick={handleTransfer}
-                    color="info"
+                    color="primary"
                     disabled={!accountLogin || burnt}
+                    sx={{
+                      borderRadius: 1,
+                      py: 0.5,
+                      px: 1.5,
+                      minHeight: 0,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.75rem',
+                      borderWidth: 1
+                    }}
                   >
-                    Transfer
+                    Send
                   </Button>
-                  <BurnNFT nft={nft} onHandleBurn={onHandleBurn} />
+                  <BurnNFT 
+                    nft={nft} 
+                    onHandleBurn={onHandleBurn}
+                    sx={{
+                      minWidth: 'auto',
+                      borderRadius: 1,
+                      py: 0.5,
+                      px: 1.5,
+                      minHeight: 0,
+                      fontSize: '0.75rem',
+                      borderWidth: 1
+                    }}
+                  />
                 </Box>
               ) : (
-                <Stack spacing={2} direction="row" sx={{ mt: 2 }}>
+                <Stack 
+                  spacing={1}
+                  direction="row" 
+                  sx={{ mt: 1.5 }}
+                >
                   <Button
                     fullWidth
                     disabled={!cost || burnt}
                     variant="contained"
                     onClick={handleBuyNow}
+                    sx={{
+                      borderRadius: 1,
+                      py: 0.5,
+                      px: 1.5,
+                      minHeight: 0,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.75rem',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      '&:hover': {
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                      }
+                    }}
                   >
                     Buy Now
                   </Button>
@@ -620,8 +760,18 @@ const NFTDisplay = ({ nftLink }) => {
                     disabled={!accountLogin || burnt}
                     variant="outlined"
                     onClick={handleCreateBuyOffer}
+                    sx={{
+                      borderRadius: 1,
+                      py: 0.5,
+                      px: 1.5,
+                      minHeight: 0,
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: '0.75rem',
+                      borderWidth: 1
+                    }}
                   >
-                    Make Offer
+                    Offer
                   </Button>
                 </Stack>
               )}
