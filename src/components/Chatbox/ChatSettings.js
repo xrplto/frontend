@@ -401,14 +401,6 @@ function ChatSettings() {
 
         <Divider sx={{ my: 3 }} />
 
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Last login: {new Date().toLocaleString()}
-        </Typography>
-
-        <Button variant="outlined" color="secondary" fullWidth>
-          Log Out
-        </Button>
-
         {editMode && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
             <Button
