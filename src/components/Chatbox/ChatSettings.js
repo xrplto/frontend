@@ -285,6 +285,7 @@ function ChatSettings() {
               <Avatar
                 src={getProfileImageUrl(localProfile?.imageUrl)}
                 alt={localProfile?.username || 'User'}
+                onClick={editMode ? handleOpenNFTPicker : undefined}
                 sx={{
                   width: 80,
                   height: 80,
@@ -292,7 +293,14 @@ function ChatSettings() {
                   borderRadius: 2,
                   '& img': {
                     objectFit: 'cover'
-                  }
+                  },
+                  cursor: editMode ? 'pointer' : 'default',
+                  '&:hover': editMode
+                    ? {
+                        opacity: 0.8,
+                        transition: 'opacity 0.2s'
+                      }
+                    : {}
                 }}
               />
               <Typography
@@ -302,16 +310,6 @@ function ChatSettings() {
               >
                 {localProfile?.username || 'User'}
               </Typography>
-              {editMode && (
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={handleOpenNFTPicker}
-                  sx={{ mb: 2 }}
-                >
-                  Change NFT
-                </Button>
-              )}
             </Box>
           </Grid>
           <Grid item xs={12} md={8}>
