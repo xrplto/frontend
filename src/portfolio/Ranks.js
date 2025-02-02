@@ -62,7 +62,7 @@ const ranks = {
   }
 };
 
-const chatURL = "http://65.108.136.237:5000"; //http://65.108.136.237:5000
+const chatURL = "http://37.27.134.126:5000"; //http://37.27.134.126:5000
 
 const Ranks = ({ profileAccount }) => {
 

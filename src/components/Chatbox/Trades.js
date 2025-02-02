@@ -26,7 +26,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
   fontSize: '0.875rem',
 }));
 
-const NFTRADE_URL = 'http://65.108.136.237:5333';
+const NFTRADE_URL = 'http://37.27.134.126:5333';
 
 function TradeOffer({ _id, status, timestamp, fromAddress, toAddress, isOutgoing, itemsSent, itemsRequested }) {
   console.log('TradeOffer props:', { _id, status, timestamp, fromAddress, toAddress, isOutgoing, itemsSent, itemsRequested });

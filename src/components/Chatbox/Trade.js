@@ -40,7 +40,7 @@ import sdk from "@crossmarkio/sdk";
 import WarningIcon from '@mui/icons-material/Warning';
 
 const BASE_URL = process.env.API_URL;
-const NFTRADE_URL = 'http://65.108.136.237:5333';
+const NFTRADE_URL = 'http://37.27.134.126:5333';
 
 const BASE_RESERVE = 10;
 const OWNER_RESERVE = 2;

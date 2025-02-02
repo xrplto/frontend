@@ -21,7 +21,7 @@ import QRDialog from 'src/components/QRDialog';
 import { ranks, verifiedStatus } from './RankItems';
 import RankItem from './RankItem';
 
-const chatURL = 'http://65.108.136.237:5000';
+const chatURL = 'http://37.27.134.126:5000';
 const BASE_URL = process.env.API_URL;
 
 function Store() {
