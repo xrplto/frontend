@@ -124,7 +124,8 @@ function ChatSettings() {
   const handleCancel = () => {
     setTempUsername(localProfile?.username || '');
     setEditMode(false);
-    setNftsAvailable(true); // Reset nftsAvailable on cancel
+    setNftsAvailable(true); // Reset nftsAvailable
+    setShowNFTPicker(false); // Close the NFT picker section
   };
 
   const handleEditToggle = () => {
