@@ -88,7 +88,21 @@ const StyledBackdrop = styled(Backdrop)(({ theme }) => ({
   transition: 'opacity 0.3s ease-in-out'
 }));
 
-export default function TransferDialog({ open, setOpen, nft }) {
+const NFTPreview = styled('div')(({ theme }) => ({
+  width: '100%',
+  marginBottom: theme.spacing(3),
+  borderRadius: 12,
+  overflow: 'hidden',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+  '& img': {
+    width: '100%',
+    height: 'auto',
+    display: 'block',
+    objectFit: 'contain'
+  }
+}));
+
+export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
   const theme = useTheme();
   const BASE_URL = 'https://api.xrpnft.com/api';
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
@@ -362,6 +376,19 @@ export default function TransferDialog({ open, setOpen, nft }) {
         </StyledDialogTitle>
 
         <StyledDialogContent>
+          {nftImageUrl && (
+            <NFTPreview>
+              <img
+                src={nftImageUrl}
+                alt={nft?.name || 'NFT'}
+                style={{
+                  opacity: isLoading ? 0.7 : 1,
+                  transition: 'opacity 0.2s'
+                }}
+              />
+            </NFTPreview>
+          )}
+
           <Typography
             variant="body1"
             sx={{

@@ -481,6 +481,27 @@ const NFTDisplay = ({ nftLink }) => {
     doProcessOffer(acceptOffer, true);
   };
 
+  // Find the getMediaPreview function and add a new function to get the best image URL
+  const getBestImageUrl = () => {
+    if (!nft || !nft.files || nft.files.length === 0) return null;
+
+    const file = nft.files[0];
+    if (!file) return null;
+
+    // Return the best available image URL in order of preference
+    if (file.thumbnail?.big) {
+      return `${IMAGE_BASE_URL}${file.thumbnail.big}`;
+    } else if (file.thumbnail?.small) {
+      return `${IMAGE_BASE_URL}${file.thumbnail.small}`;
+    } else if (file.convertedFile) {
+      return `${IMAGE_BASE_URL}${file.convertedFile}`;
+    } else if (file.dfile) {
+      return `${IMAGE_BASE_URL}${file.dfile}`;
+    }
+
+    return null;
+  };
+
   if (!match) return null;
 
   return (
@@ -855,7 +876,12 @@ const NFTDisplay = ({ nftLink }) => {
         isSellOffer={isSellOffer}
       />
 
-      <TransferDialog open={openTransfer} setOpen={setOpenTransfer} nft={nft} />
+      <TransferDialog
+        open={openTransfer}
+        setOpen={setOpenTransfer}
+        nft={nft}
+        nftImageUrl={getBestImageUrl()}
+      />
 
       <SelectPriceDialog
         open={openSelectPrice}
