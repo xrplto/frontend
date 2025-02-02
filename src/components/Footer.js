@@ -8,7 +8,7 @@ const FooterWrapper = styled(Box)(
     width: 100%;
     display: flex;
     align-items: center;
-    margin-bottom: ${theme.spacing(2)};
+    margin-bottom: ${theme.spacing(1)};
   `
 );
 
@@ -17,7 +17,7 @@ function Footer() {
   const img = darkMode ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
 
   const linkStyles = {
-    mt: 1.5,
+    mt: 0.75,
     display: 'inline-flex',
     underline: 'none',
     target: '_blank',
@@ -29,8 +29,8 @@ function Footer() {
       <Container
         maxWidth="xl"
         sx={{
-          mt: 4,
-          mb: 8,
+          mt: 2,
+          mb: 4,
           '& .MuiLink-root': {
             color: 'rgb(160, 160, 160) !important',
             '&:hover': {
@@ -39,20 +39,20 @@ function Footer() {
           }
         }}
       >
-        <Grid container>
-          <Grid item xs={12} md={5} lg={5} sx={{ mt: 3 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={5} lg={5} sx={{ mt: 1 }}>
             <Link
               href="/"
-              sx={{ pl: 0, pr: 0, py: 3, display: 'inline-flex' }}
+              sx={{ pl: 0, pr: 0, py: 2 }}
               underline="none"
               rel="noreferrer noopener nofollow"
             >
-              <LazyLoadImage src={img} width={125} height={46} alt="XRPL.to Logo" />
+              <LazyLoadImage src={img} width={100} height={37} alt="XRPL.to Logo" />
             </Link>
           </Grid>
 
-          <Grid item xs={12} md={7} lg={7} sx={{ mt: 3 }}>
-            <Grid container spacing={3}>
+          <Grid item xs={12} md={7} lg={7} sx={{ mt: 1 }}>
+            <Grid container spacing={2}>
               {[
                 {
                   title: 'Products',
@@ -90,18 +90,20 @@ function Footer() {
                   ]
                 }
               ].map((section, index) => (
-                <Grid item xs={6} sm={6} md={3} lg={3} key={index} sx={{ mt: 3 }}>
-                  <Stack>
-                    <Typography variant="h2" sx={{ fontWeight: 600 }}>
+                <Grid item xs={6} sm={6} md={3} lg={3} key={index} sx={{ mt: 1 }}>
+                  <Stack spacing={1}>
+                    <Typography variant="h2" sx={{ fontWeight: 600, fontSize: '1rem' }}>
                       {section.title}
                     </Typography>
                     {section.links.map((link, idx) => (
                       <Link
                         key={idx}
                         href={link.href}
-                        sx={{ ...linkStyles, mt: idx === 0 ? 2 : 1.5 }}
+                        sx={{ ...linkStyles, mt: idx === 0 ? 1 : 0.75 }}
                       >
-                        <Typography variant="link">{link.label}</Typography>
+                        <Typography variant="link" sx={{ fontSize: '0.9rem' }}>
+                          {link.label}
+                        </Typography>
                       </Link>
                     ))}
                   </Stack>
@@ -110,8 +112,8 @@ function Footer() {
             </Grid>
           </Grid>
 
-          <Grid item xs={12} sx={{ mt: 3 }}>
-            <Typography textAlign="left" variant="subtitle1">
+          <Grid item xs={12} sx={{ mt: 2 }}>
+            <Typography textAlign="left" variant="subtitle1" sx={{ fontSize: '0.85rem' }}>
               &copy; 2024 xrpl.to. All rights reserved
             </Typography>
           </Grid>
