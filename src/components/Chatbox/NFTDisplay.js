@@ -671,11 +671,19 @@ const NFTDisplay = ({ nftLink }) => {
                   </Box>
                 </>
               )}
-              <Divider sx={{ my: 1 }} />
-              <Typography variant="caption" color="textSecondary">
+              <Divider sx={{ my: 0.75 }} />
+              <Typography
+                variant="caption"
+                color="textSecondary"
+                sx={{
+                  fontSize: '0.65rem',
+                  display: 'block',
+                  py: 0.25
+                }}
+              >
                 Token ID: {tokenId}
               </Typography>
-              <Divider sx={{ my: 1 }} />
+              <Divider sx={{ my: 0.75 }} />
               {isOwner ? (
                 <Box
                   sx={{
