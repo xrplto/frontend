@@ -5,28 +5,30 @@ import Decimal from 'decimal.js';
 // Material
 import { withStyles } from '@mui/styles';
 import {
-    alpha, useTheme, useMediaQuery,
-    styled,
-    Backdrop,
-    Button,
-    Dialog,
-    DialogContent,
-    DialogTitle,
-    IconButton,
-    Select,
-    Stack,
-    Typography,
-    TextField,
-    CircularProgress
+  alpha,
+  useTheme,
+  useMediaQuery,
+  styled,
+  Backdrop,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Select,
+  Stack,
+  Typography,
+  TextField,
+  CircularProgress
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
 // Context
 import { useContext } from 'react';
-import { AppContext } from 'src/AppContext'
+import { AppContext } from 'src/AppContext';
 
 // Loader
-import { PulseLoader } from "react-spinners";
+import { PulseLoader } from 'react-spinners';
 
 // Utils
 import { XRP_TOKEN } from 'src/utils/constants';
@@ -36,7 +38,7 @@ import QRDialog from 'src/components/QRDialog';
 import { isValidClassicAddress } from 'ripple-address-codec';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { isInstalled, submitTransaction } from '@gemwallet/api';
-import sdk from "@crossmarkio/sdk";
+import sdk from '@crossmarkio/sdk';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -47,34 +49,43 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
     boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
     backdropFilter: 'blur(4px)',
     WebkitBackdropFilter: 'blur(4px)',
-    border: '1px solid rgba(255, 255, 255, 0.18)',
-  },
+    border: '1px solid rgba(255, 255, 255, 0.18)'
+  }
 }));
 
 const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
   background: theme.palette.background.default,
   color: theme.palette.text.primary,
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
 }));
 
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
-  padding: theme.spacing(4),
+  padding: theme.spacing(4)
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: 12,
     '&.Mui-focused': {
-      boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
-    },
-  },
+      boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`
+    }
+  }
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
   borderRadius: 25,
   padding: theme.spacing(1.5, 4),
   textTransform: 'none',
-  fontWeight: 600,
+  fontWeight: 600
+}));
+
+const StyledBackdrop = styled(Backdrop)(({ theme }) => ({
+  color: '#000',
+  zIndex: theme.zIndex.drawer + 1,
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  backdropFilter: 'blur(4px)',
+  WebkitBackdropFilter: 'blur(4px)',
+  transition: 'opacity 0.3s ease-in-out'
 }));
 
 export default function TransferDialog({ open, setOpen, nft }) {
@@ -105,7 +116,9 @@ export default function TransferDialog({ open, setOpen, nft }) {
 
     async function getDispatchResult() {
       try {
-        const ret = await axios.get(`${BASE_URL}/offers/create/${uuid}?account=${account}`, { headers: { 'x-access-token': accountToken } });
+        const ret = await axios.get(`${BASE_URL}/offers/create/${uuid}?account=${account}`, {
+          headers: { 'x-access-token': accountToken }
+        });
         const res = ret.data.data.response;
         const dispatched_result = res.dispatched_result;
 
@@ -143,11 +156,13 @@ export default function TransferDialog({ open, setOpen, nft }) {
     };
 
     async function getPayload() {
-      console.log(counter + " " + isRunning, uuid);
+      console.log(counter + ' ' + isRunning, uuid);
       if (isRunning) return;
       isRunning = true;
       try {
-        const ret = await axios.get(`${BASE_URL}/offers/create/${uuid}?account=${account}`, { headers: { 'x-access-token': accountToken } });
+        const ret = await axios.get(`${BASE_URL}/offers/create/${uuid}?account=${account}`, {
+          headers: { 'x-access-token': accountToken }
+        });
         const resolved_at = ret.data?.resolved_at;
         if (resolved_at) {
           startInterval();
@@ -168,7 +183,7 @@ export default function TransferDialog({ open, setOpen, nft }) {
     }
     return () => {
       if (timer) {
-        clearInterval(timer)
+        clearInterval(timer);
       }
     };
   }, [openScanQR, uuid, sync]);
@@ -190,20 +205,26 @@ export default function TransferDialog({ open, setOpen, nft }) {
       const owner = nft.account;
 
       const transferTxData = {
-        TransactionType: "NFTokenCreateOffer",
+        TransactionType: 'NFTokenCreateOffer',
         Account: account,
         NFTokenID,
-        Amount: "0",
+        Amount: '0',
         Flags: 1,
         Destination: destination,
-        Memos: configureMemos('XRPNFT-nft-create-sell-offer', '', `https://xrpnft.com/nft/${NFTokenID}`)
+        Memos: configureMemos(
+          'XRPNFT-nft-create-sell-offer',
+          '',
+          `https://xrpnft.com/nft/${NFTokenID}`
+        )
       };
 
-      switch(wallet_type) {
-        case "xaman":
+      switch (wallet_type) {
+        case 'xaman':
           const body = { account, NFTokenID, owner, user_token, destination };
 
-          const res = await axios.post(`${BASE_URL}/offers/transfer`, body, { headers: { 'x-access-token': accountToken } });
+          const res = await axios.post(`${BASE_URL}/offers/transfer`, body, {
+            headers: { 'x-access-token': accountToken }
+          });
 
           if (res.status === 200) {
             const uuid = res.data.data.uuid;
@@ -216,37 +237,33 @@ export default function TransferDialog({ open, setOpen, nft }) {
             setOpenScanQR(true);
           }
           break;
-        case "gem":
+        case 'gem':
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               dispatch(updateProcess(1));
               await submitTransaction({
                 transaction: transferTxData
               }).then(({ type, result }) => {
-                if (type == "response") {
+                if (type == 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
-                }
-
-                else {
+                } else {
                   dispatch(updateProcess(3));
                 }
               });
             }
           });
           break;
-        case "crossmark":
+        case 'crossmark':
           dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(transferTxData)
-            .then(({ response }) => {
-              if (response.data.meta.isSuccess) {
-                dispatch(updateProcess(2));
-                dispatch(updateTxHash(response.data.resp.result?.hash));
-
-              } else {
-                dispatch(updateProcess(3));
-              }
-            });
+          await sdk.methods.signAndSubmitAndWait(transferTxData).then(({ response }) => {
+            if (response.data.meta.isSuccess) {
+              dispatch(updateProcess(2));
+              dispatch(updateTxHash(response.data.resp.result?.hash));
+            } else {
+              dispatch(updateProcess(3));
+            }
+          });
           break;
       }
     } catch (err) {
@@ -260,12 +277,13 @@ export default function TransferDialog({ open, setOpen, nft }) {
   const onDisconnectXumm = async (uuid) => {
     setLoading(true);
     try {
-      const res = await axios.delete(`${BASE_URL}/offers/create/${uuid}`, { headers: { 'x-access-token': accountToken } });
+      const res = await axios.delete(`${BASE_URL}/offers/create/${uuid}`, {
+        headers: { 'x-access-token': accountToken }
+      });
       if (res.status === 200) {
         setUuid(null);
       }
-    } catch (err) {
-    }
+    } catch (err) {}
     setLoading(false);
   };
 
@@ -277,48 +295,58 @@ export default function TransferDialog({ open, setOpen, nft }) {
   const handleClose = () => {
     setOpen(false);
     setDestination('');
-  }
+  };
 
   const handleChangeAccount = (e) => {
     setDestination(e.target.value);
-  }
+  };
 
   const handleTransferNFT = () => {
-    const isValid = isValidClassicAddress(destination) && account !== destination
+    const isValid = isValidClassicAddress(destination) && account !== destination;
     if (isValid) {
       onCreateOfferXumm();
     } else {
       openSnackbar('Invalid value!', 'error');
     }
-  }
+  };
 
   const handleMsg = () => {
-    if (isProcessing == 1) return "Pending Transferring";
-    if (!destination) return "Enter an Account";
-    else return "Transfer";
-  }
+    if (isProcessing == 1) return 'Pending Transferring';
+    if (!destination) return 'Enter an Account';
+    else return 'Transfer';
+  };
+
+  const isLoading = loading || isProcessing === 1;
 
   return (
     <>
-      <Backdrop
-        sx={{ color: "#000", zIndex: 1303 }}
-        open={loading}
+      <StyledBackdrop
+        open={isLoading}
+        transitionDuration={300}
+        invisible={false}
+        sx={{ position: 'fixed' }}
       >
-        <PulseLoader color={"#FF4842"} size={10} />
-      </Backdrop>
+        <PulseLoader color={'#FF4842'} size={10} speedMultiplier={0.8} />
+      </StyledBackdrop>
 
       <StyledDialog
         fullScreen={fullScreen}
-        onClose={handleClose}
+        onClose={!isLoading ? handleClose : undefined}
         fullWidth
-        maxWidth='xs'
+        maxWidth="xs"
         open={open}
-        disableScrollLock
-        disablePortal
-        keepMounted
+        keepMounted={false}
+        disableEscapeKeyDown={isLoading}
+        sx={{
+          '& .MuiDialog-paper': {
+            pointerEvents: isLoading ? 'none' : 'auto'
+          }
+        }}
       >
         <StyledDialogTitle>
-          <Typography variant="h6" fontWeight="bold">Transfer NFT</Typography>
+          <Typography variant="h6" fontWeight="bold">
+            Transfer NFT
+          </Typography>
           <IconButton
             aria-label="close"
             onClick={handleClose}
@@ -326,7 +354,7 @@ export default function TransferDialog({ open, setOpen, nft }) {
               position: 'absolute',
               right: 8,
               top: 8,
-              color: (theme) => theme.palette.grey[500],
+              color: (theme) => theme.palette.grey[500]
             }}
           >
             <CloseIcon />
@@ -334,32 +362,34 @@ export default function TransferDialog({ open, setOpen, nft }) {
         </StyledDialogTitle>
 
         <StyledDialogContent>
-          <Typography variant="body1" sx={{ mb: 3 }}>
+          <Typography
+            variant="body1"
+            sx={{
+              mb: 3,
+              opacity: isLoading ? 0.7 : 1,
+              transition: 'opacity 0.2s'
+            }}
+          >
             For this transfer to be completed, the recipient must accept it through their wallet.
           </Typography>
           <StyledTextField
             fullWidth
-            id='receive-account'
-            variant='outlined'
-            placeholder='Enter destination account'
+            id="receive-account"
+            variant="outlined"
+            placeholder="Enter destination account"
             onChange={handleChangeAccount}
             value={destination}
-            onFocus={event => event.target.select()}
+            onFocus={(event) => event.target.select()}
             onKeyDown={(e) => e.stopPropagation()}
             sx={{ mb: 4 }}
+            disabled={isLoading}
           />
 
           <StyledButton
             variant="contained"
-            startIcon={
-              isProcessing == 1 ? (
-                <CircularProgress size={20} color="inherit" />
-              ) : (
-                <SendIcon />
-              )
-            }
+            startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
             onClick={handleTransferNFT}
-            disabled={isProcessing == 1}
+            disabled={isLoading}
             fullWidth
           >
             {handleMsg()}
@@ -370,7 +400,7 @@ export default function TransferDialog({ open, setOpen, nft }) {
       <QRDialog
         open={openScanQR}
         type="NFTokenCreateOffer"
-        onClose={handleScanQRClose}
+        onClose={!isLoading ? handleScanQRClose : undefined}
         qrUrl={qrUrl}
         nextUrl={nextUrl}
       />
