@@ -7,6 +7,7 @@ import { useContext, useEffect, useState } from 'react';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
 import { fCurrency, fNumberWithCurreny } from 'src/utils/formatNumber';
+import { FormControl, Select, MenuItem } from '@mui/material';
 
 function CryptoHeatmap({ exchRate }) {
   if (typeof Highcharts === 'object') {
@@ -15,13 +16,14 @@ function CryptoHeatmap({ exchRate }) {
 
   const { activeFiatCurrency } = useContext(AppContext);
   const [markets, setMarkets] = useState([]);
+  const [sortBy, setSortBy] = useState('vol24hxrp');
 
   useEffect(() => {
     const getTokenData = async () => {
       try {
         const BASE_URL = process.env.API_URL;
         const res = await axios.get(
-          `${BASE_URL}/tokens?start=1&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
+          `${BASE_URL}/tokens?start=1&limit=100&sortBy=${sortBy}&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
         );
 
         let data = res.data;
@@ -33,7 +35,8 @@ function CryptoHeatmap({ exchRate }) {
             const market = {
               name: token.name,
               original: token.user,
-              value: token.vol24hxrp,
+              value: sortBy === 'marketcap' ? token.marketcap : token.vol24hxrp,
+              displayValue: token.exch,
               priceChange: token.pro24h,
               price: token.exch,
               slug: token.slug,
@@ -54,7 +57,11 @@ function CryptoHeatmap({ exchRate }) {
     };
 
     getTokenData();
-  }, []);
+  }, [sortBy]);
+
+  const handleSortChange = (event) => {
+    setSortBy(event.target.value);
+  };
 
   const options = {
     series: [
@@ -68,14 +75,14 @@ function CryptoHeatmap({ exchRate }) {
           layoutAlgorithm: 'squarified',
           style: {},
           formatter: function () {
-            const marketcap = Decimal.div(this.point.value, exchRate).toNumber();
+            const price = this.point.displayValue;
             if (this.point.shapeArgs.width > this.point.shapeArgs.height) {
               return `<div style="color: #fff;"> <div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 10
               }px;">${this.key}</div><div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 12
               }px;">${currencySymbols[activeFiatCurrency]} ${fCurrency(
-                marketcap
+                price
               )}</div><div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 12
               }px;">${fCurrency(this.point.priceChange)}% </div></div>`;
@@ -85,7 +92,7 @@ function CryptoHeatmap({ exchRate }) {
               }px;">${this.key}</div><div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 12
               }px;">${currencySymbols[activeFiatCurrency]} ${fCurrency(
-                marketcap
+                price
               )}</div><div style="text-align: center; font-size:${
                 this.point.shapeArgs.height / 12
               }px;">${fCurrency(this.point.priceChange)}% </div></div>`;
@@ -141,15 +148,33 @@ function CryptoHeatmap({ exchRate }) {
   };
 
   return (
-    <HighchartsReact
-      highcharts={Highcharts}
-      options={options}
-      containerProps={{
-        style: {
-          height: 'calc(62.5em - 94px)'
-        }
-      }}
-    />
+    <div>
+      <FormControl sx={{ mb: 2, minWidth: 200 }}>
+        <Select
+          value={sortBy}
+          onChange={handleSortChange}
+          displayEmpty
+          size="small"
+          sx={{
+            backgroundColor: 'background.paper',
+            '& .MuiSelect-select': { py: 1 }
+          }}
+        >
+          <MenuItem value="vol24hxrp">Sort by Volume</MenuItem>
+          <MenuItem value="marketcap">Sort by Market Cap</MenuItem>
+        </Select>
+      </FormControl>
+
+      <HighchartsReact
+        highcharts={Highcharts}
+        options={options}
+        containerProps={{
+          style: {
+            height: 'calc(62.5em - 94px)'
+          }
+        }}
+      />
+    </div>
   );
 }
 
