@@ -72,10 +72,7 @@ export default function Header(props) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  const {
-    darkMode,
-    setDarkMode,
-  } = useContext(AppContext);
+  const { darkMode, setDarkMode } = useContext(AppContext);
 
   const handleFullSearch = (e) => {
     setFullSearch(true);
@@ -115,17 +112,17 @@ export default function Header(props) {
     if (isClosed) {
       setClosed(false);
     }
-  }, [isProcessing, isClosed])
+  }, [isProcessing, isClosed]);
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const initializeCrossmark = async () => {
       if (isDesktop && typeof window !== 'undefined') {
         try {
           // Dynamically import the SDK
           const { default: CrossmarkSDK } = await import('@crossmarkio/sdk');
-          
+
           if (isMounted && CrossmarkSDK && typeof CrossmarkSDK.on === 'function') {
             const handleClose = () => {
               if (isMounted) {
@@ -133,11 +130,11 @@ export default function Header(props) {
               }
             };
 
-            CrossmarkSDK.on("close", handleClose);
+            CrossmarkSDK.on('close', handleClose);
 
             return () => {
               if (CrossmarkSDK && typeof CrossmarkSDK.off === 'function') {
-                CrossmarkSDK.off("close", handleClose);
+                CrossmarkSDK.off('close', handleClose);
               }
             };
           }
@@ -152,7 +149,7 @@ export default function Header(props) {
     return () => {
       isMounted = false;
     };
-  }, [isDesktop])
+  }, [isDesktop]);
 
   return (
     <HeaderWrapper>
@@ -184,34 +181,17 @@ export default function Header(props) {
                   color={darkMode ? 'white' : 'black'}
                   sx={{
                     '&:hover': {
-                      color: darkMode
-                        ? '#22B14C !important'
-                        : '#3366FF !important'
+                      color: darkMode ? '#22B14C !important' : '#3366FF !important'
                     }
                   }}
                   href="/swap"
                 >
                   {t('Swap')}
                 </StyledLink>
-                <StyledLink
-                  underline="none"
-                  color={darkMode ? 'white' : 'black'}
-                  sx={{
-                    '&:hover': {
-                      color: darkMode
-                        ? '#22B14C !important'
-                        : '#3366FF !important'
-                    }
-                  }}
-                  href="/buy-xrp"
-                >
-                  {t('Fiat')}
-                </StyledLink>
               </>
             )}
 
             <WalletConnectModal />
-
           </Box>
 
           {fullSearch && (
@@ -221,7 +201,6 @@ export default function Header(props) {
               fullSearch={fullSearch}
               setFullSearch={setFullSearch}
             />
-
           )}
 
           {!fullSearch && (
@@ -252,7 +231,6 @@ export default function Header(props) {
                   fullSearch={fullSearch}
                   setFullSearch={setFullSearch}
                 />
-
               </Stack>
             )}
 
@@ -279,7 +257,7 @@ export default function Header(props) {
                     variant={'outlined'}
                     icon={<StarOutlineIcon fontSize="small" />}
                     label={'Watchlist'}
-                    onClick={() => { }}
+                    onClick={() => {}}
                     sx={{
                       borderRadius: '8px'
                     }}
@@ -297,7 +275,6 @@ export default function Header(props) {
                     borderRadius: '8px'
                   }}
                 />
-
               </Stack>
             )}
 
