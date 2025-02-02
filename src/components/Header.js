@@ -43,21 +43,33 @@ const StyledLink = styled(Link)(
   ({ darkMode }) => `
     font-weight: 700;
     margin-right: 27px;
-    padding: 8px 10px; // Increased padding
-    border-radius: 8px;
-    transition: background-color 0.3s;
-    display: inline-block; // Ensure it's not inline
+    padding: 12px 16px; // Increased padding for better clickable area
+    border-radius: 12px; // Increased border radius
+    transition: all 0.2s ease-in-out; // Smoother transition
+    display: inline-flex; // Changed to inline-flex for better alignment
+    align-items: center;
+    background: transparent;
     &:hover {
-      color: ${darkMode ? '#005E46' : '#4455CC'};
+      color: ${darkMode ? '#22B14C' : '#3366FF'};
+      background: ${darkMode ? 'rgba(34, 177, 76, 0.1)' : 'rgba(51, 102, 255, 0.1)'};
       cursor: pointer;
     }
 `
 );
 
-const MenuContainer = styled('div')({
-  position: 'relative',
-  display: 'inline-block' // Make sure this is an inline-block to properly wrap content
-});
+const MenuContainer = styled('div')(
+  ({ theme }) => `
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-right: ${theme.spacing(2)};
+    
+    // Add hover effect to child elements
+    &:hover > * {
+      opacity: 0.9;
+    }
+`
+);
 
 export default function Header(props) {
   const { t } = useTranslation(); // set translation const
@@ -182,7 +194,10 @@ export default function Header(props) {
                   sx={{
                     '&:hover': {
                       color: darkMode ? '#22B14C !important' : '#3366FF !important'
-                    }
+                    },
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px'
                   }}
                   href="/swap"
                 >
