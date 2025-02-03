@@ -180,16 +180,11 @@ export default function HistoryData({ token }) {
               currentDate.getMonth(),
               currentDate.getDate()
             );
-            const closestEntry = getClosestEntry(
-              targetDate.getTime(),
-              history,
-              startIndex
-            );
+            const closestEntry = getClosestEntry(targetDate.getTime(), history, startIndex);
 
             if (closestEntry[0] === history[history.length - 1][0]) {
               const daysDifference =
-                Math.abs(targetDate - new Date(closestEntry[0])) /
-                (1000 * 60 * 60 * 24);
+                Math.abs(targetDate - new Date(closestEntry[0])) / (1000 * 60 * 60 * 24);
               if (daysDifference <= 10) {
                 yearlyValues.push(closestEntry[1]);
                 break;
@@ -214,15 +209,13 @@ export default function HistoryData({ token }) {
   const classes = useStyles();
   const title = `${user} price today: ${name} to ${activeFiatCurrency} conversion, live rates, trading volume, historical data, and interactive chart`;
   const desc = `Access up-to-date ${user} prices, ${name} market cap, trading pairs, interactive charts, and comprehensive data from the leading XRP Ledger token price-tracking platform.`;
-  const url =
-    typeof window !== 'undefined' && window.location.href
-      ? window.location.href
-      : '';
+  const url = typeof window !== 'undefined' && window.location.href ? window.location.href : '';
 
   function getValueIcon(paidValue, gotValue) {
     if (paidValue < 500 || gotValue < 500) return '🦐';
     if ((paidValue >= 500 && paidValue < 5000) || (gotValue >= 500 && gotValue < 5000)) return '🐬';
-    if ((paidValue >= 5000 && paidValue < 10000) || (gotValue >= 5000 && gotValue < 10000)) return '🐋';
+    if ((paidValue >= 5000 && paidValue < 10000) || (gotValue >= 5000 && gotValue < 10000))
+      return '🐋';
     return '';
   }
 
@@ -258,6 +251,7 @@ export default function HistoryData({ token }) {
               <TableHead>
                 <TableRow>
                   <TableCell align="left">Time</TableCell>
+                  <TableCell align="left">Type</TableCell>
                   <TableCell align="left">Price</TableCell>
                   <TableCell align="left">
                     Value
@@ -285,20 +279,9 @@ export default function HistoryData({ token }) {
               </TableHead>
               <TableBody>
                 {hists.map((row, idx) => {
-                  const {
-                    maker,
-                    taker,
-                    seq,
-                    paid,
-                    got,
-                    ledger,
-                    hash,
-                    time
-                  } = row;
+                  const { maker, taker, seq, paid, got, ledger, hash, time } = row;
 
-                  const paidName = normalizeCurrencyCodeXummImpl(
-                    paid.currency
-                  );
+                  const paidName = normalizeCurrencyCodeXummImpl(paid.currency);
                   const gotName = normalizeCurrencyCodeXummImpl(got.currency);
                   const md51 = getMD5(paid.issuer, paid.currency);
 
@@ -322,35 +305,39 @@ export default function HistoryData({ token }) {
                       sx={{
                         '&:hover': {
                           '& .MuiTableCell-root': {
-                            backgroundColor: darkMode
-                              ? '#232326 !important'
-                              : '#D9DCE0 !important'
+                            backgroundColor: darkMode ? '#232326 !important' : '#D9DCE0 !important'
                           }
                         }
                       }}
                     >
                       <TableCell align="left">
                         <Tooltip title={strDateTime}>
-                          <Typography variant="caption">
-                            {relativeTime}
-                          </Typography>
+                          <Typography variant="caption">{relativeTime}</Typography>
                         </Tooltip>
+                      </TableCell>
+                      <TableCell align="left">
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color:
+                              md5 === getMD5(paid.issuer, paid.currency) ? '#FF4842' : '#54D62C',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          {md5 === getMD5(paid.issuer, paid.currency) ? 'SELL' : 'BUY'}
+                        </Typography>
                       </TableCell>
                       <TableCell align="left">
                         <Typography variant="caption">
                           {fNumber(exch)} {name}
                         </Typography>
                       </TableCell>
+                      <TableCell align="left">{getValueIcon(paid.value, got.value)}</TableCell>
                       <TableCell align="left">
-                        {getValueIcon(paid.value, got.value)}
+                        {fNumber(paid.value)} <Typography variant="caption">{paidName}</Typography>
                       </TableCell>
                       <TableCell align="left">
-                        {fNumber(paid.value)}{' '}
-                        <Typography variant="caption">{paidName}</Typography>
-                      </TableCell>
-                      <TableCell align="left">
-                        {fNumber(got.value)}{' '}
-                        <Typography variant="caption">{gotName}</Typography>
+                        {fNumber(got.value)} <Typography variant="caption">{gotName}</Typography>
                       </TableCell>
                       <TableCell align="left">
                         <Link
@@ -402,13 +389,7 @@ export default function HistoryData({ token }) {
           </Box>
         </Grid>
 
-        <Grid
-          item
-          xs={12}
-          md={2.5}
-          lg={2.5}
-          sx={{ order: { xs: 1, md: 2, lg: 2 } }}
-        >
+        <Grid item xs={12} md={2.5} lg={2.5} sx={{ order: { xs: 1, md: 2, lg: 2 } }}>
           <Typography variant="h2" fontSize="1.1rem">
             On This Day
           </Typography>
@@ -423,16 +404,9 @@ export default function HistoryData({ token }) {
             &nbsp;
           </Typography>
           <StackStyle>
-            <Stack
-              spacing={0.2}
-              sx={{ paddingTop: '20px', paddingBottom: '10px' }}
-            >
+            <Stack spacing={0.2} sx={{ paddingTop: '20px', paddingBottom: '10px' }}>
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Avatar
-                  alt={user}
-                  src={imgUrl}
-                  sx={{ width: 28, height: 28 }}
-                />
+                <Avatar alt={user} src={imgUrl} sx={{ width: 28, height: 28 }} />
                 <Stack direction="row" alignItems="baseline" spacing={0.5}>
                   <Typography
                     variant="h2"
@@ -454,16 +428,11 @@ export default function HistoryData({ token }) {
                   : `${index} ${index === 1 ? 'year' : 'years'} ago`;
 
                 return [
-                  <div
-                    className={classes.lineContainer}
-                    key={`lineContainer-${index}`}
-                  >
+                  <div className={classes.lineContainer} key={`lineContainer-${index}`}>
                     <DateRangeIcon className={classes.icon} />
                     <span className={classes.yearsAgo}>{yearsAgoText}</span>
                     <span
-                      className={`${classes.price} ${
-                        isToday ? classes.priceToday : ''
-                      }`}
+                      className={`${classes.price} ${isToday ? classes.priceToday : ''}`}
                       style={{ textAlign: 'right' }}
                     >
                       {currencySymbols[activeFiatCurrency]}
@@ -471,10 +440,7 @@ export default function HistoryData({ token }) {
                     </span>
                   </div>,
                   index < histsPrices.length - 1 && (
-                    <div
-                      className={classes.lineContainer}
-                      key={`verticalLine-${index}`}
-                    >
+                    <div className={classes.lineContainer} key={`verticalLine-${index}`}>
                       <div className={classes.verticalLine}></div>
                     </div>
                   )
@@ -489,12 +455,7 @@ export default function HistoryData({ token }) {
               style={{ justifyContent: 'center', paddingTop: '15px' }}
             >
               <Box>Share </Box>
-              <FacebookShareButton
-                url={url}
-                quote={title}
-                hashtag={'#'}
-                description={desc}
-              >
+              <FacebookShareButton url={url} quote={title} hashtag={'#'} description={desc}>
                 <FacebookIcon size={32} round />
               </FacebookShareButton>
               <TwitterShareButton title={title} url={url} hashtag={'#'}>
@@ -505,13 +466,7 @@ export default function HistoryData({ token }) {
         </Grid>
       </Grid>
 
-      <HistoryToolbar
-        count={count}
-        rows={rows}
-        setRows={setRows}
-        page={page}
-        setPage={setPage}
-      />
+      <HistoryToolbar count={count} rows={rows} setRows={setRows} page={page} setPage={setPage} />
     </>
   );
 }
