@@ -368,52 +368,85 @@ function FTokenRow({
                 <Table
                   sx={{
                     '& .MuiTableCell-root': {
-                      borderBottom: 'none'
+                      borderBottom: 'none',
+                      padding: '1px 6px',
+                      backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                      '&:first-of-type': {
+                        pr: 2
+                      }
+                    },
+                    '& .MuiTableRow-root:not(:first-child)': {
+                      '& .MuiTableCell-root': {
+                        paddingTop: '1px'
+                      }
                     }
                   }}
                 >
                   <TableBody>
                     <TableRow>
-                      <TableCell align="right" width="100%" sx={{ pt: 0, pb: 0 }}>
-                        <Typography variant="small" noWrap sx={{ fontWeight: 'bold', m: 1 }}>
+                      <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
+                        <Typography
+                          variant="caption"
+                          noWrap
+                          sx={{ fontWeight: 'bold', color: '#fff' }}
+                        >
                           Percentage:
                         </Typography>
                       </TableCell>
                       <TableCell sx={{ pt: 0, pb: 0 }}>
-                        <Typography variant="small">{fNumber(supplyRate)}%</Typography>
+                        <Typography variant="caption" sx={{ color: '#fff' }}>
+                          {fNumber(supplyRate)}%
+                        </Typography>
                       </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell colSpan={2}>
-                        <Box sx={{ color: 'darkgrey' }}>
+                      <TableCell colSpan={2} sx={{ py: 0.25 }}>
+                        <Box sx={{ color: 'darkgrey', width: '100px', margin: '0 auto' }}>
                           <LinearProgress
                             variant="determinate"
                             value={supplyRate}
                             color="inherit"
+                            sx={{
+                              height: 2,
+                              borderRadius: 1,
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              '& .MuiLinearProgress-bar': {
+                                borderRadius: 1,
+                                backgroundColor: 'rgba(255, 255, 255, 0.7)'
+                              }
+                            }}
                           />
                         </Box>
                       </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell align="right" width="100%" sx={{ pt: 0, pb: 0 }}>
-                        <Typography variant="small" noWrap sx={{ fontWeight: 'bold', m: 1 }}>
-                          Circulating supply:
+                      <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
+                        <Typography
+                          variant="caption"
+                          noWrap
+                          sx={{ fontWeight: 'bold', color: '#fff' }}
+                        >
+                          Circulating:
                         </Typography>
                       </TableCell>
                       <TableCell sx={{ pt: 0, pb: 0 }}>
-                        <Typography variant="small" noWrap>
+                        <Typography variant="caption" noWrap sx={{ color: '#fff' }}>
                           {fNumber(supply)} {name}
                         </Typography>
                       </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
-                        <Typography variant="small" noWrap sx={{ fontWeight: 'bold', m: 1 }}>
-                          Total supply:
+                        <Typography
+                          variant="caption"
+                          noWrap
+                          sx={{ fontWeight: 'bold', color: '#fff' }}
+                        >
+                          Total:
                         </Typography>
                       </TableCell>
                       <TableCell sx={{ pt: 0, pb: 0 }}>
-                        <Typography variant="small" noWrap>
+                        <Typography variant="caption" noWrap sx={{ color: '#fff' }}>
                           {fNumber(amount)} {name}
                         </Typography>
                       </TableCell>
@@ -423,11 +456,15 @@ function FTokenRow({
               }
               placement="bottom-end"
               arrow
-              fontSize="small"
               componentsProps={{
                 tooltip: {
                   sx: {
-                    maxWidth: '500px'
+                    maxWidth: '300px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                    p: 0.5,
+                    '& .MuiTooltip-arrow': {
+                      color: 'rgba(0, 0, 0, 0.9)'
+                    }
                   }
                 }
               }}
