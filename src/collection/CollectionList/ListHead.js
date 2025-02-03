@@ -18,9 +18,7 @@ const StickyTableCell = withStyles((theme) => ({
   }
 }))(TableCell);
 
-const TABLE_HEAD = (isMobile, timeFrame) => {
-  const volumeLabel = timeFrame === '24h' ? 'Volume (24h)' : 'Volume (All)';
-
+const TABLE_HEAD = (isMobile) => {
   if (isMobile) {
     return [
       {
@@ -34,13 +32,21 @@ const TABLE_HEAD = (isMobile, timeFrame) => {
       {
         no: 1,
         id: 'volume',
-        label: volumeLabel,
+        label: 'Volume (24h)',
         align: 'right',
         width: '30%',
         order: true
       },
       {
         no: 2,
+        id: 'totalVolume',
+        label: 'Total Volume',
+        align: 'right',
+        width: '30%',
+        order: true
+      },
+      {
+        no: 3,
         id: 'floor.amount',
         label: 'Floor',
         align: 'right',
@@ -55,7 +61,7 @@ const TABLE_HEAD = (isMobile, timeFrame) => {
       id: 'name',
       label: 'Collection',
       align: 'left',
-      width: '40%',
+      width: '35%',
       order: false
     },
     {
@@ -63,37 +69,45 @@ const TABLE_HEAD = (isMobile, timeFrame) => {
       id: 'floor.amount',
       label: 'Floor',
       align: 'right',
-      width: '20%',
+      width: '13%',
       order: true
     },
     {
       no: 2,
       id: 'volume',
-      label: volumeLabel,
+      label: 'Volume (24h)',
       align: 'right',
-      width: '10%',
+      width: '13%',
       order: true
     },
     {
       no: 3,
-      id: 'owners',
-      label: 'Owners',
+      id: 'totalVolume',
+      label: 'Total Volume',
       align: 'right',
-      width: '10%',
+      width: '13%',
       order: true
     },
     {
       no: 4,
+      id: 'owners',
+      label: 'Owners',
+      align: 'right',
+      width: '13%',
+      order: true
+    },
+    {
+      no: 5,
       id: 'items',
       label: 'Supply',
       align: 'right',
-      width: '10%',
+      width: '13%',
       order: true
     }
   ];
 };
 
-export default function ListHead({ order, orderBy, onRequestSort, timeFrame }) {
+export default function ListHead({ order, orderBy, onRequestSort }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -104,7 +118,7 @@ export default function ListHead({ order, orderBy, onRequestSort, timeFrame }) {
   return (
     <TableHead>
       <TableRow style={{ background: '#00000000' }}>
-        {TABLE_HEAD(isMobile, timeFrame).map((headCell) => (
+        {TABLE_HEAD(isMobile).map((headCell) => (
           <StickyTableCell
             key={headCell.id}
             align={headCell.align}

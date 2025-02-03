@@ -93,7 +93,7 @@ const ImageBackdrop = styled('span')(({ theme }) => ({
   transition: theme.transitions.create('opacity')
 }));
 
-export default function Row({ id, item, isMine, timeFrame }) {
+export default function Row({ id, item, isMine }) {
   const {
     uuid,
     account,
@@ -113,15 +113,15 @@ export default function Row({ id, item, isMine, timeFrame }) {
     created,
     volume,
     totalVolume,
-    floor,
-    owners,
     vol24h,
-    totalVol24h
+    totalVol24h,
+    floor,
+    owners
   } = item;
 
   const floorPrice = floor?.amount || 0;
-  const volumeValue = timeFrame === '24h' ? totalVol24h : totalVolume;
-  const volumeDisplay = fVolume(volumeValue || 0);
+  const volume24h = fVolume(totalVol24h || 0);
+  const totalVolumeDisplay = fVolume(totalVolume || 0);
 
   const strDateTime = formatMonthYearDate(created);
   const logoImageUrl = `https://s1.xrpnft.com/collection/${logoImage}`;
@@ -239,7 +239,20 @@ export default function Row({ id, item, isMine, timeFrame }) {
             fontWeight: 600
           }}
         >
-          ✕ {volumeDisplay}
+          ✕ {volume24h}
+        </Typography>
+      </TableCell>
+
+      <TableCell align="right" sx={{ pl: 0, pr: 2, border: 'none' }}>
+        <Typography
+          variant={isMobile ? 'subtitle2' : 'h6'}
+          noWrap
+          sx={{
+            color: (theme) => theme.colors.success.main,
+            fontWeight: 600
+          }}
+        >
+          ✕ {totalVolumeDisplay}
         </Typography>
       </TableCell>
 
