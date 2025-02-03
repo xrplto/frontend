@@ -362,7 +362,7 @@ function FTokenRow({
           {fNumber(supply)} {name}
         </Typography>
         <Box display="flex" alignItems="center" pt={1}>
-          <Box width="100%" sx={{ color: 'darkgrey' }}>
+          <Box width="80%" sx={{ color: 'darkgrey', margin: '0 auto' }}>
             <Tooltip
               title={
                 <Table
