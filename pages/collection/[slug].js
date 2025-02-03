@@ -13,6 +13,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Collection from 'src/collection';
 import ScrollToTop from 'src/components/ScrollToTop';
+import Topbar from 'src/components/Topbar';
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
@@ -74,10 +75,14 @@ export default function Overview({ collection }) {
   // const bannerImage = collection.bannerImage?`https://s1.xrpnft.com/collection/${collection.bannerImage}`:default_banner;
   const bannerImage = collection.collection.logoImage
     ? `https://s1.xrpnft.com/collection/${collection.collection.logoImage}`
-    : darkMode ? '/static/banner_black.png' : '/static/banner_white.png'; //added default banner. Disable custom banner images above for now.
+    : darkMode
+    ? '/static/banner_black.png'
+    : '/static/banner_white.png'; //added default banner. Disable custom banner images above for now.
   return (
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
+
+      <Topbar />
 
       <Header />
 
@@ -86,7 +91,7 @@ export default function Overview({ collection }) {
           style={{
             height: 0,
             paddingBottom: '25%',
-            position: 'relative',
+            position: 'relative'
           }}
         >
           <BannerImage alt="Banner Image" src={bannerImage} decoding="async" />
