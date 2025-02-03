@@ -18,7 +18,7 @@ import {
   Stack,
   Tooltip,
   Typography,
-  useTheme,
+  useTheme
   // useMediaQuery
 } from '@mui/material';
 // import GridOnIcon from '@mui/icons-material/GridOn';
@@ -119,33 +119,32 @@ export default function Wallet({ style }) {
   return (
     <Box style={style}>
       <Button
-  direction="row"
-  spacing={1}
-  sx={{
-    padding: '4px 12px', // Adjust the padding to make it thicker
-    // backgroundImage: 'linear-gradient(to right, #721DA6 0%, #3021C1 51%, #721DA6 100%)',
-    backgroundColor: `${darkMode ? '#007B55' : '#147DFE'}`,
-    transition: '0.5s',
-    backgroundSize: '200% auto',
-    '&:hover': {
-      backgroundColor: `${darkMode ? '#005E46' : '#147DFE'}`,
-    }
-  }}
-  ref={anchorRef}
-  onClick={accountLogin ? handleOpen : () => setOpenWalletModal(true)}
->
-  <AccountBalanceWalletIcon
-    fontSize="small"
-    sx={{
-      color: '#fff',
-      marginRight: '6px'
-    }}
-  />
-  <Typography variant="s3" fontSize={13} color="#fff">
-    {accountLogin ? truncateAccount(accountLogin, 4) : 'Connect'}
-  </Typography>
-</Button>
-
+        direction="row"
+        spacing={1}
+        sx={{
+          padding: '4px 12px', // Adjust the padding to make it thicker
+          // backgroundImage: 'linear-gradient(to right, #721DA6 0%, #3021C1 51%, #721DA6 100%)',
+          backgroundColor: `${darkMode ? '#007B55' : '#147DFE'}`,
+          transition: '0.5s',
+          backgroundSize: '200% auto',
+          '&:hover': {
+            backgroundColor: `${darkMode ? '#005E46' : '#147DFE'}`
+          }
+        }}
+        ref={anchorRef}
+        onClick={accountLogin ? handleOpen : () => setOpenWalletModal(true)}
+      >
+        <AccountBalanceWalletIcon
+          fontSize="small"
+          sx={{
+            color: '#fff',
+            marginRight: '6px'
+          }}
+        />
+        <Typography variant="s3" fontSize={13} color="#fff">
+          {accountLogin ? truncateAccount(accountLogin, 4) : 'Connect'}
+        </Typography>
+      </Button>
 
       {accountLogin && (
         <Popover
@@ -179,9 +178,7 @@ export default function Wallet({ style }) {
                 sx={{ width: 32, height: 32 }}
               />
               <Stack spacing={0} sx={{ ml: 2, mr: 2 }}>
-                <Typography variant="s6">
-                  {truncateAccount(accountLogin)}
-                </Typography>
+                <Typography variant="s6">{truncateAccount(accountLogin)}</Typography>
                 <Stack direction="row" spacing={1} alignItems="center">
                   <ActiveCircle />
                   <Typography variant="s7">Active XRPL Account</Typography>
@@ -233,18 +230,14 @@ export default function Wallet({ style }) {
                       src={'/static/xrp.3e1e159f.svg'} // use normal <img> attributes as props
                       width={18}
                       height={18}
-                      onError={(event) =>
-                        (event.target.src = '/static/alt.webp')
-                      }
+                      onError={(event) => (event.target.src = '/static/alt.webp')}
                     />
                     <Typography variant="caption" ml={1}>
                       XRP
                     </Typography>
                   </Stack>
 
-                  <Typography variant="caption">
-                    {accountBalance?.curr1?.value}
-                  </Typography>
+                  <Typography variant="caption">{accountBalance?.curr1?.value}</Typography>
                 </Stack>
 
                 {/* <Divider sx={{ my: 1 }} /> */}
@@ -294,7 +287,7 @@ export default function Wallet({ style }) {
                       Account Reserve
                     </Typography>
                     <Tooltip
-                      title={`To activate an XRP wallet, a reserve of 10 XRP is mandatory. Once the XRP address is funded with this amount on the XRP Ledger network, the reserve becomes locked and unable to be retrieved unless either the network decides to reduce the reserve requirement, or the user deletes the wallet. It's possible to pay fees using the reserve funds.`}
+                      title={`To activate an XRP wallet, a base reserve of 1 XRP is required. Once the XRP address is funded with this amount on the XRP Ledger network, the reserve becomes locked. Additional reserve of 0.2 XRP is required for each ledger object (like trustlines) owned by the account. The reserve can only be retrieved if the network reduces the reserve requirement or if the wallet is deleted. It's possible to pay fees using the reserve funds.`}
                     >
                       <HelpIcon
                         sx={{
@@ -365,11 +358,7 @@ export default function Wallet({ style }) {
                     setOpen(false);
                   }}
                 >
-                  <Stack
-                    direction="row"
-                    sx={{ typography: 'body2' }}
-                    alignItems="center"
-                  >
+                  <Stack direction="row" sx={{ typography: 'body2' }} alignItems="center">
                     <Avatar
                       variant={accountLogo ? '' : 'square'}
                       alt="User"
@@ -377,12 +366,8 @@ export default function Wallet({ style }) {
                       sx={{ width: 32, height: 32 }}
                     />
                     <Stack spacing={0} sx={{ ml: 2, mr: 2 }}>
-                      <Typography variant="s6">
-                        {truncateAccount(account)}
-                      </Typography>
-                      <Typography variant="s7">
-                        Switch to this Account
-                      </Typography>
+                      <Typography variant="s6">{truncateAccount(account)}</Typography>
+                      <Typography variant="s7">Switch to this Account</Typography>
                     </Stack>
                     <div onClick={(e) => e.stopPropagation()}>
                       <CopyToClipboard
@@ -417,18 +402,11 @@ export default function Wallet({ style }) {
               sx={{ typography: 'body2', py: 1.2, px: 3 }}
               onClick={() => setOpenWalletModal(true)}
             >
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{ mr: 2 }}
-                alignItems="center"
-              >
+              <Stack direction="row" spacing={1} sx={{ mr: 2 }} alignItems="center">
                 <AddCircleOutlineIcon />
                 <Stack spacing={0} sx={{ ml: 1 }}>
                   <Typography variant="s6">Add Account</Typography>
-                  <Typography variant="s7">
-                    Connect multiple accounts
-                  </Typography>
+                  <Typography variant="s7">Connect multiple accounts</Typography>
                 </Stack>
               </Stack>
             </MenuItem>
@@ -438,12 +416,7 @@ export default function Wallet({ style }) {
               sx={{ typography: 'body2', py: 1.5, px: 3 }}
               onClick={handleLogout}
             >
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{ mr: 2 }}
-                alignItems="center"
-              >
+              <Stack direction="row" spacing={1} sx={{ mr: 2 }} alignItems="center">
                 <LogoutIcon />
                 <Typography variant="s6" style={{ marginLeft: '10px' }}>
                   Logout
