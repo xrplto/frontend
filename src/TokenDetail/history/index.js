@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import InfoIcon from '@mui/icons-material/Info';
+import LinkIcon from '@mui/icons-material/Link';
 import { makeStyles } from '@mui/styles';
 import { FacebookShareButton, TwitterShareButton, FacebookIcon, TwitterIcon } from 'react-share';
 import moment from 'moment';
@@ -273,7 +274,9 @@ export default function HistoryData({ token }) {
                   <TableCell align="left">Taker Got</TableCell>
                   <TableCell align="left">Taker</TableCell>
                   <TableCell align="left">Maker</TableCell>
-                  <TableCell align="left">Hash</TableCell>
+                  <TableCell align="left" sx={{ width: '40px' }}>
+                    Hash
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -359,25 +362,22 @@ export default function HistoryData({ token }) {
                         </Link>
                       </TableCell>
                       <TableCell
-                        align="left"
+                        align="center"
                         sx={{
-                          width: '5%',
-                          whiteSpace: 'nowrap'
+                          width: '40px',
+                          padding: '6px'
                         }}
                       >
-                        <Stack direction="row" alignItems="center">
-                          <Link
-                            color="primary"
-                            target="_blank"
-                            href={`https://bithomp.com/explorer/${hash}`}
-                            rel="noreferrer noopener nofollow"
-                          >
-                            <Stack direction="row" alignItems="center">
-                              {truncate(hash, 16)}
-                              <IconButton edge="end" aria-label="bithomp"></IconButton>
-                            </Stack>
-                          </Link>
-                        </Stack>
+                        <Link
+                          color="primary"
+                          target="_blank"
+                          href={`https://bithomp.com/explorer/${hash}`}
+                          rel="noreferrer noopener nofollow"
+                        >
+                          <IconButton size="small">
+                            <LinkIcon fontSize="small" />
+                          </IconButton>
+                        </Link>
                       </TableCell>
                     </TableRow>
                   );
