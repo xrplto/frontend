@@ -85,7 +85,7 @@ const TABLE_HEAD = (isMobile, timeFrame) => {
     {
       no: 4,
       id: 'items',
-      label: 'Items',
+      label: 'Supply',
       align: 'right',
       width: '10%',
       order: true
