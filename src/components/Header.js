@@ -199,6 +199,21 @@ export default function Header(props) {
                     alignItems: 'center',
                     gap: '8px'
                   }}
+                  href="/collections"
+                >
+                  {t('NFTs')}
+                </StyledLink>
+                <StyledLink
+                  underline="none"
+                  color={darkMode ? 'white' : 'black'}
+                  sx={{
+                    '&:hover': {
+                      color: darkMode ? '#22B14C !important' : '#3366FF !important'
+                    },
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
                   href="/swap"
                 >
                   {t('Swap')}
