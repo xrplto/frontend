@@ -33,16 +33,16 @@ const TABLE_HEAD = (isMobile, timeFrame) => {
             },
             {
                 no: 1,
-                id: 'floor.amount',
-                label: 'Floor',
+                id: 'volume',
+                label: volumeLabel,
                 align: 'right',
                 width: '30%',
                 order: true
             },
             {
                 no: 2,
-                id: 'volume',
-                label: volumeLabel,
+                id: 'floor.amount',
+                label: 'Floor',
                 align: 'right',
                 width: '30%',
                 order: true
@@ -60,16 +60,16 @@ const TABLE_HEAD = (isMobile, timeFrame) => {
         },
         {
             no: 1,
-            id: 'volume',
-            label: volumeLabel,
+            id: 'floor.amount',
+            label: 'Floor',
             align: 'right',
             width: '20%',
             order: true
         },
         {
             no: 2,
-            id: 'floor.amount',
-            label: 'Floor',
+            id: 'volume',
+            label: volumeLabel,
             align: 'right',
             width: '10%',
             order: true

@@ -215,14 +215,14 @@ export default function Row({ id, item, isMine, timeFrame }) {
             <TableCell align="right" sx={{ pl: 0, pr: 0, border: 'none' }}>
                 <Typography variant={isMobile ? 'caption' : 'body2'} noWrap> 
                 <Typography>✕</Typography>{' '}
-                    {volumeDisplay}
+                    {fNumber(floorPrice)}
                 </Typography>
             </TableCell>
 
             <TableCell align="right" sx={{ pl: 0, pr: 0, border: 'none' }}>
                 <Typography variant={isMobile ? 'caption' : 'body2'} noWrap> 
                 <Typography>✕</Typography>{' '}
-                    {fNumber(floorPrice)}
+                    {volumeDisplay}
                 </Typography>
             </TableCell>
 
