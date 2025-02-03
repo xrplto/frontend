@@ -274,7 +274,7 @@ const Topbar = () => {
               <CurrencySwithcer />
               <ThemeSwitcher />
               <Separator>|</Separator> {/* Add separator */}
-              <APILabel onClick={() => dispatch(toggleChatOpen())}>Chatbox</APILabel>
+              {/* <APILabel onClick={() => dispatch(toggleChatOpen())}>Chatbox</APILabel> */}
               <APILabel href="/api-docs" target="_blank" rel="noopener noreferrer">
                 API
               </APILabel>{' '}
