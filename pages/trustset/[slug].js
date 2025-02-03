@@ -471,39 +471,7 @@ const TrustLine = (props) => {
 
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                <Box
-                  component="img"
-                  alt="XUMM QR"
-                  src={qrUrl}
-                  sx={{ width: '100%', maxWidth: 250, height: 'auto', mb: 2 }}
-                />
-                <Stack direction="row" spacing={1} justifyContent="center">
-                  <LoadingButton
-                    size="small"
-                    onClick={handleTrustSet}
-                    loading={loading}
-                    variant="contained"
-                    color={uuid ? 'error' : 'success'}
-                  >
-                    {uuid ? `Cancel (${counter})` : 'Generate QR'}
-                  </LoadingButton>
-                  {nextUrl && (
-                    <Link
-                      underline="none"
-                      color="inherit"
-                      target="_blank"
-                      href={nextUrl}
-                      rel="noreferrer noopener nofollow"
-                    >
-                      <Button size="small" variant="outlined">
-                        Open in XUMM
-                      </Button>
-                    </Link>
-                  )}
-                </Stack>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
+                {/* Token Details Section */}
                 <Stack spacing={1} sx={{ mb: 2 }}>
                   <Stack direction="row" alignItems="center">
                     <Link
@@ -554,6 +522,7 @@ const TrustLine = (props) => {
                   </Stack>
                 </Stack>
 
+                {/* Market Stats Section */}
                 <Stack spacing={1}>
                   <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
                     {/* Market Stats */}
@@ -583,7 +552,6 @@ const TrustLine = (props) => {
                       {fNumber(token.dom)} %
                     </Typography>
 
-                    {/* Supply Stats */}
                     <Label>CIRCULATING SUPPLY</Label>
                     <Typography variant="body2" color="primary">
                       {fNumber(token.supply)}
@@ -594,7 +562,6 @@ const TrustLine = (props) => {
                       {fNumber(token.amount)}
                     </Typography>
 
-                    {/* Additional Info */}
                     <Label>CREATED ON</Label>
                     <Typography variant="body2" color="primary">
                       {token.date}
@@ -605,6 +572,49 @@ const TrustLine = (props) => {
                       {info.blackholed ? 'YES' : 'NO'}
                     </Typography>
                   </Box>
+                </Stack>
+              </Grid>
+
+              {/* QR Code Section */}
+              <Grid item xs={12} sm={6}>
+                <Stack alignItems="center" spacing={2}>
+                  <Box
+                    component="img"
+                    alt="XUMM QR"
+                    src={qrUrl}
+                    sx={{
+                      width: '100%',
+                      maxWidth: 280,
+                      height: 'auto',
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: 'divider'
+                    }}
+                  />
+                  <Stack direction="row" spacing={1} justifyContent="center">
+                    <LoadingButton
+                      size="small"
+                      onClick={handleTrustSet}
+                      loading={loading}
+                      variant="contained"
+                      color={uuid ? 'error' : 'success'}
+                    >
+                      {uuid ? `Cancel (${counter})` : 'Generate QR'}
+                    </LoadingButton>
+                    {nextUrl && (
+                      <Link
+                        underline="none"
+                        color="inherit"
+                        target="_blank"
+                        href={nextUrl}
+                        rel="noreferrer noopener nofollow"
+                      >
+                        <Button size="small" variant="outlined">
+                          Open in XUMM
+                        </Button>
+                      </Link>
+                    )}
+                  </Stack>
                 </Stack>
               </Grid>
             </Grid>
