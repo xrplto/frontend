@@ -273,7 +273,6 @@ export default function HistoryData({ token }) {
                   <TableCell align="left">Taker Got</TableCell>
                   <TableCell align="left">Taker</TableCell>
                   <TableCell align="left">Maker</TableCell>
-                  <TableCell align="left">Ledger</TableCell>
                   <TableCell align="left">Hash</TableCell>
                 </TableRow>
               </TableHead>
@@ -359,7 +358,6 @@ export default function HistoryData({ token }) {
                           {truncate(maker, 12)}
                         </Link>
                       </TableCell>
-                      <TableCell align="left">{ledger}</TableCell>
                       <TableCell
                         align="left"
                         sx={{
