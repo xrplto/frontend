@@ -183,21 +183,41 @@ export default function ViewNFT({ collection }) {
     { label: 'Owners', value: extra.owners }
   ];
 
+  const handleOpenShare = () => {
+    setOpenShare(true);
+  };
+
+  const handleCloseShare = () => {
+    setOpenShare(false);
+  };
+
   return (
     <GlassBox>
       <Popover
         open={openShare}
-        onClose={() => setOpenShare(false)}
+        onClose={handleCloseShare}
         anchorEl={anchorRef.current}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        PaperProps={{
+          sx: { borderRadius: 2 }
+        }}
       >
-        <Stack direction="row" spacing={2} sx={{ p: 1.5 }}>
+        <Stack direction="row" spacing={2} sx={{ p: 2 }}>
           <FacebookShareButton url={shareUrl} quote={shareTitle}>
-            <FacebookIcon size={24} round />
+            <Tooltip title="Share on Facebook">
+              <FacebookIcon size={32} round />
+            </Tooltip>
           </FacebookShareButton>
-          <TwitterShareButton title={shareTitle} url={shareUrl}>
-            <TwitterIcon size={24} round />
+
+          <TwitterShareButton
+            title={`Check out ${shareTitle} on XRPNFT`}
+            url={shareUrl}
+            hashtags={['XRPNFT', 'NFT']}
+          >
+            <Tooltip title="Share on Twitter">
+              <TwitterIcon size={32} round />
+            </Tooltip>
           </TwitterShareButton>
         </Stack>
       </Popover>
@@ -252,7 +272,7 @@ export default function ViewNFT({ collection }) {
           </Tooltip>
 
           <Tooltip title="Share">
-            <IconButton size="medium" sx={{ padding: 1 }} ref={anchorRef} onClick={() => {}}>
+            <IconButton size="medium" sx={{ padding: 1 }} ref={anchorRef} onClick={handleOpenShare}>
               <ShareIcon />
             </IconButton>
           </Tooltip>
