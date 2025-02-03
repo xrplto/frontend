@@ -20,6 +20,7 @@ import SportsScoreIcon from '@mui/icons-material/SportsScore';
 import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import { Icon } from '@iconify/react';
+import NumbersIcon from '@mui/icons-material/Numbers';
 
 import { getMinterName } from 'src/utils/constants';
 import { fNumber, fIntNumber } from 'src/utils/formatNumber';
@@ -44,7 +45,7 @@ const CardWrapper = styled(Card)(({ theme }) => ({
     transform: 'translateY(-5px)',
     boxShadow: '0 12px 40px 0 rgba(31, 38, 135, 0.5)'
   },
-  height: 300, // Reduced from 340
+  height: 300 // Reduced from 340
 }));
 
 export default function NFTCard({ nft, handleRemove }) {
@@ -54,7 +55,19 @@ export default function NFTCard({ nft, handleRemove }) {
 
   const [loadingImg, setLoadingImg] = useState(true);
 
-  const { uuid, account, cost, costb, meta, NFTokenID, destination, rarity_rank, updateEvent, amount } = nft;
+  const {
+    uuid,
+    account,
+    cost,
+    costb,
+    meta,
+    NFTokenID,
+    destination,
+    rarity_rank,
+    updateEvent,
+    amount,
+    MasterSequence
+  } = nft;
 
   const isSold = false;
   const imgUrl = getNftCoverUrl(nft, 'small');
@@ -71,7 +84,8 @@ export default function NFTCard({ nft, handleRemove }) {
     handleRemove(NFTokenID);
   };
 
-  const showBuyNowButton = (cost && cost.issuer === 'XRPL' && cost.currency === 'XRP' && cost.amount) || amount;
+  const showBuyNowButton =
+    (cost && cost.issuer === 'XRPL' && cost.currency === 'XRP' && cost.amount) || amount;
 
   return (
     <Link href={`/nft/${NFTokenID}`} underline="none" sx={{ position: 'relative' }}>
@@ -103,7 +117,12 @@ export default function NFTCard({ nft, handleRemove }) {
             image={imgUrl}
             loading={loadingImg.toString()}
             alt={'NFT' + uuid}
-            sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px 16px 0 0' }}
+            sx={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: '16px 16px 0 0'
+            }}
           />
           <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
 
@@ -181,7 +200,12 @@ export default function NFTCard({ nft, handleRemove }) {
               {name}
             </Typography>
             {(cost || amount) && (
-              <Typography variant="caption" color="text.secondary" noWrap sx={{ fontSize: '0.7rem' }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                noWrap
+                sx={{ fontSize: '0.7rem' }}
+              >
                 {cost
                   ? cost.currency === 'XRP'
                     ? `✕ ${fNumber(cost.amount)}`
@@ -197,7 +221,13 @@ export default function NFTCard({ nft, handleRemove }) {
           </Box>
 
           {/* Buy Now button and Ranking */}
-          <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%" mt={1}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            width="100%"
+            mt={1}
+          >
             {showBuyNowButton && (
               <Button
                 variant="contained"
@@ -216,19 +246,46 @@ export default function NFTCard({ nft, handleRemove }) {
                 Buy Now
               </Button>
             )}
-            {rarity_rank > 0 && (
-              <Chip
-                variant="filled"
-                color="secondary"
-                icon={<LeaderboardOutlinedIcon sx={{ width: '12px' }} />}
-                label={<Typography variant="caption" sx={{ fontSize: '0.65rem' }}>{fIntNumber(rarity_rank)}</Typography>}
-                size="small"
-                sx={{
-                  height: '20px',
-                  '& .MuiChip-label': { px: 0.5 }
-                }}
-              />
-            )}
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              {MasterSequence > 0 && (
+                <Tooltip title="On-Chain Rank">
+                  <Chip
+                    variant="filled"
+                    color="warning"
+                    icon={<NumbersIcon sx={{ width: '12px' }} />}
+                    label={
+                      <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                        {fIntNumber(MasterSequence)}
+                      </Typography>
+                    }
+                    size="small"
+                    sx={{
+                      height: '20px',
+                      '& .MuiChip-label': { px: 0.5 }
+                    }}
+                  />
+                </Tooltip>
+              )}
+              {rarity_rank > 0 && (
+                <Tooltip title="Rarity Rank">
+                  <Chip
+                    variant="filled"
+                    color="secondary"
+                    icon={<LeaderboardOutlinedIcon sx={{ width: '12px' }} />}
+                    label={
+                      <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                        {fIntNumber(rarity_rank)}
+                      </Typography>
+                    }
+                    size="small"
+                    sx={{
+                      height: '20px',
+                      '& .MuiChip-label': { px: 0.5 }
+                    }}
+                  />
+                </Tooltip>
+              )}
+            </Stack>
           </Stack>
         </CardContent>
       </CardWrapper>
