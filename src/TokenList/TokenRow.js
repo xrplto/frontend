@@ -165,10 +165,10 @@ function FTokenRow({
           cursor: 'pointer'
         },
         '& .MuiTypography-root': {
-          fontSize: isMobile ? '13px' : '14px'
+          fontSize: isMobile ? '12px' : '14px'
         },
         '& .MuiTableCell-root': {
-          padding: '4px 8px',
+          padding: isMobile ? '2px 4px' : '4px 8px',
           whiteSpace: 'nowrap'
         }
       }}
@@ -223,7 +223,7 @@ function FTokenRow({
       <TableCell
         align="left"
         sx={{
-          p: '4px 8px',
+          p: isMobile ? '2px 4px' : '4px 8px',
           position: 'sticky',
           zIndex: 1001,
           left: isMobile ? '32px' : '72px',
@@ -244,15 +244,13 @@ function FTokenRow({
             : {}
         }}
       >
-        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ p: 0 }}>
-          {' '}
-          {/* Reduce spacing */}
+        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.25 : 0.5}>
           <Box>
             {isAdmin ? (
               <AdminImage
                 src={imgUrl}
-                width={isMobile ? 16 : 24}
-                height={isMobile ? 16 : 24}
+                width={isMobile ? 14 : 24}
+                height={isMobile ? 14 : 24}
                 onClick={handleEditToken}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
                 alt={`${user} ${name} Logo`}
@@ -260,8 +258,8 @@ function FTokenRow({
             ) : (
               <TokenImage
                 src={imgUrl}
-                width={isMobile ? 16 : 24}
-                height={isMobile ? 16 : 24}
+                width={isMobile ? 14 : 24}
+                height={isMobile ? 14 : 24}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
                 alt={`${user} ${name} Logo`}
               />
@@ -273,16 +271,14 @@ function FTokenRow({
             href={`/token/${slug}`}
             rel="noreferrer noopener nofollow"
           >
-            <Stack spacing={0.5}>
-              {' '}
-              {/* Reduce spacing between name and user */}
+            <Stack spacing={isMobile ? 0 : 0.5}>
               <Typography
                 variant="token"
                 sx={{
                   fontWeight: '700',
-                  fontSize: isMobile ? '0.75rem' : '0.85rem',
-                  lineHeight: 1.2
-                }} // Adjust font size and line height
+                  fontSize: isMobile ? '0.7rem' : '0.85rem',
+                  lineHeight: 1.1
+                }}
                 color={
                   isOMCF !== 'yes'
                     ? darkMode
@@ -296,20 +292,22 @@ function FTokenRow({
                 }
                 noWrap={!isMobile}
               >
-                {truncate(name, 13)}
+                {truncate(name, isMobile ? 10 : 13)}
               </Typography>
               <Typography
                 variant="p2"
                 sx={{
                   fontWeight: '600',
-                  fontSize: isMobile ? '0.65rem' : '0.75rem',
-                  lineHeight: 1.2
-                }} // Adjust font size and line height
+                  fontSize: isMobile ? '0.6rem' : '0.75rem',
+                  lineHeight: 1.1
+                }}
                 color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                 noWrap={!isMobile}
               >
-                {isMobile && <span style={badge24hStyle}>{id}</span>}
-                {truncate(user, 15)}
+                {isMobile && (
+                  <span style={{ ...badge24hStyle, fontSize: '10px', padding: '0 2px' }}>{id}</span>
+                )}
+                {truncate(user, isMobile ? 12 : 15)}
               </Typography>
             </Stack>
           </Link>
@@ -322,9 +320,6 @@ function FTokenRow({
             number={fNumberWithCurreny(exch, exchRate)}
           />
         </TransitionTypo>
-        {/* <TransitionTypo variant="h6" noWrap={!isMobile}>
-          ✕ <NumberTooltip number={fNumber(exch)} />
-        </TransitionTypo> */}
       </TableCell>
       <TableCell align="right">
         <BearBullLabel value={pro24h} variant="h4" />
