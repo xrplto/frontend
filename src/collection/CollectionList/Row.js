@@ -18,20 +18,21 @@ import { Icon } from '@iconify/react';
 
 const IconCover = styled('div')(
   ({ theme }) => `
-        width: 30px;  // reduced from 40px
-        height: 30px; // reduced from 40px
-        box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
-
-        border: 1px solid ${theme.colors.alpha.black[50]};
-        border-radius: 10px;
-        box-shadow: rgb(0 0 0 / 8%) 0px 5px 10px;
-        background-color: ${theme.colors.alpha.white[70]};
+        width: 42px;  // Increased for better visibility
+        height: 42px; // Increased for better visibility
+        border: 2px solid ${theme.colors.alpha.black[10]};
+        border-radius: 12px;
+        background: ${theme.colors.alpha.white[100]};
         position: relative;
         overflow: hidden;
-        transition: width 1s ease-in-out, height .5s ease-in-out !important;
+        transition: all 0.2s ease-in-out;
         -webkit-tap-highlight-color: transparent;
+        
         &:hover, &.Mui-focusVisible {
-            z-index: 1;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.12);
+            border-color: ${theme.colors.primary.main}40;
+            
             & .MuiImageBackdrop-root {
                 opacity: 0.1;
             }
@@ -41,8 +42,8 @@ const IconCover = styled('div')(
         }
 
         ${theme.breakpoints.down('sm')} {
-            width: 20px; // reduced from 28px
-            height: 20px; // reduced from 28px
+            width: 32px;
+            height: 32px;
         }
     `
 );
@@ -52,12 +53,12 @@ const IconWrapper = styled('div')(
         box-sizing: border-box;
         display: inline-block;
         position: relative;
-        width: 28px;  // reduced from 38px
-        height: 28px; // reduced from 38px
+        width: 38px;
+        height: 38px;
 
         ${theme.breakpoints.down('sm')} {
-            width: 18px; // reduced from 26px
-            height: 18px; // reduced from 26px
+            width: 28px;
+            height: 28px;
         }
   `
 );
@@ -133,10 +134,30 @@ export default function Row({ id, item, isMine, timeFrame }) {
   };
 
   return (
-    <TableRow hover key={uuid} onClick={handleRowClick} style={{ cursor: 'pointer' }}>
+    <TableRow
+      hover
+      key={uuid}
+      onClick={handleRowClick}
+      sx={{
+        cursor: 'pointer',
+        transition: 'all 0.2s',
+        '&:hover': {
+          backgroundColor: (theme) => theme.colors.alpha.black[5]
+        }
+      }}
+    >
       <TableCell align="left" sx={{ p: 0, border: 'none' }}>
-        <Stack direction="row" alignItems="center" spacing={2} sx={{ pt: 1, pb: 1 }}>
-          <Typography variant={isMobile ? 'caption' : 'body2'}>{id}</Typography>
+        <Stack direction="row" alignItems="center" spacing={2} sx={{ pt: 1.5, pb: 1.5 }}>
+          <Typography
+            variant={isMobile ? 'caption' : 'body2'}
+            sx={{
+              minWidth: '24px',
+              color: (theme) => theme.colors.alpha.black[70]
+            }}
+          >
+            {id}
+          </Typography>
+
           <Link href={isMine ? `/collection/${slug}/edit` : `/collection/${slug}`} underline="none">
             <IconCover>
               <IconWrapper>
@@ -166,34 +187,58 @@ export default function Row({ id, item, isMine, timeFrame }) {
           </Link>
 
           <Link underline="none" href={`/collection/${slug}`}>
-            <Stack spacing={0.4}>
-              <Stack direction="row" spacing={0.5} sx={{ pt: 0 }}>
+            <Stack spacing={0.8}>
+              <Stack direction="row" spacing={1} alignItems="center">
                 <Typography
-                  variant={isMobile ? 'caption' : 'token'}
+                  variant={isMobile ? 'subtitle2' : 'h6'}
                   noWrap
                   color="primary"
                   sx={{
-                    width: isMobile ? '80px' : undefined,
-                    textOverflow: isMobile ? 'ellipsis' : 'none'
+                    width: isMobile ? '120px' : 'auto',
+                    textOverflow: 'ellipsis',
+                    fontWeight: 600
                   }}
                 >
                   {name}
                 </Typography>
+                {verified && (
+                  <VerifiedIcon
+                    sx={{
+                      fontSize: isMobile ? 14 : 18,
+                      color: (theme) => theme.colors.primary.main
+                    }}
+                  />
+                )}
               </Stack>
-              <Typography variant={isMobile ? 'caption' : 'token'} noWrap></Typography>
+              <Typography
+                variant={isMobile ? 'caption' : 'body2'}
+                sx={{
+                  color: (theme) => theme.colors.alpha.black[50],
+                  fontWeight: 500
+                }}
+              >
+                {strDateTime}
+              </Typography>
             </Stack>
           </Link>
         </Stack>
       </TableCell>
 
-      <TableCell align="right" sx={{ pl: 0, pr: 0, border: 'none' }}>
-        <Typography variant={isMobile ? 'caption' : 'body2'} noWrap>
+      <TableCell align="right" sx={{ pl: 0, pr: 2, border: 'none' }}>
+        <Typography variant={isMobile ? 'subtitle2' : 'h6'} noWrap sx={{ fontWeight: 600 }}>
           ✕ {fNumber(floorPrice)}
         </Typography>
       </TableCell>
 
-      <TableCell align="right" sx={{ pl: 0, pr: 0, border: 'none' }}>
-        <Typography variant={isMobile ? 'caption' : 'body2'} noWrap>
+      <TableCell align="right" sx={{ pl: 0, pr: 2, border: 'none' }}>
+        <Typography
+          variant={isMobile ? 'subtitle2' : 'h6'}
+          noWrap
+          sx={{
+            color: (theme) => theme.colors.success.main,
+            fontWeight: 600
+          }}
+        >
           ✕ {volumeDisplay}
         </Typography>
       </TableCell>
@@ -202,12 +247,12 @@ export default function Row({ id, item, isMine, timeFrame }) {
         align="right"
         sx={{
           pl: 0,
-          pr: 0,
+          pr: 2,
           border: 'none',
           display: { xs: 'none', sm: 'table-cell' }
         }}
       >
-        <Typography variant={isMobile ? 'caption' : 'body2'} noWrap>
+        <Typography variant="h6" noWrap sx={{ fontWeight: 600 }}>
           {fIntNumber(owners || 0)}
         </Typography>
       </TableCell>
@@ -216,12 +261,12 @@ export default function Row({ id, item, isMine, timeFrame }) {
         align="right"
         sx={{
           pl: 0,
-          pr: 0,
+          pr: 3,
           border: 'none',
           display: { xs: 'none', sm: 'table-cell' }
         }}
       >
-        <Typography variant={isMobile ? 'caption' : 'body2'} noWrap>
+        <Typography variant="h6" noWrap sx={{ fontWeight: 600 }}>
           {fIntNumber(items)}
         </Typography>
       </TableCell>
