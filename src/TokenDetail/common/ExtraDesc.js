@@ -33,6 +33,10 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
 
+// Add these new imports
+import { alpha } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+
 // ----------------------------------------------------------------------
 
 export default function ExtraDesc({ token }) {
@@ -105,31 +109,47 @@ export default function ExtraDesc({ token }) {
 
   const MarketTypography = withStyles({
     root: {
-      color: '#2CD9C5'
+      background: 'linear-gradient(45deg, #2CD9C5 30%, #2CD9FF 90%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent'
     }
   })(Typography);
 
   const VolumeTypography = withStyles({
     root: {
-      color: theme.palette.error.main
+      background: 'linear-gradient(45deg, #FF6B6B 30%, #FF8E53 90%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent'
     }
   })(Typography);
 
   const SupplyTypography = withStyles({
     root: {
-      color: '#3366FF'
+      background: 'linear-gradient(45deg, #3366FF 30%, #33C2FF 90%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent'
     }
   })(Typography);
 
   const TotalSupplyTypography = withStyles({
     root: {
-      color: theme.palette.warning.main
+      background: 'linear-gradient(45deg, #FFB86C 30%, #FFDD95 90%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent'
     }
   })(Typography);
 
   return (
-    <Stack spacing={1}>
-      <Grid container spacing={0.5}>
+    <Box
+      sx={{
+        background: (theme) => alpha(theme.palette.background.default, 0.8),
+        backdropFilter: 'blur(8px)',
+        borderRadius: 2,
+        boxShadow: (theme) => `0 0 24px ${alpha(theme.palette.primary.main, 0.08)}`,
+        p: 0.5
+      }}
+    >
+      <Grid container spacing={0}>
         <Grid
           item
           xs={12}
@@ -137,14 +157,28 @@ export default function ExtraDesc({ token }) {
           sx={{
             display: { xs: 'none', md: 'block' },
             borderRight: '1px solid',
-            borderRightColor: theme.palette.divider,
-            p: 2
+            borderRightColor: (theme) => alpha(theme.palette.divider, 0.1),
+            p: 1.5,
+            '&:hover': {
+              background: (theme) => alpha(theme.palette.primary.main, 0.04),
+              transition: 'all 0.3s ease-in-out'
+            }
           }}
         >
-          <Stack spacing={2}>
-            <Stack>
-              <Stack direction="row" alignItems="center" gap={1}>
-                <Typography variant="body2" color="text.secondary">
+          <Stack spacing={1.5}>
+            <Stack
+              sx={{
+                p: 1.5,
+                borderRadius: 1,
+                background: (theme) => alpha(theme.palette.background.paper, 0.4),
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)'
+                }
+              }}
+            >
+              <Stack direction="row" alignItems="center" gap={0.5}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
                   Market cap
                 </Typography>
                 <Tooltip
@@ -184,14 +218,24 @@ export default function ExtraDesc({ token }) {
                   </FormGroup>
                 )}
               </Stack>
-              <MarketTypography variant="h6" sx={{ mt: 0.5 }}>
+              <MarketTypography variant="h6" sx={{ mt: 0.25 }}>
                 {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
               </MarketTypography>
             </Stack>
 
-            <Stack>
-              <Stack direction="row" alignItems="center" gap={1}>
-                <Typography variant="body2" color="text.secondary">
+            <Stack
+              sx={{
+                p: 1.5,
+                borderRadius: 1,
+                background: (theme) => alpha(theme.palette.background.paper, 0.4),
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)'
+                }
+              }}
+            >
+              <Stack direction="row" alignItems="center" gap={0.5}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
                   Volume / Marketcap
                 </Typography>
                 <Tooltip
@@ -210,7 +254,7 @@ export default function ExtraDesc({ token }) {
                   />
                 </Tooltip>
               </Stack>
-              <VolumeTypography variant="h6" sx={{ mt: 0.5 }}>
+              <VolumeTypography variant="h6" sx={{ mt: 0.25 }}>
                 {fNumber(voldivmarket)}
               </VolumeTypography>
             </Stack>
@@ -224,14 +268,28 @@ export default function ExtraDesc({ token }) {
           sx={{
             display: { xs: 'none', md: 'block' },
             borderRight: '1px solid',
-            borderRightColor: theme.palette.divider,
-            p: 2
+            borderRightColor: (theme) => alpha(theme.palette.divider, 0.1),
+            p: 1.5,
+            '&:hover': {
+              background: (theme) => alpha(theme.palette.primary.main, 0.04),
+              transition: 'all 0.3s ease-in-out'
+            }
           }}
         >
-          <Stack spacing={2}>
-            <Stack>
-              <Stack direction="row" alignItems="center" gap={1}>
-                <Typography variant="body2" color="text.secondary">
+          <Stack spacing={1.5}>
+            <Stack
+              sx={{
+                p: 1.5,
+                borderRadius: 1,
+                background: (theme) => alpha(theme.palette.background.paper, 0.4),
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)'
+                }
+              }}
+            >
+              <Stack direction="row" alignItems="center" gap={0.5}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
                   Volume (24h)
                 </Typography>
                 <Tooltip
@@ -248,10 +306,10 @@ export default function ExtraDesc({ token }) {
                   />
                 </Tooltip>
               </Stack>
-              <VolumeTypography variant="h6" sx={{ mt: 0.5 }}>
+              <VolumeTypography variant="h6" sx={{ mt: 0.25 }}>
                 {currencySymbols[activeFiatCurrency]} {fNumber(convertedVolume)}
               </VolumeTypography>
-              <VolumeTypography variant="body2" sx={{ mt: 0.5 }}>
+              <VolumeTypography variant="body2" sx={{ mt: 0.25 }}>
                 <NumberTooltip number={volume} /> {name}
               </VolumeTypography>
             </Stack>
@@ -264,13 +322,27 @@ export default function ExtraDesc({ token }) {
           md={4}
           sx={{
             display: { xs: 'none', md: 'block' },
-            p: 2
+            p: 1.5,
+            '&:hover': {
+              background: (theme) => alpha(theme.palette.primary.main, 0.04),
+              transition: 'all 0.3s ease-in-out'
+            }
           }}
         >
-          <Stack spacing={2}>
-            <Stack>
-              <Stack direction="row" alignItems="center" gap={1}>
-                <Typography variant="body2" color="text.secondary">
+          <Stack spacing={1.5}>
+            <Stack
+              sx={{
+                p: 1.5,
+                borderRadius: 1,
+                background: (theme) => alpha(theme.palette.background.paper, 0.4),
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)'
+                }
+              }}
+            >
+              <Stack direction="row" alignItems="center" gap={0.5}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
                   Circulating Supply
                 </Typography>
                 <Tooltip
@@ -288,14 +360,24 @@ export default function ExtraDesc({ token }) {
                   />
                 </Tooltip>
               </Stack>
-              <SupplyTypography variant="h6" sx={{ mt: 0.5 }}>
+              <SupplyTypography variant="h6" sx={{ mt: 0.25 }}>
                 {circulatingSupply}
               </SupplyTypography>
             </Stack>
 
-            <Stack>
-              <Stack direction="row" alignItems="center" gap={1}>
-                <Typography variant="body2" color="text.secondary">
+            <Stack
+              sx={{
+                p: 1.5,
+                borderRadius: 1,
+                background: (theme) => alpha(theme.palette.background.paper, 0.4),
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-2px)'
+                }
+              }}
+            >
+              <Stack direction="row" alignItems="center" gap={0.5}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
                   Total Supply
                 </Typography>
                 <Tooltip
@@ -314,13 +396,13 @@ export default function ExtraDesc({ token }) {
                   />
                 </Tooltip>
               </Stack>
-              <TotalSupplyTypography variant="h6" sx={{ mt: 0.5 }}>
+              <TotalSupplyTypography variant="h6" sx={{ mt: 0.25 }}>
                 {totalSupply}
               </TotalSupplyTypography>
             </Stack>
           </Stack>
         </Grid>
       </Grid>
-    </Stack>
+    </Box>
   );
 }
