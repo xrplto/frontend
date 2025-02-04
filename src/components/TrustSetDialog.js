@@ -57,13 +57,13 @@ const TrustDialog = styled(Dialog)(({ theme }) => ({
   WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
   '& .MuiDialogContent-root': {
     padding: theme.spacing(3),
-    minWidth: { xs: '100%', sm: 400 }  // Add minimum width
+    minWidth: { xs: '100%', sm: 400 } // Add minimum width
   },
   '& .MuiDialogActions-root': {
     padding: theme.spacing(1)
   },
   '& .MuiPaper-root': {
-    borderRadius: theme.spacing(2)  // More rounded corners
+    borderRadius: theme.spacing(2) // More rounded corners
   }
 }));
 
@@ -579,15 +579,17 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
         </TrustDialogTitle>
 
         <DialogContent>
-          <Stack spacing={2.5} sx={{ px: 1 }}>  {/* Increased spacing between elements */}
+          <Stack spacing={2.5} sx={{ px: 1 }}>
+            {' '}
+            {/* Increased spacing between elements */}
             <Stack direction="row" alignItems="center" spacing={1}>
               <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
                 Issuer:
               </Label>
-              <Label 
-                variant="body2" 
-                noWrap 
-                sx={{ 
+              <Label
+                variant="body2"
+                noWrap
+                sx={{
                   flex: 1,
                   fontFamily: 'monospace',
                   bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
@@ -613,15 +615,14 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                 </IconButton>
               </Link>
             </Stack>
-
             <Stack direction="row" alignItems="center" spacing={1}>
               <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
                 Currency:
               </Label>
-              <Label 
-                variant="body2" 
-                noWrap 
-                sx={{ 
+              <Label
+                variant="body2"
+                noWrap
+                sx={{
                   fontWeight: 600,
                   color: 'primary.main'
                 }}
@@ -629,34 +630,33 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                 {currency}
               </Label>
             </Stack>
-
             <TextField
               fullWidth
               label="Trust Amount"
               value={amount}
               onChange={handleChangeAmount}
-              variant="outlined"  // Changed to outlined
+              variant="outlined" // Changed to outlined
               disabled={isRemove}
               InputProps={{
-                sx: { 
+                sx: {
                   borderRadius: 1.5,
-                  bgcolor: (theme) => isRemove ? alpha(theme.palette.action.disabled, 0.08) : 'transparent'
+                  bgcolor: (theme) =>
+                    isRemove ? alpha(theme.palette.action.disabled, 0.08) : 'transparent'
                 }
               }}
             />
-
-            <Stack 
-              direction="row" 
-              alignItems="center" 
-              sx={{ 
+            <Stack
+              direction="row"
+              alignItems="center"
+              sx={{
                 bgcolor: (theme) => alpha(theme.palette.grey[200], 0.4),
                 borderRadius: 1,
                 p: 1.5
               }}
             >
-              <Typography 
-                variant="body2" 
-                sx={{ 
+              <Typography
+                variant="body2"
+                sx={{
                   flex: 1,
                   color: 'text.secondary',
                   fontSize: '0.85rem'
@@ -675,20 +675,14 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                 </Tooltip>
               </CopyToClipboard>
             </Stack>
-
-            <Stack 
-              direction="row" 
-              spacing={2} 
-              justifyContent="center" 
-              sx={{ pt: 1 }}
-            >
+            <Stack direction="row" spacing={2} justifyContent="center" sx={{ pt: 1 }}>
               {isLoggedIn ? (
                 <Button
                   variant="contained"
                   onClick={isRemove ? handleRemoveTrust : handleSetTrust}
                   color={isRemove ? 'error' : 'primary'}
-                  size="large"  // Made buttons larger
-                  sx={{ 
+                  size="large" // Made buttons larger
+                  sx={{
                     minWidth: 140,
                     borderRadius: 1.5,
                     textTransform: 'none',
@@ -705,11 +699,11 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                 text={`https://xrpl.to/trustset/${slug}`}
                 onCopy={() => openSnackbar('Copied!', 'success')}
               >
-                <Button 
-                  variant="outlined" 
-                  color="primary" 
+                <Button
+                  variant="outlined"
+                  color="primary"
                   size="large"
-                  sx={{ 
+                  sx={{
                     minWidth: 120,
                     borderRadius: 1.5,
                     textTransform: 'none'
