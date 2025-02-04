@@ -195,6 +195,33 @@ function normalizeTag(tag) {
   return '';
 }
 
+// Helper functions before component
+const hasShownWarningForToken = (tokenId) => {
+  const currentSession = sessionStorage.getItem('currentSession');
+  if (!currentSession) return false;
+
+  try {
+    const session = JSON.parse(currentSession);
+    return session.scamWarnings.includes(tokenId);
+  } catch (e) {
+    return false;
+  }
+};
+
+const markWarningShownForToken = (tokenId) => {
+  let session;
+  try {
+    session = JSON.parse(sessionStorage.getItem('currentSession') || '{"scamWarnings":[]}');
+  } catch (e) {
+    session = { scamWarnings: [] };
+  }
+
+  if (!session.scamWarnings.includes(tokenId)) {
+    session.scamWarnings.push(tokenId);
+    sessionStorage.setItem('currentSession', JSON.stringify(session));
+  }
+};
+
 // ----------------------------------------------------------------------
 export default function UserDesc({ token }) {
   const theme = useTheme();
@@ -280,11 +307,20 @@ export default function UserDesc({ token }) {
 
   const [openScamWarning, setOpenScamWarning] = useState(false);
 
+  // Move the session initialization useEffect inside the component
   useEffect(() => {
-    if (tags && tags.some((tag) => tag.toLowerCase() === 'scam')) {
-      setOpenScamWarning(true);
+    if (!sessionStorage.getItem('currentSession')) {
+      sessionStorage.setItem('currentSession', JSON.stringify({ scamWarnings: [] }));
     }
-  }, [tags]);
+  }, []);
+
+  // Move the scam warning useEffect inside the component
+  useEffect(() => {
+    if (tags && tags.some((tag) => tag.toLowerCase() === 'scam') && !hasShownWarningForToken(id)) {
+      setOpenScamWarning(true);
+      markWarningShownForToken(id);
+    }
+  }, [tags, id]);
 
   return (
     <Stack>
@@ -570,20 +606,18 @@ export default function UserDesc({ token }) {
       >
         {!isTablet ? (
           tags &&
-          tags.map((tag, idx) => {
-            return (
-              <Grid item key={md5 + idx + tag}>
-                <Link
-                  href={`/view/${normalizeTag(tag)}`}
-                  sx={{ pl: 0, pr: 0, display: 'inline-flex' }}
-                  underline="none"
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Chip size="small" label={tag} onClick={handleDelete} />
-                </Link>
-              </Grid>
-            );
-          })
+          tags.map((tag) => (
+            <Grid item key={`${md5}-${tag}`}>
+              <Link
+                href={`/view/${normalizeTag(tag)}`}
+                sx={{ pl: 0, pr: 0, display: 'inline-flex' }}
+                underline="none"
+                rel="noreferrer noopener nofollow"
+              >
+                <Chip size="small" label={tag} onClick={handleDelete} />
+              </Link>
+            </Grid>
+          ))
         ) : (
           <Stack
             direction="row"
@@ -595,9 +629,9 @@ export default function UserDesc({ token }) {
 
             <Box display="flex" alignItems="center">
               {tags &&
-                tags.slice(0, 2).map((tag, idx) => (
+                tags.slice(0, 2).map((tag) => (
                   <Link
-                    key={md5 + idx + tag}
+                    key={`${md5}-${tag}`}
                     href={`/view/${normalizeTag(tag)}`}
                     sx={{
                       pl: 0,
