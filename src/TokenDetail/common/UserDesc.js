@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 
@@ -22,7 +22,12 @@ import {
   Tooltip,
   Typography,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import TokenIcon from '@mui/icons-material/Token';
 import SyncAltIcon from '@mui/icons-material/SyncAlt';
@@ -31,6 +36,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import LocalFloristTwoToneIcon from '@mui/icons-material/LocalFloristTwoTone';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import WarningIcon from '@mui/icons-material/Warning';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -193,10 +199,8 @@ function normalizeTag(tag) {
 export default function UserDesc({ token }) {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-  const { darkMode, accountProfile, openSnackbar, activeFiatCurrency } =
-    useContext(AppContext);
-  const isAdmin =
-    accountProfile && accountProfile.account && accountProfile.admin;
+  const { darkMode, accountProfile, openSnackbar, activeFiatCurrency } = useContext(AppContext);
+  const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
   const [rating, setRating] = useState(2);
   // const [trustToken, setTrustToken] = useState(null);
   const [openIssuerInfo, setOpenIssuerInfo] = useState(false);
@@ -235,13 +239,9 @@ export default function UserDesc({ token }) {
   const metrics = useSelector(selectMetrics);
 
   const [omcf, setOMCF] = useState(token.isOMCF || 'no'); // is Old Market Cap Formula
-  const convertedMarketCap = Decimal.div(
-    marketcap,
-    metrics[activeFiatCurrency]
-  ).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
   const volume = fNumber(vol24hx);
-  const voldivmarket =
-    marketcap > 0 ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
+  const voldivmarket = marketcap > 0 ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
   const circulatingSupply = fNumber(supply);
   const totalSupply = fNumber(amount);
 
@@ -278,17 +278,19 @@ export default function UserDesc({ token }) {
     setOpenLinksDrawer(isOpen);
   };
 
+  const [openScamWarning, setOpenScamWarning] = useState(false);
+
+  useEffect(() => {
+    if (tags && tags.some((tag) => tag.toLowerCase() === 'scam')) {
+      setOpenScamWarning(true);
+    }
+  }, [tags]);
+
   return (
     <Stack>
-      {editToken && (
-        <EditTokenDialog token={editToken} setToken={setEditToken} />
-      )}
+      {editToken && <EditTokenDialog token={editToken} setToken={setEditToken} />}
 
-      <IssuerInfoDialog
-        open={openIssuerInfo}
-        setOpen={setOpenIssuerInfo}
-        token={token}
-      />
+      <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
 
       <Stack direction="row" spacing={1} alignItems="center">
         {isAdmin ? (
@@ -317,11 +319,7 @@ export default function UserDesc({ token }) {
             </IconCover>
           </div>
         ) : (
-          <Avatar
-            alt={`${user} ${name} Logo`}
-            src={imgUrl}
-            sx={{ width: 56, height: 56 }}
-          />
+          <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ width: 56, height: 56 }} />
         )}
         <Stack spacing={0.2}>
           <Typography
@@ -331,11 +329,9 @@ export default function UserDesc({ token }) {
             alt={user}
             fontSize="1.1rem"
           >
-            
             {name}
           </Typography>
           <Stack direction="row" alignItems="center" spacing={0.5}>
-            
             <Typography variant="s17">{truncate(user, 15)}</Typography>
             <Stack>{kyc && <Typography variant="kyc2">KYC</Typography>}</Stack>
           </Stack>
@@ -376,15 +372,9 @@ export default function UserDesc({ token }) {
           mb: isTablet ? 2 : 0
         }}
       >
-        <Tooltip
-          title={<Typography variant="body2">Rank by 24h Volume.</Typography>}
-        >
+        <Tooltip title={<Typography variant="body2">Rank by 24h Volume.</Typography>}>
           <Chip
-            label={
-              <Typography variant={isTablet ? 'body2' : 's16'}>
-                Rank # {id}
-              </Typography>
-            }
+            label={<Typography variant={isTablet ? 'body2' : 's16'}>Rank # {id}</Typography>}
             color="primary"
             variant="outlined"
             size={isTablet ? 'small' : 'small'}
@@ -415,9 +405,7 @@ export default function UserDesc({ token }) {
         />
         <Chip
           label={
-            <Typography variant={isTablet ? 'body2' : 's16'}>
-              {fNumber(vol24htx)} Trades
-            </Typography>
+            <Typography variant={isTablet ? 'body2' : 's16'}>{fNumber(vol24htx)} Trades</Typography>
           }
           color="secondary" // You can choose a suitable color
           variant="outlined"
@@ -479,27 +467,17 @@ export default function UserDesc({ token }) {
       )}
 
       {showStat && (
-        <Grid
-          container
-          item
-          xs={12}
-          sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}
-        >
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-          >
+        <Grid container item xs={12} sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Stack direction="row" alignItems="center" gap={1}>
               <Typography variant="body1">Market Cap</Typography>
               <Tooltip
                 title={
                   <Typography variant="body2">
-                    The total market value of a token's circulating supply
-                    represents its overall worth.
+                    The total market value of a token's circulating supply represents its overall
+                    worth.
                     <br />
-                    This concept is similar to free-float capitalization in the
-                    stock market.
+                    This concept is similar to free-float capitalization in the stock market.
                     <br />
                     {omcf === 'yes'
                       ? 'Price x Circulating Supply'
@@ -513,17 +491,11 @@ export default function UserDesc({ token }) {
             </Stack>
 
             <MarketTypography variant="body1">
-              {currencySymbols[activeFiatCurrency]}{' '}
-              {fNumber(convertedMarketCap)}
+              {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
             </MarketTypography>
           </Stack>
 
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ mt: 1 }}
-          >
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
             <Stack direction="row" alignItems="center" gap={1}>
               <Typography variant="body1">Volume (24h)</Typography>
               <Tooltip
@@ -537,58 +509,35 @@ export default function UserDesc({ token }) {
               </Tooltip>
             </Stack>
             <VolumeTypography variant="body1">
-              {volume}{' '}
-              <VolumeTypography variant="small"> {name}</VolumeTypography>
+              {volume} <VolumeTypography variant="small"> {name}</VolumeTypography>
             </VolumeTypography>
           </Stack>
 
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ mt: 1 }}
-          >
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
             <Typography variant="body1">Volume / Marketcap</Typography>
-            <VolumeTypography variant="body1">
-              {fNumber(voldivmarket)}
-            </VolumeTypography>
+            <VolumeTypography variant="body1">{fNumber(voldivmarket)}</VolumeTypography>
           </Stack>
 
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ mt: 1 }}
-          >
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
             <Stack direction="row" alignItems="center" gap={1}>
               <Typography variant="body1">Circulating Supply</Typography>
               <Tooltip
                 title={
                   <Typography variant="body2">
-                    The number of tokens in circulation within the market and
-                    held by the public is comparable to the concept of
-                    outstanding shares in the stock market.
+                    The number of tokens in circulation within the market and held by the public is
+                    comparable to the concept of outstanding shares in the stock market.
                   </Typography>
                 }
               >
                 <Icon icon={infoFilled} />
               </Tooltip>
             </Stack>
-            <SupplyTypography variant="body1">
-              {circulatingSupply}
-            </SupplyTypography>
+            <SupplyTypography variant="body1">{circulatingSupply}</SupplyTypography>
           </Stack>
 
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ mt: 1 }}
-          >
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
             <Typography variant="body1">Total Supply</Typography>
-            <TotalSupplyTypography variant="body1">
-              {totalSupply}
-            </TotalSupplyTypography>
+            <TotalSupplyTypography variant="body1">{totalSupply}</TotalSupplyTypography>
           </Stack>
         </Grid>
       )}
@@ -663,9 +612,7 @@ export default function UserDesc({ token }) {
                       label={tag}
                       size="small"
                       sx={{
-                        borderInlineStart: `3px solid ${
-                          darkMode ? '#17171a' : '#fff'
-                        }`,
+                        borderInlineStart: `3px solid ${darkMode ? '#17171a' : '#fff'}`,
                         cursor: 'pointer',
                         fontSize: '12px'
                       }}
@@ -678,9 +625,7 @@ export default function UserDesc({ token }) {
                   size="small"
                   sx={{
                     fontSize: '12px',
-                    borderInlineStart: `3px solid ${
-                      darkMode ? '#17171a' : '#fff'
-                    }`,
+                    borderInlineStart: `3px solid ${darkMode ? '#17171a' : '#fff'}`,
                     marginLeft: '-6px'
                   }}
                   onClick={() => toggleTagsDrawer(true)}
@@ -703,11 +648,7 @@ export default function UserDesc({ token }) {
         />
       )}
 
-      <Grid
-        container
-        spacing={1}
-        sx={{ p: 0, mt: 1, width: '100%', ml: isTablet ? 0 : '-9px' }}
-      >
+      <Grid container spacing={1} sx={{ p: 0, mt: 1, width: '100%', ml: isTablet ? 0 : '-9px' }}>
         {!isTablet ? (
           <>
             {domain && (
@@ -719,16 +660,21 @@ export default function UserDesc({ token }) {
                   href={`https://${domain}`}
                   rel="noreferrer noopener nofollow"
                 >
-                 <Chip
-      label={domain}
-      sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px' }}
-      deleteIcon={
-        <Icon icon={linkExternal} width="16" height="16" style={{ color: theme.palette.primary.main }} />
-      }
-      onDelete={handleDelete}
-      onClick={handleDelete}
-      icon={<Icon icon={link45deg} width="16" height="16"   />}
-    />
+                  <Chip
+                    label={domain}
+                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px' }}
+                    deleteIcon={
+                      <Icon
+                        icon={linkExternal}
+                        width="16"
+                        height="16"
+                        style={{ color: theme.palette.primary.main }}
+                      />
+                    }
+                    onDelete={handleDelete}
+                    onClick={handleDelete}
+                    icon={<Icon icon={link45deg} width="16" height="16" />}
+                  />
                 </Link>
               </Grid>
             )}
@@ -745,11 +691,16 @@ export default function UserDesc({ token }) {
                     label={'Whitepaper'}
                     sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px' }}
                     deleteIcon={
-                      <Icon icon={linkExternal} width="16" height="16" style={{ color: theme.palette.primary.main }}/>
+                      <Icon
+                        icon={linkExternal}
+                        width="16"
+                        height="16"
+                        style={{ color: theme.palette.primary.main }}
+                      />
                     }
                     onDelete={handleDelete}
                     onClick={handleDelete}
-                    icon={<Icon icon={paperIcon} width="16" height="16"  /> }
+                    icon={<Icon icon={paperIcon} width="16" height="16" />}
                   />
                 </Link>
               </Grid>
@@ -791,11 +742,7 @@ export default function UserDesc({ token }) {
           >
             <Typography variant="body1">Links</Typography>
 
-            <Box
-              display="flex"
-              alignItems="center"
-              onClick={() => toggleLinksDrawer(true)}
-            >
+            <Box display="flex" alignItems="center" onClick={() => toggleLinksDrawer(true)}>
               <Typography variant="caption" sx={{ fontSize: '12px' }}>
                 Website, Explorers, Socials etc.
               </Typography>
@@ -826,8 +773,7 @@ export default function UserDesc({ token }) {
             <Chip
               label={
                 <Typography variant="s7">
-                  Issuer:{' '}
-                  <Typography variant="s8">{truncate(issuer, 16)}</Typography>
+                  Issuer: <Typography variant="s8">{truncate(issuer, 16)}</Typography>
                 </Typography>
               }
               size={isTablet ? 'small' : 'medium'}
@@ -864,11 +810,7 @@ export default function UserDesc({ token }) {
                     >
                       <Tooltip title={'Assessment'}>
                         <IconButton size="small">
-                          <LazyLoadImage
-                            src={img_xrplf}
-                            width={16}
-                            height={16}
-                          />
+                          <LazyLoadImage src={img_xrplf} width={16} height={16} />
                         </IconButton>
                       </Tooltip>
                     </Link>
@@ -904,11 +846,42 @@ export default function UserDesc({ token }) {
         md5={md5}
       />
 
-      <LinksDrawer
-        isOpen={openLinksDrawer}
-        toggleDrawer={toggleLinksDrawer}
-        token={token}
-      />
+      <LinksDrawer isOpen={openLinksDrawer} toggleDrawer={toggleLinksDrawer} token={token} />
+
+      <Dialog
+        open={openScamWarning}
+        onClose={() => setOpenScamWarning(false)}
+        aria-labelledby="scam-warning-dialog"
+        PaperProps={{
+          sx: {
+            maxWidth: '500px',
+            border: '2px solid #ff3d00'
+          }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningIcon sx={{ color: '#ff3d00' }} />
+          <Typography color="error" variant="h6">
+            Scam Warning!
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This token has been tagged as a potential SCAM. Exercise extreme caution:
+            <ul>
+              <li>Do NOT trust any investment promises</li>
+              <li>Do NOT connect your wallet to unknown sites</li>
+              <li>Do NOT share your private keys or seed phrase</li>
+              <li>DYOR (Do Your Own Research) before any interaction</li>
+            </ul>
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenScamWarning(false)} variant="contained" color="error">
+            I Understand
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }
