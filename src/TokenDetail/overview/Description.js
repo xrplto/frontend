@@ -20,7 +20,6 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { fPercent, fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 
 // Components
-import Converter from './Converter';
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
 
@@ -176,8 +175,6 @@ export default function Description({
     <Stack spacing={2}>
       <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
 
-      {issuer !== 'XRPL' && <Converter token={token} />}
-
       <Typography
         variant="h2"
         fontSize="1.5rem"
@@ -188,12 +185,22 @@ export default function Description({
       <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
         Today's live <strong>{user}</strong> price is{' '}
         <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={price} />{' '}
-        {activeFiatCurrency}, accompanied by a 24-hour trading volume of <strong>{fNumber(vol24hx)} {name}</strong>.
-        Our {name} to {activeFiatCurrency} price is updated in real-time. In the last 24 hours,{' '}
-        {user} has experienced a <strong>{strPro24h}</strong> change. XRPL.to currently ranks it at <strong>#{id}</strong>, with a
-        live market cap of <strong>{currencySymbols[activeFiatCurrency]}
-        {fNumber(convertedMarketCap)} {activeFiatCurrency}</strong> and a circulating supply of{' '}
-        <strong>{fNumber(supply)} {name}</strong> tokens.
+        {activeFiatCurrency}, accompanied by a 24-hour trading volume of{' '}
+        <strong>
+          {fNumber(vol24hx)} {name}
+        </strong>
+        . Our {name} to {activeFiatCurrency} price is updated in real-time. In the last 24 hours,{' '}
+        {user} has experienced a <strong>{strPro24h}</strong> change. XRPL.to currently ranks it at{' '}
+        <strong>#{id}</strong>, with a live market cap of{' '}
+        <strong>
+          {currencySymbols[activeFiatCurrency]}
+          {fNumber(convertedMarketCap)} {activeFiatCurrency}
+        </strong>{' '}
+        and a circulating supply of{' '}
+        <strong>
+          {fNumber(supply)} {name}
+        </strong>{' '}
+        tokens.
       </Typography>
 
       <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
@@ -221,13 +228,19 @@ export default function Description({
 
       {!showEditor && description && (
         <ReadMore>
-          <ReactMarkdown 
+          <ReactMarkdown
             className={darkMode ? 'reactMarkDowndark' : 'reactMarkDownlight'}
             components={{
               p: ({ node, ...props }) => <Typography variant="body1" sx={{ mb: 2 }} {...props} />,
-              h1: ({ node, ...props }) => <Typography variant="h4" sx={{ mt: 3, mb: 2 }} {...props} />,
-              h2: ({ node, ...props }) => <Typography variant="h5" sx={{ mt: 3, mb: 2 }} {...props} />,
-              h3: ({ node, ...props }) => <Typography variant="h6" sx={{ mt: 3, mb: 2 }} {...props} />,
+              h1: ({ node, ...props }) => (
+                <Typography variant="h4" sx={{ mt: 3, mb: 2 }} {...props} />
+              ),
+              h2: ({ node, ...props }) => (
+                <Typography variant="h5" sx={{ mt: 3, mb: 2 }} {...props} />
+              ),
+              h3: ({ node, ...props }) => (
+                <Typography variant="h6" sx={{ mt: 3, mb: 2 }} {...props} />
+              ),
               ul: ({ node, ...props }) => <ul style={{ marginBottom: '1rem' }} {...props} />,
               ol: ({ node, ...props }) => <ol style={{ marginBottom: '1rem' }} {...props} />,
               li: ({ node, ...props }) => <li style={{ marginBottom: '0.5rem' }} {...props} />
