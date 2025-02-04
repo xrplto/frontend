@@ -450,11 +450,6 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
     let body;
     switch (xamanStep) {
       case 3:
-        if (limit == 0) {
-          setXamanStep(4);
-          return;
-        }
-
         const Flags = 0x00020000;
         let LimitAmount = {};
         LimitAmount.issuer = issuer;
@@ -469,7 +464,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
             const qrlink = res1.data.data.qrUrl;
             const nextlink = res1.data.data.next;
 
-            setXamanStep(4);
+            setOpenConfirm(false);
             setUuid(uuid);
             setQrUrl(qrlink);
             setNextUrl(nextlink);
