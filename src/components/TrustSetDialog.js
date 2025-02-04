@@ -2,7 +2,6 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
-
 // Material
 import { withStyles } from '@mui/styles';
 import {
@@ -48,7 +47,7 @@ import copyIcon from '@iconify/icons-fad/copy';
 import Wallet from './Wallet';
 import { isInstalled, setTrustline, submitTransaction } from '@gemwallet/api';
 import { enqueueSnackbar } from 'notistack';
-import sdk from "@crossmarkio/sdk";
+import sdk from '@crossmarkio/sdk';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import CustomDialog from './Dialog';
 
@@ -57,10 +56,14 @@ const TrustDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(1px)',
   WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
   '& .MuiDialogContent-root': {
-    padding: theme.spacing(2)
+    padding: theme.spacing(3),
+    minWidth: { xs: '100%', sm: 400 }  // Add minimum width
   },
   '& .MuiDialogActions-root': {
     padding: theme.spacing(1)
+  },
+  '& .MuiPaper-root': {
+    borderRadius: theme.spacing(2)  // More rounded corners
   }
 }));
 
@@ -110,11 +113,11 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
   const [nextUrl, setNextUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState(fNumber(token.amount));
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState('');
   const [openConfirm, setOpenConfirm] = useState(false);
   const [xamanStep, setXamanStep] = useState(0);
   const [xamanTitle, setXamanTitle] = useState(0);
-  const [stepTitle, setStepTitle] = useState("");
+  const [stepTitle, setStepTitle] = useState('');
 
   const [isRemove, setIsRemove] = useState(false);
 
@@ -137,7 +140,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
         const dispatched_result = res.dispatched_result;
 
         return dispatched_result;
-      } catch (err) { }
+      } catch (err) {}
     }
 
     const startInterval = () => {
@@ -147,10 +150,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
         const dispatched_result = await getDispatchResult();
 
         if (dispatched_result && dispatched_result === 'tesSUCCESS') {
-          openSnackbar(
-            `Successfully ${isRemove ? 'removed' : 'set'} trustline!`,
-            'success'
-          );
+          openSnackbar(`Successfully ${isRemove ? 'removed' : 'set'} trustline!`, 'success');
           stopInterval();
           return;
         }
@@ -164,7 +164,6 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
         }
       }, 1000);
     };
-
 
     // Stop the interval
     const stopInterval = () => {
@@ -186,7 +185,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
           startInterval();
           return;
         }
-      } catch (err) { }
+      } catch (err) {}
       isRunning = false;
       counter--;
       if (counter <= 0) {
@@ -219,8 +218,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
 
             const trustlineToRemove = trustlines.find((trustline) => {
               return (
-                (trustline.LowLimit.issuer === issuer ||
-                  trustline.HighLimit.issuer) &&
+                (trustline.LowLimit.issuer === issuer || trustline.HighLimit.issuer) &&
                 trustline.LowLimit.currency === currency
               );
             });
@@ -272,7 +270,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
       const body = { LimitAmount, Flags, user_token };
 
       switch (wallet_type) {
-        case "xaman":
+        case 'xaman':
           setLoading(true);
           const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
 
@@ -287,33 +285,29 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
             setOpenScanQR(true);
           }
           break;
-        case "gem":
+        case 'gem':
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               const trustSet = {
                 flags: Flags,
-                limitAmount: LimitAmount,
-              }
+                limitAmount: LimitAmount
+              };
 
               dispatch(updateProcess(1));
               await setTrustline(trustSet).then(({ type, result }) => {
-                if (type == "response") {
+                if (type == 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
-                }
-
-                else {
+                } else {
                   dispatch(updateProcess(3));
                 }
               });
+            } else {
+              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
             }
-
-            else {
-              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
-            }
-          })
+          });
           break;
-        case "crossmark":
+        case 'crossmark':
           // if (!window.xrpl) {
           //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
           //   return;
@@ -322,28 +316,27 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
           // if (isCrossmark) {
           const trustSet = {
             Flags: Flags,
-            LimitAmount: LimitAmount,
-          }
+            LimitAmount: LimitAmount
+          };
 
           dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait({
-            ...trustSet,
-            Account: accountProfile.account,
-            TransactionType: 'TrustSet'
-          }).then(({ response }) => {
-            if (response.data.meta.isSuccess) {
-              dispatch(updateProcess(2));
-              dispatch(updateTxHash(response.data.resp.result?.hash));
-
-            } else {
-              dispatch(updateProcess(3));
-            }
-          });
+          await sdk.methods
+            .signAndSubmitAndWait({
+              ...trustSet,
+              Account: accountProfile.account,
+              TransactionType: 'TrustSet'
+            })
+            .then(({ response }) => {
+              if (response.data.meta.isSuccess) {
+                dispatch(updateProcess(2));
+                dispatch(updateTxHash(response.data.resp.result?.hash));
+              } else {
+                dispatch(updateProcess(3));
+              }
+            });
           // }
           break;
       }
-
-
     } catch (err) {
       console.log(err);
       dispatch(updateProcess(0));
@@ -359,7 +352,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
       if (res.status === 200) {
         setUuid(null);
       }
-    } catch (err) { }
+    } catch (err) {}
     setLoading(false);
   };
 
@@ -387,52 +380,52 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
       if (isNumber(amount)) {
         fAmount = new Decimal(amount.replaceAll(',', '')).toNumber();
       }
-    } catch (e) { }
+    } catch (e) {}
 
     if (fAmount > 0) {
       onTrustSetXumm(fAmount);
     } else {
       openSnackbar('Invalid value!', 'error');
     }
-  }
+  };
 
   useEffect(() => {
-
     switch (xamanStep) {
       case 1:
-        setContent(`This TrustLine still contains ${balance} ${currency}. If you continue, it will be sent back to the issuer before your TrustLine is deleted.`);
-        setXamanTitle("Refund to Issuer");
-        setStepTitle("Warning");
+        setContent(
+          `This TrustLine still contains ${balance} ${currency}. If you continue, it will be sent back to the issuer before your TrustLine is deleted.`
+        );
+        setXamanTitle('Refund to Issuer');
+        setStepTitle('Warning');
         setOpenConfirm(true);
         break;
       case 2:
-        setContent("Your dust balance has been sent back to the issuer. The TrustLine can now be eliminated");
-        setStepTitle("Success");
+        setContent(
+          'Your dust balance has been sent back to the issuer. The TrustLine can now be eliminated'
+        );
+        setStepTitle('Success');
         setOpenConfirm(true);
         break;
       case 3:
-        setContent("You are removing this token from your XRP ledger account. Are you sure?");
-        setXamanTitle("Trust Set");
-        setStepTitle("Warning");
+        setContent('You are removing this token from your XRP ledger account. Are you sure?');
+        setXamanTitle('Trust Set');
+        setStepTitle('Warning');
         setOpenConfirm(true);
         break;
       case 4:
-        openSnackbar("You removed trustline", "success");
+        openSnackbar('You removed trustline', 'success');
         handleConfirmClose();
         break;
     }
-
   }, [xamanStep]);
 
   const handleRemoveTrust = async () => {
     try {
-
       if (balance > 0) {
         setXamanStep(1);
       } else {
         setXamanStep(3);
       }
-
     } catch (err) {
       console.log(err);
       openSnackbar('Network error!', 'error');
@@ -441,7 +434,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
   const handleConfirmClose = () => {
     setOpenConfirm(false);
     setXamanStep(0);
-  }
+  };
 
   const handleConfirmContinue = async () => {
     const user_token = accountProfile?.user_token;
@@ -454,10 +447,10 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
         let LimitAmount = {};
         LimitAmount.issuer = issuer;
         LimitAmount.currency = currency;
-        LimitAmount.value = "0";
+        LimitAmount.value = '0';
 
-        body = { LimitAmount, Flags, user_token, TransactionType: "TrustSet" };
-        if (wallet_type == "xaman") {
+        body = { LimitAmount, Flags, user_token, TransactionType: 'TrustSet' };
+        if (wallet_type == 'xaman') {
           const res1 = await axios.post(`${BASE_URL}/xumm/trustset`, body);
           if (res1.status === 200) {
             const uuid = res1.data.data.uuid;
@@ -470,28 +463,24 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
             setNextUrl(nextlink);
             setOpenScanQR(true);
           }
-        }
-
-        else if (wallet_type == "gem") {
+        } else if (wallet_type == 'gem') {
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               await submitTransaction({
                 transaction: body
               }).then(({ type, result }) => {
-                if (type === "response") {
+                if (type === 'response') {
                   setXamanStep(4);
                 } else {
                   handleConfirmClose();
                 }
               });
             } else {
-              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
+              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
               handleConfirmClose();
             }
           });
-        }
-
-        else if (wallet_type == "crossmark") {
+        } else if (wallet_type == 'crossmark') {
           await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
             if (response.data.meta.isSuccess) {
               setXamanStep(4);
@@ -506,7 +495,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
         break;
       case 1:
         body = {
-          TransactionType: "Payment",
+          TransactionType: 'Payment',
           Account: accountProfile.account,
           Amount: {
             currency: currency,
@@ -514,11 +503,11 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
             issuer: issuer
           },
           Destination: issuer,
-          Fee: "12",
+          Fee: '12',
           SourceTag: 20221212,
-          DestinationTag: 20221212,
-        }
-        if (wallet_type == "xaman") {
+          DestinationTag: 20221212
+        };
+        if (wallet_type == 'xaman') {
           const res2 = await axios.post(`${BASE_URL}/xumm/transfer`, body);
           if (res2.status === 200) {
             const uuid = res2.data.data.uuid;
@@ -531,28 +520,24 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
             setNextUrl(nextlink);
             setOpenScanQR(true);
           }
-        }
-
-        else if (wallet_type == "gem") {
+        } else if (wallet_type == 'gem') {
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               await submitTransaction({
                 transaction: body
               }).then(({ type, result }) => {
-                if (type === "response") {
+                if (type === 'response') {
                   setXamanStep(2);
                 } else {
                   handleConfirmClose();
                 }
               });
             } else {
-              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
+              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
               handleConfirmClose();
             }
           });
-        }
-
-        else if (wallet_type == "crossmark") {
+        } else if (wallet_type == 'crossmark') {
           await sdk.methods.signAndSubmitAndWait(body).then(({ response }) => {
             if (response.data.meta.isSuccess) {
               setXamanStep(2);
@@ -566,13 +551,12 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
     }
 
     setSync(!sync);
-  }
+  };
 
   return (
     <>
       <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
         <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
-
       </Backdrop>
 
       <TrustDialog
@@ -580,22 +564,37 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
         onClose={handleClose}
         open={true}
         sx={{ zIndex: 1302 }}
-      // hideBackdrop={true}
+        // hideBackdrop={true}
       >
         <TrustDialogTitle id="customized-dialog-title" onClose={handleClose}>
           <Stack direction="row" alignItems="center">
             <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ mr: 1 }} />
             <Stack>
-              <Typography variant="token" color="primary">{name}</Typography>
+              <Typography variant="token" color="primary">
+                {name}
+              </Typography>
               <Typography variant="caption">{user}</Typography>
             </Stack>
           </Stack>
         </TrustDialogTitle>
 
         <DialogContent>
-          <Stack spacing={1.5} sx={{ pl: 1, pr: 1 }}>
-            <Stack direction="row" alignItems="center">
-              <Label variant="subtitle2" noWrap>
+          <Stack spacing={2.5} sx={{ px: 1 }}>  {/* Increased spacing between elements */}
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
+                Issuer:
+              </Label>
+              <Label 
+                variant="body2" 
+                noWrap 
+                sx={{ 
+                  flex: 1,
+                  fontFamily: 'monospace',
+                  bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                  p: 0.5,
+                  borderRadius: 0.5
+                }}
+              >
                 {issuer}
               </Label>
               <Link
@@ -605,7 +604,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                 href={`https://bithomp.com/explorer/${issuer}`}
                 rel="noreferrer noopener nofollow"
               >
-                <IconButton edge="end" aria-label="bithomp">
+                <IconButton edge="end" aria-label="bithomp" size="small">
                   <Avatar
                     alt="Bithomp Explorer"
                     src="/static/bithomp.ico"
@@ -615,54 +614,86 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
               </Link>
             </Stack>
 
-            <Label variant="subtitle2" noWrap>
-              {currency}
-            </Label>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
+                Currency:
+              </Label>
+              <Label 
+                variant="body2" 
+                noWrap 
+                sx={{ 
+                  fontWeight: 600,
+                  color: 'primary.main'
+                }}
+              >
+                {currency}
+              </Label>
+            </Stack>
 
             <TextField
               fullWidth
-              id="input-with-sx1"
-              label="Amount"
+              label="Trust Amount"
               value={amount}
               onChange={handleChangeAmount}
-              variant="standard"
+              variant="outlined"  // Changed to outlined
               disabled={isRemove}
+              InputProps={{
+                sx: { 
+                  borderRadius: 1.5,
+                  bgcolor: (theme) => isRemove ? alpha(theme.palette.action.disabled, 0.08) : 'transparent'
+                }
+              }}
             />
 
-            <Stack direction="row" alignItems="center">
-              <Link
-                underline="none"
-                color="inherit"
-                target="_blank"
-                href={`https://xrpl.to/trustset/${slug}`}
-                rel="noreferrer noopener nofollow"
+            <Stack 
+              direction="row" 
+              alignItems="center" 
+              sx={{ 
+                bgcolor: (theme) => alpha(theme.palette.grey[200], 0.4),
+                borderRadius: 1,
+                p: 1.5
+              }}
+            >
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  flex: 1,
+                  color: 'text.secondary',
+                  fontSize: '0.85rem'
+                }}
               >
-                https://xrpl.to/trustset/{slug}
-              </Link>
+                {`https://xrpl.to/trustset/${slug}`}
+              </Typography>
               <CopyToClipboard
                 text={`https://xrpl.to/trustset/${slug}`}
                 onCopy={() => openSnackbar('Copied!', 'success')}
               >
                 <Tooltip title={'Click to copy'}>
-                  <IconButton>
-                    <Icon icon={copyIcon} />
+                  <IconButton size="small">
+                    <Icon icon={copyIcon} width={18} />
                   </IconButton>
                 </Tooltip>
               </CopyToClipboard>
             </Stack>
 
-            <Stack
-              direction="row"
-              spacing={2}
-              justifyContent="center"
-              sx={{ mt: 2 }}
+            <Stack 
+              direction="row" 
+              spacing={2} 
+              justifyContent="center" 
+              sx={{ pt: 1 }}
             >
               {isLoggedIn ? (
                 <Button
                   variant="contained"
                   onClick={isRemove ? handleRemoveTrust : handleSetTrust}
-                  color={`${isRemove ? 'error' : 'primary'}`}
-                  size="small"
+                  color={isRemove ? 'error' : 'primary'}
+                  size="large"  // Made buttons larger
+                  sx={{ 
+                    minWidth: 140,
+                    borderRadius: 1.5,
+                    textTransform: 'none',
+                    fontWeight: 600
+                  }}
                 >
                   {`${isRemove ? 'Remove' : 'Set'} Trustline`}
                 </Button>
@@ -674,7 +705,16 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                 text={`https://xrpl.to/trustset/${slug}`}
                 onCopy={() => openSnackbar('Copied!', 'success')}
               >
-                <Button variant="outlined" color="primary" size="small">
+                <Button 
+                  variant="outlined" 
+                  color="primary" 
+                  size="large"
+                  sx={{ 
+                    minWidth: 120,
+                    borderRadius: 1.5,
+                    textTransform: 'none'
+                  }}
+                >
                   Copy Link
                 </Button>
               </CopyToClipboard>
@@ -691,7 +731,13 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
         nextUrl={nextUrl}
       />
 
-      <CustomDialog open={openConfirm} content={content} title={stepTitle} handleClose={handleConfirmClose} handleContinue={handleConfirmContinue} />
+      <CustomDialog
+        open={openConfirm}
+        content={content}
+        title={stepTitle}
+        handleClose={handleConfirmClose}
+        handleContinue={handleConfirmContinue}
+      />
     </>
   );
 }
