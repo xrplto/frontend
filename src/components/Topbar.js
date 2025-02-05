@@ -210,6 +210,18 @@ const getTradeSizeEmoji = (value) => {
   return '';
 };
 
+// Add this helper function near the top of the file
+const formatTradeValue = (value) => {
+  // Convert to number if it's a string
+  const numValue = typeof value === 'string' ? Number(value) : value;
+
+  // Check if the number is in scientific notation
+  if (Math.abs(numValue) < 0.0001) {
+    return numValue.toFixed(8);
+  }
+  return numValue.toString();
+};
+
 const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -303,28 +315,32 @@ const Topbar = () => {
   const filterTrades = (trades) => {
     if (!trades?.hists) return [];
 
-    const getXRPAmount = (trade) => {
-      if (trade.paid.currency === 'XRP') return parseFloat(trade.paid.value);
-      if (trade.got.currency === 'XRP') return parseFloat(trade.got.value);
-      return 0;
+    const parseValue = (value) => {
+      // Convert scientific notation to regular number if needed
+      if (typeof value === 'string' && value.includes('e')) {
+        const converted = parseFloat(Number(value).toFixed(8));
+        console.log(`Converted ${value} to ${converted}`);
+        return converted;
+      }
+      return parseFloat(value);
     };
 
     const filters = {
       All: () => true,
       '🦐 <500 XRP': (trade) => {
-        const xrpAmount = getXRPAmount(trade);
+        const xrpAmount = parseValue(trade.paid.value);
         return xrpAmount > 0 && xrpAmount < 500;
       },
       '🐬 500-5000 XRP': (trade) => {
-        const xrpAmount = getXRPAmount(trade);
+        const xrpAmount = parseValue(trade.paid.value);
         return xrpAmount >= 500 && xrpAmount < 5000;
       },
       '🐋 5000-10000 XRP': (trade) => {
-        const xrpAmount = getXRPAmount(trade);
+        const xrpAmount = parseValue(trade.paid.value);
         return xrpAmount >= 5000 && xrpAmount < 10000;
       },
       '🐳 10000+ XRP': (trade) => {
-        const xrpAmount = getXRPAmount(trade);
+        const xrpAmount = parseValue(trade.paid.value);
         return xrpAmount >= 10000;
       }
     };
@@ -514,7 +530,9 @@ const Topbar = () => {
                           SELL{' '}
                         </Typography>
                       )}
-                      {`${trade.paid.value} ${trade.paid.currency} ↔ ${trade.got.value} ${trade.got.currency}`}
+                      {`${formatTradeValue(trade.paid.value)} ${
+                        trade.paid.currency
+                      } ↔ ${formatTradeValue(trade.got.value)} ${trade.got.currency}`}
                     </>
                   }
                   secondary={
