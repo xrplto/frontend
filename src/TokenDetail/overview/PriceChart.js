@@ -28,7 +28,7 @@ import { currencySymbols } from 'src/utils/constants';
 
 // import Highcharts from 'highcharts'
 import Highcharts from 'highcharts/highstock';
-import HighchartsReact from 'highcharts-react-official'
+import HighchartsReact from 'highcharts-react-official';
 import moment from 'moment';
 import { fCurrency5 } from 'src/utils/formatNumber';
 // ----------------------------------------------------------------------
@@ -38,7 +38,7 @@ const fiatMapping = {
   EUR: 'EUR',
   JPY: 'JPY',
   CNY: 'CNH',
-  XRP: 'XRP',
+  XRP: 'XRP'
 };
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
@@ -47,14 +47,13 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     border: 0,
     borderRadius: theme.shape.borderRadius,
     [`&.${toggleButtonGroupClasses.disabled}`]: {
-      border: 0,
-    },
+      border: 0
+    }
   },
-  [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]:
-  {
+  [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]: {
     marginLeft: -1,
-    borderLeft: '1px solid transparent',
-  },
+    borderLeft: '1px solid transparent'
+  }
 }));
 
 function PriceChart({ token }) {
@@ -73,8 +72,7 @@ function PriceChart({ token }) {
   const [mediumValue, setMediumValue] = useState(null);
 
   const { accountProfile, activeFiatCurrency, darkMode } = useContext(AppContext);
-  const isAdmin =
-    accountProfile && accountProfile.account && accountProfile.admin;
+  const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
   const router = useRouter();
   const fromSearch = router.query.fromSearch ? '&fromSearch=1' : '';
@@ -274,7 +272,7 @@ function PriceChart({ token }) {
       }
     }));
   }, [minTime, maxTime]);
-  console.log("data", data)
+  console.log('data', data);
 
   // const options2 = {
   //   chart: {
@@ -400,15 +398,15 @@ function PriceChart({ token }) {
       text: null
     },
     chart: {
-      backgroundColor: "transparent",
-      type: "areaspline",
-      height: "500px",
+      backgroundColor: 'transparent',
+      type: 'areaspline',
+      height: '500px',
       events: {
         render: function () {
           const chart = this;
           const imgUrl = darkMode ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
-          const imgWidth = "50";
-          const imgHeight = "15";
+          const imgWidth = '50';
+          const imgHeight = '15';
 
           if (chart.watermark) {
             chart.watermark.destroy();
@@ -418,26 +416,28 @@ function PriceChart({ token }) {
           const yPos = chart.plotHeight - imgHeight - 10; // 10px margin from bottom edge
 
           // Add watermark as an SVG image
-          chart.watermark = chart.renderer.image(imgUrl, xPos, yPos, imgWidth, imgHeight)
+          chart.watermark = chart.renderer
+            .image(imgUrl, xPos, yPos, imgWidth, imgHeight)
             .attr({
               zIndex: 5, // Ensure it's above other elements
               opacity: 0.6, // Adjust the opacity as needed
-              width: "100px",
+              width: '100px'
             })
             .add();
         }
       },
       zoomType: 'x', // Enable horizontal zooming
+      marginBottom: 100 // Add margin for volume chart
     },
     legend: { enabled: false },
     credits: {
-      text: ""
+      text: ''
     },
     xAxis: {
-      type: "datetime",
+      type: 'datetime',
       crosshair: {
         width: 1,
-        dashStyle: "Dot",
+        dashStyle: 'Dot',
         color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
       },
       labels: {
@@ -448,36 +448,57 @@ function PriceChart({ token }) {
       lineColor: theme.palette.divider,
       tickColor: theme.palette.divider
     },
-    yAxis: {
-      title: {
-        text: null
-      },
-      tickAmount: 8,
-      tickWidth: 1,
-      gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-      labels: {
-        style: {
-          color: theme.palette.text.primary
+    yAxis: [
+      {
+        // Main price axis
+        title: {
+          text: null
         },
-        formatter: function() {
-          return fCurrency5(this.value);
+        tickAmount: 8,
+        tickWidth: 1,
+        gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        labels: {
+          style: {
+            color: theme.palette.text.primary
+          },
+          formatter: function () {
+            return fCurrency5(this.value);
+          }
+        },
+        events: {
+          afterSetExtremes: handleAfterSetExtremes
+        },
+        plotLines: [
+          {
+            width: 1,
+            value: mediumValue,
+            dashStyle: 'Dot',
+            color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
+          }
+        ],
+        crosshair: {
+          width: 1,
+          dashStyle: 'Dot',
+          color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
         }
       },
-      events: {
-        afterSetExtremes: handleAfterSetExtremes
-      },
-      plotLines: [{
-        width: 1,
-        value: mediumValue,
-        dashStyle: "Dot",
-        color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
-      }],
-      crosshair: {
-        width: 1,
-        dashStyle: "Dot",
-        color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+      {
+        // Volume axis
+        title: {
+          text: null
+        },
+        labels: {
+          style: {
+            color: theme.palette.text.secondary
+          }
+        },
+        top: '70%',
+        height: '30%',
+        offset: 0,
+        lineWidth: 1,
+        gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
       }
-    },
+    ],
     plotOptions: {
       areaspline: {
         marker: {
@@ -502,8 +523,8 @@ function PriceChart({ token }) {
       series: {
         states: {
           inactive: {
-            opacity: 1,
-          },
+            opacity: 1
+          }
         },
         zones: [
           {
@@ -512,29 +533,37 @@ function PriceChart({ token }) {
             fillColor: {
               linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
               stops: [
-                [0, "rgba(255, 105, 104, 0.2)"],
-                [1, "rgba(255, 105, 104, 0)"],
-              ],
-            },
+                [0, 'rgba(255, 105, 104, 0.2)'],
+                [1, 'rgba(255, 105, 104, 0)']
+              ]
+            }
           },
           {
             color: '#94caae',
             fillColor: {
               linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
               stops: [
-                [0, "rgba(148, 202, 174, 0.2)"],
-                [1, "rgba(148, 202, 174, 0)"],
-              ],
-            },
+                [0, 'rgba(148, 202, 174, 0.2)'],
+                [1, 'rgba(148, 202, 174, 0)']
+              ]
+            }
           }
         ]
-      },
+      }
     },
     series: [
       {
-        data: data,
-        threshold: mediumValue,
+        name: 'Price',
+        data: data.map((point) => [point[0], point[1]]),
+        threshold: mediumValue
       },
+      {
+        type: 'column',
+        name: 'Volume',
+        data: data.map((point) => [point[0], point[2]]),
+        yAxis: 1,
+        color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+      }
     ],
     tooltip: {
       backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
@@ -546,21 +575,30 @@ function PriceChart({ token }) {
         fontSize: '12px'
       },
       formatter: function () {
-        const point = this.point;
-        const prevPoint = this.series.data[this.point.index - 1];
-        const change = prevPoint ? point.y - prevPoint.y : 0;
+        const points = this.points;
+        const pricePoint = points.find((p) => p.series.name === 'Price');
+        const volumePoint = points.find((p) => p.series.name === 'Volume');
+        const prevPoint = pricePoint.series.data[pricePoint.point.index - 1];
+        const change = prevPoint ? pricePoint.y - prevPoint.y : 0;
         const changePercent = prevPoint ? (change / prevPoint.y) * 100 : 0;
         const changeColor = change >= 0 ? '#94caae' : '#ff6968';
-        
+
         return `<div style="padding: 8px;">
           <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">
-            ${moment(point.x).format("MMM DD, YYYY HH:mm")}
+            ${moment(pricePoint.x).format('MMM DD, YYYY HH:mm')}
           </div>
           <table>
-            <tr><td>Price:</td><td style="text-align: right; padding-left: 10px;">${currencySymbols[activeFiatCurrency]}${fCurrency5(point.y)}</td></tr>
+            <tr><td>Price:</td><td style="text-align: right; padding-left: 10px;">${
+              currencySymbols[activeFiatCurrency]
+            }${fCurrency5(pricePoint.y)}</td></tr>
+            <tr><td>Volume:</td><td style="text-align: right; padding-left: 10px;">${fCurrency5(
+              volumePoint.y
+            )}</td></tr>
             <tr><td colspan="2" style="padding-top: 5px;">
               <span style="color: ${changeColor};">
-                ${change >= 0 ? '▲' : '▼'} ${fCurrency5(Math.abs(change))} (${changePercent.toFixed(2)}%)
+                ${change >= 0 ? '▲' : '▼'} ${fCurrency5(Math.abs(change))} (${changePercent.toFixed(
+          2
+        )}%)
               </span>
             </td></tr>
           </table>
@@ -594,14 +632,14 @@ function PriceChart({ token }) {
       text: null
     },
     chart: {
-      backgroundColor: "transparent",
-      height: "500px",
+      backgroundColor: 'transparent',
+      height: '500px',
       events: {
         render: function () {
           const chart = this;
           const imgUrl = darkMode ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
-          const imgWidth = "50";
-          const imgHeight = "15";
+          const imgWidth = '50';
+          const imgHeight = '15';
 
           if (chart.watermark) {
             chart.watermark.destroy();
@@ -611,11 +649,12 @@ function PriceChart({ token }) {
           const yPos = chart.plotHeight - imgHeight - 10; // 10px margin from bottom edge
 
           // Add watermark as an SVG image
-          chart.watermark = chart.renderer.image(imgUrl, xPos, yPos, imgWidth, imgHeight)
+          chart.watermark = chart.renderer
+            .image(imgUrl, xPos, yPos, imgWidth, imgHeight)
             .attr({
               zIndex: 5, // Ensure it's above other elements
               opacity: 0.6, // Adjust the opacity as needed
-              width: "100px",
+              width: '100px'
             })
             .add();
         }
@@ -626,10 +665,10 @@ function PriceChart({ token }) {
       enabled: false
     },
     xAxis: {
-      type: "datetime",
+      type: 'datetime',
       crosshair: {
         width: 1,
-        dashStyle: "Dot",
+        dashStyle: 'Dot',
         color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
       },
       labels: {
@@ -643,7 +682,7 @@ function PriceChart({ token }) {
     yAxis: {
       crosshair: {
         width: 1,
-        dashStyle: "Dot",
+        dashStyle: 'Dot',
         color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
       },
       title: {
@@ -653,17 +692,19 @@ function PriceChart({ token }) {
         style: {
           color: theme.palette.text.primary
         },
-        formatter: function() {
+        formatter: function () {
           return fCurrency5(this.value);
         }
       },
-      gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+      gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
     },
-    series: [{
-      type: 'candlestick',
-      name: `${user} ${name}`,
-      data: dataOHLC
-    }],
+    series: [
+      {
+        type: 'candlestick',
+        name: `${user} ${name}`,
+        data: dataOHLC
+      }
+    ],
     tooltip: {
       backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
       borderRadius: 8,
@@ -678,19 +719,29 @@ function PriceChart({ token }) {
         const change = point.close - point.open;
         const changePercent = (change / point.open) * 100;
         const changeColor = change >= 0 ? '#94caae' : '#ff6968';
-        
+
         return `<div style="padding: 8px;">
           <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">
-            ${moment(point.x).format("MMM DD, YYYY HH:mm")}
+            ${moment(point.x).format('MMM DD, YYYY HH:mm')}
           </div>
           <table>
-            <tr><td>Open:</td><td style="text-align: right; padding-left: 10px;">${currencySymbols[activeFiatCurrency]}${fCurrency5(point.open)}</td></tr>
-            <tr><td>High:</td><td style="text-align: right; padding-left: 10px;">${currencySymbols[activeFiatCurrency]}${fCurrency5(point.high)}</td></tr>
-            <tr><td>Low:</td><td style="text-align: right; padding-left: 10px;">${currencySymbols[activeFiatCurrency]}${fCurrency5(point.low)}</td></tr>
-            <tr><td>Close:</td><td style="text-align: right; padding-left: 10px;">${currencySymbols[activeFiatCurrency]}${fCurrency5(point.close)}</td></tr>
+            <tr><td>Open:</td><td style="text-align: right; padding-left: 10px;">${
+              currencySymbols[activeFiatCurrency]
+            }${fCurrency5(point.open)}</td></tr>
+            <tr><td>High:</td><td style="text-align: right; padding-left: 10px;">${
+              currencySymbols[activeFiatCurrency]
+            }${fCurrency5(point.high)}</td></tr>
+            <tr><td>Low:</td><td style="text-align: right; padding-left: 10px;">${
+              currencySymbols[activeFiatCurrency]
+            }${fCurrency5(point.low)}</td></tr>
+            <tr><td>Close:</td><td style="text-align: right; padding-left: 10px;">${
+              currencySymbols[activeFiatCurrency]
+            }${fCurrency5(point.close)}</td></tr>
             <tr><td colspan="2" style="padding-top: 5px;">
               <span style="color: ${changeColor};">
-                ${change >= 0 ? '▲' : '▼'} ${fCurrency5(Math.abs(change))} (${changePercent.toFixed(2)}%)
+                ${change >= 0 ? '▲' : '▼'} ${fCurrency5(Math.abs(change))} (${changePercent.toFixed(
+          2
+        )}%)
               </span>
             </td></tr>
           </table>
@@ -716,7 +767,7 @@ function PriceChart({ token }) {
               sx={{
                 display: 'flex',
                 border: (theme) => `1px solid ${theme.palette.divider}`,
-                flexWrap: 'wrap',
+                flexWrap: 'wrap'
               }}
             >
               <StyledToggleButtonGroup
@@ -737,12 +788,7 @@ function PriceChart({ token }) {
           </Stack>
         </Grid>
         <Grid container item xs={12} md={6} justifyContent="flex-end">
-          <ToggleButtonGroup
-            color="primary"
-            value={range}
-            exclusive
-            onChange={handleChange}
-          >
+          <ToggleButtonGroup color="primary" value={range} exclusive onChange={handleChange}>
             <ToggleButton sx={{ pt: 0, pb: 0 }} value="1D">
               1D
             </ToggleButton>
@@ -764,19 +810,11 @@ function PriceChart({ token }) {
           </ToggleButtonGroup>
         </Grid>
       </Grid>
-      <Stack display={!chartType ? "flex" : "none"}>
-        <HighchartsReact
-          highcharts={Highcharts}
-          options={options1}
-          allowChartUpdate={true}
-        />
+      <Stack display={!chartType ? 'flex' : 'none'}>
+        <HighchartsReact highcharts={Highcharts} options={options1} allowChartUpdate={true} />
       </Stack>
-      <Stack display={chartType ? "flex" : "none"}>
-        <HighchartsReact
-          highcharts={Highcharts}
-          options={options2}
-          allowChartUpdate={true}
-        />
+      <Stack display={chartType ? 'flex' : 'none'}>
+        <HighchartsReact highcharts={Highcharts} options={options2} allowChartUpdate={true} />
       </Stack>
       {/* <Box sx={{ p: 0, pb: 0 }} dir="ltr">
         <Chart series={options1.series} options={options1} height={364} />
