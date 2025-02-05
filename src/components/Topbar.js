@@ -179,6 +179,26 @@ const LiveCircle = styled('div')(({ theme }) => ({
   }
 }));
 
+const ProgressBar = styled('div')(({ theme, width, color }) => ({
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  height: '100%',
+  width: `${width}%`,
+  backgroundColor: color,
+  opacity: 0.15,
+  transition: 'width 0.3s ease-in-out'
+}));
+
+const ProgressBarContainer = styled('div')(({ theme }) => ({
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  height: '100%',
+  width: '100%',
+  overflow: 'hidden'
+}));
+
 // Create a fetcher function for useSWR
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
@@ -221,6 +241,14 @@ const formatTradeValue = (value) => {
     return numValue.toFixed(8);
   }
   return numValue.toString();
+};
+
+// Add this helper function near the top of the file
+const getTradeColor = (xrpValue) => {
+  if (xrpValue < 500) return '#4CAF50'; // Green for small trades
+  if (xrpValue >= 500 && xrpValue < 5000) return '#2196F3'; // Blue for medium trades
+  if (xrpValue >= 5000 && xrpValue < 10000) return '#FFC107'; // Yellow for large trades
+  return '#F44336'; // Red for whale trades
 };
 
 const Topbar = () => {
@@ -511,52 +539,82 @@ const Topbar = () => {
         ) : (
           <List>
             {filterTrades(trades).map((trade, index) => (
-              <ListItem key={index} sx={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
-                <ListItemText
-                  primary={
-                    <>
-                      <Typography component="span" sx={{ mr: 1 }}>
-                        {getTradeSizeEmoji(
-                          trade.paid.currency === 'XRP'
-                            ? trade.paid.value
-                            : trade.got.currency === 'XRP'
-                            ? trade.got.value
-                            : Math.max(parseFloat(trade.paid.value), parseFloat(trade.got.value))
-                        )}
-                        {(trade.maker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6' ||
-                          trade.taker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6') && (
-                          <SmartToy
-                            style={{
-                              color: theme.palette.warning.main,
-                              fontSize: '1rem',
-                              marginLeft: '4px',
-                              verticalAlign: 'middle'
-                            }}
-                          />
-                        )}
-                      </Typography>
-                      {trade.paid.currency === 'XRP' ? (
-                        <Typography component="span" color="success.main">
-                          BUY{' '}
+              <ListItem
+                key={index}
+                sx={{
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  padding: '12px 16px'
+                }}
+              >
+                <ProgressBarContainer>
+                  <ProgressBar
+                    width={(() => {
+                      const xrpValue = parseFloat(
+                        trade.paid.currency === 'XRP'
+                          ? trade.paid.value
+                          : trade.got.currency === 'XRP'
+                          ? trade.got.value
+                          : 0
+                      );
+
+                      // Calculate relative width based on XRP amount
+                      if (xrpValue < 500) return Math.max(5, (xrpValue / 500) * 25);
+                      if (xrpValue < 5000) return Math.max(25, (xrpValue / 5000) * 50);
+                      if (xrpValue < 10000) return Math.max(50, (xrpValue / 10000) * 75);
+                      return Math.min(100, 75 + (xrpValue / 50000) * 25);
+                    })()}
+                    color={trade.paid.currency === 'XRP' ? '#4CAF50' : '#F44336'}
+                  />
+                </ProgressBarContainer>
+                <Box sx={{ width: '100%', position: 'relative', zIndex: 1 }}>
+                  <ListItemText
+                    primary={
+                      <>
+                        <Typography component="span" sx={{ mr: 1 }}>
+                          {getTradeSizeEmoji(
+                            trade.paid.currency === 'XRP'
+                              ? trade.paid.value
+                              : trade.got.currency === 'XRP'
+                              ? trade.got.value
+                              : Math.max(parseFloat(trade.paid.value), parseFloat(trade.got.value))
+                          )}
+                          {(trade.maker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6' ||
+                            trade.taker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6') && (
+                            <SmartToy
+                              style={{
+                                color: theme.palette.warning.main,
+                                fontSize: '1rem',
+                                marginLeft: '4px',
+                                verticalAlign: 'middle'
+                              }}
+                            />
+                          )}
                         </Typography>
-                      ) : (
-                        <Typography component="span" color="error.main">
-                          SELL{' '}
-                        </Typography>
-                      )}
-                      {`${formatTradeValue(trade.paid.value)} ${
-                        trade.paid.currency
-                      } ↔ ${formatTradeValue(trade.got.value)} ${trade.got.currency}`}
-                    </>
-                  }
-                  secondary={
-                    <>
-                      <Typography variant="body2">{formatRelativeTime(trade.time)}</Typography>
-                      <Typography variant="caption">Maker: {trade.maker}</Typography>
-                      <Typography variant="caption">Taker: {trade.taker}</Typography>
-                    </>
-                  }
-                />
+                        {trade.paid.currency === 'XRP' ? (
+                          <Typography component="span" color="success.main">
+                            BUY{' '}
+                          </Typography>
+                        ) : (
+                          <Typography component="span" color="error.main">
+                            SELL{' '}
+                          </Typography>
+                        )}
+                        {`${formatTradeValue(trade.paid.value)} ${
+                          trade.paid.currency
+                        } ↔ ${formatTradeValue(trade.got.value)} ${trade.got.currency}`}
+                      </>
+                    }
+                    secondary={
+                      <>
+                        <Typography variant="body2">{formatRelativeTime(trade.time)}</Typography>
+                        <Typography variant="caption">Maker: {trade.maker}</Typography>
+                        <Typography variant="caption">Taker: {trade.taker}</Typography>
+                      </>
+                    }
+                  />
+                </Box>
               </ListItem>
             ))}
           </List>
