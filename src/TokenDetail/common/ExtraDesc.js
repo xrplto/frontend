@@ -192,36 +192,6 @@ export default function ExtraDesc({ token }) {
               {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
             </MarketTypography>
           </Stack>
-          <Stack direction="row" alignItems="center" gap={1} sx={{ pl: 3 }}>
-            <Typography variant="body1">Volume / Marketcap</Typography>
-            <Tooltip
-              title={
-                <Typography variant="body2">
-                  This metric represents the ratio of trading volume within the past 24 hours to the
-                  market capitalization of {name} token. It provides insights into the token's
-                  liquidity and trading activity relative to its overall market value.
-                </Typography>
-              }
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    bgcolor: 'black',
-                    border: '1px solid rgba(255, 255, 255, 0.5)',
-                    '& .MuiTooltip-arrow': {
-                      color: 'black'
-                    }
-                  }
-                }
-              }}
-            >
-              <Icon icon={infoFilled} />
-            </Tooltip>
-          </Stack>
-          <Stack alignItems="center">
-            <VolumeTypography variant="subtitle2" sx={{ mt: 1, mb: 1 }}>
-              {fNumber(voldivmarket)}
-            </VolumeTypography>
-          </Stack>
         </Grid>
 
         <Grid
