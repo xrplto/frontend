@@ -302,19 +302,30 @@ const Topbar = () => {
   const filterTrades = (trades) => {
     if (!trades?.hists) return [];
 
+    const getXRPAmount = (trade) => {
+      if (trade.paid.currency === 'XRP') return parseFloat(trade.paid.value);
+      if (trade.got.currency === 'XRP') return parseFloat(trade.got.value);
+      return 0;
+    };
+
     const filters = {
       All: () => true,
-      '🦐 <500 XRP': (trade) => trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) < 500,
-      '🐬 500-5000 XRP': (trade) =>
-        trade.paid.currency === 'XRP' &&
-        parseFloat(trade.paid.value) >= 500 &&
-        parseFloat(trade.paid.value) < 5000,
-      '🐋 5000-10000 XRP': (trade) =>
-        trade.paid.currency === 'XRP' &&
-        parseFloat(trade.paid.value) >= 5000 &&
-        parseFloat(trade.paid.value) < 10000,
-      '🐳 10000+ XRP': (trade) =>
-        trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) >= 10000
+      '🦐 <500 XRP': (trade) => {
+        const xrpAmount = getXRPAmount(trade);
+        return xrpAmount > 0 && xrpAmount < 500;
+      },
+      '🐬 500-5000 XRP': (trade) => {
+        const xrpAmount = getXRPAmount(trade);
+        return xrpAmount >= 500 && xrpAmount < 5000;
+      },
+      '🐋 5000-10000 XRP': (trade) => {
+        const xrpAmount = getXRPAmount(trade);
+        return xrpAmount >= 5000 && xrpAmount < 10000;
+      },
+      '🐳 10000+ XRP': (trade) => {
+        const xrpAmount = getXRPAmount(trade);
+        return xrpAmount >= 10000;
+      }
     };
 
     return trades.hists.filter(filters[filter]);
