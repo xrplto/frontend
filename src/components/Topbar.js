@@ -22,6 +22,7 @@ import {
   Select,
   FormControl
 } from '@mui/material';
+import SmartToy from '@mui/icons-material/SmartToy';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
@@ -514,13 +515,15 @@ const Topbar = () => {
                 <ListItemText
                   primary={
                     <>
-                      {(trade.paid.currency === 'XRP' || trade.got.currency === 'XRP') && (
-                        <Typography component="span" sx={{ mr: 1 }}>
-                          {getTradeSizeEmoji(
-                            trade.paid.currency === 'XRP' ? trade.paid.value : trade.got.value
-                          )}
-                        </Typography>
-                      )}
+                      <Typography component="span" sx={{ mr: 1 }}>
+                        {getTradeSizeEmoji(
+                          trade.paid.currency === 'XRP'
+                            ? trade.paid.value
+                            : trade.got.currency === 'XRP'
+                            ? trade.got.value
+                            : Math.max(parseFloat(trade.paid.value), parseFloat(trade.got.value))
+                        )}
+                      </Typography>
                       {trade.paid.currency === 'XRP' ? (
                         <Typography component="span" color="success.main">
                           BUY{' '}
@@ -538,8 +541,32 @@ const Topbar = () => {
                   secondary={
                     <>
                       <Typography variant="body2">{formatRelativeTime(trade.time)}</Typography>
-                      <Typography variant="caption">Maker: {trade.maker}</Typography>
-                      <Typography variant="caption">Taker: {trade.taker}</Typography>
+                      <Typography variant="caption">
+                        Maker: {trade.maker}
+                        {trade.maker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6' && (
+                          <SmartToy
+                            style={{
+                              color: theme.palette.warning.main,
+                              fontSize: '1rem',
+                              marginLeft: '4px',
+                              verticalAlign: 'middle'
+                            }}
+                          />
+                        )}
+                      </Typography>
+                      <Typography variant="caption">
+                        Taker: {trade.taker}
+                        {trade.taker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6' && (
+                          <SmartToy
+                            style={{
+                              color: theme.palette.warning.main,
+                              fontSize: '1rem',
+                              marginLeft: '4px',
+                              verticalAlign: 'middle'
+                            }}
+                          />
+                        )}
+                      </Typography>
                     </>
                   }
                 />
