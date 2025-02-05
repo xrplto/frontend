@@ -523,6 +523,17 @@ const Topbar = () => {
                             ? trade.got.value
                             : Math.max(parseFloat(trade.paid.value), parseFloat(trade.got.value))
                         )}
+                        {(trade.maker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6' ||
+                          trade.taker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6') && (
+                          <SmartToy
+                            style={{
+                              color: theme.palette.warning.main,
+                              fontSize: '1rem',
+                              marginLeft: '4px',
+                              verticalAlign: 'middle'
+                            }}
+                          />
+                        )}
                       </Typography>
                       {trade.paid.currency === 'XRP' ? (
                         <Typography component="span" color="success.main">
@@ -541,32 +552,8 @@ const Topbar = () => {
                   secondary={
                     <>
                       <Typography variant="body2">{formatRelativeTime(trade.time)}</Typography>
-                      <Typography variant="caption">
-                        Maker: {trade.maker}
-                        {trade.maker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6' && (
-                          <SmartToy
-                            style={{
-                              color: theme.palette.warning.main,
-                              fontSize: '1rem',
-                              marginLeft: '4px',
-                              verticalAlign: 'middle'
-                            }}
-                          />
-                        )}
-                      </Typography>
-                      <Typography variant="caption">
-                        Taker: {trade.taker}
-                        {trade.taker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6' && (
-                          <SmartToy
-                            style={{
-                              color: theme.palette.warning.main,
-                              fontSize: '1rem',
-                              marginLeft: '4px',
-                              verticalAlign: 'middle'
-                            }}
-                          />
-                        )}
-                      </Typography>
+                      <Typography variant="caption">Maker: {trade.maker}</Typography>
+                      <Typography variant="caption">Taker: {trade.taker}</Typography>
                     </>
                   }
                 />
