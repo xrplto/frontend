@@ -167,10 +167,10 @@ function FTokenRow({
           cursor: 'pointer'
         },
         '& .MuiTypography-root': {
-          fontSize: isMobile ? '12px' : '14px'
+          fontSize: isMobile ? '11px' : '12px'
         },
         '& .MuiTableCell-root': {
-          padding: isMobile ? '2px 4px' : '4px 8px',
+          padding: isMobile ? '1px 2px' : '2px 3px',
           whiteSpace: 'nowrap'
         }
       }}
@@ -183,25 +183,23 @@ function FTokenRow({
           zIndex: 1001,
           left: 0,
           background: darkMode ? '#000000' : '#FFFFFF',
-          width: '32px',
-          minWidth: '32px',
-          padding: '4px'
+          width: '20px',
+          minWidth: '20px',
+          padding: '1px'
         }}
       >
         {watchList.includes(md5) ? (
           <Tooltip title="Remove from Watchlist">
             <StarRateIcon
               onClick={handleWatchlistClick}
-              fontSize="small"
-              sx={{ cursor: 'pointer', color: '#F6B87E' }}
+              sx={{ cursor: 'pointer', color: '#F6B87E', fontSize: '16px' }}
             />
           </Tooltip>
         ) : (
-          <Tooltip title="Add to Watchlist and follow token">
+          <Tooltip title="Add to Watchlist">
             <StarOutlineIcon
               onClick={handleWatchlistClick}
-              fontSize="small"
-              sx={{ cursor: 'pointer', '&:hover': { color: '#F6B87E' } }}
+              sx={{ cursor: 'pointer', '&:hover': { color: '#F6B87E' }, fontSize: '16px' }}
             />
           </Tooltip>
         )}
@@ -212,11 +210,11 @@ function FTokenRow({
           sx={{
             position: 'sticky',
             zIndex: 1001,
-            left: '32px',
+            left: '20px',
             background: darkMode ? '#000000' : '#FFFFFF',
-            width: '40px',
-            minWidth: '40px',
-            padding: '4px 8px'
+            width: '25px',
+            minWidth: '25px',
+            padding: '1px 2px'
           }}
         >
           {idx + 1}
@@ -225,10 +223,10 @@ function FTokenRow({
       <TableCell
         align="left"
         sx={{
-          p: isMobile ? '2px 4px' : '4px 8px',
+          p: isMobile ? '1px' : '1px 2px',
           position: 'sticky',
           zIndex: 1001,
-          left: isMobile ? '32px' : '72px',
+          left: isMobile ? '20px' : '45px',
           background: darkMode ? '#000000' : '#FFFFFF',
           '&:before': scrollLeft
             ? {
@@ -246,13 +244,13 @@ function FTokenRow({
             : {}
         }}
       >
-        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.25 : 0.5}>
+        <Stack direction="row" alignItems="center" spacing={0.5}>
           <Box>
             {isAdmin ? (
               <AdminImage
                 src={imgUrl}
-                width={isMobile ? 14 : 24}
-                height={isMobile ? 14 : 24}
+                width={isMobile ? 12 : 16}
+                height={isMobile ? 12 : 16}
                 onClick={handleEditToken}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
                 alt={`${user} ${name} Logo`}
@@ -260,8 +258,8 @@ function FTokenRow({
             ) : (
               <TokenImage
                 src={imgUrl}
-                width={isMobile ? 14 : 24}
-                height={isMobile ? 14 : 24}
+                width={isMobile ? 12 : 16}
+                height={isMobile ? 12 : 16}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
                 alt={`${user} ${name} Logo`}
               />
@@ -278,8 +276,8 @@ function FTokenRow({
                 variant="token"
                 sx={{
                   fontWeight: '700',
-                  fontSize: isMobile ? '0.7rem' : '0.85rem',
-                  lineHeight: 1.1
+                  fontSize: isMobile ? '0.7rem' : '0.8rem',
+                  lineHeight: 1
                 }}
                 color={
                   isOMCF !== 'yes'
@@ -315,7 +313,10 @@ function FTokenRow({
           </Link>
         </Stack>
       </TableCell>
-      <TableCell align="right" sx={{ color: priceColor }}>
+      <TableCell
+        align="right"
+        sx={{ color: priceColor, padding: isMobile ? '1px 2px' : '2px 3px' }}
+      >
         <TransitionTypo variant="h4" noWrap={!isMobile}>
           <NumberTooltip
             prepend={currencySymbols[activeFiatCurrency]}
@@ -323,16 +324,60 @@ function FTokenRow({
           />
         </TransitionTypo>
       </TableCell>
-      <TableCell align="right">
+      <TableCell
+        align="right"
+        sx={{
+          width: '70px',
+          minWidth: '70px',
+          padding: isMobile ? '1px 2px' : '2px 3px',
+          '& .MuiTypography-root': {
+            textAlign: 'right',
+            width: '100%'
+          }
+        }}
+      >
         <BearBullLabel value={pro5m} variant="h4" />
       </TableCell>
-      <TableCell align="right">
+      <TableCell
+        align="right"
+        sx={{
+          width: '70px',
+          minWidth: '70px',
+          padding: isMobile ? '1px 2px' : '2px 3px',
+          '& .MuiTypography-root': {
+            textAlign: 'right',
+            width: '100%'
+          }
+        }}
+      >
         <BearBullLabel value={pro1h} variant="h4" />
       </TableCell>
-      <TableCell align="right">
+      <TableCell
+        align="right"
+        sx={{
+          width: '70px',
+          minWidth: '70px',
+          padding: isMobile ? '1px 2px' : '2px 3px',
+          '& .MuiTypography-root': {
+            textAlign: 'right',
+            width: '100%'
+          }
+        }}
+      >
         <BearBullLabel value={pro24h} variant="h4" />
       </TableCell>
-      <TableCell align="right">
+      <TableCell
+        align="right"
+        sx={{
+          width: '70px',
+          minWidth: '70px',
+          padding: isMobile ? '1px 2px' : '2px 3px',
+          '& .MuiTypography-root': {
+            textAlign: 'right',
+            width: '100%'
+          }
+        }}
+      >
         <BearBullLabel value={pro7d} variant="h4" />
       </TableCell>
       <TableCell align="right">
@@ -480,12 +525,21 @@ function FTokenRow({
       <TableCell
         align="right"
         sx={{
-          px: '0 !important'
+          px: '0 !important',
+          width: '60px',
+          minWidth: '60px'
         }}
       >
         <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
       </TableCell>
-      <TableCell align="right">
+      <TableCell
+        align="right"
+        sx={{
+          width: '28px',
+          minWidth: '28px',
+          padding: '1px !important'
+        }}
+      >
         <TokenMoreMenu
           token={memoizedToken}
           admin={isAdmin}
