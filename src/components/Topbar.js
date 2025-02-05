@@ -124,6 +124,25 @@ const TradeButton = styled(IconButton)(({ theme }) => ({
 // Create a fetcher function for useSWR
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
+// Add this utility function at the top of the file
+const formatRelativeTime = (timestamp) => {
+  const now = Date.now();
+  const diffInSeconds = Math.floor((now - timestamp) / 1000);
+
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds}s ago`;
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes}min ago`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours}h ago`;
+  } else {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days}d ago`;
+  }
+};
+
 const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -386,12 +405,23 @@ const Topbar = () => {
             {filterTrades(trades).map((trade, index) => (
               <ListItem key={index} sx={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
                 <ListItemText
-                  primary={`${trade.paid.value} ${trade.paid.currency} ↔ ${trade.got.value} ${trade.got.currency}`}
+                  primary={
+                    <>
+                      {trade.paid.currency === 'XRP' ? (
+                        <Typography component="span" color="success.main">
+                          BUY{' '}
+                        </Typography>
+                      ) : (
+                        <Typography component="span" color="error.main">
+                          SELL{' '}
+                        </Typography>
+                      )}
+                      {`${trade.paid.value} ${trade.paid.currency} ↔ ${trade.got.value} ${trade.got.currency}`}
+                    </>
+                  }
                   secondary={
                     <>
-                      <Typography variant="body2">
-                        {new Date(trade.time).toLocaleString()}
-                      </Typography>
+                      <Typography variant="body2">{formatRelativeTime(trade.time)}</Typography>
                       <Typography variant="caption">Maker: {trade.maker}</Typography>
                       <Typography variant="caption">Taker: {trade.taker}</Typography>
                     </>
