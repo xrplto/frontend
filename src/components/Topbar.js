@@ -271,7 +271,7 @@ const Topbar = () => {
   const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
   const { data: trades, error } = useSWR(
     tradeDrawerOpen
-      ? 'http://37.27.134.126/api//history?md5=84e5efeb89c4eae8f68188982dc290d8&page=1&limit=100'
+      ? 'https://api.xrpl.to/api//history?md5=84e5efeb89c4eae8f68188982dc290d8&page=1&limit=100'
       : null,
     fetcher
   );
