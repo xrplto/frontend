@@ -116,6 +116,7 @@ const TradeButton = styled(IconButton)(({ theme }) => ({
   marginLeft: theme.spacing(1),
   padding: theme.spacing(1),
   backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  borderRadius: '8px',
   '&:hover': {
     backgroundColor: alpha(theme.palette.primary.main, 0.2)
   }
