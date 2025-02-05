@@ -591,9 +591,15 @@ function PriceChart({ token }) {
             <tr><td>Price:</td><td style="text-align: right; padding-left: 10px;">${
               currencySymbols[activeFiatCurrency]
             }${fCurrency5(pricePoint.y)}</td></tr>
+            ${
+              volumePoint
+                ? `
             <tr><td>Volume:</td><td style="text-align: right; padding-left: 10px;">${fCurrency5(
               volumePoint.y
             )}</td></tr>
+            `
+                : ''
+            }
             <tr><td colspan="2" style="padding-top: 5px;">
               <span style="color: ${changeColor};">
                 ${change >= 0 ? '▲' : '▼'} ${fCurrency5(Math.abs(change))} (${changePercent.toFixed(
