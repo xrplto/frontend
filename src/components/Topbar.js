@@ -295,8 +295,8 @@ const filterTrades = (trades, selectedFilter) => {
 
   const filteredTrades = trades.hists.filter(filters[selectedFilter]);
 
-  // Sort by XRP amount in descending order
-  return filteredTrades.sort((a, b) => getXRPAmount(b) - getXRPAmount(a));
+  // Sort by timestamp in descending order (most recent first)
+  return filteredTrades.sort((a, b) => b.time - a.time);
 };
 
 const Topbar = () => {
@@ -321,7 +321,12 @@ const Topbar = () => {
     tradeDrawerOpen
       ? 'https://api.xrpl.to/api//history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=50' //supports only 50 it seems
       : null,
-    fetcher
+    fetcher,
+    {
+      refreshInterval: tradeDrawerOpen ? 5000 : 0, // Refresh every 5 seconds when drawer is open
+      dedupingInterval: 2000, // Dedupe requests within 2 seconds
+      revalidateOnFocus: false // Don't revalidate on window focus
+    }
   );
   const [filter, setFilter] = useState('All');
 
