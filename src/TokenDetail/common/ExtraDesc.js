@@ -259,11 +259,28 @@ export default function ExtraDesc({ token }) {
           </Stack>
           <Stack alignItems="center">
             <VolumeTypography variant="desc" sx={{ mt: 3, mb: 2 }}>
-              {currencySymbols[activeFiatCurrency]} {fNumber(convertedVolume)}{' '}
-            </VolumeTypography>
-            <VolumeTypography variant="desc" sx={{ mt: 3, mb: 2 }}>
-              <NumberTooltip number={volume} />{' '}
-              <VolumeTypography variant="small">{name}</VolumeTypography>
+              <Tooltip
+                title={
+                  <Typography variant="body2">
+                    {volume} {name}
+                  </Typography>
+                }
+                componentsProps={{
+                  tooltip: {
+                    sx: {
+                      bgcolor: 'black',
+                      border: '1px solid rgba(255, 255, 255, 0.5)',
+                      '& .MuiTooltip-arrow': {
+                        color: 'black'
+                      }
+                    }
+                  }
+                }}
+              >
+                <span>
+                  {currencySymbols[activeFiatCurrency]} {fNumber(convertedVolume)}
+                </span>
+              </Tooltip>
             </VolumeTypography>
           </Stack>
         </Grid>
