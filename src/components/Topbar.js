@@ -12,7 +12,15 @@ import {
   Typography,
   useTheme,
   useMediaQuery,
-  IconButton
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  CircularProgress,
+  MenuItem,
+  Select,
+  FormControl
 } from '@mui/material';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -24,6 +32,8 @@ import CurrencySwithcer from './CurrencySwitcher';
 import ThemeSwitcher from './ThemeSwitcher';
 import { currencySymbols } from 'src/utils/constants';
 import { toggleChatOpen } from 'src/redux/chatSlice';
+import useSWR from 'swr';
+import axios from 'axios';
 
 const TopWrapper = styled(Box)(
   ({ theme }) => `
@@ -102,6 +112,18 @@ const StyledContainer = styled(Container)(({ theme }) => ({
   }
 }));
 
+const TradeButton = styled(IconButton)(({ theme }) => ({
+  marginLeft: theme.spacing(1),
+  padding: theme.spacing(1),
+  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.2)
+  }
+}));
+
+// Create a fetcher function for useSWR
+const fetcher = (url) => axios.get(url).then((res) => res.data);
+
 const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -119,6 +141,14 @@ const Topbar = () => {
   const [fullSearch, setFullSearch] = useState(false);
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const [currentMetricIndex, setCurrentMetricIndex] = useState(0);
+  const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
+  const { data: trades, error } = useSWR(
+    tradeDrawerOpen
+      ? 'http://37.27.134.126/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=10'
+      : null,
+    fetcher
+  );
+  const [filter, setFilter] = useState('All');
 
   const mobileMetrics = [
     {
@@ -175,6 +205,30 @@ const Topbar = () => {
 
     return () => clearInterval(interval);
   }, [isMobile, mobileMetrics.length]);
+
+  const handleTradeDrawerOpen = () => {
+    setTradeDrawerOpen(true);
+  };
+
+  const handleTradeDrawerClose = () => {
+    setTradeDrawerOpen(false);
+  };
+
+  const filterTrades = (trades) => {
+    if (!trades?.hists) return [];
+
+    const filters = {
+      All: () => true,
+      '250+ XRP': (trade) => trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) >= 250,
+      '1250+ XRP': (trade) => trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) >= 1250,
+      '2500+ XRP': (trade) => trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) >= 2500,
+      '5000+ XRP': (trade) => trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) >= 5000,
+      '10000+ XRP': (trade) =>
+        trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) >= 10000
+    };
+
+    return trades.hists.filter(filters[filter]);
+  };
 
   return (
     <TopWrapper>
@@ -280,10 +334,74 @@ const Topbar = () => {
               </APILabel>{' '}
               {/* Add API label with new window */}
               {!fullSearch && isDesktop && <Wallet style={{ marginRight: '9px' }} />}
+              <TradeButton onClick={handleTradeDrawerOpen} title="Global Trades">
+                <Typography variant="body2">Global Trades</Typography>
+              </TradeButton>
             </Box>
           )}
         </ContentWrapper>
       </StyledContainer>
+      <Drawer
+        anchor="right"
+        open={tradeDrawerOpen}
+        onClose={handleTradeDrawerClose}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: isMobile ? '100%' : '400px',
+            padding: theme.spacing(2)
+          }
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h6">Global Trades</Typography>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <Select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              displayEmpty
+              inputProps={{ 'aria-label': 'Filter trades' }}
+            >
+              <MenuItem value="All">All</MenuItem>
+              <MenuItem value="250+ XRP">250+ XRP</MenuItem>
+              <MenuItem value="1250+ XRP">1250+ XRP</MenuItem>
+              <MenuItem value="2500+ XRP">2500+ XRP</MenuItem>
+              <MenuItem value="5000+ XRP">5000+ XRP</MenuItem>
+              <MenuItem value="10000+ XRP">10000+ XRP</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+        {error ? (
+          <Box>
+            <Typography color="error">Failed to load trades</Typography>
+            <Typography variant="body2" color="textSecondary">
+              Error: {error.message}
+            </Typography>
+          </Box>
+        ) : !trades ? (
+          <Box display="flex" justifyContent="center" mt={2}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <List>
+            {filterTrades(trades).map((trade, index) => (
+              <ListItem key={index} sx={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
+                <ListItemText
+                  primary={`${trade.paid.value} ${trade.paid.currency} ↔ ${trade.got.value} ${trade.got.currency}`}
+                  secondary={
+                    <>
+                      <Typography variant="body2">
+                        {new Date(trade.time).toLocaleString()}
+                      </Typography>
+                      <Typography variant="caption">Maker: {trade.maker}</Typography>
+                      <Typography variant="caption">Taker: {trade.taker}</Typography>
+                    </>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </Drawer>
     </TopWrapper>
   );
 };
