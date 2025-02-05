@@ -47,56 +47,96 @@ const TABLE_HEAD = [
   },
   {
     no: 4,
-    id: 'pro24h',
-    label: '24h',
+    id: 'pro5m',
+    label: (
+      <Tooltip title="Price change in the last 5 minutes" placement="top">
+        <span>
+          5m <SmallInfoIcon />
+        </span>
+      </Tooltip>
+    ),
     align: 'right',
     width: '6%',
     order: true
   },
   {
     no: 5,
-    id: 'pro7d',
-    label: '7d',
+    id: 'pro1h',
+    label: (
+      <Tooltip title="Price change in the last hour" placement="top">
+        <span>
+          1h <SmallInfoIcon />
+        </span>
+      </Tooltip>
+    ),
     align: 'right',
     width: '6%',
     order: true
   },
   {
     no: 6,
-    id: 'vol24hxrp',
+    id: 'pro24h',
     label: (
-     <Tooltip
-        title="Amount of XRP that has been traded with this token in the last 24 hours"
-        placement="top" // Adjust placement as needed
-      >
+      <Tooltip title="Price change in the last 24 hours" placement="top">
         <span>
-          Volume <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
+          24h <SmallInfoIcon />
         </span>
-     </Tooltip>
+      </Tooltip>
     ),
     align: 'right',
-    width: '10%',
+    width: '6%',
     order: true
   },
   {
     no: 7,
-    id: 'vol24htx',
+    id: 'pro7d',
     label: (
-      <Tooltip
-         title="Trades represents the total number of trade transactions for an asset on the XRPL DEX within the last 24 hours, indicating market activity and liquidity."
-         placement="top" // Adjust placement as needed
-       >
-         <span>
-           Trades <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
-         </span>
+      <Tooltip title="Price change in the last 7 days" placement="top">
+        <span>
+          7d <SmallInfoIcon />
+        </span>
       </Tooltip>
-     ),
+    ),
     align: 'right',
     width: '6%',
     order: true
   },
   {
     no: 8,
+    id: 'vol24hxrp',
+    label: (
+      <Tooltip
+        title="Amount of XRP that has been traded with this token in the last 24 hours"
+        placement="top" // Adjust placement as needed
+      >
+        <span>
+          Volume <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
+        </span>
+      </Tooltip>
+    ),
+    align: 'right',
+    width: '10%',
+    order: true
+  },
+  {
+    no: 9,
+    id: 'vol24htx',
+    label: (
+      <Tooltip
+        title="Trades represents the total number of trade transactions for an asset on the XRPL DEX within the last 24 hours, indicating market activity and liquidity."
+        placement="top" // Adjust placement as needed
+      >
+        <span>
+          Trades <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
+        </span>
+      </Tooltip>
+    ),
+    align: 'right',
+    width: '6%',
+    order: true
+  },
+  {
+    no: 10,
     id: 'marketcap',
     label: (
       <Tooltip
@@ -113,24 +153,24 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 9,
+    no: 11,
     id: 'trustlines',
     label: (
       <Tooltip
-         title="A TrustLine in blockchain allows users to hold and transact in others' debt in specified currencies, enabling multi-currency dealings."
-         placement="top" // Adjust placement as needed
-       >
-         <span>
-           TrustLines <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
-         </span>
+        title="A TrustLine in blockchain allows users to hold and transact in others' debt in specified currencies, enabling multi-currency dealings."
+        placement="top" // Adjust placement as needed
+      >
+        <span>
+          TrustLines <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
+        </span>
       </Tooltip>
-     ),
+    ),
     align: 'right',
     width: '10%',
     order: true
   },
   {
-    no: 10,
+    no: 12,
     id: 'supply',
     label: (
       <Tooltip
@@ -147,7 +187,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 11,
+    no: 13,
     id: 'historyGraph',
     label: 'Last 7 Days',
     align: 'right',

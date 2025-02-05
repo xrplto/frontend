@@ -132,6 +132,8 @@ function FTokenRow({
     user,
     pro7d,
     pro24h,
+    pro1h,
+    pro5m,
     exch,
     usd,
     ext,
@@ -320,6 +322,12 @@ function FTokenRow({
             number={fNumberWithCurreny(exch, exchRate)}
           />
         </TransitionTypo>
+      </TableCell>
+      <TableCell align="right">
+        <BearBullLabel value={pro5m} variant="h4" />
+      </TableCell>
+      <TableCell align="right">
+        <BearBullLabel value={pro1h} variant="h4" />
       </TableCell>
       <TableCell align="right">
         <BearBullLabel value={pro24h} variant="h4" />
