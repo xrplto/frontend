@@ -257,12 +257,13 @@ export default function ExtraDesc({ token }) {
 
         <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
           <Stack direction="row" alignItems="center" gap={1} sx={{ pl: 3 }}>
-            <Typography variant="body1">Circulating Supply</Typography>
+            <Typography variant="body1">Supply</Typography>
             <Tooltip
               title={
                 <Typography variant="body2">
-                  The number of {name} tokens in circulation within the market and held by the
-                  public is comparable to the concept of outstanding shares in the stock market.
+                  Circulating Supply: The number of {name} tokens in circulation within the market and held by the public.
+                  <br /><br />
+                  Total Supply: Total number of {name} tokens that have been issued, including those not currently active in the market.
                 </Typography>
               }
               componentsProps={{
@@ -282,38 +283,8 @@ export default function ExtraDesc({ token }) {
           </Stack>
           <Stack alignItems="center">
             <SupplyTypography color="primary" variant="desc" sx={{ mt: 3, mb: 2 }}>
-              {circulatingSupply}
+              {circulatingSupply} / {totalSupply}
             </SupplyTypography>
-          </Stack>
-
-          <Stack direction="row" alignItems="center" gap={1} sx={{ pl: 3 }}>
-            <Typography variant="body1">Total Supply</Typography>
-            <Tooltip
-              title={
-                <Typography variant="body2">
-                  Total number of {name} tokens that have been issued. This includes tokens that are
-                  in circulation as well as those that are not currently active in the market.
-                </Typography>
-              }
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    bgcolor: 'black',
-                    border: '1px solid rgba(255, 255, 255, 0.5)',
-                    '& .MuiTooltip-arrow': {
-                      color: 'black'
-                    }
-                  }
-                }
-              }}
-            >
-              <Icon icon={infoFilled} />
-            </Tooltip>
-          </Stack>
-          <Stack alignItems="center">
-            <TotalSupplyTypography variant="desc" sx={{ mt: 1, mb: 1 }}>
-              {totalSupply}
-            </TotalSupplyTypography>
           </Stack>
         </Grid>
       </Grid>
