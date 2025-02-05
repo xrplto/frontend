@@ -246,9 +246,19 @@ const formatTradeValue = (value) => {
   // Convert to number if it's a string
   const numValue = typeof value === 'string' ? Number(value) : value;
 
-  // Check if the number is in scientific notation or very small
+  // Very small numbers (use 8 decimal places)
   if (Math.abs(numValue) < 0.0001) {
     return numValue.toFixed(8);
+  }
+
+  // Small numbers (use 4 decimal places)
+  if (Math.abs(numValue) < 1) {
+    return numValue.toFixed(4);
+  }
+
+  // Medium numbers (use 2 decimal places)
+  if (Math.abs(numValue) < 1000) {
+    return numValue.toFixed(2);
   }
 
   // Abbreviate large numbers
