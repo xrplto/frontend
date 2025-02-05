@@ -49,42 +49,46 @@ export default function PriceDesc({ token }) {
         </Stack>
       </Stack>
 
-      <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+      <Stack direction="row" spacing={1} sx={{ mt: 0.5 }} alignItems="center">
         <BearBullChip
           value={pro5m}
           tooltip={
             <Stack alignItems="center">
-              5m (%)
+              5m Change
               <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro5m=${pro5m}`} />
             </Stack>
           }
+          label="5m"
         />
         <BearBullChip
           value={pro1h}
           tooltip={
             <Stack alignItems="center">
-              1h (%)
+              1h Change
               <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro1h=${pro1h}`} />
             </Stack>
           }
+          label="1h"
         />
         <BearBullChip
           value={pro24h}
           tooltip={
             <Stack alignItems="center">
-              24h (%)
+              24h Change
               <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`} />
             </Stack>
           }
+          label="24h"
         />
         <BearBullChip
           value={pro7d}
           tooltip={
             <Stack alignItems="center">
-              7d (%)
+              7d Change
               <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
             </Stack>
           }
+          label="7d"
         />
       </Stack>
 
