@@ -436,7 +436,16 @@ function FTokenRow({
       </TableCell>
       <TableCell align="right">
         <Typography variant="h4" noWrap={!isMobile}>
-          {fNumber(supply)} {name}
+          {supply >= 1000000000000
+            ? `${(supply / 1000000000000).toFixed(2)}T`
+            : supply >= 1000000000
+            ? `${(supply / 1000000000).toFixed(2)}B`
+            : supply >= 1000000
+            ? `${(supply / 1000000).toFixed(2)}M`
+            : supply >= 1000
+            ? `${(supply / 1000).toFixed(1)}K`
+            : fNumber(supply)}{' '}
+          {name}
         </Typography>
         <Box display="flex" alignItems="center" pt={1}>
           <Box width="80%" sx={{ color: 'darkgrey', margin: '0 auto' }}>
