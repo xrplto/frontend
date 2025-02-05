@@ -192,6 +192,8 @@ export default function ExtraDesc({ token }) {
               {currencySymbols[activeFiatCurrency]}{' '}
               {convertedMarketCap >= 1000000
                 ? `${(convertedMarketCap / 1000000).toFixed(1)}M`
+                : convertedMarketCap >= 1000
+                ? `${(convertedMarketCap / 1000).toFixed(1)}K`
                 : fNumber(convertedMarketCap)}
             </MarketTypography>
           </Stack>
@@ -254,6 +256,8 @@ export default function ExtraDesc({ token }) {
                   {currencySymbols[activeFiatCurrency]}{' '}
                   {convertedVolume >= 1000000
                     ? `${(convertedVolume / 1000000).toFixed(1)}M`
+                    : convertedVolume >= 1000
+                    ? `${(convertedVolume / 1000).toFixed(1)}K`
                     : fNumber(convertedVolume)}
                 </span>
               </Tooltip>
@@ -292,8 +296,17 @@ export default function ExtraDesc({ token }) {
           </Stack>
           <Stack alignItems="center">
             <SupplyTypography color="primary" variant="desc" sx={{ mt: 3, mb: 2 }}>
-              {supply >= 1000000 ? `${(supply / 1000000).toFixed(1)}M` : fNumber(supply)} /
-              {amount >= 1000000 ? `${(amount / 1000000).toFixed(1)}M` : fNumber(amount)}
+              {supply >= 1000000
+                ? `${(supply / 1000000).toFixed(1)}M`
+                : supply >= 1000
+                ? `${(supply / 1000).toFixed(1)}K`
+                : fNumber(supply)}{' '}
+              /
+              {amount >= 1000000
+                ? `${(amount / 1000000).toFixed(1)}M`
+                : amount >= 1000
+                ? `${(amount / 1000).toFixed(1)}K`
+                : fNumber(amount)}
             </SupplyTypography>
           </Stack>
         </Grid>
