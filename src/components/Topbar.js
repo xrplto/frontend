@@ -421,9 +421,11 @@ const Topbar = () => {
                 <ListItemText
                   primary={
                     <>
-                      {trade.paid.currency === 'XRP' && (
+                      {(trade.paid.currency === 'XRP' || trade.got.currency === 'XRP') && (
                         <Typography component="span" sx={{ mr: 1 }}>
-                          {getTradeSizeEmoji(trade.paid.value)}
+                          {getTradeSizeEmoji(
+                            trade.paid.currency === 'XRP' ? trade.paid.value : trade.got.value
+                          )}
                         </Typography>
                       )}
                       {trade.paid.currency === 'XRP' ? (
