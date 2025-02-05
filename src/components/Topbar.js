@@ -251,6 +251,54 @@ const getTradeColor = (xrpValue) => {
   return '#F44336'; // Red for whale trades
 };
 
+const getXRPAmount = (trade) => {
+  const xrpValue =
+    trade.paid.currency === 'XRP'
+      ? parseValue(trade.paid.value)
+      : trade.got.currency === 'XRP'
+      ? parseValue(trade.got.value)
+      : 0;
+  return xrpValue;
+};
+
+const parseValue = (value) => {
+  if (typeof value === 'string' && value.includes('e')) {
+    const converted = parseFloat(Number(value).toFixed(8));
+    console.log(`Converted ${value} to ${converted}`);
+    return converted;
+  }
+  return parseFloat(value);
+};
+
+const filterTrades = (trades, selectedFilter) => {
+  if (!trades?.hists) return [];
+
+  const filters = {
+    All: () => true,
+    '🦐 <500 XRP': (trade) => {
+      const xrpAmount = getXRPAmount(trade);
+      return xrpAmount > 0 && xrpAmount < 500;
+    },
+    '🐬 500-5000 XRP': (trade) => {
+      const xrpAmount = getXRPAmount(trade);
+      return xrpAmount >= 500 && xrpAmount < 5000;
+    },
+    '🐋 5000-10000 XRP': (trade) => {
+      const xrpAmount = getXRPAmount(trade);
+      return xrpAmount >= 5000 && xrpAmount < 10000;
+    },
+    '🐳 10000+ XRP': (trade) => {
+      const xrpAmount = getXRPAmount(trade);
+      return xrpAmount >= 10000;
+    }
+  };
+
+  const filteredTrades = trades.hists.filter(filters[selectedFilter]);
+
+  // Sort by XRP amount in descending order
+  return filteredTrades.sort((a, b) => getXRPAmount(b) - getXRPAmount(a));
+};
+
 const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -339,42 +387,6 @@ const Topbar = () => {
 
   const handleTradeDrawerClose = () => {
     setTradeDrawerOpen(false);
-  };
-
-  const filterTrades = (trades) => {
-    if (!trades?.hists) return [];
-
-    const parseValue = (value) => {
-      // Convert scientific notation to regular number if needed
-      if (typeof value === 'string' && value.includes('e')) {
-        const converted = parseFloat(Number(value).toFixed(8));
-        console.log(`Converted ${value} to ${converted}`);
-        return converted;
-      }
-      return parseFloat(value);
-    };
-
-    const filters = {
-      All: () => true,
-      '🦐 <500 XRP': (trade) => {
-        const xrpAmount = parseValue(trade.paid.value);
-        return xrpAmount > 0 && xrpAmount < 500;
-      },
-      '🐬 500-5000 XRP': (trade) => {
-        const xrpAmount = parseValue(trade.paid.value);
-        return xrpAmount >= 500 && xrpAmount < 5000;
-      },
-      '🐋 5000-10000 XRP': (trade) => {
-        const xrpAmount = parseValue(trade.paid.value);
-        return xrpAmount >= 5000 && xrpAmount < 10000;
-      },
-      '🐳 10000+ XRP': (trade) => {
-        const xrpAmount = parseValue(trade.paid.value);
-        return xrpAmount >= 10000;
-      }
-    };
-
-    return trades.hists.filter(filters[filter]);
   };
 
   return (
@@ -535,7 +547,7 @@ const Topbar = () => {
           </Box>
         ) : (
           <List>
-            {filterTrades(trades).map((trade, index) => (
+            {filterTrades(trades, filter).map((trade, index) => (
               <ListItem
                 key={index}
                 sx={{
@@ -548,13 +560,7 @@ const Topbar = () => {
                 <ProgressBarContainer>
                   <ProgressBar
                     width={(() => {
-                      const xrpValue = parseFloat(
-                        trade.paid.currency === 'XRP'
-                          ? trade.paid.value
-                          : trade.got.currency === 'XRP'
-                          ? trade.got.value
-                          : 0
-                      );
+                      const xrpValue = getXRPAmount(trade);
 
                       // Calculate relative width based on XRP amount
                       if (xrpValue < 500) return Math.max(5, (xrpValue / 500) * 25);
@@ -570,13 +576,7 @@ const Topbar = () => {
                     primary={
                       <>
                         <Typography component="span" sx={{ mr: 1 }}>
-                          {getTradeSizeEmoji(
-                            trade.paid.currency === 'XRP'
-                              ? trade.paid.value
-                              : trade.got.currency === 'XRP'
-                              ? trade.got.value
-                              : Math.max(parseFloat(trade.paid.value), parseFloat(trade.got.value))
-                          )}
+                          {getTradeSizeEmoji(getXRPAmount(trade))}
                           {(trade.maker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6' ||
                             trade.taker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6') && (
                             <SmartToy
