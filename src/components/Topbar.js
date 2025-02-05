@@ -232,15 +232,27 @@ const getTradeSizeEmoji = (value) => {
 };
 
 // Add this helper function near the top of the file
+const abbreviateNumber = (num) => {
+  if (Math.abs(num) < 1000) return num.toString();
+  const suffixes = ['', 'k', 'm', 'b', 't'];
+  const magnitude = Math.floor(Math.log10(Math.abs(num)) / 3);
+  const scaled = num / Math.pow(10, magnitude * 3);
+  const suffix = suffixes[magnitude];
+  return scaled.toFixed(2) + suffix;
+};
+
+// Update formatTradeValue function
 const formatTradeValue = (value) => {
   // Convert to number if it's a string
   const numValue = typeof value === 'string' ? Number(value) : value;
 
-  // Check if the number is in scientific notation
+  // Check if the number is in scientific notation or very small
   if (Math.abs(numValue) < 0.0001) {
     return numValue.toFixed(8);
   }
-  return numValue.toString();
+
+  // Abbreviate large numbers
+  return abbreviateNumber(numValue);
 };
 
 // Add this helper function near the top of the file
