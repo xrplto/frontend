@@ -391,20 +391,6 @@ function FTokenRow({
               : fNumber(convertedVolume)}
           </Typography>
         </Stack>
-        <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
-          <Typography variant="h6" color="primary.dark">
-            <NumberTooltip
-              number={
-                vol24hx >= 1000000
-                  ? `${(vol24hx / 1000000).toFixed(1)}M`
-                  : vol24hx >= 1000
-                  ? `${(vol24hx / 1000).toFixed(1)}K`
-                  : fNumber(vol24hx)
-              }
-            />{' '}
-            {name}
-          </Typography>
-        </Stack>
       </TableCell>
       <TableCell align="right">
         <Typography variant="h4">
@@ -435,130 +421,93 @@ function FTokenRow({
         </Typography>
       </TableCell>
       <TableCell align="right">
-        <Typography variant="h4" noWrap={!isMobile}>
-          {supply >= 1000000000000
-            ? `${(supply / 1000000000000).toFixed(2)}T`
-            : supply >= 1000000000
-            ? `${(supply / 1000000000).toFixed(2)}B`
-            : supply >= 1000000
-            ? `${(supply / 1000000).toFixed(2)}M`
-            : supply >= 1000
-            ? `${(supply / 1000).toFixed(1)}K`
-            : fNumber(supply)}{' '}
-          {name}
-        </Typography>
-        <Box display="flex" alignItems="center" pt={1}>
-          <Box width="80%" sx={{ color: 'darkgrey', margin: '0 auto' }}>
-            <Tooltip
-              title={
-                <Table
-                  sx={{
-                    '& .MuiTableCell-root': {
-                      borderBottom: 'none',
-                      padding: '1px 6px',
-                      backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                      '&:first-of-type': {
-                        pr: 2
-                      }
-                    },
-                    '& .MuiTableRow-root:not(:first-child)': {
-                      '& .MuiTableCell-root': {
-                        paddingTop: '1px'
-                      }
-                    }
-                  }}
-                >
-                  <TableBody>
-                    <TableRow>
-                      <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
-                        <Typography
-                          variant="caption"
-                          noWrap
-                          sx={{ fontWeight: 'bold', color: '#fff' }}
-                        >
-                          Percentage:
-                        </Typography>
-                      </TableCell>
-                      <TableCell sx={{ pt: 0, pb: 0 }}>
-                        <Typography variant="caption" sx={{ color: '#fff' }}>
-                          {fNumber(supplyRate)}%
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={2} sx={{ py: 0.25 }}>
-                        <Box sx={{ color: 'darkgrey', width: '100px', margin: '0 auto' }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={supplyRate}
-                            color="inherit"
-                            sx={{
-                              height: 2,
-                              borderRadius: 1,
-                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                              '& .MuiLinearProgress-bar': {
-                                borderRadius: 1,
-                                backgroundColor: 'rgba(255, 255, 255, 0.7)'
-                              }
-                            }}
-                          />
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
-                        <Typography
-                          variant="caption"
-                          noWrap
-                          sx={{ fontWeight: 'bold', color: '#fff' }}
-                        >
-                          Circulating:
-                        </Typography>
-                      </TableCell>
-                      <TableCell sx={{ pt: 0, pb: 0 }}>
-                        <Typography variant="caption" noWrap sx={{ color: '#fff' }}>
-                          {fNumber(supply)} {name}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
-                        <Typography
-                          variant="caption"
-                          noWrap
-                          sx={{ fontWeight: 'bold', color: '#fff' }}
-                        >
-                          Total:
-                        </Typography>
-                      </TableCell>
-                      <TableCell sx={{ pt: 0, pb: 0 }}>
-                        <Typography variant="caption" noWrap sx={{ color: '#fff' }}>
-                          {fNumber(amount)} {name}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              }
-              placement="bottom-end"
-              arrow
-              componentsProps={{
-                tooltip: {
-                  sx: {
-                    maxWidth: '300px',
-                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                    p: 0.5,
-                    '& .MuiTooltip-arrow': {
-                      color: 'rgba(0, 0, 0, 0.9)'
-                    }
+        <Tooltip
+          title={
+            <Table
+              sx={{
+                '& .MuiTableCell-root': {
+                  borderBottom: 'none',
+                  padding: '1px 6px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                  '&:first-of-type': {
+                    pr: 2
+                  }
+                },
+                '& .MuiTableRow-root:not(:first-child)': {
+                  '& .MuiTableCell-root': {
+                    paddingTop: '1px'
                   }
                 }
               }}
             >
-              <LinearProgress variant="determinate" value={supplyRate} color="inherit" />
-            </Tooltip>
-          </Box>
-        </Box>
+              <TableBody>
+                <TableRow>
+                  <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
+                    <Typography variant="caption" noWrap sx={{ fontWeight: 'bold', color: '#fff' }}>
+                      Percentage:
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ pt: 0, pb: 0 }}>
+                    <Typography variant="caption" sx={{ color: '#fff' }}>
+                      {fNumber(supplyRate)}%
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
+                    <Typography variant="caption" noWrap sx={{ fontWeight: 'bold', color: '#fff' }}>
+                      Circulating:
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ pt: 0, pb: 0 }}>
+                    <Typography variant="caption" noWrap sx={{ color: '#fff' }}>
+                      {fNumber(supply)} {name}
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell align="right" sx={{ pt: 0, pb: 0 }}>
+                    <Typography variant="caption" noWrap sx={{ fontWeight: 'bold', color: '#fff' }}>
+                      Total:
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ pt: 0, pb: 0 }}>
+                    <Typography variant="caption" noWrap sx={{ color: '#fff' }}>
+                      {fNumber(amount)} {name}
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          }
+          placement="bottom-end"
+          arrow
+          componentsProps={{
+            tooltip: {
+              sx: {
+                maxWidth: '300px',
+                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                p: 0.5,
+                '& .MuiTooltip-arrow': {
+                  color: 'rgba(0, 0, 0, 0.9)'
+                }
+              }
+            }
+          }}
+        >
+          <Typography variant="h4" noWrap={!isMobile}>
+            {supply >= 1000000000000
+              ? `${(supply / 1000000000000).toFixed(2)}T`
+              : supply >= 1000000000
+              ? `${(supply / 1000000000).toFixed(2)}B`
+              : supply >= 1000000
+              ? `${(supply / 1000000).toFixed(2)}M`
+              : supply >= 1000
+              ? `${(supply / 1000).toFixed(1)}K`
+              : fNumber(supply)}{' '}
+            {name}
+          </Typography>
+        </Tooltip>
       </TableCell>
       <TableCell
         align="right"
