@@ -189,7 +189,10 @@ export default function ExtraDesc({ token }) {
           </Stack>
           <Stack alignItems="center">
             <MarketTypography variant="desc" sx={{ mt: 3, mb: 3 }}>
-              {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
+              {currencySymbols[activeFiatCurrency]}{' '}
+              {convertedMarketCap >= 1000000
+                ? `${(convertedMarketCap / 1000000).toFixed(1)}M`
+                : fNumber(convertedMarketCap)}
             </MarketTypography>
           </Stack>
         </Grid>
@@ -248,7 +251,10 @@ export default function ExtraDesc({ token }) {
                 }}
               >
                 <span>
-                  {currencySymbols[activeFiatCurrency]} {fNumber(convertedVolume)}
+                  {currencySymbols[activeFiatCurrency]}{' '}
+                  {convertedVolume >= 1000000
+                    ? `${(convertedVolume / 1000000).toFixed(1)}M`
+                    : fNumber(convertedVolume)}
                 </span>
               </Tooltip>
             </VolumeTypography>
@@ -261,9 +267,12 @@ export default function ExtraDesc({ token }) {
             <Tooltip
               title={
                 <Typography variant="body2">
-                  Circulating Supply: The number of {name} tokens in circulation within the market and held by the public.
-                  <br /><br />
-                  Total Supply: Total number of {name} tokens that have been issued, including those not currently active in the market.
+                  Circulating Supply: The number of {name} tokens in circulation within the market
+                  and held by the public.
+                  <br />
+                  <br />
+                  Total Supply: Total number of {name} tokens that have been issued, including those
+                  not currently active in the market.
                 </Typography>
               }
               componentsProps={{
@@ -283,7 +292,8 @@ export default function ExtraDesc({ token }) {
           </Stack>
           <Stack alignItems="center">
             <SupplyTypography color="primary" variant="desc" sx={{ mt: 3, mb: 2 }}>
-              {circulatingSupply} / {totalSupply}
+              {supply >= 1000000 ? `${(supply / 1000000).toFixed(1)}M` : fNumber(supply)} /
+              {amount >= 1000000 ? `${(amount / 1000000).toFixed(1)}M` : fNumber(amount)}
             </SupplyTypography>
           </Stack>
         </Grid>
