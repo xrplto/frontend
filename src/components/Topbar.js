@@ -31,7 +31,7 @@ import { AppContext } from 'src/AppContext';
 import { fIntNumber, fNumber } from 'src/utils/formatNumber';
 import CurrencySwithcer from './CurrencySwitcher';
 import ThemeSwitcher from './ThemeSwitcher';
-import { currencySymbols, getTokenImageUrl } from 'src/utils/constants';
+import { currencySymbols, getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 import { toggleChatOpen } from 'src/redux/chatSlice';
 import useSWR from 'swr';
 import axios from 'axios';
@@ -600,25 +600,22 @@ const Topbar = () => {
                             </Typography>
                           )}
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            {trade.paid.currency !== 'XRP' && (
-                              <img
-                                src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
-                                alt={trade.paid.currency}
-                                style={{ width: 16, height: 16, borderRadius: '50%' }}
-                              />
-                            )}
-                            {formatTradeValue(trade.paid.value)} {trade.paid.currency}
+                            <img
+                              src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
+                              alt={decodeCurrency(trade.paid.currency)}
+                              style={{ width: 16, height: 16, borderRadius: '50%' }}
+                            />
+                            {formatTradeValue(trade.paid.value)}{' '}
+                            {decodeCurrency(trade.paid.currency)}
                           </Box>
                           ↔
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            {trade.got.currency !== 'XRP' && (
-                              <img
-                                src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
-                                alt={trade.got.currency}
-                                style={{ width: 16, height: 16, borderRadius: '50%' }}
-                              />
-                            )}
-                            {formatTradeValue(trade.got.value)} {trade.got.currency}
+                            <img
+                              src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
+                              alt={decodeCurrency(trade.got.currency)}
+                              style={{ width: 16, height: 16, borderRadius: '50%' }}
+                            />
+                            {formatTradeValue(trade.got.value)} {decodeCurrency(trade.got.currency)}
                           </Box>
                         </Box>
                       </>

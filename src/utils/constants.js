@@ -431,7 +431,34 @@ export const currencyConfig = {
 
 export const persistJWT = 'UDnaYthx9EJaulSkvfH5qE0q98tp3twQ';
 
+// Function to decode hex currency code
+export const decodeCurrency = (code) => {
+  if (!code || code === 'XRP') return 'XRP';
+  if (code.length === 40) {
+    // Hex currency code
+    let decoded = '';
+    for (let i = 0; i < code.length; i += 2) {
+      const hex = code.substr(i, 2);
+      const int = parseInt(hex, 16);
+      if (int) {
+        decoded += String.fromCharCode(int);
+      }
+    }
+    return decoded.replace(/\u0000/g, ''); // Remove null characters
+  }
+  return code;
+};
+
 export const getTokenImageUrl = (issuer, currency) => {
-  const md5 = CryptoJS.MD5(issuer + '_' + currency).toString();
+  // Handle XRP case first
+  if (currency === 'XRP' || decodeCurrency(currency) === 'XRP') {
+    return 'https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8';
+  }
+
+  // For hex currencies, use the original hex code for MD5 calculation
+  const md5Input =
+    currency.length === 40 ? `${issuer}_${currency}` : `${issuer}_${decodeCurrency(currency)}`;
+
+  const md5 = CryptoJS.MD5(md5Input).toString();
   return `https://s1.xrpl.to/token/${md5}`;
 };
