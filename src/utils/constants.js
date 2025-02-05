@@ -21,6 +21,8 @@ import CurrencyYuanRoundedIcon from '@mui/icons-material/CurrencyYuanRounded';
 import { Icon } from '@iconify/react';
 // import CurrencyXRPIcon from "@iconify/icons-tabler/currency-xrp";
 
+const CryptoJS = require('crypto-js');
+
 export const SUPPORTED_FILE_TYPES = [
   'JPG',
   'PNG'
@@ -411,7 +413,7 @@ export const currencyIcons = {
   EUR: <EuroRoundedIcon {...defaultCurrencyIconProps} />,
   JPY: <CurrencyYenRoundedIcon {...defaultCurrencyIconProps} />,
   CNY: <CurrencyYuanRoundedIcon {...defaultCurrencyIconProps} />,
-  XRP: <Icon icon="tabler:currency-xrp" width={18} height={18}/>
+  XRP: <Icon icon="tabler:currency-xrp" width={18} height={18} />
 };
 
 export const currencySymbols = {
@@ -427,4 +429,9 @@ export const currencyConfig = {
   activeFiatCurrency: 'USD'
 };
 
-export const persistJWT = 'UDnaYthx9EJaulSkvfH5qE0q98tp3twQ'
+export const persistJWT = 'UDnaYthx9EJaulSkvfH5qE0q98tp3twQ';
+
+export const getTokenImageUrl = (issuer, currency) => {
+  const md5 = CryptoJS.MD5(issuer + '_' + currency).toString();
+  return `https://s1.xrpl.to/token/${md5}`;
+};

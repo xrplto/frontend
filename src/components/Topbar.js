@@ -31,7 +31,7 @@ import { AppContext } from 'src/AppContext';
 import { fIntNumber, fNumber } from 'src/utils/formatNumber';
 import CurrencySwithcer from './CurrencySwitcher';
 import ThemeSwitcher from './ThemeSwitcher';
-import { currencySymbols } from 'src/utils/constants';
+import { currencySymbols, getTokenImageUrl } from 'src/utils/constants';
 import { toggleChatOpen } from 'src/redux/chatSlice';
 import useSWR from 'swr';
 import axios from 'axios';
@@ -589,18 +589,38 @@ const Topbar = () => {
                             />
                           )}
                         </Typography>
-                        {trade.paid.currency === 'XRP' ? (
-                          <Typography component="span" color="success.main">
-                            BUY{' '}
-                          </Typography>
-                        ) : (
-                          <Typography component="span" color="error.main">
-                            SELL{' '}
-                          </Typography>
-                        )}
-                        {`${formatTradeValue(trade.paid.value)} ${
-                          trade.paid.currency
-                        } ↔ ${formatTradeValue(trade.got.value)} ${trade.got.currency}`}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {trade.paid.currency === 'XRP' ? (
+                            <Typography component="span" color="success.main">
+                              BUY{' '}
+                            </Typography>
+                          ) : (
+                            <Typography component="span" color="error.main">
+                              SELL{' '}
+                            </Typography>
+                          )}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            {trade.paid.currency !== 'XRP' && (
+                              <img
+                                src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
+                                alt={trade.paid.currency}
+                                style={{ width: 16, height: 16, borderRadius: '50%' }}
+                              />
+                            )}
+                            {formatTradeValue(trade.paid.value)} {trade.paid.currency}
+                          </Box>
+                          ↔
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            {trade.got.currency !== 'XRP' && (
+                              <img
+                                src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
+                                alt={trade.got.currency}
+                                style={{ width: 16, height: 16, borderRadius: '50%' }}
+                              />
+                            )}
+                            {formatTradeValue(trade.got.value)} {trade.got.currency}
+                          </Box>
+                        </Box>
                       </>
                     }
                     secondary={
