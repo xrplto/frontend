@@ -121,6 +121,62 @@ const TradeButton = styled(IconButton)(({ theme }) => ({
   }
 }));
 
+// Add this styled component after other styled components
+const PulsatingCircle = styled('div')(({ theme }) => ({
+  width: '10px',
+  height: '10px',
+  borderRadius: '50%',
+  backgroundColor: theme.palette.success.main,
+  marginRight: theme.spacing(1),
+  animation: 'pulse 1.5s infinite',
+  '@keyframes pulse': {
+    '0%': {
+      transform: 'scale(0.9)',
+      opacity: 0.7
+    },
+    '50%': {
+      transform: 'scale(1.1)',
+      opacity: 1
+    },
+    '100%': {
+      transform: 'scale(0.9)',
+      opacity: 0.7
+    }
+  }
+}));
+
+// Add this styled component after other styled components
+const LiveIndicator = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  padding: theme.spacing(0.5, 1),
+  borderRadius: '16px',
+  backgroundColor: alpha(theme.palette.error.main, 0.1)
+}));
+
+const LiveCircle = styled('div')(({ theme }) => ({
+  width: '8px',
+  height: '8px',
+  borderRadius: '50%',
+  backgroundColor: theme.palette.error.main,
+  animation: 'pulse 1.5s infinite',
+  '@keyframes pulse': {
+    '0%': {
+      transform: 'scale(0.9)',
+      opacity: 0.7
+    },
+    '50%': {
+      transform: 'scale(1.1)',
+      opacity: 1
+    },
+    '100%': {
+      transform: 'scale(0.9)',
+      opacity: 0.7
+    }
+  }
+}));
+
 // Create a fetcher function for useSWR
 const fetcher = (url) => axios.get(url).then((res) => res.data);
 
@@ -369,6 +425,7 @@ const Topbar = () => {
               {/* Add API label with new window */}
               {!fullSearch && isDesktop && <Wallet style={{ marginRight: '9px' }} />}
               <TradeButton onClick={handleTradeDrawerOpen} title="Global Trades">
+                <PulsatingCircle />
                 <Typography variant="body2">Global Trades</Typography>
               </TradeButton>
             </Box>
@@ -387,7 +444,15 @@ const Topbar = () => {
         }}
       >
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h6">Global Trades</Typography>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Typography variant="h6">Global Trades</Typography>
+            <LiveIndicator>
+              <LiveCircle />
+              <Typography variant="body2" color="error.main">
+                LIVE
+              </Typography>
+            </LiveIndicator>
+          </Box>
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <Select
               value={filter}
