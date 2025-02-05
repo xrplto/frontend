@@ -296,14 +296,22 @@ export default function ExtraDesc({ token }) {
           </Stack>
           <Stack alignItems="center">
             <SupplyTypography color="primary" variant="desc" sx={{ mt: 3, mb: 2 }}>
-              {supply >= 1000000
-                ? `${(supply / 1000000).toFixed(1)}M`
+              {supply >= 1000000000000
+                ? `${(supply / 1000000000000).toFixed(2)}T`
+                : supply >= 1000000000
+                ? `${(supply / 1000000000).toFixed(2)}B`
+                : supply >= 1000000
+                ? `${(supply / 1000000).toFixed(2)}M`
                 : supply >= 1000
                 ? `${(supply / 1000).toFixed(1)}K`
                 : fNumber(supply)}{' '}
               /
-              {amount >= 1000000
-                ? `${(amount / 1000000).toFixed(1)}M`
+              {amount >= 1000000000000
+                ? `${(amount / 1000000000000).toFixed(2)}T`
+                : amount >= 1000000000
+                ? `${(amount / 1000000000).toFixed(2)}B`
+                : amount >= 1000000
+                ? `${(amount / 1000000).toFixed(2)}M`
                 : amount >= 1000
                 ? `${(amount / 1000).toFixed(1)}K`
                 : fNumber(amount)}
