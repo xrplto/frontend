@@ -143,6 +143,16 @@ const formatRelativeTime = (timestamp) => {
   }
 };
 
+// Add this helper function
+const getTradeSizeEmoji = (value) => {
+  const xrpValue = parseFloat(value);
+  if (xrpValue < 500) return '🦐';
+  if (xrpValue >= 500 && xrpValue < 5000) return '🐬';
+  if (xrpValue >= 5000 && xrpValue < 10000) return '🐋';
+  if (xrpValue >= 10000) return '🐳';
+  return '';
+};
+
 const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -238,11 +248,16 @@ const Topbar = () => {
 
     const filters = {
       All: () => true,
-      '250+ XRP': (trade) => trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) >= 250,
-      '1250+ XRP': (trade) => trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) >= 1250,
-      '2500+ XRP': (trade) => trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) >= 2500,
-      '5000+ XRP': (trade) => trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) >= 5000,
-      '10000+ XRP': (trade) =>
+      '🦐 <500 XRP': (trade) => trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) < 500,
+      '🐬 500-5000 XRP': (trade) =>
+        trade.paid.currency === 'XRP' &&
+        parseFloat(trade.paid.value) >= 500 &&
+        parseFloat(trade.paid.value) < 5000,
+      '🐋 5000-10000 XRP': (trade) =>
+        trade.paid.currency === 'XRP' &&
+        parseFloat(trade.paid.value) >= 5000 &&
+        parseFloat(trade.paid.value) < 10000,
+      '🐳 10000+ XRP': (trade) =>
         trade.paid.currency === 'XRP' && parseFloat(trade.paid.value) >= 10000
     };
 
@@ -381,11 +396,10 @@ const Topbar = () => {
               inputProps={{ 'aria-label': 'Filter trades' }}
             >
               <MenuItem value="All">All</MenuItem>
-              <MenuItem value="250+ XRP">250+ XRP</MenuItem>
-              <MenuItem value="1250+ XRP">1250+ XRP</MenuItem>
-              <MenuItem value="2500+ XRP">2500+ XRP</MenuItem>
-              <MenuItem value="5000+ XRP">5000+ XRP</MenuItem>
-              <MenuItem value="10000+ XRP">10000+ XRP</MenuItem>
+              <MenuItem value="🦐 <500 XRP">🦐 &lt;500 XRP</MenuItem>
+              <MenuItem value="🐬 500-5000 XRP">🐬 500-5000 XRP</MenuItem>
+              <MenuItem value="🐋 5000-10000 XRP">🐋 5000-10000 XRP</MenuItem>
+              <MenuItem value="🐳 10000+ XRP">🐳 10000+ XRP</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -407,6 +421,11 @@ const Topbar = () => {
                 <ListItemText
                   primary={
                     <>
+                      {trade.paid.currency === 'XRP' && (
+                        <Typography component="span" sx={{ mr: 1 }}>
+                          {getTradeSizeEmoji(trade.paid.value)}
+                        </Typography>
+                      )}
                       {trade.paid.currency === 'XRP' ? (
                         <Typography component="span" color="success.main">
                           BUY{' '}
