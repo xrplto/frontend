@@ -1,11 +1,5 @@
 // Material
-import {
-  Divider,
-  Stack,
-  Typography,
-  useMediaQuery,
-  useTheme
-} from '@mui/material';
+import { Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 
 // Components
 import BearBullChip from './BearBullChip';
@@ -31,7 +25,7 @@ export default function PriceDesc({ token }) {
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency } = useContext(AppContext);
 
-  const { name, exch, pro7d, pro24h, md5 } = token;
+  const { name, exch, pro7d, pro24h, pro5m, pro1h, md5 } = token;
 
   let user = token.user;
   if (!user) user = name;
@@ -57,25 +51,38 @@ export default function PriceDesc({ token }) {
 
       <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
         <BearBullChip
+          value={pro5m}
+          tooltip={
+            <Stack alignItems="center">
+              5m (%)
+              <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro5m=${pro5m}`} />
+            </Stack>
+          }
+        />
+        <BearBullChip
+          value={pro1h}
+          tooltip={
+            <Stack alignItems="center">
+              1h (%)
+              <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro1h=${pro1h}`} />
+            </Stack>
+          }
+        />
+        <BearBullChip
           value={pro24h}
           tooltip={
             <Stack alignItems="center">
               24h (%)
-              <LoadChart
-                url={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`}
-              />
+              <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`} />
             </Stack>
           }
         />
-
         <BearBullChip
           value={pro7d}
           tooltip={
             <Stack alignItems="center">
               7d (%)
-              <LoadChart
-                url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
-              />
+              <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
             </Stack>
           }
         />
