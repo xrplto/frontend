@@ -474,17 +474,14 @@ const Topbar = () => {
             <Box sx={{ paddingLeft: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
               <CurrencySwithcer />
               <ThemeSwitcher />
-              <Separator>|</Separator> {/* Add separator */}
-              {/* <APILabel onClick={() => dispatch(toggleChatOpen())}>Chatbox</APILabel> */}
-              <APILabel href="/api-docs" target="_blank" rel="noopener noreferrer">
-                API
-              </APILabel>{' '}
-              {/* Add API label with new window */}
+              <Separator>|</Separator>
+              <APILabel onClick={handleTradeDrawerOpen}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <PulsatingCircle />
+                  Global Trades
+                </Box>
+              </APILabel>
               {!fullSearch && isDesktop && <Wallet style={{ marginRight: '9px' }} />}
-              <TradeButton onClick={handleTradeDrawerOpen} title="Global Trades">
-                <PulsatingCircle />
-                <Typography variant="body2">Global Trades</Typography>
-              </TradeButton>
             </Box>
           )}
         </ContentWrapper>
