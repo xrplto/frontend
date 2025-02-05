@@ -271,7 +271,7 @@ function FTokenRow({
             href={`/token/${slug}`}
             rel="noreferrer noopener nofollow"
           >
-            <Stack spacing={isMobile ? 0 : 0.5}>
+            <Stack direction="row" spacing={0.5} alignItems="center">
               <Typography
                 variant="token"
                 sx={{
@@ -299,7 +299,8 @@ function FTokenRow({
                 sx={{
                   fontWeight: '600',
                   fontSize: isMobile ? '0.6rem' : '0.75rem',
-                  lineHeight: 1.1
+                  lineHeight: 1.1,
+                  color: darkMode ? '#848E9C' : '#616E85'
                 }}
                 color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                 noWrap={!isMobile}
