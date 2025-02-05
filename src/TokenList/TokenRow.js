@@ -384,26 +384,55 @@ function FTokenRow({
         <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
           <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
           <Typography variant="h4" noWrap={!isMobile}>
-            {fNumber(convertedVolume)}
+            {convertedVolume >= 1000000
+              ? `${(convertedVolume / 1000000).toFixed(1)}M`
+              : convertedVolume >= 1000
+              ? `${(convertedVolume / 1000).toFixed(1)}K`
+              : fNumber(convertedVolume)}
           </Typography>
         </Stack>
         <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
           <Typography variant="h6" color="primary.dark">
-            <NumberTooltip number={fNumber(vol24hx)} /> {name}
+            <NumberTooltip
+              number={
+                vol24hx >= 1000000
+                  ? `${(vol24hx / 1000000).toFixed(1)}M`
+                  : vol24hx >= 1000
+                  ? `${(vol24hx / 1000).toFixed(1)}K`
+                  : fNumber(vol24hx)
+              }
+            />{' '}
+            {name}
           </Typography>
         </Stack>
       </TableCell>
       <TableCell align="right">
-        <Typography variant="h4">{fNumber(vol24htx)}</Typography>
+        <Typography variant="h4">
+          {vol24htx >= 1000000
+            ? `${(vol24htx / 1000000).toFixed(1)}M`
+            : vol24htx >= 1000
+            ? `${(vol24htx / 1000).toFixed(1)}K`
+            : fNumber(vol24htx)}
+        </Typography>
       </TableCell>
       <TableCell align="right">
         <Typography variant="h4">
           {currencySymbols[activeFiatCurrency]}
-          {fNumber(convertedMarketCap)}
+          {convertedMarketCap >= 1000000
+            ? `${(convertedMarketCap / 1000000).toFixed(1)}M`
+            : convertedMarketCap >= 1000
+            ? `${(convertedMarketCap / 1000).toFixed(1)}K`
+            : fNumber(convertedMarketCap)}
         </Typography>
       </TableCell>
       <TableCell align="right">
-        <Typography variant="h4">{fIntNumber(trustlines)}</Typography>
+        <Typography variant="h4">
+          {trustlines >= 1000000
+            ? `${(trustlines / 1000000).toFixed(1)}M`
+            : trustlines >= 1000
+            ? `${(trustlines / 1000).toFixed(1)}K`
+            : fIntNumber(trustlines)}
+        </Typography>
       </TableCell>
       <TableCell align="right">
         <Typography variant="h4" noWrap={!isMobile}>
