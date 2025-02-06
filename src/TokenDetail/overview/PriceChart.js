@@ -374,6 +374,11 @@ function PriceChart({ token }) {
         const points = this.points;
         const pricePoint = points.find((p) => p.series.name === 'Price');
         const volumePoint = points.find((p) => p.series.name === 'Volume');
+
+        if (!pricePoint) {
+          return false;
+        }
+
         const prevPoint = pricePoint.series.data[pricePoint.point.index - 1];
         const change = prevPoint ? pricePoint.y - prevPoint.y : 0;
         const changePercent = prevPoint ? (change / prevPoint.y) * 100 : 0;
