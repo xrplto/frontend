@@ -25,10 +25,13 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
           label="All Sources"
           onClick={() => onSourceSelect(null)}
           sx={{
-            backgroundColor: !selectedSource ? 'primary.main' : 'grey.300',
-            color: !selectedSource ? 'white' : 'text.primary',
+            backgroundColor: !selectedSource ? 'primary.main' : 'primary.lighter',
+            color: !selectedSource ? 'white' : 'primary.main',
+            borderColor: 'primary.main',
+            border: '1px solid',
             '&:hover': {
-              backgroundColor: !selectedSource ? 'primary.dark' : 'grey.400'
+              backgroundColor: !selectedSource ? 'primary.dark' : 'primary.light',
+              color: 'white'
             }
           }}
         />
@@ -38,10 +41,13 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
             label={`${source} (${count})`}
             onClick={() => onSourceSelect(source)}
             sx={{
-              backgroundColor: selectedSource === source ? 'primary.main' : 'grey.300',
-              color: selectedSource === source ? 'white' : 'text.primary',
+              backgroundColor: selectedSource === source ? 'primary.main' : 'primary.lighter',
+              color: selectedSource === source ? 'white' : 'primary.main',
+              borderColor: 'primary.main',
+              border: '1px solid',
               '&:hover': {
-                backgroundColor: selectedSource === source ? 'primary.dark' : 'grey.400'
+                backgroundColor: selectedSource === source ? 'primary.dark' : 'primary.light',
+                color: 'white'
               }
             }}
           />
