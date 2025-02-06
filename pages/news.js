@@ -13,15 +13,64 @@ import {
 } from '@mui/material';
 import moment from 'moment';
 
+const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
+  return (
+    <Paper sx={{ mb: 4, p: 2 }}>
+      <Typography variant="h5" gutterBottom>
+        News Sources
+      </Typography>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        <Chip
+          key="all"
+          label="All Sources"
+          onClick={() => onSourceSelect(null)}
+          sx={{
+            backgroundColor: !selectedSource ? 'primary.main' : 'grey.300',
+            color: !selectedSource ? 'white' : 'text.primary',
+            '&:hover': {
+              backgroundColor: !selectedSource ? 'primary.dark' : 'grey.400'
+            }
+          }}
+        />
+        {Object.entries(sources).map(([source, count]) => (
+          <Chip
+            key={source}
+            label={`${source} (${count})`}
+            onClick={() => onSourceSelect(source)}
+            sx={{
+              backgroundColor: selectedSource === source ? 'primary.main' : 'grey.300',
+              color: selectedSource === source ? 'white' : 'text.primary',
+              '&:hover': {
+                backgroundColor: selectedSource === source ? 'primary.dark' : 'grey.400'
+              }
+            }}
+          />
+        ))}
+      </Box>
+    </Paper>
+  );
+};
+
 export default function News() {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedSource, setSelectedSource] = useState(null);
   const [sentimentStats, setSentimentStats] = useState({
     last24h: { bullish: 0, bearish: 0, neutral: 0 },
     last7d: { bullish: 0, bearish: 0, neutral: 0 },
     last30d: { bullish: 0, bearish: 0, neutral: 0 }
   });
+  const [sourcesStats, setSourcesStats] = useState({});
+
+  // Filter news based on selected source
+  const filteredNews = selectedSource
+    ? news.filter((article) => article.sourceName === selectedSource)
+    : news;
+
+  const handleSourceSelect = (source) => {
+    setSelectedSource(source);
+  };
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -33,6 +82,14 @@ export default function News() {
         }
         const data = await response.json();
         setNews(data);
+
+        // Calculate sources statistics
+        const sourceCount = data.reduce((acc, article) => {
+          const source = article.sourceName || 'Unknown';
+          acc[source] = (acc[source] || 0) + 1;
+          return acc;
+        }, {});
+        setSourcesStats(sourceCount);
 
         // Calculate sentiment statistics
         const now = moment();
@@ -146,9 +203,20 @@ export default function News() {
         Latest Crypto News
       </Typography>
 
+      <SourcesMenu
+        sources={sourcesStats}
+        selectedSource={selectedSource}
+        onSourceSelect={handleSourceSelect}
+      />
+
       <Paper sx={{ mb: 4, p: 2 }}>
         <Typography variant="h5" gutterBottom>
           Sentiment Analysis
+          {selectedSource && (
+            <Typography component="span" color="text.secondary" sx={{ ml: 1 }}>
+              ({selectedSource})
+            </Typography>
+          )}
         </Typography>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
           <SentimentSummary period="Last 24 Hours" stats={sentimentStats.last24h} />
@@ -160,7 +228,7 @@ export default function News() {
       </Paper>
 
       <Grid container spacing={3}>
-        {news.map((article) => (
+        {filteredNews.map((article) => (
           <Grid item xs={12} key={article._id}>
             <Card
               sx={{
