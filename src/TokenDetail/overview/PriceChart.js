@@ -16,7 +16,8 @@ import {
   Typography,
   Paper,
   toggleButtonGroupClasses,
-  styled
+  styled,
+  Box
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 
@@ -816,18 +817,49 @@ function PriceChart({ token }) {
           </ToggleButtonGroup>
         </Grid>
       </Grid>
-      <Stack display={!chartType ? 'flex' : 'none'}>
-        <HighchartsReact highcharts={Highcharts} options={options1} allowChartUpdate={true} />
-      </Stack>
-      <Stack display={chartType ? 'flex' : 'none'}>
-        <HighchartsReact highcharts={Highcharts} options={options2} allowChartUpdate={true} />
-      </Stack>
-      {/* <Box sx={{ p: 0, pb: 0 }} dir="ltr">
-        <Chart series={options1.series} options={options1} height={364} />
-      </Box>
-      <Box sx={{ mt: -5, pb: 1 }} dir="ltr">
-        <Chart series={options2.series} options={options2} height={130} />
-      </Box> */}
+      {!chartType ? (
+        data && data.length > 0 ? (
+          <Stack>
+            <HighchartsReact highcharts={Highcharts} options={options1} allowChartUpdate={true} />
+          </Stack>
+        ) : (
+          <Box
+            sx={{
+              height: '500px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: (theme) => `1px dashed ${theme.palette.divider}`,
+              borderRadius: 1,
+              mt: 2
+            }}
+          >
+            <Typography variant="h6" color="text.secondary">
+              No data available for this time range
+            </Typography>
+          </Box>
+        )
+      ) : dataOHLC && dataOHLC.length > 0 ? (
+        <Stack>
+          <HighchartsReact highcharts={Highcharts} options={options2} allowChartUpdate={true} />
+        </Stack>
+      ) : (
+        <Box
+          sx={{
+            height: '500px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: (theme) => `1px dashed ${theme.palette.divider}`,
+            borderRadius: 1,
+            mt: 2
+          }}
+        >
+          <Typography variant="h6" color="text.secondary">
+            No data available for this time range
+          </Typography>
+        </Box>
+      )}
     </>
   );
 }
