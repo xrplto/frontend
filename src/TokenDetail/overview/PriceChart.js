@@ -17,7 +17,8 @@ import {
   Paper,
   toggleButtonGroupClasses,
   styled,
-  Box
+  Box,
+  CircularProgress
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 
@@ -64,7 +65,7 @@ function PriceChart({ token }) {
   const [data, setData] = useState([]);
   const [dataOHLC, setDataOHLC] = useState([]);
   const [chartType, setChartType] = useState(0);
-
+  const [isLoading, setIsLoading] = useState(true);
   const [range, setRange] = useState('1D');
 
   const [minTime, setMinTime] = useState(0);
@@ -98,53 +99,40 @@ function PriceChart({ token }) {
 
   useEffect(() => {
     function getGraph() {
-      // https://api.xrpl.to/api/graph/0527842b8550fce65ff44e913a720037?range=1D
-      axios
-        .get(
+      setIsLoading(true);
+
+      Promise.all([
+        axios.get(
           `${BASE_URL}/graph-with-metrics/${token.md5}?range=${range}&vs_currency=${fiatMapping[activeFiatCurrency]}${fromSearch}`
-        )
-        .then((res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            const items = ret.history;
-
-            if (items && items.length > 0) {
-              setMinTime(items[0][0]);
-              setMaxTime(items[items.length - 1][0]);
-            }
-
-            setData(items);
-          }
-        })
-        .catch((err) => {
-          console.log('Error on getting graph data.', err);
-        })
-        .then(function () {
-          // always executed
-        });
-
-      axios
-        .get(
+        ),
+        axios.get(
           `${BASE_URL}/graph-ohlc-with-metrics/${token.md5}?range=${range}&vs_currency=${fiatMapping[activeFiatCurrency]}${fromSearch}`
         )
-        .then((res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            const items = ret.history;
-
+      ])
+        .then(([lineRes, ohlcRes]) => {
+          if (lineRes.status === 200) {
+            const items = lineRes.data.history;
             if (items && items.length > 0) {
               setMinTime(items[0][0]);
               setMaxTime(items[items.length - 1][0]);
             }
+            setData(items || []);
+          }
 
-            setDataOHLC(items);
+          if (ohlcRes.status === 200) {
+            const items = ohlcRes.data.history;
+            if (items && items.length > 0) {
+              setMinTime(items[0][0]);
+              setMaxTime(items[items.length - 1][0]);
+            }
+            setDataOHLC(items || []);
           }
         })
         .catch((err) => {
           console.log('Error on getting graph data.', err);
         })
-        .then(function () {
-          // always executed
+        .finally(() => {
+          setIsLoading(false);
         });
     }
 
@@ -154,114 +142,6 @@ function PriceChart({ token }) {
   let user = token.user;
   if (!user) user = token.name;
   let name = token.name;
-
-  // let options1 = ChartOptions();
-
-  // Object.assign(options1, {
-  //   chart: {
-  //     id: 'chart2',
-  //     animations: { enabled: false },
-  //     foreColor: theme.palette.text.primary,
-  //     fontFamily: theme.typography.fontFamily,
-  //     redrawOnParentResize: true,
-  //     toolbar: {
-  //       autoSelected: 'pan',
-  //       show: false
-  //     },
-  //     zoom: {
-  //       type: 'y',
-  //       enabled: true,
-  //       autoScaleYaxis: true
-  //     }
-  //   },
-
-  //   series: [
-  //     {
-  //       name: 'XRP',
-  //       type: 'area',
-  //       data: data
-  //     },
-  //     {
-  //       //name: 'XRP',
-  //       type: 'line',
-  //       data: data
-  //     }
-  //   ],
-  //   stroke: {
-  //     width: [0, 2.5]
-  //   },
-  //   // Grid
-  //   grid: {
-  //     strokeDashArray: 3,
-  //     borderColor: theme.palette.divider
-  //   },
-  //   colors: [theme.palette.primary.light], // Set the primary color from the theme
-
-  //   // Fill
-  //   fill: {
-  //     type: 'gradient',
-  //     opacity: 1,
-  //     gradient: {
-  //       inverseColors: false,
-  //       type: 'vertical',
-  //       shadeIntensity: 0,
-  //       opacityFrom: [0.6, 1],
-  //       opacityTo: [0.4, 1],
-  //       gradientToColors: ['#B72136', '#B72136'],
-  //       stops: [50, 70]
-  //     }
-  //   },
-  //   legend: { show: false },
-
-  //   // X Axis
-  //   xaxis: {
-  //     type: 'datetime',
-  //     axisBorder: { show: true },
-  //     axisTicks: { show: false }
-  //   },
-  //   // Y Axis
-  //   yaxis: {
-  //     show: true,
-  //     tickAmount: 6,
-  //     labels: {
-  //       formatter: function (val, index) {
-  //         return fNumber(val);
-  //       }
-  //     }
-  //   },
-
-  //   // Tooltip
-  //   tooltip: {
-  //     shared: true,
-  //     intersect: false,
-  //     theme: 'dark',
-  //     style: {
-  //       fontSize: '16px',
-  //       fontFamily: undefined
-  //     },
-  //     x: {
-  //       show: false,
-  //       format: 'MM/dd/yyyy, h:mm:ss TT'
-  //     },
-  //     y: {
-  //       formatter: function (
-  //         value,
-  //         { series, seriesIndex, dataPointIndex, w }
-  //       ) {
-  //         return `${activeFiatCurrency} ${fCurrency5(value)}`;
-  //       },
-  //       title: {
-  //         formatter: (seriesName) => {
-  //           return '';
-  //         }
-  //       }
-  //     },
-  //     marker: {
-  //       show: true
-  //     },
-  //     enabledOnSeries: [0]
-  //   }
-  // });
 
   useEffect(() => {
     // Update the selectionXaxis when minTime or maxTime change
@@ -274,91 +154,6 @@ function PriceChart({ token }) {
     }));
   }, [minTime, maxTime]);
   console.log('data', data);
-
-  // const options2 = {
-  //   chart: {
-  //     id: 'chart1',
-  //     animations: { enabled: chartControls.animationsEnabled },
-  //     foreColor: theme.palette.text.disabled,
-  //     fontFamily: theme.typography.fontFamily,
-  //     brush: {
-  //       target: 'chart2',
-  //       enabled: chartControls.brushEnabled,
-  //       autoScaleYaxis: chartControls.autoScaleYaxis
-  //     },
-  //     selection: {
-  //       enabled: chartControls.selectionEnabled,
-  //       fill: {
-  //         color: chartControls.selectionFill,
-  //         opacity: 0.05
-  //       },
-  //       stroke: {
-  //         width: 1,
-  //         dashArray: 3,
-  //         color: chartControls.selectionStroke.color,
-  //         opacity: chartControls.selectionStroke.opacity
-  //       },
-  //       xaxis: {
-  //         min: chartControls.selectionXaxis.min,
-  //         max: chartControls.selectionXaxis.max
-  //       }
-  //     }
-  //   },
-
-  //   series: [
-  //     {
-  //       name: '',
-  //       type: 'area',
-  //       data: data
-  //     }
-  //   ],
-
-  //   colors: ['#008FFB'],
-  //   fill: {
-  //     type: 'gradient',
-  //     gradient: {
-  //       type: 'vertical',
-  //       opacityFrom: 0.91,
-  //       opacityTo: 0.1
-  //     }
-  //   },
-
-  //   // Grid
-  //   grid: {
-  //     show: false,
-  //     strokeDashArray: 0,
-  //     borderColor: theme.palette.divider,
-  //     xaxis: {
-  //       lines: {
-  //         show: false
-  //       }
-  //     },
-  //     yaxis: {
-  //       lines: {
-  //         show: false
-  //       }
-  //     }
-  //   },
-
-  //   xaxis: {
-  //     type: 'datetime',
-  //     tooltip: {
-  //       enabled: false
-  //     }
-  //   },
-  //   yaxis: {
-  //     show: true,
-  //     tickAmount: 2,
-  //     labels: {
-  //       style: {
-  //         colors: ['#008FFB00']
-  //       },
-  //       formatter: function (val, index) {
-  //         return fNumber(val);
-  //       }
-  //     }
-  //   }
-  // };
 
   const handleChange = (event, newRange) => {
     if (newRange) setRange(newRange);
@@ -817,7 +612,21 @@ function PriceChart({ token }) {
           </ToggleButtonGroup>
         </Grid>
       </Grid>
-      {!chartType ? (
+      {isLoading ? (
+        <Box
+          sx={{
+            height: '500px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: (theme) => `1px dashed ${theme.palette.divider}`,
+            borderRadius: 1,
+            mt: 2
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      ) : !chartType ? (
         data && data.length > 0 ? (
           <Stack>
             <HighchartsReact highcharts={Highcharts} options={options1} allowChartUpdate={true} />
