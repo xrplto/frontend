@@ -667,12 +667,6 @@ const Topbar = () => {
                         </Box>
                       </>
                     }
-                    secondary={
-                      <>
-                        <Typography variant="caption">Maker: {trade.maker}</Typography>
-                        <Typography variant="caption">Taker: {trade.taker}</Typography>
-                      </>
-                    }
                   />
                 </Box>
               </ListItem>
