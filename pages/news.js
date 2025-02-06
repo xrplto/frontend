@@ -15,20 +15,25 @@ import moment from 'moment';
 
 const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
   return (
-    <Paper sx={{ mb: 4, p: 2 }}>
-      <Typography variant="h5" gutterBottom>
+    <Paper sx={{ mb: 3, py: 1.5, px: 2 }}>
+      <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500 }}>
         News Sources
       </Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
         <Chip
           key="all"
           label="All Sources"
+          size="small"
           onClick={() => onSourceSelect(null)}
           sx={{
             backgroundColor: !selectedSource ? 'primary.main' : 'primary.lighter',
             color: !selectedSource ? 'white' : 'primary.main',
             borderColor: 'primary.main',
             border: '1px solid',
+            height: '24px',
+            '& .MuiChip-label': {
+              px: 1
+            },
             '&:hover': {
               backgroundColor: !selectedSource ? 'primary.dark' : 'primary.light',
               color: 'white'
@@ -39,12 +44,17 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
           <Chip
             key={source}
             label={`${source} (${count})`}
+            size="small"
             onClick={() => onSourceSelect(source)}
             sx={{
               backgroundColor: selectedSource === source ? 'primary.main' : 'primary.lighter',
               color: selectedSource === source ? 'white' : 'primary.main',
               borderColor: 'primary.main',
               border: '1px solid',
+              height: '24px',
+              '& .MuiChip-label': {
+                px: 1
+              },
               '&:hover': {
                 backgroundColor: selectedSource === source ? 'primary.dark' : 'primary.light',
                 color: 'white'
