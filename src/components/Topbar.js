@@ -547,11 +547,11 @@ const Topbar = () => {
         sx={{
           '& .MuiDrawer-paper': {
             width: isMobile ? '100%' : '400px',
-            padding: theme.spacing(2)
+            padding: 0 // Remove padding from drawer paper
           }
         }}
       >
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
           <Box display="flex" alignItems="center" gap={1}>
             <Typography variant="h6">Global Trades</Typography>
             <LiveIndicator>
@@ -577,18 +577,18 @@ const Topbar = () => {
           </FormControl>
         </Box>
         {error ? (
-          <Box>
+          <Box p={2}>
             <Typography color="error">Failed to load trades</Typography>
             <Typography variant="body2" color="textSecondary">
               Error: {error.message}
             </Typography>
           </Box>
         ) : !trades ? (
-          <Box display="flex" justifyContent="center" mt={2}>
+          <Box display="flex" justifyContent="center" p={2}>
             <CircularProgress />
           </Box>
         ) : (
-          <List>
+          <List sx={{ width: '100%', padding: 0 }}>
             {filterTrades(trades, filter).map((trade, index) => (
               <ListItem
                 key={index}
@@ -596,7 +596,8 @@ const Topbar = () => {
                   borderBottom: `1px solid ${theme.palette.divider}`,
                   position: 'relative',
                   overflow: 'hidden',
-                  padding: '12px 16px'
+                  padding: '12px 16px',
+                  width: '100%'
                 }}
               >
                 <ProgressBarContainer>
