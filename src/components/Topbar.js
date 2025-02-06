@@ -596,7 +596,7 @@ const Topbar = () => {
                   borderBottom: `1px solid ${theme.palette.divider}`,
                   position: 'relative',
                   overflow: 'hidden',
-                  padding: '12px 16px',
+                  padding: '8px 12px',
                   width: '100%'
                 }}
               >
@@ -618,17 +618,17 @@ const Topbar = () => {
                   <ListItemText
                     primary={
                       <>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-                            <Typography variant="body2" color="text.secondary">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
+                            <Typography variant="caption" color="text.secondary">
                               {formatRelativeTime(trade.time)}
                             </Typography>
                             {trade.paid.currency === 'XRP' ? (
-                              <Typography component="span" color="success.main">
+                              <Typography component="span" variant="caption" color="success.main">
                                 BUY{' '}
                               </Typography>
                             ) : (
-                              <Typography component="span" color="error.main">
+                              <Typography component="span" variant="caption" color="error.main">
                                 SELL{' '}
                               </Typography>
                             )}
@@ -637,29 +637,36 @@ const Topbar = () => {
                             <img
                               src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
                               alt={decodeCurrency(trade.paid.currency)}
-                              style={{ width: 16, height: 16, borderRadius: '50%' }}
+                              style={{ width: 14, height: 14, borderRadius: '50%' }}
                             />
-                            {formatTradeValue(trade.paid.value)}{' '}
-                            {decodeCurrency(trade.paid.currency)}
+                            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                              {formatTradeValue(trade.paid.value)}{' '}
+                              {decodeCurrency(trade.paid.currency)}
+                            </Typography>
                           </Box>
-                          ↔
+                          <Typography variant="body2" sx={{ mx: 0.5 }}>
+                            ↔
+                          </Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <img
                               src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
                               alt={decodeCurrency(trade.got.currency)}
-                              style={{ width: 16, height: 16, borderRadius: '50%' }}
+                              style={{ width: 14, height: 14, borderRadius: '50%' }}
                             />
-                            {formatTradeValue(trade.got.value)} {decodeCurrency(trade.got.currency)}
+                            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                              {formatTradeValue(trade.got.value)}{' '}
+                              {decodeCurrency(trade.got.currency)}
+                            </Typography>
                           </Box>
-                          <Typography component="span" sx={{ ml: 1 }}>
+                          <Typography component="span" sx={{ ml: 0.5 }}>
                             {getTradeSizeEmoji(getXRPAmount(trade))}
                             {(BOT_ADDRESSES.includes(trade.maker) ||
                               BOT_ADDRESSES.includes(trade.taker)) && (
                               <SmartToy
                                 style={{
                                   color: theme.palette.warning.main,
-                                  fontSize: '1rem',
-                                  marginLeft: '4px',
+                                  fontSize: '0.9rem',
+                                  marginLeft: '2px',
                                   verticalAlign: 'middle'
                                 }}
                               />
