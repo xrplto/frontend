@@ -602,30 +602,21 @@ const Topbar = () => {
                   <ListItemText
                     primary={
                       <>
-                        <Typography component="span" sx={{ mr: 1 }}>
-                          {getTradeSizeEmoji(getXRPAmount(trade))}
-                          {(trade.maker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6' ||
-                            trade.taker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6') && (
-                            <SmartToy
-                              style={{
-                                color: theme.palette.warning.main,
-                                fontSize: '1rem',
-                                marginLeft: '4px',
-                                verticalAlign: 'middle'
-                              }}
-                            />
-                          )}
-                        </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          {trade.paid.currency === 'XRP' ? (
-                            <Typography component="span" color="success.main">
-                              BUY{' '}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                            {trade.paid.currency === 'XRP' ? (
+                              <Typography component="span" color="success.main">
+                                BUY{' '}
+                              </Typography>
+                            ) : (
+                              <Typography component="span" color="error.main">
+                                SELL{' '}
+                              </Typography>
+                            )}
+                            <Typography variant="body2" color="text.secondary">
+                              {formatRelativeTime(trade.time)}
                             </Typography>
-                          ) : (
-                            <Typography component="span" color="error.main">
-                              SELL{' '}
-                            </Typography>
-                          )}
+                          </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <img
                               src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
@@ -644,12 +635,25 @@ const Topbar = () => {
                             />
                             {formatTradeValue(trade.got.value)} {decodeCurrency(trade.got.currency)}
                           </Box>
+                          <Typography component="span" sx={{ ml: 1 }}>
+                            {getTradeSizeEmoji(getXRPAmount(trade))}
+                            {(trade.maker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6' ||
+                              trade.taker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6') && (
+                              <SmartToy
+                                style={{
+                                  color: theme.palette.warning.main,
+                                  fontSize: '1rem',
+                                  marginLeft: '4px',
+                                  verticalAlign: 'middle'
+                                }}
+                              />
+                            )}
+                          </Typography>
                         </Box>
                       </>
                     }
                     secondary={
                       <>
-                        <Typography variant="body2">{formatRelativeTime(trade.time)}</Typography>
                         <Typography variant="caption">Maker: {trade.maker}</Typography>
                         <Typography variant="caption">Taker: {trade.taker}</Typography>
                       </>
