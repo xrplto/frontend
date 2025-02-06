@@ -321,6 +321,21 @@ const filterTrades = (trades, selectedFilter) => {
   return filteredTrades.sort((a, b) => b.time - a.time);
 };
 
+// Add this constant before the Topbar component
+const BOT_ADDRESSES = [
+  'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6',
+  'rfmdBKhtJw2J22rw1JxQcchQTM68qzE4N2',
+  'rpiFwLYi6Gb1ESHYorn2QG1WU5vw2u4exQ',
+  'rpP3jobib3bCGbK1EHUsyeFJF1LXcUBymq',
+  'rhubarbMVC2nzASf3qSGQcUKtLnAzqcBjp',
+  'rBYuQZgRnsSNTuGsxz7wmGt53GYDEg1qzf',
+  'rippLE4uy7r898MzuHTeTe7sPfuUDafLB',
+  'raKT8yExRhuK9xAqYeWezH8RAp6vNoU3Jo',
+  'rhB5snxAxsZ2cKf8iDJYiBpX8nrTxJfHoH',
+  'rN7SthSu7RZXo2LNmsh4QPgXcBzhTgmDDg',
+  'raKTPwoUnGbdSquoiZLX5bLZwY2JAvS5o9'
+];
+
 const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -637,8 +652,8 @@ const Topbar = () => {
                           </Box>
                           <Typography component="span" sx={{ ml: 1 }}>
                             {getTradeSizeEmoji(getXRPAmount(trade))}
-                            {(trade.maker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6' ||
-                              trade.taker === 'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6') && (
+                            {(BOT_ADDRESSES.includes(trade.maker) ||
+                              BOT_ADDRESSES.includes(trade.taker)) && (
                               <SmartToy
                                 style={{
                                   color: theme.palette.warning.main,
