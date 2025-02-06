@@ -604,6 +604,9 @@ const Topbar = () => {
                       <>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              {formatRelativeTime(trade.time)}
+                            </Typography>
                             {trade.paid.currency === 'XRP' ? (
                               <Typography component="span" color="success.main">
                                 BUY{' '}
@@ -613,9 +616,6 @@ const Topbar = () => {
                                 SELL{' '}
                               </Typography>
                             )}
-                            <Typography variant="body2" color="text.secondary">
-                              {formatRelativeTime(trade.time)}
-                            </Typography>
                           </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <img
