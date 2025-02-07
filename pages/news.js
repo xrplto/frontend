@@ -183,25 +183,25 @@ export default function News() {
     const getPercentage = (value) => ((value / total) * 100).toFixed(1);
 
     return (
-      <Box sx={{ flex: 1, p: 2 }}>
-        <Typography variant="h6" gutterBottom>
+      <Box sx={{ flex: 1, py: 0.5, px: 1 }}>
+        <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
           {period}
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
           <Chip
             label={`Bullish ${getPercentage(stats.bullish)}%`}
             size="small"
-            sx={{ backgroundColor: '#4caf50', color: 'white' }}
+            sx={{ backgroundColor: '#4caf50', color: 'white', height: '20px' }}
           />
           <Chip
             label={`Bearish ${getPercentage(stats.bearish)}%`}
             size="small"
-            sx={{ backgroundColor: '#f44336', color: 'white' }}
+            sx={{ backgroundColor: '#f44336', color: 'white', height: '20px' }}
           />
           <Chip
             label={`Neutral ${getPercentage(stats.neutral)}%`}
             size="small"
-            sx={{ backgroundColor: '#ff9800', color: 'white' }}
+            sx={{ backgroundColor: '#ff9800', color: 'white', height: '20px' }}
           />
         </Box>
       </Box>
@@ -225,14 +225,15 @@ export default function News() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 2 }}>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 2 }}>
         Latest Crypto News
       </Typography>
 
-      <Box sx={{ mb: 3 }}>
+      <Box sx={{ mb: 2 }}>
         <TextField
           fullWidth
+          size="small"
           variant="outlined"
           placeholder="Search news by title, summary, or content..."
           value={searchQuery}
@@ -264,8 +265,8 @@ export default function News() {
         onSourceSelect={handleSourceSelect}
       />
 
-      <Paper sx={{ mb: 4, p: 2 }}>
-        <Typography variant="h5" gutterBottom>
+      <Paper sx={{ mb: 2, p: 1.5 }}>
+        <Typography variant="h6" gutterBottom sx={{ mb: 1 }}>
           Sentiment Analysis
           {selectedSource && (
             <Typography component="span" color="text.secondary" sx={{ ml: 1 }}>
@@ -273,16 +274,16 @@ export default function News() {
             </Typography>
           )}
         </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-          <SentimentSummary period="Last 24 Hours" stats={sentimentStats.last24h} />
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+          <SentimentSummary period="Last 24h" stats={sentimentStats.last24h} />
           <Divider orientation="vertical" flexItem />
-          <SentimentSummary period="Last 7 Days" stats={sentimentStats.last7d} />
+          <SentimentSummary period="7d" stats={sentimentStats.last7d} />
           <Divider orientation="vertical" flexItem />
-          <SentimentSummary period="Last 30 Days" stats={sentimentStats.last30d} />
+          <SentimentSummary period="30d" stats={sentimentStats.last30d} />
         </Box>
       </Paper>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         {filteredNews.map((article) => (
           <Grid item xs={12} key={article._id}>
             <Card
@@ -292,60 +293,61 @@ export default function News() {
                 flexDirection: 'column',
                 transition: 'transform 0.2s',
                 '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: 3
+                  transform: 'translateY(-2px)',
+                  boxShadow: 2
                 }
               }}
             >
-              <CardContent>
+              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                 <Box
                   sx={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'flex-start',
-                    mb: 2
+                    mb: 1
                   }}
                 >
-                  <Typography variant="h6" component="h2" sx={{ flex: 1 }}>
+                  <Typography variant="subtitle1" component="h2" sx={{ flex: 1 }}>
                     {extractTitle(article.title)}
                   </Typography>
                   <Chip
                     label={article.sentiment || 'Unknown'}
                     size="small"
                     sx={{
-                      ml: 2,
+                      ml: 1,
                       backgroundColor: getSentimentColor(article.sentiment),
-                      color: 'white'
+                      color: 'white',
+                      height: '20px'
                     }}
                   />
                 </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   {article.summary}
                 </Typography>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="body2" sx={{ mb: 2 }}>
+                <Divider sx={{ my: 1 }} />
+                <Typography variant="body2" sx={{ mb: 1 }}>
                   {article.articleBody?.split('\n').map(
                     (paragraph, index) =>
                       paragraph.trim() && (
-                        <Typography key={index} paragraph>
+                        <Typography key={index} paragraph sx={{ mb: 0.5 }}>
                           {paragraph}
                         </Typography>
                       )
                   )}
                 </Typography>
                 <Box
-                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mt: 1
+                  }}
                 >
                   <Typography variant="caption" color="text.secondary">
-                    {article.sourceName}
+                    {article.sourceName} • {moment(article.pubDate).format('MMM D, YYYY')}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {moment(article.pubDate).format('MMMM D, YYYY')}
-                  </Typography>
-                </Box>
-                <Box sx={{ mt: 2 }}>
                   <Typography
-                    variant="body2"
+                    variant="caption"
                     component="a"
                     href={article.sourceUrl}
                     target="_blank"
