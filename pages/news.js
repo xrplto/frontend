@@ -20,6 +20,9 @@ import moment from 'moment';
 import ChatModal from '../src/components/AIChat';
 
 const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
+  // Sort sources by count in descending order
+  const sortedSources = Object.entries(sources).sort(([, a], [, b]) => b - a);
+
   return (
     <Paper sx={{ mb: 3, py: 1.5, px: 2 }}>
       <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500 }}>
@@ -46,7 +49,7 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
             }
           }}
         />
-        {Object.entries(sources).map(([source, count]) => (
+        {sortedSources.map(([source, count]) => (
           <Chip
             key={source}
             label={`${source} (${count})`}
