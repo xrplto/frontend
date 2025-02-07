@@ -9,8 +9,11 @@ import {
   Chip,
   CircularProgress,
   Divider,
-  Paper
+  Paper,
+  TextField,
+  InputAdornment
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import moment from 'moment';
 
 const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
@@ -72,6 +75,7 @@ export default function News() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSource, setSelectedSource] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [sentimentStats, setSentimentStats] = useState({
     last24h: { bullish: 0, bearish: 0, neutral: 0 },
     last7d: { bullish: 0, bearish: 0, neutral: 0 },
@@ -79,10 +83,17 @@ export default function News() {
   });
   const [sourcesStats, setSourcesStats] = useState({});
 
-  // Filter news based on selected source
-  const filteredNews = selectedSource
-    ? news.filter((article) => article.sourceName === selectedSource)
-    : news;
+  // Filter news based on selected source and search query
+  const filteredNews = news.filter((article) => {
+    const matchesSource = selectedSource ? article.sourceName === selectedSource : true;
+    const searchLower = searchQuery.toLowerCase();
+    const matchesSearch =
+      searchQuery === '' ||
+      article.title.toLowerCase().includes(searchLower) ||
+      article.summary?.toLowerCase().includes(searchLower) ||
+      article.articleBody?.toLowerCase().includes(searchLower);
+    return matchesSource && matchesSearch;
+  });
 
   const handleSourceSelect = (source) => {
     setSelectedSource(source);
@@ -218,6 +229,34 @@ export default function News() {
       <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
         Latest Crypto News
       </Typography>
+
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Search news by title, summary, or content..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            )
+          }}
+          sx={{
+            backgroundColor: 'background.paper',
+            '& .MuiOutlinedInput-root': {
+              '& fieldset': {
+                borderColor: 'divider'
+              },
+              '&:hover fieldset': {
+                borderColor: 'primary.main'
+              }
+            }
+          }}
+        />
+      </Box>
 
       <SourcesMenu
         sources={sourcesStats}
