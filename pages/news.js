@@ -224,7 +224,7 @@ export default function News() {
       <>
         <Topbar />
         <Header />
-        <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+        <Container maxWidth="xl" sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress />
         </Container>
         <Footer />
@@ -237,7 +237,7 @@ export default function News() {
       <>
         <Topbar />
         <Header />
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
           <Typography color="error">Error: {error}</Typography>
         </Container>
         <Footer />
@@ -250,9 +250,9 @@ export default function News() {
       <Topbar />
       <Header />
       <Box sx={{ flex: 1 }}>
-        <Container maxWidth="lg" sx={{ py: 2 }}>
+        <Container maxWidth="xl" sx={{ py: 2 }}>
           <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 2 }}>
-            Latest Crypto News
+            Latest XRPL News
           </Typography>
 
           <Box sx={{ mb: 2 }}>
