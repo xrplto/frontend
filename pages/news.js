@@ -385,7 +385,7 @@ export default function News() {
                       }}
                     >
                       <Typography variant="caption" color="text.secondary">
-                        {article.sourceName} • {moment(article.pubDate).format('MMM D, YYYY')}
+                        {article.sourceName} • {moment(article.pubDate).fromNow()}
                       </Typography>
                       <Typography
                         variant="caption"
