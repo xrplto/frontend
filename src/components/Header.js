@@ -218,6 +218,21 @@ export default function Header(props) {
                 >
                   {t('Swap')}
                 </StyledLink>
+                <StyledLink
+                  underline="none"
+                  color={darkMode ? 'white' : 'black'}
+                  sx={{
+                    '&:hover': {
+                      color: darkMode ? '#22B14C !important' : '#3366FF !important'
+                    },
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                  href="/news"
+                >
+                  {t('News')}
+                </StyledLink>
               </>
             )}
 

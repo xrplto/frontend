@@ -18,6 +18,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import ChatIcon from '@mui/icons-material/Chat';
 import moment from 'moment';
 import ChatModal from '../src/components/AIChat';
+import Header from '../src/components/Header';
+import Footer from '../src/components/Footer';
+import Topbar from '../src/components/Topbar';
 
 const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
   // Sort sources by count in descending order
@@ -218,182 +221,198 @@ export default function News() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
-        <CircularProgress />
-      </Container>
+      <>
+        <Topbar />
+        <Header />
+        <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
+          <CircularProgress />
+        </Container>
+        <Footer />
+      </>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Typography color="error">Error: {error}</Typography>
-      </Container>
+      <>
+        <Topbar />
+        <Header />
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Typography color="error">Error: {error}</Typography>
+        </Container>
+        <Footer />
+      </>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 2 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 2 }}>
-        Latest Crypto News
-      </Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Topbar />
+      <Header />
+      <Box sx={{ flex: 1 }}>
+        <Container maxWidth="lg" sx={{ py: 2 }}>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 2 }}>
+            Latest Crypto News
+          </Typography>
 
-      <Box sx={{ mb: 2 }}>
-        <TextField
-          fullWidth
-          size="small"
-          variant="outlined"
-          placeholder="Search news by title, summary, or content..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            )
-          }}
-          sx={{
-            backgroundColor: 'background.paper',
-            '& .MuiOutlinedInput-root': {
-              '& fieldset': {
-                borderColor: 'divider'
-              },
-              '&:hover fieldset': {
-                borderColor: 'primary.main'
-              }
-            }
-          }}
-        />
-      </Box>
-
-      <SourcesMenu
-        sources={sourcesStats}
-        selectedSource={selectedSource}
-        onSourceSelect={handleSourceSelect}
-      />
-
-      <Paper sx={{ mb: 2, p: 1.5 }}>
-        <Typography variant="h6" gutterBottom sx={{ mb: 1 }}>
-          Sentiment Analysis
-          {selectedSource && (
-            <Typography component="span" color="text.secondary" sx={{ ml: 1 }}>
-              ({selectedSource})
-            </Typography>
-          )}
-        </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          <SentimentSummary period="Last 24h" stats={sentimentStats.last24h} />
-          <Divider orientation="vertical" flexItem />
-          <SentimentSummary period="7d" stats={sentimentStats.last7d} />
-          <Divider orientation="vertical" flexItem />
-          <SentimentSummary period="30d" stats={sentimentStats.last30d} />
-        </Box>
-      </Paper>
-
-      <Grid container spacing={2}>
-        {filteredNews.map((article) => (
-          <Grid item xs={12} key={article._id}>
-            <Card
+          <Box sx={{ mb: 2 }}>
+            <TextField
+              fullWidth
+              size="small"
+              variant="outlined"
+              placeholder="Search news by title, summary, or content..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )
+              }}
               sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: 2
+                backgroundColor: 'background.paper',
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': {
+                    borderColor: 'divider'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'primary.main'
+                  }
                 }
               }}
-            >
-              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                <Box
+            />
+          </Box>
+
+          <SourcesMenu
+            sources={sourcesStats}
+            selectedSource={selectedSource}
+            onSourceSelect={handleSourceSelect}
+          />
+
+          <Paper sx={{ mb: 2, p: 1.5 }}>
+            <Typography variant="h6" gutterBottom sx={{ mb: 1 }}>
+              Sentiment Analysis
+              {selectedSource && (
+                <Typography component="span" color="text.secondary" sx={{ ml: 1 }}>
+                  ({selectedSource})
+                </Typography>
+              )}
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <SentimentSummary period="Last 24h" stats={sentimentStats.last24h} />
+              <Divider orientation="vertical" flexItem />
+              <SentimentSummary period="7d" stats={sentimentStats.last7d} />
+              <Divider orientation="vertical" flexItem />
+              <SentimentSummary period="30d" stats={sentimentStats.last30d} />
+            </Box>
+          </Paper>
+
+          <Grid container spacing={2}>
+            {filteredNews.map((article) => (
+              <Grid item xs={12} key={article._id}>
+                <Card
                   sx={{
+                    height: '100%',
                     display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    mb: 1
+                    flexDirection: 'column',
+                    transition: 'transform 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: 2
+                    }
                   }}
                 >
-                  <Typography variant="subtitle1" component="h2" sx={{ flex: 1 }}>
-                    {extractTitle(article.title)}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setSelectedArticle(article);
-                        setChatOpen(true);
-                      }}
+                  <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                    <Box
                       sx={{
-                        color: 'primary.main',
-                        '&:hover': {
-                          backgroundColor: 'primary.lighter'
-                        }
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        mb: 1
                       }}
                     >
-                      <ChatIcon />
-                    </IconButton>
-                    <Chip
-                      label={article.sentiment || 'Unknown'}
-                      size="small"
+                      <Typography variant="subtitle1" component="h2" sx={{ flex: 1 }}>
+                        {extractTitle(article.title)}
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setSelectedArticle(article);
+                            setChatOpen(true);
+                          }}
+                          sx={{
+                            color: 'primary.main',
+                            '&:hover': {
+                              backgroundColor: 'primary.lighter'
+                            }
+                          }}
+                        >
+                          <ChatIcon />
+                        </IconButton>
+                        <Chip
+                          label={article.sentiment || 'Unknown'}
+                          size="small"
+                          sx={{
+                            backgroundColor: getSentimentColor(article.sentiment),
+                            color: 'white',
+                            height: '20px'
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                      {article.summary}
+                    </Typography>
+                    <Divider sx={{ my: 1 }} />
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      {article.articleBody?.split('\n').map(
+                        (paragraph, index) =>
+                          paragraph.trim() && (
+                            <Typography key={index} paragraph sx={{ mb: 0.5 }}>
+                              {paragraph}
+                            </Typography>
+                          )
+                      )}
+                    </Typography>
+                    <Box
                       sx={{
-                        backgroundColor: getSentimentColor(article.sentiment),
-                        color: 'white',
-                        height: '20px'
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        mt: 1
                       }}
-                    />
-                  </Box>
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  {article.summary}
-                </Typography>
-                <Divider sx={{ my: 1 }} />
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  {article.articleBody?.split('\n').map(
-                    (paragraph, index) =>
-                      paragraph.trim() && (
-                        <Typography key={index} paragraph sx={{ mb: 0.5 }}>
-                          {paragraph}
-                        </Typography>
-                      )
-                  )}
-                </Typography>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mt: 1
-                  }}
-                >
-                  <Typography variant="caption" color="text.secondary">
-                    {article.sourceName} • {moment(article.pubDate).format('MMM D, YYYY')}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    component="a"
-                    href={article.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      color: 'primary.main',
-                      textDecoration: 'none',
-                      '&:hover': {
-                        textDecoration: 'underline'
-                      }
-                    }}
-                  >
-                    Read full article →
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+                    >
+                      <Typography variant="caption" color="text.secondary">
+                        {article.sourceName} • {moment(article.pubDate).format('MMM D, YYYY')}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        component="a"
+                        href={article.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          color: 'primary.main',
+                          textDecoration: 'none',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }}
+                      >
+                        Read full article →
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
-
+        </Container>
+      </Box>
+      <Footer />
       <ChatModal open={chatOpen} onClose={() => setChatOpen(false)} article={selectedArticle} />
-    </Container>
+    </Box>
   );
 }
