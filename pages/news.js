@@ -11,10 +11,13 @@ import {
   Divider,
   Paper,
   TextField,
-  InputAdornment
+  InputAdornment,
+  IconButton
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import ChatIcon from '@mui/icons-material/Chat';
 import moment from 'moment';
+import ChatModal from '../src/components/AIChat';
 
 const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
   return (
@@ -76,6 +79,8 @@ export default function News() {
   const [error, setError] = useState(null);
   const [selectedSource, setSelectedSource] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [chatOpen, setChatOpen] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState(null);
   const [sentimentStats, setSentimentStats] = useState({
     last24h: { bullish: 0, bearish: 0, neutral: 0 },
     last7d: { bullish: 0, bearish: 0, neutral: 0 },
@@ -310,16 +315,32 @@ export default function News() {
                   <Typography variant="subtitle1" component="h2" sx={{ flex: 1 }}>
                     {extractTitle(article.title)}
                   </Typography>
-                  <Chip
-                    label={article.sentiment || 'Unknown'}
-                    size="small"
-                    sx={{
-                      ml: 1,
-                      backgroundColor: getSentimentColor(article.sentiment),
-                      color: 'white',
-                      height: '20px'
-                    }}
-                  />
+                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setSelectedArticle(article);
+                        setChatOpen(true);
+                      }}
+                      sx={{
+                        color: 'primary.main',
+                        '&:hover': {
+                          backgroundColor: 'primary.lighter'
+                        }
+                      }}
+                    >
+                      <ChatIcon />
+                    </IconButton>
+                    <Chip
+                      label={article.sentiment || 'Unknown'}
+                      size="small"
+                      sx={{
+                        backgroundColor: getSentimentColor(article.sentiment),
+                        color: 'white',
+                        height: '20px'
+                      }}
+                    />
+                  </Box>
                 </Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                   {article.summary}
@@ -368,6 +389,8 @@ export default function News() {
           </Grid>
         ))}
       </Grid>
+
+      <ChatModal open={chatOpen} onClose={() => setChatOpen(false)} article={selectedArticle} />
     </Container>
   );
 }
