@@ -12,7 +12,9 @@ import {
   Paper,
   TextField,
   InputAdornment,
-  IconButton
+  IconButton,
+  Pagination,
+  Stack
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -87,6 +89,8 @@ export default function News() {
   const [searchQuery, setSearchQuery] = useState('');
   const [chatOpen, setChatOpen] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [sentimentStats, setSentimentStats] = useState({
     last24h: { bullish: 0, bearish: 0, neutral: 0 },
     last7d: { bullish: 0, bearish: 0, neutral: 0 },
@@ -105,6 +109,17 @@ export default function News() {
       article.articleBody?.toLowerCase().includes(searchLower);
     return matchesSource && matchesSearch;
   });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredNews.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handlePageChange = (event, value) => {
+    setCurrentPage(value);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleSourceSelect = (source) => {
     setSelectedSource(source);
@@ -309,7 +324,7 @@ export default function News() {
           </Paper>
 
           <Grid container spacing={2}>
-            {filteredNews.map((article) => (
+            {currentItems.map((article) => (
               <Grid item xs={12} key={article._id}>
                 <Card
                   sx={{
@@ -409,6 +424,24 @@ export default function News() {
               </Grid>
             ))}
           </Grid>
+
+          {totalPages > 1 && (
+            <Stack spacing={2} alignItems="center" sx={{ mt: 4, mb: 2 }}>
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={handlePageChange}
+                color="primary"
+                size="large"
+                showFirstButton
+                showLastButton
+              />
+              <Typography variant="caption" color="text.secondary">
+                Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredNews.length)} of{' '}
+                {filteredNews.length} articles
+              </Typography>
+            </Stack>
+          )}
         </Container>
       </Box>
       <Footer />
