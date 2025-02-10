@@ -115,7 +115,7 @@ export default function Summary() {
         The global token market cap stands at{' '}
         <strong>
           {currencySymbols[activeFiatCurrency]}
-          {formatNumberWithCommas(Number(gMarketcap))}
+          {fNumberWithSuffix(Number(gMarketcap))}
         </strong>{' '}
         marking a <BearBull value={gMarketcapPro} sx={{ pl: 1, pr: 1 }} />{' '}
         {gMarketcapPro < 0 ? 'decrease' : 'increase'} over the last 24 hours.
