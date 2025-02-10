@@ -233,12 +233,11 @@ const getTradeSizeEmoji = (value) => {
 
 // Add this helper function near the top of the file
 const abbreviateNumber = (num) => {
-  if (Math.abs(num) < 1000) return num.toString();
-  const suffixes = ['', 'k', 'm', 'b', 't'];
+  if (Math.abs(num) < 1000) return num.toFixed(1);
+  const suffixes = ['', 'k', 'M', 'B', 'T'];
   const magnitude = Math.floor(Math.log10(Math.abs(num)) / 3);
   const scaled = num / Math.pow(10, magnitude * 3);
-  const suffix = suffixes[magnitude];
-  return scaled.toFixed(2) + suffix;
+  return scaled.toFixed(2).replace(/\.?0+$/, '') + suffixes[magnitude];
 };
 
 // Update formatTradeValue function
@@ -256,12 +255,6 @@ const formatTradeValue = (value) => {
     return numValue.toFixed(4);
   }
 
-  // Medium numbers (use 2 decimal places)
-  if (Math.abs(numValue) < 1000) {
-    return numValue.toFixed(2);
-  }
-
-  // Abbreviate large numbers
   return abbreviateNumber(numValue);
 };
 
@@ -370,44 +363,44 @@ const Topbar = () => {
   const mobileMetrics = [
     {
       label: 'Tokens',
-      value: fIntNumber(metrics.total),
+      value: abbreviateNumber(metrics.total),
       color: 'inherit'
     },
     {
       label: 'Addresses',
-      value: fIntNumber(metrics.H24.totalAddresses),
+      value: abbreviateNumber(metrics.H24.totalAddresses),
       color: '#54D62C'
     },
     {
       label: 'Offers',
-      value: fIntNumber(metrics.H24.totalOffers),
+      value: abbreviateNumber(metrics.H24.totalOffers),
       color: '#FFC107'
     },
     {
       label: 'Trustlines',
-      value: fIntNumber(metrics.H24.totalTrustLines),
+      value: abbreviateNumber(metrics.H24.totalTrustLines),
       color: '#FFA48D'
     },
     {
       label: 'Trades',
-      value: fIntNumber(metrics.H24.transactions24H),
+      value: abbreviateNumber(metrics.H24.transactions24H),
       color: '#74CAFF'
     },
     {
       label: 'Vol',
-      value: `${currencySymbols[activeFiatCurrency]}${fNumber(
+      value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
         Decimal.div(metrics.H24.tradedXRP24H, metrics[activeFiatCurrency]).toNumber()
       )}`,
       color: theme.palette.error.main
     },
     {
       label: 'Tokens Traded',
-      value: fIntNumber(metrics.H24.tradedTokens24H),
+      value: abbreviateNumber(metrics.H24.tradedTokens24H),
       color: '#3366FF'
     },
     {
       label: 'Active Addresses',
-      value: fIntNumber(metrics.H24.activeAddresses24H),
+      value: abbreviateNumber(metrics.H24.activeAddresses24H),
       color: '#54D62C'
     }
   ];
@@ -458,24 +451,24 @@ const Topbar = () => {
               <Typography variant="body2" color="#a1a7bb" sx={{ fontWeight: 500 }}>
                 {t('Tokens')}:
               </Typography>
-              <Typography variant="body2">{fIntNumber(metrics.total)}</Typography>
+              <Typography variant="body2">{abbreviateNumber(metrics.total)}</Typography>
               <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
                 {t('Addresses')}:
               </Typography>
               <Typography align="center" color="#54D62C" variant="body2">
-                {fIntNumber(metrics.H24.totalAddresses)}
+                {abbreviateNumber(metrics.H24.totalAddresses)}
               </Typography>
               <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
                 {t('Offers')}:
               </Typography>
               <Typography align="center" color="#FFC107" variant="body2">
-                {fIntNumber(metrics.H24.totalOffers)}
+                {abbreviateNumber(metrics.H24.totalOffers)}
               </Typography>
               <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
                 {t('Trustlines')}:
               </Typography>
               <Typography align="center" color="#FFA48D" variant="body2">
-                {fIntNumber(metrics.H24.totalTrustLines)}
+                {abbreviateNumber(metrics.H24.totalTrustLines)}
               </Typography>
               <H24Style>
                 <Tooltip title="Statistics from the past 24 hours.">
@@ -495,7 +488,7 @@ const Topbar = () => {
                 {t('Trades')}:
               </Typography>
               <Typography align="center" color="#74CAFF" variant="body2">
-                {fIntNumber(metrics.H24.transactions24H)}
+                {abbreviateNumber(metrics.H24.transactions24H)}
               </Typography>
               <Typography variant="body2" color="#a1a7bb" sx={{ fontWeight: 500 }}>
                 {t('Vol')}:
@@ -504,7 +497,7 @@ const Topbar = () => {
                 <Stack direction="row" spacing={0.5} alignItems="center">
                   <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
                   <Typography align="center" color={theme.palette.error.main} variant="body2">
-                    {fNumber(
+                    {abbreviateNumber(
                       Decimal.div(metrics.H24.tradedXRP24H, metrics[activeFiatCurrency]).toNumber()
                     )}
                   </Typography>
@@ -514,13 +507,13 @@ const Topbar = () => {
                 {t('Tokens Traded')}:
               </Typography>
               <Typography align="center" color="#3366FF" variant="body2">
-                {fIntNumber(metrics.H24.tradedTokens24H)}
+                {abbreviateNumber(metrics.H24.tradedTokens24H)}
               </Typography>
               <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
                 {t('Active Addresses')}:
               </Typography>
               <Typography align="center" color="#54D62C" variant="body2">
-                {fIntNumber(metrics.H24.activeAddresses24H)}
+                {abbreviateNumber(metrics.H24.activeAddresses24H)}
               </Typography>
             </Stack>
           )}
