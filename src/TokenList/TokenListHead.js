@@ -107,10 +107,10 @@ const TABLE_HEAD = [
     label: (
       <Tooltip
         title="Amount of XRP that has been traded with this token in the last 24 hours"
-        placement="top" // Adjust placement as needed
+        placement="top"
       >
         <span>
-          Volume <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
+          Volume <SmallInfoIcon />
         </span>
       </Tooltip>
     ),
@@ -124,10 +124,10 @@ const TABLE_HEAD = [
     label: (
       <Tooltip
         title="Trades represents the total number of trade transactions for an asset on the XRPL DEX within the last 24 hours, indicating market activity and liquidity."
-        placement="top" // Adjust placement as needed
+        placement="top"
       >
         <span>
-          Trades <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
+          Trades <SmallInfoIcon />
         </span>
       </Tooltip>
     ),
@@ -137,57 +137,6 @@ const TABLE_HEAD = [
   },
   {
     no: 10,
-    id: 'marketcap',
-    label: (
-      <Tooltip
-        title="Circulating supply * price"
-        placement="top" // Adjust placement as needed
-      >
-        <span>
-          Market Cap <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
-        </span>
-      </Tooltip>
-    ),
-    align: 'right',
-    width: '10%',
-    order: true
-  },
-  {
-    no: 11,
-    id: 'trustlines',
-    label: (
-      <Tooltip
-        title="A TrustLine in blockchain allows users to hold and transact in others' debt in specified currencies, enabling multi-currency dealings."
-        placement="top" // Adjust placement as needed
-      >
-        <span>
-          TrustLines <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
-        </span>
-      </Tooltip>
-    ),
-    align: 'right',
-    width: '10%',
-    order: true
-  },
-  {
-    no: 12,
-    id: 'supply',
-    label: (
-      <Tooltip
-        title="The quantity of tokens in circulation within the market and held by the public is comparable to the shares in motion within the stock market."
-        placement="top" // Adjust placement as needed
-      >
-        <span>
-          Circulating Supply <SmallInfoIcon /> {/* Use the SmallInfoIcon component */}
-        </span>
-      </Tooltip>
-    ),
-    align: 'right',
-    width: '13%',
-    order: true
-  },
-  {
-    no: 13,
     id: 'tvl',
     label: (
       <Tooltip
@@ -201,6 +150,54 @@ const TABLE_HEAD = [
     ),
     align: 'right',
     width: '10%',
+    order: true
+  },
+  {
+    no: 11,
+    id: 'marketcap',
+    label: (
+      <Tooltip title="Circulating supply * price" placement="top">
+        <span>
+          Market Cap <SmallInfoIcon />
+        </span>
+      </Tooltip>
+    ),
+    align: 'right',
+    width: '10%',
+    order: true
+  },
+  {
+    no: 12,
+    id: 'trustlines',
+    label: (
+      <Tooltip
+        title="A TrustLine in blockchain allows users to hold and transact in others' debt in specified currencies, enabling multi-currency dealings."
+        placement="top"
+      >
+        <span>
+          TrustLines <SmallInfoIcon />
+        </span>
+      </Tooltip>
+    ),
+    align: 'right',
+    width: '10%',
+    order: true
+  },
+  {
+    no: 13,
+    id: 'supply',
+    label: (
+      <Tooltip
+        title="The quantity of tokens in circulation within the market and held by the public is comparable to the shares in motion within the stock market."
+        placement="top"
+      >
+        <span>
+          Circulating Supply <SmallInfoIcon />
+        </span>
+      </Tooltip>
+    ),
+    align: 'right',
+    width: '13%',
     order: true
   },
   {
