@@ -42,8 +42,11 @@ const TransitionTypo = styled(Typography)(
 );
 
 const AdminImage = styled(LazyLoadImage)(({ theme }) => ({
-  borderRadius: '50%',
+  borderRadius: '8px',
   overflow: 'hidden',
+  width: '32px',
+  height: '32px',
+  objectFit: 'cover',
   '&:hover': {
     cursor: 'pointer',
     opacity: 0.6
@@ -51,8 +54,11 @@ const AdminImage = styled(LazyLoadImage)(({ theme }) => ({
 }));
 
 const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
-  borderRadius: '50%',
-  overflow: 'hidden'
+  borderRadius: '8px',
+  overflow: 'hidden',
+  width: '32px',
+  height: '32px',
+  objectFit: 'cover'
 }));
 
 const badge24hStyle = {
@@ -253,8 +259,6 @@ function FTokenRow({
             {isAdmin ? (
               <AdminImage
                 src={imgUrl}
-                width={isMobile ? 12 : 16}
-                height={isMobile ? 12 : 16}
                 onClick={handleEditToken}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
                 alt={`${user} ${name} Logo`}
@@ -262,8 +266,6 @@ function FTokenRow({
             ) : (
               <TokenImage
                 src={imgUrl}
-                width={isMobile ? 12 : 16}
-                height={isMobile ? 12 : 16}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
                 alt={`${user} ${name} Logo`}
               />
@@ -317,18 +319,16 @@ function FTokenRow({
                   )}
                   {truncate(user, isMobile ? 12 : 15)}
                 </Typography>
-                {origin && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: isMobile ? '0.5rem' : '0.65rem',
-                      color: darkMode ? '#666' : '#888',
-                      lineHeight: 1
-                    }}
-                  >
-                    {origin}
-                  </Typography>
-                )}
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: isMobile ? '0.5rem' : '0.65rem',
+                    color: darkMode ? '#666' : '#888',
+                    lineHeight: 1
+                  }}
+                >
+                  {origin || 'Standard Launch'}
+                </Typography>
               </Stack>
             </Stack>
           </Link>
