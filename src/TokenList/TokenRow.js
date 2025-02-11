@@ -139,7 +139,8 @@ function FTokenRow({
     ext,
     marketcap,
     isOMCF,
-    tvl
+    tvl,
+    origin
   } = memoizedToken;
 
   useEffect(() => {
@@ -296,22 +297,38 @@ function FTokenRow({
               >
                 {truncate(name, isMobile ? 10 : 13)}
               </Typography>
-              <Typography
-                variant="p2"
-                sx={{
-                  fontWeight: '600',
-                  fontSize: isMobile ? '0.6rem' : '0.75rem',
-                  lineHeight: 1.1,
-                  color: darkMode ? '#848E9C' : '#616E85'
-                }}
-                color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
-                noWrap={!isMobile}
-              >
-                {isMobile && (
-                  <span style={{ ...badge24hStyle, fontSize: '10px', padding: '0 2px' }}>{id}</span>
+              <Stack direction="column" spacing={0}>
+                <Typography
+                  variant="p2"
+                  sx={{
+                    fontWeight: '600',
+                    fontSize: isMobile ? '0.6rem' : '0.75rem',
+                    lineHeight: 1.1,
+                    color: darkMode ? '#848E9C' : '#616E85'
+                  }}
+                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
+                  noWrap={!isMobile}
+                >
+                  {isMobile && (
+                    <span style={{ ...badge24hStyle, fontSize: '10px', padding: '0 2px' }}>
+                      {id}
+                    </span>
+                  )}
+                  {truncate(user, isMobile ? 12 : 15)}
+                </Typography>
+                {origin && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: isMobile ? '0.5rem' : '0.65rem',
+                      color: darkMode ? '#666' : '#888',
+                      lineHeight: 1
+                    }}
+                  >
+                    {origin}
+                  </Typography>
                 )}
-                {truncate(user, isMobile ? 12 : 15)}
-              </Typography>
+              </Stack>
             </Stack>
           </Link>
         </Stack>
