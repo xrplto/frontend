@@ -23,6 +23,7 @@ import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import LockIcon from '@mui/icons-material/Lock';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 
 import { AppContext } from 'src/AppContext';
 import TokenMoreMenu from './TokenMoreMenu';
@@ -84,6 +85,16 @@ const getPriceColor = (bearbull) => {
   if (bearbull === -1) return '#FF6C40';
   if (bearbull === 1) return '#54D62C';
   return '';
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const createdDate = new Date(dateString);
+  const now = new Date();
+  const diffInHours = Math.floor((now - createdDate) / (1000 * 60 * 60));
+  const days = Math.floor(diffInHours / 24);
+  const hours = diffInHours % 24;
+  return `${days}d ${hours}h`;
 };
 
 function FTokenRow({
@@ -329,7 +340,8 @@ function FTokenRow({
                     lineHeight: 1,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px'
+                    gap: '4px',
+                    justifyContent: 'flex-end'
                   }}
                 >
                   {origin || 'Standard Launch'}
@@ -350,6 +362,28 @@ function FTokenRow({
             </Stack>
           </Link>
         </Stack>
+      </TableCell>
+      <TableCell
+        align="right"
+        sx={{
+          padding: isMobile ? '1px 2px' : '2px 3px'
+        }}
+      >
+        <Typography
+          variant="caption"
+          sx={{
+            fontSize: isMobile ? '0.5rem' : '0.65rem',
+            color: darkMode ? '#666' : '#888',
+            lineHeight: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            justifyContent: 'flex-end'
+          }}
+        >
+          <CalendarTodayIcon sx={{ fontSize: isMobile ? '10px' : '12px' }} />
+          {formatDate(date)}
+        </Typography>
       </TableCell>
       <TableCell
         align="right"

@@ -32,13 +32,33 @@ const TABLE_HEAD = [
   {
     no: 2,
     id: 'name',
-    label: 'Name',
+    label: (
+      <Tooltip title="Token name, issuer and launch type" placement="top">
+        <span>
+          Name <SmallInfoIcon />
+        </span>
+      </Tooltip>
+    ),
     align: 'left',
     width: '11%',
     order: true
   },
   {
     no: 3,
+    id: 'date',
+    label: (
+      <Tooltip title="Time since token creation" placement="top">
+        <span>
+          Created <SmallInfoIcon />
+        </span>
+      </Tooltip>
+    ),
+    align: 'right',
+    width: '7%',
+    order: true
+  },
+  {
+    no: 4,
     id: 'exch',
     label: 'Price',
     align: 'right',
@@ -46,7 +66,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 4,
+    no: 5,
     id: 'pro5m',
     label: (
       <Tooltip title="Price change in the last 5 minutes" placement="top">
@@ -60,7 +80,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 5,
+    no: 6,
     id: 'pro1h',
     label: (
       <Tooltip title="Price change in the last hour" placement="top">
@@ -74,7 +94,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 6,
+    no: 7,
     id: 'pro24h',
     label: (
       <Tooltip title="Price change in the last 24 hours" placement="top">
@@ -88,7 +108,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 7,
+    no: 8,
     id: 'pro7d',
     label: (
       <Tooltip title="Price change in the last 7 days" placement="top">
@@ -102,7 +122,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 8,
+    no: 9,
     id: 'vol24hxrp',
     label: (
       <Tooltip
@@ -119,7 +139,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 9,
+    no: 10,
     id: 'vol24htx',
     label: (
       <Tooltip
@@ -136,7 +156,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 10,
+    no: 11,
     id: 'tvl',
     label: (
       <Tooltip
@@ -153,7 +173,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 11,
+    no: 12,
     id: 'marketcap',
     label: (
       <Tooltip title="Circulating supply * price" placement="top">
@@ -167,7 +187,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 12,
+    no: 13,
     id: 'holders',
     label: (
       <Tooltip title="Number of unique addresses holding this token on the XRPL" placement="top">
@@ -181,7 +201,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 13,
+    no: 14,
     id: 'supply',
     label: (
       <Tooltip
@@ -198,7 +218,7 @@ const TABLE_HEAD = [
     order: true
   },
   {
-    no: 14,
+    no: 15,
     id: 'historyGraph',
     label: 'Last 7 Days',
     align: 'right',
