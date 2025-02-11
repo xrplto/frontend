@@ -155,6 +155,7 @@ function FTokenRow({
   const convertedMarketCap =
     marketcap && exchRate ? Decimal.div(marketcap, exchRate).toNumber() : 0;
   const convertedVolume = vol24hxrp && exchRate ? Decimal.div(vol24hxrp, exchRate).toNumber() : 0;
+  const convertedTVL = tvl && exchRate ? Decimal.div(tvl, exchRate).toNumber() : 0;
   const supplyRate = amount && supply ? Decimal.div(supply, amount).toNumber() * 100 : 0;
 
   return (
@@ -407,11 +408,11 @@ function FTokenRow({
         <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
           <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
           <Typography variant="h4" noWrap={!isMobile}>
-            {tvl >= 1000000
-              ? `${(tvl / 1000000).toFixed(1)}M`
-              : tvl >= 1000
-              ? `${(tvl / 1000).toFixed(1)}K`
-              : fNumber(tvl)}
+            {convertedTVL >= 1000000
+              ? `${(convertedTVL / 1000000).toFixed(1)}M`
+              : convertedTVL >= 1000
+              ? `${(convertedTVL / 1000).toFixed(1)}K`
+              : fNumber(convertedTVL)}
           </Typography>
         </Stack>
       </TableCell>
