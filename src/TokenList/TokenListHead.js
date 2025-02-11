@@ -168,14 +168,11 @@ const TABLE_HEAD = [
   },
   {
     no: 12,
-    id: 'trustlines',
+    id: 'holders',
     label: (
-      <Tooltip
-        title="A TrustLine in blockchain allows users to hold and transact in others' debt in specified currencies, enabling multi-currency dealings."
-        placement="top"
-      >
+      <Tooltip title="Number of unique addresses holding this token on the XRPL" placement="top">
         <span>
-          TrustLines <SmallInfoIcon />
+          Holders <SmallInfoIcon />
         </span>
       </Tooltip>
     ),

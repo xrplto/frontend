@@ -140,7 +140,8 @@ function FTokenRow({
     marketcap,
     isOMCF,
     tvl,
-    origin
+    origin,
+    holders
   } = memoizedToken;
 
   useEffect(() => {
@@ -445,11 +446,11 @@ function FTokenRow({
       </TableCell>
       <TableCell align="right">
         <Typography variant="h4">
-          {trustlines >= 1000000
-            ? `${(trustlines / 1000000).toFixed(1)}M`
-            : trustlines >= 1000
-            ? `${(trustlines / 1000).toFixed(1)}K`
-            : fIntNumber(trustlines)}
+          {holders >= 1000000
+            ? `${(holders / 1000000).toFixed(1)}M`
+            : holders >= 1000
+            ? `${(holders / 1000).toFixed(1)}K`
+            : fIntNumber(holders)}
         </Typography>
       </TableCell>
       <TableCell align="right">
