@@ -222,7 +222,7 @@ const TABLE_HEAD = [
     id: 'historyGraph',
     label: 'Last 7 Days',
     align: 'right',
-    width: '13%',
+    width: '5%',
     order: false
   },
   { id: '' }
@@ -257,7 +257,11 @@ export default function TokenListHead({
         sx={{
           '& .MuiTableCell-root': {
             fontSize: isMobile && 12,
-            fontWeight: '700'
+            fontWeight: '700',
+            padding: isMobile ? '1px 1px' : '1px 2px',
+            '&:not(:first-child)': {
+              paddingLeft: '4px'
+            }
           },
           '& .MuiTableCell-root:nth-of-type(1)': {
             position: 'sticky',

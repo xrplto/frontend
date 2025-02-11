@@ -193,8 +193,11 @@ function FTokenRow({
           fontSize: isMobile ? '11px' : '12px'
         },
         '& .MuiTableCell-root': {
-          padding: isMobile ? '1px 2px' : '2px 3px',
-          whiteSpace: 'nowrap'
+          padding: isMobile ? '1px 1px' : '1px 2px',
+          whiteSpace: 'nowrap',
+          '&:not(:first-child)': {
+            paddingLeft: '4px'
+          }
         }
       }}
       onClick={handleRowClick}
@@ -597,8 +600,9 @@ function FTokenRow({
         align="right"
         sx={{
           px: '0 !important',
-          width: '60px',
-          minWidth: '60px'
+          width: '28px',
+          minWidth: '28px',
+          pr: '4px !important'
         }}
       >
         <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
