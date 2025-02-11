@@ -188,6 +188,23 @@ const TABLE_HEAD = [
   },
   {
     no: 13,
+    id: 'tvl',
+    label: (
+      <Tooltip
+        title="Total Value Locked (TVL) represents the total value of assets deposited in the protocol"
+        placement="top"
+      >
+        <span>
+          TVL <SmallInfoIcon />
+        </span>
+      </Tooltip>
+    ),
+    align: 'right',
+    width: '10%',
+    order: true
+  },
+  {
+    no: 14,
     id: 'historyGraph',
     label: 'Last 7 Days',
     align: 'right',

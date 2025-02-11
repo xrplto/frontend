@@ -138,7 +138,8 @@ function FTokenRow({
     usd,
     ext,
     marketcap,
-    isOMCF
+    isOMCF,
+    tvl
   } = memoizedToken;
 
   useEffect(() => {
@@ -509,6 +510,18 @@ function FTokenRow({
             {name}
           </Typography>
         </Tooltip>
+      </TableCell>
+      <TableCell align="right">
+        <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
+          <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
+          <Typography variant="h4" noWrap={!isMobile}>
+            {tvl >= 1000000
+              ? `${(tvl / 1000000).toFixed(1)}M`
+              : tvl >= 1000
+              ? `${(tvl / 1000).toFixed(1)}K`
+              : fNumber(tvl)}
+          </Typography>
+        </Stack>
       </TableCell>
       <TableCell
         align="right"
