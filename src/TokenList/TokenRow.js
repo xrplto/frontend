@@ -21,6 +21,8 @@ import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import LockIcon from '@mui/icons-material/Lock';
 
 import { AppContext } from 'src/AppContext';
 import TokenMoreMenu from './TokenMoreMenu';
@@ -324,10 +326,25 @@ function FTokenRow({
                   sx={{
                     fontSize: isMobile ? '0.5rem' : '0.65rem',
                     color: darkMode ? '#666' : '#888',
-                    lineHeight: 1
+                    lineHeight: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
                   }}
                 >
                   {origin || 'Standard Launch'}
+                  {origin && (
+                    <>
+                      <Tooltip title="Blackholed Issuer">
+                        <LockIcon sx={{ fontSize: isMobile ? '12px' : '14px', color: '#007B55' }} />
+                      </Tooltip>
+                      <Tooltip title="Burned Liquidity Pool">
+                        <LocalFireDepartmentIcon
+                          sx={{ fontSize: isMobile ? '12px' : '14px', color: '#B72136' }}
+                        />
+                      </Tooltip>
+                    </>
+                  )}
                 </Typography>
               </Stack>
             </Stack>
