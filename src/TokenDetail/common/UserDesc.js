@@ -37,6 +37,12 @@ import LocalFloristTwoToneIcon from '@mui/icons-material/LocalFloristTwoTone';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import WarningIcon from '@mui/icons-material/Warning';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import LockIcon from '@mui/icons-material/Lock';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -222,6 +228,19 @@ const markWarningShownForToken = (tokenId) => {
   }
 };
 
+const getOriginIcon = (origin) => {
+  switch (origin) {
+    case 'FirstLedger':
+      return <OpenInNewIcon sx={{ fontSize: 'inherit', color: '#007B55' }} />;
+    case 'XPMarket':
+      return <StorefrontIcon sx={{ fontSize: 'inherit', color: '#B72136' }} />;
+    case 'Magnetic X':
+      return <ElectricBoltIcon sx={{ fontSize: 'inherit', color: '#7635DC' }} />;
+    default:
+      return <AutoAwesomeIcon sx={{ fontSize: 'inherit', color: '#637381' }} />;
+  }
+};
+
 // ----------------------------------------------------------------------
 export default function UserDesc({ token }) {
   const theme = useTheme();
@@ -366,7 +385,7 @@ export default function UserDesc({ token }) {
           />
         )}
         <Stack spacing={0}>
-          <Stack direction="row" alignItems="center" spacing={0.5}>
+          <Stack direction="column" spacing={0.25}>
             <Typography
               variant="span"
               fontWeight="700"
@@ -376,10 +395,27 @@ export default function UserDesc({ token }) {
             >
               {name}
             </Typography>
-            <Typography variant="s17" color="text.secondary" sx={{ fontSize: '1rem' }}>
-              {truncate(user, 15)}
-            </Typography>
-            {kyc && <Typography variant="kyc2">KYC</Typography>}
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              <Typography variant="s17" color="text.secondary" sx={{ fontSize: '1rem' }}>
+                {truncate(user, 15)}
+              </Typography>
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <Tooltip title={token.origin || 'Standard Launch'}>
+                  {getOriginIcon(token.origin)}
+                </Tooltip>
+                {token.origin && (
+                  <>
+                    <Tooltip title="Blackholed Issuer">
+                      <LockIcon sx={{ fontSize: '14px', color: '#007B55' }} />
+                    </Tooltip>
+                    <Tooltip title="Burned Liquidity Pool">
+                      <LocalFireDepartmentIcon sx={{ fontSize: '14px', color: '#B72136' }} />
+                    </Tooltip>
+                  </>
+                )}
+              </Stack>
+              {kyc && <Typography variant="kyc2">KYC</Typography>}
+            </Stack>
           </Stack>
           {date && (
             <Typography variant="s7" noWrap sx={{ fontSize: '0.8rem' }}>
