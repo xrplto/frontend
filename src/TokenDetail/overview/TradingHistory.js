@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Table,
   TableBody,
@@ -15,17 +15,36 @@ import {
   Chip,
   CircularProgress,
   Box,
-  Pagination
+  Pagination,
+  keyframes
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+
+// Define the highlight animation
+const highlightAnimation = keyframes`
+  0% {
+    background-color: rgba(51, 102, 255, 0.2);
+    transform: translateY(-3px);
+  }
+  50% {
+    background-color: rgba(51, 102, 255, 0.1);
+    transform: translateY(0);
+  }
+  100% {
+    background-color: transparent;
+    transform: translateY(0);
+  }
+`;
 
 const TradingHistory = ({ tokenId }) => {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [newTradeIds, setNewTradeIds] = useState(new Set());
+  const previousTradesRef = useRef(new Set());
   const limit = 20;
 
   const fetchTradingHistory = useCallback(async () => {
@@ -40,8 +59,26 @@ const TradingHistory = ({ tokenId }) => {
       );
       const data = await response.json();
       if (data.result === 'success') {
+        // Get current trade IDs from ref
+        const currentTradeIds = previousTradesRef.current;
+
+        // Find genuinely new trades
+        const newTrades = data.hists.filter((trade) => !currentTradeIds.has(trade._id));
+
+        if (newTrades.length > 0) {
+          // Update new trade IDs for animation
+          setNewTradeIds(new Set(newTrades.map((trade) => trade._id)));
+
+          // Update the ref with all current trade IDs
+          previousTradesRef.current = new Set(data.hists.map((trade) => trade._id));
+
+          // Clear animation after delay
+          setTimeout(() => {
+            setNewTradeIds(new Set());
+          }, 800);
+        }
+
         setTrades(data.hists);
-        // Calculate total pages based on count
         setTotalPages(Math.ceil(data.count / limit));
       }
     } catch (error) {
@@ -49,21 +86,22 @@ const TradingHistory = ({ tokenId }) => {
     } finally {
       setLoading(false);
     }
-  }, [tokenId, page]);
+  }, [tokenId, page]); // Removed trades from dependencies
 
   useEffect(() => {
+    // Reset previous trades ref when page or tokenId changes
+    previousTradesRef.current = new Set();
+
     // Initial fetch
     setLoading(true);
     fetchTradingHistory();
 
     // Set up polling interval
-    const intervalId = setInterval(() => {
-      fetchTradingHistory();
-    }, 3000); // Update every 3 seconds
+    const intervalId = setInterval(fetchTradingHistory, 3000);
 
     // Cleanup interval on unmount
     return () => clearInterval(intervalId);
-  }, [fetchTradingHistory]); // Dependencies include the memoized fetch function
+  }, [fetchTradingHistory]);
 
   const handlePageChange = (event, newPage) => {
     setPage(newPage);
@@ -236,8 +274,23 @@ const TradingHistory = ({ tokenId }) => {
             {trades.map((trade) => {
               const price = Number(trade.got.value) / Number(trade.paid.value);
               const tradeType = getTradeType(trade);
+              const isNewTrade = newTradeIds.has(trade._id);
+
               return (
-                <TableRow key={trade._id}>
+                <TableRow
+                  key={trade._id}
+                  sx={{
+                    animation: isNewTrade ? `${highlightAnimation} 0.8s ease-in-out` : 'none',
+                    transition: 'all 0.2s ease-out',
+                    position: 'relative',
+                    '&:hover': {
+                      backgroundColor: (theme) =>
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(34, 177, 76, 0.1)'
+                          : 'rgba(51, 102, 255, 0.1)'
+                    }
+                  }}
+                >
                   <TableCell>{formatTimestamp(trade.time)}</TableCell>
                   <TableCell>
                     <Chip
