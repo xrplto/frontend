@@ -308,18 +308,6 @@ export default function Header(props) {
                     }}
                   />
                 </Link>
-
-                <Chip
-                  variant={'outlined'}
-                  icon={<TroubleshootIcon fontSize="small" />}
-                  label={'Portfolio'}
-                  onClick={() => {
-                    openSnackbar('Coming soon!', 'success');
-                  }}
-                  sx={{
-                    borderRadius: '8px'
-                  }}
-                />
               </Stack>
             )}
 
