@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -28,33 +28,42 @@ const TradingHistory = ({ tokenId }) => {
   const [totalPages, setTotalPages] = useState(1);
   const limit = 20;
 
+  const fetchTradingHistory = useCallback(async () => {
+    if (!tokenId) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://37.27.134.126/api//history?md5=${tokenId}&page=${page - 1}&limit=${limit}`
+      );
+      const data = await response.json();
+      if (data.result === 'success') {
+        setTrades(data.hists);
+        // Calculate total pages based on count
+        setTotalPages(Math.ceil(data.count / limit));
+      }
+    } catch (error) {
+      console.error('Error fetching trading history:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [tokenId, page]);
+
   useEffect(() => {
-    const fetchTradingHistory = async () => {
-      if (!tokenId) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          `http://37.27.134.126/api//history?md5=${tokenId}&page=${page - 1}&limit=${limit}`
-        );
-        const data = await response.json();
-        if (data.result === 'success') {
-          setTrades(data.hists);
-          // Calculate total pages based on count
-          setTotalPages(Math.ceil(data.count / limit));
-        }
-      } catch (error) {
-        console.error('Error fetching trading history:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    // Initial fetch
     setLoading(true);
     fetchTradingHistory();
-  }, [tokenId, page]); // Add page to dependencies
+
+    // Set up polling interval
+    const intervalId = setInterval(() => {
+      fetchTradingHistory();
+    }, 3000); // Update every 3 seconds
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
+  }, [fetchTradingHistory]); // Dependencies include the memoized fetch function
 
   const handlePageChange = (event, newPage) => {
     setPage(newPage);
