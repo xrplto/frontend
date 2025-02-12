@@ -22,7 +22,6 @@ import { fPercent, fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 // Components
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
-import TradingHistory from './TradingHistory';
 
 const ReadMore = ({ children }) => {
   const [showFullContent, setShowFullContent] = useState(false);
@@ -207,8 +206,6 @@ export default function Description({
   return (
     <Stack spacing={3}>
       <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
-
-      <TradingHistory tokenId={md5 || id} />
 
       <Stack spacing={2}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">

@@ -13,7 +13,8 @@ import {
   Tooltip,
   IconButton,
   Chip,
-  CircularProgress
+  CircularProgress,
+  Box
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -179,22 +180,26 @@ const TradingHistory = ({ tokenId }) => {
 
   return (
     <Stack spacing={2}>
-      <Typography
-        variant="h2"
-        fontSize="1.5rem"
-        fontWeight="bold"
-        sx={{
-          background: (theme) =>
-            theme.palette.mode === 'dark'
-              ? 'linear-gradient(45deg, #22B14C 30%, #2ecc71 90%)'
-              : 'linear-gradient(45deg, #3366FF 30%, #4d79ff 90%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          letterSpacing: '0.5px'
-        }}
-      >
-        Recent Trades
-      </Typography>
+      <Stack spacing={2}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Typography
+            variant="h2"
+            fontSize="1.5rem"
+            fontWeight="bold"
+            sx={{
+              background: (theme) =>
+                theme.palette.mode === 'dark'
+                  ? 'linear-gradient(45deg, #22B14C 30%, #2ecc71 90%)'
+                  : 'linear-gradient(45deg, #3366FF 30%, #4d79ff 90%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: '0.5px'
+            }}
+          >
+            Trading History
+          </Typography>
+        </Stack>
+      </Stack>
 
       <TableContainer component={Paper} sx={{ mb: 3 }}>
         <Table size="small">
