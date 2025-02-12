@@ -24,6 +24,10 @@ import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import LockIcon from '@mui/icons-material/Lock';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 import { AppContext } from 'src/AppContext';
 import TokenMoreMenu from './TokenMoreMenu';
@@ -95,6 +99,19 @@ const formatDate = (dateString) => {
   const days = Math.floor(diffInHours / 24);
   const hours = diffInHours % 24;
   return `${days}d ${hours}h`;
+};
+
+const getOriginIcon = (origin) => {
+  switch (origin) {
+    case 'FirstLedger':
+      return <RocketLaunchIcon sx={{ fontSize: 'inherit', color: '#007B55' }} />;
+    case 'XPMarket':
+      return <StorefrontIcon sx={{ fontSize: 'inherit', color: '#B72136' }} />;
+    case 'Magnetic X':
+      return <ElectricBoltIcon sx={{ fontSize: 'inherit', color: '#7635DC' }} />;
+    default:
+      return <AutoAwesomeIcon sx={{ fontSize: 'inherit', color: '#637381' }} />;
+  }
 };
 
 function FTokenRow({
@@ -293,7 +310,7 @@ function FTokenRow({
             href={`/token/${slug}`}
             rel="noreferrer noopener nofollow"
           >
-            <Stack direction="row" spacing={0.5} alignItems="center">
+            <Stack direction="column" spacing={0.5}>
               <Typography
                 variant="token"
                 sx={{
@@ -316,7 +333,7 @@ function FTokenRow({
               >
                 {truncate(name, isMobile ? 10 : 13)}
               </Typography>
-              <Stack direction="column" spacing={0}>
+              <Stack direction="row" spacing={0.5} alignItems="center">
                 <Typography
                   variant="p2"
                   sx={{
@@ -335,19 +352,8 @@ function FTokenRow({
                   )}
                   {truncate(user, isMobile ? 12 : 15)}
                 </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontSize: isMobile ? '0.5rem' : '0.65rem',
-                    color: darkMode ? '#666' : '#888',
-                    lineHeight: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    justifyContent: 'flex-end'
-                  }}
-                >
-                  {origin || 'Standard Launch'}
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
                   {origin && (
                     <>
                       <Tooltip title="Blackholed Issuer">
@@ -360,7 +366,7 @@ function FTokenRow({
                       </Tooltip>
                     </>
                   )}
-                </Typography>
+                </Stack>
               </Stack>
             </Stack>
           </Link>
