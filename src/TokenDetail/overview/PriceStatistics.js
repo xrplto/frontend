@@ -34,14 +34,14 @@ import { AppContext } from 'src/AppContext';
 
 const badge24hStyle = {
   display: 'inline-block',
-  marginLeft: '4px',
+  marginLeft: '3px',
   color: '#C4CDD5',
-  fontSize: '11px',
+  fontSize: '10px',
   fontWeight: '500',
-  lineHeight: '18px',
+  lineHeight: '16px',
   backgroundColor: '#323546',
-  borderRadius: '4px',
-  padding: '2px 4px'
+  borderRadius: '3px',
+  padding: '1px 3px'
 };
 // ----------------------------------------------------------------------
 
@@ -77,69 +77,85 @@ export default function PriceStatistics({ token }) {
   let user = token.user;
   if (!user) user = name;
 
-  const voldivmarket =
-    marketcap > 0 ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
-  const convertedMarketCap = Decimal.div(
-    marketcap,
-    metrics[activeFiatCurrency]
-  ).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const voldivmarket = marketcap > 0 ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
+  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
 
   let strPc24h = fNumber(p24h < 0 ? -p24h : p24h);
-  let strPc24hPrep =
-    (p24h < 0 ? '-' : '') + currencySymbols[activeFiatCurrency];
+  let strPc24hPrep = (p24h < 0 ? '-' : '') + currencySymbols[activeFiatCurrency];
   return (
     <StackStyle>
       <CardHeader
         title={`${name} Price Statistics`}
         subheader=""
-        sx={{ p: 2 }}
+        sx={{
+          p: 1.5,
+          '& .MuiCardHeader-title': {
+            fontSize: '1rem',
+            fontWeight: 600
+          }
+        }}
       />
       <Table
+        size="small"
         sx={{
           [`& .${tableCellClasses.root}`]: {
             borderBottom: '1px solid',
-            borderBottomColor: theme.palette.divider
+            borderBottomColor: theme.palette.divider,
+            py: 1,
+            '&:first-of-type': {
+              pl: 1.5
+            },
+            '&:last-of-type': {
+              pr: 1.5
+            }
           }
         }}
       >
         <TableBody>
           <TableRow>
-            <TableCell align="left" sx={{ pr: 0 }}>
-              <Typography variant="label1" noWrap>
+            <TableCell align="left">
+              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
                 {user} Price Today
               </Typography>
             </TableCell>
             <TableCell align="left"></TableCell>
           </TableRow>
           <TableRow>
-            <TableCell align="left" sx={{ pr: 0 }}>
-              <Typography variant="label1" noWrap>
+            <TableCell align="left">
+              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
                 {user} Price
               </Typography>
             </TableCell>
             <TableCell align="left">
-              <NumberTooltip
-                prepend={currencySymbols[activeFiatCurrency]}
-                number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
-              />
+              <Typography variant="body2">
+                <NumberTooltip
+                  prepend={currencySymbols[activeFiatCurrency]}
+                  number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+                />
+              </Typography>
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell align="left" sx={{ pr: 0 }}>
-              <Typography variant="label1" noWrap>
+            <TableCell align="left">
+              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
                 Price Change<span style={badge24hStyle}>24h</span>
               </Typography>
             </TableCell>
             <TableCell align="left">
-              <Stack>
-                <NumberTooltip prepend={strPc24hPrep} number={fNumberWithCurreny(Number(strPc24h), metrics[activeFiatCurrency])} />
+              <Stack spacing={0.5}>
+                <Typography variant="body2">
+                  <NumberTooltip
+                    prepend={strPc24hPrep}
+                    number={fNumberWithCurreny(Number(strPc24h), metrics[activeFiatCurrency])}
+                  />
+                </Typography>
                 <BearBullLabel value={pro24h} variant="small" />
               </Stack>
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell align="left" sx={{ pr: 0 }}>
-              <Typography variant="label1" noWrap>
+            <TableCell align="left">
+              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
                 24h Low / 24h High
               </Typography>
             </TableCell>
@@ -174,8 +190,8 @@ export default function PriceStatistics({ token }) {
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell align="left" sx={{ pr: 0 }}>
-              <Typography variant="label1" noWrap>
+            <TableCell align="left">
+              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
                 Trading Volume<span style={badge24hStyle}>24h</span>
               </Typography>
             </TableCell>
@@ -185,8 +201,8 @@ export default function PriceStatistics({ token }) {
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell align="left" sx={{ pr: 0 }}>
-              <Typography variant="label1" noWrap>
+            <TableCell align="left">
+              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
                 Volume / Market Cap
               </Typography>
             </TableCell>
@@ -195,8 +211,8 @@ export default function PriceStatistics({ token }) {
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell align="left" sx={{ pr: 0 }}>
-              <Typography variant="label1" noWrap>
+            <TableCell align="left">
+              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
                 Market Dominance
               </Typography>
             </TableCell>
@@ -205,27 +221,26 @@ export default function PriceStatistics({ token }) {
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell align="left" sx={{ pr: 0 }}>
-              <Typography variant="label1" noWrap>
+            <TableCell align="left">
+              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
                 Market Rank
               </Typography>
             </TableCell>
             <TableCell align="left">{'#' + (Number(id) - 1)}</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell align="left" sx={{ pr: 0 }}>
-              <Typography variant="label1" noWrap>
+            <TableCell align="left">
+              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
                 Market Cap
               </Typography>
             </TableCell>
             <TableCell align="left">
-              {currencySymbols[activeFiatCurrency]}{' '}
-              {fNumber(convertedMarketCap)}
+              {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell align="left" sx={{ pr: 0 }}>
-              <Typography variant="label1" noWrap>
+            <TableCell align="left">
+              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
                 Diluted Market Cap
               </Typography>
             </TableCell>

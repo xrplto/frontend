@@ -5,7 +5,17 @@ import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
 
 // Material
-import { styled, IconButton, Link, Stack, Tooltip, Typography, Paper, Fade } from '@mui/material';
+import {
+  styled,
+  IconButton,
+  Link,
+  Stack,
+  Tooltip,
+  Typography,
+  Paper,
+  Fade,
+  CardHeader
+} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -21,6 +31,7 @@ import { fPercent, fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 
 // Components
 import NumberTooltip from 'src/components/NumberTooltip';
+import StackStyle from 'src/components/StackStyle';
 import { currencySymbols } from 'src/utils/constants';
 
 const ReadMore = ({ children }) => {
@@ -35,7 +46,7 @@ const ReadMore = ({ children }) => {
     ({ theme }) => `
         -webkit-box-flex: 1;
         flex-grow: 1;
-        height: 12em;
+        height: 10em;
         overflow: hidden;
         text-overflow: ellipsis;
         position: relative;
@@ -47,7 +58,7 @@ const ReadMore = ({ children }) => {
             left: 0px;
             bottom: 0px;
             width: 100%;
-            height: 6em;
+            height: 4em;
             background: linear-gradient(180deg, 
               rgba(255,255,255,0) 0%, 
               ${theme.palette.background.default} 90%);
@@ -62,17 +73,17 @@ const ReadMore = ({ children }) => {
         height: unset;
         overflow: unset;
         text-overflow: unset;
-        min-height: 12em;
+        min-height: 10em;
         transition: all 0.3s ease-in-out;
     `
   );
 
   const ReadMoreButton = styled(Link)(
     ({ theme }) => `
-        margin-top: -12px;
-        padding: 4px 12px;
+        margin-top: -8px;
+        padding: 2px 8px;
         border-radius: 4px;
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         color: ${theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF'};
         transition: all 0.2s ease-in-out;
         z-index: 2;
@@ -88,7 +99,7 @@ const ReadMore = ({ children }) => {
 
   return (
     <Stack spacing={0}>
-      <Fade in={true} timeout={500}>
+      <Fade in={true} timeout={300}>
         {showFullContent ? (
           <ContentOpened>{children}</ContentOpened>
         ) : (
@@ -96,7 +107,7 @@ const ReadMore = ({ children }) => {
         )}
       </Fade>
 
-      <Stack direction="row" justifyContent="flex-start" sx={{ pl: 1 }}>
+      <Stack direction="row" justifyContent="flex-start" sx={{ pl: 0.5 }}>
         <ReadMoreButton
           component="button"
           underline="none"
@@ -204,27 +215,27 @@ export default function Description({
   };
 
   return (
-    <Stack spacing={3}>
+    <StackStyle>
       <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
 
-      <Stack spacing={2}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography
-            variant="h2"
-            fontSize="1.5rem"
-            fontWeight="bold"
-            sx={{
-              background: (theme) =>
-                theme.palette.mode === 'dark'
-                  ? 'linear-gradient(45deg, #22B14C 30%, #2ecc71 90%)'
-                  : 'linear-gradient(45deg, #3366FF 30%, #4d79ff 90%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              letterSpacing: '0.5px'
-            }}
-          >{`About ${user}`}</Typography>
-
-          {isAdmin && (
+      <CardHeader
+        title={`About ${user}`}
+        subheader=""
+        sx={{
+          p: 1.5,
+          '& .MuiCardHeader-title': {
+            fontSize: '1rem',
+            fontWeight: 600,
+            background: (theme) =>
+              theme.palette.mode === 'dark'
+                ? 'linear-gradient(45deg, #22B14C 30%, #2ecc71 90%)'
+                : 'linear-gradient(45deg, #3366FF 30%, #4d79ff 90%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }
+        }}
+        action={
+          isAdmin && (
             <Tooltip title={showEditor ? 'Apply changes' : 'Click to edit description'}>
               <IconButton
                 onClick={handleClickEdit}
@@ -232,6 +243,7 @@ export default function Description({
                 aria-label="edit"
                 size="small"
                 sx={{
+                  p: 0.5,
                   background: (theme) =>
                     theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
                   backdropFilter: 'blur(10px)',
@@ -250,20 +262,22 @@ export default function Description({
                 {showEditor ? <CloseIcon color="error" /> : <EditIcon />}
               </IconButton>
             </Tooltip>
-          )}
-        </Stack>
+          )
+        }
+      />
 
-        {!showEditor && description && (
+      {!showEditor && description && (
+        <Stack sx={{ px: 1.5, pb: 1.5 }}>
           <ReadMore>
             <ReactMarkdown
               className={darkMode ? 'reactMarkDowndark' : 'reactMarkDownlight'}
               components={{
                 p: ({ node, ...props }) => (
                   <Typography
-                    variant="body1"
+                    variant="body2"
                     sx={{
-                      mb: 2,
-                      lineHeight: 1.8,
+                      mb: 1.5,
+                      lineHeight: 1.6,
                       color: (theme) => theme.palette.text.primary
                     }}
                     {...props}
@@ -271,36 +285,36 @@ export default function Description({
                 ),
                 h1: ({ node, ...props }) => (
                   <Typography
-                    variant="h4"
+                    variant="h5"
                     sx={{
-                      mt: 3,
-                      mb: 2,
+                      mt: 2,
+                      mb: 1.5,
                       fontWeight: 600,
-                      color: '#33C2FF'
+                      color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
                     }}
                     {...props}
                   />
                 ),
                 h2: ({ node, ...props }) => (
                   <Typography
-                    variant="h5"
+                    variant="h6"
                     sx={{
-                      mt: 3,
-                      mb: 2,
+                      mt: 2,
+                      mb: 1.5,
                       fontWeight: 600,
-                      color: '#33C2FF'
+                      color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
                     }}
                     {...props}
                   />
                 ),
                 h3: ({ node, ...props }) => (
                   <Typography
-                    variant="h6"
+                    variant="subtitle1"
                     sx={{
-                      mt: 3,
-                      mb: 2,
+                      mt: 2,
+                      mb: 1.5,
                       fontWeight: 600,
-                      color: '#33C2FF'
+                      color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
                     }}
                     {...props}
                   />
@@ -308,8 +322,8 @@ export default function Description({
                 ul: ({ node, ...props }) => (
                   <ul
                     style={{
-                      marginBottom: '1rem',
-                      paddingLeft: '1.5rem'
+                      marginBottom: '0.75rem',
+                      paddingLeft: '1.25rem'
                     }}
                     {...props}
                   />
@@ -317,8 +331,8 @@ export default function Description({
                 ol: ({ node, ...props }) => (
                   <ol
                     style={{
-                      marginBottom: '1rem',
-                      paddingLeft: '1.5rem'
+                      marginBottom: '0.75rem',
+                      paddingLeft: '1.25rem'
                     }}
                     {...props}
                   />
@@ -326,7 +340,7 @@ export default function Description({
                 li: ({ node, ...props }) => (
                   <li
                     style={{
-                      marginBottom: '0.5rem',
+                      marginBottom: '0.25rem',
                       color: darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)'
                     }}
                     {...props}
@@ -337,8 +351,8 @@ export default function Description({
               {description}
             </ReactMarkdown>
           </ReadMore>
-        )}
-      </Stack>
-    </Stack>
+        </Stack>
+      )}
+    </StackStyle>
   );
 }
