@@ -104,38 +104,46 @@ export default function TokenDetail({ token, tab }) {
     [token.slug, gotoTabView]
   );
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (tabRef.current) {
-        const { offsetTop, clientHeight } = tabRef.current;
-        const scrollTop = window.scrollY;
-        setIsFixed(scrollTop > offsetTop && scrollTop < offsetTop + clientHeight);
-      }
-    };
-
-    const throttledHandleScroll = throttle(handleScroll, 100);
-
-    window.addEventListener('scroll', throttledHandleScroll);
-
-    return () => {
-      window.removeEventListener('scroll', throttledHandleScroll);
-    };
-  }, []);
-
   const tabStyle = useMemo(
     () =>
       isFixed
         ? {
             position: 'fixed',
             top: 0,
+            left: 0,
+            right: 0,
             zIndex: 1000,
-            boxShadow: `5px 2px 5px ${!darkMode ? '#fff' : '#000'}`,
+            boxShadow: `0px 2px 4px ${
+              !darkMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
+            }`,
             backgroundColor: !darkMode ? '#fff' : '#000000',
-            width: '100%'
+            width: '100%',
+            padding: '0 16px'
           }
-        : null,
+        : {
+            width: '100%',
+            backgroundColor: !darkMode ? '#fff' : '#000000'
+          },
     [isFixed, darkMode]
   );
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (tabRef.current) {
+        const { offsetTop } = tabRef.current;
+        const scrollTop = window.scrollY;
+        setIsFixed(scrollTop > offsetTop);
+      }
+    };
+
+    const throttledHandleScroll = throttle(handleScroll, 100);
+    window.addEventListener('scroll', throttledHandleScroll);
+    handleScroll(); // Initial check
+
+    return () => {
+      window.removeEventListener('scroll', throttledHandleScroll);
+    };
+  }, []);
 
   return (
     <>
