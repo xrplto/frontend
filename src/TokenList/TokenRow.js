@@ -28,6 +28,7 @@ import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import { AppContext } from 'src/AppContext';
 import TokenMoreMenu from './TokenMoreMenu';
@@ -104,7 +105,7 @@ const formatDate = (dateString) => {
 const getOriginIcon = (origin) => {
   switch (origin) {
     case 'FirstLedger':
-      return <RocketLaunchIcon sx={{ fontSize: 'inherit', color: '#007B55' }} />;
+      return <OpenInNewIcon sx={{ fontSize: 'inherit', color: '#007B55' }} />;
     case 'XPMarket':
       return <StorefrontIcon sx={{ fontSize: 'inherit', color: '#B72136' }} />;
     case 'Magnetic X':
