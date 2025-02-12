@@ -286,235 +286,376 @@ export default function SearchModal({ onClose, open }) {
   if (!open) return null;
 
   return (
-    <Paper
-      sx={{
-        width: '100%',
-        maxWidth: '600px',
-        position: 'fixed',
-        right: '10px',
-        top: open ? '45px' : '-100%',
-        p: 1.5,
-        zIndex: 9999,
-        opacity: open ? 1 : 0,
-        transition: 'opacity 0.2s'
-      }}
-      ref={modalRef}
-    >
-      <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
-        <SearchIcon />
-        <InputBase
-          placeholder="Search coin, NFT"
-          fullWidth
-          sx={{ border: 'none' }}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          inputRef={inputRef}
-          autoFocus
-        />
-        <IconButton onClick={handleClose}>
-          <CloseIcon />
-        </IconButton>
-      </Stack>
-
-      {search.length > 0 && (
-        <StyledToggleButtonGroup
-          color="primary"
-          value={activeTab}
-          exclusive
-          onChange={(_, newValue) => {
-            if (newValue !== null) {
-              setActiveTab(newValue);
+    <>
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          bgcolor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 9998,
+          opacity: open ? 1 : 0,
+          transition: 'opacity 0.2s'
+        }}
+        onClick={handleClose}
+      />
+      <Paper
+        elevation={6}
+        sx={{
+          width: '100%',
+          maxWidth: '600px',
+          position: 'fixed',
+          right: '10px',
+          top: open ? '45px' : '-100%',
+          p: 2,
+          zIndex: 9999,
+          opacity: open ? 1 : 0,
+          transition: 'all 0.3s ease-in-out',
+          borderRadius: '12px',
+          backdropFilter: 'blur(8px)',
+          boxShadow: (theme) =>
+            darkMode ? '0 8px 16px rgba(0,0,0,0.4)' : '0 8px 16px rgba(0,0,0,0.1)'
+        }}
+        ref={modalRef}
+      >
+        <Paper
+          component="form"
+          sx={{
+            p: '4px 8px',
+            display: 'flex',
+            alignItems: 'center',
+            border: '2px solid',
+            borderColor: (theme) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'),
+            borderRadius: '12px',
+            backgroundColor: 'transparent',
+            transition: 'border-color 0.2s',
+            '&:hover': {
+              borderColor: (theme) => (darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')
             }
           }}
-          aria-label="text formatting"
         >
-          <ToggleButton value="all">All</ToggleButton>
-          <ToggleButton value="token">Cryptoassets</ToggleButton>
-          <ToggleButton value="nft">NFTs</ToggleButton>
-        </StyledToggleButtonGroup>
-      )}
-
-      {tokens.length > 0 && (
-        <Stack
-          mt={1}
-          sx={{ display: activeTab === 'token' || activeTab === 'all' ? 'flex' : 'none' }}
-        >
-          <Stack direction="row" alignItems="center" sx={{ px: 1 }} spacing={0.5}>
-            <Typography>{`${!search ? 'Trending ' : ''}Cryptoassets`}</Typography>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              height="16px"
-              width="16px"
-              viewBox="0 0 24 24"
-              color="#FF775F"
-            >
-              <path d="M17.0881 9.42254C16.4368 8.90717 15.8155 8.35512 15.3012 7.71336C12.3755 4.06357 13.8912 1 13.8912 1C8.46026 3.18334 7.22337 6.64895 7.16462 9.22981L7.1675 9.2572C7.1675 9.2572 7.21498 10.7365 7.90791 12.3625C8.12481 12.8713 7.88299 13.4666 7.33195 13.6199C6.87638 13.7465 6.40822 13.5317 6.21571 13.1314C5.90413 12.4831 5.49262 11.4521 5.6109 10.7249C4.75064 11.817 4.1815 13.1452 4.03542 14.6184C3.65092 18.4924 6.43759 22.0879 10.4208 22.8488C14.9906 23.7217 19.3121 20.7182 19.9269 16.3623C20.3117 13.6367 19.1498 11.0538 17.0881 9.42254ZM14.3578 17.7393C14.3289 17.776 13.5893 18.6597 12.3501 18.7517C12.2829 18.7547 12.2124 18.7577 12.1452 18.7577C11.2902 18.7577 10.4226 18.3682 9.56103 17.5951L9.37219 17.4262L9.61243 17.3372C9.62843 17.3312 11.2742 16.7236 11.6778 15.4077C11.8155 14.9629 11.7707 14.4566 11.553 13.9842C11.2905 13.4075 10.7845 11.9564 11.7453 10.9041L11.9309 10.7015L12.0206 10.9561C12.0238 10.9714 12.6034 12.5911 13.9741 13.4379C14.3871 13.6957 14.6977 14.0086 14.8931 14.3644C15.2959 15.1132 15.533 16.3065 14.3578 17.7393Z" />
-            </svg>
-          </Stack>
-          <MenuList
+          <SearchIcon
+            sx={{ color: (theme) => (darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)') }}
+          />
+          <InputBase
+            placeholder="Search coin, NFT"
+            fullWidth
             sx={{
-              p: 0,
-              maxHeight: search.length > 0 ? '465px' : 'auto',
-              overflowY: 'auto',
-              '&::-webkit-scrollbar': {
-                width: '6px !important'
-              },
-              '&::-webkit-scrollbar-thumb': {
-                backgroundColor: '#666'
+              ml: 1,
+              flex: 1,
+              '& input': {
+                py: 1
+              }
+            }}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            inputRef={inputRef}
+            autoFocus
+          />
+          <IconButton
+            size="small"
+            onClick={handleClose}
+            sx={{
+              '&:hover': {
+                backgroundColor: (theme) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')
               }
             }}
           >
-            {tokens
-              .slice(0, activeTab == 'token' ? tokens.length : 4)
-              .map(({ md5, name, slug, isOMCF, user, kyc, pro24h, exch }, idx) => {
-                const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-                const link = `/token/${slug}?fromSearch=1`;
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </Paper>
 
-                return (
-                  <Link
-                    key={idx}
-                    href={link}
-                    underline="none"
-                    color="inherit"
-                    onClick={() => addRecentSearchItem(name, user, imgUrl, link)}
-                  >
-                    <MenuItem sx={{ py: '2px', px: 1, height: '50px' }}>
-                      <Box
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="space-between"
-                        flex={2}
-                        sx={{ pl: 0, pr: 0 }}
-                      >
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <TokenImage src={imgUrl} width={24} height={24} />
-                          <Stack>
-                            <Typography
-                              variant="token"
-                              color={
-                                isOMCF !== 'yes'
-                                  ? darkMode
-                                    ? '#fff'
-                                    : '#222531'
-                                  : darkMode
-                                  ? '#007B55'
-                                  : '#5569ff'
-                              }
-                              noWrap
-                            >
-                              {truncate(user, 8)}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
-                              noWrap
-                            >
-                              {truncate(name, 13)}
-                              {kyc && (
-                                <Typography variant="kyc" sx={{ ml: 0.2 }}>
-                                  KYC
-                                </Typography>
-                              )}
-                            </Typography>
-                          </Stack>
-                        </Stack>
-
-                        <Stack direction="row" gap={1}>
-                          <NumberTooltip
-                            prepend={currencySymbols[activeFiatCurrency]}
-                            number={fNumberWithCurreny(exch, exchRate)}
-                          />
-                          <BearBullLabel value={pro24h} variant="h4" />
-                        </Stack>
-                      </Box>
-                    </MenuItem>
-                  </Link>
-                );
-              })}
-          </MenuList>
-          <Button
-            onClick={() => setActiveTab('token')}
-            sx={{ display: search && activeTab != 'token' ? 'flex' : 'none' }}
+        {search.length > 0 && (
+          <StyledToggleButtonGroup
+            color="primary"
+            value={activeTab}
+            exclusive
+            onChange={(_, newValue) => {
+              if (newValue !== null) {
+                setActiveTab(newValue);
+              }
+            }}
+            aria-label="search filters"
+            sx={{
+              mt: 2,
+              mb: 1,
+              '& .MuiToggleButton-root': {
+                border: 'none',
+                borderRadius: '8px !important',
+                px: 3,
+                py: 0.75,
+                typography: 'body2',
+                fontWeight: 500,
+                color: (theme) => (darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'),
+                '&.Mui-selected': {
+                  backgroundColor: (theme) =>
+                    darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+                  color: (theme) => (darkMode ? '#fff' : '#000')
+                },
+                '&:hover': {
+                  backgroundColor: (theme) =>
+                    darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+                }
+              }
+            }}
           >
-            See all results &#40;{tokens.length}&#41;
-          </Button>
-        </Stack>
-      )}
+            <ToggleButton value="all">All</ToggleButton>
+            <ToggleButton value="token">Cryptoassets</ToggleButton>
+            <ToggleButton value="nft">NFTs</ToggleButton>
+          </StyledToggleButtonGroup>
+        )}
 
-      {collections.length > 0 && (
+        {tokens.length > 0 && (
+          <Stack
+            mt={2}
+            spacing={1}
+            sx={{ display: activeTab === 'token' || activeTab === 'all' ? 'flex' : 'none' }}
+          >
+            <Stack direction="row" alignItems="center" sx={{ px: 1 }} spacing={1}>
+              <Typography variant="subtitle2" fontWeight={600}>
+                {`${!search ? 'Trending ' : ''}Tokens`}
+              </Typography>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                height="16px"
+                width="16px"
+                viewBox="0 0 24 24"
+                color="#FF775F"
+              >
+                <path d="M17.0881 9.42254C16.4368 8.90717 15.8155 8.35512 15.3012 7.71336C12.3755 4.06357 13.8912 1 13.8912 1C8.46026 3.18334 7.22337 6.64895 7.16462 9.22981L7.1675 9.2572C7.1675 9.2572 7.21498 10.7365 7.90791 12.3625C8.12481 12.8713 7.88299 13.4666 7.33195 13.6199C6.87638 13.7465 6.40822 13.5317 6.21571 13.1314C5.90413 12.4831 5.49262 11.4521 5.6109 10.7249C4.75064 11.817 4.1815 13.1452 4.03542 14.6184C3.65092 18.4924 6.43759 22.0879 10.4208 22.8488C14.9906 23.7217 19.3121 20.7182 19.9269 16.3623C20.3117 13.6367 19.1498 11.0538 17.0881 9.42254ZM14.3578 17.7393C14.3289 17.776 13.5893 18.6597 12.3501 18.7517C12.2829 18.7547 12.2124 18.7577 12.1452 18.7577C11.2902 18.7577 10.4226 18.3682 9.56103 17.5951L9.37219 17.4262L9.61243 17.3372C9.62843 17.3312 11.2742 16.7236 11.6778 15.4077C11.8155 14.9629 11.7707 14.4566 11.553 13.9842C11.2905 13.4075 10.7845 11.9564 11.7453 10.9041L11.9309 10.7015L12.0206 10.9561C12.0238 10.9714 12.6034 12.5911 13.9741 13.4379C14.3871 13.6957 14.6977 14.0086 14.8931 14.3644C15.2959 15.1132 15.533 16.3065 14.3578 17.7393Z" />
+              </svg>
+            </Stack>
+            <MenuList
+              sx={{
+                p: 0,
+                maxHeight: search.length > 0 ? '465px' : 'auto',
+                overflowY: 'auto',
+                '&::-webkit-scrollbar': {
+                  width: '6px',
+                  borderRadius: '3px'
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: (theme) =>
+                    darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                  borderRadius: '3px'
+                },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: 'transparent'
+                }
+              }}
+            >
+              {tokens
+                .slice(0, activeTab == 'token' ? tokens.length : 4)
+                .map(({ md5, name, slug, isOMCF, user, kyc, pro24h, exch }, idx) => {
+                  const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+                  const link = `/token/${slug}?fromSearch=1`;
+
+                  return (
+                    <Link
+                      key={idx}
+                      href={link}
+                      underline="none"
+                      color="inherit"
+                      onClick={() => addRecentSearchItem(name, user, imgUrl, link)}
+                    >
+                      <MenuItem sx={{ py: '2px', px: 1, height: '50px' }}>
+                        <Box
+                          display="flex"
+                          alignItems="center"
+                          justifyContent="space-between"
+                          flex={2}
+                          sx={{ pl: 0, pr: 0 }}
+                        >
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <TokenImage src={imgUrl} width={24} height={24} />
+                            <Stack>
+                              <Typography
+                                variant="token"
+                                color={
+                                  isOMCF !== 'yes'
+                                    ? darkMode
+                                      ? '#fff'
+                                      : '#222531'
+                                    : darkMode
+                                    ? '#007B55'
+                                    : '#5569ff'
+                                }
+                                noWrap
+                              >
+                                {truncate(user, 8)}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
+                                noWrap
+                              >
+                                {truncate(name, 13)}
+                                {kyc && (
+                                  <Typography variant="kyc" sx={{ ml: 0.2 }}>
+                                    KYC
+                                  </Typography>
+                                )}
+                              </Typography>
+                            </Stack>
+                          </Stack>
+
+                          <Stack direction="row" gap={1}>
+                            <NumberTooltip
+                              prepend={currencySymbols[activeFiatCurrency]}
+                              number={fNumberWithCurreny(exch, exchRate)}
+                            />
+                            <BearBullLabel value={pro24h} variant="h4" />
+                          </Stack>
+                        </Box>
+                      </MenuItem>
+                    </Link>
+                  );
+                })}
+            </MenuList>
+            {search && activeTab !== 'token' && tokens.length > 4 && (
+              <Button
+                onClick={() => setActiveTab('token')}
+                variant="text"
+                sx={{
+                  mt: 1,
+                  color: (theme) => (darkMode ? 'primary.light' : 'primary.main'),
+                  '&:hover': {
+                    backgroundColor: (theme) =>
+                      darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+                  }
+                }}
+              >
+                See all results ({tokens.length})
+              </Button>
+            )}
+          </Stack>
+        )}
+
+        {collections.length > 0 && (
+          <Stack
+            mt={2}
+            spacing={1}
+            sx={{ display: activeTab === 'nft' || activeTab === 'all' ? 'flex' : 'none' }}
+          >
+            <Stack direction="row" alignItems="center" spacing={1} sx={{ px: 1 }}>
+              <Typography variant="subtitle2" fontWeight={600}>
+                {`${!search ? 'Trending ' : ''}NFTs`}
+              </Typography>
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                height="16px"
+                width="16px"
+                viewBox="0 0 24 24"
+                color="#FF775F"
+              >
+                <path d="M17.0881 9.42254C16.4368 8.90717 15.8155 8.35512 15.3012 7.71336C12.3755 4.06357 13.8912 1 13.8912 1C8.46026 3.18334 7.22337 6.64895 7.16462 9.22981L7.1675 9.2572C7.1675 9.2572 7.21498 10.7365 7.90791 12.3625C8.12481 12.8713 7.88299 13.4666 7.33195 13.6199C6.87638 13.7465 6.40822 13.5317 6.21571 13.1314C5.90413 12.4831 5.49262 11.4521 5.6109 10.7249C4.75064 11.817 4.1815 13.1452 4.03542 14.6184C3.65092 18.4924 6.43759 22.0879 10.4208 22.8488C14.9906 23.7217 19.3121 20.7182 19.9269 16.3623C20.3117 13.6367 19.1498 11.0538 17.0881 9.42254ZM14.3578 17.7393C14.3289 17.776 13.5893 18.6597 12.3501 18.7517C12.2829 18.7547 12.2124 18.7577 12.1452 18.7577C11.2902 18.7577 10.4226 18.3682 9.56103 17.5951L9.37219 17.4262L9.61243 17.3372C9.62843 17.3312 11.2742 16.7236 11.6778 15.4077C11.8155 14.9629 11.7707 14.4566 11.553 13.9842C11.2905 13.4075 10.7845 11.9564 11.7453 10.9041L11.9309 10.7015L12.0206 10.9561C12.0238 10.9714 12.6034 12.5911 13.9741 13.4379C14.3871 13.6957 14.6977 14.0086 14.8931 14.3644C15.2959 15.1132 15.533 16.3065 14.3578 17.7393Z" />
+              </svg>
+            </Stack>
+            <MenuList
+              sx={{
+                p: 0,
+                maxHeight: search.length > 0 ? '465px' : 'auto',
+                overflowY: 'auto',
+                '&::-webkit-scrollbar': {
+                  width: '6px',
+                  borderRadius: '3px'
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: (theme) =>
+                    darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                  borderRadius: '3px'
+                },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: 'transparent'
+                }
+              }}
+            >
+              {collections.slice(0, activeTab == 'nft' ? collections.length : 3).map((nft, idx) => (
+                <NFTRender
+                  key={idx}
+                  {...nft}
+                  addRecentSearchItem={addRecentSearchItem}
+                  darkMode={darkMode}
+                />
+              ))}
+            </MenuList>
+            <Button
+              onClick={() => setActiveTab('nft')}
+              sx={{ display: search && activeTab != 'nft' ? 'flex' : 'none' }}
+            >
+              See all results &#40;{collections.length}&#41;
+            </Button>
+          </Stack>
+        )}
+
         <Stack
-          mt={1}
-          sx={{ display: activeTab === 'nft' || activeTab === 'all' ? 'flex' : 'none' }}
+          mt={2}
+          spacing={1}
+          sx={{
+            display: (!search || activeTab === 'all') && searchHistory.length > 0 ? 'flex' : 'none'
+          }}
         >
           <Stack direction="row" alignItems="center" spacing={0.5} sx={{ px: 1 }}>
-            <Typography>{`${!search ? 'Trending ' : ''}NFTs`}</Typography>
-
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="currentColor"
-              height="16px"
-              width="16px"
-              viewBox="0 0 24 24"
-              color="#FF775F"
-            >
-              <path d="M17.0881 9.42254C16.4368 8.90717 15.8155 8.35512 15.3012 7.71336C12.3755 4.06357 13.8912 1 13.8912 1C8.46026 3.18334 7.22337 6.64895 7.16462 9.22981L7.1675 9.2572C7.1675 9.2572 7.21498 10.7365 7.90791 12.3625C8.12481 12.8713 7.88299 13.4666 7.33195 13.6199C6.87638 13.7465 6.40822 13.5317 6.21571 13.1314C5.90413 12.4831 5.49262 11.4521 5.6109 10.7249C4.75064 11.817 4.1815 13.1452 4.03542 14.6184C3.65092 18.4924 6.43759 22.0879 10.4208 22.8488C14.9906 23.7217 19.3121 20.7182 19.9269 16.3623C20.3117 13.6367 19.1498 11.0538 17.0881 9.42254ZM14.3578 17.7393C14.3289 17.776 13.5893 18.6597 12.3501 18.7517C12.2829 18.7547 12.2124 18.7577 12.1452 18.7577C11.2902 18.7577 10.4226 18.3682 9.56103 17.5951L9.37219 17.4262L9.61243 17.3372C9.62843 17.3312 11.2742 16.7236 11.6778 15.4077C11.8155 14.9629 11.7707 14.4566 11.553 13.9842C11.2905 13.4075 10.7845 11.9564 11.7453 10.9041L11.9309 10.7015L12.0206 10.9561C12.0238 10.9714 12.6034 12.5911 13.9741 13.4379C14.3871 13.6957 14.6977 14.0086 14.8931 14.3644C15.2959 15.1132 15.533 16.3065 14.3578 17.7393Z" />
-            </svg>
+            <Typography variant="subtitle2" fontSize="0.85rem" fontWeight={600}>
+              Recent searches
+            </Typography>
           </Stack>
-          <MenuList
+
+          <Stack
+            direction="row"
+            spacing={1}
             sx={{
-              p: 0,
-              maxHeight: search.length > 0 ? '465px' : 'auto',
-              overflowY: 'auto',
-              '&::-webkit-scrollbar': {
-                width: '6px !important'
-              },
-              '&::-webkit-scrollbar-thumb': {
-                backgroundColor: '#666'
-              }
+              px: 1,
+              pb: 0.5,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gap: '8px'
             }}
           >
-            {collections.slice(0, activeTab == 'nft' ? collections.length : 3).map((nft, idx) => (
-              <NFTRender
-                key={idx}
-                {...nft}
-                addRecentSearchItem={addRecentSearchItem}
-                darkMode={darkMode}
-              />
-            ))}
-          </MenuList>
-          <Button
-            onClick={() => setActiveTab('nft')}
-            sx={{ display: search && activeTab != 'nft' ? 'flex' : 'none' }}
-          >
-            See all results &#40;{collections.length}&#41;
-          </Button>
-        </Stack>
-      )}
-
-      <Stack mt={1} sx={{ display: activeTab === 'nft' || activeTab === 'all' ? 'flex' : 'none' }}>
-        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ px: 1 }}>
-          <Typography>Recent searches</Typography>
-        </Stack>
-
-        <Stack direction="row" spacing={2} sx={{ px: 1, mt: 0.5 }}>
-          {searchHistory.map(({ name, user, img, link }, idx) => {
-            return (
+            {searchHistory.slice(0, 5).map(({ name, user, img, link }, idx) => (
               <Link href={link} key={idx} underline="none" color="inherit">
-                <Paper sx={{ width: '100px', height: '100px', padding: '10px' }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    width: '100%',
+                    aspectRatio: '1',
+                    padding: '6px',
+                    borderRadius: '8px',
+                    backgroundColor: (theme) =>
+                      darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      backgroundColor: (theme) =>
+                        darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                      transform: 'translateY(-2px)'
+                    }
+                  }}
+                >
                   <Stack direction="row" justifyContent="center">
-                    <TokenImage src={img} width={36} height={36} />
+                    <TokenImage src={img} width={28} height={28} />
                   </Stack>
-                  <Stack alignItems="center" sx={{ marginTop: '5px' }}>
-                    <Typography sx={{ fontWeight: 'bold' }}>{truncate(name, 8)}</Typography>
-                    <Typography variant="caption">{truncate(user, 8)}</Typography>
+                  <Stack alignItems="center" sx={{ marginTop: '2px' }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.2 }}>
+                      {truncate(name, 8)}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ fontSize: '0.7rem', lineHeight: 1.2, opacity: 0.7 }}
+                    >
+                      {truncate(user, 8)}
+                    </Typography>
                   </Stack>
                 </Paper>
               </Link>
-            );
-          })}
+            ))}
+          </Stack>
         </Stack>
-      </Stack>
-    </Paper>
+      </Paper>
+    </>
   );
 }
