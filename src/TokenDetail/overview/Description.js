@@ -18,6 +18,8 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -138,6 +140,7 @@ export default function Description({
 }) {
   const { accountProfile, darkMode, activeFiatCurrency } = useContext(AppContext);
   const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
+  const [showFullContent, setShowFullContent] = useState(false);
 
   const metrics = useSelector(selectMetrics);
   const {
@@ -214,6 +217,42 @@ export default function Description({
     marketDominance: dom
   };
 
+  const ContentClosed = styled('div')(
+    ({ theme }) => `
+        -webkit-box-flex: 1;
+        flex-grow: 1;
+        height: 10em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+        transition: all 0.3s ease-in-out;
+    
+        &::after {
+            content: "";
+            position: absolute;
+            left: 0px;
+            bottom: 0px;
+            width: 100%;
+            height: 4em;
+            background: linear-gradient(180deg, 
+              rgba(255,255,255,0) 0%, 
+              ${theme.palette.background.default} 90%);
+            z-index: 1;
+            transition: opacity 0.3s ease-in-out;
+        }
+    `
+  );
+
+  const ContentOpened = styled('div')(
+    ({ theme }) => `
+        height: unset;
+        overflow: unset;
+        text-overflow: unset;
+        min-height: 10em;
+        transition: all 0.3s ease-in-out;
+    `
+  );
+
   return (
     <StackStyle>
       <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
@@ -235,12 +274,11 @@ export default function Description({
           }
         }}
         action={
-          isAdmin && (
-            <Tooltip title={showEditor ? 'Apply changes' : 'Click to edit description'}>
+          <Stack direction="row" spacing={1}>
+            <Tooltip title={showFullContent ? 'Show less' : 'Show more'}>
               <IconButton
-                onClick={handleClickEdit}
+                onClick={() => setShowFullContent(!showFullContent)}
                 edge="end"
-                aria-label="edit"
                 size="small"
                 sx={{
                   p: 0.5,
@@ -259,98 +297,216 @@ export default function Description({
                   }
                 }}
               >
-                {showEditor ? <CloseIcon color="error" /> : <EditIcon />}
+                {showFullContent ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
               </IconButton>
             </Tooltip>
-          )
+            {isAdmin && (
+              <Tooltip title={showEditor ? 'Apply changes' : 'Click to edit description'}>
+                <IconButton
+                  onClick={handleClickEdit}
+                  edge="end"
+                  aria-label="edit"
+                  size="small"
+                  sx={{
+                    p: 0.5,
+                    background: (theme) =>
+                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: (theme) =>
+                      `1px solid ${
+                        theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
+                      }`,
+                    '&:hover': {
+                      background: (theme) =>
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(255,255,255,0.1)'
+                          : 'rgba(0,0,0,0.05)',
+                      transform: 'translateY(-1px)'
+                    }
+                  }}
+                >
+                  {showEditor ? <CloseIcon color="error" /> : <EditIcon />}
+                </IconButton>
+              </Tooltip>
+            )}
+          </Stack>
         }
       />
 
       {!showEditor && description && (
         <Stack sx={{ px: 1.5, pb: 1.5 }}>
-          <ReadMore>
-            <ReactMarkdown
-              className={darkMode ? 'reactMarkDowndark' : 'reactMarkDownlight'}
-              components={{
-                p: ({ node, ...props }) => (
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mb: 1.5,
-                      lineHeight: 1.6,
-                      color: (theme) => theme.palette.text.primary
-                    }}
-                    {...props}
-                  />
-                ),
-                h1: ({ node, ...props }) => (
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      mt: 2,
-                      mb: 1.5,
-                      fontWeight: 600,
-                      color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
-                    }}
-                    {...props}
-                  />
-                ),
-                h2: ({ node, ...props }) => (
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      mt: 2,
-                      mb: 1.5,
-                      fontWeight: 600,
-                      color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
-                    }}
-                    {...props}
-                  />
-                ),
-                h3: ({ node, ...props }) => (
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      mt: 2,
-                      mb: 1.5,
-                      fontWeight: 600,
-                      color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
-                    }}
-                    {...props}
-                  />
-                ),
-                ul: ({ node, ...props }) => (
-                  <ul
-                    style={{
-                      marginBottom: '0.75rem',
-                      paddingLeft: '1.25rem'
-                    }}
-                    {...props}
-                  />
-                ),
-                ol: ({ node, ...props }) => (
-                  <ol
-                    style={{
-                      marginBottom: '0.75rem',
-                      paddingLeft: '1.25rem'
-                    }}
-                    {...props}
-                  />
-                ),
-                li: ({ node, ...props }) => (
-                  <li
-                    style={{
-                      marginBottom: '0.25rem',
-                      color: darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)'
-                    }}
-                    {...props}
-                  />
-                )
-              }}
-            >
-              {description}
-            </ReactMarkdown>
-          </ReadMore>
+          <Fade in={true} timeout={300}>
+            {showFullContent ? (
+              <ContentOpened>
+                <ReactMarkdown
+                  className={darkMode ? 'reactMarkDowndark' : 'reactMarkDownlight'}
+                  components={{
+                    p: ({ node, ...props }) => (
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mb: 1.5,
+                          lineHeight: 1.6,
+                          color: (theme) => theme.palette.text.primary
+                        }}
+                        {...props}
+                      />
+                    ),
+                    h1: ({ node, ...props }) => (
+                      <Typography
+                        variant="h5"
+                        sx={{
+                          mt: 2,
+                          mb: 1.5,
+                          fontWeight: 600,
+                          color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
+                        }}
+                        {...props}
+                      />
+                    ),
+                    h2: ({ node, ...props }) => (
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          mt: 2,
+                          mb: 1.5,
+                          fontWeight: 600,
+                          color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
+                        }}
+                        {...props}
+                      />
+                    ),
+                    h3: ({ node, ...props }) => (
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          mt: 2,
+                          mb: 1.5,
+                          fontWeight: 600,
+                          color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
+                        }}
+                        {...props}
+                      />
+                    ),
+                    ul: ({ node, ...props }) => (
+                      <ul
+                        style={{
+                          marginBottom: '0.75rem',
+                          paddingLeft: '1.25rem'
+                        }}
+                        {...props}
+                      />
+                    ),
+                    ol: ({ node, ...props }) => (
+                      <ol
+                        style={{
+                          marginBottom: '0.75rem',
+                          paddingLeft: '1.25rem'
+                        }}
+                        {...props}
+                      />
+                    ),
+                    li: ({ node, ...props }) => (
+                      <li
+                        style={{
+                          marginBottom: '0.25rem',
+                          color: darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)'
+                        }}
+                        {...props}
+                      />
+                    )
+                  }}
+                >
+                  {description}
+                </ReactMarkdown>
+              </ContentOpened>
+            ) : (
+              <ContentClosed>
+                <ReactMarkdown
+                  className={darkMode ? 'reactMarkDowndark' : 'reactMarkDownlight'}
+                  components={{
+                    p: ({ node, ...props }) => (
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mb: 1.5,
+                          lineHeight: 1.6,
+                          color: (theme) => theme.palette.text.primary
+                        }}
+                        {...props}
+                      />
+                    ),
+                    h1: ({ node, ...props }) => (
+                      <Typography
+                        variant="h5"
+                        sx={{
+                          mt: 2,
+                          mb: 1.5,
+                          fontWeight: 600,
+                          color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
+                        }}
+                        {...props}
+                      />
+                    ),
+                    h2: ({ node, ...props }) => (
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          mt: 2,
+                          mb: 1.5,
+                          fontWeight: 600,
+                          color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
+                        }}
+                        {...props}
+                      />
+                    ),
+                    h3: ({ node, ...props }) => (
+                      <Typography
+                        variant="subtitle1"
+                        sx={{
+                          mt: 2,
+                          mb: 1.5,
+                          fontWeight: 600,
+                          color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
+                        }}
+                        {...props}
+                      />
+                    ),
+                    ul: ({ node, ...props }) => (
+                      <ul
+                        style={{
+                          marginBottom: '0.75rem',
+                          paddingLeft: '1.25rem'
+                        }}
+                        {...props}
+                      />
+                    ),
+                    ol: ({ node, ...props }) => (
+                      <ol
+                        style={{
+                          marginBottom: '0.75rem',
+                          paddingLeft: '1.25rem'
+                        }}
+                        {...props}
+                      />
+                    ),
+                    li: ({ node, ...props }) => (
+                      <li
+                        style={{
+                          marginBottom: '0.25rem',
+                          color: darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)'
+                        }}
+                        {...props}
+                      />
+                    )
+                  }}
+                >
+                  {description}
+                </ReactMarkdown>
+              </ContentClosed>
+            )}
+          </Fade>
         </Stack>
       )}
     </StackStyle>
