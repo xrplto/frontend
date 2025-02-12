@@ -10,12 +10,25 @@ import {
   Table,
   TableRow,
   TableBody,
-  TableCell
+  TableCell,
+  Tooltip,
+  IconButton,
+  Avatar,
+  Chip,
+  Link
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+
+// Iconify
+import { Icon } from '@iconify/react';
+import blackholeIcon from '@iconify/icons-arcticons/blackhole';
 
 // Components
 import BearBullLabel from './BearBullLabel';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import IssuerInfoDialog from '../common/IssuerInfoDialog';
 
 // Redux
 import { useSelector /*, useDispatch*/ } from 'react-redux';
@@ -29,7 +42,7 @@ import NumberTooltip from 'src/components/NumberTooltip';
 // ----------------------------------------------------------------------
 import StackStyle from 'src/components/StackStyle';
 import { currencySymbols } from 'src/utils/constants';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { AppContext } from 'src/AppContext';
 
 const badge24hStyle = {
@@ -48,7 +61,8 @@ const badge24hStyle = {
 export default function PriceStatistics({ token }) {
   const theme = useTheme();
   const metrics = useSelector(selectMetrics);
-  const { activeFiatCurrency } = useContext(AppContext);
+  const { activeFiatCurrency, openSnackbar } = useContext(AppContext);
+  const [openIssuerInfo, setOpenIssuerInfo] = useState(false);
 
   const {
     id,
@@ -62,17 +76,20 @@ export default function PriceStatistics({ token }) {
     vol24hxrp,
     vol24hx,
     marketcap,
-    dom
-    /*
-        pro7d,
-        p7d,
-        holders,
-        offers,
-        issuer,
-        currency,
-        date,
-        trustlines,*/
+    dom,
+    issuer,
+    issuer_info,
+    assessment
   } = token;
+
+  const info = issuer_info || {};
+  const img_xrplf =
+    theme.palette.mode === 'dark' ? '/static/xrplf_white.svg' : '/static/xrplf_black.svg';
+
+  function truncate(str, n) {
+    if (!str) return '';
+    return str.length > n ? str.substr(0, n - 1) + '... ' : str;
+  }
 
   let user = token.user;
   if (!user) user = name;
@@ -82,8 +99,14 @@ export default function PriceStatistics({ token }) {
 
   let strPc24h = fNumber(p24h < 0 ? -p24h : p24h);
   let strPc24hPrep = (p24h < 0 ? '-' : '') + currencySymbols[activeFiatCurrency];
+
+  const handleOpenIssuerInfo = () => {
+    setOpenIssuerInfo(true);
+  };
+
   return (
     <StackStyle>
+      <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
       <CardHeader
         title={`${name} Price Statistics`}
         subheader=""
@@ -112,6 +135,59 @@ export default function PriceStatistics({ token }) {
         }}
       >
         <TableBody>
+          <TableRow>
+            <TableCell align="left">
+              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
+                Issuer
+              </Typography>
+            </TableCell>
+            <TableCell align="left">
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Chip
+                  label={
+                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                      <Typography variant="s8">{truncate(issuer, 16)}</Typography>
+                      {info.blackholed && (
+                        <Tooltip title="Blackholed - Cannot issue more tokens">
+                          <Icon
+                            icon={blackholeIcon}
+                            width="16"
+                            height="16"
+                            style={{ color: '#ff0000' }}
+                          />
+                        </Tooltip>
+                      )}
+                    </Stack>
+                  }
+                  size="small"
+                  sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px', height: '24px', cursor: 'pointer' }}
+                  onClick={handleOpenIssuerInfo}
+                />
+                <CopyToClipboard text={issuer} onCopy={() => openSnackbar('Copied!', 'success')}>
+                  <Tooltip title="Copy issuer address">
+                    <IconButton size="small" sx={{ p: 0.5 }}>
+                      <ContentCopyIcon sx={{ width: 14, height: 14 }} />
+                    </IconButton>
+                  </Tooltip>
+                </CopyToClipboard>
+                {assessment && (
+                  <Link
+                    underline="none"
+                    color="inherit"
+                    target="_blank"
+                    href={assessment}
+                    rel="noreferrer noopener nofollow"
+                  >
+                    <Tooltip title="View XRPL Foundation Assessment">
+                      <IconButton size="small" sx={{ p: 0.5 }}>
+                        <LazyLoadImage src={img_xrplf} width={14} height={14} />
+                      </IconButton>
+                    </Tooltip>
+                  </Link>
+                )}
+              </Stack>
+            </TableCell>
+          </TableRow>
           <TableRow>
             <TableCell align="left">
               <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
