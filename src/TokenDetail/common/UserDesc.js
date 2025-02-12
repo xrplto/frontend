@@ -366,18 +366,20 @@ export default function UserDesc({ token }) {
           />
         )}
         <Stack spacing={0.2}>
-          <Typography
-            variant="span"
-            fontWeight="700"
-            color={darkMode ? '#22B14C' : '#3366FF'}
-            alt={user}
-            fontSize="1rem"
-          >
-            {name}
-          </Typography>
-          <Stack direction="row" alignItems="center" spacing={0.5}>
-            <Typography variant="s17">{truncate(user, 15)}</Typography>
-            <Stack>{kyc && <Typography variant="kyc2">KYC</Typography>}</Stack>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Typography
+              variant="span"
+              fontWeight="700"
+              color={darkMode ? '#22B14C' : '#3366FF'}
+              alt={user}
+              fontSize="1rem"
+            >
+              {name}
+            </Typography>
+            <Typography variant="s17" color="text.secondary">
+              {truncate(user, 15)}
+            </Typography>
+            {kyc && <Typography variant="kyc2">KYC</Typography>}
           </Stack>
           {date && (
             <Typography variant="s7" noWrap>
@@ -727,7 +729,7 @@ export default function UserDesc({ token }) {
                   <Chip
                     label={'Whitepaper'}
                     size="small"
-                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px', height: '24px' }}
+                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px', height: '32px' }}
                     deleteIcon={
                       <Icon
                         icon={linkExternal}
