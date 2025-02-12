@@ -206,7 +206,7 @@ const TradingHistory = ({ tokenId }) => {
               letterSpacing: '0.5px'
             }}
           >
-            Trading History
+            Recent Trades
           </Typography>
         </Stack>
       </Stack>
