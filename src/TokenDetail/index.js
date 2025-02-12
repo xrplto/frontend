@@ -59,8 +59,8 @@ function a11yProps(index) {
   };
 }
 
-const tabValues = ['', 'markets', 'trade', 'holders', 'wallets'];
-const tabLabels = ['Overview', 'Markets', 'Trade', 'Holders', 'Wallets'];
+const tabValues = ['', 'markets', 'limit', 'holders', 'wallets'];
+const tabLabels = ['Overview', 'Markets', 'Limit', 'Holders', 'Wallets'];
 
 function getTabID(tab) {
   if (!tab) return 0;
@@ -165,12 +165,63 @@ export default function TokenDetail({ token, tab }) {
           scrollButtons="auto"
           aria-label="token-tabs"
           style={tabStyle}
+          sx={{
+            minHeight: '40px',
+            '& .MuiTabs-flexContainer': {
+              height: '40px'
+            }
+          }}
         >
-          <Tab value={0} label={tabLabels[0]} {...a11yProps(0)} />
-          <Tab value={1} label={tabLabels[1]} {...a11yProps(1)} />
-          <Tab value={2} label={tabLabels[2]} {...a11yProps(2)} />
-          <Tab value={3} label={tabLabels[3]} {...a11yProps(3)} />
-          <Tab value={4} label={tabLabels[4]} {...a11yProps(4)} />
+          <Tab
+            value={0}
+            label={tabLabels[0]}
+            {...a11yProps(0)}
+            sx={{
+              minHeight: '40px',
+              padding: '6px 16px',
+              textTransform: 'none'
+            }}
+          />
+          <Tab
+            value={1}
+            label={tabLabels[1]}
+            {...a11yProps(1)}
+            sx={{
+              minHeight: '40px',
+              padding: '6px 16px',
+              textTransform: 'none'
+            }}
+          />
+          <Tab
+            value={2}
+            label={tabLabels[2]}
+            {...a11yProps(2)}
+            sx={{
+              minHeight: '40px',
+              padding: '6px 16px',
+              textTransform: 'none'
+            }}
+          />
+          <Tab
+            value={3}
+            label={tabLabels[3]}
+            {...a11yProps(3)}
+            sx={{
+              minHeight: '40px',
+              padding: '6px 16px',
+              textTransform: 'none'
+            }}
+          />
+          <Tab
+            value={4}
+            label={tabLabels[4]}
+            {...a11yProps(4)}
+            sx={{
+              minHeight: '40px',
+              padding: '6px 16px',
+              textTransform: 'none'
+            }}
+          />
         </Tabs>
         <TabPanel value={tabID} id={0}>
           <Overview token={token} />
