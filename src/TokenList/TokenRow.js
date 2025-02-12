@@ -622,7 +622,7 @@ function FTokenRow({
           pr: '4px !important'
         }}
       >
-        <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
+        <LoadChart url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`} />
       </TableCell>
       <TableCell
         align="right"

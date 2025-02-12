@@ -220,7 +220,7 @@ const TABLE_HEAD = [
   {
     no: 15,
     id: 'historyGraph',
-    label: 'Last 7 Days',
+    label: 'Last 24h',
     align: 'right',
     width: '5%',
     order: false
