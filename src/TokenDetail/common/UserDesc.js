@@ -454,11 +454,6 @@ export default function UserDesc({ token }) {
               </Stack>
             </Stack>
           </Stack>
-          {date && (
-            <Typography variant="s7" noWrap sx={{ fontSize: '0.8rem' }}>
-              {date}
-            </Typography>
-          )}
         </Stack>
         <Grid
           container

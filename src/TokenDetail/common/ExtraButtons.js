@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Icon } from '@iconify/react';
+import calendarIcon from '@iconify/icons-ph/calendar-thin';
 
 // Material
 import {
@@ -97,7 +99,7 @@ export default function ExtraButtons({ token }) {
   const handleByCrypto = (e) => {};
 
   return (
-    <Stack alignItems="center" spacing={1}>
+    <Stack alignItems="center" spacing={1} sx={{ position: 'relative', width: '100%' }}>
       {trustToken && (
         <TrustSetDialog
           balance={balance}
@@ -107,7 +109,56 @@ export default function ExtraButtons({ token }) {
         />
       )}
 
-      <Grid container direction="row" spacing={0.5}>
+      {token.date && (
+        <Stack
+          direction="row"
+          spacing={0.5}
+          alignItems="center"
+          sx={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            backgroundColor: darkMode ? 'rgba(145, 158, 171, 0.08)' : 'rgba(145, 158, 171, 0.08)',
+            borderRadius: '6px',
+            px: 1,
+            py: 0.5,
+            zIndex: 1
+          }}
+        >
+          <Icon
+            icon={calendarIcon}
+            width={14}
+            height={14}
+            style={{ color: theme.palette.text.secondary }}
+          />
+          <Typography
+            variant="caption"
+            noWrap
+            sx={{
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              letterSpacing: '0.2px',
+              color: 'text.secondary',
+              textTransform: 'uppercase'
+            }}
+          >
+            Created:
+          </Typography>
+          <Typography
+            variant="caption"
+            noWrap
+            sx={{
+              fontSize: '0.75rem',
+              color: 'text.primary',
+              fontWeight: 400
+            }}
+          >
+            {token.date}
+          </Typography>
+        </Stack>
+      )}
+
+      <Grid container direction="row" spacing={0.5} sx={{ mt: 4 }}>
         <Grid item>
           <Button
             variant="contained"
