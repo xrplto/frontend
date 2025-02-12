@@ -2,9 +2,8 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import Decimal from 'decimal.js';
 import { ClipLoader } from 'react-spinners';
-import {
-  LazyLoadImage,
-} from 'react-lazy-load-image-component';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import SparklineChart from 'src/components/SparklineChart';
 
 // Material
 import { withStyles } from '@mui/styles';
@@ -20,7 +19,8 @@ import {
   Snackbar,
   Alert,
   AlertTitle,
-  CircularProgress
+  CircularProgress,
+  Box
 } from '@mui/material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
@@ -32,8 +32,8 @@ import exchangeIcon from '@iconify/icons-uil/exchange';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { isInstalled, submitTransaction } from "@gemwallet/api";
-import sdk from "@crossmarkio/sdk";
+import { isInstalled, submitTransaction } from '@gemwallet/api';
+import sdk from '@crossmarkio/sdk';
 
 // Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -56,7 +56,6 @@ const CurrencyContent = styled('div')(
     box-sizing: border-box;
     margin-left: 10px;
     margin-right: 10px;
-    margin-top: 10px;
     display: flex;
     flex: 1 1 0%;
     flex-direction: row;
@@ -64,6 +63,9 @@ const CurrencyContent = styled('div')(
     border-radius: 10px;
     -webkit-box-align: center;
     align-items: center;
+    &:not(:first-of-type) {
+      margin-top: 2px;
+    }
 `
 );
 
@@ -142,12 +144,14 @@ const ExchangeButton = styled(Button)(
 `
 );
 
-const AllowButton = styled(Button)(() => `
+const AllowButton = styled(Button)(
+  () => `
   padding: 2px;
   border-radius: 24px;
   font-size: 12px;
   min-width: 48px;
-`);
+`
+);
 
 export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const theme = useTheme();
@@ -205,24 +209,23 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const priceImpact =
     inputPrice > 0
       ? new Decimal(outputPrice)
-        .sub(inputPrice)
-        .mul(100)
-        .div(inputPrice)
-        .toDP(2, Decimal.ROUND_DOWN)
-        .toNumber()
+          .sub(inputPrice)
+          .mul(100)
+          .div(inputPrice)
+          .toDP(2, Decimal.ROUND_DOWN)
+          .toNumber()
       : 0;
 
   // const color1 = revert?theme.currency.background2:theme.currency.background1;
   // const color2 = revert?theme.currency.background1:theme.currency.background2;
   var color1, color2;
-  if (typeof theme.currency !== "undefined") // webxtor SEO fix
-  {
-    /*const */color1 = theme.currency.background2;
-    /*const */color2 = theme.currency.background2;
+  if (typeof theme.currency !== 'undefined') {
+    // webxtor SEO fix
+    /*const */ color1 = theme.currency.background2;
+    /*const */ color2 = theme.currency.background2;
   }
 
-  const isLoggedIn =
-    accountProfile && accountProfile.account && accountPairBalance;
+  const isLoggedIn = accountProfile && accountProfile.account && accountPairBalance;
 
   let isSufficientBalance = false;
   let errMsg = '';
@@ -248,12 +251,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     try {
       const fAmount = new Decimal(amount || 0).toNumber();
       const fValue = new Decimal(value || 0).toNumber();
-      const accountAmount = new Decimal(
-        accountPairBalance.curr1.value
-      ).toNumber();
-      const accountValue = new Decimal(
-        accountPairBalance.curr2.value
-      ).toNumber();
+      const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
+      const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
 
       if (amount1 && amount2) {
         if (fAmount > 0 && fValue > 0) {
@@ -360,7 +359,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         const dispatched_result = res.dispatched_result;
 
         return dispatched_result;
-      } catch (err) { }
+      } catch (err) {}
     }
 
     const startInterval = () => {
@@ -407,7 +406,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           startInterval();
           return;
         }
-      } catch (err) { }
+      } catch (err) {}
       isRunning = false;
       counter--;
       if (counter <= 0) {
@@ -471,7 +470,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       }
 
       switch (wallet_type) {
-        case "xaman":
+        case 'xaman':
           setLoading(true);
           const res = await axios.post(`${BASE_URL}/offer/create`, body);
 
@@ -487,7 +486,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           }
 
           break;
-        case "gem":
+        case 'gem':
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
               if (TakerGets.currency === 'XRP') {
@@ -498,7 +497,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
               }
               let offerTxData = {
-                TransactionType: "OfferCreate",
+                TransactionType: 'OfferCreate',
                 Account,
                 Flags,
                 TakerGets,
@@ -511,26 +510,21 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               await submitTransaction({
                 transaction: offerTxData
               }).then(({ type, result }) => {
-                if (type == "response") {
+                if (type == 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
-                }
-
-                else {
+                } else {
                   dispatch(updateProcess(3));
                 }
 
                 setSwapped(!isSwapped);
               });
+            } else {
+              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
             }
-
-            else {
-              enqueueSnackbar("GemWallet is not installed", { variant: "error" });
-            }
-          })
+          });
           break;
-        case "crossmark":
-
+        case 'crossmark':
           if (TakerGets.currency === 'XRP') {
             TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
           }
@@ -539,7 +533,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
           }
           let offerTxData = {
-            TransactionType: "OfferCreate",
+            TransactionType: 'OfferCreate',
             Account,
             Flags,
             TakerGets,
@@ -548,23 +542,20 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           };
 
           dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(offerTxData)
-            .then(({ response }) => {
-              if (response.data.meta.isSuccess) {
-                dispatch(updateProcess(2));
-                dispatch(updateTxHash(response.data.resp.result?.hash));
-
-              } else {
-                dispatch(updateProcess(3));
-              }
-              setSwapped(!isSwapped);
-            });
+          await sdk.methods.signAndSubmitAndWait(offerTxData).then(({ response }) => {
+            if (response.data.meta.isSuccess) {
+              dispatch(updateProcess(2));
+              dispatch(updateTxHash(response.data.resp.result?.hash));
+            } else {
+              dispatch(updateProcess(3));
+            }
+            setSwapped(!isSwapped);
+          });
           // }
           break;
       }
-
     } catch (err) {
-      console.log("err", err);
+      console.log('err', err);
       dispatch(updateProcess(0));
     }
     setLoading(false);
@@ -577,7 +568,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       if (res.status === 200) {
         setUuid(null);
       }
-    } catch (err) { }
+    } catch (err) {}
     setLoading(false);
   };
 
@@ -591,34 +582,28 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
          */
     try {
       amt = new Decimal(amount).toNumber();
-    } catch (e) { }
+    } catch (e) {}
 
-    if (amt === 0) return "";
+    if (amt === 0) return '';
 
     try {
       if (active === 'AMOUNT') {
         for (var bid of bids) {
           if (bid.sumAmount >= amt) {
-            val = new Decimal(bid.sumValue)
-              .mul(amt)
-              .div(bid.sumAmount)
-              .toNumber();
+            val = new Decimal(bid.sumValue).mul(amt).div(bid.sumAmount).toNumber();
             break;
           }
         }
       } else {
         for (var bid of bids) {
           if (bid.sumValue >= amt) {
-            val = new Decimal(bid.sumAmount)
-              .mul(amt)
-              .div(bid.sumValue)
-              .toNumber();
+            val = new Decimal(bid.sumAmount).mul(amt).div(bid.sumValue).toNumber();
             break;
           }
         }
       }
       return new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
-    } catch (e) { }
+    } catch (e) {}
 
     return 0;
   };
@@ -665,7 +650,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const handleChangeAmount1 = (e) => {
     let value = e.target.value;
 
-    if (value == ".") value = "0.";
+    if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
 
     setAmount1(value);
@@ -675,7 +660,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const handleChangeAmount2 = (e) => {
     const value = e.target.value;
 
-    if (value == ".") value = "0.";
+    if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
 
     setAmount2(value);
@@ -685,9 +670,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const onChangeToken1 = (token) => {
     if (token.md5 !== token2.md5) {
       setToken1(token);
-    }
-
-    else {
+    } else {
       onRevertExchange();
     }
   };
@@ -695,9 +678,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const onChangeToken2 = (token) => {
     if (token.md5 !== token1.md5) {
       setToken2(token);
-    }
-
-    else {
+    } else {
       onRevertExchange();
     }
   };
@@ -718,206 +699,278 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
   const onFillHalf = () => {
     if (revert) {
-      if (accountPairBalance?.curr1.value > 0)
-        setAmount2(accountPairBalance?.curr1.value / 2);
+      if (accountPairBalance?.curr1.value > 0) setAmount2(accountPairBalance?.curr1.value / 2);
+    } else {
+      if (accountPairBalance?.curr1.value > 0) setAmount1(accountPairBalance?.curr1.value / 2);
     }
-
-    else {
-      if (accountPairBalance?.curr1.value > 0)
-        setAmount1(accountPairBalance?.curr1.value / 2);
-    }
-  }
+  };
 
   const onFillMax = () => {
     if (revert) {
-      if (accountPairBalance?.curr1.value > 0)
-        setAmount2(accountPairBalance?.curr1.value);
+      if (accountPairBalance?.curr1.value > 0) setAmount2(accountPairBalance?.curr1.value);
+    } else {
+      if (accountPairBalance?.curr1.value > 0) setAmount1(accountPairBalance?.curr1.value);
     }
-
-    else {
-      if (accountPairBalance?.curr1.value > 0)
-        setAmount1(accountPairBalance?.curr1.value);
-    }
-  }
+  };
 
   const handleMsg = () => {
-     if (isProcessing == 1) return "Pending Exchanging";
-    if (!amount1 || !amount2) return "Enter an Amount";
+    if (isProcessing == 1) return 'Pending Exchanging';
+    if (!amount1 || !amount2) return 'Enter an Amount';
     else if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
-    else return "Exchange";
-  }
+    else return 'Exchange';
+  };
 
   return (
-    <Stack alignItems="center">
-      <OverviewWrapper>
-        <ConverterFrame>
-          {
-            isLoggedIn &&
-            <Stack direction="row" justifyContent="end" spacing={1} siz="small" sx={{ px: 1.2 }}>
-              <AllowButton variant="outlined" onClick={onFillHalf}>Half</AllowButton>
-              <AllowButton variant="outlined" onClick={onFillMax}>Max</AllowButton>
-            </Stack>
-          }
-          <CurrencyContent
-            style={{ order: revert ? 2 : 1, backgroundColor: color1, border: focusTop ? `1px solid ${theme?.general?.reactFrameworkColor}` : "none" }}
-          >
-            <Stack>
-              <QueryToken token={token1} onChangeToken={onChangeToken1} />
-              {
-                isLoggedIn &&
-                <Typography variant="s7">
-                  Balance{' '}
-                  <Typography variant="s2" color="primary" >
-                    {revert
-                      ? accountPairBalance?.curr2.value
-                      : accountPairBalance?.curr1.value}
+    <Stack alignItems="center" sx={{ width: '100%', maxWidth: '480px', margin: '0 auto' }}>
+      <Stack sx={{ width: '100%' }}>
+        <OverviewWrapper sx={{ width: '100%' }}>
+          <ConverterFrame>
+            {isLoggedIn && (
+              <Stack
+                direction="row"
+                justifyContent="end"
+                spacing={1}
+                siz="small"
+                sx={{ px: 1.2, mb: 1 }}
+              >
+                <AllowButton variant="outlined" onClick={onFillHalf}>
+                  Half
+                </AllowButton>
+                <AllowButton variant="outlined" onClick={onFillMax}>
+                  Max
+                </AllowButton>
+              </Stack>
+            )}
+            <CurrencyContent
+              style={{
+                order: revert ? 2 : 1,
+                backgroundColor: color1,
+                border: focusTop ? `1px solid ${theme?.general?.reactFrameworkColor}` : 'none',
+                borderTopLeftRadius: '10px',
+                borderTopRightRadius: '10px',
+                borderBottomLeftRadius: '0',
+                borderBottomRightRadius: '0'
+              }}
+            >
+              <Stack>
+                <QueryToken token={token1} onChangeToken={onChangeToken1} />
+                {isLoggedIn && (
+                  <Typography variant="s7">
+                    Balance{' '}
+                    <Typography variant="s2" color="primary">
+                      {revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value}
+                    </Typography>
                   </Typography>
+                )}
+              </Stack>
+              <InputContent>
+                <Input
+                  placeholder="0"
+                  autoComplete="new-password"
+                  // margin='dense'
+                  // disabled={revert?true:false}
+                  disableUnderline
+                  value={amount1}
+                  onChange={handleChangeAmount1}
+                  sx={{
+                    width: '100%',
+                    input: {
+                      autoComplete: 'off',
+                      padding: '10px 0px',
+                      border: 'none',
+                      fontSize: '18px',
+                      textAlign: 'end',
+                      appearance: 'none',
+                      fontWeight: 700
+                    }
+                  }}
+                  onFocus={() => setFocusTop(true)}
+                  onBlur={() => setFocusTop(false)}
+                />
+                <Typography
+                  variant="s2"
+                  color="primary"
+                  sx={{ visibility: tokenPrice1 > 0 ? 'visible' : 'hidden' }}
+                >
+                  {currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}
                 </Typography>
-              }
-            </Stack>
-            <InputContent>
-              <Input
-                placeholder="0"
-                autoComplete="new-password"
-                // margin='dense'
-                // disabled={revert?true:false}
-                disableUnderline
-                value={amount1}
-                onChange={handleChangeAmount1}
-                sx={{
-                  width: '100%',
-                  input: {
-                    autoComplete: 'off',
-                    padding: '10px 0px',
-                    border: 'none',
-                    fontSize: '18px',
-                    textAlign: 'end',
-                    appearance: 'none',
-                    fontWeight: 700
-                  }
-                }}
-                onFocus={() => setFocusTop(true)}
-                onBlur={() => setFocusTop(false)}
-              />
-              <Typography variant="s2" color="primary" sx={{ visibility: tokenPrice1 > 0 ? "visible" : "hidden" }}>{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}</Typography>
-            </InputContent>
-          </CurrencyContent>
-          <CurrencyContent
-            style={{ order: revert ? 1 : 2, backgroundColor: color2, border: focusBottom ? `1px solid ${theme?.general?.reactFrameworkColor}` : "none" }}
-          >
-            <Stack>
-              <QueryToken token={token2} onChangeToken={onChangeToken2} />
-              {
-                isLoggedIn &&
-                <Typography variant="s7">
-                  Balance{' '}
-                  <Typography variant="s2" color="primary" >
-                    {revert
-                      ? accountPairBalance?.curr1.value
-                      : accountPairBalance?.curr2.value}
+              </InputContent>
+            </CurrencyContent>
+            <CurrencyContent
+              style={{
+                order: revert ? 1 : 2,
+                backgroundColor: color2,
+                border: focusBottom ? `1px solid ${theme?.general?.reactFrameworkColor}` : 'none',
+                borderRadius: '0'
+              }}
+            >
+              <Stack>
+                <QueryToken token={token2} onChangeToken={onChangeToken2} />
+                {isLoggedIn && (
+                  <Typography variant="s7">
+                    Balance{' '}
+                    <Typography variant="s2" color="primary">
+                      {revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value}
+                    </Typography>
                   </Typography>
+                )}
+              </Stack>
+              <InputContent>
+                <Input
+                  placeholder="0"
+                  autoComplete="new-password"
+                  // margin='dense'
+                  // disabled={revert?false:true}
+                  disableUnderline
+                  value={amount1 === '' ? '' : amount2}
+                  onChange={handleChangeAmount2}
+                  sx={{
+                    width: '100%',
+                    input: {
+                      autoComplete: 'off',
+                      padding: '10px 0px',
+                      border: 'none',
+                      fontSize: '18px',
+                      textAlign: 'end',
+                      appearance: 'none',
+                      fontWeight: 700
+                    }
+                  }}
+                  onFocus={() => setFocusBottom(true)}
+                  onBlur={() => setFocusBottom(false)}
+                />
+                <Typography
+                  variant="s2"
+                  color="primary"
+                  sx={{ visibility: tokenPrice2 > 0 ? 'visible' : 'hidden' }}
+                >
+                  {currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}
                 </Typography>
-              }
-            </Stack>
-            <InputContent>
-              <Input
-                placeholder="0"
-                autoComplete="new-password"
-                // margin='dense'
-                // disabled={revert?false:true}
-                disableUnderline
-                value={amount1 === '' ? '' : amount2}
-                onChange={handleChangeAmount2}
+              </InputContent>
+            </CurrencyContent>
+            <CurrencyContent
+              style={{
+                order: 3,
+                backgroundColor: color2,
+                borderRadius: '0'
+              }}
+            >
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
                 sx={{
-                  width: '100%',
-                  input: {
-                    autoComplete: 'off',
-                    padding: '10px 0px',
-                    border: 'none',
-                    fontSize: '18px',
-                    textAlign: 'end',
-                    appearance: 'none',
-                    fontWeight: 700
-                  }
+                  width: '100%'
                 }}
-                onFocus={() => setFocusBottom(true)}
-                onBlur={() => setFocusBottom(false)}
-              />
-              <Typography variant="s2" color="primary" sx={{ visibility: tokenPrice2 > 0 ? "visible" : "hidden" }}>{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}</Typography>
-            </InputContent>
-          </CurrencyContent>
-          <ToggleContent>
-            <IconButton size="medium" onClick={onRevertExchange}>
-              <Icon
-                icon={exchangeIcon}
-                width="28"
-                height="28"
-                style={{
-                  padding: 6,
-                  borderRadius: "50%",
-                  color: "#17171AAA",
-                  background: "#ffffff",
-                  transform: 'rotate(90deg)', // Rotates the icon 90 degrees permanently,
-                }}
-              />
-            </IconButton>
+              >
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography variant="s6">Price impact</Typography>
+                  {loadingPrice ? (
+                    <ClipLoader color="#FF6C40" size={15} />
+                  ) : (
+                    <Typography variant="s2" color="primary">
+                      {priceImpact} %
+                    </Typography>
+                  )}
+                </Stack>
+              </Stack>
+            </CurrencyContent>
 
+            <CurrencyContent
+              style={{
+                order: 4,
+                backgroundColor: color2,
+                borderTopLeftRadius: '0',
+                borderTopRightRadius: '0',
+                borderBottomLeftRadius: '10px',
+                borderBottomRightRadius: '10px'
+              }}
+            >
+              {accountProfile && accountProfile.account ? (
+                <ExchangeButton
+                  variant="contained"
+                  fullWidth
+                  onClick={handlePlaceOrder}
+                  disabled={!canPlaceOrder || isProcessing == 1}
+                >
+                  {handleMsg()}
+                </ExchangeButton>
+              ) : (
+                <ConnectWallet pair={pair} />
+              )}
+            </CurrencyContent>
+          </ConverterFrame>
+        </OverviewWrapper>
 
-          </ToggleContent>
-        </ConverterFrame>
-
-        <CurrencyContent
-          style={{ order: 3, backgroundColor: color2 /*theme.currency.background2*/ /* webxtor SEO fix */ }}
+        <Stack
+          direction="column"
+          spacing={0}
+          alignItems="center"
+          sx={{
+            width: '100%',
+            mt: 2
+          }}
         >
           <Stack
             direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{
-              width: '100%'
-            }}
+            alignItems="flex-start"
+            spacing={1}
+            sx={{ width: '100%', p: 1.5, pb: 0 }}
           >
-            <Typography variant="s6">Price impact</Typography>
-            {loadingPrice ? (
-              <ClipLoader color="#FF6C40" size={15} />
-            ) : (
-              <Typography variant="s2" color="primary">{priceImpact} %</Typography>
-            )}
-          </Stack>
-        </CurrencyContent>
-      </OverviewWrapper>
-
-      <Stack sx={{ width: '95.9%', mt: 2 }}>
-        {accountProfile && accountProfile.account ? (
-          <>
-            {/* {errMsg && amount1 !== '' && amount2 !== '' && (
-              <Typography variant="s2" sx={{ ml: 2 }}>
-                {errMsg}
+            <Stack>
+              <Typography variant="s7">{token1.name}</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                {token1.issuer
+                  ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
+                  : 'XRPL'}
               </Typography>
-            )} */}
+            </Stack>
+            <Stack sx={{ flex: 1 }}>
+              <Typography variant="s7" align="right" sx={{ mb: 0.2 }}>
+                {currencySymbols[activeFiatCurrency]} {fNumber(tokenExch1)}
+              </Typography>
+              <Box sx={{ height: '60px', width: '100%' }}>
+                <SparklineChart
+                  url={`${BASE_URL}/sparkline/${token1.md5}?period=24h&${token1.pro24h}`}
+                />
+              </Box>
+            </Stack>
+          </Stack>
+          <Stack
+            direction="row"
+            alignItems="flex-start"
+            spacing={1}
+            sx={{ width: '100%', p: 1.5, pt: 0 }}
+          >
+            <Stack>
+              <Typography variant="s7">{token2.name}</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                {token2.issuer
+                  ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
+                  : 'XRPL'}
+              </Typography>
+            </Stack>
+            <Stack sx={{ flex: 1 }}>
+              <Typography variant="s7" align="right" sx={{ mb: 0.2 }}>
+                {currencySymbols[activeFiatCurrency]} {fNumber(tokenExch2)}
+              </Typography>
+              <Box sx={{ height: '60px', width: '100%' }}>
+                <SparklineChart
+                  url={`${BASE_URL}/sparkline/${token2.md5}?period=24h&${token2.pro24h}`}
+                />
+              </Box>
+            </Stack>
+          </Stack>
+        </Stack>
 
-            <ExchangeButton
-              variant="contained"
-              sx={{ mt: 1.5 }}
-              onClick={handlePlaceOrder}
-              // color={'primary'}
-              disabled={!canPlaceOrder || isProcessing == 1}
-            >
-              {handleMsg()}
-            </ExchangeButton>
-          </>
-        ) : (
-          <ConnectWallet pair={pair} />
-        )}
+        <QRDialog
+          open={openScanQR}
+          type="OfferCreate"
+          onClose={handleScanQRClose}
+          qrUrl={qrUrl}
+          nextUrl={nextUrl}
+        />
       </Stack>
-
-      <QRDialog
-        open={openScanQR}
-        type="OfferCreate"
-        onClose={handleScanQRClose}
-        qrUrl={qrUrl}
-        nextUrl={nextUrl}
-      />
     </Stack>
   );
 }

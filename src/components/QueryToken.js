@@ -1,15 +1,9 @@
 import React, { useContext } from 'react';
 import { useState } from 'react';
-import {
-  LazyLoadImage,
-} from 'react-lazy-load-image-component';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Material
-import {
-  styled,
-  Stack,
-  Typography
-} from '@mui/material';
+import { styled, Stack, Typography } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CurrencySearchModal from 'src/components/CurrencySearchModal';
 
@@ -34,7 +28,7 @@ export default function QueryToken({ token, onChangeToken }) {
 
   const onDismiss = () => {
     setOpen(false);
-  }
+  };
 
   const { md5, name, user, kyc, isOMCF } = token;
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
@@ -45,13 +39,13 @@ export default function QueryToken({ token, onChangeToken }) {
         direction="row"
         alignItems="center"
         spacing={0.5}
-        sx={{ p: 0, cursor: "pointer", '&:hover': { opacity: 0.8} }}
+        sx={{ p: 0, cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
         onClick={() => setOpen(true)}
       >
         <TokenImage
           src={imgUrl} // use normal <img> attributes as props
-          width={48}
-          height={48}
+          width={36}
+          height={36}
           onError={(event) => (event.target.src = '/static/alt.webp')}
         />
         <Stack>
@@ -59,13 +53,7 @@ export default function QueryToken({ token, onChangeToken }) {
             variant="token"
             color={
               // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-              isOMCF !== 'yes'
-                ? darkMode
-                  ? '#fff'
-                  : '#222531'
-                : darkMode
-                  ? '#007B55'
-                  : '#4E8DF4'
+              isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : darkMode ? '#007B55' : '#4E8DF4'
             }
             noWrap
           >
@@ -73,9 +61,7 @@ export default function QueryToken({ token, onChangeToken }) {
           </Typography>
           <Typography
             variant="caption"
-            color={
-              isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-            }
+            color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
             noWrap
           >
             {truncate(user, 13)}
@@ -87,10 +73,15 @@ export default function QueryToken({ token, onChangeToken }) {
           </Typography>
           {/* <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography> */}
         </Stack>
-        <ArrowDropDownIcon/>
+        <ArrowDropDownIcon />
       </Stack>
 
-      <CurrencySearchModal token={token} open={open} onDismiss={onDismiss} onChangeToken={onChangeToken} />
+      <CurrencySearchModal
+        token={token}
+        open={open}
+        onDismiss={onDismiss}
+        onChangeToken={onChangeToken}
+      />
     </>
   );
 }
