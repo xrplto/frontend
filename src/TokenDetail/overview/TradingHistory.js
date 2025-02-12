@@ -32,7 +32,7 @@ const TradingHistory = ({ tokenId }) => {
 
       try {
         const response = await fetch(
-          `http://37.27.134.126/api//history?md5=${tokenId}&page=0&limit=10`
+          `http://37.27.134.126/api//history?md5=${tokenId}&page=0&limit=20`
         );
         const data = await response.json();
         if (data.result === 'success') {
