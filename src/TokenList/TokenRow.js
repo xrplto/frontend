@@ -94,11 +94,21 @@ const getPriceColor = (bearbull) => {
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
-  const createdDate = new Date(dateString);
+  const createdDate = new Date(parseInt(dateString));
   const now = new Date();
-  const diffInHours = Math.floor((now - createdDate) / (1000 * 60 * 60));
+  const diffInMs = now - createdDate;
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
   const days = Math.floor(diffInHours / 24);
   const hours = diffInHours % 24;
+
+  if (diffInMinutes < 1) {
+    return 'Just now';
+  } else if (diffInMinutes < 60) {
+    return `${diffInMinutes}m`;
+  } else if (days === 0) {
+    return `${hours}h`;
+  }
   return `${days}d ${hours}h`;
 };
 
@@ -156,7 +166,7 @@ function FTokenRow({
   const {
     id,
     name,
-    date,
+    dateon,
     amount,
     supply,
     trustlines,
@@ -392,7 +402,7 @@ function FTokenRow({
           }}
         >
           <CalendarTodayIcon sx={{ fontSize: isMobile ? '10px' : '12px' }} />
-          {formatDate(date)}
+          {formatDate(dateon)}
         </Typography>
       </TableCell>
       <TableCell
