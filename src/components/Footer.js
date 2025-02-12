@@ -113,7 +113,7 @@ function Footer() {
 
           <Grid item xs={12} sx={{ mt: 2 }}>
             <Typography textAlign="left" variant="subtitle1" sx={{ fontSize: '0.85rem' }}>
-              &copy; 2024 xrpl.to. All rights reserved
+              &copy; 2025 xrpl.to. All rights reserved
             </Typography>
           </Grid>
         </Grid>
