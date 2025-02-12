@@ -105,37 +105,42 @@ export default function ExtraDesc({ token }) {
 
   const MarketTypography = withStyles({
     root: {
-      color: '#2CD9C5'
+      color: '#2CD9C5',
+      fontWeight: 700
     }
   })(Typography);
 
   const VolumeTypography = withStyles({
     root: {
-      color: theme.palette.error.main
+      color: theme.palette.error.main,
+      fontWeight: 700
     }
   })(Typography);
 
   const SupplyTypography = withStyles({
     root: {
-      color: '#3366FF'
+      color: '#3366FF',
+      fontWeight: 700
     }
   })(Typography);
 
   const TotalSupplyTypography = withStyles({
     root: {
-      color: theme.palette.warning.main
+      color: theme.palette.warning.main,
+      fontWeight: 700
     }
   })(Typography);
 
   const TvlTypography = withStyles({
     root: {
-      color: '#A64AEE'
+      color: '#A64AEE',
+      fontWeight: 700
     }
   })(Typography);
 
   return (
-    <Stack spacing={1}>
-      <Grid item container>
+    <Stack spacing={0.5}>
+      <Grid item container spacing={0}>
         <Grid
           item
           xs={12}
@@ -146,8 +151,10 @@ export default function ExtraDesc({ token }) {
             borderRightColor: theme.palette.divider
           }}
         >
-          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 1 }}>
-            <Typography variant="body2">Market cap</Typography>
+          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 0.5 }}>
+            <Typography variant="body2" sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
+              Market cap
+            </Typography>
             <Tooltip
               title={
                 <Typography style={{ display: 'inline-block' }} variant="body2">
@@ -172,10 +179,10 @@ export default function ExtraDesc({ token }) {
                 }
               }}
             >
-              <Icon icon={infoFilled} width={16} height={16} />
+              <Icon icon={infoFilled} width={14} height={14} />
             </Tooltip>
             {isAdmin && (
-              <FormGroup sx={{ ml: 1 }}>
+              <FormGroup sx={{ ml: 0.5 }}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -183,15 +190,23 @@ export default function ExtraDesc({ token }) {
                       checked={omcf === 'yes'}
                       onClick={onChangeMarketCalculation}
                       inputProps={{ 'aria-label': 'controlled' }}
+                      sx={{ p: 0.5 }}
                     />
                   }
-                  label={<Typography variant="body2">Use original formula</Typography>}
+                  label={
+                    <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
+                      Use original formula
+                    </Typography>
+                  }
                 />
               </FormGroup>
             )}
           </Stack>
           <Stack alignItems="center">
-            <MarketTypography variant="desc" sx={{ mt: 1, mb: 1 }}>
+            <MarketTypography
+              variant="desc"
+              sx={{ mt: 0.5, mb: 0.5, fontSize: '1.125rem', letterSpacing: '0.02em' }}
+            >
               {currencySymbols[activeFiatCurrency]}{' '}
               {convertedMarketCap >= 1000000
                 ? `${(convertedMarketCap / 1000000).toFixed(1)}M`
@@ -212,8 +227,10 @@ export default function ExtraDesc({ token }) {
             borderRightColor: theme.palette.divider
           }}
         >
-          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 1 }}>
-            <Typography variant="body2">TVL</Typography>
+          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 0.5 }}>
+            <Typography variant="body2" sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
+              TVL
+            </Typography>
             <Tooltip
               title={
                 <Typography variant="body2">
@@ -234,11 +251,14 @@ export default function ExtraDesc({ token }) {
                 }
               }}
             >
-              <Icon icon={infoFilled} width={16} height={16} />
+              <Icon icon={infoFilled} width={14} height={14} />
             </Tooltip>
           </Stack>
           <Stack alignItems="center">
-            <TvlTypography variant="desc" sx={{ mt: 1, mb: 1 }}>
+            <TvlTypography
+              variant="desc"
+              sx={{ mt: 0.5, mb: 0.5, fontSize: '1.125rem', letterSpacing: '0.02em' }}
+            >
               {currencySymbols[activeFiatCurrency]}{' '}
               {token.tvl >= 1000000
                 ? `${(token.tvl / 1000000).toFixed(1)}M`
@@ -259,8 +279,10 @@ export default function ExtraDesc({ token }) {
             borderRightColor: theme.palette.divider
           }}
         >
-          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 1 }}>
-            <Typography variant="body2">Volume (24h)</Typography>
+          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 0.5 }}>
+            <Typography variant="body2" sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
+              Volume (24h)
+            </Typography>
             <Tooltip
               title={
                 <Typography variant="body2">
@@ -279,11 +301,14 @@ export default function ExtraDesc({ token }) {
                 }
               }}
             >
-              <Icon icon={infoFilled} width={16} height={16} />
+              <Icon icon={infoFilled} width={14} height={14} />
             </Tooltip>
           </Stack>
           <Stack alignItems="center">
-            <VolumeTypography variant="desc" sx={{ mt: 1, mb: 1 }}>
+            <VolumeTypography
+              variant="desc"
+              sx={{ mt: 0.5, mb: 0.5, fontSize: '1.125rem', letterSpacing: '0.02em' }}
+            >
               <Tooltip
                 title={
                   <Typography variant="body2">
@@ -316,8 +341,10 @@ export default function ExtraDesc({ token }) {
         </Grid>
 
         <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' } }}>
-          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 1 }}>
-            <Typography variant="body2">Supply</Typography>
+          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 0.5 }}>
+            <Typography variant="body2" sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
+              Supply
+            </Typography>
             <Tooltip
               title={
                 <Typography variant="body2">
@@ -340,11 +367,15 @@ export default function ExtraDesc({ token }) {
                 }
               }}
             >
-              <Icon icon={infoFilled} width={16} height={16} />
+              <Icon icon={infoFilled} width={14} height={14} />
             </Tooltip>
           </Stack>
           <Stack alignItems="center">
-            <SupplyTypography color="primary" variant="desc" sx={{ mt: 1, mb: 1 }}>
+            <SupplyTypography
+              color="primary"
+              variant="desc"
+              sx={{ mt: 0.5, mb: 0.5, fontSize: '1.125rem', letterSpacing: '0.02em' }}
+            >
               {supply >= 1000000000000
                 ? `${(supply / 1000000000000).toFixed(2)}T`
                 : supply >= 1000000000

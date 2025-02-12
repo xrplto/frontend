@@ -32,24 +32,21 @@ export default function PriceDesc({ token }) {
 
   return (
     <Stack>
-      <Typography variant="h1" color="#33C2FF" fontSize="1.2rem">
+      <Typography variant="h1" color="#33C2FF" fontSize="1rem">
         {user} Price ({name})
       </Typography>
-      <Stack direction="row" spacing={2} sx={{ mt: 0 }} alignItems="center">
-        <Stack direction="row" spacing={1} alignItems="center">
+      <Stack direction="row" spacing={1} sx={{ mt: 0.5 }} alignItems="center">
+        <Stack direction="row" spacing={0.5} alignItems="center">
           <Typography variant="price" noWrap>
             <NumberTooltip
               prepend={currencySymbols[activeFiatCurrency]}
               number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
             />
           </Typography>
-          {/* <Typography variant="subtitle1" style={{ marginTop: 8 }}>
-            <NumberTooltip number={fNumber(exch)} /> XRP
-          </Typography> */}
         </Stack>
       </Stack>
 
-      <Stack direction="row" spacing={1} sx={{ mt: 0.5 }} alignItems="center">
+      <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }} alignItems="center">
         <BearBullChip
           value={pro5m}
           tooltip={
@@ -94,7 +91,7 @@ export default function PriceDesc({ token }) {
 
       <LowHighBar24H token={token} />
 
-      {isTablet && <Divider />}
+      {isTablet && <Divider sx={{ mt: 0.5 }} />}
     </Stack>
   );
 }

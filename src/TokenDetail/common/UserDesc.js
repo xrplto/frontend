@@ -323,7 +323,7 @@ export default function UserDesc({ token }) {
   }, [tags, id]);
 
   return (
-    <Stack>
+    <Stack spacing={1}>
       {editToken && <EditTokenDialog token={editToken} setToken={setEditToken} />}
 
       <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
@@ -344,8 +344,8 @@ export default function UserDesc({ token }) {
                   top: '0vh',
                   opacity: 0,
                   zIndex: 1,
-                  width: '56px',
-                  height: '56px'
+                  width: '48px',
+                  height: '48px'
                 }}
                 onClick={() => setEditToken(token)}
               >
@@ -355,7 +355,7 @@ export default function UserDesc({ token }) {
             </IconCover>
           </div>
         ) : (
-          <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ width: 56, height: 56 }} />
+          <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ width: 48, height: 48 }} />
         )}
         <Stack spacing={0.2}>
           <Typography
@@ -363,7 +363,7 @@ export default function UserDesc({ token }) {
             fontWeight="700"
             color={darkMode ? '#22B14C' : '#3366FF'}
             alt={user}
-            fontSize="1.1rem"
+            fontSize="1rem"
           >
             {name}
           </Typography>
@@ -380,8 +380,8 @@ export default function UserDesc({ token }) {
         <Grid
           container
           direction="row"
-          spacing={1}
-          sx={{ mt: 2 }}
+          spacing={0.5}
+          sx={{ mt: 1 }}
           justifyContent={isTablet ? 'flex-end' : 'flex-start'}
         >
           <Grid item>
@@ -395,17 +395,17 @@ export default function UserDesc({ token }) {
       <Box
         sx={{
           display: 'flex',
-          flexWrap: 'wrap', // Enable wrapping for smaller screens
-          gap: { xs: 1, sm: 1.5, md: 2 }, // Dynamic gap based on screen size
-          py: 1,
+          flexWrap: 'wrap',
+          gap: { xs: 0.5, sm: 0.75, md: 1 },
+          py: 0.5,
           overflow: 'auto',
           width: '100%',
           '& > *': {
             scrollSnapAlign: 'center',
-            minWidth: 'fit-content' // Prevent chips from shrinking too much
+            minWidth: 'fit-content'
           },
           '::-webkit-scrollbar': { display: 'none' },
-          mb: isTablet ? 2 : 0
+          mb: isTablet ? 1 : 0
         }}
       >
         <Tooltip title={<Typography variant="body2">Rank by 24h Volume.</Typography>}>
@@ -413,8 +413,8 @@ export default function UserDesc({ token }) {
             label={<Typography variant={isTablet ? 'body2' : 's16'}>Rank # {id}</Typography>}
             color="primary"
             variant="outlined"
-            size={isTablet ? 'small' : 'small'}
-            sx={{ borderRadius: '8px' }} // Reduced borderRadius for a more squared shape
+            size="small"
+            sx={{ borderRadius: '6px', height: '24px' }}
           />
         </Tooltip>
         <Chip
@@ -425,8 +425,8 @@ export default function UserDesc({ token }) {
           }
           color="error"
           variant="outlined"
-          size={isTablet ? 'small' : 'small'}
-          sx={{ borderRadius: '8px' }}
+          size="small"
+          sx={{ borderRadius: '6px', height: '24px' }}
         />
         <Chip
           label={
@@ -436,17 +436,17 @@ export default function UserDesc({ token }) {
           }
           color="warning"
           variant="outlined"
-          size={isTablet ? 'small' : 'small'}
-          sx={{ borderRadius: '8px' }}
+          size="small"
+          sx={{ borderRadius: '6px', height: '24px' }}
         />
         <Chip
           label={
             <Typography variant={isTablet ? 'body2' : 's16'}>{fNumber(vol24htx)} Trades</Typography>
           }
-          color="secondary" // You can choose a suitable color
+          color="secondary"
           variant="outlined"
-          size={isTablet ? 'small' : 'small'}
-          sx={{ borderRadius: '8px' }}
+          size="small"
+          sx={{ borderRadius: '6px', height: '24px' }}
         />
         <Chip
           label={
@@ -456,37 +456,14 @@ export default function UserDesc({ token }) {
           }
           color="info"
           variant="outlined"
-          size={isTablet ? 'small' : 'small'}
-          sx={{ borderRadius: '8px' }}
+          size="small"
+          sx={{ borderRadius: '6px', height: '24px' }}
         />
       </Box>
 
-      {/* <Box
-                sx={{
-                    display: "flex",
-                    gap: 1,
-                    py: 1,
-                    overflow: "auto",
-                    width: "100%",
-                    "& > *": {
-                        scrollSnapAlign: "center",
-                    },
-                    "::-webkit-scrollbar": { display: "none" },
-                }}
-            >
-                {tags && tags.map((tag, idx) => {
-                    return (
-                        <Chip
-                            size="small"
-                            label={tag}
-                        />
-                    );
-                })}
-            </Box> */}
-
       {isTablet && (
         <>
-          <Grid item xs={12} lg={6} mb={2}>
+          <Grid item xs={12} lg={6} mb={1}>
             <PriceDesc token={token} />
           </Grid>
 
@@ -494,19 +471,15 @@ export default function UserDesc({ token }) {
             <ExtraButtons token={token} />
           </Grid>
 
-          <Divider
-            sx={{
-              my: 1.5
-            }}
-          />
+          <Divider sx={{ my: 1 }} />
         </>
       )}
 
       {showStat && (
-        <Grid container item xs={12} sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Stack direction="row" alignItems="center" gap={1}>
-              <Typography variant="body1">Market Cap</Typography>
+        <Grid container item xs={12} sx={{ display: { xs: 'block', md: 'none' }, mb: 1 }}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={0.5}>
+            <Stack direction="row" alignItems="center" gap={0.5}>
+              <Typography variant="body2">Market Cap</Typography>
               <Tooltip
                 title={
                   <Typography variant="body2">
@@ -522,18 +495,23 @@ export default function UserDesc({ token }) {
                   </Typography>
                 }
               >
-                <Icon icon={infoFilled} />
+                <Icon icon={infoFilled} width={14} height={14} />
               </Tooltip>
             </Stack>
 
-            <MarketTypography variant="body1">
+            <MarketTypography variant="body2">
               {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
             </MarketTypography>
           </Stack>
 
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
-            <Stack direction="row" alignItems="center" gap={1}>
-              <Typography variant="body1">Volume (24h)</Typography>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mt: 0.5 }}
+          >
+            <Stack direction="row" alignItems="center" gap={0.5}>
+              <Typography variant="body2">Volume (24h)</Typography>
               <Tooltip
                 title={
                   <Typography variant="body2">
@@ -541,22 +519,32 @@ export default function UserDesc({ token }) {
                   </Typography>
                 }
               >
-                <Icon icon={infoFilled} />
+                <Icon icon={infoFilled} width={14} height={14} />
               </Tooltip>
             </Stack>
-            <VolumeTypography variant="body1">
+            <VolumeTypography variant="body2">
               {volume} <VolumeTypography variant="small"> {name}</VolumeTypography>
             </VolumeTypography>
           </Stack>
 
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
-            <Typography variant="body1">Volume / Marketcap</Typography>
-            <VolumeTypography variant="body1">{fNumber(voldivmarket)}</VolumeTypography>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mt: 0.5 }}
+          >
+            <Typography variant="body2">Volume / Marketcap</Typography>
+            <VolumeTypography variant="body2">{fNumber(voldivmarket)}</VolumeTypography>
           </Stack>
 
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
-            <Stack direction="row" alignItems="center" gap={1}>
-              <Typography variant="body1">Circulating Supply</Typography>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mt: 0.5 }}
+          >
+            <Stack direction="row" alignItems="center" gap={0.5}>
+              <Typography variant="body2">Circulating Supply</Typography>
               <Tooltip
                 title={
                   <Typography variant="body2">
@@ -565,15 +553,20 @@ export default function UserDesc({ token }) {
                   </Typography>
                 }
               >
-                <Icon icon={infoFilled} />
+                <Icon icon={infoFilled} width={14} height={14} />
               </Tooltip>
             </Stack>
-            <SupplyTypography variant="body1">{circulatingSupply}</SupplyTypography>
+            <SupplyTypography variant="body2">{circulatingSupply}</SupplyTypography>
           </Stack>
 
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
-            <Typography variant="body1">Total Supply</Typography>
-            <TotalSupplyTypography variant="body1">{totalSupply}</TotalSupplyTypography>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ mt: 0.5 }}
+          >
+            <Typography variant="body2">Total Supply</Typography>
+            <TotalSupplyTypography variant="body2">{totalSupply}</TotalSupplyTypography>
           </Stack>
         </Grid>
       )}
@@ -587,7 +580,8 @@ export default function UserDesc({ token }) {
             '&:hover': {
               backgroundColor: darkMode ? '#2B2C38' : '#EBEDF0'
             },
-            mb: 1
+            py: 0.5,
+            mb: 0.5
           }}
         >
           {`${!showStat ? 'More' : 'less'} stats`}
@@ -596,11 +590,11 @@ export default function UserDesc({ token }) {
 
       <Grid
         container
-        spacing={1}
+        spacing={0.5}
         alignItems="center"
         sx={{
-          mt: 1,
-          ml: isTablet ? 0 : '-9px',
+          mt: 0.5,
+          ml: isTablet ? 0 : '-4px',
           width: '100%'
         }}
       >
@@ -614,7 +608,7 @@ export default function UserDesc({ token }) {
                 underline="none"
                 rel="noreferrer noopener nofollow"
               >
-                <Chip size="small" label={tag} onClick={handleDelete} />
+                <Chip size="small" label={tag} onClick={handleDelete} sx={{ height: '24px' }} />
               </Link>
             </Grid>
           ))
@@ -625,7 +619,7 @@ export default function UserDesc({ token }) {
             justifyContent="space-between"
             sx={{ width: '100%' }}
           >
-            <Typography variant="body1">Tags</Typography>
+            <Typography variant="body2">Tags</Typography>
 
             <Box display="flex" alignItems="center">
               {tags &&
@@ -637,7 +631,7 @@ export default function UserDesc({ token }) {
                       pl: 0,
                       pr: 0,
                       display: 'inline-flex',
-                      marginLeft: '-6px'
+                      marginLeft: '-3px'
                     }}
                     underline="none"
                     rel="noreferrer noopener nofollow"
@@ -646,9 +640,10 @@ export default function UserDesc({ token }) {
                       label={tag}
                       size="small"
                       sx={{
-                        borderInlineStart: `3px solid ${darkMode ? '#17171a' : '#fff'}`,
+                        borderInlineStart: `2px solid ${darkMode ? '#17171a' : '#fff'}`,
                         cursor: 'pointer',
-                        fontSize: '12px'
+                        fontSize: '12px',
+                        height: '24px'
                       }}
                     />
                   </Link>
@@ -659,14 +654,15 @@ export default function UserDesc({ token }) {
                   size="small"
                   sx={{
                     fontSize: '12px',
-                    borderInlineStart: `3px solid ${darkMode ? '#17171a' : '#fff'}`,
-                    marginLeft: '-6px'
+                    borderInlineStart: `2px solid ${darkMode ? '#17171a' : '#fff'}`,
+                    marginLeft: '-3px',
+                    height: '24px'
                   }}
                   onClick={() => toggleTagsDrawer(true)}
                 />
               )}
               <KeyboardArrowRightIcon
-                sx={{ cursor: 'pointer' }}
+                sx={{ cursor: 'pointer', width: 20, height: 20 }}
                 onClick={() => toggleTagsDrawer(true)}
               />
             </Box>
@@ -674,19 +670,17 @@ export default function UserDesc({ token }) {
         )}
       </Grid>
 
-      {isTablet && (
-        <Divider
-          sx={{
-            mt: 1.5
-          }}
-        />
-      )}
+      {isTablet && <Divider sx={{ my: 1 }} />}
 
-      <Grid container spacing={1} sx={{ p: 0, mt: 1, width: '100%', ml: isTablet ? 0 : '-9px' }}>
+      <Grid
+        container
+        spacing={0.5}
+        sx={{ p: 0, mt: 0.5, width: '100%', ml: isTablet ? 0 : '-4px' }}
+      >
         {!isTablet ? (
           <>
             {domain && (
-              <Grid item sx={{ pb: 1 }}>
+              <Grid item>
                 <Link
                   underline="none"
                   color="inherit"
@@ -696,24 +690,25 @@ export default function UserDesc({ token }) {
                 >
                   <Chip
                     label={domain}
-                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px' }}
+                    size="small"
+                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px', height: '24px' }}
                     deleteIcon={
                       <Icon
                         icon={linkExternal}
-                        width="16"
-                        height="16"
+                        width="14"
+                        height="14"
                         style={{ color: theme.palette.primary.main }}
                       />
                     }
                     onDelete={handleDelete}
                     onClick={handleDelete}
-                    icon={<Icon icon={link45deg} width="16" height="16" />}
+                    icon={<Icon icon={link45deg} width="14" height="14" />}
                   />
                 </Link>
               </Grid>
             )}
             {whitepaper && (
-              <Grid item sx={{ pb: 1 }}>
+              <Grid item>
                 <Link
                   underline="none"
                   color="inherit"
@@ -723,46 +718,34 @@ export default function UserDesc({ token }) {
                 >
                   <Chip
                     label={'Whitepaper'}
-                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px' }}
+                    size="small"
+                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px', height: '24px' }}
                     deleteIcon={
                       <Icon
                         icon={linkExternal}
-                        width="16"
-                        height="16"
+                        width="14"
+                        height="14"
                         style={{ color: theme.palette.primary.main }}
                       />
                     }
                     onDelete={handleDelete}
                     onClick={handleDelete}
-                    icon={<Icon icon={paperIcon} width="16" height="16" />}
+                    icon={<Icon icon={paperIcon} width="14" height="14" />}
                   />
                 </Link>
               </Grid>
             )}
 
-            {/* <Grid item sx={{pb:1}}>
-                        <Chip label={'TrustSet'} sx={{pl:0.5,pr:0.5}}
-                            deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
-                            onDelete={handleDelete} onClick={handleSetTrust}
-                            icon={<Icon icon={arrowsExchange} width="18" height="18"/>} />
-                    </Grid> */}
-
-            <Grid item sx={{ pb: 1 }}>
+            <Grid item>
               <ExplorersMenu issuer={issuer} />
             </Grid>
             {isChat && (
-              <Grid item sx={{ pb: 1 }}>
+              <Grid item>
                 <ChatMenu token={token} />
               </Grid>
             )}
-            {/* <Grid item sx={{pb:1}}>
-                        <Chip label="Source code" sx={{pl:0.5,pr:0.5}}
-                            deleteIcon={<Icon icon={linkExternal} width="16" height="16"/>}
-                            onDelete={handleDelete} onClick={handleDelete}
-                            icon={<Icon icon={codeIcon} width="16" height="16" />} />
-                    </Grid> */}
             {isCommunity && (
-              <Grid item sx={{ pb: 1 }}>
+              <Grid item>
                 <CommunityMenu token={token} />
               </Grid>
             )}
@@ -774,26 +757,20 @@ export default function UserDesc({ token }) {
             justifyContent="space-between"
             sx={{ width: '100%' }}
           >
-            <Typography variant="body1">Links</Typography>
+            <Typography variant="body2">Links</Typography>
 
             <Box display="flex" alignItems="center" onClick={() => toggleLinksDrawer(true)}>
-              <Typography variant="caption" sx={{ fontSize: '12px' }}>
+              <Typography variant="caption" sx={{ fontSize: '11px' }}>
                 Website, Explorers, Socials etc.
               </Typography>
 
-              <KeyboardArrowRightIcon sx={{ cursor: 'pointer' }} />
+              <KeyboardArrowRightIcon sx={{ cursor: 'pointer', width: 20, height: 20 }} />
             </Box>
           </Stack>
         )}
       </Grid>
 
-      {isTablet && (
-        <Divider
-          sx={{
-            my: 1.5
-          }}
-        />
-      )}
+      {isTablet && <Divider sx={{ my: 1 }} />}
 
       {issuer_info && (
         <>
@@ -801,26 +778,26 @@ export default function UserDesc({ token }) {
             direction="row"
             alignItems="center"
             justifyContent="space-between"
-            sx={{ mt: isTablet ? 0 : 3, width: '100%' }}
+            sx={{ mt: isTablet ? 0 : 2, width: '100%' }}
           >
-            {isTablet && <Typography variant="body1">Issuer</Typography>}
+            {isTablet && <Typography variant="body2">Issuer</Typography>}
             <Chip
               label={
                 <Typography variant="s7">
                   Issuer: <Typography variant="s8">{truncate(issuer, 16)}</Typography>
                 </Typography>
               }
-              size={isTablet ? 'small' : 'medium'}
-              sx={{ pl: 0.5, pr: 0, borderRadius: '6px' }}
+              size="small"
+              sx={{ pl: 0.5, pr: 0, borderRadius: '6px', height: '24px' }}
               deleteIcon={
                 <Stack direction="row" spacing={0} alignItems="center">
                   <Tooltip title={'Copy Address'}>
-                    <IconButton size="small">
+                    <IconButton size="small" sx={{ p: 0.5 }}>
                       <CopyToClipboard
                         text={issuer}
                         onCopy={() => openSnackbar('Copied!', 'success')}
                       >
-                        <Icon icon={copyIcon} width="16" height="16" />
+                        <Icon icon={copyIcon} width="14" height="14" />
                       </CopyToClipboard>
                     </IconButton>
                   </Tooltip>
@@ -828,8 +805,8 @@ export default function UserDesc({ token }) {
                     <Tooltip title={'Blackholed'}>
                       <Icon
                         icon={blackholeIcon}
-                        width="24"
-                        height="24"
+                        width="20"
+                        height="20"
                         style={{ color: '#ff0000' }}
                       />
                     </Tooltip>
@@ -843,8 +820,8 @@ export default function UserDesc({ token }) {
                       rel="noreferrer noopener nofollow"
                     >
                       <Tooltip title={'Assessment'}>
-                        <IconButton size="small">
-                          <LazyLoadImage src={img_xrplf} width={16} height={16} />
+                        <IconButton size="small" sx={{ p: 0.5 }}>
+                          <LazyLoadImage src={img_xrplf} width={14} height={14} />
                         </IconButton>
                       </Tooltip>
                     </Link>
@@ -857,18 +834,12 @@ export default function UserDesc({ token }) {
                 <Avatar
                   alt="XRP Logo"
                   src="/static/xrp.webp"
-                  sx={{ mr: 1, width: 20, height: 20 }}
+                  sx={{ mr: 0.5, width: 16, height: 16 }}
                 />
               }
             />
           </Stack>
-          {isTablet && (
-            <Divider
-              sx={{
-                mt: 1.5
-              }}
-            />
-          )}
+          {isTablet && <Divider sx={{ mt: 1 }} />}
         </>
       )}
 
@@ -893,16 +864,16 @@ export default function UserDesc({ token }) {
           }
         }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <WarningIcon sx={{ color: '#ff3d00' }} />
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5 }}>
+          <WarningIcon sx={{ color: '#ff3d00', width: 24, height: 24 }} />
           <Typography color="error" variant="h6">
             Scam Warning!
           </Typography>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ p: 1.5 }}>
           <DialogContentText>
             This token has been tagged as a potential SCAM. Exercise extreme caution:
-            <ul>
+            <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
               <li>Do NOT trust any investment promises</li>
               <li>Do NOT connect your wallet to unknown sites</li>
               <li>Do NOT share your private keys or seed phrase</li>
@@ -910,7 +881,7 @@ export default function UserDesc({ token }) {
             </ul>
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 1.5 }}>
           <Button onClick={() => setOpenScamWarning(false)} variant="contained" color="error">
             I Understand
           </Button>

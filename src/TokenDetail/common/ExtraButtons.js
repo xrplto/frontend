@@ -64,32 +64,31 @@ export default function ExtraButtons({ token }) {
   useEffect(() => {
     if (!accountProfile) return;
     axios
-    .get(`${BASE_URL}/account/lines/${accountProfile?.account}`)
-    .then((res) => {
-      let ret = res.status === 200 ? res.data : undefined;
-      if (ret) {
-        const trustlines = ret.lines;
+      .get(`${BASE_URL}/account/lines/${accountProfile?.account}`)
+      .then((res) => {
+        let ret = res.status === 200 ? res.data : undefined;
+        if (ret) {
+          const trustlines = ret.lines;
 
-        const trustlineToRemove = trustlines.find((trustline) => {
-          return (
-            (trustline.LowLimit.issuer === issuer ||
-              trustline.HighLimit.issuer === issuer) &&
-            trustline.LowLimit.currency === currency
-          );
-        });
+          const trustlineToRemove = trustlines.find((trustline) => {
+            return (
+              (trustline.LowLimit.issuer === issuer || trustline.HighLimit.issuer === issuer) &&
+              trustline.LowLimit.currency === currency
+            );
+          });
 
-        if (trustlineToRemove) {
-          setBalance(Decimal.abs(trustlineToRemove.Balance.value).toString());
-          setLimit(trustlineToRemove.HighLimit.value);
+          if (trustlineToRemove) {
+            setBalance(Decimal.abs(trustlineToRemove.Balance.value).toString());
+            setLimit(trustlineToRemove.HighLimit.value);
+          }
+
+          setIsRemove(trustlineToRemove);
         }
-        
-        setIsRemove(trustlineToRemove);
-      }
-    })
-    .catch((err) => {
-      console.log('Error on getting account lines!!!', err);
-    })
-  }, [trustToken, accountProfile, sync])
+      })
+      .catch((err) => {
+        console.log('Error on getting account lines!!!', err);
+      });
+  }, [trustToken, accountProfile, sync]);
 
   const handleSetTrust = (e) => {
     setTrustToken(token);
@@ -98,7 +97,7 @@ export default function ExtraButtons({ token }) {
   const handleByCrypto = (e) => {};
 
   return (
-    <Stack alignItems="center">
+    <Stack alignItems="center" spacing={1}>
       {trustToken && (
         <TrustSetDialog
           balance={balance}
@@ -108,7 +107,7 @@ export default function ExtraButtons({ token }) {
         />
       )}
 
-      <Grid container direction="row" spacing={1}>
+      <Grid container direction="row" spacing={0.5}>
         <Grid item>
           <Button
             variant="contained"
@@ -116,6 +115,7 @@ export default function ExtraButtons({ token }) {
             color={`${isRemove ? 'error' : 'primary'}`}
             size="small"
             disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
+            sx={{ minWidth: 'auto', px: 1 }}
           >
             {`${isRemove ? 'Remove' : 'Set'} Trustline`}
           </Button>
@@ -125,11 +125,15 @@ export default function ExtraButtons({ token }) {
           <Link
             underline="none"
             color="inherit"
-            // target="_blank"
             href={`/buy-xrp`}
             rel="noreferrer noopener nofollow"
           >
-            <Button variant="outlined" color="primary" size="small">
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              sx={{ minWidth: 'auto', px: 1 }}
+            >
               Buy XRP
             </Button>
           </Link>
@@ -139,16 +143,20 @@ export default function ExtraButtons({ token }) {
       <Stack
         direction="row"
         alignItems="center"
-        sx={{ mt: 1, width: isTablet ? '100%' : 'auto' }}
-        justifyContent={isTablet ? 'flex-end' : 'flex-start'}
+        spacing={0.5}
+        sx={{
+          width: isTablet ? '100%' : 'auto',
+          justifyContent: isTablet ? 'flex-end' : 'flex-start'
+        }}
       >
-        {/* Step 4: Use darkMode to select the appropriate image */}
         <LazyLoadImage
-          src={darkMode ? "/static/sponsor-dark-theme.svg" : "/static/sponsor-light-theme.svg"}
-          width={24}
-          height={24}
+          src={darkMode ? '/static/sponsor-dark-theme.svg' : '/static/sponsor-light-theme.svg'}
+          width={20}
+          height={20}
         />
-        <Typography variant="sponsored">Sponsored</Typography>
+        <Typography variant="sponsored" sx={{ fontSize: '0.75rem' }}>
+          Sponsored
+        </Typography>
       </Stack>
     </Stack>
   );

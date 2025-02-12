@@ -15,21 +15,21 @@ export default function BearBullChip({ value, tooltip, label }) {
 
   return (
     <Tooltip title={tooltip} arrow>
-      <Stack direction="row" spacing={0.5} alignItems="center">
+      <Stack direction="row" spacing={0.25} alignItems="center">
         {label && (
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
             {label}
           </Typography>
         )}
         <ChipComponent
-          icon={<Icon icon={isBearish ? caretDown : caretUp} width="16" height="16" color="#fff" />}
+          icon={<Icon icon={isBearish ? caretDown : caretUp} width="14" height="14" color="#fff" />}
           size="small"
           label={
-            <WhiteTextTypography variant="subtitle2" style={{ color: '#FFFFFF !important' }}>
+            <WhiteTextTypography variant="caption" style={{ color: '#FFFFFF !important' }}>
               {strPro}
             </WhiteTextTypography>
           }
-          style={{ borderRadius: '8px' }}
+          sx={{ height: '22px', '& .MuiChip-label': { px: 0.75 } }}
         />
       </Stack>
     </Tooltip>
@@ -44,18 +44,28 @@ BearBullChip.propTypes = {
 
 const BearishChip = withStyles({
   root: {
-    backgroundColor: '#B72136 !important'
+    backgroundColor: '#B72136 !important',
+    borderRadius: '4px !important',
+    '& .MuiChip-label': {
+      padding: '0 4px'
+    }
   }
 })(Chip);
 
 const BullishChip = withStyles({
   root: {
-    backgroundColor: '#007B55 !important'
+    backgroundColor: '#007B55 !important',
+    borderRadius: '4px !important',
+    '& .MuiChip-label': {
+      padding: '0 4px'
+    }
   }
 })(Chip);
 
 const WhiteTextTypography = withStyles({
   root: {
-    color: '#FFFFFF !important'
+    color: '#FFFFFF !important',
+    fontSize: '0.75rem !important',
+    lineHeight: 1.2
   }
 })(Typography);

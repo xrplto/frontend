@@ -32,8 +32,8 @@ const LowhighBarSlider = styled(Slider)(({ theme }) => ({
     border: 'none'
   },
   '& .MuiSlider-thumb': {
-    height: 24,
-    width: 24,
+    height: 16,
+    width: 16,
     backgroundColor: 'unset',
     border: '0px solid currentColor',
     '&:focus, &:hover, &.Mui-active, &.Mui-focusVisible': {
@@ -48,8 +48,8 @@ const LowhighBarSlider = styled(Slider)(({ theme }) => ({
     fontSize: 0,
     background: 'unset',
     padding: 0,
-    width: 13,
-    height: 13,
+    width: 10,
+    height: 10,
     borderRadius: '0 50% 50% 50%',
     backgroundColor: theme.palette.primary.main,
     transformOrigin: 'bottom left',
@@ -80,7 +80,7 @@ export default function LowHighBar24H({ token }) {
     <Stack
       direction="row"
       alignItems="center"
-      spacing={1}
+      spacing={0.5}
       justifyContent={isTablet ? 'space-between' : 'flex-start'}
     >
       <Typography variant="caption">
@@ -88,19 +88,16 @@ export default function LowHighBar24H({ token }) {
         <NumberTooltip
           prepend={currencySymbols[activeFiatCurrency]}
           number={fNumber(
-            Decimal.mul(
-              Decimal.mul(min, metrics.USD),
-              1 / metrics[activeFiatCurrency]
-            )
+            Decimal.mul(Decimal.mul(min, metrics.USD), 1 / metrics[activeFiatCurrency])
           )}
         />
       </Typography>
-      <Box sx={{ width: isTablet ? 360 : 160 }}>
+      <Box sx={{ width: isTablet ? 280 : 120 }}>
         <LowhighBarSlider
           valueLabelDisplay="on"
           aria-label="Low High Bar Slider"
           value={percent}
-          sx={{ mt: 1 }}
+          sx={{ mt: 0.5 }}
         />
       </Box>
       <Typography variant="caption">
@@ -108,10 +105,7 @@ export default function LowHighBar24H({ token }) {
         <NumberTooltip
           prepend={currencySymbols[activeFiatCurrency]}
           number={fNumber(
-            Decimal.mul(
-              Decimal.mul(max, metrics.USD),
-              1 / metrics[activeFiatCurrency]
-            )
+            Decimal.mul(Decimal.mul(max, metrics.USD), 1 / metrics[activeFiatCurrency])
           )}
         />
       </Typography>
