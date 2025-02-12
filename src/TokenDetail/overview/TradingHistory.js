@@ -11,9 +11,12 @@ import {
   Stack,
   Link,
   Tooltip,
-  IconButton
+  IconButton,
+  Chip
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 
 const TradingHistory = ({ trades }) => {
   const formatTimestamp = (timestamp) => {
@@ -53,6 +56,16 @@ const TradingHistory = ({ trades }) => {
     return `https://bithomp.com/explorer/${hash}`;
   };
 
+  const getTradeType = (trade) => {
+    // If taker paid XRP, it's a buy
+    const isBuy = trade.got.currency === '534F4C4F00000000000000000000000000000000';
+    return {
+      type: isBuy ? 'BUY' : 'SELL',
+      color: isBuy ? 'success' : 'error',
+      icon: isBuy ? <TrendingUpIcon fontSize="small" /> : <TrendingDownIcon fontSize="small" />
+    };
+  };
+
   return (
     <Stack spacing={2}>
       <Typography
@@ -87,10 +100,20 @@ const TradingHistory = ({ trades }) => {
           <TableBody>
             {trades.map((trade) => {
               const price = Number(trade.got.value) / Number(trade.paid.value);
+              const tradeType = getTradeType(trade);
               return (
                 <TableRow key={trade._id}>
                   <TableCell>{formatTimestamp(trade.time)}</TableCell>
-                  <TableCell>{trade.isAMM ? 'AMM' : 'DEX'}</TableCell>
+                  <TableCell>
+                    <Chip
+                      icon={tradeType.icon}
+                      label={tradeType.type}
+                      size="small"
+                      color={tradeType.color}
+                      variant="outlined"
+                      sx={{ minWidth: '80px' }}
+                    />
+                  </TableCell>
                   <TableCell>{formatValue(price)}</TableCell>
                   <TableCell>{formatValue(trade.paid.value)}</TableCell>
                   <TableCell>{formatValue(trade.got.value)}</TableCell>
