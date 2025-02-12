@@ -59,8 +59,8 @@ function a11yProps(index) {
   };
 }
 
-const tabValues = ['', 'markets', 'limit', 'holders', 'wallets'];
-const tabLabels = ['Overview', 'Markets', 'Limit', 'Holders', 'Wallets'];
+const tabValues = ['', 'markets', 'orderbook', 'holders', 'wallets'];
+const tabLabels = ['Overview', 'Markets', 'Orderbook', 'Holders', 'Wallets'];
 
 function getTabID(tab) {
   if (!tab) return 0;
