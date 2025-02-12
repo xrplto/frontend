@@ -14,7 +14,8 @@ import {
   IconButton,
   Chip,
   CircularProgress,
-  Box
+  Box,
+  Pagination
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -23,6 +24,9 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 const TradingHistory = ({ tokenId }) => {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 20;
 
   useEffect(() => {
     const fetchTradingHistory = async () => {
@@ -33,11 +37,13 @@ const TradingHistory = ({ tokenId }) => {
 
       try {
         const response = await fetch(
-          `http://37.27.134.126/api//history?md5=${tokenId}&page=0&limit=20`
+          `http://37.27.134.126/api//history?md5=${tokenId}&page=${page - 1}&limit=${limit}`
         );
         const data = await response.json();
         if (data.result === 'success') {
           setTrades(data.hists);
+          // Calculate total pages based on count
+          setTotalPages(Math.ceil(data.count / limit));
         }
       } catch (error) {
         console.error('Error fetching trading history:', error);
@@ -48,7 +54,11 @@ const TradingHistory = ({ tokenId }) => {
 
     setLoading(true);
     fetchTradingHistory();
-  }, [tokenId]); // Refetch when tokenId changes
+  }, [tokenId, page]); // Add page to dependencies
+
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+  };
 
   const formatTimestamp = (timestamp) => {
     const now = Date.now();
@@ -259,6 +269,21 @@ const TradingHistory = ({ tokenId }) => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Add pagination controls */}
+      {totalPages > 1 && (
+        <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            size="large"
+            showFirstButton
+            showLastButton
+          />
+        </Stack>
+      )}
     </Stack>
   );
 };
