@@ -2,15 +2,7 @@ import React, { useContext } from 'react';
 import { useMediaQuery } from '@mui/material';
 
 // Material
-import {
-  Box,
-  Chip,
-  Link,
-  Typography,
-  MenuItem,
-  Divider,
-  Avatar
-} from '@mui/material';
+import { Box, Chip, Link, Typography, MenuItem, Divider, Avatar } from '@mui/material';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -35,8 +27,7 @@ const socialMediaIcons = {
   tiktok: { alt: 'tiktok', src: '/static/tiktok.webp' },
   reddit: { alt: 'reddit', src: '/static/reddit.svg' },
   telegram: { alt: 'telegram', src: '/static/telegram.webp' },
-  discord: { alt: 'discord', src: '/static/discord.webp' },
-  xrpchat: { alt: 'xrpchat', src: '/static/xrpchat.webp' }
+  discord: { alt: 'discord', src: '/static/discord.webp' }
 };
 
 export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
@@ -71,12 +62,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
 
   const renderIconItem = (title, icon) => (
     <MenuItem divider={true} sx={{ py: 1, px: 2 }}>
-      <Icon
-        icon={icon}
-        width={iconSize}
-        height={iconSize}
-        style={{ marginRight: iconSpacing }}
-      />
+      <Icon icon={icon} width={iconSize} height={iconSize} style={{ marginRight: iconSpacing }} />
       <Typography variant="caption">{title}</Typography>
     </MenuItem>
   );
@@ -99,45 +85,29 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
       <Box>
         {(domain || whitepaper) && (
           <>
-            <Typography
-              variant="h6"
-              color="textPrimary"
-              sx={{ mt: 2, ml: 2, mb: 1 }}
-            >
+            <Typography variant="h6" color="textPrimary" sx={{ mt: 2, ml: 2, mb: 1 }}>
               Links
             </Typography>
-            {domain &&
-              renderLinkItem('Website', link45deg, `https://${domain}`)}
-            {whitepaper &&
-              renderLinkItem('Whitepaper', paperIcon, whitepaper)}
+            {domain && renderLinkItem('Website', link45deg, `https://${domain}`)}
+            {whitepaper && renderLinkItem('Whitepaper', paperIcon, whitepaper)}
             <Divider sx={{ my: 2 }} />
           </>
         )}
 
         {isChat && (
           <>
-            <Typography
-              variant="h6"
-              color="textPrimary"
-              sx={{ mt: 2, ml: 2, mb: 1 }}
-            >
+            <Typography variant="h6" color="textPrimary" sx={{ mt: 2, ml: 2, mb: 1 }}>
               Chat
             </Typography>
-            {social.telegram &&
-              renderLinkItem('Telegram', chatIcon, social.telegram)}
-            {social.discord &&
-              renderLinkItem('Discord', chatIcon, social.discord)}
+            {social.telegram && renderLinkItem('Telegram', chatIcon, social.telegram)}
+            {social.discord && renderLinkItem('Discord', chatIcon, social.discord)}
             <Divider sx={{ my: 2 }} />
           </>
         )}
 
         {social && (
           <>
-            <Typography
-              variant="h6"
-              color="textPrimary"
-              sx={{ mt: 2, ml: 2, mb: 1 }}
-            >
+            <Typography variant="h6" color="textPrimary" sx={{ mt: 2, ml: 2, mb: 1 }}>
               Social Media
             </Typography>
             {Object.entries(social).map(([platform, handle], index) => {
@@ -157,11 +127,7 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
 
         {issuer && (
           <>
-            <Typography
-              variant="h6"
-              color="textPrimary"
-              sx={{ mt: 2, ml: 2, mb: 1 }}
-            >
+            <Typography variant="h6" color="textPrimary" sx={{ mt: 2, ml: 2, mb: 1 }}>
               Issuer
             </Typography>
             {renderLinkItem('Website', linkExternal, issuer)}
@@ -169,24 +135,11 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token }) {
           </>
         )}
 
-        <Typography
-          variant="h6"
-          color="textPrimary"
-          sx={{ mt: 2, ml: 2, mb: 1 }}
-        >
+        <Typography variant="h6" color="textPrimary" sx={{ mt: 2, ml: 2, mb: 1 }}>
           Additional Resources
         </Typography>
         {renderIconItem('Explorer', zoomIcon)}
         <Divider sx={{ my: 2 }} />
-
-        <Typography
-          variant="h6"
-          color="textPrimary"
-          sx={{ mt: 2, ml: 2, mb: 1 }}
-        >
-          Community
-        </Typography>
-        {renderIconItem('XRPChat', personFill)}
       </Box>
     </Drawer>
   );
