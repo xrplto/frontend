@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Material
-import { styled, Stack, Typography } from '@mui/material';
+import { styled, Stack, Typography, Box, alpha } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CurrencySearchModal from 'src/components/CurrencySearchModal';
 
@@ -13,6 +13,21 @@ import { AppContext } from 'src/AppContext';
 const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
   borderRadius: '50%',
   overflow: 'hidden'
+}));
+
+const SelectTokenButton = styled(Stack)(({ theme }) => ({
+  padding: '4px 8px 4px 4px',
+  borderRadius: '20px',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.12),
+    transform: 'translateY(-1px)'
+  },
+  '&:active': {
+    transform: 'translateY(0)'
+  }
 }));
 
 function truncate(str, n) {
@@ -35,26 +50,26 @@ export default function QueryToken({ token, onChangeToken }) {
 
   return (
     <>
-      <Stack
+      <SelectTokenButton
         direction="row"
         alignItems="center"
-        spacing={0.5}
-        sx={{ p: 0, cursor: 'pointer', '&:hover': { opacity: 0.8 } }}
+        spacing={0.8}
         onClick={() => setOpen(true)}
       >
         <TokenImage
-          src={imgUrl} // use normal <img> attributes as props
-          width={36}
-          height={36}
+          src={imgUrl}
+          width={28}
+          height={28}
           onError={(event) => (event.target.src = '/static/alt.webp')}
         />
-        <Stack>
+        <Stack spacing={0}>
           <Typography
-            variant="token"
+            variant="subtitle2"
             color={
               // isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
               isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : darkMode ? '#007B55' : '#4E8DF4'
             }
+            sx={{ lineHeight: 1.2, fontWeight: 600 }}
             noWrap
           >
             {truncate(name, 8)}
@@ -62,19 +77,22 @@ export default function QueryToken({ token, onChangeToken }) {
           <Typography
             variant="caption"
             color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
+            sx={{ lineHeight: 1, fontSize: '0.7rem', opacity: 0.7 }}
             noWrap
           >
             {truncate(user, 13)}
             {kyc && (
-              <Typography variant="kyc" sx={{ ml: 0.2 }}>
+              <Typography variant="kyc" sx={{ ml: 0.2, fontSize: '0.65rem' }}>
                 KYC
               </Typography>
             )}
           </Typography>
           {/* <Typography variant="small" color={isOMCF!=='yes'?'#222531':''}>{date}</Typography> */}
         </Stack>
-        <ArrowDropDownIcon />
-      </Stack>
+        <Box sx={{ display: 'flex', alignItems: 'center', ml: 0.2 }}>
+          <ArrowDropDownIcon sx={{ fontSize: 20, opacity: 0.7 }} />
+        </Box>
+      </SelectTokenButton>
 
       <CurrencySearchModal
         token={token}
