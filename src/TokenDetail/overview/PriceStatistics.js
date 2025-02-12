@@ -108,7 +108,7 @@ export default function PriceStatistics({ token }) {
     <StackStyle>
       <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
       <CardHeader
-        title={`${name} Price Statistics`}
+        title={`${name} Token Details`}
         subheader=""
         sx={{
           p: 1.5,
