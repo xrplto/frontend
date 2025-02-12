@@ -40,10 +40,10 @@ const pulse = keyframes`
 const CurrencyContent = styled('div')(
   ({ theme }) => `
     box-sizing: border-box;
-    margin: 10px 0;
+    margin: 5px 0;
     display: flex;
     flex-direction: row;
-    padding: 20px;
+    padding: 16px;
     border-radius: 10px;
     align-items: center;
     background-color: ${theme.palette.background.paper};
@@ -108,7 +108,23 @@ const ToggleContent = styled('div')(
     transform: translate(-50%, -50%);
     background-color: ${theme.palette.background.paper};
     border-radius: 50%;
-    padding: 6px;
+    padding: 4px;
+    z-index: 1;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid ${theme.palette.divider};
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      transform: translate(-50%, -50%) scale(1.1);
+      background-color: ${theme.palette.primary.main};
+      border-color: ${theme.palette.primary.main};
+
+      svg {
+        color: ${theme.palette.primary.contrastText} !important;
+      }
+    }
+
+    animation: ${pulse} 2s infinite;
 `
 );
 
@@ -889,14 +905,25 @@ const Swap = ({ token }) => {
           </CurrencyContent>
 
           <ToggleContent>
-            <IconButton size="medium" onClick={onRevertExchange}>
+            <IconButton
+              size="small"
+              onClick={onRevertExchange}
+              sx={{
+                backgroundColor: 'transparent',
+                padding: '4px',
+                '&:hover': {
+                  backgroundColor: 'transparent'
+                }
+              }}
+            >
               <Icon
                 icon={exchangeIcon}
-                width="28"
-                height="28"
+                width="20"
+                height="20"
                 style={{
                   color: theme.palette.text.primary,
-                  transform: 'rotate(90deg)'
+                  transform: 'rotate(90deg)',
+                  transition: 'all 0.2s ease-in-out'
                 }}
               />
             </IconButton>
