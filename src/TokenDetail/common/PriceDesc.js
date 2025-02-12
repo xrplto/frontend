@@ -37,7 +37,7 @@ export default function PriceDesc({ token }) {
       </Typography>
       <Stack direction="row" spacing={0.5} alignItems="center">
         <Stack direction="row" spacing={0.25} alignItems="center">
-          <Typography variant="price" noWrap sx={{ fontSize: '1.125rem' }}>
+          <Typography variant="price" noWrap sx={{ fontSize: '1.5rem' }}>
             <NumberTooltip
               prepend={currencySymbols[activeFiatCurrency]}
               number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}

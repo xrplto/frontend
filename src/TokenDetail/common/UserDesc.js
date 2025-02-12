@@ -372,11 +372,11 @@ export default function UserDesc({ token }) {
               fontWeight="700"
               color={darkMode ? '#22B14C' : '#3366FF'}
               alt={user}
-              fontSize="0.95rem"
+              fontSize="1.1rem"
             >
               {name}
             </Typography>
-            <Typography variant="s17" color="text.secondary" sx={{ fontSize: '0.9rem' }}>
+            <Typography variant="s17" color="text.secondary" sx={{ fontSize: '1rem' }}>
               {truncate(user, 15)}
             </Typography>
             {kyc && <Typography variant="kyc2">KYC</Typography>}
