@@ -75,9 +75,9 @@ import { currencySymbols } from 'src/utils/constants';
 
 const IconCover = styled('div')(
   ({ theme }) => `
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
         position: relative;
         overflow: hidden;
         transition: width 1s ease-in-out, height .5s ease-in-out !important;
@@ -99,8 +99,8 @@ const IconWrapper = styled('div')(
         box-sizing: border-box;
         display: inline-block;
         position: relative;
-        width: 56px;
-        height: 56px;
+        width: 64px;
+        height: 64px;
   `
 );
 
@@ -119,7 +119,7 @@ const IconImage = styled('img')(
     min-height: 100%;
     max-height: 100%;
     object-fit: cover;
-    border-radius: 0px;
+    border-radius: 12px;
   `
 );
 
@@ -344,18 +344,26 @@ export default function UserDesc({ token }) {
                   top: '0vh',
                   opacity: 0,
                   zIndex: 1,
-                  width: '48px',
-                  height: '48px'
+                  width: '64px',
+                  height: '64px'
                 }}
                 onClick={() => setEditToken(token)}
               >
-                <EditIcon />
+                <EditIcon sx={{ width: 32, height: 32 }} />
               </IconButton>
               <ImageBackdrop className="MuiImageBackdrop-root" />
             </IconCover>
           </div>
         ) : (
-          <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ width: 48, height: 48 }} />
+          <Avatar
+            alt={`${user} ${name} Logo`}
+            src={imgUrl}
+            sx={{
+              width: 64,
+              height: 64,
+              borderRadius: '16px'
+            }}
+          />
         )}
         <Stack spacing={0.2}>
           <Typography
