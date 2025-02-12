@@ -45,7 +45,7 @@ const TABLE_HEAD = [
   },
   {
     no: 3,
-    id: 'date',
+    id: 'dateon',
     label: (
       <Tooltip title="Time since token creation" placement="top">
         <span>
