@@ -127,13 +127,19 @@ export default function ExtraDesc({ token }) {
     }
   })(Typography);
 
+  const TvlTypography = withStyles({
+    root: {
+      color: '#A64AEE'
+    }
+  })(Typography);
+
   return (
     <Stack spacing={2}>
       <Grid item container>
         <Grid
           item
           xs={12}
-          md={4}
+          md={3}
           sx={{
             display: { xs: 'none', md: 'block' },
             borderRight: '1px solid',
@@ -202,7 +208,54 @@ export default function ExtraDesc({ token }) {
         <Grid
           item
           xs={12}
-          md={4}
+          md={3}
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            borderRight: '1px solid',
+            borderRightColor: theme.palette.divider
+          }}
+        >
+          <Stack direction="row" alignItems="center" gap={1} sx={{ pl: 3 }}>
+            <Typography variant="body1">TVL</Typography>
+            <Tooltip
+              title={
+                <Typography variant="body2">
+                  Total Value Locked (TVL) represents the total value of {name} tokens locked in the
+                  protocol, providing a measure of the overall economic activity and security of the
+                  token.
+                </Typography>
+              }
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    bgcolor: 'black',
+                    border: '1px solid rgba(255, 255, 255, 0.5)',
+                    '& .MuiTooltip-arrow': {
+                      color: 'black'
+                    }
+                  }
+                }
+              }}
+            >
+              <Icon icon={infoFilled} />
+            </Tooltip>
+          </Stack>
+          <Stack alignItems="center">
+            <TvlTypography variant="desc" sx={{ mt: 3, mb: 2 }}>
+              {currencySymbols[activeFiatCurrency]}{' '}
+              {token.tvl >= 1000000
+                ? `${(token.tvl / 1000000).toFixed(1)}M`
+                : token.tvl >= 1000
+                ? `${(token.tvl / 1000).toFixed(1)}K`
+                : fNumber(token.tvl)}
+            </TvlTypography>
+          </Stack>
+        </Grid>
+
+        <Grid
+          item
+          xs={12}
+          md={3}
           sx={{
             display: { xs: 'none', md: 'block' },
             borderRight: '1px solid',
@@ -265,7 +318,7 @@ export default function ExtraDesc({ token }) {
           </Stack>
         </Grid>
 
-        <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
+        <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' } }}>
           <Stack direction="row" alignItems="center" gap={1} sx={{ pl: 3 }}>
             <Typography variant="body1">Supply</Typography>
             <Tooltip
