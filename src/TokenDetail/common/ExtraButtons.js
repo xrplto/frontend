@@ -171,24 +171,6 @@ export default function ExtraButtons({ token }) {
             {`${isRemove ? 'Remove' : 'Set'} Trustline`}
           </Button>
         </Grid>
-
-        <Grid item>
-          <Link
-            underline="none"
-            color="inherit"
-            href={`/buy-xrp`}
-            rel="noreferrer noopener nofollow"
-          >
-            <Button
-              variant="outlined"
-              color="primary"
-              size="small"
-              sx={{ minWidth: 'auto', px: 1 }}
-            >
-              Buy XRP
-            </Button>
-          </Link>
-        </Grid>
       </Grid>
 
       <Stack
