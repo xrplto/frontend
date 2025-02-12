@@ -50,42 +50,102 @@ export default function PriceDesc({ token }) {
         <BearBullChip
           value={pro5m}
           tooltip={
-            <Stack alignItems="center" spacing={0.25}>
+            <Stack
+              alignItems="center"
+              spacing={0.25}
+              sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
+            >
               5m Change
               <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro5m=${pro5m}`} />
             </Stack>
           }
           label="5m"
+          componentsProps={{
+            tooltip: {
+              sx: {
+                bgcolor: 'black',
+                border: '1px solid rgba(255, 255, 255, 0.5)',
+                '& .MuiTooltip-arrow': {
+                  color: 'black'
+                }
+              }
+            }
+          }}
         />
         <BearBullChip
           value={pro1h}
           tooltip={
-            <Stack alignItems="center" spacing={0.25}>
+            <Stack
+              alignItems="center"
+              spacing={0.25}
+              sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
+            >
               1h Change
               <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro1h=${pro1h}`} />
             </Stack>
           }
           label="1h"
+          componentsProps={{
+            tooltip: {
+              sx: {
+                bgcolor: 'black',
+                border: '1px solid rgba(255, 255, 255, 0.5)',
+                '& .MuiTooltip-arrow': {
+                  color: 'black'
+                }
+              }
+            }
+          }}
         />
         <BearBullChip
           value={pro24h}
           tooltip={
-            <Stack alignItems="center" spacing={0.25}>
+            <Stack
+              alignItems="center"
+              spacing={0.25}
+              sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
+            >
               24h Change
               <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`} />
             </Stack>
           }
           label="24h"
+          componentsProps={{
+            tooltip: {
+              sx: {
+                bgcolor: 'black',
+                border: '1px solid rgba(255, 255, 255, 0.5)',
+                '& .MuiTooltip-arrow': {
+                  color: 'black'
+                }
+              }
+            }
+          }}
         />
         <BearBullChip
           value={pro7d}
           tooltip={
-            <Stack alignItems="center" spacing={0.25}>
+            <Stack
+              alignItems="center"
+              spacing={0.25}
+              sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
+            >
               7d Change
               <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
             </Stack>
           }
           label="7d"
+          componentsProps={{
+            tooltip: {
+              sx: {
+                bgcolor: 'black',
+                border: '1px solid rgba(255, 255, 255, 0.5)',
+                '& .MuiTooltip-arrow': {
+                  color: 'black'
+                }
+              }
+            }
+          }}
         />
       </Stack>
 

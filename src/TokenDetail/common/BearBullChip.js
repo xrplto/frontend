@@ -6,7 +6,7 @@ import caretDown from '@iconify/icons-bx/caret-down';
 import caretUp from '@iconify/icons-bx/caret-up';
 import { fPercent } from 'src/utils/formatNumber';
 
-export default function BearBullChip({ value, tooltip, label }) {
+export default function BearBullChip({ value, tooltip, label, componentsProps }) {
   const formattedPro = parseFloat(value).toFixed(2); // Format to two decimal places
   const isBearish = formattedPro < 0;
   const strPro = `${isBearish ? -formattedPro : formattedPro} %`;
@@ -14,7 +14,7 @@ export default function BearBullChip({ value, tooltip, label }) {
   const ChipComponent = isBearish ? BearishChip : BullishChip;
 
   return (
-    <Tooltip title={tooltip} arrow>
+    <Tooltip title={tooltip} arrow componentsProps={componentsProps}>
       <Stack direction="row" spacing={0.25} alignItems="center">
         {label && (
           <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
@@ -39,7 +39,8 @@ export default function BearBullChip({ value, tooltip, label }) {
 BearBullChip.propTypes = {
   value: PropTypes.number,
   tooltip: PropTypes.any,
-  label: PropTypes.string
+  label: PropTypes.string,
+  componentsProps: PropTypes.object
 };
 
 const BearishChip = withStyles({
