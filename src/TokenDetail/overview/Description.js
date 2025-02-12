@@ -180,41 +180,7 @@ export default function Description({
         fontSize="1.5rem"
         fontWeight="bold"
         sx={{ mt: 4, mb: 2 }}
-      >{`${name} Price Live Data`}</Typography>
-
-      <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-        Today's live <strong>{user}</strong> price is{' '}
-        <NumberTooltip prepend={currencySymbols[activeFiatCurrency]} number={price} />{' '}
-        {activeFiatCurrency}, accompanied by a 24-hour trading volume of{' '}
-        <strong>
-          {fNumber(vol24hx)} {name}
-        </strong>
-        . Our {name} to {activeFiatCurrency} price is updated in real-time. In the last 24 hours,{' '}
-        {user} has experienced a <strong>{strPro24h}</strong> change. XRPL.to currently ranks it at{' '}
-        <strong>#{id}</strong>, with a live market cap of{' '}
-        <strong>
-          {currencySymbols[activeFiatCurrency]}
-          {fNumber(convertedMarketCap)} {activeFiatCurrency}
-        </strong>{' '}
-        and a circulating supply of{' '}
-        <strong>
-          {fNumber(supply)} {name}
-        </strong>{' '}
-        tokens.
-      </Typography>
-
-      <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-        If you're interested in purchasing {user}, the top XRPL DEX platform for trading {user}{' '}
-        tokens is currently:
-        <Link
-          color={darkMode ? '#22B14C' : '#3366FF'}
-          underline="hover"
-          href={`/token/${slug}/trade`}
-          sx={{ fontWeight: 'bold', ml: 1 }}
-        >
-          xrpl.to DEX
-        </Link>
-      </Typography>
+      >{`About ${user}`}</Typography>
 
       {isAdmin && (
         <Stack direction="row" sx={{ mt: 2, mb: 2 }}>
