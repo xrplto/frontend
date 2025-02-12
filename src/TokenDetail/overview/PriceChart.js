@@ -284,14 +284,13 @@ function PriceChart({ token }) {
           text: null
         },
         labels: {
-          style: {
-            color: theme.palette.text.secondary
-          }
+          enabled: false
         },
         top: '70%',
         height: '30%',
         offset: 0,
-        lineWidth: 1,
+        lineWidth: 0,
+        gridLineWidth: 0,
         gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
       }
     ],
@@ -358,7 +357,8 @@ function PriceChart({ token }) {
         name: 'Volume',
         data: data.map((point) => [point[0], point[2]]),
         yAxis: 1,
-        color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+        color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+        showInLegend: false
       }
     ],
     tooltip: {
