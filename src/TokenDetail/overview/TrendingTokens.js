@@ -11,10 +11,12 @@ import {
   TableBody,
   TableCell,
   Box,
-  useMediaQuery // Import for media query
+  useMediaQuery, // Import for media query
+  Tooltip
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import StackStyle from 'src/components/StackStyle';
 
 // Context
@@ -33,6 +35,17 @@ const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
   width: '32px',
   height: '32px'
 }));
+
+const KYCBadge = styled('div')(
+  ({ theme }) => `
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        z-index: 2;
+        background: ${theme.palette.background.paper};
+        border-radius: 50%;
+    `
+);
 
 const TrendingTokens = () => {
   const BASE_URL = process.env.API_URL;
@@ -100,7 +113,7 @@ const TrendingTokens = () => {
                     }
                   }
                 }}
-                key={id} // Change this line
+                key={id}
               >
                 <TableCell align="left">
                   <Link
@@ -118,12 +131,21 @@ const TrendingTokens = () => {
                       sx={{ pl: 0, pr: 0 }}
                     >
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <TokenImage
-                          src={imgUrl}
-                          width={32}
-                          height={32}
-                          onError={(event) => (event.target.src = '/static/alt.webp')}
-                        />
+                        <Box sx={{ position: 'relative' }}>
+                          <TokenImage
+                            src={imgUrl}
+                            width={32}
+                            height={32}
+                            onError={(event) => (event.target.src = '/static/alt.webp')}
+                          />
+                          {kyc && (
+                            <KYCBadge>
+                              <Tooltip title="KYC Verified">
+                                <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 16 }} />
+                              </Tooltip>
+                            </KYCBadge>
+                          )}
+                        </Box>
                         <Stack direction="row" spacing={1}>
                           <Typography
                             variant="token"
