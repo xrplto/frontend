@@ -63,6 +63,7 @@ const CurrencyContent = styled('div')(
     border-radius: 10px;
     -webkit-box-align: center;
     align-items: center;
+    background-color: #000000;
     &:not(:first-of-type) {
       margin-top: 2px;
     }
@@ -92,13 +93,12 @@ const OverviewWrapper = styled('div')(
   ({ theme }) => `
     flex-direction: column;
     overflow: hidden;
-    /*// margin: auto -16px;*/
     box-sizing: border-box;
     position: relative;
     border-radius: 16px;
     display: flex;
-    /*//border:$000{theme.currency.border};//webxtor SEO fix */
-    border: ${border};
+    background-color: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 10px;
 
     @media (max-width: 600px) {
@@ -106,10 +106,8 @@ const OverviewWrapper = styled('div')(
         border-left: none;
         border-image: initial;
         border-radius: unset;
-        /*// border-top: $000{theme.currency.border};
-        // border-bottom: $000{theme.currency.border};*/
-        border-top: none;
-        border-bottom: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 `
 );
@@ -744,8 +742,10 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <CurrencyContent
               style={{
                 order: revert ? 2 : 1,
-                backgroundColor: color1,
-                border: focusTop ? `1px solid ${theme?.general?.reactFrameworkColor}` : 'none',
+                backgroundColor: '#000000',
+                border: focusTop
+                  ? `1px solid ${theme?.general?.reactFrameworkColor}`
+                  : '1px solid rgba(255, 255, 255, 0.1)',
                 borderTopLeftRadius: '10px',
                 borderTopRightRadius: '10px',
                 borderBottomLeftRadius: '0',
@@ -767,8 +767,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 <Input
                   placeholder="0"
                   autoComplete="new-password"
-                  // margin='dense'
-                  // disabled={revert?true:false}
                   disableUnderline
                   value={amount1}
                   onChange={handleChangeAmount1}
@@ -781,7 +779,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                       fontSize: '18px',
                       textAlign: 'end',
                       appearance: 'none',
-                      fontWeight: 700
+                      fontWeight: 700,
+                      color: 'white',
+                      backgroundColor: 'transparent'
                     }
                   }}
                   onFocus={() => setFocusTop(true)}
@@ -799,8 +799,10 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <CurrencyContent
               style={{
                 order: revert ? 1 : 2,
-                backgroundColor: color2,
-                border: focusBottom ? `1px solid ${theme?.general?.reactFrameworkColor}` : 'none',
+                backgroundColor: '#000000',
+                border: focusBottom
+                  ? `1px solid ${theme?.general?.reactFrameworkColor}`
+                  : '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '0'
               }}
             >
@@ -819,8 +821,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 <Input
                   placeholder="0"
                   autoComplete="new-password"
-                  // margin='dense'
-                  // disabled={revert?false:true}
                   disableUnderline
                   value={amount1 === '' ? '' : amount2}
                   onChange={handleChangeAmount2}
@@ -833,7 +833,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                       fontSize: '18px',
                       textAlign: 'end',
                       appearance: 'none',
-                      fontWeight: 700
+                      fontWeight: 700,
+                      color: 'white',
+                      backgroundColor: 'transparent'
                     }
                   }}
                   onFocus={() => setFocusBottom(true)}
@@ -851,7 +853,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <CurrencyContent
               style={{
                 order: 3,
-                backgroundColor: color2,
+                backgroundColor: '#000000',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '0'
               }}
             >
@@ -864,7 +867,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 }}
               >
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="s6">Price impact</Typography>
+                  <Typography variant="s6" sx={{ color: 'white' }}>
+                    Price impact
+                  </Typography>
                   {loadingPrice ? (
                     <ClipLoader color="#FF6C40" size={15} />
                   ) : (
@@ -879,7 +884,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <CurrencyContent
               style={{
                 order: 4,
-                backgroundColor: color2,
+                backgroundColor: '#000000',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderTopLeftRadius: '0',
                 borderTopRightRadius: '0',
                 borderBottomLeftRadius: '10px',
@@ -908,7 +914,10 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           alignItems="center"
           sx={{
             width: '100%',
-            mt: 2
+            mt: 2,
+            backgroundColor: '#000000',
+            borderRadius: '16px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
           }}
         >
           <Stack
@@ -918,15 +927,17 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             sx={{ width: '100%', p: 1.5, pb: 0 }}
           >
             <Stack>
-              <Typography variant="s7">{token1.name}</Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              <Typography variant="s7" sx={{ color: 'white' }}>
+                {token1.name}
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                 {token1.issuer
                   ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
                   : 'XRPL'}
               </Typography>
             </Stack>
             <Stack sx={{ flex: 1 }}>
-              <Typography variant="s7" align="right" sx={{ mb: 0.2 }}>
+              <Typography variant="s7" align="right" sx={{ mb: 0.2, color: 'white' }}>
                 {currencySymbols[activeFiatCurrency]} {fNumber(tokenExch1)}
               </Typography>
               <Box sx={{ height: '60px', width: '100%' }}>
@@ -943,15 +954,17 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             sx={{ width: '100%', p: 1.5, pt: 0 }}
           >
             <Stack>
-              <Typography variant="s7">{token2.name}</Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              <Typography variant="s7" sx={{ color: 'white' }}>
+                {token2.name}
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                 {token2.issuer
                   ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
                   : 'XRPL'}
               </Typography>
             </Stack>
             <Stack sx={{ flex: 1 }}>
-              <Typography variant="s7" align="right" sx={{ mb: 0.2 }}>
+              <Typography variant="s7" align="right" sx={{ mb: 0.2, color: 'white' }}>
                 {currencySymbols[activeFiatCurrency]} {fNumber(tokenExch2)}
               </Typography>
               <Box sx={{ height: '60px', width: '100%' }}>
