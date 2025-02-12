@@ -423,9 +423,19 @@ export default function UserDesc({ token }) {
             >
               {name}
             </Typography>
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <Typography variant="s17" color="text.secondary" sx={{ fontSize: '1rem' }}>
-                {truncate(user, 15)}
+            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ maxWidth: '100%' }}>
+              <Typography
+                variant="s17"
+                color="text.secondary"
+                sx={{
+                  fontSize: '1rem',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '200px'
+                }}
+              >
+                {user}
               </Typography>
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <Tooltip title={token.origin || 'Standard Launch'}>
