@@ -25,9 +25,14 @@ const TradingHistory = ({ tokenId }) => {
 
   useEffect(() => {
     const fetchTradingHistory = async () => {
+      if (!tokenId) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(
-          'http://37.27.134.126/api//history?md5=0413ca7cfc258dfaf698c02fe304e607&page=0&limit=10'
+          `http://37.27.134.126/api//history?md5=${tokenId}&page=0&limit=10`
         );
         const data = await response.json();
         if (data.result === 'success') {
@@ -40,6 +45,7 @@ const TradingHistory = ({ tokenId }) => {
       }
     };
 
+    setLoading(true);
     fetchTradingHistory();
   }, [tokenId]); // Refetch when tokenId changes
 

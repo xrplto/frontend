@@ -146,7 +146,8 @@ export default function Description({
     slug,
     marketcap,
     exch,
-    dom
+    dom,
+    md5
   } = token;
 
   let user = token.user;
@@ -207,7 +208,7 @@ export default function Description({
     <Stack spacing={3}>
       <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
 
-      <TradingHistory tokenId={id} />
+      <TradingHistory tokenId={md5 || id} />
 
       <Stack spacing={2}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
