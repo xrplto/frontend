@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -12,13 +12,37 @@ import {
   Link,
   Tooltip,
   IconButton,
-  Chip
+  Chip,
+  CircularProgress
 } from '@mui/material';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 
-const TradingHistory = ({ trades }) => {
+const TradingHistory = ({ tokenId }) => {
+  const [trades, setTrades] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTradingHistory = async () => {
+      try {
+        const response = await fetch(
+          'http://37.27.134.126/api//history?md5=0413ca7cfc258dfaf698c02fe304e607&page=0&limit=10'
+        );
+        const data = await response.json();
+        if (data.result === 'success') {
+          setTrades(data.hists);
+        }
+      } catch (error) {
+        console.error('Error fetching trading history:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTradingHistory();
+  }, [tokenId]); // Refetch when tokenId changes
+
   const formatTimestamp = (timestamp) => {
     const now = Date.now();
     const diff = now - timestamp;
@@ -57,14 +81,95 @@ const TradingHistory = ({ trades }) => {
   };
 
   const getTradeType = (trade) => {
-    // If taker paid XRP, it's a buy
-    const isBuy = trade.got.currency === '534F4C4F00000000000000000000000000000000';
+    // If taker got token (non-XRP), it's a buy
+    const isBuy = trade.got.currency !== 'XRP';
+    const tokenCurrency = isBuy ? trade.got.currency : trade.paid.currency;
+
     return {
       type: isBuy ? 'BUY' : 'SELL',
       color: isBuy ? 'success' : 'error',
-      icon: isBuy ? <TrendingUpIcon fontSize="small" /> : <TrendingDownIcon fontSize="small" />
+      icon: isBuy ? <TrendingUpIcon fontSize="small" /> : <TrendingDownIcon fontSize="small" />,
+      tokenCurrency
     };
   };
+
+  const getTokenName = (currency) => {
+    if (!currency || currency === 'XRP') return 'XRP';
+
+    try {
+      // Handle hex-encoded currency names (e.g. "534F4C4F00000000000000000000000000000000" -> "SOLO")
+      if (currency.length === 40) {
+        // Take first 3 bytes (6 characters) and convert to ASCII
+        const bytes = [];
+        for (let i = 0; i < currency.length; i += 2) {
+          const byte = parseInt(currency.substr(i, 2), 16);
+          // Stop at first null byte
+          if (byte === 0) break;
+          bytes.push(byte);
+        }
+        return String.fromCharCode(...bytes);
+      }
+      return currency;
+    } catch (error) {
+      console.error('Error decoding currency:', error);
+      return currency;
+    }
+  };
+
+  // Get token currency from first trade
+  const tokenCurrency =
+    trades[0]?.paid.currency === 'XRP' ? trades[0]?.got.currency : trades[0]?.paid.currency;
+  const tokenName = getTokenName(tokenCurrency);
+
+  if (loading) {
+    return (
+      <Stack spacing={2} alignItems="center">
+        <Typography
+          variant="h2"
+          fontSize="1.5rem"
+          fontWeight="bold"
+          sx={{
+            background: (theme) =>
+              theme.palette.mode === 'dark'
+                ? 'linear-gradient(45deg, #22B14C 30%, #2ecc71 90%)'
+                : 'linear-gradient(45deg, #3366FF 30%, #4d79ff 90%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            letterSpacing: '0.5px'
+          }}
+        >
+          Recent Trades
+        </Typography>
+        <CircularProgress />
+      </Stack>
+    );
+  }
+
+  if (!trades || trades.length === 0) {
+    return (
+      <Stack spacing={2}>
+        <Typography
+          variant="h2"
+          fontSize="1.5rem"
+          fontWeight="bold"
+          sx={{
+            background: (theme) =>
+              theme.palette.mode === 'dark'
+                ? 'linear-gradient(45deg, #22B14C 30%, #2ecc71 90%)'
+                : 'linear-gradient(45deg, #3366FF 30%, #4d79ff 90%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            letterSpacing: '0.5px'
+          }}
+        >
+          Recent Trades
+        </Typography>
+        <Typography variant="body2" color="text.secondary" align="center">
+          No recent trades found
+        </Typography>
+      </Stack>
+    );
+  }
 
   return (
     <Stack spacing={2}>
@@ -91,8 +196,8 @@ const TradingHistory = ({ trades }) => {
             <TableRow>
               <TableCell>Time</TableCell>
               <TableCell>Type</TableCell>
-              <TableCell>Price (SOLO/XRP)</TableCell>
-              <TableCell>Amount SOLO</TableCell>
+              <TableCell>Price ({tokenName}/XRP)</TableCell>
+              <TableCell>Amount {tokenName}</TableCell>
               <TableCell>Total XRP</TableCell>
               <TableCell align="right">Explorer</TableCell>
             </TableRow>

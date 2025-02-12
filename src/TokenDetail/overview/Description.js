@@ -1,26 +1,11 @@
 import React from 'react';
 import Decimal from 'decimal.js';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useContext } from 'react';
 import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
 
 // Material
-import {
-  styled,
-  IconButton,
-  Link,
-  Stack,
-  Tooltip,
-  Typography,
-  Paper,
-  Fade,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow
-} from '@mui/material';
+import { styled, IconButton, Link, Stack, Tooltip, Typography, Paper, Fade } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -141,7 +126,6 @@ export default function Description({
   description,
   onApplyDescription
 }) {
-  const [tradingHistory, setTradingHistory] = useState([]);
   const { accountProfile, darkMode, activeFiatCurrency } = useContext(AppContext);
   const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
@@ -169,7 +153,7 @@ export default function Description({
   if (!user) user = name;
 
   const price = fNumberWithCurreny(exch || 0, metrics[activeFiatCurrency]);
-  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber();
 
   const vpro24h = fPercent(pro24h);
   const vpro7d = fPercent(pro7d);
@@ -219,29 +203,11 @@ export default function Description({
     marketDominance: dom
   };
 
-  useEffect(() => {
-    const fetchTradingHistory = async () => {
-      try {
-        const response = await fetch(
-          'http://37.27.134.126/api//history?md5=0413ca7cfc258dfaf698c02fe304e607&page=0&limit=10'
-        );
-        const data = await response.json();
-        if (data.result === 'success') {
-          setTradingHistory(data.hists);
-        }
-      } catch (error) {
-        console.error('Error fetching trading history:', error);
-      }
-    };
-
-    fetchTradingHistory();
-  }, []);
-
   return (
     <Stack spacing={3}>
       <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
 
-      <TradingHistory trades={tradingHistory} />
+      <TradingHistory tokenId={id} />
 
       <Stack spacing={2}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
