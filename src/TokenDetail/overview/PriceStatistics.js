@@ -189,12 +189,6 @@ export default function PriceStatistics({ token }) {
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell align="left">
-              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>
-                {user} Price Today
-              </Typography>
-            </TableCell>
-            <TableCell align="left"></TableCell>
           </TableRow>
           <TableRow>
             <TableCell align="left">
