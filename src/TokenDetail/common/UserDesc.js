@@ -43,6 +43,7 @@ import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import LockIcon from '@mui/icons-material/Lock';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -183,6 +184,17 @@ const MarketTypography = withStyles({
     color: '#2CD9C5'
   }
 })(Typography);
+
+const KYCBadge = styled('div')(
+  ({ theme }) => `
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        z-index: 2;
+        background: ${theme.palette.background.paper};
+        border-radius: 50%;
+    `
+);
 
 function truncate(str, n) {
   if (!str) return '';
@@ -371,18 +383,34 @@ export default function UserDesc({ token }) {
                 <EditIcon sx={{ width: 28, height: 28 }} />
               </IconButton>
               <ImageBackdrop className="MuiImageBackdrop-root" />
+              {kyc && (
+                <KYCBadge>
+                  <Tooltip title="KYC Verified">
+                    <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 20 }} />
+                  </Tooltip>
+                </KYCBadge>
+              )}
             </IconCover>
           </div>
         ) : (
-          <Avatar
-            alt={`${user} ${name} Logo`}
-            src={imgUrl}
-            sx={{
-              width: 56,
-              height: 56,
-              borderRadius: '12px'
-            }}
-          />
+          <Box sx={{ position: 'relative' }}>
+            <Avatar
+              alt={`${user} ${name} Logo`}
+              src={imgUrl}
+              sx={{
+                width: 56,
+                height: 56,
+                borderRadius: '12px'
+              }}
+            />
+            {kyc && (
+              <KYCBadge>
+                <Tooltip title="KYC Verified">
+                  <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 20 }} />
+                </Tooltip>
+              </KYCBadge>
+            )}
+          </Box>
         )}
         <Stack spacing={0}>
           <Stack direction="column" spacing={0.25}>
@@ -414,7 +442,6 @@ export default function UserDesc({ token }) {
                   </>
                 )}
               </Stack>
-              {kyc && <Typography variant="kyc2">KYC</Typography>}
             </Stack>
           </Stack>
           {date && (
