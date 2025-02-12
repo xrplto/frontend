@@ -560,12 +560,15 @@ function PriceChart({ token }) {
 
   return (
     <>
-      <Grid container rowSpacing={2} alignItems="center" sx={{ mt: 0 }}>
+      <Grid container rowSpacing={1} alignItems="center" sx={{ mt: 0, mb: 1 }}>
         <Grid container item xs={12} md={6}>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="h3">{`${user} ${name} to ${activeFiatCurrency}(${currencySymbols[activeFiatCurrency]}) Chart`}</Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography
+              variant="h4"
+              noWrap
+            >{`${user} ${name} to ${activeFiatCurrency}(${currencySymbols[activeFiatCurrency]}) Chart`}</Typography>
             {isAdmin && range !== 'OHLC' && (
-              <IconButton onClick={handleDownloadCSV}>
+              <IconButton size="small" onClick={handleDownloadCSV}>
                 <DownloadIcon fontSize="small" />
               </IconButton>
             )}
@@ -595,23 +598,29 @@ function PriceChart({ token }) {
           </Stack>
         </Grid>
         <Grid container item xs={12} md={6} justifyContent="flex-end">
-          <ToggleButtonGroup color="primary" value={range} exclusive onChange={handleChange}>
-            <ToggleButton sx={{ pt: 0, pb: 0 }} value="1D">
+          <ToggleButtonGroup
+            color="primary"
+            value={range}
+            exclusive
+            onChange={handleChange}
+            size="small"
+          >
+            <ToggleButton sx={{ minWidth: '40px', pt: 0, pb: 0 }} value="1D">
               1D
             </ToggleButton>
-            <ToggleButton sx={{ pt: 0, pb: 0 }} value="7D">
+            <ToggleButton sx={{ minWidth: '40px', pt: 0, pb: 0 }} value="7D">
               7D
             </ToggleButton>
-            <ToggleButton sx={{ pt: 0, pb: 0 }} value="1M">
+            <ToggleButton sx={{ minWidth: '40px', pt: 0, pb: 0 }} value="1M">
               1M
             </ToggleButton>
-            <ToggleButton sx={{ pt: 0, pb: 0 }} value="3M">
+            <ToggleButton sx={{ minWidth: '40px', pt: 0, pb: 0 }} value="3M">
               3M
             </ToggleButton>
-            <ToggleButton sx={{ pt: 0, pb: 0 }} value="1Y">
+            <ToggleButton sx={{ minWidth: '40px', pt: 0, pb: 0 }} value="1Y">
               1Y
             </ToggleButton>
-            <ToggleButton sx={{ pt: 0, pb: 0 }} value="ALL">
+            <ToggleButton sx={{ minWidth: '40px', pt: 0, pb: 0 }} value="ALL">
               ALL
             </ToggleButton>
           </ToggleButtonGroup>
