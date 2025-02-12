@@ -134,7 +134,7 @@ export default function ExtraDesc({ token }) {
   })(Typography);
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={1}>
       <Grid item container>
         <Grid
           item
@@ -146,14 +146,13 @@ export default function ExtraDesc({ token }) {
             borderRightColor: theme.palette.divider
           }}
         >
-          <Stack direction="row" alignItems="center" gap={1} sx={{ pl: 3 }}>
-            <Typography variant="body1">Market cap</Typography>
+          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 1 }}>
+            <Typography variant="body2">Market cap</Typography>
             <Tooltip
               title={
                 <Typography style={{ display: 'inline-block' }} variant="body2">
                   The total market value of {name} token's circulating supply represents its overall
                   worth. This concept is similar to free-float capitalization in the stock market.
-                  <br />
                   <br />
                   {omcf === 'yes'
                     ? 'Price x Circulating Supply'
@@ -173,28 +172,26 @@ export default function ExtraDesc({ token }) {
                 }
               }}
             >
-              <Icon icon={infoFilled} />
+              <Icon icon={infoFilled} width={16} height={16} />
             </Tooltip>
             {isAdmin && (
-              <FormGroup sx={{ ml: 2 }}>
+              <FormGroup sx={{ ml: 1 }}>
                 <FormControlLabel
                   control={
                     <Checkbox
                       size="small"
                       checked={omcf === 'yes'}
-                      onClick={() => {
-                        onChangeMarketCalculation();
-                      }}
+                      onClick={onChangeMarketCalculation}
                       inputProps={{ 'aria-label': 'controlled' }}
                     />
                   }
-                  label="Use original formula"
+                  label={<Typography variant="body2">Use original formula</Typography>}
                 />
               </FormGroup>
             )}
           </Stack>
           <Stack alignItems="center">
-            <MarketTypography variant="desc" sx={{ mt: 3, mb: 3 }}>
+            <MarketTypography variant="desc" sx={{ mt: 1, mb: 1 }}>
               {currencySymbols[activeFiatCurrency]}{' '}
               {convertedMarketCap >= 1000000
                 ? `${(convertedMarketCap / 1000000).toFixed(1)}M`
@@ -215,8 +212,8 @@ export default function ExtraDesc({ token }) {
             borderRightColor: theme.palette.divider
           }}
         >
-          <Stack direction="row" alignItems="center" gap={1} sx={{ pl: 3 }}>
-            <Typography variant="body1">TVL</Typography>
+          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 1 }}>
+            <Typography variant="body2">TVL</Typography>
             <Tooltip
               title={
                 <Typography variant="body2">
@@ -237,11 +234,11 @@ export default function ExtraDesc({ token }) {
                 }
               }}
             >
-              <Icon icon={infoFilled} />
+              <Icon icon={infoFilled} width={16} height={16} />
             </Tooltip>
           </Stack>
           <Stack alignItems="center">
-            <TvlTypography variant="desc" sx={{ mt: 3, mb: 2 }}>
+            <TvlTypography variant="desc" sx={{ mt: 1, mb: 1 }}>
               {currencySymbols[activeFiatCurrency]}{' '}
               {token.tvl >= 1000000
                 ? `${(token.tvl / 1000000).toFixed(1)}M`
@@ -262,8 +259,8 @@ export default function ExtraDesc({ token }) {
             borderRightColor: theme.palette.divider
           }}
         >
-          <Stack direction="row" alignItems="center" gap={1} sx={{ pl: 3 }}>
-            <Typography variant="body1">Volume (24h)</Typography>
+          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 1 }}>
+            <Typography variant="body2">Volume (24h)</Typography>
             <Tooltip
               title={
                 <Typography variant="body2">
@@ -282,11 +279,11 @@ export default function ExtraDesc({ token }) {
                 }
               }}
             >
-              <Icon icon={infoFilled} />
+              <Icon icon={infoFilled} width={16} height={16} />
             </Tooltip>
           </Stack>
           <Stack alignItems="center">
-            <VolumeTypography variant="desc" sx={{ mt: 3, mb: 2 }}>
+            <VolumeTypography variant="desc" sx={{ mt: 1, mb: 1 }}>
               <Tooltip
                 title={
                   <Typography variant="body2">
@@ -319,14 +316,13 @@ export default function ExtraDesc({ token }) {
         </Grid>
 
         <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' } }}>
-          <Stack direction="row" alignItems="center" gap={1} sx={{ pl: 3 }}>
-            <Typography variant="body1">Supply</Typography>
+          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 1 }}>
+            <Typography variant="body2">Supply</Typography>
             <Tooltip
               title={
                 <Typography variant="body2">
                   Circulating Supply: The number of {name} tokens in circulation within the market
                   and held by the public.
-                  <br />
                   <br />
                   Total Supply: Total number of {name} tokens that have been issued, including those
                   not currently active in the market.
@@ -344,11 +340,11 @@ export default function ExtraDesc({ token }) {
                 }
               }}
             >
-              <Icon icon={infoFilled} />
+              <Icon icon={infoFilled} width={16} height={16} />
             </Tooltip>
           </Stack>
           <Stack alignItems="center">
-            <SupplyTypography color="primary" variant="desc" sx={{ mt: 3, mb: 2 }}>
+            <SupplyTypography color="primary" variant="desc" sx={{ mt: 1, mb: 1 }}>
               {supply >= 1000000000000
                 ? `${(supply / 1000000000000).toFixed(2)}T`
                 : supply >= 1000000000
