@@ -323,12 +323,12 @@ export default function UserDesc({ token }) {
   }, [tags, id]);
 
   return (
-    <Stack spacing={1}>
+    <Stack spacing={0.5}>
       {editToken && <EditTokenDialog token={editToken} setToken={setEditToken} />}
 
       <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
 
-      <Stack direction="row" spacing={1} alignItems="center">
+      <Stack direction="row" spacing={0.5} alignItems="center">
         {isAdmin ? (
           <div>
             <IconCover>
@@ -344,12 +344,12 @@ export default function UserDesc({ token }) {
                   top: '0vh',
                   opacity: 0,
                   zIndex: 1,
-                  width: '64px',
-                  height: '64px'
+                  width: '56px',
+                  height: '56px'
                 }}
                 onClick={() => setEditToken(token)}
               >
-                <EditIcon sx={{ width: 32, height: 32 }} />
+                <EditIcon sx={{ width: 28, height: 28 }} />
               </IconButton>
               <ImageBackdrop className="MuiImageBackdrop-root" />
             </IconCover>
@@ -359,30 +359,30 @@ export default function UserDesc({ token }) {
             alt={`${user} ${name} Logo`}
             src={imgUrl}
             sx={{
-              width: 64,
-              height: 64,
-              borderRadius: '16px'
+              width: 56,
+              height: 56,
+              borderRadius: '12px'
             }}
           />
         )}
-        <Stack spacing={0.2}>
-          <Stack direction="row" alignItems="center" spacing={1}>
+        <Stack spacing={0}>
+          <Stack direction="row" alignItems="center" spacing={0.5}>
             <Typography
               variant="span"
               fontWeight="700"
               color={darkMode ? '#22B14C' : '#3366FF'}
               alt={user}
-              fontSize="1rem"
+              fontSize="0.95rem"
             >
               {name}
             </Typography>
-            <Typography variant="s17" color="text.secondary">
+            <Typography variant="s17" color="text.secondary" sx={{ fontSize: '0.9rem' }}>
               {truncate(user, 15)}
             </Typography>
             {kyc && <Typography variant="kyc2">KYC</Typography>}
           </Stack>
           {date && (
-            <Typography variant="s7" noWrap>
+            <Typography variant="s7" noWrap sx={{ fontSize: '0.8rem' }}>
               {date}
             </Typography>
           )}
@@ -391,8 +391,8 @@ export default function UserDesc({ token }) {
           container
           direction="row"
           spacing={0.5}
-          sx={{ mt: 1 }}
           justifyContent={isTablet ? 'flex-end' : 'flex-start'}
+          sx={{ ml: 'auto' }}
         >
           <Grid item>
             <Watch token={token} />
@@ -406,8 +406,8 @@ export default function UserDesc({ token }) {
         sx={{
           display: 'flex',
           flexWrap: 'wrap',
-          gap: { xs: 0.5, sm: 0.75, md: 1 },
-          py: 0.5,
+          gap: { xs: 0.25, sm: 0.5, md: 0.75 },
+          py: 0.25,
           overflow: 'auto',
           width: '100%',
           '& > *': {
@@ -415,7 +415,7 @@ export default function UserDesc({ token }) {
             minWidth: 'fit-content'
           },
           '::-webkit-scrollbar': { display: 'none' },
-          mb: isTablet ? 1 : 0
+          mb: isTablet ? 0.5 : 0
         }}
       >
         <Tooltip title={<Typography variant="body2">Rank by 24h Volume.</Typography>}>
@@ -600,10 +600,10 @@ export default function UserDesc({ token }) {
 
       <Grid
         container
-        spacing={0.5}
+        spacing={0.25}
         alignItems="center"
         sx={{
-          mt: 0.5,
+          mt: 0.25,
           ml: isTablet ? 0 : '-4px',
           width: '100%'
         }}
@@ -680,12 +680,12 @@ export default function UserDesc({ token }) {
         )}
       </Grid>
 
-      {isTablet && <Divider sx={{ my: 1 }} />}
+      {isTablet && <Divider sx={{ my: 0.5 }} />}
 
       <Grid
         container
-        spacing={0.5}
-        sx={{ p: 0, mt: 0.5, width: '100%', ml: isTablet ? 0 : '-4px' }}
+        spacing={0.25}
+        sx={{ p: 0, mt: 0.25, width: '100%', ml: isTablet ? 0 : '-4px' }}
       >
         {!isTablet ? (
           <>
@@ -780,7 +780,7 @@ export default function UserDesc({ token }) {
         )}
       </Grid>
 
-      {isTablet && <Divider sx={{ my: 1 }} />}
+      {isTablet && <Divider sx={{ my: 0.5 }} />}
 
       <TagsDrawer
         isOpen={openTagsDrawer}
