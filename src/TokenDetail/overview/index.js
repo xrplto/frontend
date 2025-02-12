@@ -24,7 +24,6 @@ import PriceStatistics from './PriceStatistics';
 import Description from './Description';
 import TrendingTokens from './TrendingTokens';
 import Swap from './Swap'; // Import Swap component
-import Poll from './Poll'; // Import Poll component
 import TradingHistory from './TradingHistory';
 
 // ----------------------------------------------------------------------
@@ -104,7 +103,6 @@ export default function Overview({ token }) {
             {/* <MDEditor value={description} renderHTML={text => <ReactMarkdown children={text} />} onChange={handleEditorChange} style={{ height: '500px' }} /> */}
           </>
         )}
-        <Poll user={user} name={token.name} /> {/* Pass user and name as props */}
       </Grid>
       <Grid item xs={12} md={12} lg={4}>
         <Swap token={token} />
