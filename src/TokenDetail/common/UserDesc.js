@@ -691,7 +691,7 @@ export default function UserDesc({ token }) {
                   <Chip
                     label={domain}
                     size="small"
-                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px', height: '24px' }}
+                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px', height: '32px' }}
                     deleteIcon={
                       <Icon
                         icon={linkExternal}
