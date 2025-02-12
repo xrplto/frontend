@@ -117,10 +117,7 @@ export default function Share({ token }) {
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
   const title = `${user} price today: ${name} to ${activeFiatCurrency} conversion, live rates, trading volume, historical data, and interactive chart`;
   const desc = `Access up-to-date ${user} prices, ${name} market cap, trading pairs, interactive charts, and comprehensive data from the leading XRP Ledger token price-tracking platform.`;
-  const url =
-    typeof window !== 'undefined' && window.location.href
-      ? window.location.href
-      : '';
+  const url = typeof window !== 'undefined' && window.location.href ? window.location.href : '';
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -151,55 +148,91 @@ export default function Share({ token }) {
         aria-labelledby="customized-dialog-title"
         open={open}
         sx={{ zIndex: 1302 }}
+        maxWidth="sm"
+        fullWidth
       >
         <ShareDialogTitle onClose={handleClose}>
-        
+          Share {user} {name}
         </ShareDialogTitle>
         <DialogContent>
-          <Stack alignItems="center">
+          <Stack alignItems="center" spacing={2}>
             <Avatar
               alt={`${user}${name} Logo`}
               src={imgUrl}
-              sx={{ width: 64, height: 64, mt: 2 }}
+              sx={{
+                width: 80,
+                height: 80,
+                mt: 1,
+                boxShadow: (theme) => theme.shadows[3]
+              }}
             />
 
             <Typography
-              variant="desc"
-              sx={{ color: darkMode ? '#007B55' : '#5569ff' }}
+              variant="h6"
+              sx={{
+                color: darkMode ? '#007B55' : '#5569ff',
+                fontWeight: 600
+              }}
             >
               {user} {name}
             </Typography>
-            <Typography
-              variant="desc"
-              sx={{
-                mt: 2,
-                maxWidth: '100%',
-                overflowWrap: 'break-word',
-                textAlign: 'center'
-              }}
-            >
-              Spread the word: Share with your friends and network
-            </Typography>
-            <Typography variant="subtitle1" sx={{ mt: 1, mb: 2 }}>
-              The current price of {user} {name} is{' '}
-              {currencySymbols[activeFiatCurrency]}{' '}
-              {fNumber(exch / metrics[activeFiatCurrency])}!
-            </Typography>
+
+            <Stack spacing={1} alignItems="center" sx={{ width: '100%' }}>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 500,
+                  textAlign: 'center',
+                  color: (theme) => theme.palette.text.secondary
+                }}
+              >
+                Spread the word: Share with your friends and network
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  textAlign: 'center',
+                  bgcolor: (theme) => theme.palette.background.neutral,
+                  p: 1.5,
+                  borderRadius: 1,
+                  width: '100%'
+                }}
+              >
+                The current price of {user} {name} is{' '}
+                <Typography component="span" variant="subtitle2" sx={{ fontWeight: 600 }}>
+                  {currencySymbols[activeFiatCurrency]}{' '}
+                  {fNumber(exch / metrics[activeFiatCurrency])}
+                </Typography>
+              </Typography>
+            </Stack>
+
             <Stack
               direction="row"
-              spacing={2}
-              sx={{ flexWrap: 'wrap', justifyContent: 'center' }}
+              spacing={1}
+              sx={{
+                flexWrap: 'nowrap',
+                justifyContent: 'center',
+                gap: 0.5,
+                py: 2,
+                width: '100%',
+                overflowX: 'auto',
+                '&::-webkit-scrollbar': {
+                  height: 6
+                },
+                '&::-webkit-scrollbar-track': {
+                  backgroundColor: 'background.neutral'
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: 'divider',
+                  borderRadius: 3
+                }
+              }}
             >
               <TwitterShareButton title={title} url={url} hashtag={'#'}>
                 <TwitterIcon size={36} round />
               </TwitterShareButton>
 
-              <FacebookShareButton
-                url={url}
-                quote={title}
-                hashtag={'#'}
-                description={desc}
-              >
+              <FacebookShareButton url={url} quote={title} hashtag={'#'} description={desc}>
                 <FacebookIcon size={36} round />
               </FacebookShareButton>
 
@@ -231,29 +264,42 @@ export default function Share({ token }) {
                 <PinterestIcon size={36} round />
               </PinterestShareButton>
 
-              <EmailShareButton
-                subject={title}
-                body={`Check out this link: ${url}`}
-              >
+              <EmailShareButton subject={title} body={`Check out this link: ${url}`}>
                 <EmailIcon size={36} round />
               </EmailShareButton>
             </Stack>
-            <Stack direction="row" alignItems="center">
+
+            <Stack
+              direction="row"
+              alignItems="center"
+              sx={{
+                width: '100%',
+                p: 1.5,
+                bgcolor: (theme) => theme.palette.background.neutral,
+                borderRadius: 1,
+                border: (theme) => `1px solid ${theme.palette.divider}`
+              }}
+            >
               <Link
                 underline="none"
                 color="inherit"
                 target="_blank"
                 href={url}
                 rel="noreferrer noopener nofollow"
+                sx={{
+                  maxWidth: 'calc(100% - 48px)',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontSize: '0.875rem',
+                  color: (theme) => theme.palette.text.secondary
+                }}
               >
                 {url}
               </Link>
-              <CopyToClipboard
-                text={url}
-                onCopy={() => openSnackbar('Copied!', 'success')}
-              >
+              <CopyToClipboard text={url} onCopy={() => openSnackbar('Copied!', 'success')}>
                 <Tooltip title={'Click to copy'}>
-                  <IconButton>
+                  <IconButton sx={{ ml: 'auto' }}>
                     <Icon icon={copyIcon} />
                   </IconButton>
                 </Tooltip>
