@@ -139,7 +139,7 @@ export default function ExtraDesc({ token }) {
   })(Typography);
 
   return (
-    <Stack spacing={0.5}>
+    <Stack spacing={0}>
       <Grid item container spacing={0}>
         <Grid
           item
@@ -151,8 +151,8 @@ export default function ExtraDesc({ token }) {
             borderRightColor: theme.palette.divider
           }}
         >
-          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 0.5 }}>
-            <Typography variant="body2" sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
+          <Stack direction="row" alignItems="center" gap={0.25} sx={{ pl: 0.25 }}>
+            <Typography variant="body2" sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
               Market cap
             </Typography>
             <Tooltip
@@ -179,10 +179,10 @@ export default function ExtraDesc({ token }) {
                 }
               }}
             >
-              <Icon icon={infoFilled} width={14} height={14} />
+              <Icon icon={infoFilled} width={12} height={12} />
             </Tooltip>
             {isAdmin && (
-              <FormGroup sx={{ ml: 0.5 }}>
+              <FormGroup sx={{ ml: 0.25 }}>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -190,11 +190,11 @@ export default function ExtraDesc({ token }) {
                       checked={omcf === 'yes'}
                       onClick={onChangeMarketCalculation}
                       inputProps={{ 'aria-label': 'controlled' }}
-                      sx={{ p: 0.5 }}
+                      sx={{ p: 0.25 }}
                     />
                   }
                   label={
-                    <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
                       Use original formula
                     </Typography>
                   }
@@ -205,7 +205,7 @@ export default function ExtraDesc({ token }) {
           <Stack alignItems="center">
             <MarketTypography
               variant="desc"
-              sx={{ mt: 0.5, mb: 0.5, fontSize: '1.125rem', letterSpacing: '0.02em' }}
+              sx={{ mt: 0.25, mb: 0.25, fontSize: '1rem', letterSpacing: '0.02em' }}
             >
               {currencySymbols[activeFiatCurrency]}{' '}
               {convertedMarketCap >= 1000000
@@ -227,8 +227,8 @@ export default function ExtraDesc({ token }) {
             borderRightColor: theme.palette.divider
           }}
         >
-          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 0.5 }}>
-            <Typography variant="body2" sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
+          <Stack direction="row" alignItems="center" gap={0.25} sx={{ pl: 0.25 }}>
+            <Typography variant="body2" sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
               TVL
             </Typography>
             <Tooltip
@@ -251,13 +251,13 @@ export default function ExtraDesc({ token }) {
                 }
               }}
             >
-              <Icon icon={infoFilled} width={14} height={14} />
+              <Icon icon={infoFilled} width={12} height={12} />
             </Tooltip>
           </Stack>
           <Stack alignItems="center">
             <TvlTypography
               variant="desc"
-              sx={{ mt: 0.5, mb: 0.5, fontSize: '1.125rem', letterSpacing: '0.02em' }}
+              sx={{ mt: 0.25, mb: 0.25, fontSize: '1rem', letterSpacing: '0.02em' }}
             >
               {currencySymbols[activeFiatCurrency]}{' '}
               {token.tvl >= 1000000
@@ -279,8 +279,8 @@ export default function ExtraDesc({ token }) {
             borderRightColor: theme.palette.divider
           }}
         >
-          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 0.5 }}>
-            <Typography variant="body2" sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
+          <Stack direction="row" alignItems="center" gap={0.25} sx={{ pl: 0.25 }}>
+            <Typography variant="body2" sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
               Volume (24h)
             </Typography>
             <Tooltip
@@ -301,13 +301,13 @@ export default function ExtraDesc({ token }) {
                 }
               }}
             >
-              <Icon icon={infoFilled} width={14} height={14} />
+              <Icon icon={infoFilled} width={12} height={12} />
             </Tooltip>
           </Stack>
           <Stack alignItems="center">
             <VolumeTypography
               variant="desc"
-              sx={{ mt: 0.5, mb: 0.5, fontSize: '1.125rem', letterSpacing: '0.02em' }}
+              sx={{ mt: 0.25, mb: 0.25, fontSize: '1rem', letterSpacing: '0.02em' }}
             >
               <Tooltip
                 title={
@@ -341,8 +341,8 @@ export default function ExtraDesc({ token }) {
         </Grid>
 
         <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' } }}>
-          <Stack direction="row" alignItems="center" gap={0.5} sx={{ pl: 0.5 }}>
-            <Typography variant="body2" sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
+          <Stack direction="row" alignItems="center" gap={0.25} sx={{ pl: 0.25 }}>
+            <Typography variant="body2" sx={{ fontSize: '0.75rem', color: 'text.disabled' }}>
               Supply
             </Typography>
             <Tooltip
@@ -367,14 +367,14 @@ export default function ExtraDesc({ token }) {
                 }
               }}
             >
-              <Icon icon={infoFilled} width={14} height={14} />
+              <Icon icon={infoFilled} width={12} height={12} />
             </Tooltip>
           </Stack>
           <Stack alignItems="center">
             <SupplyTypography
               color="primary"
               variant="desc"
-              sx={{ mt: 0.5, mb: 0.5, fontSize: '1.125rem', letterSpacing: '0.02em' }}
+              sx={{ mt: 0.25, mb: 0.25, fontSize: '1rem', letterSpacing: '0.02em' }}
             >
               {supply >= 1000000000000
                 ? `${(supply / 1000000000000).toFixed(2)}T`

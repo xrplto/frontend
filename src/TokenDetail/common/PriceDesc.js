@@ -31,13 +31,13 @@ export default function PriceDesc({ token }) {
   if (!user) user = name;
 
   return (
-    <Stack>
-      <Typography variant="h1" color="#33C2FF" fontSize="1rem">
+    <Stack spacing={0.25}>
+      <Typography variant="h1" color="#33C2FF" fontSize="0.875rem">
         {user} Price ({name})
       </Typography>
-      <Stack direction="row" spacing={1} sx={{ mt: 0.5 }} alignItems="center">
-        <Stack direction="row" spacing={0.5} alignItems="center">
-          <Typography variant="price" noWrap>
+      <Stack direction="row" spacing={0.5} alignItems="center">
+        <Stack direction="row" spacing={0.25} alignItems="center">
+          <Typography variant="price" noWrap sx={{ fontSize: '1.125rem' }}>
             <NumberTooltip
               prepend={currencySymbols[activeFiatCurrency]}
               number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
@@ -46,11 +46,11 @@ export default function PriceDesc({ token }) {
         </Stack>
       </Stack>
 
-      <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }} alignItems="center">
+      <Stack direction="row" spacing={0.25} alignItems="center">
         <BearBullChip
           value={pro5m}
           tooltip={
-            <Stack alignItems="center">
+            <Stack alignItems="center" spacing={0.25}>
               5m Change
               <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro5m=${pro5m}`} />
             </Stack>
@@ -60,7 +60,7 @@ export default function PriceDesc({ token }) {
         <BearBullChip
           value={pro1h}
           tooltip={
-            <Stack alignItems="center">
+            <Stack alignItems="center" spacing={0.25}>
               1h Change
               <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro1h=${pro1h}`} />
             </Stack>
@@ -70,7 +70,7 @@ export default function PriceDesc({ token }) {
         <BearBullChip
           value={pro24h}
           tooltip={
-            <Stack alignItems="center">
+            <Stack alignItems="center" spacing={0.25}>
               24h Change
               <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`} />
             </Stack>
@@ -80,7 +80,7 @@ export default function PriceDesc({ token }) {
         <BearBullChip
           value={pro7d}
           tooltip={
-            <Stack alignItems="center">
+            <Stack alignItems="center" spacing={0.25}>
               7d Change
               <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
             </Stack>
@@ -91,7 +91,7 @@ export default function PriceDesc({ token }) {
 
       <LowHighBar24H token={token} />
 
-      {isTablet && <Divider sx={{ mt: 0.5 }} />}
+      {isTablet && <Divider />}
     </Stack>
   );
 }
