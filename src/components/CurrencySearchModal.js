@@ -151,7 +151,7 @@ function truncate(str, n) {
   return str.length > n ? str.substr(0, n - 1) + '... ' : str;
 }
 
-const MAX_RECENT_SEARCHES = 5;
+const MAX_RECENT_SEARCHES = 4;
 
 export default function CurrencySearchModal({
   onDismiss = () => null,
