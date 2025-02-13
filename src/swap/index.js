@@ -152,6 +152,30 @@ const AllowButton = styled(Button)(
 `
 );
 
+const ToggleButton = styled(IconButton)(
+  ({ theme }) => `
+    background-color: ${alpha('#000000', 0.8)};
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 32px;
+    height: 32px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    transition: all 0.2s ease-in-out;
+    
+    &:hover {
+      background-color: ${alpha('#000000', 0.9)};
+      transform: translate(-50%, -50%) rotate(180deg);
+    }
+
+    &.switching {
+      transform: translate(-50%, -50%) rotate(180deg);
+    }
+`
+);
+
 const getPriceImpactColor = (impact) => {
   if (impact <= 1) return '#22C55E'; // Green for low impact
   if (impact <= 3) return '#F59E0B'; // Yellow for medium impact
@@ -201,6 +225,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const [loadingPrice, setLoadingPrice] = useState(false);
   const [focusTop, setFocusTop] = useState(false);
   const [focusBottom, setFocusBottom] = useState(false);
+
+  const [isSwitching, setIsSwitching] = useState(false);
 
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
@@ -697,18 +723,49 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   };
 
   const onRevertExchange = () => {
-    setRevert(!revert);
-    /*
-        
-        const newToken1 = {...token2};
-        const newToken2 = {...token1};
-        setToken1(newToken1);
-        setToken2(newToken2);
-        setAmount1(amount1);
-        setAmount2(amount2);
+    setIsSwitching(true);
 
-        */
+    // Store current values
+    const tempAmount1 = amount1;
+    const tempAmount2 = amount2;
+    const tempToken1 = token1;
+    const tempToken2 = token2;
+
+    // Clear amounts temporarily for smooth transition
+    setAmount1('');
+    setAmount2('');
+
+    // Switch the tokens and revert state
+    setToken1(tempToken2);
+    setToken2(tempToken1);
+    setRevert(!revert);
+
+    // Update the pair with switched tokens
+    setPair({
+      curr1: tempToken2,
+      curr2: tempToken1
+    });
+
+    // Restore values in switched positions after a small delay
+    setTimeout(() => {
+      setAmount1(tempAmount2);
+      setAmount2(tempAmount1);
+      setIsSwitching(false);
+    }, 200);
   };
+
+  // Add keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      // Alt + S to switch
+      if (event.altKey && event.key.toLowerCase() === 's') {
+        onRevertExchange();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [revert, amount1, amount2]);
 
   const onFillHalf = () => {
     if (revert) {
@@ -756,7 +813,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             )}
             <CurrencyContent
               style={{
-                order: revert ? 2 : 1,
+                order: 1,
                 backgroundColor: '#121212',
                 border: focusTop
                   ? `1px solid ${theme?.general?.reactFrameworkColor}`
@@ -811,9 +868,21 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 </Typography>
               </InputContent>
             </CurrencyContent>
+
+            <Box sx={{ position: 'relative', height: 0, my: -1, zIndex: 2, order: 2 }}>
+              <ToggleButton
+                onClick={onRevertExchange}
+                className={isSwitching ? 'switching' : ''}
+                disabled={isSwitching}
+                title="Switch currencies (Alt + S)"
+              >
+                <Icon icon={exchangeIcon} width={20} height={20} color="#fff" />
+              </ToggleButton>
+            </Box>
+
             <CurrencyContent
               style={{
-                order: revert ? 1 : 2,
+                order: 3,
                 backgroundColor: '#000000',
                 border: focusBottom
                   ? `1px solid ${theme?.general?.reactFrameworkColor}`
@@ -867,7 +936,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             </CurrencyContent>
             <CurrencyContent
               style={{
-                order: 3,
+                order: 4,
                 backgroundColor: '#000000',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: '0'
@@ -917,7 +986,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
             <CurrencyContent
               style={{
-                order: 4,
+                order: 5,
                 backgroundColor: '#000000',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
                 borderTopLeftRadius: '0',
