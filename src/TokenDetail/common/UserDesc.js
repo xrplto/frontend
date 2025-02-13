@@ -87,6 +87,7 @@ const IconCover = styled('div')(
         border-radius: 16px;
         position: relative;
         overflow: hidden;
+        z-index: 1;
         transition: width 1s ease-in-out, height .5s ease-in-out !important;
         -webkit-tap-highlight-color: transparent;
         &:hover, &.Mui-focusVisible {
@@ -397,7 +398,7 @@ export default function UserDesc({ token }) {
             </IconCover>
           </div>
         ) : (
-          <Box sx={{ position: 'relative' }}>
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
             <Avatar
               alt={`${user} ${name} Logo`}
               src={imgUrl}

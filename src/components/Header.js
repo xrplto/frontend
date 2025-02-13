@@ -36,6 +36,9 @@ const HeaderWrapper = styled(Box)(
     margin-bottom: ${theme.spacing(0)};
     border-radius: 0px;
     border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
+    position: relative;
+    z-index: 1200;
+    background-color: ${theme.palette.background.paper};
 `
 );
 
