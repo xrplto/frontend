@@ -94,8 +94,12 @@ export default function PriceStatistics({ token }) {
   let user = token.user;
   if (!user) user = name;
 
-  const voldivmarket = marketcap > 0 ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
-  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const voldivmarket =
+    marketcap > 0 && vol24hxrp != null ? Decimal.div(vol24hxrp || 0, marketcap || 1).toNumber() : 0;
+  const convertedMarketCap =
+    marketcap != null && metrics[activeFiatCurrency] != null
+      ? Decimal.div(marketcap || 0, metrics[activeFiatCurrency] || 1).toNumber()
+      : 0;
 
   let strPc24h = fNumber(p24h < 0 ? -p24h : p24h);
   let strPc24hPrep = (p24h < 0 ? '-' : '') + currencySymbols[activeFiatCurrency];
@@ -188,8 +192,7 @@ export default function PriceStatistics({ token }) {
               </Stack>
             </TableCell>
           </TableRow>
-          <TableRow>
-          </TableRow>
+          <TableRow></TableRow>
           <TableRow>
             <TableCell align="left">
               <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>

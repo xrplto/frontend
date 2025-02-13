@@ -167,7 +167,10 @@ export default function Description({
   if (!user) user = name;
 
   const price = fNumberWithCurreny(exch || 0, metrics[activeFiatCurrency]);
-  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber();
+  const convertedMarketCap =
+    marketcap && metrics[activeFiatCurrency]
+      ? Decimal.div(marketcap || 0, metrics[activeFiatCurrency] || 1).toNumber()
+      : 0;
 
   const vpro24h = fPercent(pro24h);
   const vpro7d = fPercent(pro7d);

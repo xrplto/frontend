@@ -71,9 +71,15 @@ export default function ExtraDesc({ token }) {
   const circulatingSupply = fNumber(supply);
   const totalSupply = fNumber(amount);
   const volume = fNumber(vol24hx);
-  const voldivmarket = marketcap > 0 ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
-  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
-  const convertedVolume = Decimal.div(vol24hxrp, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const voldivmarket = marketcap > 0 ? Decimal.div(vol24hxrp || 0, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
+  const convertedMarketCap =
+    marketcap && metrics[activeFiatCurrency]
+      ? Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber()
+      : 0; // .toFixed(5, Decimal.ROUND_DOWN)
+  const convertedVolume =
+    vol24hxrp && metrics[activeFiatCurrency]
+      ? Decimal.div(vol24hxrp, metrics[activeFiatCurrency]).toNumber()
+      : 0; // .toFixed(5, Decimal.ROUND_DOWN)
 
   const onChangeMarketCalculation = async () => {
     setLoading(true);

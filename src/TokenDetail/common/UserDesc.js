@@ -297,9 +297,13 @@ export default function UserDesc({ token }) {
   const metrics = useSelector(selectMetrics);
 
   const [omcf, setOMCF] = useState(token.isOMCF || 'no'); // is Old Market Cap Formula
-  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const convertedMarketCap =
+    marketcap && metrics && metrics[activeFiatCurrency]
+      ? Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber()
+      : 0;
   const volume = fNumber(vol24hx);
-  const voldivmarket = marketcap > 0 ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0; // .toFixed(5, Decimal.ROUND_DOWN)
+  const voldivmarket =
+    marketcap > 0 && vol24hxrp ? Decimal.div(vol24hxrp, marketcap).toNumber() : 0;
   const circulatingSupply = fNumber(supply);
   const totalSupply = fNumber(amount);
 
