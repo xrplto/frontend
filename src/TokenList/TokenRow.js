@@ -115,7 +115,7 @@ const formatDate = (dateString) => {
 const getOriginIcon = (origin) => {
   switch (origin) {
     case 'FirstLedger':
-      return <OpenInNewIcon sx={{ fontSize: 'inherit', color: '#007B55' }} />;
+      return <OpenInNewIcon sx={{ fontSize: 'inherit', color: '#0C53B7' }} />;
     case 'XPMarket':
       return <StorefrontIcon sx={{ fontSize: 'inherit', color: '#B72136' }} />;
     case 'Magnetic X':
