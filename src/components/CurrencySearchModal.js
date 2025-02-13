@@ -26,12 +26,14 @@ import {
   Paper,
   alpha,
   Chip,
-  Tooltip
+  Tooltip,
+  Divider
 } from '@mui/material';
 
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import searchFill from '@iconify/icons-eva/search-fill';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import HistoryIcon from '@mui/icons-material/History';
 
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import Backdrop from '@mui/material/Backdrop';
@@ -133,11 +135,23 @@ const TokenImage = styled(LazyLoadImage)`
   }
 `;
 
+const RecentSearchesSection = styled(Stack)`
+  margin-top: 24px;
+  margin-bottom: 16px;
+`;
+
+const RecentSearchesHeader = styled(Stack)`
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 12px;
+`;
+
 function truncate(str, n) {
   if (!str) return '';
-  //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
   return str.length > n ? str.substr(0, n - 1) + '... ' : str;
 }
+
+const MAX_RECENT_SEARCHES = 5;
 
 export default function CurrencySearchModal({
   onDismiss = () => null,
@@ -161,6 +175,76 @@ export default function CurrencySearchModal({
 
   const [tokens, setTokens] = useState([XRP_TOKEN, USD_TOKEN]);
   const [filter, setFilter] = useState('');
+  const [recentSearches, setRecentSearches] = useState([]);
+
+  useEffect(() => {
+    // Load recent searches from localStorage
+    const savedSearches = localStorage.getItem('recentTokenSearches');
+    if (savedSearches) {
+      setRecentSearches(JSON.parse(savedSearches));
+    }
+  }, []);
+
+  const addToRecentSearches = (token) => {
+    const updatedSearches = [token, ...recentSearches.filter((t) => t.md5 !== token.md5)].slice(
+      0,
+      MAX_RECENT_SEARCHES
+    );
+    setRecentSearches(updatedSearches);
+    localStorage.setItem('recentTokenSearches', JSON.stringify(updatedSearches));
+  };
+
+  const renderTokenItem = (row) => {
+    const { md5, name, user, kyc, isOMCF } = row;
+    const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+
+    return (
+      <TokenListItem
+        key={md5 + '_token1'}
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        onClick={() => handleChangetoken(row)}
+      >
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <TokenImageWrapper>
+            <TokenImage
+              src={imgUrl}
+              width={36}
+              height={36}
+              onError={(event) => (event.target.src = '/static/alt.webp')}
+            />
+            {kyc && (
+              <KYCBadge>
+                <Tooltip title="KYC Verified">
+                  <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 20 }} />
+                </Tooltip>
+              </KYCBadge>
+            )}
+          </TokenImageWrapper>
+          <Stack spacing={0.2}>
+            <Typography
+              variant="subtitle2"
+              color={isOMCF !== 'yes' ? 'text.primary' : 'primary'}
+              sx={{ fontWeight: 600 }}
+              noWrap
+            >
+              {truncate(name, 12)}
+            </Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontSize: '0.75rem' }}
+              noWrap
+            >
+              {truncate(user, 16)}
+            </Typography>
+          </Stack>
+        </Stack>
+        <ArrowForwardIcon sx={{ color: 'primary.main', opacity: 0.7 }} />
+      </TokenListItem>
+    );
+  };
 
   const loadTokens = () => {
     setLoading(true);
@@ -205,6 +289,7 @@ export default function CurrencySearchModal({
   };
 
   const handleChangetoken = (_token) => {
+    addToRecentSearches(_token);
     onChangeToken(_token);
     onDismiss();
   };
@@ -276,58 +361,21 @@ export default function CurrencySearchModal({
               }}
             />
 
-            <Stack sx={{ mt: 3 }} spacing={1}>
-              {tokens.map((row) => {
-                const { md5, name, user, kyc, isOMCF } = row;
-                const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+            {!filter && recentSearches.length > 0 && (
+              <RecentSearchesSection>
+                <RecentSearchesHeader>
+                  <HistoryIcon sx={{ color: 'text.secondary', fontSize: 20, mr: 1 }} />
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Recent Searches
+                  </Typography>
+                </RecentSearchesHeader>
+                <Stack spacing={1}>{recentSearches.map((row) => renderTokenItem(row))}</Stack>
+                <Divider sx={{ my: 2 }} />
+              </RecentSearchesSection>
+            )}
 
-                return (
-                  <TokenListItem
-                    key={md5 + '_token1'}
-                    direction="row"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    onClick={() => handleChangetoken(row)}
-                  >
-                    <Stack direction="row" spacing={1.5} alignItems="center">
-                      <TokenImageWrapper>
-                        <TokenImage
-                          src={imgUrl}
-                          width={36}
-                          height={36}
-                          onError={(event) => (event.target.src = '/static/alt.webp')}
-                        />
-                        {kyc && (
-                          <KYCBadge>
-                            <Tooltip title="KYC Verified">
-                              <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 20 }} />
-                            </Tooltip>
-                          </KYCBadge>
-                        )}
-                      </TokenImageWrapper>
-                      <Stack spacing={0.2}>
-                        <Typography
-                          variant="subtitle2"
-                          color={isOMCF !== 'yes' ? 'text.primary' : 'primary'}
-                          sx={{ fontWeight: 600 }}
-                          noWrap
-                        >
-                          {truncate(name, 12)}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ fontSize: '0.75rem' }}
-                          noWrap
-                        >
-                          {truncate(user, 16)}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                    <ArrowForwardIcon sx={{ color: 'primary.main', opacity: 0.7 }} />
-                  </TokenListItem>
-                );
-              })}
+            <Stack sx={{ mt: !filter && recentSearches.length > 0 ? 0 : 3 }} spacing={1}>
+              {tokens.map((row) => renderTokenItem(row))}
             </Stack>
           </StyledModalBody>
         </StyledModalContainer>
