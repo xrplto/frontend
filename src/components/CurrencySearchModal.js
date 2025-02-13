@@ -49,17 +49,18 @@ const StyledModalContainer = styled(ModalContainer)`
   width: 100%;
   min-width: 320px;
   max-width: 420px !important;
-  min-height: calc(var(--vh, 1vh) * 90);
-  ${({ theme }) => theme.mediaQueries.md} {
-    min-height: auto;
-  }
+  height: 80vh;
+  max-height: 600px;
+  display: flex;
+  flex-direction: column;
   background: #000000;
   border-radius: 24px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 `;
 
 const StyledModalBody = styled(ModalBody)`
-  padding: 24px;
+  padding: 16px;
+  flex: 1;
   overflow-y: auto;
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -70,9 +71,10 @@ const StyledModalBody = styled(ModalBody)`
 
 const SearchTextField = styled(TextField)`
   & .MuiOutlinedInput-root {
-    border-radius: 16px;
+    border-radius: 12px;
     background: rgba(255, 255, 255, 0.05);
     transition: all 0.2s ease;
+    height: 44px;
 
     &:hover {
       background: rgba(255, 255, 255, 0.08);
@@ -87,6 +89,7 @@ const SearchTextField = styled(TextField)`
     }
 
     & input {
+      padding: 8px 14px;
       color: rgba(255, 255, 255, 0.9);
       &::placeholder {
         color: rgba(255, 255, 255, 0.5);
@@ -96,10 +99,11 @@ const SearchTextField = styled(TextField)`
 `;
 
 const TokenListItem = styled(Stack)`
-  padding: 12px;
-  border-radius: 16px;
+  padding: 6px 8px;
+  border-radius: 8px;
   transition: all 0.2s ease;
   background: rgba(255, 255, 255, 0.03);
+  margin-bottom: 2px;
 
   &:hover {
     background: rgba(255, 255, 255, 0.06);
@@ -128,6 +132,8 @@ const KYCBadge = styled('div')`
 
 const TokenImage = styled(LazyLoadImage)`
   border-radius: 50%;
+  width: 24px;
+  height: 24px;
   overflow: hidden;
   transition: transform 0.2s ease;
   ${TokenListItem}:hover & {
@@ -136,14 +142,14 @@ const TokenImage = styled(LazyLoadImage)`
 `;
 
 const RecentSearchesSection = styled(Stack)`
-  margin-top: 24px;
-  margin-bottom: 16px;
+  margin-top: 16px;
+  margin-bottom: 12px;
 `;
 
 const RecentSearchesHeader = styled(Stack)`
   flex-direction: row;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 `;
 
 function truncate(str, n) {
@@ -206,27 +212,27 @@ export default function CurrencySearchModal({
         justifyContent="space-between"
         onClick={() => handleChangetoken(row)}
       >
-        <Stack direction="row" spacing={1.5} alignItems="center">
+        <Stack direction="row" spacing={0.8} alignItems="center">
           <TokenImageWrapper>
             <TokenImage
               src={imgUrl}
-              width={36}
-              height={36}
+              alt={name}
+              effect="opacity"
               onError={(event) => (event.target.src = '/static/alt.webp')}
             />
             {kyc && (
               <KYCBadge>
                 <Tooltip title="KYC Verified">
-                  <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 20 }} />
+                  <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 14 }} />
                 </Tooltip>
               </KYCBadge>
             )}
           </TokenImageWrapper>
-          <Stack spacing={0.2}>
+          <Stack spacing={0}>
             <Typography
               variant="subtitle2"
               color={isOMCF !== 'yes' ? 'text.primary' : 'primary'}
-              sx={{ fontWeight: 600 }}
+              sx={{ fontWeight: 600, fontSize: '0.8rem', lineHeight: 1.2 }}
               noWrap
             >
               {truncate(name, 12)}
@@ -234,14 +240,14 @@ export default function CurrencySearchModal({
             <Typography
               variant="caption"
               color="text.secondary"
-              sx={{ fontSize: '0.75rem' }}
+              sx={{ fontSize: '0.65rem', lineHeight: 1 }}
               noWrap
             >
               {truncate(user, 16)}
             </Typography>
           </Stack>
         </Stack>
-        <ArrowForwardIcon sx={{ color: 'primary.main', opacity: 0.7 }} />
+        <ArrowForwardIcon sx={{ color: 'primary.main', opacity: 0.7, fontSize: 16 }} />
       </TokenListItem>
     );
   };
@@ -323,7 +329,10 @@ export default function CurrencySearchModal({
           color: '#fff',
           zIndex: (theme) => theme.zIndex.drawer + 1,
           backdropFilter: 'blur(3px)',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)'
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
         open={open}
         onClick={onDismiss}
@@ -374,9 +383,7 @@ export default function CurrencySearchModal({
               </RecentSearchesSection>
             )}
 
-            <Stack sx={{ mt: !filter && recentSearches.length > 0 ? 0 : 3 }} spacing={1}>
-              {tokens.map((row) => renderTokenItem(row))}
-            </Stack>
+            <Stack spacing={0.5}>{tokens.map((row) => renderTokenItem(row))}</Stack>
           </StyledModalBody>
         </StyledModalContainer>
       </Backdrop>
