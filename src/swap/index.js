@@ -28,6 +28,7 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 // Iconify
 import { Icon } from '@iconify/react';
 import exchangeIcon from '@iconify/icons-uil/exchange';
+import infoFill from '@iconify/icons-eva/info-fill';
 
 // Context
 import { useContext } from 'react';
@@ -150,6 +151,18 @@ const AllowButton = styled(Button)(
   min-width: 48px;
 `
 );
+
+const getPriceImpactColor = (impact) => {
+  if (impact <= 1) return '#22C55E'; // Green for low impact
+  if (impact <= 3) return '#F59E0B'; // Yellow for medium impact
+  return '#EF4444'; // Red for high impact
+};
+
+const getPriceImpactSeverity = (impact) => {
+  if (impact <= 1) return 'Low';
+  if (impact <= 3) return 'Medium';
+  return 'High';
+};
 
 export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const theme = useTheme();
@@ -865,19 +878,45 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 alignItems="center"
                 justifyContent="space-between"
                 sx={{
-                  width: '100%'
+                  width: '100%',
+                  position: 'relative'
                 }}
               >
                 <Stack direction="row" spacing={1} alignItems="center">
                   <Typography variant="s6" sx={{ color: 'white' }}>
                     Price impact
                   </Typography>
+                  <Icon
+                    icon={infoFill}
+                    width={16}
+                    height={16}
+                    style={{ color: 'rgba(255,255,255,0.5)', cursor: 'help' }}
+                    title="The difference between the market price and estimated price due to trade size"
+                  />
                   {loadingPrice ? (
                     <ClipLoader color="#FF6C40" size={15} />
                   ) : (
-                    <Typography variant="s2" color="primary">
-                      {priceImpact} %
-                    </Typography>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography
+                        variant="s2"
+                        sx={{
+                          color: getPriceImpactColor(priceImpact),
+                          fontWeight: 600
+                        }}
+                      >
+                        {priceImpact}%
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: getPriceImpactColor(priceImpact),
+                          opacity: 0.8,
+                          fontWeight: 500
+                        }}
+                      >
+                        ({getPriceImpactSeverity(priceImpact)})
+                      </Typography>
+                    </Stack>
                   )}
                 </Stack>
               </Stack>
