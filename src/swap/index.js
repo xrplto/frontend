@@ -511,6 +511,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 if (type == 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
+                  setSync(sync + 1);
                 } else {
                   dispatch(updateProcess(3));
                 }
@@ -544,6 +545,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             if (response.data.meta.isSuccess) {
               dispatch(updateProcess(2));
               dispatch(updateTxHash(response.data.resp.result?.hash));
+              setSync(sync + 1);
             } else {
               dispatch(updateProcess(3));
             }
