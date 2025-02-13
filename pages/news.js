@@ -27,12 +27,35 @@ import Topbar from '../src/components/Topbar';
 const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
   // Sort sources by count in descending order
   const sortedSources = Object.entries(sources).sort(([, a], [, b]) => b - a);
+  const [showAll, setShowAll] = useState(false);
+
+  // Show top 12 sources by default
+  const displayedSources = showAll ? sortedSources : sortedSources.slice(0, 12);
+  const totalSources = sortedSources.length;
+  const hiddenCount = totalSources - 12;
 
   return (
     <Paper sx={{ mb: 3, py: 1.5, px: 2 }}>
-      <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500 }}>
-        News Sources ({Object.keys(sources).length} sources)
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+          News Sources ({totalSources} sources)
+        </Typography>
+        {totalSources > 12 && (
+          <Chip
+            label={showAll ? 'Show Less' : `Show All (+${hiddenCount})`}
+            size="small"
+            onClick={() => setShowAll(!showAll)}
+            sx={{
+              cursor: 'pointer',
+              backgroundColor: 'primary.lighter',
+              color: 'primary.main',
+              '&:hover': {
+                backgroundColor: 'primary.light'
+              }
+            }}
+          />
+        )}
+      </Box>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
         <Chip
           key="all"
@@ -54,7 +77,7 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
             }
           }}
         />
-        {sortedSources.map(([source, count]) => (
+        {displayedSources.map(([source, count]) => (
           <Chip
             key={source}
             label={`${source} (${count})`}
