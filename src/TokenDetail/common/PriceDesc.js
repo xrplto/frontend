@@ -1,5 +1,6 @@
 // Material
 import { Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
 // Components
 import BearBullChip from './BearBullChip';
@@ -30,131 +31,113 @@ export default function PriceDesc({ token }) {
   let user = token.user;
   if (!user) user = name;
 
+  const tooltipStyles = {
+    bgcolor: theme.palette.background.paper,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+    boxShadow: theme.shadows[4],
+    borderRadius: 1.5,
+    p: 1.5,
+    '& .MuiTooltip-arrow': {
+      color: theme.palette.background.paper
+    }
+  };
+
   return (
-    <Stack spacing={0.25}>
-      <Typography variant="h1" color="#33C2FF" fontSize="0.875rem">
-        {user} ({name})
+    <Stack spacing={0.75} sx={{ position: 'relative' }}>
+      <Typography
+        variant="h1"
+        sx={{
+          color: theme.palette.primary.main,
+          fontSize: '0.875rem',
+          fontWeight: 600,
+          letterSpacing: '0.015em',
+          transition: 'color 0.2s ease-in-out',
+          mb: -0.5
+        }}
+      >
+        {user}{' '}
+        <Typography component="span" color="text.secondary" fontSize="inherit">
+          ({name})
+        </Typography>
       </Typography>
-      <Stack direction="row" spacing={0.5} alignItems="center">
-        <Stack direction="row" spacing={0.25} alignItems="center">
-          <Typography variant="price" noWrap sx={{ fontSize: '1.5rem' }}>
+
+      <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <Typography
+            variant="price"
+            noWrap
+            sx={{
+              fontSize: { xs: '1.5rem', md: '1.75rem' },
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              transition: 'all 0.3s ease'
+            }}
+          >
             <NumberTooltip
               prepend={currencySymbols[activeFiatCurrency]}
               number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
             />
           </Typography>
         </Stack>
-        <Stack direction="row" spacing={0.5} alignItems="center">
-          <BearBullChip
-            value={pro5m}
-            tooltip={
-              <Stack
-                alignItems="center"
-                spacing={0.25}
-                sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
-              >
-                5m Change
-                <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro5m=${pro5m}`} />
-              </Stack>
-            }
-            label="5m"
-            sx={{ '& .MuiChip-label': { fontWeight: 600 } }}
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  bgcolor: 'black',
-                  border: '1px solid rgba(255, 255, 255, 0.5)',
-                  '& .MuiTooltip-arrow': {
-                    color: 'black'
+
+        <Stack
+          direction="row"
+          spacing={0.5}
+          alignItems="center"
+          sx={{
+            flexWrap: { xs: 'wrap', sm: 'nowrap' },
+            gap: { xs: 0.25, sm: 0 }
+          }}
+        >
+          {[
+            { value: pro5m, label: '5m' },
+            { value: pro1h, label: '1h' },
+            { value: pro24h, label: '24h' },
+            { value: pro7d, label: '7d' }
+          ].map((item) => (
+            <BearBullChip
+              key={item.label}
+              value={item.value}
+              tooltip={
+                <Stack alignItems="center" spacing={0.5} sx={{ minWidth: 160 }}>
+                  <Typography variant="caption">{item.label} Change</Typography>
+                  <LoadChart
+                    url={`${BASE_URL}/sparkline/${md5}?${item.label.toLowerCase()}=${item.value}`}
+                    sx={{ width: '100%', height: 50 }}
+                  />
+                </Stack>
+              }
+              label={item.label}
+              size="small"
+              sx={{
+                height: 24,
+                '& .MuiChip-label': {
+                  fontWeight: 600,
+                  px: 0.75,
+                  fontSize: '0.75rem'
+                },
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                  boxShadow: theme.shadows[1]
+                }
+              }}
+              componentsProps={{
+                tooltip: {
+                  sx: {
+                    ...tooltipStyles,
+                    p: 1
                   }
                 }
-              }
-            }}
-          />
-          <BearBullChip
-            value={pro1h}
-            tooltip={
-              <Stack
-                alignItems="center"
-                spacing={0.25}
-                sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
-              >
-                1h Change
-                <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro1h=${pro1h}`} />
-              </Stack>
-            }
-            label="1h"
-            sx={{ '& .MuiChip-label': { fontWeight: 600 } }}
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  bgcolor: 'black',
-                  border: '1px solid rgba(255, 255, 255, 0.5)',
-                  '& .MuiTooltip-arrow': {
-                    color: 'black'
-                  }
-                }
-              }
-            }}
-          />
-          <BearBullChip
-            value={pro24h}
-            tooltip={
-              <Stack
-                alignItems="center"
-                spacing={0.25}
-                sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
-              >
-                24h Change
-                <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`} />
-              </Stack>
-            }
-            label="24h"
-            sx={{ '& .MuiChip-label': { fontWeight: 600 } }}
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  bgcolor: 'black',
-                  border: '1px solid rgba(255, 255, 255, 0.5)',
-                  '& .MuiTooltip-arrow': {
-                    color: 'black'
-                  }
-                }
-              }
-            }}
-          />
-          <BearBullChip
-            value={pro7d}
-            tooltip={
-              <Stack
-                alignItems="center"
-                spacing={0.25}
-                sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
-              >
-                7d Change
-                <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
-              </Stack>
-            }
-            label="7d"
-            sx={{ '& .MuiChip-label': { fontWeight: 600 } }}
-            componentsProps={{
-              tooltip: {
-                sx: {
-                  bgcolor: 'black',
-                  border: '1px solid rgba(255, 255, 255, 0.5)',
-                  '& .MuiTooltip-arrow': {
-                    color: 'black'
-                  }
-                }
-              }
-            }}
-          />
+              }}
+            />
+          ))}
         </Stack>
       </Stack>
 
       <LowHighBar24H token={token} />
 
-      {isTablet && <Divider />}
+      {isTablet && <Divider sx={{ mt: 1 }} />}
     </Stack>
   );
 }
