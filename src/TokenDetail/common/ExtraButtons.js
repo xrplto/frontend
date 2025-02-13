@@ -109,20 +109,32 @@ export default function ExtraButtons({ token }) {
         />
       )}
 
+      <Grid container direction="row" spacing={0.5} sx={{ justifyContent: 'flex-end' }}>
+        <Grid item>
+          <Button
+            variant="contained"
+            onClick={handleSetTrust}
+            color={`${isRemove ? 'error' : 'primary'}`}
+            size="small"
+            disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
+            sx={{ minWidth: 'auto', px: 1 }}
+          >
+            {`${isRemove ? 'Remove' : 'Set'} Trustline`}
+          </Button>
+        </Grid>
+      </Grid>
+
       {token.date && (
         <Stack
           direction="row"
           spacing={0.5}
           alignItems="center"
           sx={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
             backgroundColor: darkMode ? 'rgba(145, 158, 171, 0.08)' : 'rgba(145, 158, 171, 0.08)',
             borderRadius: '6px',
             px: 1,
             py: 0.5,
-            zIndex: 1
+            alignSelf: 'flex-end'
           }}
         >
           <Icon
@@ -157,21 +169,6 @@ export default function ExtraButtons({ token }) {
           </Typography>
         </Stack>
       )}
-
-      <Grid container direction="row" spacing={0.5} sx={{ mt: 4 }}>
-        <Grid item>
-          <Button
-            variant="contained"
-            onClick={handleSetTrust}
-            color={`${isRemove ? 'error' : 'primary'}`}
-            size="small"
-            disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
-            sx={{ minWidth: 'auto', px: 1 }}
-          >
-            {`${isRemove ? 'Remove' : 'Set'} Trustline`}
-          </Button>
-        </Grid>
-      </Grid>
 
       <Stack
         direction="row"
