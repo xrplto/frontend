@@ -886,13 +886,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                   <Typography variant="s6" sx={{ color: 'white' }}>
                     Price impact
                   </Typography>
-                  <Icon
-                    icon={infoFill}
-                    width={16}
-                    height={16}
-                    style={{ color: 'rgba(255,255,255,0.5)', cursor: 'help' }}
-                    title="The difference between the market price and estimated price due to trade size"
-                  />
                   {loadingPrice ? (
                     <ClipLoader color="#FF6C40" size={15} />
                   ) : (
