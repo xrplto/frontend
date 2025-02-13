@@ -757,7 +757,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <CurrencyContent
               style={{
                 order: revert ? 2 : 1,
-                backgroundColor: '#000000',
+                backgroundColor: '#121212',
                 border: focusTop
                   ? `1px solid ${theme?.general?.reactFrameworkColor}`
                   : '1px solid rgba(255, 255, 255, 0.1)',
