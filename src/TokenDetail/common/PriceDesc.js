@@ -33,7 +33,7 @@ export default function PriceDesc({ token }) {
   return (
     <Stack spacing={0.25}>
       <Typography variant="h1" color="#33C2FF" fontSize="0.875rem">
-        {user} Price ({name})
+        {user} ({name})
       </Typography>
       <Stack direction="row" spacing={0.5} alignItems="center">
         <Stack direction="row" spacing={0.25} alignItems="center">
@@ -44,109 +44,112 @@ export default function PriceDesc({ token }) {
             />
           </Typography>
         </Stack>
-      </Stack>
-
-      <Stack direction="row" spacing={0.25} alignItems="center">
-        <BearBullChip
-          value={pro5m}
-          tooltip={
-            <Stack
-              alignItems="center"
-              spacing={0.25}
-              sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
-            >
-              5m Change
-              <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro5m=${pro5m}`} />
-            </Stack>
-          }
-          label="5m"
-          componentsProps={{
-            tooltip: {
-              sx: {
-                bgcolor: 'black',
-                border: '1px solid rgba(255, 255, 255, 0.5)',
-                '& .MuiTooltip-arrow': {
-                  color: 'black'
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <BearBullChip
+            value={pro5m}
+            tooltip={
+              <Stack
+                alignItems="center"
+                spacing={0.25}
+                sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
+              >
+                5m Change
+                <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro5m=${pro5m}`} />
+              </Stack>
+            }
+            label="5m"
+            sx={{ '& .MuiChip-label': { fontWeight: 600 } }}
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  bgcolor: 'black',
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  '& .MuiTooltip-arrow': {
+                    color: 'black'
+                  }
                 }
               }
+            }}
+          />
+          <BearBullChip
+            value={pro1h}
+            tooltip={
+              <Stack
+                alignItems="center"
+                spacing={0.25}
+                sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
+              >
+                1h Change
+                <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro1h=${pro1h}`} />
+              </Stack>
             }
-          }}
-        />
-        <BearBullChip
-          value={pro1h}
-          tooltip={
-            <Stack
-              alignItems="center"
-              spacing={0.25}
-              sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
-            >
-              1h Change
-              <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro1h=${pro1h}`} />
-            </Stack>
-          }
-          label="1h"
-          componentsProps={{
-            tooltip: {
-              sx: {
-                bgcolor: 'black',
-                border: '1px solid rgba(255, 255, 255, 0.5)',
-                '& .MuiTooltip-arrow': {
-                  color: 'black'
+            label="1h"
+            sx={{ '& .MuiChip-label': { fontWeight: 600 } }}
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  bgcolor: 'black',
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  '& .MuiTooltip-arrow': {
+                    color: 'black'
+                  }
                 }
               }
+            }}
+          />
+          <BearBullChip
+            value={pro24h}
+            tooltip={
+              <Stack
+                alignItems="center"
+                spacing={0.25}
+                sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
+              >
+                24h Change
+                <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`} />
+              </Stack>
             }
-          }}
-        />
-        <BearBullChip
-          value={pro24h}
-          tooltip={
-            <Stack
-              alignItems="center"
-              spacing={0.25}
-              sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
-            >
-              24h Change
-              <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro24h=${pro24h}`} />
-            </Stack>
-          }
-          label="24h"
-          componentsProps={{
-            tooltip: {
-              sx: {
-                bgcolor: 'black',
-                border: '1px solid rgba(255, 255, 255, 0.5)',
-                '& .MuiTooltip-arrow': {
-                  color: 'black'
+            label="24h"
+            sx={{ '& .MuiChip-label': { fontWeight: 600 } }}
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  bgcolor: 'black',
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  '& .MuiTooltip-arrow': {
+                    color: 'black'
+                  }
                 }
               }
+            }}
+          />
+          <BearBullChip
+            value={pro7d}
+            tooltip={
+              <Stack
+                alignItems="center"
+                spacing={0.25}
+                sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
+              >
+                7d Change
+                <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
+              </Stack>
             }
-          }}
-        />
-        <BearBullChip
-          value={pro7d}
-          tooltip={
-            <Stack
-              alignItems="center"
-              spacing={0.25}
-              sx={{ bgcolor: 'black', p: 1, borderRadius: 1 }}
-            >
-              7d Change
-              <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
-            </Stack>
-          }
-          label="7d"
-          componentsProps={{
-            tooltip: {
-              sx: {
-                bgcolor: 'black',
-                border: '1px solid rgba(255, 255, 255, 0.5)',
-                '& .MuiTooltip-arrow': {
-                  color: 'black'
+            label="7d"
+            sx={{ '& .MuiChip-label': { fontWeight: 600 } }}
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  bgcolor: 'black',
+                  border: '1px solid rgba(255, 255, 255, 0.5)',
+                  '& .MuiTooltip-arrow': {
+                    color: 'black'
+                  }
                 }
               }
-            }
-          }}
-        />
+            }}
+          />
+        </Stack>
       </Stack>
 
       <LowHighBar24H token={token} />
