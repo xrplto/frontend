@@ -31,7 +31,7 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
   return (
     <Paper sx={{ mb: 3, py: 1.5, px: 2 }}>
       <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500 }}>
-        News Sources
+        News Sources ({Object.keys(sources).length} sources)
       </Typography>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
         <Chip
