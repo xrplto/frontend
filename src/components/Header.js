@@ -31,7 +31,7 @@ const HeaderWrapper = styled(Box)(
     width: 100%;
     display: flex;
     align-items: center;
-    height: ${theme.spacing(10)};
+    height: ${theme.spacing(7)};
     margin-bottom: ${theme.spacing(0)};
     border-radius: 0px;
     border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
@@ -44,11 +44,11 @@ const HeaderWrapper = styled(Box)(
 const StyledLink = styled(Link)(
   ({ darkMode }) => `
     font-weight: 700;
-    margin-right: 27px;
-    padding: 12px 16px; // Increased padding for better clickable area
-    border-radius: 12px; // Increased border radius
-    transition: all 0.2s ease-in-out; // Smoother transition
-    display: inline-flex; // Changed to inline-flex for better alignment
+    margin-right: 20px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    transition: all 0.2s ease-in-out;
+    display: inline-flex;
     align-items: center;
     background: transparent;
     &:hover {
@@ -257,7 +257,7 @@ export default function Header(props) {
             }}
           >
             {!fullSearch && isDesktop && (
-              <Stack mr={2}>
+              <Stack mr={1}>
                 <NavSearchBar
                   id="id_search_tokens"
                   placeholder="Search XRPL Tokens"
@@ -291,8 +291,13 @@ export default function Header(props) {
                     icon={<StarOutlineIcon fontSize="small" />}
                     label={'Watchlist'}
                     onClick={() => {}}
+                    size="small"
                     sx={{
-                      borderRadius: '8px'
+                      borderRadius: '8px',
+                      height: '28px',
+                      '& .MuiChip-label': {
+                        px: 1
+                      }
                     }}
                   />
                 </Link>
