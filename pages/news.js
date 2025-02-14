@@ -23,6 +23,9 @@ import ChatModal from '../src/components/AIChat';
 import Header from '../src/components/Header';
 import Footer from '../src/components/Footer';
 import Topbar from '../src/components/Topbar';
+import useWebSocket from 'react-use-websocket';
+import { useDispatch } from 'react-redux';
+import { update_metrics } from 'src/redux/statusSlice';
 
 const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
   // Sort sources by count in descending order
@@ -105,6 +108,7 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
 };
 
 export default function News() {
+  const dispatch = useDispatch();
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -120,6 +124,20 @@ export default function News() {
     last30d: { bullish: 0, bearish: 0, neutral: 0 }
   });
   const [sourcesStats, setSourcesStats] = useState({});
+
+  // Add WebSocket connection
+  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
+  const { sendJsonMessage } = useWebSocket(WSS_FEED_URL, {
+    shouldReconnect: (closeEvent) => true,
+    onMessage: (event) => {
+      try {
+        const json = JSON.parse(event.data);
+        dispatch(update_metrics(json));
+      } catch (err) {
+        console.error('Error processing WebSocket message:', err);
+      }
+    }
+  });
 
   // Filter news based on selected source and search query
   const filteredNews = news.filter((article) => {
