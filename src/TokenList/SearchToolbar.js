@@ -391,7 +391,7 @@ export default function SearchToolbar({
                   onFilterName({ target: { value: '' } });
                   router.push({
                     pathname: '/',
-                    query: { sortBy: 'trendingScore', sortType: 'desc' }
+                    query: { sort: 'trendingScore', order: 'desc' }
                   });
                 }}
                 sx={{
