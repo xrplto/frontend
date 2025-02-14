@@ -23,7 +23,6 @@ import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
 import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
-import DropDownMenu from './DropDownMenu';
 import WalletConnectModal from './WalletConnectModal';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 
@@ -60,20 +59,6 @@ const StyledLink = styled(Link)(
 `
 );
 
-const MenuContainer = styled('div')(
-  ({ theme }) => `
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    margin-right: ${theme.spacing(2)};
-    
-    // Add hover effect to child elements
-    &:hover > * {
-      opacity: 0.9;
-    }
-`
-);
-
 export default function Header(props) {
   const { t } = useTranslation(); // set translation const
   const theme = useTheme();
@@ -105,18 +90,6 @@ export default function Header(props) {
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
-  };
-
-  // Dropdown menu state and functions
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
-
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
   };
 
   useEffect(() => {
@@ -188,9 +161,21 @@ export default function Header(props) {
 
             {isDesktop && (
               <>
-                <MenuContainer>
-                  <DropDownMenu />
-                </MenuContainer>
+                <StyledLink
+                  underline="none"
+                  color={darkMode ? 'white' : 'black'}
+                  sx={{
+                    '&:hover': {
+                      color: darkMode ? '#22B14C !important' : '#3366FF !important'
+                    },
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                  href="/"
+                >
+                  {t('Tokens')}
+                </StyledLink>
                 <StyledLink
                   underline="none"
                   color={darkMode ? 'white' : 'black'}
