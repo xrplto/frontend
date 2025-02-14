@@ -101,17 +101,16 @@ const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   [`& .${toggleButtonGroupClasses.grouped}`]: {
     margin: theme.spacing(0.3),
     border: 0,
-    borderRadius: "4px",
-    height: "24px",
+    borderRadius: '4px',
+    height: '24px',
     [`&.${toggleButtonGroupClasses.disabled}`]: {
-      border: 0,
-    },
+      border: 0
+    }
   },
-  [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]:
-    {
-      marginLeft: -1,
-      borderLeft: '1px solid transparent',
-    },
+  [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]: {
+    marginLeft: -1,
+    borderLeft: '1px solid transparent'
+  }
 }));
 
 function getTagValue(tags, tagName) {
@@ -140,8 +139,7 @@ export default function SearchToolbar({
 }) {
   const router = useRouter();
   const { accountProfile, openSnackbar } = useContext(AppContext);
-  const isAdmin =
-    accountProfile && accountProfile.account && accountProfile.admin;
+  const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
   const [tagValue, setTagValue] = useState(getTagValue(tags, tagName));
   const [openCategoriesDrawer, setOpenCategoriesDrawer] = useState(false);
@@ -150,7 +148,7 @@ export default function SearchToolbar({
     setRows(parseInt(e.target.value, 10));
   };
 
-  const handleDelete = () => { };
+  const handleDelete = () => {};
 
   const toggleCategoriesDrawer = (isOpen = true) => {
     setOpenCategoriesDrawer(isOpen);
@@ -200,7 +198,7 @@ export default function SearchToolbar({
             variant={'outlined'}
             icon={<StarOutlineIcon fontSize="small" />}
             label={'Watchlist'}
-            onClick={() => { }}
+            onClick={() => {}}
             sx={{
               borderRadius: '8px'
             }}
@@ -239,8 +237,8 @@ export default function SearchToolbar({
             display: 'flex',
             border: (theme) => `1px solid ${theme.palette.divider}`,
             flexWrap: 'wrap',
-            borderRadius: "6px",
-            padding: "1px 4px"
+            borderRadius: '6px',
+            padding: '1px 4px'
           }}
         >
           <StyledToggleButtonGroup
@@ -250,10 +248,14 @@ export default function SearchToolbar({
             onChange={(_, newType) => setViewType(newType)}
           >
             <ToggleButton size="small" value="row">
-              <DehazeIcon fontSize="16px"/>
+              <DehazeIcon fontSize="16px" />
             </ToggleButton>
-            <ToggleButton size="small" value="heatmap" onClick={() => router.push('/tokens-heatmap')}>
-              <WindowIcon fontSize="16px"/>
+            <ToggleButton
+              size="small"
+              value="heatmap"
+              onClick={() => router.push('/tokens-heatmap')}
+            >
+              <WindowIcon fontSize="16px" />
             </ToggleButton>
           </StyledToggleButtonGroup>
         </Paper>
@@ -342,9 +344,36 @@ export default function SearchToolbar({
                   borderRadius: '4px'
                 }}
               />
-
             }
+            style={{
+              paddingLeft: 0,
+              paddingRight: 0
+            }}
+          />
 
+          <Tab
+            disableRipple
+            label={
+              <Chip
+                size="small"
+                icon={<FiberNewIcon fontSize="small" />}
+                label={'New Tokens'}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // Clear any existing search filter
+                  onFilterName({ target: { value: '' } });
+                  // Update URL with sort parameters
+                  router.push({
+                    pathname: '/',
+                    query: { sort: 'dateon', order: 'desc' }
+                  });
+                }}
+                sx={{
+                  borderRadius: '4px'
+                }}
+              />
+            }
             style={{
               paddingLeft: 0,
               paddingRight: 0
@@ -358,7 +387,7 @@ export default function SearchToolbar({
             sx={{
               display: { xs: 'none', md: 'flex' },
               mx: 3, // Adjust this margin to ensure the divider is visible
-              my: 'auto',
+              my: 'auto'
             }}
           />
 
@@ -381,14 +410,17 @@ export default function SearchToolbar({
                         size="small"
                         label={
                           <span style={{ display: 'flex', alignItems: 'center' }}>
-                            <WhatshotIcon fontSize="small" style={{ marginRight: 4, color: 'orange' }} />
+                            <WhatshotIcon
+                              fontSize="small"
+                              style={{ marginRight: 4, color: 'orange' }}
+                            />
                             {tag}
                           </span>
                         }
                         onClick={handleDelete}
                         color={normalizeTag(tagName) === nTag ? 'primary' : undefined}
                         sx={{
-                          borderRadius: '4px',
+                          borderRadius: '4px'
                           // Additional styling here if needed
                         }}
                       />
