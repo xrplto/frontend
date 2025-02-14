@@ -68,13 +68,16 @@ const Separator = styled('span')(({ theme }) => ({
 }));
 
 const APILabel = styled('a')(({ theme }) => ({
-  fontSize: '14px', // Adjust font size as needed
-  color: theme.palette.text.primary, // Adjust color as needed
+  fontSize: '13px',
+  color: theme.palette.text.primary,
   textDecoration: 'none',
-  marginLeft: theme.spacing(2),
+  marginLeft: theme.spacing(1),
   backgroundColor: alpha(theme.palette.primary.main, 0.3),
-  padding: '5px 10px',
-  borderRadius: '5px',
+  padding: '3px 8px',
+  borderRadius: '4px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4px',
   '&:hover': {
     backgroundColor: alpha(theme.palette.primary.main, 0.2),
     textDecoration: 'none',
@@ -125,11 +128,10 @@ const TradeButton = styled(IconButton)(({ theme }) => ({
 
 // Add this styled component after other styled components
 const PulsatingCircle = styled('div')(({ theme }) => ({
-  width: '10px',
-  height: '10px',
+  width: '6px',
+  height: '6px',
   borderRadius: '50%',
   backgroundColor: theme.palette.success.main,
-  marginRight: theme.spacing(1),
   animation: 'pulse 1.5s infinite',
   '@keyframes pulse': {
     '0%': {
@@ -523,10 +525,8 @@ const Topbar = () => {
               <ThemeSwitcher />
               <Separator>|</Separator>
               <APILabel onClick={handleTradeDrawerOpen}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <PulsatingCircle />
-                  Global Trades
-                </Box>
+                <PulsatingCircle />
+                Global Trades
               </APILabel>
               {!fullSearch && isDesktop && <Wallet style={{ marginRight: '9px' }} />}
             </Box>
