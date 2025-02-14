@@ -583,7 +583,7 @@ export default function SearchToolbar({
               <Chip
                 size="small"
                 icon={<FiberNewIcon sx={{ fontSize: '16px' }} />}
-                label={'New Tokens'}
+                label={'New'}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -596,6 +596,22 @@ export default function SearchToolbar({
                 sx={{
                   borderRadius: '4px',
                   height: '24px',
+                  backgroundColor:
+                    currentPeriod === 'dateon'
+                      ? darkMode
+                        ? 'rgba(255, 171, 0, 0.16)'
+                        : 'rgba(255, 171, 0, 0.08)'
+                      : 'transparent',
+                  color:
+                    currentPeriod === 'dateon' ? (darkMode ? '#FFA000' : '#B76E00') : 'inherit',
+                  '&:hover': {
+                    backgroundColor:
+                      currentPeriod === 'dateon'
+                        ? darkMode
+                          ? 'rgba(255, 171, 0, 0.24)'
+                          : 'rgba(255, 171, 0, 0.16)'
+                        : ''
+                  },
                   '& .MuiChip-label': {
                     px: 1
                   }
