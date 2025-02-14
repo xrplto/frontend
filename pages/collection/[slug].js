@@ -14,6 +14,9 @@ import Footer from 'src/components/Footer';
 import Collection from 'src/collection';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Topbar from 'src/components/Topbar';
+import useWebSocket from 'react-use-websocket';
+import { useDispatch } from 'react-redux';
+import { update_metrics } from 'src/redux/statusSlice';
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
@@ -55,6 +58,22 @@ const BannerImage = styled('img')(
 
 export default function Overview({ collection }) {
   const { darkMode } = useContext(AppContext);
+  const dispatch = useDispatch();
+
+  // Add WebSocket connection
+  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
+  const { sendJsonMessage } = useWebSocket(WSS_FEED_URL, {
+    shouldReconnect: (closeEvent) => true,
+    onMessage: (event) => {
+      try {
+        const json = JSON.parse(event.data);
+        dispatch(update_metrics(json));
+      } catch (err) {
+        console.error('Error processing WebSocket message:', err);
+      }
+    }
+  });
+
   // "collection": {
   //     "_id": "6310c27cf81fe46884ef89ba",
   //     "account": "rpcmZhxthTeWoLMpro5dfRAsAmwZCrsxGK",

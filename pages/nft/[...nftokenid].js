@@ -1,110 +1,116 @@
-import axios from 'axios'
+import axios from 'axios';
 import dynamic from 'next/dynamic';
 
 // Material
-import {
-    Box,
-    Container,
-    styled,
-    Toolbar
-} from '@mui/material';
+import { Box, Container, styled, Toolbar } from '@mui/material';
 
 // Utils
 import { getNftCoverUrl } from 'src/utils/parse/utils';
 
 // Components
 import Topbar from 'src/components/Topbar';
-import Header from 'src/components/Header'
+import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { useContext } from 'react';
 import TokenDetail from 'src/nft';
+import useWebSocket from 'react-use-websocket';
+import { useDispatch } from 'react-redux';
+import { update_metrics } from 'src/redux/statusSlice';
 
 // const DynamicTokenDetail = dynamic(() => import('src/detail'));
-import { AppContext } from "src/AppContext";
+import { AppContext } from 'src/AppContext';
 
 const OverviewWrapper = styled(Box)(
-    ({ theme }) => `
+  ({ theme }) => `
         // overflow: hidden;
         flex: 1;
 `
 );
 
 export default function Overview({ nft }) {
+  const { darkMode } = useContext(AppContext);
+  const dispatch = useDispatch();
 
-    const { darkMode } = useContext(AppContext);
+  // Add WebSocket connection
+  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
+  const { sendJsonMessage } = useWebSocket(WSS_FEED_URL, {
+    shouldReconnect: (closeEvent) => true,
+    onMessage: (event) => {
+      try {
+        const json = JSON.parse(event.data);
+        dispatch(update_metrics(json));
+      } catch (err) {
+        console.error('Error processing WebSocket message:', err);
+      }
+    }
+  });
 
-    return (
-        <OverviewWrapper>
-            <Toolbar id="back-to-top-anchor" />
-            <Topbar />
-            <Header />
+  return (
+    <OverviewWrapper>
+      <Toolbar id="back-to-top-anchor" />
+      <Topbar />
+      <Header />
 
-            <Container maxWidth="xl">
-                <TokenDetail nft={nft.nft} />
-            </Container>
+      <Container maxWidth="xl">
+        <TokenDetail nft={nft.nft} />
+      </Container>
 
-            <ScrollToTop />
+      <ScrollToTop />
 
-            <Footer />
-
-        </OverviewWrapper>
-    );
+      <Footer />
+    </OverviewWrapper>
+  );
 }
 
 export async function getServerSideProps(ctx) {
-    const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpnft.com/api';
 
-    let data = null;
-    try {
+  let data = null;
+  try {
+    const params = ctx.params.nftokenid;
 
-        const params = ctx.params.nftokenid;
+    const NFTokenID = params[0];
 
-        const NFTokenID = params[0];
+    // Self: true  https://api.xrpnft.com/api/nft/00081388A47691FB124F91B5FF0F5246AED2B5275385689F9494918200001FE8
+    // Self: false https://api.xrpnft.com/api/nft/00081388C182B4F213B82CCFA4C6F59AD76F0AFCFBDF04D5048B654B00000070
+    const res = await axios.get(`${BASE_URL}/nft/${NFTokenID}`);
 
-        // Self: true  https://api.xrpnft.com/api/nft/00081388A47691FB124F91B5FF0F5246AED2B5275385689F9494918200001FE8
-        // Self: false https://api.xrpnft.com/api/nft/00081388C182B4F213B82CCFA4C6F59AD76F0AFCFBDF04D5048B654B00000070
-        const res = await axios.get(`${BASE_URL}/nft/${NFTokenID}`);
+    data = res.data;
+  } catch (e) {
+    console.log(e);
+  }
+  let ret = {};
+  const nft = data?.nft;
+  if (nft) {
+    const { NFTokenID, meta, dfile, collection } = nft;
 
-        data = res.data;
+    const name = meta?.name || nft.meta?.Name || 'No Name';
+    const description = meta?.description;
+    const cname = collection || '';
 
-    } catch (e) {
-        console.log(e);
-    }
-    let ret = {};
-    const nft = data?.nft
-    if (nft) {
-        const {
-            NFTokenID,
-            meta,
-            dfile,
-            collection
-        } = nft;
+    let ogp = {};
+    ogp.canonical = `https://xrpnft.com/nft/${NFTokenID}`;
+    ogp.title = cname ? `${name} - ${cname}` : `${name}`;
+    ogp.url = `https://xrpnft.com/nft/${NFTokenID}`;
+    ogp.imgUrl = getNftCoverUrl(nft, '', 'image') || getNftCoverUrl(nft, '', 'animation'); // (NFTokenID, meta, dfile, 48)
+    ogp.videoUrl = getNftCoverUrl(nft, '', 'video');
+    ogp.desc = description
+      ? description
+      : `XRPL's largest NFT marketplace: Buy, sell, mint with ease. Experience exclusive NFT creation and trade.`;
+    ogp.isVideo = meta?.video ? true : false;
 
-        const name = meta?.name || nft.meta?.Name || "No Name";
-        const description = meta?.description;
-        const cname = collection || "";
-
-        let ogp = {};
-        ogp.canonical = `https://xrpnft.com/nft/${NFTokenID}`;
-        ogp.title = cname ? `${name} - ${cname}` : `${name}`;
-        ogp.url = `https://xrpnft.com/nft/${NFTokenID}`;
-        ogp.imgUrl = getNftCoverUrl(nft, '', 'image') || getNftCoverUrl(nft, '', 'animation'); // (NFTokenID, meta, dfile, 48)
-        ogp.videoUrl = getNftCoverUrl(nft, '', 'video');
-        ogp.desc = description ? description : `XRPL's largest NFT marketplace: Buy, sell, mint with ease. Experience exclusive NFT creation and trade.`;
-        ogp.isVideo = meta?.video ? true : false;
-
-        ret = { nft: data, ogp };
-    } else {
-        return {
-            redirect: {
-                permanent: false,
-                destination: '/404'
-            }
-        }
-    }
-
+    ret = { nft: data, ogp };
+  } else {
     return {
-        props: ret, // will be passed to the page component as props
-    }
+      redirect: {
+        permanent: false,
+        destination: '/404'
+      }
+    };
+  }
+
+  return {
+    props: ret // will be passed to the page component as props
+  };
 }
