@@ -793,15 +793,15 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   return (
     <Stack alignItems="center" sx={{ width: '100%', maxWidth: '480px', margin: '0 auto' }}>
       <Stack sx={{ width: '100%' }}>
-        <OverviewWrapper sx={{ width: '100%' }}>
+        <OverviewWrapper sx={{ width: '100%', mb: 3 }}>
           <ConverterFrame>
             {isLoggedIn && (
               <Stack
                 direction="row"
                 justifyContent="end"
-                spacing={1}
+                spacing={1.5}
                 siz="small"
-                sx={{ px: 1.2, mb: 1 }}
+                sx={{ px: 2, mb: 2 }}
               >
                 <AllowButton variant="outlined" onClick={onFillHalf}>
                   Half
@@ -821,7 +821,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 borderTopLeftRadius: '10px',
                 borderTopRightRadius: '10px',
                 borderBottomLeftRadius: '0',
-                borderBottomRightRadius: '0'
+                borderBottomRightRadius: '0',
+                margin: '0 16px',
+                padding: '16px 24px'
               }}
             >
               <Stack>
@@ -869,7 +871,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               </InputContent>
             </CurrencyContent>
 
-            <Box sx={{ position: 'relative', height: 0, my: -1, zIndex: 2, order: 2 }}>
+            <Box sx={{ position: 'relative', height: 0, my: -0.5, zIndex: 2, order: 2 }}>
               <ToggleButton
                 onClick={onRevertExchange}
                 className={isSwitching ? 'switching' : ''}
@@ -887,7 +889,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 border: focusBottom
                   ? `1px solid ${theme?.general?.reactFrameworkColor}`
                   : '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '0'
+                borderRadius: '0',
+                margin: '0 16px',
+                padding: '16px 24px'
               }}
             >
               <Stack>
@@ -939,7 +943,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 order: 4,
                 backgroundColor: '#000000',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '0'
+                borderRadius: '0',
+                margin: '0 16px',
+                padding: '16px 24px'
               }}
             >
               <Stack
@@ -992,7 +998,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 borderTopLeftRadius: '0',
                 borderTopRightRadius: '0',
                 borderBottomLeftRadius: '10px',
-                borderBottomRightRadius: '10px'
+                borderBottomRightRadius: '10px',
+                margin: '0 16px 16px',
+                padding: '16px 24px'
               }}
             >
               {accountProfile && accountProfile.account ? (
@@ -1013,21 +1021,23 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
         <Stack
           direction="column"
-          spacing={0}
+          spacing={2}
           alignItems="center"
           sx={{
             width: '100%',
-            mt: 2,
+            mt: 4,
+            mb: 3,
             backgroundColor: '#000000',
             borderRadius: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.1)'
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            padding: '16px'
           }}
         >
           <Stack
             direction="row"
             alignItems="flex-start"
-            spacing={1}
-            sx={{ width: '100%', p: 1.5, pb: 0 }}
+            spacing={2}
+            sx={{ width: '100%', p: 2, pb: 0 }}
           >
             <Stack>
               <Typography variant="s7" sx={{ color: 'white' }}>
@@ -1053,8 +1063,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           <Stack
             direction="row"
             alignItems="flex-start"
-            spacing={1}
-            sx={{ width: '100%', p: 1.5, pt: 0 }}
+            spacing={2}
+            sx={{ width: '100%', p: 2, pt: 0 }}
           >
             <Stack>
               <Typography variant="s7" sx={{ color: 'white' }}>
