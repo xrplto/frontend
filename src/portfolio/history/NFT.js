@@ -107,7 +107,7 @@ export default function NFTHistory({ account }) {
 
     const getImageUrl = (nft) => {
       if (nft.files && nft.files.length > 0) {
-        const fileWithThumbnail = nft.files.find(file => file.thumbnail);
+        const fileWithThumbnail = nft.files.find((file) => file.thumbnail);
         if (fileWithThumbnail) {
           const thumbnailUrl = fileWithThumbnail.thumbnail.big || fileWithThumbnail.thumbnail.small;
           if (thumbnailUrl) {
@@ -116,7 +116,6 @@ export default function NFTHistory({ account }) {
         }
       }
 
-      // Fallback to other methods if files array doesn't contain a suitable thumbnail
       if (nft.thumbnail && nft.thumbnail.image) {
         return `https://s2.xrpnft.com/d1/${nft.thumbnail.image}`;
       }
@@ -136,25 +135,24 @@ export default function NFTHistory({ account }) {
           src={imageUrl}
           alt={nft.name || 'NFT'}
           style={{
-            maxWidth: '50px',
-            maxHeight: '50px',
+            width: '36px',
+            height: '36px',
             objectFit: 'contain',
             borderRadius: '3px'
           }}
           onError={(e) => {
             console.error('Error loading NFT image:', e);
-            e.target.src = '/path/to/fallback/image.png'; // Add a fallback image
+            e.target.src = '/path/to/fallback/image.png';
           }}
         />
       );
     }
 
-    // Fallback for NFTs without images
     return (
       <Box
         sx={{
-          width: '50px',
-          height: '50px',
+          width: '36px',
+          height: '36px',
           backgroundColor: 'grey.300',
           display: 'flex',
           alignItems: 'center',
@@ -223,7 +221,11 @@ export default function NFTHistory({ account }) {
       case Activity.UPDATE_COLLECTION:
         return (
           <Stack direction="row" spacing={1} alignItems="center">
-            <Avatar alt="C" src={`https://s1.xrpnft.com/collection/${data.logo}`} sx={{ width: 24, height: 24 }} />
+            <Avatar
+              alt="C"
+              src={`https://s1.xrpnft.com/collection/${data.logo}`}
+              sx={{ width: 24, height: 24 }}
+            />
             <Stack>
               <Stack direction="row" spacing={1}>
                 <Typography variant="s7">Name: </Typography>
@@ -240,7 +242,11 @@ export default function NFTHistory({ account }) {
         return (
           <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="center">
             <Stack direction="row" spacing={1}>
-              <Avatar alt="C" src={`https://gateway.xrpnft.com/ipfs/${data.meta.image}`} sx={{ width: 24, height: 24 }} />
+              <Avatar
+                alt="C"
+                src={`https://gateway.xrpnft.com/ipfs/${data.meta.image}`}
+                sx={{ width: 24, height: 24 }}
+              />
               <Stack>
                 <Stack direction="row" spacing={1}>
                   <Typography variant="s7">Minter: </Typography>
@@ -263,27 +269,33 @@ export default function NFTHistory({ account }) {
         );
       case Activity.BUY_MINT:
         return (
-          <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="center">
-            <Stack direction="row" spacing={1}>
-              <Avatar alt="C" src={`https://s1.xrpl.to/token/${data.cost?.md5}`} sx={{ width: 24, height: 24 }} />
+          <Stack direction="row" spacing={0.5} justifyContent="space-between" alignItems="center">
+            <Stack direction="row" spacing={0.5}>
+              <Avatar
+                alt="C"
+                src={`https://s1.xrpl.to/token/${data.cost?.md5}`}
+                sx={{ width: 20, height: 20 }}
+              />
               <Stack>
-                <Stack direction="row" spacing={1}>
-                  <Typography variant="s7">Collection: </Typography>
-                  <Typography variant="s8">{data.cname}</Typography>
+                <Stack direction="row" spacing={0.5}>
+                  <Typography variant="caption" color="text.secondary">
+                    Collection:
+                  </Typography>
+                  <Typography variant="caption">{data.cname}</Typography>
                 </Stack>
-                <Stack direction="row" spacing={0.8} alignItems="center">
-                  <Typography variant="p4" color="#EB5757">
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Typography variant="caption" color="#EB5757">
                     {data.cost?.amount}
                   </Typography>
-                  <Typography variant="s2">{data.cost?.name}</Typography>
+                  <Typography variant="caption">{data.cost?.name}</Typography>
                 </Stack>
               </Stack>
             </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Stack direction="row" spacing={1}>
-                <Typography variant="s7">Quantity: </Typography>
-                <Typography variant="s8">{data.quantity}</Typography>
-              </Stack>
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <Typography variant="caption" color="text.secondary">
+                Qty:
+              </Typography>
+              <Typography variant="caption">{data.quantity}</Typography>
             </Stack>
           </Stack>
         );
@@ -298,84 +310,85 @@ export default function NFTHistory({ account }) {
       case Activity.BROKER_ACCEPTED_YOUR_BUY_OFFER:
       case Activity.BROKER_ACCEPTED_YOUR_SELL_OFFER:
       case Activity.YOU_RECEIVED_A_NFT:
-        console.log('NFT Activity Data:', data);
-        console.log('NFT Details:', nftDetails[data.NFTokenID]);
-
         if (!nftDetails[data.NFTokenID]) {
           fetchNFTDetails(data.NFTokenID);
         }
         const nft = nftDetails[data.NFTokenID];
 
-        console.log('Rendered NFT:', nft);
-
         return (
-          <Stack direction="row" spacing={2} alignItems="center">
-            {nft ? renderNFTPreview(nft) : <Typography variant="s7">Loading NFT preview...</Typography>}
-            <Stack>
-              <Typography variant="s7">NFTokenID: </Typography>
-              <Link
-                color="inherit"
-                target="_blank"
-                href={`/nft/${data.NFTokenID}`}
-                rel="noreferrer noopener nofollow"
-              >
-                <Typography variant="s8">{data.NFTokenID}</Typography>
-              </Link>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            {nft ? renderNFTPreview(nft) : <Box sx={{ width: 36, height: 36 }} />}
+            <Stack spacing={0}>
               {nft && (
-                <>
-                  <Typography variant="s7">Name: {nft.name || 'N/A'}</Typography>
-                  <Typography variant="s7">Collection: {nft.collection || 'N/A'}</Typography>
-                </>
+                <Typography variant="caption" noWrap sx={{ maxWidth: 200 }}>
+                  {nft.name || 'N/A'} • {nft.collection || 'N/A'}
+                </Typography>
               )}
-              {!nft && <Typography variant="s7">Loading NFT details...</Typography>}
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  ID:
+                </Typography>
+                <Link
+                  color="inherit"
+                  target="_blank"
+                  href={`/nft/${data.NFTokenID}`}
+                  rel="noreferrer noopener nofollow"
+                  sx={{ fontSize: '0.7rem' }}
+                >
+                  {data.NFTokenID.slice(0, 12)}...
+                </Link>
+              </Stack>
             </Stack>
           </Stack>
         );
       case Activity.MINT_NFT:
-        console.log('Mint NFT Data:', data);
         return data.meta ? (
-          <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="center">
-            <Stack direction="row" spacing={1}>
-              <Avatar alt="C" src={`https://gateway.xrpnft.com/ipfs/${data.meta.image}`} sx={{ width: 24, height: 24 }} />
-              <Stack>
-                <Stack direction="row" spacing={1}>
-                  <Typography variant="s7">Name: </Typography>
-                  <Typography variant="s8">{data.name}</Typography>
-                </Stack>
-                <Stack direction="row" spacing={1}>
-                  <Typography variant="s7">Type: </Typography>
-                  <Typography variant="s8">{data.type}</Typography>
-                </Stack>
+          <Stack direction="row" spacing={0.5} justifyContent="space-between" alignItems="center">
+            <Stack direction="row" spacing={0.5}>
+              <Avatar
+                alt="C"
+                src={`https://gateway.xrpnft.com/ipfs/${data.meta.image}`}
+                sx={{ width: 20, height: 20 }}
+              />
+              <Stack spacing={0}>
+                <Typography variant="caption">{data.name}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {data.type}
+                </Typography>
               </Stack>
             </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <FlagsContainer Flags={data.flag} />
-            </Stack>
+            <FlagsContainer Flags={data.flag} />
           </Stack>
         ) : (
-          <Stack direction="row" spacing={1}>
-            <Typography variant="s7">NFTokenID: </Typography>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <Typography variant="caption" color="text.secondary">
+              ID:
+            </Typography>
             <Link
               color="inherit"
               target="_blank"
               href={`/nft/${data.NFTokenID}`}
               rel="noreferrer noopener nofollow"
+              sx={{ fontSize: '0.7rem' }}
             >
-              <Typography variant="s8">{data.NFTokenID}</Typography>
+              {data.NFTokenID.slice(0, 12)}...
             </Link>
           </Stack>
         );
       case Activity.BURN_NFT:
         return (
-          <Stack direction="row" spacing={1}>
-            <Typography variant="s7">NFTokenID: </Typography>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <Typography variant="caption" color="text.secondary">
+              ID:
+            </Typography>
             <Link
               color="inherit"
               target="_blank"
               href={`/nft/${data.NFTokenID}`}
               rel="noreferrer noopener nofollow"
+              sx={{ fontSize: '0.7rem' }}
             >
-              <Typography variant="s8">{data.NFTokenID}</Typography>
+              {data.NFTokenID.slice(0, 12)}...
             </Link>
           </Stack>
         );
@@ -391,7 +404,11 @@ export default function NFTHistory({ account }) {
         return (
           <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="center">
             <Stack direction="row" spacing={1}>
-              <Avatar alt="C" src={`https://s1.xrpl.to/token/${data.cost?.md5}`} sx={{ width: 24, height: 24 }} />
+              <Avatar
+                alt="C"
+                src={`https://s1.xrpl.to/token/${data.cost?.md5}`}
+                sx={{ width: 24, height: 24 }}
+              />
               <Stack>
                 <Stack direction="row" spacing={1}>
                   <Typography variant="s7">Collection: </Typography>
@@ -486,21 +503,23 @@ export default function NFTHistory({ account }) {
   return (
     <Container maxWidth="lg" sx={{ pl: 0, pr: 0 }}>
       {loading ? (
-        <Stack alignItems="center" sx={{ mt: 3 }}>
-          <PulseLoader color="#00AB55" size={10} />
+        <Stack alignItems="center" sx={{ mt: 1 }}>
+          <PulseLoader color="#00AB55" size={8} />
         </Stack>
       ) : acts.length === 0 ? (
-        <Stack alignItems="center" sx={{ mt: 5 }}>
-          <Typography variant="h6">No activity found</Typography>
+        <Stack alignItems="center" sx={{ mt: 2 }}>
+          <Typography variant="subtitle2">No activity found</Typography>
         </Stack>
       ) : (
-        <Box sx={{ mt: 2, mb: 2 }}>
+        <Box sx={{ mt: 0.5, mb: 0.5 }}>
           <Table
             stickyHeader
+            size="small"
             sx={{
               [`& .${tableCellClasses.root}`]: {
                 borderBottom: '1px solid',
-                borderColor: theme.palette.divider
+                borderColor: theme.palette.divider,
+                padding: '4px 12px'
               }
             }}
           >
@@ -508,30 +527,35 @@ export default function NFTHistory({ account }) {
               {acts.map(({ account, activity, data, time }) => {
                 const activityName = getActivityName(activity);
                 const activityDetails = renderActivityDetails(activity, data);
-                
-                // Skip rendering if activityName is null
-                if (activityName === null) {
-                  return null;
-                }
+
+                if (activityName === null) return null;
 
                 const strDateTime = formatDistanceToNow(new Date(time), { addSuffix: true });
                 return (
-                  <TableRow key={time} hover>
-                    <TableCell align="left" sx={{ width: '50px' }}>
-                      {renderActivityIcon(activity)}
+                  <TableRow
+                    key={time}
+                    hover
+                    sx={{ '&:hover': { backgroundColor: 'action.hover' } }}
+                  >
+                    <TableCell align="left" sx={{ width: '32px', p: '4px' }}>
+                      <Box sx={{ fontSize: '1rem' }}>{renderActivityIcon(activity)}</Box>
                     </TableCell>
-                    <TableCell align="left">
-                      <Stack spacing={1}>
+                    <TableCell align="left" sx={{ py: '4px' }}>
+                      <Stack spacing={0.25}>
                         <Stack
                           direction="row"
-                          spacing={1}
+                          spacing={0.5}
                           justifyContent="space-between"
                           alignItems="center"
                         >
-                          <Typography variant="subtitle1" fontWeight="bold">
+                          <Typography variant="caption" sx={{ fontWeight: 500 }}>
                             {activityName}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.7rem' }}
+                          >
                             {strDateTime}
                           </Typography>
                         </Stack>
