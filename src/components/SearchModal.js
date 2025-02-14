@@ -613,8 +613,9 @@ export default function SearchModal({ onClose, open }) {
               px: 1,
               pb: 0.5,
               display: 'grid',
-              gridTemplateColumns: 'repeat(5, 1fr)',
-              gap: '8px'
+              gridTemplateColumns: 'repeat(auto-fill, 80px)',
+              gap: '8px',
+              justifyContent: 'start'
             }}
           >
             {searchHistory.slice(0, 5).map(({ name, user, img, link }, idx) => (
@@ -622,8 +623,8 @@ export default function SearchModal({ onClose, open }) {
                 <Paper
                   elevation={0}
                   sx={{
-                    width: '100%',
-                    aspectRatio: '1',
+                    width: '80px',
+                    height: '80px',
                     padding: '6px',
                     borderRadius: '8px',
                     backgroundColor: (theme) =>
