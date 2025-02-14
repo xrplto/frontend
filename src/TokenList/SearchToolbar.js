@@ -44,6 +44,10 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -792,7 +796,8 @@ export default function SearchToolbar({
                 minHeight: '32px',
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center'
+                alignItems: 'center',
+                gap: 1
               }
             }
           }}
@@ -808,7 +813,10 @@ export default function SearchToolbar({
               color: !router.query.view ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
             }}
           >
-            All
+            <Stack direction="row" spacing={1} alignItems="center">
+              <AutoAwesomeIcon sx={{ fontSize: '16px', color: '#637381' }} />
+              <span>All</span>
+            </Stack>
           </MenuItem>
           <MenuItem
             onClick={() => handleTokenOptionSelect('/view/firstledger')}
@@ -823,7 +831,10 @@ export default function SearchToolbar({
                 router.query.view === 'firstledger' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
             }}
           >
-            FirstLedger
+            <Stack direction="row" spacing={1} alignItems="center">
+              <OpenInNewIcon sx={{ fontSize: '16px', color: '#0C53B7' }} />
+              <span>FirstLedger</span>
+            </Stack>
           </MenuItem>
           <MenuItem
             onClick={() => handleTokenOptionSelect('/view/magnetic-x')}
@@ -838,7 +849,10 @@ export default function SearchToolbar({
                 router.query.view === 'magnetic-x' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
             }}
           >
-            Magnetic X
+            <Stack direction="row" spacing={1} alignItems="center">
+              <ElectricBoltIcon sx={{ fontSize: '16px', color: '#7635DC' }} />
+              <span>Magnetic X</span>
+            </Stack>
           </MenuItem>
           <MenuItem
             onClick={() => handleTokenOptionSelect('/view/xpmarket')}
@@ -853,7 +867,10 @@ export default function SearchToolbar({
                 router.query.view === 'xpmarket' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
             }}
           >
-            XPmarket
+            <Stack direction="row" spacing={1} alignItems="center">
+              <StorefrontIcon sx={{ fontSize: '16px', color: '#B72136' }} />
+              <span>XPmarket</span>
+            </Stack>
           </MenuItem>
         </Menu>
       </RootStyle>
