@@ -108,21 +108,20 @@ export default function TokenDetail({ token, tab }) {
     () =>
       isFixed
         ? {
-            position: 'fixed',
+            position: 'sticky',
             top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 1000,
+            backgroundColor: !darkMode ? '#fff' : '#000000',
+            width: '100%',
+            zIndex: 1100,
             boxShadow: `0px 2px 4px ${
               !darkMode ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
             }`,
-            backgroundColor: !darkMode ? '#fff' : '#000000',
-            width: '100%',
-            padding: '0 16px'
+            transition: 'all 0.3s ease'
           }
         : {
             width: '100%',
-            backgroundColor: !darkMode ? '#fff' : '#000000'
+            backgroundColor: !darkMode ? '#fff' : '#000000',
+            transition: 'all 0.3s ease'
           },
     [isFixed, darkMode]
   );
@@ -131,22 +130,21 @@ export default function TokenDetail({ token, tab }) {
     const handleScroll = () => {
       if (tabRef.current) {
         const { offsetTop } = tabRef.current;
-        const scrollTop = window.scrollY;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         setIsFixed(scrollTop > offsetTop);
       }
     };
 
-    const throttledHandleScroll = throttle(handleScroll, 100);
-    window.addEventListener('scroll', throttledHandleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll(); // Initial check
 
     return () => {
-      window.removeEventListener('scroll', throttledHandleScroll);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
   return (
-    <>
+    <Box sx={{ position: 'relative' }}>
       {!isMobile && <LinkCascade token={token} tabID={tabID} tabLabels={tabLabels} />}
 
       <Common token={token} />
@@ -157,18 +155,28 @@ export default function TokenDetail({ token, tab }) {
 
       <div id="back-to-top-tab-anchor" />
 
-      <Box ref={tabRef}>
+      <Box
+        ref={tabRef}
+        sx={{
+          position: 'sticky',
+          top: 0,
+          backgroundColor: !darkMode ? '#fff' : '#000000',
+          zIndex: 1100
+        }}
+      >
         <Tabs
           value={tabID}
           onChange={handleChangeTab}
           variant="scrollable"
           scrollButtons="auto"
           aria-label="token-tabs"
-          style={tabStyle}
           sx={{
             minHeight: '40px',
             '& .MuiTabs-flexContainer': {
               height: '40px'
+            },
+            '& .MuiTabs-indicator': {
+              height: '2px'
             }
           }}
         >
@@ -239,7 +247,7 @@ export default function TokenDetail({ token, tab }) {
           <Wallet />
         </TabPanel>
       </Box>
-    </>
+    </Box>
   );
 }
 
