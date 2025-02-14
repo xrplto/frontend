@@ -634,66 +634,12 @@ export default function SearchToolbar({
               paddingRight: 0
             }}
           />
-
-          <Divider
-            orientation="vertical"
-            variant="middle"
-            flexItem
-            sx={{
-              display: { xs: 'none', md: 'flex' },
-              mx: 2, // Reduce margin
-              my: 'auto'
-            }}
-          />
-
-          {tags &&
-            tags?.slice(0, 12)?.map((tag, idx) => {
-              const nTag = normalizeTag(tag);
-              return (
-                <Tab
-                  key={idx + 1}
-                  value={idx + 1}
-                  disableRipple
-                  label={
-                    <Link
-                      href={`/view/${nTag}`}
-                      sx={{ pl: 0, pr: 0, display: 'inline-flex' }}
-                      underline="none"
-                      rel="noreferrer noopener nofollow"
-                    >
-                      <Chip
-                        size="small"
-                        label={
-                          <span style={{ display: 'flex', alignItems: 'center' }}>
-                            <WhatshotIcon
-                              fontSize="small"
-                              style={{ marginRight: 4, color: 'orange' }}
-                            />
-                            {tag}
-                          </span>
-                        }
-                        onClick={handleDelete}
-                        color={normalizeTag(tagName) === nTag ? 'primary' : undefined}
-                        sx={{
-                          borderRadius: '4px'
-                          // Additional styling here if needed
-                        }}
-                      />
-                    </Link>
-                  }
-                  style={{
-                    paddingLeft: 0,
-                    paddingRight: 0
-                  }}
-                />
-              );
-            })}
         </Tabs>
 
         <Stack
           direction="row"
           alignItems="center"
-          sx={{ display: { xs: 'none', md: 'flex' }, ml: 0 }}
+          sx={{ display: { xs: 'none', md: 'flex' }, ml: 'auto' }}
         >
           {isAdmin && (
             <Stack direction="row" alignItems="center" sx={{ mr: 2, mt: 0.5 }}>
