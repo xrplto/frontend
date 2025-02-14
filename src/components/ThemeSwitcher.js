@@ -1,13 +1,8 @@
 import React, { useContext } from 'react';
-
-// Material
-import { IconButton } from '@mui/material';
-
-// Iconify Icons
+import { IconButton, alpha } from '@mui/material';
 import { Icon } from '@iconify/react';
 import baselineBrightnessHigh from '@iconify/icons-ic/baseline-brightness-high';
 import baselineBrightness4 from '@iconify/icons-ic/baseline-brightness-4';
-
 import { AppContext } from 'src/AppContext';
 
 export default function ThemeSwitcher() {
@@ -15,15 +10,17 @@ export default function ThemeSwitcher() {
 
   return (
     <IconButton
-      onClick={() => {
-        toggleTheme();
+      onClick={toggleTheme}
+      size="small"
+      sx={{
+        backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+        borderRadius: 1,
+        '&:hover': {
+          backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.2)
+        }
       }}
     >
-      {darkMode ? (
-        <Icon icon={baselineBrightness4} />
-      ) : (
-        <Icon icon={baselineBrightnessHigh} />
-      )}
+      <Icon icon={darkMode ? baselineBrightness4 : baselineBrightnessHigh} fontSize={20} />
     </IconButton>
   );
 }

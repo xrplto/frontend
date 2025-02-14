@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
+import { Box, IconButton, Menu, MenuItem, alpha } from '@mui/material';
 import { currencyConfig, currencyIcons } from 'src/utils/constants';
-import { InputAdornment } from '@mui/material';
 import { AppContext } from 'src/AppContext';
 
 export default function CurrencySwithcer() {
   const { activeFiatCurrency, toggleFiatCurrency } = useContext(AppContext);
   const [activeCurrency, setActiveCurrency] = useState(activeFiatCurrency);
   const { availableFiatCurrencies } = currencyConfig;
+  const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
     const defaultIndex = availableFiatCurrencies?.indexOf(activeFiatCurrency);
@@ -18,65 +16,66 @@ export default function CurrencySwithcer() {
       : setActiveCurrency(availableFiatCurrencies[0]);
   }, [activeFiatCurrency]);
 
-  const handleChange = (_, newValue) => {
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleChange = (newValue) => {
     toggleFiatCurrency(newValue);
     setActiveCurrency(newValue);
+    handleClose();
   };
 
   return (
-    <Box sx={{ minWidth: 120, mr: 1 }}>
-      <Autocomplete
-        autoHighlight
-        openOnFocus
-        blurOnSelect
-        disableClearable
+    <Box>
+      <IconButton
+        onClick={handleClick}
         size="small"
-        disablePortal
-        id="xrplto-currency-switcher"
-        options={availableFiatCurrencies}
-        value={activeCurrency}
-        onChange={handleChange}
-        renderOption={(props, option) => {
-          return (
-            <Box
-              component="li"
-              sx={{ p: 0, m: 0 }}
-              display={'flex'}
-              gap={2}
-              {...props}
-              width={'100%'}
-            >
-              {currencyIcons[option]}
-              {option}
-            </Box>
-          );
+        sx={{
+          backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+          borderRadius: 1,
+          '&:hover': {
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.2)
+          }
         }}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            InputProps={{
-              ...params.InputProps,
-              startAdornment: (
-                <InputAdornment position="start">
-                  {currencyIcons[activeCurrency]}
-                </InputAdornment>
-              )
-            }}
-            variant="standard"
+      >
+        {currencyIcons[activeCurrency]}
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right'
+        }}
+      >
+        {availableFiatCurrencies.map((option) => (
+          <MenuItem
+            key={option}
+            onClick={() => handleChange(option)}
+            selected={option === activeCurrency}
             sx={{
-              '& .MuiInputBase-root': {
-                backgroundColor: 'background.paper',
-                borderRadius: 1,
-                px: 1,
-                py: 0.5,
-                '&:before': {
-                  borderBottom: 'none'
-                }
-              }
+              minHeight: 'auto',
+              py: 1,
+              px: 2
             }}
-          />
-        )}
-      />
+          >
+            <Box component="span" sx={{ mr: 1 }}>
+              {currencyIcons[option]}
+            </Box>
+            {option}
+          </MenuItem>
+        ))}
+      </Menu>
     </Box>
   );
 }
