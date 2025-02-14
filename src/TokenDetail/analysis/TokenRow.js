@@ -2,10 +2,7 @@ import Decimal from 'decimal.js';
 import { useTheme } from '@mui/material/styles';
 import { useState, useEffect } from 'react';
 import React from 'react';
-import {
-  LazyLoadImage,
-  LazyLoadComponent
-} from 'react-lazy-load-image-component';
+import { LazyLoadImage, LazyLoadComponent } from 'react-lazy-load-image-component';
 
 // Material
 import { withStyles } from '@mui/styles';
@@ -16,13 +13,19 @@ import {
   TableCell,
   useMediaQuery,
   TableRow,
-  Typography
+  Typography,
+  Tooltip
 } from '@mui/material';
 
 // Iconify
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
-
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import LockIcon from '@mui/icons-material/Lock';
 
 // Context
 import { useContext } from 'react';
@@ -41,8 +44,8 @@ import LoadChart from 'src/components/LoadChart';
 const StyledTableRow = withStyles((theme) => ({
   root: {
     // Added overflow hidden here to prevent x-axis overflow on scroll
-    overflow: 'hidden',
-  },
+    overflow: 'hidden'
+  }
 }))(TableRow);
 
 const StickyTableCell = withStyles((theme) => ({
@@ -50,12 +53,12 @@ const StickyTableCell = withStyles((theme) => ({
     position: 'sticky',
     zIndex: 100,
     top: 0,
-    left: 0, // Changed from 24 to 0
+    left: 0 // Changed from 24 to 0
   },
   body: {
     position: 'sticky',
     zIndex: 100,
-    left: 0, // Changed from 24 to 0
+    left: 0 // Changed from 24 to 0
   }
 }))(TableCell);
 
@@ -102,6 +105,19 @@ function getPriceColor(token, theme) {
   return color;
 }
 
+const getOriginIcon = (origin) => {
+  switch (origin) {
+    case 'FirstLedger':
+      return <OpenInNewIcon sx={{ fontSize: 'inherit', color: '#0C53B7' }} />;
+    case 'XPMarket':
+      return <StorefrontIcon sx={{ fontSize: 'inherit', color: '#B72136' }} />;
+    case 'Magnetic X':
+      return <ElectricBoltIcon sx={{ fontSize: 'inherit', color: '#7635DC' }} />;
+    default:
+      return <AutoAwesomeIcon sx={{ fontSize: 'inherit', color: '#637381' }} />;
+  }
+};
+
 export const TokenRow = React.memo(FTokenRow);
 
 function FTokenRow({
@@ -116,8 +132,7 @@ function FTokenRow({
 }) {
   const BASE_URL = process.env.API_URL;
   const { accountProfile, darkMode } = useContext(AppContext);
-  const isAdmin =
-    accountProfile && accountProfile.account && accountProfile.admin;
+  const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
   const [priceColor, setPriceColor] = useState('');
   const {
@@ -160,9 +175,7 @@ function FTokenRow({
       sx={{
         '&:hover': {
           '& .MuiTableCell-root': {
-            backgroundColor: darkMode
-              ? '#232326 !important'
-              : '#D9DCE0 !important'
+            backgroundColor: darkMode ? '#232326 !important' : '#D9DCE0 !important'
           }
         }
       }}
@@ -172,7 +185,7 @@ function FTokenRow({
         style={{
           position: 'sticky',
           overflow: 'hidden',
-         
+
           left: 0,
           background: darkMode ? '#000000' : '#FFFFFF'
         }}
@@ -185,7 +198,7 @@ function FTokenRow({
           sx={{
             p: 0,
             position: 'sticky',
-         
+
             left: 0, // Changed from 67 to 0
             background: darkMode ? '#000000' : '#FFFFFF',
             '&:before': scrollLeft
@@ -215,7 +228,7 @@ function FTokenRow({
                 alt={`${user} ${name} Logo`}
               />
             ) : (
-              <TokenImage 
+              <TokenImage
                 src={imgUrl}
                 width={isMobile ? 26 : 46}
                 height={isMobile ? 26 : 46}
@@ -234,7 +247,15 @@ function FTokenRow({
                 <Typography
                   variant="token"
                   color={
-                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : (darkMode ? '#007B55' : slug === md5 ? '#B72136' : '') 
+                    isOMCF !== 'yes'
+                      ? darkMode
+                        ? '#fff'
+                        : '#222531'
+                      : darkMode
+                      ? '#007B55'
+                      : slug === md5
+                      ? '#B72136'
+                      : ''
                   }
                   noWrap
                 >
@@ -242,9 +263,7 @@ function FTokenRow({
                 </Typography>
                 <Typography
                   variant="caption"
-                  color={
-                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-                  }
+                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                   noWrap
                 >
                   {truncate(user, 13)}
@@ -254,11 +273,26 @@ function FTokenRow({
                     </Typography>
                   )}
                 </Typography>
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Tooltip title={token.origin || 'Standard Launch'}>
+                    {getOriginIcon(token.origin)}
+                  </Tooltip>
+                  {token.origin && (
+                    <>
+                      <Tooltip title="Blackholed Issuer">
+                        <LockIcon sx={{ fontSize: isMobile ? '12px' : '14px', color: '#007B55' }} />
+                      </Tooltip>
+                      <Tooltip title="Burned Liquidity Pool">
+                        <LocalFireDepartmentIcon
+                          sx={{ fontSize: isMobile ? '12px' : '14px', color: '#B72136' }}
+                        />
+                      </Tooltip>
+                    </>
+                  )}
+                </Stack>
                 <Typography
                   variant="small"
-                  color={
-                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-                  }
+                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                 >
                   {date}
                 </Typography>
@@ -273,7 +307,7 @@ function FTokenRow({
           }}
         >
           <TransitionTypo variant="h4" noWrap>
-            {currencySymbols[activeFiatCurrency]} {fNumberWithCurreny(exch,exchRate)}
+            {currencySymbols[activeFiatCurrency]} {fNumberWithCurreny(exch, exchRate)}
           </TransitionTypo>
           {/* <TransitionTypo variant="h6" noWrap>
           <Typography>✕</Typography> {fNumber(exch)}
@@ -286,36 +320,24 @@ function FTokenRow({
           <BearBullLabel value={pro7d} variant="h4" />
         </TableCell>
         <TableCell align="right">
-          <Stack
-            direction="row"
-            spacing={0.5}
-            justifyContent="flex-end"
-            alignItems="center"
-          >
+          <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
             <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
             <Typography variant="h4" noWrap>
               {fNumberWithCurreny(vol24hxrp, exchRate)}
             </Typography>
           </Stack>
-          <Stack
-            direction="row"
-            spacing={0.5}
-            justifyContent="flex-end"
-            alignItems="center"
-          >
-            <Icon
-              icon={arrowsExchange}
-              color="#primary"
-              width="16"
-              height="16"
-            />
+          <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
+            <Icon icon={arrowsExchange} color="#primary" width="16" height="16" />
             <Typography variant="h5" color="primary">
               {fNumber(vol24hx)}
             </Typography>
           </Stack>
         </TableCell>
         <TableCell align="right">{fNumber(vol24htx)}</TableCell>
-        <TableCell align="right">{currencySymbols[activeFiatCurrency]}{fNumber(convertedMarketCap)}</TableCell>
+        <TableCell align="right">
+          {currencySymbols[activeFiatCurrency]}
+          {fNumber(convertedMarketCap)}
+        </TableCell>
         <TableCell align="right">{fNumber(trustlines)}</TableCell>
         <TableCell align="right">
           {fNumber(supply)}{' '}
@@ -324,9 +346,7 @@ function FTokenRow({
           </Typography>
         </TableCell>
         <TableCell align="right">
-          <LoadChart
-            url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`}
-          />
+          <LoadChart url={`${BASE_URL}/sparkline/${md5}?pro7d=${pro7d}`} />
         </TableCell>
         <TableCell align="right">
           <TokenMoreMenu token={token} setTrustToken={setTrustToken} />
