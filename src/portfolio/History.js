@@ -12,7 +12,7 @@ const History = ({ account }) => {
   };
 
   return (
-    <Box sx={{ bgcolor: theme.palette.background.paper, p: 3, borderRadius: 2 }}>
+    <Box sx={{ bgcolor: theme.palette.background.paper, py: 3, borderRadius: 2 }}>
       <Typography sx={{ color: theme.palette.text.primary, mb: 3 }} variant="h5">
         Historical Trades
       </Typography>
