@@ -17,9 +17,7 @@ import {
   Stack
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import ChatIcon from '@mui/icons-material/Chat';
 import moment from 'moment';
-import ChatModal from '../src/components/AIChat';
 import Header from '../src/components/Header';
 import Footer from '../src/components/Footer';
 import Topbar from '../src/components/Topbar';
@@ -114,8 +112,6 @@ export default function News() {
   const [error, setError] = useState(null);
   const [selectedSource, setSelectedSource] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [chatOpen, setChatOpen] = useState(false);
-  const [selectedArticle, setSelectedArticle] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [sentimentStats, setSentimentStats] = useState({
@@ -392,21 +388,6 @@ export default function News() {
                         {extractTitle(article.title)}
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => {
-                            setSelectedArticle(article);
-                            setChatOpen(true);
-                          }}
-                          sx={{
-                            color: 'primary.main',
-                            '&:hover': {
-                              backgroundColor: 'primary.lighter'
-                            }
-                          }}
-                        >
-                          <ChatIcon />
-                        </IconButton>
                         <Chip
                           label={article.sentiment || 'Unknown'}
                           size="small"
@@ -486,7 +467,6 @@ export default function News() {
         </Container>
       </Box>
       <Footer />
-      <ChatModal open={chatOpen} onClose={() => setChatOpen(false)} article={selectedArticle} />
     </Box>
   );
 }
