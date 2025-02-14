@@ -452,20 +452,29 @@ const TradingHistory = ({ tokenId }) => {
               {/* Maker/Taker */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Tooltip title={`Maker: ${trade.maker}\nTaker: ${trade.taker}`}>
-                  <Typography component="span" sx={{ fontSize: '0.8rem' }}>
-                    {getTradeSizeEmoji(getXRPAmount(trade))}
-                    {(BOT_ADDRESSES.includes(trade.maker) ||
-                      BOT_ADDRESSES.includes(trade.taker)) && (
-                      <SmartToy
-                        style={{
-                          color: theme.palette.warning.main,
-                          fontSize: '0.9rem',
-                          marginLeft: '2px',
-                          verticalAlign: 'middle'
-                        }}
-                      />
-                    )}
-                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Typography
+                      component="span"
+                      sx={{
+                        fontSize: '0.8rem',
+                        color: theme.palette.text.secondary
+                      }}
+                    >
+                      {`${trade.maker.slice(0, 4)}...${trade.maker.slice(-4)}`}
+                      {getTradeSizeEmoji(getXRPAmount(trade))}
+                      {(BOT_ADDRESSES.includes(trade.maker) ||
+                        BOT_ADDRESSES.includes(trade.taker)) && (
+                        <SmartToy
+                          style={{
+                            color: theme.palette.warning.main,
+                            fontSize: '0.9rem',
+                            marginLeft: '2px',
+                            verticalAlign: 'middle'
+                          }}
+                        />
+                      )}
+                    </Typography>
+                  </Box>
                 </Tooltip>
               </Box>
 
