@@ -150,6 +150,7 @@ export default function SearchToolbar({
   const [tagValue, setTagValue] = useState(getTagValue(tags, tagName));
   const [openCategoriesDrawer, setOpenCategoriesDrawer] = useState(false);
   const [gainersAnchorEl, setGainersAnchorEl] = useState(null);
+  const [tokensAnchorEl, setTokensAnchorEl] = useState(null);
 
   // Get current sorting period from URL
   const currentPeriod = router.query.sort;
@@ -185,6 +186,22 @@ export default function SearchToolbar({
       query: { sort: period, order: 'desc' }
     });
     handleGainersClose();
+  };
+
+  const handleTokensClick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setTokensAnchorEl(event.currentTarget);
+  };
+
+  const handleTokensClose = () => {
+    setTokensAnchorEl(null);
+  };
+
+  const handleTokenOptionSelect = (path) => {
+    onFilterName({ target: { value: '' } });
+    router.push(path);
+    handleTokensClose();
   };
 
   const ShadowContent = styled('div')(
@@ -317,27 +334,20 @@ export default function SearchToolbar({
           <Tab
             disableRipple
             label={
-              <Link
-                href={`/`}
-                sx={{ pl: 0, pr: 0, display: 'inline-flex' }}
-                underline="none"
-                rel="noreferrer noopener nofollow"
-              >
-                <Chip
-                  size="small"
-                  icon={<AppsIcon sx={{ fontSize: '16px' }} />}
-                  label={'Tokens'}
-                  onClick={handleDelete}
-                  color={tagValue === 0 && !currentPeriod ? 'primary' : undefined}
-                  sx={{
-                    borderRadius: '4px',
-                    height: '24px',
-                    '& .MuiChip-label': {
-                      px: 1
-                    }
-                  }}
-                />
-              </Link>
+              <Chip
+                size="small"
+                icon={<AppsIcon sx={{ fontSize: '16px' }} />}
+                label={'Tokens'}
+                onClick={handleTokensClick}
+                color={tagValue === 0 && !currentPeriod ? 'primary' : undefined}
+                sx={{
+                  borderRadius: '4px',
+                  height: '24px',
+                  '& .MuiChip-label': {
+                    px: 1
+                  }
+                }}
+              />
             }
             style={{
               paddingLeft: 0,
@@ -758,6 +768,93 @@ export default function SearchToolbar({
               {currentPeriod === period && <TrendingUpIcon sx={{ fontSize: '16px', ml: 1 }} />}
             </MenuItem>
           ))}
+        </Menu>
+
+        {/* Tokens Menu */}
+        <Menu
+          anchorEl={tokensAnchorEl}
+          open={Boolean(tokensAnchorEl)}
+          onClose={handleTokensClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left'
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'left'
+          }}
+          PaperProps={{
+            sx: {
+              mt: 1,
+              minWidth: '160px',
+              '& .MuiMenuItem-root': {
+                fontSize: '0.875rem',
+                minHeight: '32px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }
+            }
+          }}
+        >
+          <MenuItem
+            onClick={() => handleTokenOptionSelect('/')}
+            sx={{
+              backgroundColor: !router.query.view
+                ? darkMode
+                  ? 'rgba(0, 171, 85, 0.16)'
+                  : 'rgba(0, 123, 85, 0.08)'
+                : 'transparent',
+              color: !router.query.view ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
+            }}
+          >
+            All
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleTokenOptionSelect('/view/firstledger')}
+            sx={{
+              backgroundColor:
+                router.query.view === 'firstledger'
+                  ? darkMode
+                    ? 'rgba(0, 171, 85, 0.16)'
+                    : 'rgba(0, 123, 85, 0.08)'
+                  : 'transparent',
+              color:
+                router.query.view === 'firstledger' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
+            }}
+          >
+            FirstLedger
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleTokenOptionSelect('/view/magnetic-x')}
+            sx={{
+              backgroundColor:
+                router.query.view === 'magnetic-x'
+                  ? darkMode
+                    ? 'rgba(0, 171, 85, 0.16)'
+                    : 'rgba(0, 123, 85, 0.08)'
+                  : 'transparent',
+              color:
+                router.query.view === 'magnetic-x' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
+            }}
+          >
+            Magnetic X
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleTokenOptionSelect('/view/xpmarket')}
+            sx={{
+              backgroundColor:
+                router.query.view === 'xpmarket'
+                  ? darkMode
+                    ? 'rgba(0, 171, 85, 0.16)'
+                    : 'rgba(0, 123, 85, 0.08)'
+                  : 'transparent',
+              color:
+                router.query.view === 'xpmarket' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
+            }}
+          >
+            XPmarket
+          </MenuItem>
         </Menu>
       </RootStyle>
     </>
