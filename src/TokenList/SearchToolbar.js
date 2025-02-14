@@ -182,7 +182,7 @@ export default function SearchToolbar({
     onFilterName({ target: { value: '' } });
     router.push({
       pathname: '/',
-      query: { sortBy: period, sortType: 'desc' }
+      query: { sort: period, order: 'desc' }
     });
     handleGainersClose();
   };
@@ -590,7 +590,7 @@ export default function SearchToolbar({
                   onFilterName({ target: { value: '' } });
                   router.push({
                     pathname: '/',
-                    query: { sortBy: 'dateon', sortType: 'desc' }
+                    query: { sort: 'dateon', order: 'desc' }
                   });
                 }}
                 sx={{
