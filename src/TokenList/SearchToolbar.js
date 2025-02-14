@@ -671,33 +671,6 @@ export default function SearchToolbar({
           alignItems="center"
           sx={{ display: { xs: 'none', md: 'flex' }, ml: 'auto' }}
         >
-          {isAdmin && (
-            <Stack direction="row" alignItems="center" sx={{ mr: 2, mt: 0.5 }}>
-              <IconButton
-                onClick={() => {
-                  setShowNew(!showNew);
-                }}
-              >
-                <FiberNewIcon color={showNew ? 'error' : 'inherit'} />
-              </IconButton>
-
-              <IconButton
-                onClick={() => {
-                  setShowSlug(!showSlug);
-                }}
-              >
-                <DoNotTouchIcon color={showSlug ? 'error' : 'inherit'} />
-              </IconButton>
-
-              <IconButton
-                onClick={() => {
-                  setShowDate(!showDate);
-                }}
-              >
-                <UpdateDisabledIcon color={showDate ? 'error' : 'inherit'} />
-              </IconButton>
-            </Stack>
-          )}
           Rows
           <Select
             value={rows}
