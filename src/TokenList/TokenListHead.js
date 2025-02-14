@@ -71,7 +71,7 @@ const TABLE_HEAD = [
     label: (
       <Tooltip title="Price change in the last 5 minutes" placement="top">
         <span>
-          5m <SmallInfoIcon />
+          5m % <SmallInfoIcon />
         </span>
       </Tooltip>
     ),
@@ -85,7 +85,7 @@ const TABLE_HEAD = [
     label: (
       <Tooltip title="Price change in the last hour" placement="top">
         <span>
-          1h <SmallInfoIcon />
+          1h % <SmallInfoIcon />
         </span>
       </Tooltip>
     ),
@@ -99,7 +99,7 @@ const TABLE_HEAD = [
     label: (
       <Tooltip title="Price change in the last 24 hours" placement="top">
         <span>
-          24h <SmallInfoIcon />
+          24h % <SmallInfoIcon />
         </span>
       </Tooltip>
     ),
@@ -113,7 +113,7 @@ const TABLE_HEAD = [
     label: (
       <Tooltip title="Price change in the last 7 days" placement="top">
         <span>
-          7d <SmallInfoIcon />
+          7d % <SmallInfoIcon />
         </span>
       </Tooltip>
     ),
@@ -256,9 +256,11 @@ export default function TokenListHead({
       <TableRow
         sx={{
           '& .MuiTableCell-root': {
-            fontSize: isMobile && 12,
-            fontWeight: '700',
-            padding: isMobile ? '1px 1px' : '1px 2px',
+            fontSize: isMobile ? 11 : 12,
+            fontWeight: '600',
+            padding: '4px 8px',
+            height: '36px',
+            whiteSpace: 'nowrap',
             '&:not(:first-child)': {
               paddingLeft: '4px'
             }
@@ -272,7 +274,7 @@ export default function TokenListHead({
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
             zIndex: 1001,
-            left: (tokens?.length ?? 0) > 0 ? (isMobile ? 28 : 52) : isMobile ? 8 : 32,
+            left: (tokens?.length ?? 0) > 0 ? (isMobile ? 28 : 48) : isMobile ? 8 : 28,
             background: darkMode ? '#000000' : '#FFFFFF',
             '&:before':
               isMobile && scrollLeft
@@ -293,7 +295,6 @@ export default function TokenListHead({
           '& .MuiTableCell-root:nth-of-type(3)': !isMobile && {
             position: 'sticky',
             zIndex: 1001,
-            // left: tokens.length > 0 ? 99 : 72,
             background: darkMode ? '#000000' : '#FFFFFF',
             '&:before': scrollLeft
               ? {
@@ -309,6 +310,12 @@ export default function TokenListHead({
                   pointerEvents: 'none'
                 }
               : {}
+          },
+          '& .MuiTableSortLabel-root': {
+            fontSize: isMobile ? 11 : 12,
+            '& .MuiTableSortLabel-icon': {
+              fontSize: '16px'
+            }
           }
         }}
       >

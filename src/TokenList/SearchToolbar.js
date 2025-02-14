@@ -23,7 +23,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   toggleButtonGroupClasses,
-  Paper
+  Paper,
+  Menu
 } from '@mui/material';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
@@ -39,6 +40,7 @@ import CategoryIcon from '@mui/icons-material/Category';
 import CollectionsIcon from '@mui/icons-material/Collections'; // Import the icon for "NFTs"
 import DehazeIcon from '@mui/icons-material/Dehaze';
 import WindowIcon from '@mui/icons-material/Window';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -138,11 +140,22 @@ export default function SearchToolbar({
   setViewType
 }) {
   const router = useRouter();
-  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const { accountProfile, openSnackbar, darkMode } = useContext(AppContext);
   const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
+  const theme = useTheme();
 
   const [tagValue, setTagValue] = useState(getTagValue(tags, tagName));
   const [openCategoriesDrawer, setOpenCategoriesDrawer] = useState(false);
+  const [gainersAnchorEl, setGainersAnchorEl] = useState(null);
+
+  // Get current sorting period from URL
+  const currentPeriod = router.query.sort;
+  const periodLabels = {
+    pro5m: '5m',
+    pro1h: '1h',
+    pro24h: '24h',
+    pro7d: '7d'
+  };
 
   const handleChangeRows = (e) => {
     setRows(parseInt(e.target.value, 10));
@@ -152,6 +165,23 @@ export default function SearchToolbar({
 
   const toggleCategoriesDrawer = (isOpen = true) => {
     setOpenCategoriesDrawer(isOpen);
+  };
+
+  const handleGainersClick = (event) => {
+    setGainersAnchorEl(event.currentTarget);
+  };
+
+  const handleGainersClose = () => {
+    setGainersAnchorEl(null);
+  };
+
+  const handleGainersPeriodSelect = (period) => {
+    onFilterName({ target: { value: '' } });
+    router.push({
+      pathname: '/',
+      query: { sort: period, order: 'desc' }
+    });
+    handleGainersClose();
   };
 
   const ShadowContent = styled('div')(
@@ -175,7 +205,7 @@ export default function SearchToolbar({
         }
     `
   );
-  const { darkMode } = useContext(AppContext);
+
   return (
     <>
       <Stack
@@ -262,7 +292,6 @@ export default function SearchToolbar({
 
         <Tabs
           value={tagValue}
-          // onChange={handleChange}
           variant="scrollable"
           scrollButtons="auto"
           aria-label="tag-tabs"
@@ -271,10 +300,17 @@ export default function SearchToolbar({
               display: 'none'
             },
             '& .MuiTabs-flexContainer': {
-              justifyContent: 'flex-start' // Align tabs to the left
+              justifyContent: 'flex-start',
+              gap: '4px'
+            },
+            '& .MuiTab-root': {
+              minHeight: '32px',
+              padding: '0 4px',
+              minWidth: 'unset'
             }
           }}
         >
+          {/* Tokens Tab */}
           <Tab
             disableRipple
             label={
@@ -286,12 +322,16 @@ export default function SearchToolbar({
               >
                 <Chip
                   size="small"
-                  icon={<AppsIcon fontSize="small" />}
-                  label={'All'}
+                  icon={<AppsIcon sx={{ fontSize: '16px' }} />}
+                  label={'Tokens'}
                   onClick={handleDelete}
                   color={tagValue === 0 ? 'primary' : undefined}
                   sx={{
-                    borderRadius: '4px'
+                    borderRadius: '4px',
+                    height: '24px',
+                    '& .MuiChip-label': {
+                      px: 1
+                    }
                   }}
                 />
               </Link>
@@ -302,6 +342,7 @@ export default function SearchToolbar({
             }}
           />
 
+          {/* NFTs Tab */}
           <Tab
             disableRipple
             label={
@@ -313,12 +354,16 @@ export default function SearchToolbar({
               >
                 <Chip
                   size="small"
-                  icon={<CollectionsIcon fontSize="small" />}
+                  icon={<CollectionsIcon sx={{ fontSize: '16px' }} />}
                   label={'NFTs'}
                   onClick={handleDelete}
                   color={tagValue === 1 ? 'primary' : undefined}
                   sx={{
-                    borderRadius: '4px'
+                    borderRadius: '4px',
+                    height: '24px',
+                    '& .MuiChip-label': {
+                      px: 1
+                    }
                   }}
                 />
               </Link>
@@ -329,19 +374,45 @@ export default function SearchToolbar({
             }}
           />
 
+          {/* Gainers Tab */}
           <Tab
-            key={0}
-            value={0}
             disableRipple
             label={
               <Chip
                 size="small"
-                icon={<CategoryIcon fontSize="small" />}
-                label={'Categories'}
-                onClick={() => setOpenCategoriesDrawer(true)}
+                icon={<TrendingUpIcon sx={{ fontSize: '16px' }} />}
+                label={
+                  currentPeriod && periodLabels[currentPeriod]
+                    ? `Gainers ${periodLabels[currentPeriod]}`
+                    : 'Gainers'
+                }
+                onClick={handleGainersClick}
                 sx={{
-                  color: darkMode ? '#007B55 !important  ' : '#5569ff !important',
-                  borderRadius: '4px'
+                  borderRadius: '4px',
+                  height: '24px',
+                  backgroundColor:
+                    currentPeriod && ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentPeriod)
+                      ? darkMode
+                        ? 'rgba(0, 171, 85, 0.16)'
+                        : 'rgba(0, 123, 85, 0.08)'
+                      : 'transparent',
+                  color:
+                    currentPeriod && ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentPeriod)
+                      ? darkMode
+                        ? '#00AB55'
+                        : '#007B55'
+                      : 'inherit',
+                  '&:hover': {
+                    backgroundColor:
+                      currentPeriod && ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentPeriod)
+                        ? darkMode
+                          ? 'rgba(0, 171, 85, 0.24)'
+                          : 'rgba(0, 123, 85, 0.16)'
+                        : ''
+                  },
+                  '& .MuiChip-label': {
+                    px: 1
+                  }
                 }}
               />
             }
@@ -351,26 +422,56 @@ export default function SearchToolbar({
             }}
           />
 
+          {/* Categories Tab */}
+          <Tab
+            key={0}
+            value={0}
+            disableRipple
+            label={
+              <Chip
+                size="small"
+                icon={<CategoryIcon sx={{ fontSize: '16px' }} />}
+                label={'Categories'}
+                onClick={() => setOpenCategoriesDrawer(true)}
+                sx={{
+                  color: darkMode ? '#007B55 !important' : '#5569ff !important',
+                  borderRadius: '4px',
+                  height: '24px',
+                  '& .MuiChip-label': {
+                    px: 1
+                  }
+                }}
+              />
+            }
+            style={{
+              paddingLeft: 0,
+              paddingRight: 0
+            }}
+          />
+
+          {/* New Tokens Tab */}
           <Tab
             disableRipple
             label={
               <Chip
                 size="small"
-                icon={<FiberNewIcon fontSize="small" />}
+                icon={<FiberNewIcon sx={{ fontSize: '16px' }} />}
                 label={'New Tokens'}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  // Clear any existing search filter
                   onFilterName({ target: { value: '' } });
-                  // Update URL with sort parameters
                   router.push({
                     pathname: '/',
                     query: { sort: 'dateon', order: 'desc' }
                   });
                 }}
                 sx={{
-                  borderRadius: '4px'
+                  borderRadius: '4px',
+                  height: '24px',
+                  '& .MuiChip-label': {
+                    px: 1
+                  }
                 }}
               />
             }
@@ -386,7 +487,7 @@ export default function SearchToolbar({
             flexItem
             sx={{
               display: { xs: 'none', md: 'flex' },
-              mx: 3, // Adjust this margin to ensure the divider is visible
+              mx: 2, // Reduce margin
               my: 'auto'
             }}
           />
@@ -488,6 +589,60 @@ export default function SearchToolbar({
           tags={tags}
           normalizeTag={normalizeTag}
         />
+
+        <Menu
+          anchorEl={gainersAnchorEl}
+          open={Boolean(gainersAnchorEl)}
+          onClose={handleGainersClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left'
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'left'
+          }}
+          PaperProps={{
+            sx: {
+              mt: 1,
+              minWidth: '160px',
+              '& .MuiMenuItem-root': {
+                fontSize: '0.875rem',
+                minHeight: '32px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }
+            }
+          }}
+        >
+          {Object.entries(periodLabels).map(([period, label]) => (
+            <MenuItem
+              key={period}
+              onClick={() => handleGainersPeriodSelect(period)}
+              sx={{
+                backgroundColor:
+                  currentPeriod === period
+                    ? darkMode
+                      ? 'rgba(0, 171, 85, 0.16)'
+                      : 'rgba(0, 123, 85, 0.08)'
+                    : 'transparent',
+                color: currentPeriod === period ? (darkMode ? '#00AB55' : '#007B55') : 'inherit',
+                '&:hover': {
+                  backgroundColor:
+                    currentPeriod === period
+                      ? darkMode
+                        ? 'rgba(0, 171, 85, 0.24)'
+                        : 'rgba(0, 123, 85, 0.16)'
+                      : ''
+                }
+              }}
+            >
+              {`${label} Gainers`}
+              {currentPeriod === period && <TrendingUpIcon sx={{ fontSize: '16px', ml: 1 }} />}
+            </MenuItem>
+          ))}
+        </Menu>
       </RootStyle>
     </>
   );

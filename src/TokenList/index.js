@@ -21,18 +21,27 @@ import { useRouter } from 'next/router';
 const useStyles = makeStyles({
   tableContainer: {
     display: 'flex',
-    gap: 1,
-    py: 1,
+    gap: 0,
+    py: 0.5,
     overflow: 'auto',
     width: '100%',
     '& > *': {
       scrollSnapAlign: 'center'
     },
-    '::-webkit-scrollbar': { display: 'none' }
+    '::-webkit-scrollbar': { display: 'none' },
+    '& .MuiTableCell-root': {
+      padding: '4px 8px',
+      height: '40px' // Set a fixed height for table cells
+    },
+    '& .MuiTableRow-root': {
+      '&:hover': {
+        backgroundColor: 'rgba(0, 0, 0, 0.04)'
+      }
+    }
   },
   tableCell: {
     borderBottom: 'none',
-    padding: (props) => (props.isMobile ? '4px' : '16px')
+    padding: (props) => (props.isMobile ? '2px' : '8px')
   }
 });
 
@@ -354,25 +363,27 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
 
       {trustToken && <TrustSetDialog token={trustToken} setToken={setTrustToken} />}
 
-      <SearchToolbar
-        tags={tags}
-        tagName={tagName}
-        filterName={filterName}
-        onFilterName={handleFilterByName}
-        rows={rows}
-        setRows={updateRows}
-        showNew={showNew}
-        setShowNew={updateShowNew}
-        showSlug={showSlug}
-        setShowSlug={updateShowSlug}
-        showDate={showDate}
-        setShowDate={updateShowDate}
-        viewType={viewType}
-        setViewType={setViewType}
-      />
+      <Box sx={{ mb: 1 }}>
+        <SearchToolbar
+          tags={tags}
+          tagName={tagName}
+          filterName={filterName}
+          onFilterName={handleFilterByName}
+          rows={rows}
+          setRows={updateRows}
+          showNew={showNew}
+          setShowNew={updateShowNew}
+          showSlug={showSlug}
+          setShowSlug={updateShowSlug}
+          showDate={showDate}
+          setShowDate={updateShowDate}
+          viewType={viewType}
+          setViewType={setViewType}
+        />
+      </Box>
 
       <Box className={classes.tableContainer} ref={tableContainerRef}>
-        <Table ref={tableRef}>
+        <Table ref={tableRef} size="small">
           <TokenListHead
             order={order}
             orderBy={orderBy}
@@ -400,7 +411,9 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           </TableBody>
         </Table>
       </Box>
-      <TokenListToolbar rows={rows} setRows={updateRows} page={page} setPage={updatePage} />
+      <Box sx={{ mt: 1 }}>
+        <TokenListToolbar rows={rows} setRows={updateRows} page={page} setPage={updatePage} />
+      </Box>
     </>
   );
 }
