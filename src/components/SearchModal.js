@@ -39,8 +39,10 @@ const BASE_URL = process.env.API_URL;
 const NFT_BASE_URL = 'https://api.xrpnft.com/api';
 
 const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
-  borderRadius: '50%',
-  overflow: 'hidden'
+  borderRadius: '12px',
+  overflow: 'hidden',
+  aspectRatio: '1',
+  objectFit: 'cover'
 }));
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
@@ -305,25 +307,28 @@ export default function SearchModal({ onClose, open }) {
         elevation={6}
         sx={{
           width: '100%',
-          maxWidth: '600px',
+          maxWidth: '800px',
           position: 'fixed',
-          right: '10px',
-          top: open ? '45px' : '-100%',
-          p: 2,
+          left: '50%',
+          top: '50%',
+          transform: open ? 'translate(-50%, -50%)' : 'translate(-50%, -150%)',
+          p: 3,
           zIndex: 9999,
           opacity: open ? 1 : 0,
           transition: 'all 0.3s ease-in-out',
-          borderRadius: '12px',
+          borderRadius: '16px',
           backdropFilter: 'blur(8px)',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           boxShadow: (theme) =>
-            darkMode ? '0 8px 16px rgba(0,0,0,0.4)' : '0 8px 16px rgba(0,0,0,0.1)'
+            darkMode ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.1)'
         }}
         ref={modalRef}
       >
         <Paper
           component="form"
           sx={{
-            p: '4px 8px',
+            p: '8px 16px',
             display: 'flex',
             alignItems: 'center',
             border: '2px solid',
@@ -430,9 +435,12 @@ export default function SearchModal({ onClose, open }) {
             </Stack>
             <MenuList
               sx={{
-                p: 0,
+                p: 1,
                 maxHeight: search.length > 0 ? '465px' : 'auto',
                 overflowY: 'auto',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '12px',
                 '&::-webkit-scrollbar': {
                   width: '6px',
                   borderRadius: '3px'
@@ -448,7 +456,7 @@ export default function SearchModal({ onClose, open }) {
               }}
             >
               {tokens
-                .slice(0, activeTab == 'token' ? tokens.length : 4)
+                .slice(0, activeTab == 'token' ? tokens.length : 8)
                 .map(({ md5, name, slug, isOMCF, user, kyc, pro24h, exch }, idx) => {
                   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
                   const link = `/token/${slug}?fromSearch=1`;
@@ -461,7 +469,21 @@ export default function SearchModal({ onClose, open }) {
                       color="inherit"
                       onClick={() => addRecentSearchItem(name, user, imgUrl, link)}
                     >
-                      <MenuItem sx={{ py: '2px', px: 1, height: '50px' }}>
+                      <MenuItem
+                        sx={{
+                          py: 1.5,
+                          px: 2,
+                          height: '64px',
+                          borderRadius: 2,
+                          backgroundColor: (theme) =>
+                            darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                          transition: 'all 0.2s',
+                          '&:hover': {
+                            backgroundColor: (theme) =>
+                              darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'
+                          }
+                        }}
+                      >
                         <Box
                           display="flex"
                           alignItems="center"
@@ -469,11 +491,19 @@ export default function SearchModal({ onClose, open }) {
                           flex={2}
                           sx={{ pl: 0, pr: 0 }}
                         >
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <TokenImage src={imgUrl} width={24} height={24} />
-                            <Stack>
+                          <Stack direction="row" spacing={2} alignItems="center">
+                            <TokenImage
+                              src={imgUrl}
+                              width={40}
+                              height={40}
+                              style={{
+                                minWidth: '40px'
+                              }}
+                            />
+                            <Stack spacing={0.5}>
                               <Typography
                                 variant="token"
+                                fontSize="1rem"
                                 color={
                                   isOMCF !== 'yes'
                                     ? darkMode
@@ -489,12 +519,13 @@ export default function SearchModal({ onClose, open }) {
                               </Typography>
                               <Typography
                                 variant="caption"
+                                fontSize="0.85rem"
                                 color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                                 noWrap
                               >
                                 {truncate(name, 13)}
                                 {kyc && (
-                                  <Typography variant="kyc" sx={{ ml: 0.2 }}>
+                                  <Typography variant="kyc" sx={{ ml: 0.5 }}>
                                     KYC
                                   </Typography>
                                 )}
@@ -502,7 +533,7 @@ export default function SearchModal({ onClose, open }) {
                             </Stack>
                           </Stack>
 
-                          <Stack direction="row" gap={1}>
+                          <Stack direction="row" gap={2}>
                             <NumberTooltip
                               prepend={currencySymbols[activeFiatCurrency]}
                               number={fNumberWithCurreny(exch, exchRate)}
@@ -515,7 +546,7 @@ export default function SearchModal({ onClose, open }) {
                   );
                 })}
             </MenuList>
-            {search && activeTab !== 'token' && tokens.length > 4 && (
+            {search && activeTab !== 'token' && tokens.length > 8 && (
               <Button
                 onClick={() => setActiveTab('token')}
                 variant="text"
@@ -536,31 +567,34 @@ export default function SearchModal({ onClose, open }) {
 
         {collections.length > 0 && (
           <Stack
-            mt={2}
-            spacing={1}
+            mt={3}
+            spacing={2}
             sx={{ display: activeTab === 'nft' || activeTab === 'all' ? 'flex' : 'none' }}
           >
             <Stack direction="row" alignItems="center" spacing={1} sx={{ px: 1 }}>
-              <Typography variant="subtitle2" fontWeight={600}>
+              <Typography variant="subtitle2" fontWeight={600} fontSize="1.1rem">
                 {`${!search ? 'Trending ' : ''}NFTs`}
               </Typography>
-
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="currentColor"
-                height="16px"
-                width="16px"
+                height="20px"
+                width="20px"
                 viewBox="0 0 24 24"
                 color="#FF775F"
               >
                 <path d="M17.0881 9.42254C16.4368 8.90717 15.8155 8.35512 15.3012 7.71336C12.3755 4.06357 13.8912 1 13.8912 1C8.46026 3.18334 7.22337 6.64895 7.16462 9.22981L7.1675 9.2572C7.1675 9.2572 7.21498 10.7365 7.90791 12.3625C8.12481 12.8713 7.88299 13.4666 7.33195 13.6199C6.87638 13.7465 6.40822 13.5317 6.21571 13.1314C5.90413 12.4831 5.49262 11.4521 5.6109 10.7249C4.75064 11.817 4.1815 13.1452 4.03542 14.6184C3.65092 18.4924 6.43759 22.0879 10.4208 22.8488C14.9906 23.7217 19.3121 20.7182 19.9269 16.3623C20.3117 13.6367 19.1498 11.0538 17.0881 9.42254ZM14.3578 17.7393C14.3289 17.776 13.5893 18.6597 12.3501 18.7517C12.2829 18.7547 12.2124 18.7577 12.1452 18.7577C11.2902 18.7577 10.4226 18.3682 9.56103 17.5951L9.37219 17.4262L9.61243 17.3372C9.62843 17.3312 11.2742 16.7236 11.6778 15.4077C11.8155 14.9629 11.7707 14.4566 11.553 13.9842C11.2905 13.4075 10.7845 11.9564 11.7453 10.9041L11.9309 10.7015L12.0206 10.9561C12.0238 10.9714 12.6034 12.5911 13.9741 13.4379C14.3871 13.6957 14.6977 14.0086 14.8931 14.3644C15.2959 15.1132 15.533 16.3065 14.3578 17.7393Z" />
               </svg>
             </Stack>
+
             <MenuList
               sx={{
-                p: 0,
+                p: 1,
                 maxHeight: search.length > 0 ? '465px' : 'auto',
                 overflowY: 'auto',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '12px',
                 '&::-webkit-scrollbar': {
                   width: '6px',
                   borderRadius: '3px'
@@ -576,20 +610,116 @@ export default function SearchModal({ onClose, open }) {
               }}
             >
               {collections.slice(0, activeTab == 'nft' ? collections.length : 3).map((nft, idx) => (
-                <NFTRender
+                <Link
                   key={idx}
-                  {...nft}
-                  addRecentSearchItem={addRecentSearchItem}
-                  darkMode={darkMode}
-                />
+                  href={`/collection/${nft.slug}`}
+                  underline="none"
+                  color="inherit"
+                  onClick={() =>
+                    addRecentSearchItem(
+                      nft.name,
+                      '',
+                      `https://s1.xrpnft.com/collection/${nft.logoImage}`,
+                      `/collection/${nft.slug}`
+                    )
+                  }
+                >
+                  <MenuItem
+                    sx={{
+                      py: 1.5,
+                      px: 2,
+                      height: '80px',
+                      borderRadius: 2,
+                      backgroundColor: (theme) =>
+                        darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        backgroundColor: (theme) =>
+                          darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'
+                      }
+                    }}
+                  >
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="space-between"
+                      width="100%"
+                    >
+                      <Stack direction="row" spacing={2} alignItems="center">
+                        <Avatar
+                          alt={nft.name}
+                          src={`https://s1.xrpnft.com/collection/${nft.logoImage}`}
+                          sx={{
+                            width: 48,
+                            height: 48,
+                            backgroundColor: 'transparent',
+                            borderRadius: '12px',
+                            '& .MuiCardMedia-root': {
+                              borderRadius: '12px',
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover'
+                            }
+                          }}
+                        >
+                          <CardMedia
+                            component="img"
+                            src={`https://s1.xrpnft.com/collection/${nft.logoImage}`}
+                            alt={nft.name}
+                          />
+                        </Avatar>
+                        <Stack spacing={0.5}>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Typography variant="subtitle1" fontSize="1rem" fontWeight={600} noWrap>
+                              {truncate(nft.name, 20)}
+                            </Typography>
+                            {nft.verified === 'yes' && (
+                              <Tooltip title="Verified">
+                                <VerifiedIcon fontSize="small" sx={{ color: '#4589ff' }} />
+                              </Tooltip>
+                            )}
+                            {nft.type === 'random' && (
+                              <Tooltip title="Random Collection">
+                                <CasinoIcon color="info" fontSize="small" />
+                              </Tooltip>
+                            )}
+                            {nft.type === 'sequence' && (
+                              <Tooltip title="Sequence Collection">
+                                <AnimationIcon color="info" fontSize="small" />
+                              </Tooltip>
+                            )}
+                          </Stack>
+                          <Stack direction="row" spacing={2}>
+                            <Typography variant="caption" fontSize="0.85rem" color="text.secondary">
+                              Floor: {nft.floor?.amount} {nft.floor?.currency}
+                            </Typography>
+                            <Typography variant="caption" fontSize="0.85rem" color="text.secondary">
+                              Volume: {nft.totalVolume?.toLocaleString() || 0} XRP
+                            </Typography>
+                          </Stack>
+                        </Stack>
+                      </Stack>
+                    </Box>
+                  </MenuItem>
+                </Link>
               ))}
             </MenuList>
-            <Button
-              onClick={() => setActiveTab('nft')}
-              sx={{ display: search && activeTab != 'nft' ? 'flex' : 'none' }}
-            >
-              See all results &#40;{collections.length}&#41;
-            </Button>
+            {search && activeTab !== 'nft' && collections.length > 3 && (
+              <Button
+                onClick={() => setActiveTab('nft')}
+                variant="text"
+                sx={{
+                  mt: 1,
+                  color: (theme) => (darkMode ? 'primary.light' : 'primary.main'),
+                  '&:hover': {
+                    backgroundColor: (theme) =>
+                      darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+                  }
+                }}
+              >
+                See all results ({collections.length})
+              </Button>
+            )}
           </Stack>
         )}
 
@@ -626,7 +756,7 @@ export default function SearchModal({ onClose, open }) {
                     width: '80px',
                     height: '80px',
                     padding: '6px',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     backgroundColor: (theme) =>
                       darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
                     transition: 'all 0.2s',
@@ -638,9 +768,25 @@ export default function SearchModal({ onClose, open }) {
                   }}
                 >
                   <Stack direction="row" justifyContent="center">
-                    <TokenImage src={img} width={28} height={28} />
+                    <Box
+                      sx={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '8px',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <TokenImage
+                        src={img}
+                        width={32}
+                        height={32}
+                        style={{
+                          minWidth: '32px'
+                        }}
+                      />
+                    </Box>
                   </Stack>
-                  <Stack alignItems="center" sx={{ marginTop: '2px' }}>
+                  <Stack alignItems="center" sx={{ marginTop: '4px' }}>
                     <Typography sx={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.2 }}>
                       {truncate(name, 8)}
                     </Typography>
