@@ -1,10 +1,7 @@
 import Decimal from 'decimal.js';
 import { useState, useEffect } from 'react';
 import React from 'react';
-import {
-  LazyLoadImage,
-  LazyLoadComponent
-} from 'react-lazy-load-image-component';
+import { LazyLoadImage, LazyLoadComponent } from 'react-lazy-load-image-component';
 
 // Material
 import {
@@ -15,13 +12,19 @@ import {
   Stack,
   TableCell,
   TableRow,
-  Typography
+  Typography,
+  Tooltip
 } from '@mui/material';
 
 // Iconify
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
-
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import LockIcon from '@mui/icons-material/Lock';
 
 // Context
 import { useContext } from 'react';
@@ -46,8 +49,11 @@ const TransitionTypo = styled(Typography)(
 );
 
 const AdminImage = styled(LazyLoadImage)(({ theme }) => ({
-  borderRadius: '50%',
+  borderRadius: '8px',
   overflow: 'hidden',
+  width: '46px',
+  height: '46px',
+  objectFit: 'cover',
   '&:hover': {
     cursor: 'pointer',
     opacity: 0.6
@@ -55,8 +61,11 @@ const AdminImage = styled(LazyLoadImage)(({ theme }) => ({
 }));
 
 const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
-  borderRadius: '50%',
-  overflow: 'hidden'
+  borderRadius: '8px',
+  overflow: 'hidden',
+  width: '46px',
+  height: '46px',
+  objectFit: 'cover'
 }));
 
 function truncate(str, n) {
@@ -107,6 +116,19 @@ function formatTime(value, unit) {
   }
 }
 
+const getOriginIcon = (origin) => {
+  switch (origin) {
+    case 'FirstLedger':
+      return <OpenInNewIcon sx={{ fontSize: 'inherit', color: '#0C53B7' }} />;
+    case 'XPMarket':
+      return <StorefrontIcon sx={{ fontSize: 'inherit', color: '#B72136' }} />;
+    case 'Magnetic X':
+      return <ElectricBoltIcon sx={{ fontSize: 'inherit', color: '#7635DC' }} />;
+    default:
+      return <AutoAwesomeIcon sx={{ fontSize: 'inherit', color: '#637381' }} />;
+  }
+};
+
 export const RecentTokenRow = React.memo(FTokenRow);
 
 function FTokenRow({
@@ -150,7 +172,8 @@ function FTokenRow({
     // usd,
     // ext,
     marketcap,
-    isOMCF
+    isOMCF,
+    origin
   } = token;
 
   useEffect(() => {
@@ -171,9 +194,7 @@ function FTokenRow({
       sx={{
         '&:hover': {
           '& .MuiTableCell-root': {
-            backgroundColor: darkMode
-              ? '#232326 !important'
-              : '#D9DCE0 !important'
+            backgroundColor: darkMode ? '#232326 !important' : '#D9DCE0 !important'
           }
         }
       }}
@@ -200,35 +221,33 @@ function FTokenRow({
             background: darkMode ? '#000000' : '#FFFFFF',
             '&:before': scrollLeft
               ? {
-                content: "''",
-                boxShadow: 'inset 10px 0 8px -8px #00000026',
-                position: 'absolute',
-                top: '0',
-                right: '0',
-                bottom: '-1px',
-                width: '30px',
-                transform: 'translate(100%)',
-                transition: 'box-shadow .3s',
-                pointerEvents: 'none'
-              }
+                  content: "''",
+                  boxShadow: 'inset 10px 0 8px -8px #00000026',
+                  position: 'absolute',
+                  top: '0',
+                  right: '0',
+                  bottom: '-1px',
+                  width: '30px',
+                  transform: 'translate(100%)',
+                  transition: 'box-shadow .3s',
+                  pointerEvents: 'none'
+                }
               : {}
           }}
         >
           <Stack direction="row" alignItems="center" spacing={2} sx={{ p: 0 }}>
             {admin ? (
               <AdminImage
-                src={imgUrl} // use normal <img> attributes as props
-                width={isMobile ? 26 : 46}
-                height={isMobile ? 26 : 46}
+                src={imgUrl}
+                style={{ width: isMobile ? '26px' : '46px', height: isMobile ? '26px' : '46px' }}
                 onClick={() => setEditToken(token)}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
                 alt={`${user} ${name} Logo`}
               />
             ) : (
               <TokenImage
-                src={imgUrl} // use normal <img> attributes as props
-                width={isMobile ? 26 : 46}
-                height={isMobile ? 26 : 46}
+                src={imgUrl}
+                style={{ width: isMobile ? '26px' : '46px', height: isMobile ? '26px' : '46px' }}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
                 alt={`${user} ${name} Logo`}
               />
@@ -239,7 +258,7 @@ function FTokenRow({
               color="inherit"
               href={`/token/${slug}`}
               rel="noreferrer noopener nofollow"
-            // style={{textDecoration: "none"}}
+              // style={{textDecoration: "none"}}
             >
               <Stack>
                 <Typography
@@ -252,37 +271,46 @@ function FTokenRow({
                         ? '#fff'
                         : '#222531'
                       : darkMode
-                        ? '#007B55'
-                        : slug === md5
-                          ? '#B72136'
-                          : ''
+                      ? '#007B55'
+                      : slug === md5
+                      ? '#B72136'
+                      : ''
                   }
                   noWrap
                 >
                   {truncate(name, 8)}
                 </Typography>
-                <Typography
-                  variant="caption"
-                  color={
-                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-                  }
-                  noWrap
-                >
-                  {truncate(user, 13)}
-                  {kyc && (
-                    <Typography variant="kyc" sx={{ ml: 0.2 }}>
-                      KYC
-                    </Typography>
-                  )}
-                </Typography>
-                <Typography
-                  variant="small"
-                  color={
-                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-                  }
-                >
-                  {date}
-                </Typography>
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Typography
+                    variant="caption"
+                    color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
+                    noWrap
+                  >
+                    {truncate(user, 13)}
+                    {kyc && (
+                      <Typography variant="kyc" sx={{ ml: 0.2 }}>
+                        KYC
+                      </Typography>
+                    )}
+                  </Typography>
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
+                    {origin && (
+                      <>
+                        <Tooltip title="Blackholed Issuer">
+                          <LockIcon
+                            sx={{ fontSize: isMobile ? '12px' : '14px', color: '#007B55' }}
+                          />
+                        </Tooltip>
+                        <Tooltip title="Burned Liquidity Pool">
+                          <LocalFireDepartmentIcon
+                            sx={{ fontSize: isMobile ? '12px' : '14px', color: '#B72136' }}
+                          />
+                        </Tooltip>
+                      </>
+                    )}
+                  </Stack>
+                </Stack>
               </Stack>
             </Link>
           </Stack>
@@ -307,37 +335,25 @@ function FTokenRow({
           <BearBullLabel value={pro7d} variant="h4" />
         </TableCell>*/}
         <TableCell align="right">
-          <Stack
-            direction="row"
-            spacing={0.5}
-            justifyContent="flex-end"
-            alignItems="center"
-          >
+          <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
             <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
             <Typography variant="h4" noWrap>
               {fNumberWithCurreny(vol24hxrp, exchRate)}
             </Typography>
           </Stack>
-          <Stack
-            direction="row"
-            spacing={0.5}
-            justifyContent="flex-end"
-            alignItems="center"
-          >
+          <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
             {/* <Icon icon={outlineToken} color="#0C53B7"/> */}
-            <Icon
-              icon={arrowsExchange}
-              color="#primary"
-              width="16"
-              height="16"
-            />
+            <Icon icon={arrowsExchange} color="#primary" width="16" height="16" />
             <Typography variant="h5" color="primary">
               {fNumber(vol24hx)}
             </Typography>
           </Stack>
         </TableCell>
         <TableCell align="right">{fNumber(vol24htx)}</TableCell>
-        <TableCell align="right">{currencySymbols[activeFiatCurrency]}{fNumber(convertedMarketCap)}</TableCell>
+        <TableCell align="right">
+          {currencySymbols[activeFiatCurrency]}
+          {fNumber(convertedMarketCap)}
+        </TableCell>
         {/* <TableCell align="left">{holders}</TableCell>
                 <TableCell align="left">{offers}</TableCell> */}
 
@@ -349,9 +365,7 @@ function FTokenRow({
             {name}
           </Typography>
         </TableCell>
-        <TableCell align="right">
-          {timeAgo(dateon)}
-        </TableCell>
+        <TableCell align="right">{timeAgo(dateon)}</TableCell>
         {/*<TableCell align="right">
           <LazyLoadImage
             alt=""

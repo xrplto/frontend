@@ -1,9 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import React from 'react';
-import {
-  LazyLoadImage,
-  LazyLoadComponent
-} from 'react-lazy-load-image-component';
+import { LazyLoadImage, LazyLoadComponent } from 'react-lazy-load-image-component';
 
 // Material
 import {
@@ -74,9 +71,9 @@ function getPriceColor(token, theme) {
   return color;
 }
 
-export const GainersLosersTokenRow = React.memo(fTokenRow);
+export const GainersLosersTokenRow = React.memo(TokenRow);
 
-function fTokenRow({
+function TokenRow({
   time,
   token,
   admin,
@@ -99,20 +96,7 @@ function fTokenRow({
     }, 3000);
   }, [time, token, theme]);
 
-  const {
-    id,
-    name,
-    date,
-    vol24hxrp,
-    vol24hx,
-    kyc,
-    md5,
-    slug,
-    user,
-    pro24h,
-    exch,
-    isOMCF
-  } = token;
+  const { id, name, date, vol24hxrp, vol24hx, kyc, md5, slug, user, pro24h, exch, isOMCF } = token;
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
@@ -122,9 +106,7 @@ function fTokenRow({
       sx={{
         '&:hover': {
           '& .MuiTableCell-root': {
-            backgroundColor: darkMode
-              ? '#232326 !important'
-              : '#D9DCE0 !important'
+            backgroundColor: darkMode ? '#232326 !important' : '#D9DCE0 !important'
           }
         }
       }}
@@ -193,7 +175,15 @@ function fTokenRow({
                 <Typography
                   variant="token"
                   color={
-                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : (darkMode ? '#007B55' : slug === md5 ? '#B72136' : '') 
+                    isOMCF !== 'yes'
+                      ? darkMode
+                        ? '#fff'
+                        : '#222531'
+                      : darkMode
+                      ? '#007B55'
+                      : slug === md5
+                      ? '#B72136'
+                      : ''
                   }
                   noWrap
                 >
@@ -201,9 +191,7 @@ function fTokenRow({
                 </Typography>
                 <Typography
                   variant="caption"
-                  color={
-                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-                  }
+                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                   noWrap
                 >
                   {truncate(user, 13)}
@@ -215,9 +203,7 @@ function fTokenRow({
                 </Typography>
                 <Typography
                   variant="small"
-                  color={
-                    isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''
-                  }
+                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                 >
                   {date}
                 </Typography>
@@ -239,24 +225,13 @@ function fTokenRow({
           <BearBullLabel value={pro24h} variant="h4" />
         </TableCell>
         <TableCell align="right">
-          <Stack
-            direction="row"
-            spacing={0.5}
-            justifyContent="flex-end"
-            alignItems="center"
-          >
+          <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
             <Typography>✕</Typography>
             <Typography variant="h4" noWrap>
               {fNumber(vol24hxrp)}
             </Typography>
           </Stack>
-          <Stack
-            direction="row"
-            spacing={0.5}
-            justifyContent="flex-end"
-            alignItems="center"
-          >
-      
+          <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
             <Typography variant="h5" color="primary.dark">
               {fNumber(vol24hx)} {name}
             </Typography>
