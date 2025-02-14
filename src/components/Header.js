@@ -8,13 +8,22 @@ import {
   Snackbar,
   Stack,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  Typography,
+  Divider
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
+import SettingsIcon from '@mui/icons-material/Settings';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import { useTranslation } from 'react-i18next';
 import { useState, useContext, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -58,6 +67,97 @@ const StyledLink = styled(Link)(
     }
 `
 );
+
+const SettingsButton = styled(IconButton)(({ theme }) => ({
+  marginLeft: theme.spacing(1),
+  padding: theme.spacing(1),
+  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  borderRadius: '8px',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.2)
+  }
+}));
+
+const Settings = () => {
+  const { darkMode, setDarkMode, activeFiatCurrency, setActiveFiatCurrency } =
+    useContext(AppContext);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const theme = useTheme();
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleThemeChange = () => {
+    setDarkMode(!darkMode);
+  };
+
+  const handleCurrencyChange = (currency) => {
+    setActiveFiatCurrency(currency);
+    handleClose();
+  };
+
+  return (
+    <>
+      <SettingsButton
+        onClick={handleClick}
+        aria-controls={open ? 'settings-menu' : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? 'true' : undefined}
+      >
+        <SettingsIcon />
+      </SettingsButton>
+      <Menu
+        id="settings-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        MenuListProps={{
+          'aria-labelledby': 'settings-button'
+        }}
+        PaperProps={{
+          sx: {
+            mt: 1.5,
+            minWidth: 200,
+            borderRadius: 2,
+            boxShadow: theme.shadows[3]
+          }
+        }}
+      >
+        <MenuItem onClick={handleThemeChange}>
+          <ListItemIcon>
+            {darkMode ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+          </ListItemIcon>
+          <Typography variant="body2">{darkMode ? 'Light Mode' : 'Dark Mode'}</Typography>
+        </MenuItem>
+        <Divider />
+        <Typography
+          variant="caption"
+          sx={{ px: 2, py: 1, display: 'block', color: 'text.secondary' }}
+        >
+          Currency
+        </Typography>
+        {['USD', 'EUR', 'GBP', 'JPY', 'CNY'].map((currency) => (
+          <MenuItem
+            key={currency}
+            onClick={() => handleCurrencyChange(currency)}
+            selected={currency === activeFiatCurrency}
+          >
+            <ListItemIcon>
+              <AttachMoneyIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="body2">{currency}</Typography>
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
+};
 
 export default function Header(props) {
   const { t } = useTranslation(); // set translation const
@@ -253,33 +353,12 @@ export default function Header(props) {
               flexGrow: 1,
               display: 'flex',
               justifyContent: 'flex-end',
-              alignItems: 'center'
+              alignItems: 'center',
+              gap: 2
             }}
           >
             {!fullSearch && isDesktop && (
-              <Stack mr={1}>
-                <NavSearchBar
-                  id="id_search_tokens"
-                  placeholder="Search XRPL Tokens"
-                  fullSearch={fullSearch}
-                  setFullSearch={setFullSearch}
-                />
-              </Stack>
-            )}
-
-            {!fullSearch && isTabletOrMobile && (
-              <IconButton aria-label="search" onClick={handleFullSearch}>
-                <SearchIcon />
-              </IconButton>
-            )}
-
-            {!fullSearch && (
-              <Stack
-                direction="row"
-                alignItems="center"
-                spacing={0.5}
-                sx={{ display: { xs: 'none', md: 'flex' }, mr: 0 }}
-              >
+              <>
                 <Link
                   underline="none"
                   color="inherit"
@@ -301,7 +380,25 @@ export default function Header(props) {
                     }}
                   />
                 </Link>
-              </Stack>
+                <NavSearchBar
+                  id="id_search_tokens"
+                  placeholder="Search XRPL Tokens"
+                  fullSearch={fullSearch}
+                  setFullSearch={setFullSearch}
+                />
+              </>
+            )}
+
+            {!fullSearch && isTabletOrMobile && (
+              <IconButton aria-label="search" onClick={handleFullSearch}>
+                <SearchIcon />
+              </IconButton>
+            )}
+
+            {!fullSearch && (
+              <>
+                <Settings />
+              </>
             )}
 
             {isTabletOrMobile && !fullSearch && (

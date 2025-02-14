@@ -20,9 +20,16 @@ import {
   CircularProgress,
   MenuItem,
   Select,
-  FormControl
+  FormControl,
+  Menu,
+  ListItemIcon,
+  Divider
 } from '@mui/material';
 import SmartToy from '@mui/icons-material/SmartToy';
+import SettingsIcon from '@mui/icons-material/Settings';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
@@ -67,18 +74,21 @@ const Separator = styled('span')(({ theme }) => ({
   color: theme.palette.text.primary // Adjust color as needed
 }));
 
-const APILabel = styled('a')(({ theme }) => ({
-  fontSize: '14px', // Adjust font size as needed
-  color: theme.palette.text.primary, // Adjust color as needed
+const APILabel = styled('button')(({ theme }) => ({
+  fontSize: '14px',
+  color: theme.palette.text.primary,
   textDecoration: 'none',
-  marginLeft: theme.spacing(2),
-  backgroundColor: alpha(theme.palette.primary.main, 0.3),
-  padding: '5px 10px',
-  borderRadius: '5px',
+  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  padding: '6px 12px',
+  borderRadius: '8px',
+  border: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
+  cursor: 'pointer',
+  transition: 'all 0.2s',
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.2),
-    textDecoration: 'none',
-    cursor: 'pointer'
+    backgroundColor: alpha(theme.palette.primary.main, 0.2)
   }
 }));
 
@@ -125,11 +135,10 @@ const TradeButton = styled(IconButton)(({ theme }) => ({
 
 // Add this styled component after other styled components
 const PulsatingCircle = styled('div')(({ theme }) => ({
-  width: '10px',
-  height: '10px',
+  width: '8px',
+  height: '8px',
   borderRadius: '50%',
   backgroundColor: theme.palette.success.main,
-  marginRight: theme.spacing(1),
   animation: 'pulse 1.5s infinite',
   '@keyframes pulse': {
     '0%': {
@@ -329,6 +338,97 @@ const BOT_ADDRESSES = [
   'raKTPwoUnGbdSquoiZLX5bLZwY2JAvS5o9'
 ];
 
+const SettingsButton = styled(IconButton)(({ theme }) => ({
+  marginLeft: theme.spacing(1),
+  padding: theme.spacing(1),
+  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  borderRadius: '8px',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.2)
+  }
+}));
+
+const Settings = () => {
+  const { darkMode, setDarkMode, activeFiatCurrency, setActiveFiatCurrency } =
+    useContext(AppContext);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const theme = useTheme();
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleThemeChange = () => {
+    setDarkMode(!darkMode);
+  };
+
+  const handleCurrencyChange = (currency) => {
+    setActiveFiatCurrency(currency);
+    handleClose();
+  };
+
+  return (
+    <>
+      <SettingsButton
+        onClick={handleClick}
+        aria-controls={open ? 'settings-menu' : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? 'true' : undefined}
+      >
+        <SettingsIcon />
+      </SettingsButton>
+      <Menu
+        id="settings-menu"
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        MenuListProps={{
+          'aria-labelledby': 'settings-button'
+        }}
+        PaperProps={{
+          sx: {
+            mt: 1.5,
+            minWidth: 200,
+            borderRadius: 2,
+            boxShadow: theme.shadows[3]
+          }
+        }}
+      >
+        <MenuItem onClick={handleThemeChange}>
+          <ListItemIcon>
+            {darkMode ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
+          </ListItemIcon>
+          <Typography variant="body2">{darkMode ? 'Light Mode' : 'Dark Mode'}</Typography>
+        </MenuItem>
+        <Divider />
+        <Typography
+          variant="caption"
+          sx={{ px: 2, py: 1, display: 'block', color: 'text.secondary' }}
+        >
+          Currency
+        </Typography>
+        {['USD', 'EUR', 'GBP', 'JPY', 'CNY'].map((currency) => (
+          <MenuItem
+            key={currency}
+            onClick={() => handleCurrencyChange(currency)}
+            selected={currency === activeFiatCurrency}
+          >
+            <ListItemIcon>
+              <AttachMoneyIcon fontSize="small" />
+            </ListItemIcon>
+            <Typography variant="body2">{currency}</Typography>
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
+};
+
 const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -518,17 +618,14 @@ const Topbar = () => {
             </Stack>
           )}
           {!isMobile && (
-            <Box sx={{ paddingLeft: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CurrencySwithcer />
-              <ThemeSwitcher />
-              <Separator>|</Separator>
+            <Box sx={{ paddingLeft: 2, display: 'flex', alignItems: 'center' }}>
               <APILabel onClick={handleTradeDrawerOpen}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <PulsatingCircle />
+                <PulsatingCircle />
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
                   Global Trades
-                </Box>
+                </Typography>
               </APILabel>
-              {!fullSearch && isDesktop && <Wallet style={{ marginRight: '9px' }} />}
+              {!fullSearch && isDesktop && <Wallet style={{ marginLeft: '12px' }} />}
             </Box>
           )}
         </ContentWrapper>

@@ -122,13 +122,24 @@ export default function Wallet({ style }) {
         direction="row"
         spacing={1}
         sx={{
-          padding: '4px 12px', // Adjust the padding to make it thicker
-          // backgroundImage: 'linear-gradient(to right, #721DA6 0%, #3021C1 51%, #721DA6 100%)',
+          padding: '4px 12px',
+          borderRadius: '8px',
           backgroundColor: `${darkMode ? '#007B55' : '#147DFE'}`,
-          transition: '0.5s',
-          backgroundSize: '200% auto',
+          transition: 'all 0.2s ease-in-out',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          minHeight: '32px',
+          boxShadow: `0 1px 4px ${darkMode ? 'rgba(0, 123, 85, 0.2)' : 'rgba(20, 125, 254, 0.2)'}`,
           '&:hover': {
-            backgroundColor: `${darkMode ? '#005E46' : '#147DFE'}`
+            backgroundColor: `${darkMode ? '#005E46' : '#0E5FBE'}`,
+            transform: 'translateY(-1px)',
+            boxShadow: `0 2px 8px ${
+              darkMode ? 'rgba(0, 123, 85, 0.25)' : 'rgba(20, 125, 254, 0.25)'
+            }`
+          },
+          '&:active': {
+            transform: 'translateY(0)'
           }
         }}
         ref={anchorRef}
@@ -138,10 +149,18 @@ export default function Wallet({ style }) {
           fontSize="small"
           sx={{
             color: '#fff',
-            marginRight: '6px'
+            fontSize: '16px'
           }}
         />
-        <Typography variant="s3" fontSize={13} color="#fff">
+        <Typography
+          variant="s3"
+          fontSize={13}
+          color="#fff"
+          sx={{
+            fontWeight: 500,
+            letterSpacing: '0.1px'
+          }}
+        >
           {accountLogin ? truncateAccount(accountLogin, 4) : 'Connect'}
         </Typography>
       </Button>
