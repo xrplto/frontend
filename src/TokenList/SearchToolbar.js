@@ -41,6 +41,9 @@ import CollectionsIcon from '@mui/icons-material/Collections'; // Import the ico
 import DehazeIcon from '@mui/icons-material/Dehaze';
 import WindowIcon from '@mui/icons-material/Window';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import SearchIcon from '@mui/icons-material/Search';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -179,7 +182,7 @@ export default function SearchToolbar({
     onFilterName({ target: { value: '' } });
     router.push({
       pathname: '/',
-      query: { sort: period, order: 'desc' }
+      query: { sortBy: period, sortType: 'desc' }
     });
     handleGainersClose();
   };
@@ -325,7 +328,7 @@ export default function SearchToolbar({
                   icon={<AppsIcon sx={{ fontSize: '16px' }} />}
                   label={'Tokens'}
                   onClick={handleDelete}
-                  color={tagValue === 0 ? 'primary' : undefined}
+                  color={tagValue === 0 && !currentPeriod ? 'primary' : undefined}
                   sx={{
                     borderRadius: '4px',
                     height: '24px',
@@ -367,6 +370,157 @@ export default function SearchToolbar({
                   }}
                 />
               </Link>
+            }
+            style={{
+              paddingLeft: 0,
+              paddingRight: 0
+            }}
+          />
+
+          {/* Trending Tab */}
+          <Tab
+            disableRipple
+            label={
+              <Chip
+                size="small"
+                icon={<LocalFireDepartmentIcon sx={{ fontSize: '16px' }} />}
+                label={'Trending'}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onFilterName({ target: { value: '' } });
+                  router.push({
+                    pathname: '/',
+                    query: { sortBy: 'trendingScore', sortType: 'desc' }
+                  });
+                }}
+                sx={{
+                  borderRadius: '4px',
+                  height: '24px',
+                  backgroundColor:
+                    currentPeriod === 'trendingScore'
+                      ? darkMode
+                        ? 'rgba(255, 86, 48, 0.16)'
+                        : 'rgba(255, 86, 48, 0.08)'
+                      : 'transparent',
+                  color:
+                    currentPeriod === 'trendingScore'
+                      ? darkMode
+                        ? '#FF5630'
+                        : '#B71D18'
+                      : 'inherit',
+                  '&:hover': {
+                    backgroundColor:
+                      currentPeriod === 'trendingScore'
+                        ? darkMode
+                          ? 'rgba(255, 86, 48, 0.24)'
+                          : 'rgba(255, 86, 48, 0.16)'
+                        : ''
+                  },
+                  '& .MuiChip-label': {
+                    px: 1
+                  }
+                }}
+              />
+            }
+            style={{
+              paddingLeft: 0,
+              paddingRight: 0
+            }}
+          />
+
+          {/* Spotlight Tab */}
+          <Tab
+            disableRipple
+            label={
+              <Chip
+                size="small"
+                icon={<SearchIcon sx={{ fontSize: '16px' }} />}
+                label={'Spotlight'}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onFilterName({ target: { value: '' } });
+                  router.push({
+                    pathname: '/',
+                    query: { sort: 'assessmentScore', order: 'desc' }
+                  });
+                }}
+                sx={{
+                  borderRadius: '4px',
+                  height: '24px',
+                  backgroundColor:
+                    currentPeriod === 'assessmentScore'
+                      ? darkMode
+                        ? 'rgba(36, 153, 239, 0.16)'
+                        : 'rgba(36, 153, 239, 0.08)'
+                      : 'transparent',
+                  color:
+                    currentPeriod === 'assessmentScore'
+                      ? darkMode
+                        ? '#2499EF'
+                        : '#0C53B7'
+                      : 'inherit',
+                  '&:hover': {
+                    backgroundColor:
+                      currentPeriod === 'assessmentScore'
+                        ? darkMode
+                          ? 'rgba(36, 153, 239, 0.24)'
+                          : 'rgba(36, 153, 239, 0.16)'
+                        : ''
+                  },
+                  '& .MuiChip-label': {
+                    px: 1
+                  }
+                }}
+              />
+            }
+            style={{
+              paddingLeft: 0,
+              paddingRight: 0
+            }}
+          />
+
+          {/* Most Viewed Tab */}
+          <Tab
+            disableRipple
+            label={
+              <Chip
+                size="small"
+                icon={<VisibilityIcon sx={{ fontSize: '16px' }} />}
+                label={'Most Viewed'}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onFilterName({ target: { value: '' } });
+                  router.push({
+                    pathname: '/',
+                    query: { sort: 'views', order: 'desc' }
+                  });
+                }}
+                sx={{
+                  borderRadius: '4px',
+                  height: '24px',
+                  backgroundColor:
+                    currentPeriod === 'views'
+                      ? darkMode
+                        ? 'rgba(145, 85, 253, 0.16)'
+                        : 'rgba(145, 85, 253, 0.08)'
+                      : 'transparent',
+                  color: currentPeriod === 'views' ? (darkMode ? '#9155FD' : '#7635DC') : 'inherit',
+                  '&:hover': {
+                    backgroundColor:
+                      currentPeriod === 'views'
+                        ? darkMode
+                          ? 'rgba(145, 85, 253, 0.24)'
+                          : 'rgba(145, 85, 253, 0.16)'
+                        : ''
+                  },
+                  '& .MuiChip-label': {
+                    px: 1
+                  }
+                }}
+              />
             }
             style={{
               paddingLeft: 0,
@@ -422,33 +576,6 @@ export default function SearchToolbar({
             }}
           />
 
-          {/* Categories Tab */}
-          <Tab
-            key={0}
-            value={0}
-            disableRipple
-            label={
-              <Chip
-                size="small"
-                icon={<CategoryIcon sx={{ fontSize: '16px' }} />}
-                label={'Categories'}
-                onClick={() => setOpenCategoriesDrawer(true)}
-                sx={{
-                  color: darkMode ? '#007B55 !important' : '#5569ff !important',
-                  borderRadius: '4px',
-                  height: '24px',
-                  '& .MuiChip-label': {
-                    px: 1
-                  }
-                }}
-              />
-            }
-            style={{
-              paddingLeft: 0,
-              paddingRight: 0
-            }}
-          />
-
           {/* New Tokens Tab */}
           <Tab
             disableRipple
@@ -463,10 +590,37 @@ export default function SearchToolbar({
                   onFilterName({ target: { value: '' } });
                   router.push({
                     pathname: '/',
-                    query: { sort: 'dateon', order: 'desc' }
+                    query: { sortBy: 'dateon', sortType: 'desc' }
                   });
                 }}
                 sx={{
+                  borderRadius: '4px',
+                  height: '24px',
+                  '& .MuiChip-label': {
+                    px: 1
+                  }
+                }}
+              />
+            }
+            style={{
+              paddingLeft: 0,
+              paddingRight: 0
+            }}
+          />
+
+          {/* Categories Tab */}
+          <Tab
+            key={0}
+            value={0}
+            disableRipple
+            label={
+              <Chip
+                size="small"
+                icon={<CategoryIcon sx={{ fontSize: '16px' }} />}
+                label={'Categories'}
+                onClick={() => setOpenCategoriesDrawer(true)}
+                sx={{
+                  color: darkMode ? '#007B55 !important' : '#5569ff !important',
                   borderRadius: '4px',
                   height: '24px',
                   '& .MuiChip-label': {
