@@ -73,15 +73,21 @@ const APILabel = styled('a')(({ theme }) => ({
   textDecoration: 'none',
   marginLeft: theme.spacing(1),
   backgroundColor: alpha(theme.palette.primary.main, 0.3),
-  padding: '3px 8px',
-  borderRadius: '4px',
+  padding: '4px 12px',
+  borderRadius: '8px',
   display: 'flex',
   alignItems: 'center',
   gap: '4px',
+  minHeight: '32px',
+  transition: 'all 0.2s ease-in-out',
   '&:hover': {
     backgroundColor: alpha(theme.palette.primary.main, 0.2),
     textDecoration: 'none',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transform: 'translateY(-1px)'
+  },
+  '&:active': {
+    transform: 'translateY(0)'
   }
 }));
 
