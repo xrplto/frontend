@@ -39,12 +39,10 @@ const History = ({ account }) => {
           bgcolor: theme.palette.background.default,
           boxShadow: 3,
           '&::-webkit-scrollbar': {
-            width: '8px'
+            display: 'none'
           },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: theme.palette.primary.main,
-            borderRadius: '4px'
-          }
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none'
         }}
       >
         {filter === 'token' ? <DeFiHistory account={account} /> : <NFTHistory account={account} />}
