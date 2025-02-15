@@ -264,6 +264,7 @@ function PriceChart({ token }) {
         events: {
           afterSetExtremes: handleAfterSetExtremes
         },
+        height: '80%',
         plotLines: [
           {
             width: 1,
@@ -286,8 +287,8 @@ function PriceChart({ token }) {
         labels: {
           enabled: false
         },
-        top: '70%',
-        height: '30%',
+        top: '82%',
+        height: '18%',
         offset: 0,
         lineWidth: 0,
         gridLineWidth: 0,
