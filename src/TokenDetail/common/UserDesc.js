@@ -51,6 +51,7 @@ import link45deg from '@iconify/icons-bi/link-45deg';
 import linkExternal from '@iconify/icons-charm/link-external';
 import paperIcon from '@iconify/icons-akar-icons/paper';
 import copyIcon from '@iconify/icons-ph/copy';
+import chartLineUp from '@iconify/icons-ph/chart-line-up';
 // import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
 // import listCheck from '@iconify/icons-ci/list-check';
 import blackholeIcon from '@iconify/icons-arcticons/blackhole';
@@ -249,6 +250,8 @@ const getOriginIcon = (origin) => {
       return <StorefrontIcon sx={{ fontSize: 'inherit', color: '#B72136' }} />;
     case 'Magnetic X':
       return <ElectricBoltIcon sx={{ fontSize: 'inherit', color: '#7635DC' }} />;
+    case 'xrp.fun':
+      return <Icon icon={chartLineUp} style={{ fontSize: 'inherit', color: '#00AB55' }} />;
     default:
       return <AutoAwesomeIcon sx={{ fontSize: 'inherit', color: '#637381' }} />;
   }

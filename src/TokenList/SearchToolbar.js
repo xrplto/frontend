@@ -52,6 +52,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 // Iconify
 import { Icon } from '@iconify/react';
 import searchFill from '@iconify/icons-eva/search-fill';
+import chartLineUp from '@iconify/icons-ph/chart-line-up';
 
 // Context
 import { useContext } from 'react';
@@ -843,6 +844,24 @@ export default function SearchToolbar({
             <Stack direction="row" spacing={1} alignItems="center">
               <StorefrontIcon sx={{ fontSize: '16px', color: '#B72136' }} />
               <span>XPmarket</span>
+            </Stack>
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleTokenOptionSelect('/view/xrp-fun')}
+            sx={{
+              backgroundColor:
+                router.query.view === 'xrp-fun'
+                  ? darkMode
+                    ? 'rgba(0, 171, 85, 0.16)'
+                    : 'rgba(0, 123, 85, 0.08)'
+                  : 'transparent',
+              color:
+                router.query.view === 'xrp-fun' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
+            }}
+          >
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Icon icon={chartLineUp} style={{ fontSize: '16px', color: '#00AB55' }} />
+              <span>xrp.fun</span>
             </Stack>
           </MenuItem>
         </Menu>
