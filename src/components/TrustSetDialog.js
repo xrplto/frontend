@@ -739,9 +739,89 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                   sx={{
                     minWidth: '120px',
                     height: '44px',
-                    borderRadius: 1.5,
+                    borderRadius: '12px',
                     textTransform: 'none',
-                    padding: '8px 22px'
+                    padding: '8px 22px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    background: (theme) => `linear-gradient(45deg, 
+                      ${theme.palette.mode === 'dark' ? '#000000' : '#ffffff'} 0%, 
+                      ${alpha(theme.palette.mode === 'dark' ? '#000000' : '#ffffff', 0.9)} 25%,
+                      ${alpha(theme.palette.mode === 'dark' ? '#1a1a1a' : '#f5f5f5', 0.95)} 50%,
+                      ${alpha(theme.palette.mode === 'dark' ? '#000000' : '#ffffff', 0.9)} 75%,
+                      ${theme.palette.mode === 'dark' ? '#000000' : '#ffffff'} 100%)`,
+                    backgroundSize: '200% 200%',
+                    animation: 'gradient 5s ease infinite',
+                    border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.5)}`,
+                    color: (theme) =>
+                      theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.main,
+                    boxShadow: (theme) => `
+                      0 0 5px ${alpha(theme.palette.primary.main, 0.2)},
+                      0 0 10px ${alpha(theme.palette.primary.main, 0.1)}
+                    `,
+                    '@keyframes gradient': {
+                      '0%': {
+                        backgroundPosition: '0% 50%'
+                      },
+                      '50%': {
+                        backgroundPosition: '100% 50%'
+                      },
+                      '100%': {
+                        backgroundPosition: '0% 50%'
+                      }
+                    },
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '-50%',
+                      left: '-50%',
+                      width: '200%',
+                      height: '200%',
+                      background: (theme) =>
+                        `radial-gradient(circle, ${alpha(
+                          theme.palette.primary.light,
+                          0.1
+                        )} 0%, transparent 70%)`,
+                      animation: 'rotate 4s linear infinite',
+                      opacity: 0,
+                      transition: 'opacity 0.3s ease'
+                    },
+                    '@keyframes rotate': {
+                      '0%': {
+                        transform: 'rotate(0deg)'
+                      },
+                      '100%': {
+                        transform: 'rotate(360deg)'
+                      }
+                    },
+                    '&:hover': {
+                      transform: 'translateY(-2px) scale(1.02)',
+                      background: (theme) => `linear-gradient(45deg, 
+                        ${theme.palette.mode === 'dark' ? '#000000' : '#ffffff'} 0%, 
+                        ${alpha(theme.palette.mode === 'dark' ? '#000000' : '#ffffff', 0.95)} 25%,
+                        ${alpha(theme.palette.mode === 'dark' ? '#1a1a1a' : '#f5f5f5', 1)} 50%,
+                        ${alpha(theme.palette.mode === 'dark' ? '#000000' : '#ffffff', 0.95)} 75%,
+                        ${theme.palette.mode === 'dark' ? '#000000' : '#ffffff'} 100%)`,
+                      border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.7)}`,
+                      boxShadow: (theme) => `
+                        0 0 8px ${alpha(theme.palette.primary.main, 0.3)},
+                        0 0 15px ${alpha(theme.palette.primary.main, 0.15)}
+                      `,
+                      '&::before': {
+                        opacity: 1
+                      }
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)'
+                    },
+                    '&.Mui-disabled': {
+                      background: (theme) =>
+                        theme.palette.mode === 'dark'
+                          ? alpha('#000000', 0.5)
+                          : alpha('#ffffff', 0.5),
+                      border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.2)}`,
+                      boxShadow: 'none'
+                    }
                   }}
                 >
                   Copy Link
