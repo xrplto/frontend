@@ -180,6 +180,99 @@ function FTokenRow({
 
   const memoizedToken = useMemo(() => token, [token]);
 
+  const percentageCellStyle = useMemo(
+    () => ({
+      width: '70px',
+      minWidth: '70px',
+      padding: isMobile ? '1px 2px' : '2px 3px',
+      '& .MuiTypography-root': {
+        textAlign: 'right',
+        width: '100%'
+      }
+    }),
+    [isMobile]
+  );
+
+  const tableRowStyle = useMemo(
+    () => ({
+      '&:hover': {
+        '& .MuiTableCell-root': {
+          backgroundColor: darkMode ? '#232326 !important' : '#D9DCE0 !important'
+        },
+        cursor: 'pointer'
+      },
+      '& .MuiTypography-root': {
+        fontSize: isMobile ? '11px' : '12px'
+      },
+      '& .MuiTableCell-root': {
+        padding: isMobile ? '1px 1px' : '1px 2px',
+        whiteSpace: 'nowrap',
+        '&:not(:first-child)': {
+          paddingLeft: '4px'
+        }
+      }
+    }),
+    [darkMode, isMobile]
+  );
+
+  const stickyCellStyles = useMemo(
+    () => ({
+      first: {
+        position: 'sticky',
+        zIndex: 1001,
+        left: 0,
+        background: darkMode ? '#000000' : '#FFFFFF',
+        width: '20px',
+        minWidth: '20px',
+        padding: '1px'
+      },
+      second: {
+        position: 'sticky',
+        zIndex: 1001,
+        left: '20px',
+        background: darkMode ? '#000000' : '#FFFFFF',
+        width: '25px',
+        minWidth: '25px',
+        padding: '1px 2px'
+      },
+      third: {
+        p: isMobile ? '1px' : '1px 2px',
+        position: 'sticky',
+        zIndex: 1001,
+        left: isMobile ? '20px' : '45px',
+        background: darkMode ? '#000000' : '#FFFFFF',
+        '&:before': scrollLeft
+          ? {
+              content: "''",
+              boxShadow: 'inset 10px 0 8px -8px #00000026',
+              position: 'absolute',
+              top: '0',
+              right: '0',
+              bottom: '-1px',
+              width: '30px',
+              transform: 'translate(100%)',
+              transition: 'box-shadow .3s',
+              pointerEvents: 'none'
+            }
+          : {}
+      }
+    }),
+    [darkMode, isMobile, scrollLeft]
+  );
+
+  const dateTypographyStyle = useMemo(
+    () => ({
+      fontSize: isMobile ? '0.5rem' : '0.65rem',
+      color: darkMode ? '#666' : '#888',
+      lineHeight: 1,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px',
+      justifyContent: 'flex-end'
+    }),
+    [darkMode, isMobile]
+  );
+
   const handleWatchlistClick = useCallback(
     (e) => {
       e.stopPropagation();
@@ -224,6 +317,16 @@ function FTokenRow({
     holders
   } = memoizedToken;
 
+  const convertedValues = useMemo(
+    () => ({
+      marketCap: marketcap && exchRate ? Decimal.div(marketcap, exchRate).toNumber() : 0,
+      volume: vol24hxrp && exchRate ? Decimal.div(vol24hxrp, exchRate).toNumber() : 0,
+      tvl: tvl && exchRate ? Decimal.div(tvl, exchRate).toNumber() : 0,
+      supplyRate: amount && supply ? Decimal.div(supply, amount).toNumber() * 100 : 0
+    }),
+    [marketcap, vol24hxrp, tvl, amount, supply, exchRate]
+  );
+
   useEffect(() => {
     setPriceColor(getPriceColor(memoizedToken.bearbull));
     const timer = setTimeout(() => {
@@ -234,47 +337,11 @@ function FTokenRow({
   }, [time, memoizedToken.bearbull]);
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-  const convertedMarketCap =
-    marketcap && exchRate ? Decimal.div(marketcap, exchRate).toNumber() : 0;
-  const convertedVolume = vol24hxrp && exchRate ? Decimal.div(vol24hxrp, exchRate).toNumber() : 0;
-  const convertedTVL = tvl && exchRate ? Decimal.div(tvl, exchRate).toNumber() : 0;
   const supplyRate = amount && supply ? Decimal.div(supply, amount).toNumber() * 100 : 0;
 
   return (
-    <TableRow
-      key={id}
-      sx={{
-        '&:hover': {
-          '& .MuiTableCell-root': {
-            backgroundColor: darkMode ? '#232326 !important' : '#D9DCE0 !important'
-          },
-          cursor: 'pointer'
-        },
-        '& .MuiTypography-root': {
-          fontSize: isMobile ? '11px' : '12px'
-        },
-        '& .MuiTableCell-root': {
-          padding: isMobile ? '1px 1px' : '1px 2px',
-          whiteSpace: 'nowrap',
-          '&:not(:first-child)': {
-            paddingLeft: '4px'
-          }
-        }
-      }}
-      onClick={handleRowClick}
-    >
-      <TableCell
-        align="left"
-        style={{
-          position: 'sticky',
-          zIndex: 1001,
-          left: 0,
-          background: darkMode ? '#000000' : '#FFFFFF',
-          width: '20px',
-          minWidth: '20px',
-          padding: '1px'
-        }}
-      >
+    <TableRow key={id} sx={tableRowStyle} onClick={handleRowClick}>
+      <TableCell align="left" style={stickyCellStyles.first}>
         {watchList.includes(md5) ? (
           <Tooltip title="Remove from Watchlist">
             <StarRateIcon
@@ -292,59 +359,37 @@ function FTokenRow({
         )}
       </TableCell>
       {!isMobile && (
-        <TableCell
-          align="left"
-          sx={{
-            position: 'sticky',
-            zIndex: 1001,
-            left: '20px',
-            background: darkMode ? '#000000' : '#FFFFFF',
-            width: '25px',
-            minWidth: '25px',
-            padding: '1px 2px'
-          }}
-        >
+        <TableCell align="left" sx={stickyCellStyles.second}>
           {idx + 1}
         </TableCell>
       )}
-      <TableCell
-        align="left"
-        sx={{
-          p: isMobile ? '1px' : '1px 2px',
-          position: 'sticky',
-          zIndex: 1001,
-          left: isMobile ? '20px' : '45px',
-          background: darkMode ? '#000000' : '#FFFFFF',
-          '&:before': scrollLeft
-            ? {
-                content: "''",
-                boxShadow: 'inset 10px 0 8px -8px #00000026',
-                position: 'absolute',
-                top: '0',
-                right: '0',
-                bottom: '-1px',
-                width: '30px',
-                transform: 'translate(100%)',
-                transition: 'box-shadow .3s',
-                pointerEvents: 'none'
-              }
-            : {}
-        }}
-      >
+      <TableCell align="left" sx={stickyCellStyles.third}>
         <Stack direction="row" alignItems="center" spacing={0.5}>
-          <Box>
+          <Box
+            sx={{
+              width: 32,
+              height: 32,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
             {isAdmin ? (
               <AdminImage
                 src={imgUrl}
                 onClick={handleEditToken}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
                 alt={`${user} ${name} Logo`}
+                width={32}
+                height={32}
               />
             ) : (
               <TokenImage
                 src={imgUrl}
                 onError={(event) => (event.target.src = '/static/alt.webp')}
                 alt={`${user} ${name} Logo`}
+                width={32}
+                height={32}
               />
             )}
           </Box>
@@ -360,7 +405,9 @@ function FTokenRow({
                 sx={{
                   fontWeight: '700',
                   fontSize: isMobile ? '0.7rem' : '0.8rem',
-                  lineHeight: 1
+                  lineHeight: 1,
+                  width: isMobile ? '80px' : '104px',
+                  minWidth: isMobile ? '80px' : '104px'
                 }}
                 color={
                   isOMCF !== 'yes'
@@ -422,18 +469,7 @@ function FTokenRow({
           padding: isMobile ? '1px 2px' : '2px 3px'
         }}
       >
-        <Typography
-          variant="caption"
-          sx={{
-            fontSize: isMobile ? '0.5rem' : '0.65rem',
-            color: darkMode ? '#666' : '#888',
-            lineHeight: 1,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            justifyContent: 'flex-end'
-          }}
-        >
+        <Typography variant="caption" sx={dateTypographyStyle}>
           <CalendarTodayIcon sx={{ fontSize: isMobile ? '10px' : '12px' }} />
           {formatDate(dateon)}
         </Typography>
@@ -449,71 +485,27 @@ function FTokenRow({
           />
         </TransitionTypo>
       </TableCell>
-      <TableCell
-        align="right"
-        sx={{
-          width: '70px',
-          minWidth: '70px',
-          padding: isMobile ? '1px 2px' : '2px 3px',
-          '& .MuiTypography-root': {
-            textAlign: 'right',
-            width: '100%'
-          }
-        }}
-      >
+      <TableCell align="right" sx={percentageCellStyle}>
         <BearBullLabel value={pro5m} variant="h4" />
       </TableCell>
-      <TableCell
-        align="right"
-        sx={{
-          width: '70px',
-          minWidth: '70px',
-          padding: isMobile ? '1px 2px' : '2px 3px',
-          '& .MuiTypography-root': {
-            textAlign: 'right',
-            width: '100%'
-          }
-        }}
-      >
+      <TableCell align="right" sx={percentageCellStyle}>
         <BearBullLabel value={pro1h} variant="h4" />
       </TableCell>
-      <TableCell
-        align="right"
-        sx={{
-          width: '70px',
-          minWidth: '70px',
-          padding: isMobile ? '1px 2px' : '2px 3px',
-          '& .MuiTypography-root': {
-            textAlign: 'right',
-            width: '100%'
-          }
-        }}
-      >
+      <TableCell align="right" sx={percentageCellStyle}>
         <BearBullLabel value={pro24h} variant="h4" />
       </TableCell>
-      <TableCell
-        align="right"
-        sx={{
-          width: '70px',
-          minWidth: '70px',
-          padding: isMobile ? '1px 2px' : '2px 3px',
-          '& .MuiTypography-root': {
-            textAlign: 'right',
-            width: '100%'
-          }
-        }}
-      >
+      <TableCell align="right" sx={percentageCellStyle}>
         <BearBullLabel value={pro7d} variant="h4" />
       </TableCell>
       <TableCell align="right">
         <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
           <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
           <Typography variant="h4" noWrap={!isMobile}>
-            {convertedVolume >= 1000000
-              ? `${(convertedVolume / 1000000).toFixed(1)}M`
-              : convertedVolume >= 1000
-              ? `${(convertedVolume / 1000).toFixed(1)}K`
-              : fNumber(convertedVolume)}
+            {convertedValues.volume >= 1000000
+              ? `${(convertedValues.volume / 1000000).toFixed(1)}M`
+              : convertedValues.volume >= 1000
+              ? `${(convertedValues.volume / 1000).toFixed(1)}K`
+              : fNumber(convertedValues.volume)}
           </Typography>
         </Stack>
       </TableCell>
@@ -530,22 +522,22 @@ function FTokenRow({
         <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
           <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
           <Typography variant="h4" noWrap={!isMobile}>
-            {convertedTVL >= 1000000
-              ? `${(convertedTVL / 1000000).toFixed(1)}M`
-              : convertedTVL >= 1000
-              ? `${(convertedTVL / 1000).toFixed(1)}K`
-              : fNumber(convertedTVL)}
+            {convertedValues.tvl >= 1000000
+              ? `${(convertedValues.tvl / 1000000).toFixed(1)}M`
+              : convertedValues.tvl >= 1000
+              ? `${(convertedValues.tvl / 1000).toFixed(1)}K`
+              : fNumber(convertedValues.tvl)}
           </Typography>
         </Stack>
       </TableCell>
       <TableCell align="right">
         <Typography variant="h4">
           {currencySymbols[activeFiatCurrency]}
-          {convertedMarketCap >= 1000000
-            ? `${(convertedMarketCap / 1000000).toFixed(1)}M`
-            : convertedMarketCap >= 1000
-            ? `${(convertedMarketCap / 1000).toFixed(1)}K`
-            : fNumber(convertedMarketCap)}
+          {convertedValues.marketCap >= 1000000
+            ? `${(convertedValues.marketCap / 1000000).toFixed(1)}M`
+            : convertedValues.marketCap >= 1000
+            ? `${(convertedValues.marketCap / 1000).toFixed(1)}K`
+            : fNumber(convertedValues.marketCap)}
         </Typography>
       </TableCell>
       <TableCell align="right">
@@ -638,7 +630,9 @@ function FTokenRow({
               : supply >= 1000000000
               ? `${(supply / 1000000000).toFixed(2)}B`
               : supply >= 1000000
-              ? `${(supply / 1000000).toFixed(2)}M`
+              ? supply >= 999500000
+                ? `${(supply / 1000000000).toFixed(2)}B`
+                : `${(supply / 1000000).toFixed(2)}M`
               : supply >= 1000
               ? `${(supply / 1000).toFixed(1)}K`
               : fNumber(supply)}{' '}
