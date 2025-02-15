@@ -135,7 +135,7 @@ const XPMarketIcon = (props) => (
 const getOriginIcon = (origin) => {
   switch (origin) {
     case 'FirstLedger':
-      return <OpenInNewIcon sx={{ fontSize: 'inherit', color: '#0C53B7' }} />;
+      return <OpenInNewIcon sx={{ fontSize: 'inherit', color: '#013CFE' }} />;
     case 'XPMarket':
       return <XPMarketIcon sx={{ fontSize: 'inherit', color: '#6D1FEE' }} />;
     case 'Magnetic X':
