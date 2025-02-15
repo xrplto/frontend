@@ -476,19 +476,115 @@ export default function News() {
 
           {totalPages > 1 && (
             <Stack spacing={2} alignItems="center" sx={{ mt: 4, mb: 2 }}>
-              <Pagination
-                count={totalPages}
-                page={currentPage}
-                onChange={handlePageChange}
-                color="primary"
-                size="large"
-                showFirstButton
-                showLastButton
-              />
-              <Typography variant="caption" color="text.secondary">
-                Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredNews.length)} of{' '}
-                {filteredNews.length} articles
-              </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: 'background.paper',
+                  boxShadow: 1
+                }}
+              >
+                <IconButton
+                  onClick={() => handlePageChange(null, 1)}
+                  disabled={currentPage === 1}
+                  sx={{
+                    '&:hover': { backgroundColor: 'primary.lighter' },
+                    color: currentPage === 1 ? 'text.disabled' : 'primary.main'
+                  }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M18.41 16.59L13.82 12L18.41 7.41L17 6L11 12L17 18L18.41 16.59Z"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M12.41 16.59L7.82 12L12.41 7.41L11 6L5 12L11 18L12.41 16.59Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </IconButton>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                  size="large"
+                  siblingCount={1}
+                  boundaryCount={1}
+                  sx={{
+                    '& .MuiPaginationItem-root': {
+                      borderRadius: 1,
+                      margin: '0 2px',
+                      '&:hover': {
+                        backgroundColor: 'primary.lighter'
+                      },
+                      '&.Mui-selected': {
+                        backgroundColor: 'primary.main',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        '&:hover': {
+                          backgroundColor: 'primary.dark'
+                        }
+                      }
+                    }
+                  }}
+                />
+                <IconButton
+                  onClick={() => handlePageChange(null, totalPages)}
+                  disabled={currentPage === totalPages}
+                  sx={{
+                    '&:hover': { backgroundColor: 'primary.lighter' },
+                    color: currentPage === totalPages ? 'text.disabled' : 'primary.main'
+                  }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M5.59 7.41L10.18 12L5.59 16.59L7 18L13 12L7 6L5.59 7.41Z"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M11.59 7.41L16.18 12L11.59 16.59L13 18L19 12L13 6L11.59 7.41Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </IconButton>
+              </Box>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  color: 'text.secondary',
+                  fontSize: '0.875rem'
+                }}
+              >
+                <Typography variant="body2">
+                  Showing{' '}
+                  <Box component="span" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                    {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredNews.length)}
+                  </Box>{' '}
+                  of{' '}
+                  <Box component="span" sx={{ fontWeight: 'bold' }}>
+                    {filteredNews.length}
+                  </Box>{' '}
+                  articles
+                </Typography>
+              </Box>
             </Stack>
           )}
         </Container>
