@@ -69,7 +69,7 @@ export default function PriceStatistics({ token }) {
     name,
     amount,
     exch,
-    maxMin24h,
+    maxMin24h = [0, 0],
     pro24h,
     p24h,
     vol24h,
@@ -237,26 +237,18 @@ export default function PriceStatistics({ token }) {
                 prepend={currencySymbols[activeFiatCurrency]}
                 number={fNumber(
                   Decimal.mul(
-                    Decimal.mul(maxMin24h[1], metrics.USD),
-                    1 / metrics[activeFiatCurrency]
+                    Decimal.mul(maxMin24h?.[1] || 0, metrics?.USD || 1),
+                    1 / (metrics?.[activeFiatCurrency] || 1)
                   )
                 )}
               />{' '}
               /{' '}
               <NumberTooltip
                 prepend={currencySymbols[activeFiatCurrency]}
-                // number={fNumber(
-                //   activeFiatCurrency === 'USD'
-                //     ? maxMin24h[1]
-                //     : Decimal.mul(
-                //         Decimal.div(maxMin24h[0], metrics.USD),
-                //         1 / metrics[activeFiatCurrency]
-                //       )
-                // )}
                 number={fNumber(
                   Decimal.mul(
-                    Decimal.mul(maxMin24h[0], metrics.USD),
-                    1 / metrics[activeFiatCurrency]
+                    Decimal.mul(maxMin24h?.[0] || 0, metrics?.USD || 1),
+                    1 / (metrics?.[activeFiatCurrency] || 1)
                   )
                 )}
               />

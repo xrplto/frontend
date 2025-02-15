@@ -210,8 +210,8 @@ export default function Description({
     priceChangePercentage24h: strPro24h,
     priceChangePercentage7d: vpro7d,
     fiatChange24h: p24h,
-    maxPrice24h: maxMin24h.max,
-    minPrice24h: maxMin24h.min,
+    maxPrice24h: maxMin24h?.max || 0,
+    minPrice24h: maxMin24h?.min || 0,
     tradingVolume24h: {
       '@type': 'MonetaryAmount',
       currency: 'XRP',

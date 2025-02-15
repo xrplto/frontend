@@ -69,6 +69,12 @@ export default function LowHighBar24H({ token }) {
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency } = React.useContext(AppContext);
+
+  // Return early if token or maxMin24h is not available
+  if (!token || !token.maxMin24h) {
+    return null;
+  }
+
   const { maxMin24h, usd } = token;
   const min = maxMin24h[1];
   const max = maxMin24h[0];
