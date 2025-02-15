@@ -152,7 +152,17 @@ const getOriginIcon = (origin) => {
         />
       );
     case 'xrp.fun':
-      return <Icon icon={chartLineUp} style={{ fontSize: 'inherit', color: '#00AB55' }} />;
+      return (
+        <Icon
+          icon={chartLineUp}
+          style={{
+            fontSize: 'inherit',
+            color: '#B72136',
+            backgroundColor: '#fff',
+            borderRadius: '2px'
+          }}
+        />
+      );
     default:
       return <AutoAwesomeIcon sx={{ fontSize: 'inherit', color: '#637381' }} />;
   }
