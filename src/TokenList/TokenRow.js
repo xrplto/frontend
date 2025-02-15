@@ -15,7 +15,8 @@ import {
   Box,
   LinearProgress,
   Table,
-  TableBody
+  TableBody,
+  SvgIcon
 } from '@mui/material';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
@@ -113,12 +114,21 @@ const formatDate = (dateString) => {
   return `${days}d ${hours}h`;
 };
 
+// Add XPMarket icon component
+const XPMarketIcon = (props) => (
+  <SvgIcon {...props} viewBox="0 0 32 32">
+    <path d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z" />
+    <path d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z" />
+    <path d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z" />
+  </SvgIcon>
+);
+
 const getOriginIcon = (origin) => {
   switch (origin) {
     case 'FirstLedger':
       return <OpenInNewIcon sx={{ fontSize: 'inherit', color: '#0C53B7' }} />;
     case 'XPMarket':
-      return <StorefrontIcon sx={{ fontSize: 'inherit', color: '#B72136' }} />;
+      return <XPMarketIcon sx={{ fontSize: 'inherit', color: '#B72136' }} />;
     case 'Magnetic X':
       return <ElectricBoltIcon sx={{ fontSize: 'inherit', color: '#7635DC' }} />;
     case 'xrp.fun':
