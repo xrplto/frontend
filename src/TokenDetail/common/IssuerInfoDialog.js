@@ -30,6 +30,7 @@ import {
 import { tableCellClasses } from '@mui/material/TableCell';
 
 import CloseIcon from '@mui/icons-material/Close';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -49,10 +50,14 @@ const IssuerDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(1px)',
   WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
   '& .MuiDialogContent-root': {
-    padding: theme.spacing(2)
+    padding: theme.spacing(3),
+    minWidth: { xs: '100%', sm: 400 } // Add minimum width
   },
   '& .MuiDialogActions-root': {
     padding: theme.spacing(1)
+  },
+  '& .MuiPaper-root': {
+    borderRadius: theme.spacing(2) // More rounded corners
   }
 }));
 
@@ -91,8 +96,6 @@ const BlackTypography = withStyles({
     color: '#B72136',
     borderRadius: '6px',
     border: '0.1em solid #B72136',
-    //fontSize: '0.5rem',
-    // lineHeight: '1',
     paddingLeft: '8px',
     paddingRight: '8px',
     paddingTop: '6px',
@@ -107,27 +110,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
 
   const { issuer, name, user, currency, md5, ext, issuer_info } = token;
 
-  // const imgUrl = `/static/tokens/${md5}.${ext}`;
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
-
-  // passwordSpent
-  // requireDestTag   | YES
-  // requireAuth      | YES
-  // depositAuth      | YES
-  // disallowXRP      | YES
-  // disableMaster    | YES
-  // noFreeze         | YES
-  // globalFreeze     | YES
-  // defaultRipple    | YES
-
-  // blackholed       | YES
-
-  // emailHash=C2C2097ADA6046F0EF8FFECD07AFC676,
-  // walletLocator
-  // messageKey
-  // domain=nftfightercat01.xrpl-art.work             | YES
-  // transferRate                                     | YES
-  // tickSize                                         | YES
 
   const info = issuer_info || {};
 
@@ -137,17 +120,20 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
 
   return (
     <>
-      <IssuerDialog
-        fullScreen={fullScreen}
-        onClose={handleClose}
-        open={open}
-        sx={{ zIndex: 1302 }}
-        // hideBackdrop={true}
-      >
+      <IssuerDialog fullScreen={fullScreen} onClose={handleClose} open={open} sx={{ zIndex: 1302 }}>
         <IssuerInfoDialogTitle id="customized-dialog-title" onClose={handleClose}>
           <Stack direction="row" alignItems="center">
-            <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ mr: 1 }} />
-
+            <Avatar
+              alt={`${user} ${name} Logo`}
+              src={imgUrl}
+              variant="rounded"
+              sx={{
+                mr: 1,
+                width: 40,
+                height: 40,
+                borderRadius: 2
+              }}
+            />
             <Stack>
               <Typography variant="token" color="primary">
                 {name}
@@ -158,167 +144,160 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
         </IssuerInfoDialogTitle>
 
         <DialogContent>
-          <Stack spacing={0} sx={{ pl: 1, pr: 1, pb: 3 }}>
-            <Stack direction="row" alignItems="center">
-              <Label variant="subtitle2" noWrap></Label>
-              <Link
-                underline="none"
-                color="primary"
-                target="_blank"
-                href={`https://bithomp.com/explorer/${issuer}`}
-                rel="noreferrer noopener nofollow"
-              >
-                {issuer}
-              </Link>
-              <CopyToClipboard text={issuer} onCopy={() => openSnackbar('Copied!', 'success')}>
-                <Tooltip title={'Click to copy'}>
-                  <IconButton>
-                    <Icon icon={copyIcon} />
-                  </IconButton>
-                </Tooltip>
-              </CopyToClipboard>
+          <Stack spacing={2.5} sx={{ px: 1 }}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
+                Issuer:
+              </Label>
+              <Stack direction="row" alignItems="center" spacing={0.5} sx={{ flex: 1 }}>
+                <Link
+                  underline="hover"
+                  target="_blank"
+                  href={`https://bithomp.com/explorer/${issuer}`}
+                  rel="noreferrer noopener nofollow"
+                  sx={{
+                    flex: 1,
+                    fontFamily: 'monospace',
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                    p: 0.5,
+                    borderRadius: 0.5,
+                    color: 'text.secondary',
+                    '&:hover': {
+                      color: 'primary.main'
+                    }
+                  }}
+                >
+                  <Typography variant="body2" noWrap>
+                    {issuer}
+                  </Typography>
+                </Link>
+                <CopyToClipboard
+                  text={issuer}
+                  onCopy={() => openSnackbar('Address copied!', 'success')}
+                >
+                  <Tooltip title="Copy address">
+                    <IconButton size="small">
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </CopyToClipboard>
+              </Stack>
             </Stack>
 
-            <Stack direction="row" alignItems="center">
-              <Typography variant="s7" noWrap>
-                {currency}
-              </Typography>
-              <CopyToClipboard text={currency} onCopy={() => openSnackbar('Copied!', 'success')}>
-                <Tooltip title={'Click to copy'}>
-                  <IconButton>
-                    <Icon icon={copyIcon} />
-                  </IconButton>
-                </Tooltip>
-              </CopyToClipboard>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
+                Currency:
+              </Label>
+              <Stack direction="row" alignItems="center" spacing={0.5}>
+                <Label
+                  variant="body2"
+                  noWrap
+                  sx={{
+                    fontWeight: 600,
+                    color: 'primary.main',
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                    p: 0.5,
+                    borderRadius: 0.5
+                  }}
+                >
+                  {currency}
+                </Label>
+                <CopyToClipboard
+                  text={currency}
+                  onCopy={() => openSnackbar('Currency code copied!', 'success')}
+                >
+                  <Tooltip title="Copy currency code">
+                    <IconButton size="small">
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </CopyToClipboard>
+              </Stack>
             </Stack>
 
             {info.blackholed && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-                <BlackTypography variant="s11">
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                sx={{
+                  bgcolor: (theme) => alpha(theme.palette.error.main, 0.08),
+                  p: 1.5,
+                  borderRadius: 1
+                }}
+              >
+                <Typography variant="body2" color="error.main">
                   This account is BLACKHOLED. It can not issue more tokens.
-                </BlackTypography>
+                </Typography>
               </Stack>
             )}
 
             {info.domain && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }}>
-                <Typography variant="s17">Domain:</Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
+                  Domain:
+                </Label>
                 <Link
-                  underline="always"
+                  underline="hover"
                   color="inherit"
                   target="_blank"
                   href={
                     info.domain.startsWith('https://') ? `${info.domain}` : `https://${info.domain}`
                   }
                   rel="noreferrer noopener nofollow"
+                  sx={{
+                    color: 'primary.main',
+                    '&:hover': {
+                      opacity: 0.8
+                    }
+                  }}
                 >
-                  <Typography variant="s18">{info.domain}</Typography>
+                  <Typography variant="body2">{info.domain}</Typography>
                 </Link>
               </Stack>
             )}
 
-            {info.tickSize && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }}>
-                <Link
-                  underline="always"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://xrpl.org/ticksize.html`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Typography variant="s17">Tick Size:</Typography>
-                </Link>
-                <Typography variant="s18">{info.tickSize}</Typography>
-              </Stack>
-            )}
-
-            {info.globalFreeze && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }}>
-                <Typography variant="s17">Global Freeze:</Typography>
-                <Link
-                  underline="always"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://xrpl.org/freezes.html`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Typography variant="s18">Freeze</Typography>
-                </Link>
-              </Stack>
-            )}
-
-            {info.requireAuth && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }}>
-                <Typography variant="s17">Token auth:</Typography>
-                <Typography variant="s18">required</Typography>
-              </Stack>
-            )}
-
-            {info.disableMaster && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }}>
-                <Typography variant="s17">Disable Master:</Typography>
-                <Typography variant="s18">Disallowed</Typography>
-              </Stack>
-            )}
-
-            {info.depositAuth && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }}>
-                <Typography variant="s17">Deposit auth:</Typography>
-                <Link
-                  underline="always"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://xrpl.org/depositauth.html`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Typography variant="s18">enabled</Typography>
-                </Link>
-              </Stack>
-            )}
-
-            {info.requireDestTag && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }}>
-                <Typography variant="s17">Destination tag:</Typography>
-                <Typography variant="s18">required</Typography>
-              </Stack>
-            )}
-
-            {info.disallowXRP && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }}>
-                <Typography variant="s17">Receiving XRP:</Typography>
-                <Typography variant="s18">disabled</Typography>
-              </Stack>
-            )}
-
-            {info.transferRate && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }}>
-                <Typography variant="s17">Transfer fee:</Typography>
-                <Typography variant="s18">
-                  {fNumber(new Decimal(info.transferRate).sub(1).mul(100).toNumber())} %
-                </Typography>
-              </Stack>
-            )}
-
-            {info.noFreeze && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }}>
-                <Typography variant="s17">No freeze:</Typography>
-                <Link
-                  underline="always"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://xrpl.org/freezes.html`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Typography variant="s18">true</Typography>
-                </Link>
-              </Stack>
-            )}
-
-            {info.defaultRipple && (
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1.5 }}>
-                <Typography variant="s17">Rippling:</Typography>
-                <Typography variant="s18">enabled</Typography>
-              </Stack>
+            {Object.entries({
+              tickSize: 'Tick Size',
+              globalFreeze: 'Global Freeze',
+              requireAuth: 'Token Auth',
+              disableMaster: 'Disable Master',
+              depositAuth: 'Deposit Auth',
+              requireDestTag: 'Destination Tag',
+              disallowXRP: 'Receiving XRP',
+              transferRate: 'Transfer Fee',
+              noFreeze: 'No Freeze',
+              defaultRipple: 'Rippling'
+            }).map(
+              ([key, label]) =>
+                info[key] && (
+                  <Stack key={key} direction="row" spacing={1} alignItems="center">
+                    <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
+                      {label}:
+                    </Label>
+                    <Typography variant="body2" sx={{ color: 'text.primary' }}>
+                      {key === 'transferRate'
+                        ? `${fNumber(new Decimal(info[key]).sub(1).mul(100).toNumber())}%`
+                        : key === 'tickSize'
+                        ? info[key]
+                        : key === 'globalFreeze'
+                        ? 'Freeze'
+                        : key === 'requireAuth'
+                        ? 'Required'
+                        : key === 'disableMaster'
+                        ? 'Disallowed'
+                        : key === 'depositAuth'
+                        ? 'Enabled'
+                        : key === 'requireDestTag'
+                        ? 'Required'
+                        : key === 'disallowXRP'
+                        ? 'Disabled'
+                        : key === 'noFreeze'
+                        ? 'True'
+                        : 'Enabled'}
+                    </Typography>
+                  </Stack>
+                )
             )}
           </Stack>
         </DialogContent>
