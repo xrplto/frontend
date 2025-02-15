@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Button, Stack, Typography, Input, IconButton, Box } from '@mui/material';
-import { styled, useTheme, keyframes } from '@mui/material/styles';
+import { styled, useTheme, keyframes, alpha } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
 import exchangeIcon from '@iconify/icons-uil/exchange';
 import swapIcon from '@iconify/icons-uil/sync'; // Import an icon for swap
@@ -132,9 +132,91 @@ const ExchangeButton = styled(Button)(
   ({ theme }) => `
     width: 100%;
     max-width: 600px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: linear-gradient(45deg, 
+      #000000 0%, 
+      ${alpha('#000000', 0.9)} 25%,
+      ${alpha('#1a1a1a', 0.95)} 50%,
+      ${alpha('#000000', 0.9)} 75%,
+      #000000 100%);
+    background-size: 200% 200%;
+    animation: gradient 5s ease infinite;
+    border: 1px solid ${alpha(theme.palette.primary.main, 0.2)};
+    box-shadow: 
+      0 0 5px ${alpha(theme.palette.primary.main, 0.2)},
+      0 0 10px ${alpha(theme.palette.primary.main, 0.1)};
+
+    @keyframes gradient {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, ${alpha(
+        theme.palette.primary.main,
+        0.08
+      )} 0%, transparent 70%);
+      animation: rotate 4s linear infinite;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    @keyframes rotate {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    &:hover {
+      transform: translateY(-2px) scale(1.02);
+      background: linear-gradient(45deg, 
+        #000000 0%, 
+        ${alpha('#000000', 0.95)} 25%,
+        ${alpha('#1a1a1a', 1)} 50%,
+        ${alpha('#000000', 0.95)} 75%,
+        #000000 100%);
+      border: 1px solid ${alpha(theme.palette.primary.main, 0.3)};
+      box-shadow: 
+        0 0 8px ${alpha(theme.palette.primary.main, 0.3)},
+        0 0 15px ${alpha(theme.palette.primary.main, 0.15)};
+
+      &::before {
+        opacity: 1;
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &.Mui-disabled {
+      background: ${alpha('#000000', 0.5)};
+      border: 1px solid ${alpha(theme.palette.primary.main, 0.1)};
+      box-shadow: none;
+    }
+
     @media (max-width: 600px) {
-        margin-left: 10px;
-        margin-right: 10px;
+      margin-left: 10px;
+      margin-right: 10px;
     }
 `
 );
@@ -980,6 +1062,81 @@ const App = ({ token }) => {
         onClick={toggleSwap}
         fullWidth
         startIcon={<Icon icon={showSwap ? hideIcon : swapIcon} />}
+        sx={{
+          position: 'relative',
+          overflow: 'hidden',
+          borderRadius: '12px',
+          transition: 'all 0.3s ease',
+          background: (theme) => `linear-gradient(45deg, 
+            #000000 0%, 
+            ${alpha('#000000', 0.9)} 25%,
+            ${alpha('#1a1a1a', 0.95)} 50%,
+            ${alpha('#000000', 0.9)} 75%,
+            #000000 100%)`,
+          backgroundSize: '200% 200%',
+          animation: 'gradient 5s ease infinite',
+          color: '#fff',
+          border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+          boxShadow: (theme) => `
+            0 0 5px ${alpha(theme.palette.primary.main, 0.2)},
+            0 0 10px ${alpha(theme.palette.primary.main, 0.1)}
+          `,
+          '@keyframes gradient': {
+            '0%': {
+              backgroundPosition: '0% 50%'
+            },
+            '50%': {
+              backgroundPosition: '100% 50%'
+            },
+            '100%': {
+              backgroundPosition: '0% 50%'
+            }
+          },
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: '-50%',
+            left: '-50%',
+            width: '200%',
+            height: '200%',
+            background: (theme) =>
+              `radial-gradient(circle, ${alpha(
+                theme.palette.primary.main,
+                0.08
+              )} 0%, transparent 70%)`,
+            animation: 'rotate 4s linear infinite',
+            opacity: 0,
+            transition: 'opacity 0.3s ease'
+          },
+          '@keyframes rotate': {
+            '0%': {
+              transform: 'rotate(0deg)'
+            },
+            '100%': {
+              transform: 'rotate(360deg)'
+            }
+          },
+          '&:hover': {
+            transform: 'translateY(-2px) scale(1.02)',
+            background: `linear-gradient(45deg, 
+              #000000 0%, 
+              ${alpha('#000000', 0.95)} 25%,
+              ${alpha('#1a1a1a', 1)} 50%,
+              ${alpha('#000000', 0.95)} 75%,
+              #000000 100%)`,
+            border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+            boxShadow: (theme) => `
+              0 0 8px ${alpha(theme.palette.primary.main, 0.3)},
+              0 0 15px ${alpha(theme.palette.primary.main, 0.15)}
+            `,
+            '&::before': {
+              opacity: 1
+            }
+          },
+          '&:active': {
+            transform: 'translateY(0)'
+          }
+        }}
       >
         {showSwap ? 'Hide Swap' : 'Swap Now'}
       </Button>
