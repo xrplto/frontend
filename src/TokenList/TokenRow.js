@@ -434,14 +434,21 @@ function FTokenRow({
               >
                 {truncate(name, isMobile ? 10 : 13)}
               </Typography>
-              <Stack direction="row" spacing={0.5} alignItems="center">
+              <Stack
+                direction={isMobile ? 'column' : 'row'}
+                spacing={0.5}
+                alignItems={isMobile ? 'flex-start' : 'center'}
+              >
                 <Typography
                   variant="p2"
                   sx={{
                     fontWeight: '600',
                     fontSize: isMobile ? '0.6rem' : '0.75rem',
                     lineHeight: 1.1,
-                    color: darkMode ? '#848E9C' : '#616E85'
+                    color: darkMode ? '#848E9C' : '#616E85',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
                   }}
                   color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
                   noWrap={!isMobile}
