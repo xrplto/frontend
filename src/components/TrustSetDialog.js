@@ -45,7 +45,7 @@ import Decimal from 'decimal.js';
 // Iconify
 import { Icon } from '@iconify/react';
 import copyIcon from '@iconify/icons-fad/copy';
-import Wallet from './Wallet';
+import ConnectWallet from './ConnectWallet';
 import { isInstalled, setTrustline, submitTransaction } from '@gemwallet/api';
 import { enqueueSnackbar } from 'notistack';
 import sdk from '@crossmarkio/sdk';
@@ -725,17 +725,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                   {`${isRemove ? 'Remove' : 'Set'} Trustline`}
                 </Button>
               ) : (
-                <Wallet
-                  style={{
-                    '& .MuiButton-root': {
-                      minWidth: '120px',
-                      height: '44px',
-                      borderRadius: 1.5,
-                      textTransform: 'none',
-                      padding: '8px 22px'
-                    }
-                  }}
-                />
+                <ConnectWallet />
               )}
 
               <CopyToClipboard
