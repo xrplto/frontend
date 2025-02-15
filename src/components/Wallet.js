@@ -122,21 +122,74 @@ export default function Wallet({ style }) {
         direction="row"
         spacing={1}
         sx={{
+          position: 'relative',
+          overflow: 'hidden',
           padding: '4px 12px',
-          borderRadius: '8px',
-          backgroundColor: `${darkMode ? '#007B55' : '#147DFE'}`,
-          transition: 'all 0.2s ease-in-out',
+          borderRadius: '12px',
+          backgroundColor: 'transparent',
+          transition: 'all 0.3s ease',
           display: 'flex',
           alignItems: 'center',
           gap: '4px',
           minHeight: '32px',
-          boxShadow: `0 1px 4px ${darkMode ? 'rgba(0, 123, 85, 0.2)' : 'rgba(20, 125, 254, 0.2)'}`,
+          background: (theme) => `linear-gradient(45deg, 
+            ${theme.palette.primary.main} 0%, 
+            ${alpha(theme.palette.primary.main, 0.8)} 25%,
+            ${alpha(theme.palette.primary.light, 0.9)} 50%,
+            ${alpha(theme.palette.primary.main, 0.8)} 75%,
+            ${theme.palette.primary.main} 100%)`,
+          backgroundSize: '200% 200%',
+          animation: 'gradient 5s ease infinite',
+          boxShadow: (theme) => `
+            0 0 10px ${alpha(theme.palette.primary.main, 0.5)},
+            0 0 20px ${alpha(theme.palette.primary.main, 0.3)},
+            0 0 30px ${alpha(theme.palette.primary.main, 0.2)}
+          `,
+          '@keyframes gradient': {
+            '0%': {
+              backgroundPosition: '0% 50%'
+            },
+            '50%': {
+              backgroundPosition: '100% 50%'
+            },
+            '100%': {
+              backgroundPosition: '0% 50%'
+            }
+          },
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: '-50%',
+            left: '-50%',
+            width: '200%',
+            height: '200%',
+            background: (theme) =>
+              `radial-gradient(circle, ${alpha(
+                theme.palette.primary.light,
+                0.15
+              )} 0%, transparent 70%)`,
+            animation: 'rotate 4s linear infinite',
+            opacity: 0,
+            transition: 'opacity 0.3s ease'
+          },
+          '@keyframes rotate': {
+            '0%': {
+              transform: 'rotate(0deg)'
+            },
+            '100%': {
+              transform: 'rotate(360deg)'
+            }
+          },
           '&:hover': {
-            backgroundColor: `${darkMode ? '#005E46' : '#0E5FBE'}`,
-            transform: 'translateY(-1px)',
-            boxShadow: `0 2px 8px ${
-              darkMode ? 'rgba(0, 123, 85, 0.25)' : 'rgba(20, 125, 254, 0.25)'
-            }`
+            transform: 'translateY(-2px) scale(1.02)',
+            boxShadow: (theme) => `
+              0 0 15px ${alpha(theme.palette.primary.main, 0.6)},
+              0 0 30px ${alpha(theme.palette.primary.main, 0.4)},
+              0 0 45px ${alpha(theme.palette.primary.main, 0.3)}
+            `,
+            '&::before': {
+              opacity: 1
+            }
           },
           '&:active': {
             transform: 'translateY(0)'
@@ -149,7 +202,19 @@ export default function Wallet({ style }) {
           fontSize="small"
           sx={{
             color: '#fff',
-            fontSize: '16px'
+            fontSize: '16px',
+            animation: 'pulse 2s infinite',
+            '@keyframes pulse': {
+              '0%': {
+                transform: 'scale(1)'
+              },
+              '50%': {
+                transform: 'scale(1.1)'
+              },
+              '100%': {
+                transform: 'scale(1)'
+              }
+            }
           }}
         />
         <Typography
