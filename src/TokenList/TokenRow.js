@@ -675,7 +675,9 @@ function FTokenRow({
           pl: '24px !important'
         }}
       >
-        <LoadChart url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`} />
+        <LazyLoadComponent threshold={100} placeholder={<Box sx={{ width: 160, height: 48 }} />}>
+          <LoadChart url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`} />
+        </LazyLoadComponent>
       </TableCell>
       <TableCell
         align="right"
