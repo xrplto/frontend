@@ -681,7 +681,8 @@ function FTokenRow({
           width: '28px',
           minWidth: '28px',
           pr: '24px !important',
-          pl: '24px !important'
+          pl: '24px !important',
+          py: '8px !important'
         }}
       >
         <LazyLoadComponent threshold={100} placeholder={<Box sx={{ width: 160, height: 48 }} />}>
