@@ -21,6 +21,7 @@ import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
 import { Icon } from '@iconify/react';
 import arrowsExchange from '@iconify/icons-gg/arrows-exchange';
+import chartLineUp from '@iconify/icons-ph/chart-line-up';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import LockIcon from '@mui/icons-material/Lock';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -120,6 +121,8 @@ const getOriginIcon = (origin) => {
       return <StorefrontIcon sx={{ fontSize: 'inherit', color: '#B72136' }} />;
     case 'Magnetic X':
       return <ElectricBoltIcon sx={{ fontSize: 'inherit', color: '#7635DC' }} />;
+    case 'xrp.fun':
+      return <Icon icon={chartLineUp} style={{ fontSize: 'inherit', color: '#00AB55' }} />;
     default:
       return <AutoAwesomeIcon sx={{ fontSize: 'inherit', color: '#637381' }} />;
   }
