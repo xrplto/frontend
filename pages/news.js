@@ -120,6 +120,7 @@ export default function News() {
     last30d: { bullish: 0, bearish: 0, neutral: 0 }
   });
   const [sourcesStats, setSourcesStats] = useState({});
+  const [expandedArticles, setExpandedArticles] = useState({});
 
   // Add WebSocket connection
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
@@ -160,6 +161,13 @@ export default function News() {
 
   const handleSourceSelect = (source) => {
     setSelectedSource(source);
+  };
+
+  const toggleArticleExpansion = (articleId) => {
+    setExpandedArticles((prev) => ({
+      ...prev,
+      [articleId]: !prev[articleId]
+    }));
   };
 
   useEffect(() => {
@@ -403,16 +411,18 @@ export default function News() {
                       {article.summary}
                     </Typography>
                     <Divider sx={{ my: 1 }} />
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      {article.articleBody?.split('\n').map(
-                        (paragraph, index) =>
-                          paragraph.trim() && (
-                            <Typography key={index} paragraph sx={{ mb: 0.5 }}>
-                              {paragraph}
-                            </Typography>
-                          )
-                      )}
-                    </Typography>
+                    {expandedArticles[article._id] && (
+                      <Typography variant="body2" sx={{ mb: 1 }}>
+                        {article.articleBody?.split('\n').map(
+                          (paragraph, index) =>
+                            paragraph.trim() && (
+                              <Typography key={index} paragraph sx={{ mb: 0.5 }}>
+                                {paragraph}
+                              </Typography>
+                            )
+                        )}
+                      </Typography>
+                    )}
                     <Box
                       sx={{
                         display: 'flex',
@@ -421,9 +431,26 @@ export default function News() {
                         mt: 1
                       }}
                     >
-                      <Typography variant="caption" color="text.secondary">
-                        {article.sourceName} • {moment(article.pubDate).fromNow()}
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
+                          {article.sourceName} • {moment(article.pubDate).fromNow()}
+                        </Typography>
+                        {article.articleBody && (
+                          <Chip
+                            label={expandedArticles[article._id] ? 'Show Less' : 'Show More'}
+                            size="small"
+                            onClick={() => toggleArticleExpansion(article._id)}
+                            sx={{
+                              cursor: 'pointer',
+                              backgroundColor: 'primary.lighter',
+                              color: 'primary.main',
+                              '&:hover': {
+                                backgroundColor: 'primary.light'
+                              }
+                            }}
+                          />
+                        )}
+                      </Box>
                       <Typography
                         variant="caption"
                         component="a"

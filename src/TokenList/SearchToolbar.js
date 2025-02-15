@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 // Material
 import {
@@ -175,6 +175,13 @@ export default function SearchToolbar({
   const [openCategoriesDrawer, setOpenCategoriesDrawer] = useState(false);
   const [gainersAnchorEl, setGainersAnchorEl] = useState(null);
   const [tokensAnchorEl, setTokensAnchorEl] = useState(null);
+  const [isLoading, setIsLoading] = useState({
+    new: false,
+    gainers: false,
+    mostViewed: false,
+    spotlight: false,
+    trending: false
+  });
 
   // Get current sorting period from URL
   const currentPeriod = router.query.sort;
@@ -203,14 +210,22 @@ export default function SearchToolbar({
     setGainersAnchorEl(null);
   };
 
-  const handleGainersPeriodSelect = (period) => {
-    onFilterName({ target: { value: '' } });
-    router.push({
-      pathname: '/',
-      query: { sort: period, order: 'desc' }
-    });
-    handleGainersClose();
-  };
+  const handleGainersPeriodSelect = useCallback(
+    async (period) => {
+      setIsLoading((prev) => ({ ...prev, gainers: true }));
+      onFilterName({ target: { value: '' } });
+      try {
+        await router.push({
+          pathname: '/',
+          query: { sort: period, order: 'desc' }
+        });
+      } finally {
+        setIsLoading((prev) => ({ ...prev, gainers: false }));
+      }
+      handleGainersClose();
+    },
+    [onFilterName, router]
+  );
 
   const handleTokensClick = (event) => {
     event.preventDefault();
@@ -227,6 +242,82 @@ export default function SearchToolbar({
     router.push(path);
     handleTokensClose();
   };
+
+  // Memoize the handlers to prevent recreating on each render
+  const handleNewClick = useCallback(
+    async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      setIsLoading((prev) => ({ ...prev, new: true }));
+      // Clear filter first
+      onFilterName({ target: { value: '' } });
+
+      try {
+        await router.push({
+          pathname: '/',
+          query: { sort: 'dateon', order: 'desc' }
+        });
+      } finally {
+        setIsLoading((prev) => ({ ...prev, new: false }));
+      }
+    },
+    [onFilterName, router]
+  );
+
+  const handleMostViewedClick = useCallback(
+    async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsLoading((prev) => ({ ...prev, mostViewed: true }));
+      onFilterName({ target: { value: '' } });
+      try {
+        await router.push({
+          pathname: '/',
+          query: { sort: 'views', order: 'desc' }
+        });
+      } finally {
+        setIsLoading((prev) => ({ ...prev, mostViewed: false }));
+      }
+    },
+    [onFilterName, router]
+  );
+
+  const handleSpotlightClick = useCallback(
+    async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsLoading((prev) => ({ ...prev, spotlight: true }));
+      onFilterName({ target: { value: '' } });
+      try {
+        await router.push({
+          pathname: '/',
+          query: { sort: 'assessmentScore', order: 'desc' }
+        });
+      } finally {
+        setIsLoading((prev) => ({ ...prev, spotlight: false }));
+      }
+    },
+    [onFilterName, router]
+  );
+
+  const handleTrendingClick = useCallback(
+    async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsLoading((prev) => ({ ...prev, trending: true }));
+      onFilterName({ target: { value: '' } });
+      try {
+        await router.push({
+          pathname: '/',
+          query: { sort: 'trendingScore', order: 'desc' }
+        });
+      } finally {
+        setIsLoading((prev) => ({ ...prev, trending: false }));
+      }
+    },
+    [onFilterName, router]
+  );
 
   const ShadowContent = styled('div')(
     ({ theme }) => `
@@ -417,17 +508,17 @@ export default function SearchToolbar({
             label={
               <Chip
                 size="small"
-                icon={<LocalFireDepartmentIcon sx={{ fontSize: '16px' }} />}
+                icon={
+                  <LocalFireDepartmentIcon
+                    sx={{
+                      fontSize: '16px',
+                      animation: isLoading.trending ? 'spin 1s linear infinite' : 'none'
+                    }}
+                  />
+                }
                 label={'Trending'}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onFilterName({ target: { value: '' } });
-                  router.push({
-                    pathname: '/',
-                    query: { sort: 'trendingScore', order: 'desc' }
-                  });
-                }}
+                onClick={handleTrendingClick}
+                disabled={isLoading.trending}
                 sx={{
                   borderRadius: '4px',
                   height: '24px',
@@ -453,7 +544,12 @@ export default function SearchToolbar({
                   },
                   '& .MuiChip-label': {
                     px: 1
-                  }
+                  },
+                  '@keyframes spin': {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg)' }
+                  },
+                  opacity: isLoading.trending ? 0.7 : 1
                 }}
               />
             }
@@ -469,17 +565,17 @@ export default function SearchToolbar({
             label={
               <Chip
                 size="small"
-                icon={<SearchIcon sx={{ fontSize: '16px' }} />}
+                icon={
+                  <SearchIcon
+                    sx={{
+                      fontSize: '16px',
+                      animation: isLoading.spotlight ? 'spin 1s linear infinite' : 'none'
+                    }}
+                  />
+                }
                 label={'Spotlight'}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onFilterName({ target: { value: '' } });
-                  router.push({
-                    pathname: '/',
-                    query: { sort: 'assessmentScore', order: 'desc' }
-                  });
-                }}
+                onClick={handleSpotlightClick}
+                disabled={isLoading.spotlight}
                 sx={{
                   borderRadius: '4px',
                   height: '24px',
@@ -505,7 +601,12 @@ export default function SearchToolbar({
                   },
                   '& .MuiChip-label': {
                     px: 1
-                  }
+                  },
+                  '@keyframes spin': {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg)' }
+                  },
+                  opacity: isLoading.spotlight ? 0.7 : 1
                 }}
               />
             }
@@ -521,17 +622,17 @@ export default function SearchToolbar({
             label={
               <Chip
                 size="small"
-                icon={<VisibilityIcon sx={{ fontSize: '16px' }} />}
+                icon={
+                  <VisibilityIcon
+                    sx={{
+                      fontSize: '16px',
+                      animation: isLoading.mostViewed ? 'spin 1s linear infinite' : 'none'
+                    }}
+                  />
+                }
                 label={'Most Viewed'}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onFilterName({ target: { value: '' } });
-                  router.push({
-                    pathname: '/',
-                    query: { sort: 'views', order: 'desc' }
-                  });
-                }}
+                onClick={handleMostViewedClick}
+                disabled={isLoading.mostViewed}
                 sx={{
                   borderRadius: '4px',
                   height: '24px',
@@ -552,7 +653,12 @@ export default function SearchToolbar({
                   },
                   '& .MuiChip-label': {
                     px: 1
-                  }
+                  },
+                  '@keyframes spin': {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg)' }
+                  },
+                  opacity: isLoading.mostViewed ? 0.7 : 1
                 }}
               />
             }
@@ -568,13 +674,21 @@ export default function SearchToolbar({
             label={
               <Chip
                 size="small"
-                icon={<TrendingUpIcon sx={{ fontSize: '16px' }} />}
+                icon={
+                  <TrendingUpIcon
+                    sx={{
+                      fontSize: '16px',
+                      animation: isLoading.gainers ? 'spin 1s linear infinite' : 'none'
+                    }}
+                  />
+                }
                 label={
                   currentPeriod && periodLabels[currentPeriod]
                     ? `Gainers ${periodLabels[currentPeriod]}`
                     : 'Gainers'
                 }
                 onClick={handleGainersClick}
+                disabled={isLoading.gainers}
                 sx={{
                   borderRadius: '4px',
                   height: '24px',
@@ -600,7 +714,12 @@ export default function SearchToolbar({
                   },
                   '& .MuiChip-label': {
                     px: 1
-                  }
+                  },
+                  '@keyframes spin': {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg)' }
+                  },
+                  opacity: isLoading.gainers ? 0.7 : 1
                 }}
               />
             }
@@ -616,17 +735,17 @@ export default function SearchToolbar({
             label={
               <Chip
                 size="small"
-                icon={<FiberNewIcon sx={{ fontSize: '16px' }} />}
+                icon={
+                  <FiberNewIcon
+                    sx={{
+                      fontSize: '16px',
+                      animation: isLoading.new ? 'spin 1s linear infinite' : 'none'
+                    }}
+                  />
+                }
                 label={'New'}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onFilterName({ target: { value: '' } });
-                  router.push({
-                    pathname: '/',
-                    query: { sort: 'dateon', order: 'desc' }
-                  });
-                }}
+                onClick={handleNewClick}
+                disabled={isLoading.new}
                 sx={{
                   borderRadius: '4px',
                   height: '24px',
@@ -648,7 +767,12 @@ export default function SearchToolbar({
                   },
                   '& .MuiChip-label': {
                     px: 1
-                  }
+                  },
+                  '@keyframes spin': {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg)' }
+                  },
+                  opacity: isLoading.new ? 0.7 : 1
                 }}
               />
             }
