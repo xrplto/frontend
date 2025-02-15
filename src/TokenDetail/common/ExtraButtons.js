@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Icon } from '@iconify/react';
 import calendarIcon from '@iconify/icons-ph/calendar-thin';
+import { alpha } from '@mui/material/styles';
 
 // Material
 import {
@@ -117,7 +118,103 @@ export default function ExtraButtons({ token }) {
             color={`${isRemove ? 'error' : 'primary'}`}
             size="small"
             disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
-            sx={{ minWidth: 'auto', px: 1 }}
+            sx={{
+              minWidth: 'auto',
+              px: 2,
+              py: 0.75,
+              position: 'relative',
+              overflow: 'hidden',
+              borderRadius: '12px',
+              backgroundColor: 'transparent',
+              transition: 'all 0.3s ease',
+              background: (theme) => `linear-gradient(45deg, 
+                ${isRemove ? theme.palette.error.main : theme.palette.primary.main} 0%, 
+                ${alpha(isRemove ? theme.palette.error.main : theme.palette.primary.main, 0.8)} 25%,
+                ${alpha(
+                  isRemove ? theme.palette.error.light : theme.palette.primary.light,
+                  0.9
+                )} 50%,
+                ${alpha(isRemove ? theme.palette.error.main : theme.palette.primary.main, 0.8)} 75%,
+                ${isRemove ? theme.palette.error.main : theme.palette.primary.main} 100%)`,
+              backgroundSize: '200% 200%',
+              animation: 'gradient 5s ease infinite',
+              boxShadow: (theme) => `
+                0 0 10px ${alpha(
+                  isRemove ? theme.palette.error.main : theme.palette.primary.main,
+                  0.5
+                )},
+                0 0 20px ${alpha(
+                  isRemove ? theme.palette.error.main : theme.palette.primary.main,
+                  0.3
+                )},
+                0 0 30px ${alpha(
+                  isRemove ? theme.palette.error.main : theme.palette.primary.main,
+                  0.2
+                )}
+              `,
+              '@keyframes gradient': {
+                '0%': {
+                  backgroundPosition: '0% 50%'
+                },
+                '50%': {
+                  backgroundPosition: '100% 50%'
+                },
+                '100%': {
+                  backgroundPosition: '0% 50%'
+                }
+              },
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: '-50%',
+                left: '-50%',
+                width: '200%',
+                height: '200%',
+                background: (theme) =>
+                  `radial-gradient(circle, ${alpha(
+                    isRemove ? theme.palette.error.light : theme.palette.primary.light,
+                    0.15
+                  )} 0%, transparent 70%)`,
+                animation: 'rotate 4s linear infinite',
+                opacity: 0,
+                transition: 'opacity 0.3s ease'
+              },
+              '@keyframes rotate': {
+                '0%': {
+                  transform: 'rotate(0deg)'
+                },
+                '100%': {
+                  transform: 'rotate(360deg)'
+                }
+              },
+              '&:hover': {
+                transform: 'translateY(-2px) scale(1.02)',
+                boxShadow: (theme) => `
+                  0 0 15px ${alpha(
+                    isRemove ? theme.palette.error.main : theme.palette.primary.main,
+                    0.6
+                  )},
+                  0 0 30px ${alpha(
+                    isRemove ? theme.palette.error.main : theme.palette.primary.main,
+                    0.4
+                  )},
+                  0 0 45px ${alpha(
+                    isRemove ? theme.palette.error.main : theme.palette.primary.main,
+                    0.3
+                  )}
+                `,
+                '&::before': {
+                  opacity: 1
+                }
+              },
+              '&:active': {
+                transform: 'translateY(0)'
+              },
+              '&.Mui-disabled': {
+                background: (theme) => theme.palette.action.disabledBackground,
+                boxShadow: 'none'
+              }
+            }}
           >
             {`${isRemove ? 'Remove' : 'Set'} Trustline`}
           </Button>
