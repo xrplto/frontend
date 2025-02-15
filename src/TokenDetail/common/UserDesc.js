@@ -249,7 +249,18 @@ const getOriginIcon = (origin) => {
     case 'XPMarket':
       return <StorefrontIcon sx={{ fontSize: 'inherit', color: '#B72136' }} />;
     case 'Magnetic X':
-      return <ElectricBoltIcon sx={{ fontSize: 'inherit', color: '#7635DC' }} />;
+      return (
+        <Box
+          component="img"
+          src="/magneticx-logo.webp"
+          alt="Magnetic X"
+          sx={{
+            width: '12px',
+            height: '12px',
+            objectFit: 'contain'
+          }}
+        />
+      );
     case 'xrp.fun':
       return <Icon icon={chartLineUp} style={{ fontSize: 'inherit', color: '#00AB55' }} />;
     default:

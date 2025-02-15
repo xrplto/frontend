@@ -824,7 +824,16 @@ export default function SearchToolbar({
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
-              <ElectricBoltIcon sx={{ fontSize: '16px', color: '#7635DC' }} />
+              <Box
+                component="img"
+                src="/magneticx-logo.webp"
+                alt="Magnetic X"
+                sx={{
+                  width: '16px',
+                  height: '16px',
+                  objectFit: 'contain'
+                }}
+              />
               <span>Magnetic X</span>
             </Stack>
           </MenuItem>
