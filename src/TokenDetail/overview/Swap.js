@@ -136,15 +136,25 @@ const ExchangeButton = styled(Button)(
     overflow: hidden;
     border-radius: 12px;
     transition: all 0.3s ease;
-    background: linear-gradient(45deg, 
-      #000000 0%, 
-      ${alpha('#000000', 0.9)} 25%,
-      ${alpha('#1a1a1a', 0.95)} 50%,
-      ${alpha('#000000', 0.9)} 75%,
-      #000000 100%);
+    background: ${
+      theme.palette.mode === 'dark'
+        ? `linear-gradient(45deg, 
+        #000000 0%, 
+        ${alpha('#000000', 0.9)} 25%,
+        ${alpha('#1a1a1a', 0.95)} 50%,
+        ${alpha('#000000', 0.9)} 75%,
+        #000000 100%)`
+        : `linear-gradient(45deg, 
+        #ffffff 0%, 
+        ${alpha('#ffffff', 0.9)} 25%,
+        ${alpha('#f5f5f5', 0.95)} 50%,
+        ${alpha('#ffffff', 0.9)} 75%,
+        #ffffff 100%)`
+    };
     background-size: 200% 200%;
     animation: gradient 5s ease infinite;
     border: 1px solid ${alpha(theme.palette.primary.light, 0.5)};
+    color: ${theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.main};
     box-shadow: 
       0 0 5px ${alpha(theme.palette.primary.main, 0.2)},
       0 0 10px ${alpha(theme.palette.primary.main, 0.1)};
@@ -188,12 +198,21 @@ const ExchangeButton = styled(Button)(
 
     &:hover {
       transform: translateY(-2px) scale(1.02);
-      background: linear-gradient(45deg, 
-        #000000 0%, 
-        ${alpha('#000000', 0.95)} 25%,
-        ${alpha('#1a1a1a', 1)} 50%,
-        ${alpha('#000000', 0.95)} 75%,
-        #000000 100%);
+      background: ${
+        theme.palette.mode === 'dark'
+          ? `linear-gradient(45deg, 
+          #000000 0%, 
+          ${alpha('#000000', 0.95)} 25%,
+          ${alpha('#1a1a1a', 1)} 50%,
+          ${alpha('#000000', 0.95)} 75%,
+          #000000 100%)`
+          : `linear-gradient(45deg, 
+          #ffffff 0%, 
+          ${alpha('#ffffff', 0.95)} 25%,
+          ${alpha('#f5f5f5', 1)} 50%,
+          ${alpha('#ffffff', 0.95)} 75%,
+          #ffffff 100%)`
+      };
       border: 1px solid ${alpha(theme.palette.primary.light, 0.7)};
       box-shadow: 
         0 0 8px ${alpha(theme.palette.primary.main, 0.3)},
@@ -209,7 +228,7 @@ const ExchangeButton = styled(Button)(
     }
 
     &.Mui-disabled {
-      background: ${alpha('#000000', 0.5)};
+      background: ${theme.palette.mode === 'dark' ? alpha('#000000', 0.5) : alpha('#ffffff', 0.5)};
       border: 1px solid ${alpha(theme.palette.primary.light, 0.2)};
       box-shadow: none;
     }
@@ -1067,15 +1086,23 @@ const App = ({ token }) => {
           overflow: 'hidden',
           borderRadius: '12px',
           transition: 'all 0.3s ease',
-          background: (theme) => `linear-gradient(45deg, 
-            #000000 0%, 
-            ${alpha('#000000', 0.9)} 25%,
-            ${alpha('#1a1a1a', 0.95)} 50%,
-            ${alpha('#000000', 0.9)} 75%,
-            #000000 100%)`,
+          background: (theme) =>
+            theme.palette.mode === 'dark'
+              ? `linear-gradient(45deg, 
+              #000000 0%, 
+              ${alpha('#000000', 0.9)} 25%,
+              ${alpha('#1a1a1a', 0.95)} 50%,
+              ${alpha('#000000', 0.9)} 75%,
+              #000000 100%)`
+              : `linear-gradient(45deg, 
+              #ffffff 0%, 
+              ${alpha('#ffffff', 0.9)} 25%,
+              ${alpha('#f5f5f5', 0.95)} 50%,
+              ${alpha('#ffffff', 0.9)} 75%,
+              #ffffff 100%)`,
           backgroundSize: '200% 200%',
           animation: 'gradient 5s ease infinite',
-          color: '#fff',
+          color: (theme) => (theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.main),
           border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.5)}`,
           boxShadow: (theme) => `
             0 0 5px ${alpha(theme.palette.primary.main, 0.2)},
@@ -1118,12 +1145,20 @@ const App = ({ token }) => {
           },
           '&:hover': {
             transform: 'translateY(-2px) scale(1.02)',
-            background: `linear-gradient(45deg, 
-              #000000 0%, 
-              ${alpha('#000000', 0.95)} 25%,
-              ${alpha('#1a1a1a', 1)} 50%,
-              ${alpha('#000000', 0.95)} 75%,
-              #000000 100%)`,
+            background: (theme) =>
+              theme.palette.mode === 'dark'
+                ? `linear-gradient(45deg, 
+                #000000 0%, 
+                ${alpha('#000000', 0.95)} 25%,
+                ${alpha('#1a1a1a', 1)} 50%,
+                ${alpha('#000000', 0.95)} 75%,
+                #000000 100%)`
+                : `linear-gradient(45deg, 
+                #ffffff 0%, 
+                ${alpha('#ffffff', 0.95)} 25%,
+                ${alpha('#f5f5f5', 1)} 50%,
+                ${alpha('#ffffff', 0.95)} 75%,
+                #ffffff 100%)`,
             border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.7)}`,
             boxShadow: (theme) => `
               0 0 8px ${alpha(theme.palette.primary.main, 0.3)},
