@@ -450,11 +450,19 @@ function FTokenRow({
                       <Tooltip title="Blackholed Issuer">
                         <LockIcon sx={{ fontSize: isMobile ? '12px' : '14px', color: '#007B55' }} />
                       </Tooltip>
-                      <Tooltip title="Burned Liquidity Pool">
-                        <LocalFireDepartmentIcon
-                          sx={{ fontSize: isMobile ? '12px' : '14px', color: '#B72136' }}
-                        />
-                      </Tooltip>
+                      {origin === 'xrp.fun' ? (
+                        <Tooltip title="Liquidity Pool Not Burned">
+                          <ElectricBoltIcon
+                            sx={{ fontSize: isMobile ? '12px' : '14px', color: '#B72136' }}
+                          />
+                        </Tooltip>
+                      ) : (
+                        <Tooltip title="Burned Liquidity Pool">
+                          <LocalFireDepartmentIcon
+                            sx={{ fontSize: isMobile ? '12px' : '14px', color: '#2065D1' }}
+                          />
+                        </Tooltip>
+                      )}
                     </>
                   )}
                 </Stack>
