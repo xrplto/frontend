@@ -23,6 +23,7 @@ import {
   TextField
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 // Context
 import { useContext } from 'react';
@@ -568,7 +569,17 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
       >
         <TrustDialogTitle id="customized-dialog-title" onClose={handleClose}>
           <Stack direction="row" alignItems="center">
-            <Avatar alt={`${user} ${name} Logo`} src={imgUrl} sx={{ mr: 1 }} />
+            <Avatar
+              alt={`${user} ${name} Logo`}
+              src={imgUrl}
+              variant="rounded"
+              sx={{
+                mr: 1,
+                width: 40,
+                height: 40,
+                borderRadius: 2
+              }}
+            />
             <Stack>
               <Typography variant="token" color="primary">
                 {name}
@@ -586,49 +597,69 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
               <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
                 Issuer:
               </Label>
-              <Label
-                variant="body2"
-                noWrap
-                sx={{
-                  flex: 1,
-                  fontFamily: 'monospace',
-                  bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
-                  p: 0.5,
-                  borderRadius: 0.5
-                }}
-              >
-                {issuer}
-              </Label>
-              <Link
-                underline="none"
-                color="inherit"
-                target="_blank"
-                href={`https://bithomp.com/explorer/${issuer}`}
-                rel="noreferrer noopener nofollow"
-              >
-                <IconButton edge="end" aria-label="bithomp" size="small">
-                  <Avatar
-                    alt="Bithomp Explorer"
-                    src="/static/bithomp.ico"
-                    sx={{ width: 16, height: 16 }}
-                  />
-                </IconButton>
-              </Link>
+              <Stack direction="row" alignItems="center" spacing={0.5} sx={{ flex: 1 }}>
+                <Link
+                  underline="hover"
+                  target="_blank"
+                  href={`https://bithomp.com/explorer/${issuer}`}
+                  rel="noreferrer noopener nofollow"
+                  sx={{
+                    flex: 1,
+                    fontFamily: 'monospace',
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                    p: 0.5,
+                    borderRadius: 0.5,
+                    color: 'text.secondary',
+                    '&:hover': {
+                      color: 'primary.main'
+                    }
+                  }}
+                >
+                  <Typography variant="body2" noWrap>
+                    {issuer}
+                  </Typography>
+                </Link>
+                <CopyToClipboard
+                  text={issuer}
+                  onCopy={() => openSnackbar('Address copied!', 'success')}
+                >
+                  <Tooltip title="Copy address">
+                    <IconButton size="small">
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </CopyToClipboard>
+              </Stack>
             </Stack>
             <Stack direction="row" alignItems="center" spacing={1}>
               <Label variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
                 Currency:
               </Label>
-              <Label
-                variant="body2"
-                noWrap
-                sx={{
-                  fontWeight: 600,
-                  color: 'primary.main'
-                }}
-              >
-                {currency}
-              </Label>
+              <Stack direction="row" alignItems="center" spacing={0.5}>
+                <Label
+                  variant="body2"
+                  noWrap
+                  sx={{
+                    fontWeight: 600,
+                    color: 'primary.main',
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+                    p: 0.5,
+                    borderRadius: 0.5
+                  }}
+                >
+                  {currency}
+                </Label>
+                <CopyToClipboard
+                  text={currency}
+                  onCopy={() => openSnackbar('Currency code copied!', 'success')}
+                >
+                  <Tooltip title="Copy currency code">
+                    <IconButton size="small">
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </CopyToClipboard>
+              </Stack>
             </Stack>
             <TextField
               fullWidth
@@ -681,18 +712,30 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                   variant="contained"
                   onClick={isRemove ? handleRemoveTrust : handleSetTrust}
                   color={isRemove ? 'error' : 'primary'}
-                  size="large" // Made buttons larger
+                  size="large"
                   sx={{
-                    minWidth: 140,
+                    minWidth: '120px',
+                    height: '44px',
                     borderRadius: 1.5,
                     textTransform: 'none',
-                    fontWeight: 600
+                    fontWeight: 600,
+                    padding: '8px 22px'
                   }}
                 >
                   {`${isRemove ? 'Remove' : 'Set'} Trustline`}
                 </Button>
               ) : (
-                <Wallet />
+                <Wallet
+                  style={{
+                    '& .MuiButton-root': {
+                      minWidth: '120px',
+                      height: '44px',
+                      borderRadius: 1.5,
+                      textTransform: 'none',
+                      padding: '8px 22px'
+                    }
+                  }}
+                />
               )}
 
               <CopyToClipboard
@@ -704,9 +747,11 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                   color="primary"
                   size="large"
                   sx={{
-                    minWidth: 120,
+                    minWidth: '120px',
+                    height: '44px',
                     borderRadius: 1.5,
-                    textTransform: 'none'
+                    textTransform: 'none',
+                    padding: '8px 22px'
                   }}
                 >
                   Copy Link

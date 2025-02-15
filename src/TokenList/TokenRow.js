@@ -31,9 +31,10 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import EditIcon from '@mui/icons-material/Edit';
 
 import { AppContext } from 'src/AppContext';
-import TokenMoreMenu from './TokenMoreMenu';
 import BearBullLabel from 'src/components/BearBullLabel';
 import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
 import NumberTooltip from 'src/components/NumberTooltip';
@@ -298,6 +299,14 @@ function FTokenRow({
   const handleEditToken = useCallback(() => {
     setEditToken(memoizedToken);
   }, [setEditToken, memoizedToken]);
+
+  const handleSetTrustline = useCallback(
+    (e) => {
+      e.stopPropagation();
+      setTrustToken(memoizedToken);
+    },
+    [setTrustToken, memoizedToken]
+  );
 
   const {
     id,
@@ -687,12 +696,37 @@ function FTokenRow({
           padding: '1px !important'
         }}
       >
-        <TokenMoreMenu
-          token={memoizedToken}
-          admin={isAdmin}
-          setEditToken={setEditToken}
-          setTrustToken={setTrustToken}
-        />
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <Tooltip title="Set Trustline">
+            <AddCircleOutlineIcon
+              onClick={handleSetTrustline}
+              sx={{
+                cursor: 'pointer',
+                fontSize: '20px',
+                '&:hover': {
+                  color: theme.palette.primary.main
+                }
+              }}
+            />
+          </Tooltip>
+          {isAdmin && (
+            <Tooltip title="Edit Token">
+              <EditIcon
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleEditToken();
+                }}
+                sx={{
+                  cursor: 'pointer',
+                  fontSize: '20px',
+                  '&:hover': {
+                    color: theme.palette.warning.main
+                  }
+                }}
+              />
+            </Tooltip>
+          )}
+        </Stack>
       </TableCell>
     </TableRow>
   );
