@@ -144,7 +144,7 @@ const ExchangeButton = styled(Button)(
       #000000 100%);
     background-size: 200% 200%;
     animation: gradient 5s ease infinite;
-    border: 1px solid ${alpha(theme.palette.primary.main, 0.2)};
+    border: 1px solid ${alpha(theme.palette.primary.light, 0.5)};
     box-shadow: 
       0 0 5px ${alpha(theme.palette.primary.main, 0.2)},
       0 0 10px ${alpha(theme.palette.primary.main, 0.1)};
@@ -169,8 +169,8 @@ const ExchangeButton = styled(Button)(
       width: 200%;
       height: 200%;
       background: radial-gradient(circle, ${alpha(
-        theme.palette.primary.main,
-        0.08
+        theme.palette.primary.light,
+        0.1
       )} 0%, transparent 70%);
       animation: rotate 4s linear infinite;
       opacity: 0;
@@ -194,7 +194,7 @@ const ExchangeButton = styled(Button)(
         ${alpha('#1a1a1a', 1)} 50%,
         ${alpha('#000000', 0.95)} 75%,
         #000000 100%);
-      border: 1px solid ${alpha(theme.palette.primary.main, 0.3)};
+      border: 1px solid ${alpha(theme.palette.primary.light, 0.7)};
       box-shadow: 
         0 0 8px ${alpha(theme.palette.primary.main, 0.3)},
         0 0 15px ${alpha(theme.palette.primary.main, 0.15)};
@@ -210,7 +210,7 @@ const ExchangeButton = styled(Button)(
 
     &.Mui-disabled {
       background: ${alpha('#000000', 0.5)};
-      border: 1px solid ${alpha(theme.palette.primary.main, 0.1)};
+      border: 1px solid ${alpha(theme.palette.primary.light, 0.2)};
       box-shadow: none;
     }
 
@@ -1076,7 +1076,7 @@ const App = ({ token }) => {
           backgroundSize: '200% 200%',
           animation: 'gradient 5s ease infinite',
           color: '#fff',
-          border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+          border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.5)}`,
           boxShadow: (theme) => `
             0 0 5px ${alpha(theme.palette.primary.main, 0.2)},
             0 0 10px ${alpha(theme.palette.primary.main, 0.1)}
@@ -1101,8 +1101,8 @@ const App = ({ token }) => {
             height: '200%',
             background: (theme) =>
               `radial-gradient(circle, ${alpha(
-                theme.palette.primary.main,
-                0.08
+                theme.palette.primary.light,
+                0.1
               )} 0%, transparent 70%)`,
             animation: 'rotate 4s linear infinite',
             opacity: 0,
@@ -1124,7 +1124,7 @@ const App = ({ token }) => {
               ${alpha('#1a1a1a', 1)} 50%,
               ${alpha('#000000', 0.95)} 75%,
               #000000 100%)`,
-            border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+            border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.7)}`,
             boxShadow: (theme) => `
               0 0 8px ${alpha(theme.palette.primary.main, 0.3)},
               0 0 15px ${alpha(theme.palette.primary.main, 0.15)}
