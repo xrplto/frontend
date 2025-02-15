@@ -671,7 +671,8 @@ function FTokenRow({
           px: '0 !important',
           width: '28px',
           minWidth: '28px',
-          pr: '4px !important'
+          pr: '24px !important',
+          pl: '24px !important'
         }}
       >
         <LoadChart url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`} />
