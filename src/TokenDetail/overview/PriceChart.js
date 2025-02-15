@@ -302,44 +302,67 @@ function PriceChart({ token }) {
           radius: 2,
           states: {
             hover: {
-              enabled: true
+              enabled: true,
+              radius: 4,
+              lineWidth: 2,
+              lineColor: theme.palette.secondary.main
             }
           }
         },
         lineWidth: 2,
         states: {
           hover: {
-            lineWidth: 3
+            lineWidth: 3,
+            brightness: 0.2
           }
         },
-        fillOpacity: 0.2,
+        fillOpacity: 0.4,
         zoneAxis: 'y'
       },
       series: {
         states: {
           inactive: {
             opacity: 1
+          },
+          hover: {
+            animation: {
+              duration: 300
+            }
           }
         },
         zones: [
           {
             value: mediumValue,
-            color: '#ff6968',
+            color: {
+              linearGradient: { x1: 0, x2: 0, y1: 0, y2: 1 },
+              stops: [
+                [0, theme.palette.error.light],
+                [1, theme.palette.error.dark]
+              ]
+            },
             fillColor: {
               linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
               stops: [
-                [0, 'rgba(255, 105, 104, 0.2)'],
-                [1, 'rgba(255, 105, 104, 0)']
+                [0, `${theme.palette.error.main}40`],
+                [0.5, `${theme.palette.error.light}20`],
+                [1, `${theme.palette.secondary.main}10`]
               ]
             }
           },
           {
-            color: '#94caae',
+            color: {
+              linearGradient: { x1: 0, x2: 0, y1: 0, y2: 1 },
+              stops: [
+                [0, theme.palette.primary.light],
+                [1, theme.palette.primary.dark]
+              ]
+            },
             fillColor: {
               linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
               stops: [
-                [0, 'rgba(148, 202, 174, 0.2)'],
-                [1, 'rgba(148, 202, 174, 0)']
+                [0, `${theme.palette.primary.main}40`],
+                [0.5, `${theme.palette.primary.light}20`],
+                [1, `${theme.palette.secondary.main}10`]
               ]
             }
           }
@@ -350,25 +373,37 @@ function PriceChart({ token }) {
       {
         name: 'Price',
         data: data.map((point) => [point[0], point[1]]),
-        threshold: mediumValue
+        threshold: mediumValue,
+        lineWidth: 2,
+        animation: {
+          duration: 1500
+        }
       },
       {
         type: 'column',
         name: 'Volume',
         data: data.map((point) => [point[0], point[2]]),
         yAxis: 1,
-        color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+        color: {
+          linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+          stops: [
+            [0, darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)'],
+            [1, darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)']
+          ]
+        },
         showInLegend: false
       }
     ],
     tooltip: {
-      backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-      borderRadius: 8,
+      backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+      borderRadius: 12,
       borderWidth: 0,
       shadow: true,
+      animation: true,
       style: {
         color: darkMode ? '#FFF' : '#333',
-        fontSize: '12px'
+        fontSize: '12px',
+        filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.2))'
       },
       formatter: function () {
         const points = this.points;
@@ -382,32 +417,48 @@ function PriceChart({ token }) {
         const prevPoint = pricePoint.series.data[pricePoint.point.index - 1];
         const change = prevPoint ? pricePoint.y - prevPoint.y : 0;
         const changePercent = prevPoint ? (change / prevPoint.y) * 100 : 0;
-        const changeColor = change >= 0 ? '#94caae' : '#ff6968';
+        const changeColor = change >= 0 ? theme.palette.primary.main : theme.palette.error.main;
 
-        return `<div style="padding: 8px;">
-          <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">
+        return `<div style="padding: 12px; backdrop-filter: blur(8px);">
+          <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; 
+               background: ${
+                 darkMode
+                   ? 'linear-gradient(45deg, #fff, rgba(255,255,255,0.8))'
+                   : 'linear-gradient(45deg, #000, rgba(0,0,0,0.8))'
+               };
+               -webkit-background-clip: text;
+               -webkit-text-fill-color: ${darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'};">
             ${moment(pricePoint.x).format('MMM DD, YYYY HH:mm')}
           </div>
-          <table>
-            <tr><td>Price:</td><td style="text-align: right; padding-left: 10px;">${
-              currencySymbols[activeFiatCurrency]
-            }${fCurrency5(pricePoint.y)}</td></tr>
+          <table style="border-spacing: 4px;">
+            <tr>
+              <td style="opacity: 0.8;">Price:</td>
+              <td style="text-align: right; padding-left: 16px; font-weight: 600;">
+                ${currencySymbols[activeFiatCurrency]}${fCurrency5(pricePoint.y)}
+              </td>
+            </tr>
             ${
               volumePoint
                 ? `
-            <tr><td>Volume:</td><td style="text-align: right; padding-left: 10px;">${fCurrency5(
-              volumePoint.y
-            )}</td></tr>
+            <tr>
+              <td style="opacity: 0.8;">Volume:</td>
+              <td style="text-align: right; padding-left: 16px; font-weight: 600;">
+                ${fCurrency5(volumePoint.y)}
+              </td>
+            </tr>
             `
                 : ''
             }
-            <tr><td colspan="2" style="padding-top: 5px;">
-              <span style="color: ${changeColor};">
-                ${change >= 0 ? '▲' : '▼'} ${fCurrency5(Math.abs(change))} (${changePercent.toFixed(
-          2
-        )}%)
-              </span>
-            </td></tr>
+            <tr>
+              <td colspan="2" style="padding-top: 8px;">
+                <span style="color: ${changeColor}; font-weight: 600; 
+                      text-shadow: 0 0 8px ${changeColor}40;">
+                  ${change >= 0 ? '▲' : '▼'} ${fCurrency5(
+          Math.abs(change)
+        )} (${changePercent.toFixed(2)}%)
+                </span>
+              </td>
+            </tr>
           </table>
         </div>`;
       },
@@ -420,14 +471,15 @@ function PriceChart({ token }) {
   const options2 = {
     plotOptions: {
       candlestick: {
-        color: '#ff6968',
-        lineColor: '#ff6968',
-        upColor: '#94caae',
-        upLineColor: '#94caae',
-        lineWidth: 1,
+        color: theme.palette.error.main,
+        lineColor: theme.palette.error.main,
+        upColor: theme.palette.primary.main,
+        upLineColor: theme.palette.primary.main,
+        lineWidth: 1.5,
         states: {
           hover: {
-            lineWidth: 2
+            lineWidth: 2,
+            brightness: 0.1
           }
         }
       }
