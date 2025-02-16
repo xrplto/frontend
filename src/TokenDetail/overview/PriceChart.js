@@ -338,15 +338,15 @@ function PriceChart({ token }) {
               linearGradient: { x1: 0, x2: 0, y1: 0, y2: 1 },
               stops: [
                 [0, theme.palette.error.light],
-                [1, theme.palette.error.dark]
+                [1, theme.palette.error.main]
               ]
             },
             fillColor: {
               linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
               stops: [
-                [0, `${theme.palette.error.main}40`],
-                [0.5, `${theme.palette.error.light}20`],
-                [1, `${theme.palette.secondary.main}10`]
+                [0, `${theme.palette.error.light}40`],
+                [0.5, `${theme.palette.error.main}20`],
+                [1, `${theme.palette.error.light}10`]
               ]
             }
           },
