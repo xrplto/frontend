@@ -217,22 +217,15 @@ export default function SearchToolbar({
     setGainersAnchorEl(null);
   };
 
-  const handleGainersPeriodSelect = useCallback(
-    async (period) => {
-      setIsLoading((prev) => ({ ...prev, gainers: true }));
-      onFilterName({ target: { value: '' } });
-      try {
-        await router.push({
-          pathname: '/',
-          query: { sort: period, order: 'desc' }
-        });
-      } finally {
-        setIsLoading((prev) => ({ ...prev, gainers: false }));
-      }
+  const handleGainersPeriodSelect = useCallback(async (period) => {
+    setIsLoading((prev) => ({ ...prev, gainers: true }));
+    try {
+      window.location.href = `/?sort=${period}&order=desc`;
+    } finally {
+      setIsLoading((prev) => ({ ...prev, gainers: false }));
       handleGainersClose();
-    },
-    [onFilterName, router]
-  );
+    }
+  }, []);
 
   const handleTokensClick = (event) => {
     event.preventDefault();
@@ -246,101 +239,56 @@ export default function SearchToolbar({
 
   const handleTokenOptionSelect = async (path) => {
     try {
-      // Reset filter
-      onFilterName({ target: { value: '' } });
-
-      // Reset tokens first to clear the display
-      setTokens([]);
-
-      // Reset pagination
-      setPage(0);
-      setRows(100);
-
-      // Navigate to new path
-      await router.push(path);
-
-      // Force a sync update after navigation
-      setSync((prev) => prev + 1);
+      window.location.href = path;
     } finally {
       handleTokensClose();
     }
   };
 
   // Memoize the handlers to prevent recreating on each render
-  const handleNewClick = useCallback(
-    async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+  const handleNewClick = useCallback(async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsLoading((prev) => ({ ...prev, new: true }));
+    try {
+      window.location.href = '/?sort=dateon&order=desc';
+    } finally {
+      setIsLoading((prev) => ({ ...prev, new: false }));
+    }
+  }, []);
 
-      setIsLoading((prev) => ({ ...prev, new: true }));
-      // Clear filter first
-      onFilterName({ target: { value: '' } });
+  const handleMostViewedClick = useCallback(async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsLoading((prev) => ({ ...prev, mostViewed: true }));
+    try {
+      window.location.href = '/?sort=views&order=desc';
+    } finally {
+      setIsLoading((prev) => ({ ...prev, mostViewed: false }));
+    }
+  }, []);
 
-      try {
-        await router.push({
-          pathname: '/',
-          query: { sort: 'dateon', order: 'desc' }
-        });
-      } finally {
-        setIsLoading((prev) => ({ ...prev, new: false }));
-      }
-    },
-    [onFilterName, router]
-  );
+  const handleSpotlightClick = useCallback(async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsLoading((prev) => ({ ...prev, spotlight: true }));
+    try {
+      window.location.href = '/?sort=assessmentScore&order=desc';
+    } finally {
+      setIsLoading((prev) => ({ ...prev, spotlight: false }));
+    }
+  }, []);
 
-  const handleMostViewedClick = useCallback(
-    async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsLoading((prev) => ({ ...prev, mostViewed: true }));
-      onFilterName({ target: { value: '' } });
-      try {
-        await router.push({
-          pathname: '/',
-          query: { sort: 'views', order: 'desc' }
-        });
-      } finally {
-        setIsLoading((prev) => ({ ...prev, mostViewed: false }));
-      }
-    },
-    [onFilterName, router]
-  );
-
-  const handleSpotlightClick = useCallback(
-    async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsLoading((prev) => ({ ...prev, spotlight: true }));
-      onFilterName({ target: { value: '' } });
-      try {
-        await router.push({
-          pathname: '/',
-          query: { sort: 'assessmentScore', order: 'desc' }
-        });
-      } finally {
-        setIsLoading((prev) => ({ ...prev, spotlight: false }));
-      }
-    },
-    [onFilterName, router]
-  );
-
-  const handleTrendingClick = useCallback(
-    async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsLoading((prev) => ({ ...prev, trending: true }));
-      onFilterName({ target: { value: '' } });
-      try {
-        await router.push({
-          pathname: '/',
-          query: { sort: 'trendingScore', order: 'desc' }
-        });
-      } finally {
-        setIsLoading((prev) => ({ ...prev, trending: false }));
-      }
-    },
-    [onFilterName, router]
-  );
+  const handleTrendingClick = useCallback(async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsLoading((prev) => ({ ...prev, trending: true }));
+    try {
+      window.location.href = '/?sort=trendingScore&order=desc';
+    } finally {
+      setIsLoading((prev) => ({ ...prev, trending: false }));
+    }
+  }, []);
 
   const ShadowContent = styled('div')(
     ({ theme }) => `
