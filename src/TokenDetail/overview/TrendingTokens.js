@@ -12,11 +12,13 @@ import {
   TableCell,
   Box,
   useMediaQuery, // Import for media query
-  Tooltip
+  Tooltip,
+  Button
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import StackStyle from 'src/components/StackStyle';
 
 // Context
@@ -180,15 +182,32 @@ const TrendingTokens = () => {
           })}
         </TableBody>
       </Table>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-        <Link
-          color={darkMode ? '#22B14C' : '#3366FF'}
-          underline="none"
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          mt: 2,
+          mb: 1,
+          pr: 1
+        }}
+      >
+        <Button
+          component={Link}
           href={`/?sort=trendingScore&order=desc`}
+          endIcon={<ArrowForwardIcon />}
+          sx={{
+            color: darkMode ? '#22B14C' : '#3366FF',
+            '&:hover': {
+              backgroundColor: darkMode ? 'rgba(34, 177, 76, 0.08)' : 'rgba(51, 102, 255, 0.08)',
+              textDecoration: 'none'
+            },
+            textTransform: 'none',
+            fontWeight: 500
+          }}
         >
-          {'View More >'}
-        </Link>
-      </div>
+          View More
+        </Button>
+      </Box>
     </StackStyle>
   );
 };
