@@ -14,7 +14,9 @@ import {
   InputAdornment,
   IconButton,
   Pagination,
-  Stack
+  Stack,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import moment from 'moment';
@@ -26,19 +28,36 @@ import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
 
 const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
-  // Sort sources by count in descending order
-  const sortedSources = Object.entries(sources).sort(([, a], [, b]) => b - a);
+  const theme = useTheme();
   const [showAll, setShowAll] = useState(false);
-
-  // Show top 12 sources by default
+  const sortedSources = Object.entries(sources).sort(([, a], [, b]) => b - a);
   const displayedSources = showAll ? sortedSources : sortedSources.slice(0, 12);
   const totalSources = sortedSources.length;
   const hiddenCount = totalSources - 12;
 
   return (
-    <Paper sx={{ mb: 3, py: 1.5, px: 2 }}>
+    <Paper
+      sx={{
+        mb: 3,
+        py: 1.5,
+        px: 2,
+        background:
+          theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.9)',
+        backdropFilter: 'blur(10px)',
+        border: `1px solid ${
+          theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+        }`,
+        borderRadius: 2
+      }}
+    >
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+        <Typography
+          variant="subtitle1"
+          sx={{
+            fontWeight: 600,
+            color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'
+          }}
+        >
           News Sources ({totalSources} sources)
         </Typography>
         {totalSources > 12 && (
@@ -48,33 +67,29 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
             onClick={() => setShowAll(!showAll)}
             sx={{
               cursor: 'pointer',
-              backgroundColor: 'primary.lighter',
-              color: 'primary.main',
+              background: theme.palette.primary.main,
+              color: '#fff',
               '&:hover': {
-                backgroundColor: 'primary.light'
+                background: theme.palette.primary.dark
               }
             }}
           />
         )}
       </Box>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
         <Chip
           key="all"
           label="All Sources"
           size="small"
           onClick={() => onSourceSelect(null)}
           sx={{
-            backgroundColor: !selectedSource ? 'primary.main' : 'primary.lighter',
-            color: !selectedSource ? 'white' : 'primary.main',
-            borderColor: 'primary.main',
-            border: '1px solid',
-            height: '24px',
-            '& .MuiChip-label': {
-              px: 1
-            },
+            background: !selectedSource ? theme.palette.primary.main : 'transparent',
+            color: !selectedSource ? '#fff' : theme.palette.primary.main,
+            border: `1px solid ${theme.palette.primary.main}`,
+            height: '26px',
             '&:hover': {
-              backgroundColor: !selectedSource ? 'primary.dark' : 'primary.light',
-              color: 'white'
+              background: !selectedSource ? theme.palette.primary.dark : theme.palette.primary.main,
+              color: '#fff'
             }
           }}
         />
@@ -85,17 +100,16 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
             size="small"
             onClick={() => onSourceSelect(source)}
             sx={{
-              backgroundColor: selectedSource === source ? 'primary.main' : 'primary.lighter',
-              color: selectedSource === source ? 'white' : 'primary.main',
-              borderColor: 'primary.main',
-              border: '1px solid',
-              height: '24px',
-              '& .MuiChip-label': {
-                px: 1
-              },
+              background: selectedSource === source ? theme.palette.primary.main : 'transparent',
+              color: selectedSource === source ? '#fff' : theme.palette.primary.main,
+              border: `1px solid ${theme.palette.primary.main}`,
+              height: '26px',
               '&:hover': {
-                backgroundColor: selectedSource === source ? 'primary.dark' : 'primary.light',
-                color: 'white'
+                background:
+                  selectedSource === source
+                    ? theme.palette.primary.dark
+                    : theme.palette.primary.main,
+                color: '#fff'
               }
             }}
           />
@@ -107,6 +121,7 @@ const SourcesMenu = ({ sources, selectedSource, onSourceSelect }) => {
 
 export default function News() {
   const dispatch = useDispatch();
+  const theme = useTheme();
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -227,13 +242,13 @@ export default function News() {
   const getSentimentColor = (sentiment) => {
     switch (sentiment?.toLowerCase()) {
       case 'bullish':
-        return '#4caf50';
+        return theme.palette.success.main;
       case 'bearish':
-        return '#f44336';
+        return theme.palette.error.main;
       case 'neutral':
-        return '#ff9800';
+        return theme.palette.warning.main;
       default:
-        return '#757575';
+        return theme.palette.grey[500];
     }
   };
 
@@ -255,24 +270,39 @@ export default function News() {
 
     return (
       <Box sx={{ flex: 1, py: 0.5, px: 1 }}>
-        <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+        <Typography variant="subtitle2" sx={{ mb: 0.8, color: 'rgba(255,255,255,0.7)' }}>
           {period}
         </Typography>
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 0.8, flexWrap: 'wrap' }}>
           <Chip
             label={`Bullish ${getPercentage(stats.bullish)}%`}
             size="small"
-            sx={{ backgroundColor: '#4caf50', color: 'white', height: '20px' }}
+            sx={{
+              background: 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)',
+              color: 'white',
+              height: '22px',
+              fontWeight: 500
+            }}
           />
           <Chip
             label={`Bearish ${getPercentage(stats.bearish)}%`}
             size="small"
-            sx={{ backgroundColor: '#f44336', color: 'white', height: '20px' }}
+            sx={{
+              background: 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)',
+              color: 'white',
+              height: '22px',
+              fontWeight: 500
+            }}
           />
           <Chip
             label={`Neutral ${getPercentage(stats.neutral)}%`}
             size="small"
-            sx={{ backgroundColor: '#ff9800', color: 'white', height: '20px' }}
+            sx={{
+              background: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)',
+              color: 'white',
+              height: '22px',
+              fontWeight: 500
+            }}
           />
         </Box>
       </Box>
@@ -306,19 +336,34 @@ export default function News() {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+        background: theme.palette.mode === 'dark' ? '#000' : '#fff'
+      }}
+    >
       <Topbar />
       <Header />
       <Box sx={{ flex: 1 }}>
-        <Container maxWidth="xl" sx={{ py: 2 }}>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 2 }}>
+        <Container maxWidth="xl" sx={{ py: 3 }}>
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{
+              mb: 3,
+              color: theme.palette.primary.main,
+              fontWeight: 600
+            }}
+          >
             Latest XRPL News
           </Typography>
 
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 3 }}>
             <TextField
               fullWidth
-              size="small"
+              size="medium"
               variant="outlined"
               placeholder="Search news by title, summary, or content..."
               value={searchQuery}
@@ -326,19 +371,36 @@ export default function News() {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon />
+                    <SearchIcon
+                      sx={{
+                        color:
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255,255,255,0.5)'
+                            : 'rgba(0,0,0,0.5)'
+                      }}
+                    />
                   </InputAdornment>
                 )
               }}
               sx={{
-                backgroundColor: 'background.paper',
                 '& .MuiOutlinedInput-root': {
+                  backgroundColor:
+                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                  borderRadius: 2,
+                  color: theme.palette.mode === 'dark' ? '#fff' : '#000',
                   '& fieldset': {
-                    borderColor: 'divider'
+                    borderColor:
+                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
                   },
                   '&:hover fieldset': {
-                    borderColor: 'primary.main'
+                    borderColor: theme.palette.primary.main
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: theme.palette.primary.main
                   }
+                },
+                '& .MuiOutlinedInput-input::placeholder': {
+                  color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
                 }
               }}
             />
@@ -350,20 +412,61 @@ export default function News() {
             onSourceSelect={handleSourceSelect}
           />
 
-          <Paper sx={{ mb: 2, p: 1.5 }}>
-            <Typography variant="h6" gutterBottom sx={{ mb: 1 }}>
+          <Paper
+            sx={{
+              mb: 3,
+              p: 2,
+              background:
+                theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.9)',
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${
+                theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+              }`,
+              borderRadius: 2
+            }}
+          >
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{
+                mb: 2,
+                color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
+                fontWeight: 600
+              }}
+            >
               Sentiment Analysis
               {selectedSource && (
-                <Typography component="span" color="text.secondary" sx={{ ml: 1 }}>
+                <Typography
+                  component="span"
+                  sx={{
+                    ml: 1,
+                    color:
+                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
+                  }}
+                >
                   ({selectedSource})
                 </Typography>
               )}
             </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
               <SentimentSummary period="Last 24h" stats={sentimentStats.last24h} />
-              <Divider orientation="vertical" flexItem />
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{
+                  borderColor:
+                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                }}
+              />
               <SentimentSummary period="7d" stats={sentimentStats.last7d} />
-              <Divider orientation="vertical" flexItem />
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{
+                  borderColor:
+                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                }}
+              />
               <SentimentSummary period="30d" stats={sentimentStats.last30d} />
             </Box>
           </Paper>
@@ -376,23 +479,45 @@ export default function News() {
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    transition: 'transform 0.2s',
+                    background:
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(0, 0, 0, 0.6)'
+                        : 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    border: `1px solid ${
+                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                    }`,
+                    borderRadius: 2,
+                    transition: 'all 0.3s ease',
                     '&:hover': {
                       transform: 'translateY(-2px)',
-                      boxShadow: 2
+                      boxShadow:
+                        theme.palette.mode === 'dark'
+                          ? '0 8px 24px rgba(255,255,255,0.1)'
+                          : '0 8px 24px rgba(0,0,0,0.1)',
+                      borderColor: theme.palette.primary.main
                     }
                   }}
                 >
-                  <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                  <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
                     <Box
                       sx={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'flex-start',
-                        mb: 1
+                        mb: 1.5
                       }}
                     >
-                      <Typography variant="subtitle1" component="h2" sx={{ flex: 1 }}>
+                      <Typography
+                        variant="h6"
+                        component="h2"
+                        sx={{
+                          flex: 1,
+                          color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+                          fontWeight: 500,
+                          fontSize: '1.1rem'
+                        }}
+                      >
                         {extractTitle(article.title)}
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -401,22 +526,51 @@ export default function News() {
                           size="small"
                           sx={{
                             backgroundColor: getSentimentColor(article.sentiment),
-                            color: 'white',
-                            height: '20px'
+                            color: '#fff',
+                            height: '22px',
+                            fontWeight: 500
                           }}
                         />
                       </Box>
                     </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        mb: 1.5,
+                        color:
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255,255,255,0.7)'
+                            : 'rgba(0,0,0,0.7)',
+                        lineHeight: 1.6
+                      }}
+                    >
                       {article.summary}
                     </Typography>
-                    <Divider sx={{ my: 1 }} />
+                    <Divider
+                      sx={{
+                        my: 1.5,
+                        borderColor:
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255,255,255,0.1)'
+                            : 'rgba(0,0,0,0.1)'
+                      }}
+                    />
                     {expandedArticles[article._id] && (
-                      <Typography variant="body2" sx={{ mb: 1 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mb: 1.5,
+                          color:
+                            theme.palette.mode === 'dark'
+                              ? 'rgba(255,255,255,0.8)'
+                              : 'rgba(0,0,0,0.8)',
+                          lineHeight: 1.6
+                        }}
+                      >
                         {article.articleBody?.split('\n').map(
                           (paragraph, index) =>
                             paragraph.trim() && (
-                              <Typography key={index} paragraph sx={{ mb: 0.5 }}>
+                              <Typography key={index} paragraph sx={{ mb: 1 }}>
                                 {paragraph}
                               </Typography>
                             )
@@ -431,8 +585,16 @@ export default function News() {
                         mt: 1
                       }}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="caption" color="text.secondary">
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color:
+                              theme.palette.mode === 'dark'
+                                ? 'rgba(255,255,255,0.5)'
+                                : 'rgba(0,0,0,0.5)'
+                          }}
+                        >
                           {article.sourceName} • {moment(article.pubDate).fromNow()}
                         </Typography>
                         {article.articleBody && (
@@ -442,10 +604,12 @@ export default function News() {
                             onClick={() => toggleArticleExpansion(article._id)}
                             sx={{
                               cursor: 'pointer',
-                              backgroundColor: 'primary.lighter',
-                              color: 'primary.main',
+                              backgroundColor: 'transparent',
+                              color: theme.palette.primary.main,
+                              border: `1px solid ${theme.palette.primary.main}`,
                               '&:hover': {
-                                backgroundColor: 'primary.light'
+                                backgroundColor: theme.palette.primary.main,
+                                color: '#fff'
                               }
                             }}
                           />
@@ -458,10 +622,13 @@ export default function News() {
                         target="_blank"
                         rel="noopener noreferrer"
                         sx={{
-                          color: 'primary.main',
+                          color: theme.palette.primary.main,
                           textDecoration: 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
                           '&:hover': {
-                            textDecoration: 'underline'
+                            color: theme.palette.primary.dark
                           }
                         }}
                       >
@@ -483,16 +650,29 @@ export default function News() {
                   gap: 2,
                   p: 2,
                   borderRadius: 2,
-                  backgroundColor: 'background.paper',
-                  boxShadow: 1
+                  background:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(0, 0, 0, 0.6)'
+                      : 'rgba(255, 255, 255, 0.9)',
+                  border: `1px solid ${
+                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                  }`
                 }}
               >
                 <IconButton
                   onClick={() => handlePageChange(null, 1)}
                   disabled={currentPage === 1}
                   sx={{
-                    '&:hover': { backgroundColor: 'primary.lighter' },
-                    color: currentPage === 1 ? 'text.disabled' : 'primary.main'
+                    color:
+                      currentPage === 1
+                        ? theme.palette.mode === 'dark'
+                          ? 'rgba(255,255,255,0.3)'
+                          : 'rgba(0,0,0,0.3)'
+                        : theme.palette.primary.main,
+                    '&:hover': {
+                      backgroundColor:
+                        theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+                    }
                   }}
                 >
                   <svg
@@ -522,68 +702,25 @@ export default function News() {
                   boundaryCount={1}
                   sx={{
                     '& .MuiPaginationItem-root': {
-                      borderRadius: 1,
-                      margin: '0 2px',
-                      '&:hover': {
-                        backgroundColor: 'primary.lighter'
-                      },
+                      color: theme.palette.mode === 'dark' ? '#fff' : '#000',
+                      borderColor:
+                        theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
                       '&.Mui-selected': {
-                        backgroundColor: 'primary.main',
-                        color: 'white',
-                        fontWeight: 'bold',
+                        backgroundColor: theme.palette.primary.main,
+                        color: '#fff',
                         '&:hover': {
-                          backgroundColor: 'primary.dark'
+                          backgroundColor: theme.palette.primary.dark
                         }
+                      },
+                      '&:hover': {
+                        backgroundColor:
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255,255,255,0.1)'
+                            : 'rgba(0,0,0,0.1)'
                       }
                     }
                   }}
                 />
-                <IconButton
-                  onClick={() => handlePageChange(null, totalPages)}
-                  disabled={currentPage === totalPages}
-                  sx={{
-                    '&:hover': { backgroundColor: 'primary.lighter' },
-                    color: currentPage === totalPages ? 'text.disabled' : 'primary.main'
-                  }}
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M5.59 7.41L10.18 12L5.59 16.59L7 18L13 12L7 6L5.59 7.41Z"
-                      fill="currentColor"
-                    />
-                    <path
-                      d="M11.59 7.41L16.18 12L11.59 16.59L13 18L19 12L13 6L11.59 7.41Z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                </IconButton>
-              </Box>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  color: 'text.secondary',
-                  fontSize: '0.875rem'
-                }}
-              >
-                <Typography variant="body2">
-                  Showing{' '}
-                  <Box component="span" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-                    {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredNews.length)}
-                  </Box>{' '}
-                  of{' '}
-                  <Box component="span" sx={{ fontWeight: 'bold' }}>
-                    {filteredNews.length}
-                  </Box>{' '}
-                  articles
-                </Typography>
               </Box>
             </Stack>
           )}
