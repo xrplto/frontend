@@ -129,16 +129,19 @@ export default function PriceDesc({ token }) {
               label={item.label}
               size="small"
               sx={{
-                height: 24,
+                height: 32,
+                minWidth: { xs: 64, sm: 72 },
+                borderWidth: 2,
                 '& .MuiChip-label': {
-                  fontWeight: 600,
-                  px: 0.75,
-                  fontSize: '0.75rem'
+                  fontWeight: 700,
+                  px: 1.5,
+                  fontSize: '0.8125rem',
+                  lineHeight: 1.2
                 },
                 transition: 'all 0.2s ease-in-out',
                 '&:hover': {
-                  transform: 'translateY(-1px)',
-                  boxShadow: theme.shadows[1]
+                  transform: 'translateY(-2px)',
+                  boxShadow: theme.shadows[2]
                 }
               }}
               componentsProps={{
@@ -146,7 +149,8 @@ export default function PriceDesc({ token }) {
                   sx: {
                     ...tooltipStyles,
                     p: 1
-                  }
+                  },
+                  placement: 'top'
                 }
               }}
             />
