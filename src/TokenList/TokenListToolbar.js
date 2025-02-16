@@ -13,8 +13,10 @@ import {
 } from '@mui/material';
 // ----------------------------------------------------------------------
 // Redux
-import { useSelector } from 'react-redux';
-import { selectFilteredCount } from 'src/redux/statusSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectFilteredCount, update_filteredCount } from 'src/redux/statusSlice';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 // ----------------------------------------------------------------------
 const RootStyle = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -30,14 +32,21 @@ const CustomSelect = styled(Select)(({ theme }) => ({
   }
 }));
 
-export default function TokenListToolbar({ rows, setRows, page, setPage }) {
-  const length = useSelector(selectFilteredCount);
+export default function TokenListToolbar({ rows, setRows, page, setPage, tokens }) {
+  const length = tokens?.length || 0;
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  // Update filtered count when tokens change
+  useEffect(() => {
+    dispatch(update_filteredCount({ filteredCount: length }));
+  }, [length, dispatch]);
 
   const num = length / rows;
   let page_count = Math.floor(num);
   if (num % 1 != 0) page_count++;
 
-  const start = page * rows + 1;
+  const start = length > 0 ? page * rows + 1 : 0;
   let end = start + rows - 1;
   if (end > length) end = length;
 

@@ -379,6 +379,10 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
           setShowDate={updateShowDate}
           viewType={viewType}
           setViewType={setViewType}
+          setTokens={setTokens}
+          setPage={setPage}
+          setSync={setSync}
+          sync={sync}
         />
       </Box>
 
@@ -412,7 +416,13 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         </Table>
       </Box>
       <Box sx={{ mt: 1 }}>
-        <TokenListToolbar rows={rows} setRows={updateRows} page={page} setPage={updatePage} />
+        <TokenListToolbar
+          rows={rows}
+          setRows={updateRows}
+          page={page}
+          setPage={updatePage}
+          tokens={tokens}
+        />
       </Box>
     </>
   );

@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import { update_filteredCount } from 'src/redux/statusSlice';
 
 // Material
 import {
@@ -164,9 +166,14 @@ export default function SearchToolbar({
   setShowSlug,
   showDate,
   setShowDate,
-  setViewType
+  setViewType,
+  setTokens,
+  setPage,
+  setSync,
+  sync
 }) {
   const router = useRouter();
+  const dispatch = useDispatch();
   const { accountProfile, openSnackbar, darkMode } = useContext(AppContext);
   const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
   const theme = useTheme();
@@ -237,10 +244,26 @@ export default function SearchToolbar({
     setTokensAnchorEl(null);
   };
 
-  const handleTokenOptionSelect = (path) => {
-    onFilterName({ target: { value: '' } });
-    router.push(path);
-    handleTokensClose();
+  const handleTokenOptionSelect = async (path) => {
+    try {
+      // Reset filter
+      onFilterName({ target: { value: '' } });
+
+      // Reset tokens first to clear the display
+      setTokens([]);
+
+      // Reset pagination
+      setPage(0);
+      setRows(100);
+
+      // Navigate to new path
+      await router.push(path);
+
+      // Force a sync update after navigation
+      setSync((prev) => prev + 1);
+    } finally {
+      handleTokensClose();
+    }
   };
 
   // Memoize the handlers to prevent recreating on each render
