@@ -1034,7 +1034,15 @@ export default function SearchToolbar({
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
-              <Icon icon={chartLineUp} style={{ fontSize: '16px', color: '#00AB55' }} />
+              <Icon
+                icon={chartLineUp}
+                style={{
+                  fontSize: '16px',
+                  color: '#B72136',
+                  backgroundColor: '#fff',
+                  borderRadius: '2px'
+                }}
+              />
               <span>xrp.fun</span>
             </Stack>
           </MenuItem>
