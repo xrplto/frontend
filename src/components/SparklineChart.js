@@ -75,7 +75,7 @@ const SparklineChart = ({ url }) => {
                   cap: 'round'
                 },
                 areaStyle: {
-                  opacity: 0.15,
+                  opacity: 0.04,
                   color: {
                     type: 'linear',
                     x: 0,
