@@ -183,7 +183,10 @@ const ExchangeButton = styled(Button)(
       left: -50%;
       width: 200%;
       height: 200%;
-      background: radial-gradient(circle, ${alpha(theme.palette.primary.light, 0.15)} 0%, transparent 70%);
+      background: radial-gradient(circle, ${alpha(
+        theme.palette.primary.light,
+        0.15
+      )} 0%, transparent 70%);
       animation: rotate 4s linear infinite;
       opacity: 0;
       transition: opacity 0.3s ease;
