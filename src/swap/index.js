@@ -1050,7 +1050,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             direction="row"
             alignItems="flex-start"
             spacing={2}
-            sx={{ width: '100%', p: 2, pb: 0 }}
+            sx={{ width: '100%', p: 1.5, pb: 0 }}
           >
             <Stack>
               <Typography variant="s7" sx={{ color: 'white' }}>
@@ -1066,7 +1066,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               <Typography variant="s7" align="right" sx={{ mb: 0.2, color: 'white' }}>
                 {currencySymbols[activeFiatCurrency]} {fNumber(tokenExch1)}
               </Typography>
-              <Box sx={{ height: '60px', width: '100%' }}>
+              <Box sx={{ height: '35px', width: '100%' }}>
                 <SparklineChart
                   url={`${BASE_URL}/sparkline/${token1.md5}?period=24h&${token1.pro24h}`}
                 />
@@ -1077,7 +1077,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             direction="row"
             alignItems="flex-start"
             spacing={2}
-            sx={{ width: '100%', p: 2, pt: 0 }}
+            sx={{ width: '100%', p: 1.5, pt: 0 }}
           >
             <Stack>
               <Typography variant="s7" sx={{ color: 'white' }}>
@@ -1093,7 +1093,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               <Typography variant="s7" align="right" sx={{ mb: 0.2, color: 'white' }}>
                 {currencySymbols[activeFiatCurrency]} {fNumber(tokenExch2)}
               </Typography>
-              <Box sx={{ height: '60px', width: '100%' }}>
+              <Box sx={{ height: '35px', width: '100%' }}>
                 <SparklineChart
                   url={`${BASE_URL}/sparkline/${token2.md5}?period=24h&${token2.pro24h}`}
                 />
