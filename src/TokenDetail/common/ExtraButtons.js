@@ -35,6 +35,7 @@ export default function ExtraButtons({ token }) {
   const BASE_URL = process.env.API_URL;
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [trustToken, setTrustToken] = useState(null);
   const [lines, setLines] = useState([]);
   const [isRemove, setIsRemove] = useState(false);
@@ -100,7 +101,15 @@ export default function ExtraButtons({ token }) {
   const handleByCrypto = (e) => {};
 
   return (
-    <Stack alignItems="center" spacing={1} sx={{ position: 'relative', width: '100%' }}>
+    <Stack
+      alignItems="center"
+      spacing={isMobile ? 2 : 1}
+      sx={{
+        position: 'relative',
+        width: '100%',
+        p: isMobile ? 2 : 0
+      }}
+    >
       {trustToken && (
         <TrustSetDialog
           balance={balance}
@@ -110,18 +119,27 @@ export default function ExtraButtons({ token }) {
         />
       )}
 
-      <Grid container direction="row" spacing={0.5} sx={{ justifyContent: 'flex-end' }}>
-        <Grid item>
+      <Grid
+        container
+        direction="row"
+        spacing={isMobile ? 2 : 0.5}
+        sx={{
+          justifyContent: 'flex-end',
+          width: '100%'
+        }}
+      >
+        <Grid item xs={isMobile ? 12 : 'auto'}>
           <Button
             variant="contained"
             onClick={handleSetTrust}
             color={`${isRemove ? 'error' : 'primary'}`}
-            size="small"
+            size={isMobile ? 'large' : 'small'}
+            fullWidth={isMobile}
             disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
             sx={{
-              minWidth: 'auto',
-              px: 2,
-              py: 0.75,
+              minWidth: isMobile ? '100%' : 'auto',
+              px: isMobile ? 3 : 2,
+              py: isMobile ? 1.5 : 0.75,
               position: 'relative',
               overflow: 'hidden',
               borderRadius: '12px',
@@ -138,6 +156,8 @@ export default function ExtraButtons({ token }) {
                 ${isRemove ? theme.palette.error.main : theme.palette.primary.main} 100%)`,
               backgroundSize: '200% 200%',
               animation: 'gradient 5s ease infinite',
+              fontSize: isMobile ? '1rem' : 'inherit',
+              fontWeight: isMobile ? 600 : 500,
               boxShadow: (theme) => `
                 0 0 10px ${alpha(
                   isRemove ? theme.palette.error.main : theme.palette.primary.main,
@@ -229,22 +249,24 @@ export default function ExtraButtons({ token }) {
           sx={{
             backgroundColor: darkMode ? 'rgba(145, 158, 171, 0.08)' : 'rgba(145, 158, 171, 0.08)',
             borderRadius: '6px',
-            px: 1,
-            py: 0.5,
-            alignSelf: 'flex-end'
+            px: isMobile ? 2 : 1,
+            py: isMobile ? 1 : 0.5,
+            alignSelf: isMobile ? 'stretch' : 'flex-end',
+            width: isMobile ? '100%' : 'auto',
+            justifyContent: isMobile ? 'center' : 'flex-start'
           }}
         >
           <Icon
             icon={calendarIcon}
-            width={14}
-            height={14}
+            width={isMobile ? 18 : 14}
+            height={isMobile ? 18 : 14}
             style={{ color: theme.palette.text.secondary }}
           />
           <Typography
-            variant="caption"
+            variant={isMobile ? 'body2' : 'caption'}
             noWrap
             sx={{
-              fontSize: '0.75rem',
+              fontSize: isMobile ? '0.875rem' : '0.75rem',
               fontWeight: 500,
               letterSpacing: '0.2px',
               color: 'text.secondary',
@@ -254,10 +276,10 @@ export default function ExtraButtons({ token }) {
             Created:
           </Typography>
           <Typography
-            variant="caption"
+            variant={isMobile ? 'body2' : 'caption'}
             noWrap
             sx={{
-              fontSize: '0.75rem',
+              fontSize: isMobile ? '0.875rem' : '0.75rem',
               color: 'text.primary',
               fontWeight: 400
             }}
@@ -270,18 +292,25 @@ export default function ExtraButtons({ token }) {
       <Stack
         direction="row"
         alignItems="center"
-        spacing={0.5}
+        spacing={1}
         sx={{
-          width: isTablet ? '100%' : 'auto',
-          justifyContent: isTablet ? 'flex-end' : 'flex-start'
+          width: '100%',
+          justifyContent: isMobile ? 'center' : 'flex-end',
+          mt: isMobile ? 2 : 0
         }}
       >
         <LazyLoadImage
           src={darkMode ? '/static/sponsor-dark-theme.svg' : '/static/sponsor-light-theme.svg'}
-          width={20}
-          height={20}
+          width={isMobile ? 24 : 20}
+          height={isMobile ? 24 : 20}
         />
-        <Typography variant="sponsored" sx={{ fontSize: '0.75rem' }}>
+        <Typography
+          variant="sponsored"
+          sx={{
+            fontSize: isMobile ? '0.875rem' : '0.75rem',
+            fontWeight: isMobile ? 500 : 400
+          }}
+        >
           Sponsored
         </Typography>
       </Stack>
