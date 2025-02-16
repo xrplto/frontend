@@ -1,6 +1,7 @@
 // Material
 import { Divider, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { useMemo } from 'react';
 
 // Components
 import BearBullChip from './BearBullChip';
@@ -28,9 +29,6 @@ export default function PriceDesc({ token }) {
 
   const { name, exch, pro7d, pro24h, pro5m, pro1h, md5 } = token;
 
-  let user = token.user;
-  if (!user) user = name;
-
   const tooltipStyles = {
     bgcolor: theme.palette.background.paper,
     border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
@@ -42,21 +40,46 @@ export default function PriceDesc({ token }) {
     }
   };
 
+  const priceChanges = useMemo(
+    () => [
+      { value: pro5m, label: '5m' },
+      { value: pro1h, label: '1h' },
+      { value: pro24h, label: '24h' },
+      { value: pro7d, label: '7d' }
+    ],
+    [pro5m, pro1h, pro24h, pro7d]
+  );
+
   return (
-    <Stack spacing={0.75} sx={{ position: 'relative' }}>
+    <Stack
+      spacing={0.75}
+      sx={{ position: 'relative' }}
+      role="region"
+      aria-label="Token price information"
+    >
       <Typography
-        variant="h1"
+        component="h1"
         sx={{
           color: theme.palette.primary.main,
-          fontSize: '0.875rem',
+          fontSize: '1rem',
           fontWeight: 600,
           letterSpacing: '0.015em',
           transition: 'color 0.2s ease-in-out',
-          mb: -0.5
+          mb: -0.5,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5
         }}
       >
-        {user}{' '}
-        <Typography component="span" color="text.secondary" fontSize="inherit">
+        Price
+        <Typography
+          component="span"
+          color="text.secondary"
+          sx={{
+            fontSize: 'inherit',
+            fontWeight: 500
+          }}
+        >
           ({name})
         </Typography>
       </Typography>
@@ -66,6 +89,7 @@ export default function PriceDesc({ token }) {
           <Typography
             variant="price"
             noWrap
+            component="h2"
             sx={{
               fontSize: { xs: '1.5rem', md: '1.75rem' },
               fontWeight: 700,
@@ -89,12 +113,7 @@ export default function PriceDesc({ token }) {
             gap: { xs: 0.25, sm: 0 }
           }}
         >
-          {[
-            { value: pro5m, label: '5m' },
-            { value: pro1h, label: '1h' },
-            { value: pro24h, label: '24h' },
-            { value: pro7d, label: '7d' }
-          ].map((item) => (
+          {priceChanges.map((item) => (
             <BearBullChip
               key={item.label}
               value={item.value}
