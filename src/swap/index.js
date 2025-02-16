@@ -1052,15 +1052,29 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             spacing={2}
             sx={{ width: '100%', p: 1.5, pb: 0 }}
           >
-            <Stack>
-              <Typography variant="s7" sx={{ color: 'white' }}>
-                {token1.name}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                {token1.issuer
-                  ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
-                  : 'XRPL'}
-              </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Box
+                component="img"
+                src={`https://s1.xrpl.to/token/${token1.md5}`}
+                alt={token1.name}
+                onError={(e) => (e.target.src = '/static/alt.webp')}
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '8px',
+                  objectFit: 'cover'
+                }}
+              />
+              <Stack>
+                <Typography variant="s7" sx={{ color: 'white' }}>
+                  {token1.name}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                  {token1.issuer
+                    ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
+                    : 'XRPL'}
+                </Typography>
+              </Stack>
             </Stack>
             <Stack sx={{ flex: 1 }}>
               <Typography variant="s7" align="right" sx={{ mb: 0.2, color: 'white' }}>
@@ -1079,15 +1093,29 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             spacing={2}
             sx={{ width: '100%', p: 1.5, pt: 0 }}
           >
-            <Stack>
-              <Typography variant="s7" sx={{ color: 'white' }}>
-                {token2.name}
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                {token2.issuer
-                  ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
-                  : 'XRPL'}
-              </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Box
+                component="img"
+                src={`https://s1.xrpl.to/token/${token2.md5}`}
+                alt={token2.name}
+                onError={(e) => (e.target.src = '/static/alt.webp')}
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '8px',
+                  objectFit: 'cover'
+                }}
+              />
+              <Stack>
+                <Typography variant="s7" sx={{ color: 'white' }}>
+                  {token2.name}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                  {token2.issuer
+                    ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
+                    : 'XRPL'}
+                </Typography>
+              </Stack>
             </Stack>
             <Stack sx={{ flex: 1 }}>
               <Typography variant="s7" align="right" sx={{ mb: 0.2, color: 'white' }}>

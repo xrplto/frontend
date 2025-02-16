@@ -11,7 +11,7 @@ import CurrencySearchModal from 'src/components/CurrencySearchModal';
 import { AppContext } from 'src/AppContext';
 
 const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
-  borderRadius: '50%',
+  borderRadius: '8px',
   overflow: 'hidden'
 }));
 
