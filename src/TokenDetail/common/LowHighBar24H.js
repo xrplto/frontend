@@ -25,19 +25,26 @@ import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
 import Decimal from 'decimal.js';
 import { AppContext } from 'src/AppContext';
+import { alpha } from '@mui/material/styles';
 
 // ----------------------------------------------------------------------
 const LowhighBarSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-track': {
-    border: 'none'
+    border: 'none',
+    height: 4
+  },
+  '& .MuiSlider-rail': {
+    height: 4,
+    opacity: 0.2
   },
   '& .MuiSlider-thumb': {
     height: 16,
     width: 16,
-    backgroundColor: 'unset',
-    border: '0px solid currentColor',
+    backgroundColor: theme.palette.background.paper,
+    border: `2px solid ${theme.palette.primary.main}`,
+    boxShadow: theme.shadows[1],
     '&:focus, &:hover, &.Mui-active, &.Mui-focusVisible': {
-      boxShadow: 'inherit'
+      boxShadow: `0 0 0 8px ${alpha(theme.palette.primary.main, 0.16)}`
     },
     '&:before': {
       display: 'none'
@@ -45,26 +52,29 @@ const LowhighBarSlider = styled(Slider)(({ theme }) => ({
   },
   '& .MuiSlider-valueLabel': {
     lineHeight: 1.2,
-    fontSize: 0,
+    fontSize: 12,
     background: 'unset',
-    padding: 0,
-    width: 10,
-    height: 10,
-    borderRadius: '0 50% 50% 50%',
+    padding: '4px 8px',
+    width: 'auto',
+    height: 'auto',
+    borderRadius: 1,
     backgroundColor: theme.palette.primary.main,
-    transformOrigin: 'bottom left',
-    transform: 'translate(-20%, 180%) rotate(45deg) scale(0)',
-    '&:before': { display: 'none' },
+    color: theme.palette.primary.contrastText,
+    transformOrigin: 'bottom center',
+    transform: 'translateY(-100%) scale(0)',
+    '&:before': {
+      display: 'none'
+    },
     '&.MuiSlider-valueLabelOpen': {
-      transform: 'translate(-20%, 180%) rotate(45deg) scale(1)'
+      transform: 'translateY(-100%) scale(1)'
     },
     '& > *': {
-      transform: 'rotate(45deg)'
+      transform: 'none'
     }
   }
 }));
 
-export default function LowHighBar24H({ token }) {
+export default function LowHighBar24H({ token, sx = {} }) {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const metrics = useSelector(selectMetrics);
@@ -86,10 +96,16 @@ export default function LowHighBar24H({ token }) {
     <Stack
       direction="row"
       alignItems="center"
-      spacing={0.5}
-      justifyContent={isTablet ? 'space-between' : 'flex-start'}
+      spacing={2}
+      sx={{
+        py: 0.5,
+        px: { xs: 0, sm: 1 },
+        borderRadius: 1,
+        bgcolor: alpha(theme.palette.primary.main, 0.04),
+        ...sx
+      }}
     >
-      <Typography variant="caption">
+      <Typography variant="caption" color="text.secondary" sx={{ minWidth: 'max-content' }}>
         Low:{' '}
         <NumberTooltip
           prepend={currencySymbols[activeFiatCurrency]}
@@ -98,15 +114,17 @@ export default function LowHighBar24H({ token }) {
           )}
         />
       </Typography>
-      <Box sx={{ width: isTablet ? 280 : 120 }}>
+
+      <Box sx={{ flexGrow: 1 }}>
         <LowhighBarSlider
-          valueLabelDisplay="on"
+          valueLabelDisplay="auto"
           aria-label="Low High Bar Slider"
           value={percent}
           sx={{ mt: 0.5 }}
         />
       </Box>
-      <Typography variant="caption">
+
+      <Typography variant="caption" color="text.secondary" sx={{ minWidth: 'max-content' }}>
         High:{' '}
         <NumberTooltip
           prepend={currencySymbols[activeFiatCurrency]}
