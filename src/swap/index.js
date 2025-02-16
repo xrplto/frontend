@@ -98,8 +98,10 @@ const OverviewWrapper = styled('div')(
     position: relative;
     border-radius: 16px;
     display: flex;
-    background-color: #000000;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: ${theme.palette.mode === 'dark' ? '#000000' : '#ffffff'};
+    border: 1px solid ${
+      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+    };
     padding-bottom: 10px;
 
     @media (max-width: 600px) {
@@ -107,8 +109,12 @@ const OverviewWrapper = styled('div')(
         border-left: none;
         border-image: initial;
         border-radius: unset;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid ${
+          theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+        };
+        border-bottom: 1px solid ${
+          theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+        };
     }
 `
 );
@@ -154,8 +160,10 @@ const AllowButton = styled(Button)(
 
 const ToggleButton = styled(IconButton)(
   ({ theme }) => `
-    background-color: ${alpha('#000000', 0.8)};
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: ${alpha(theme.palette.mode === 'dark' ? '#000000' : '#ffffff', 0.8)};
+    border: 1px solid ${
+      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+    };
     width: 32px;
     height: 32px;
     position: absolute;
@@ -166,7 +174,7 @@ const ToggleButton = styled(IconButton)(
     transition: all 0.2s ease-in-out;
     
     &:hover {
-      background-color: ${alpha('#000000', 0.9)};
+      background-color: ${alpha(theme.palette.mode === 'dark' ? '#000000' : '#ffffff', 0.9)};
       transform: translate(-50%, -50%) rotate(180deg);
     }
 
@@ -814,10 +822,14 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <CurrencyContent
               style={{
                 order: 1,
-                backgroundColor: '#121212',
+                backgroundColor: theme.palette.mode === 'dark' ? '#121212' : '#f5f5f5',
                 border: focusTop
                   ? `1px solid ${theme?.general?.reactFrameworkColor}`
-                  : '1px solid rgba(255, 255, 255, 0.1)',
+                  : `1px solid ${
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, 0.1)'
+                        : 'rgba(0, 0, 0, 0.1)'
+                    }`,
                 borderTopLeftRadius: '10px',
                 borderTopRightRadius: '10px',
                 borderBottomLeftRadius: '0',
@@ -854,7 +866,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                       textAlign: 'end',
                       appearance: 'none',
                       fontWeight: 700,
-                      color: 'white',
+                      color: theme.palette.mode === 'dark' ? 'white' : 'black',
                       backgroundColor: 'transparent'
                     }
                   }}
@@ -878,17 +890,26 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 disabled={isSwitching}
                 title="Switch currencies (Alt + S)"
               >
-                <Icon icon={exchangeIcon} width={20} height={20} color="#fff" />
+                <Icon
+                  icon={exchangeIcon}
+                  width={20}
+                  height={20}
+                  color={theme.palette.mode === 'dark' ? '#fff' : '#000'}
+                />
               </ToggleButton>
             </Box>
 
             <CurrencyContent
               style={{
                 order: 3,
-                backgroundColor: '#000000',
+                backgroundColor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
                 border: focusBottom
                   ? `1px solid ${theme?.general?.reactFrameworkColor}`
-                  : '1px solid rgba(255, 255, 255, 0.1)',
+                  : `1px solid ${
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, 0.1)'
+                        : 'rgba(0, 0, 0, 0.1)'
+                    }`,
                 borderRadius: '0',
                 margin: '0 16px',
                 padding: '16px 24px'
@@ -922,7 +943,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                       textAlign: 'end',
                       appearance: 'none',
                       fontWeight: 700,
-                      color: 'white',
+                      color: theme.palette.mode === 'dark' ? 'white' : 'black',
                       backgroundColor: 'transparent'
                     }
                   }}
@@ -941,8 +962,10 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <CurrencyContent
               style={{
                 order: 4,
-                backgroundColor: '#000000',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                backgroundColor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
+                border: `1px solid ${
+                  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                }`,
                 borderRadius: '0',
                 margin: '0 16px',
                 padding: '16px 24px'
@@ -958,7 +981,12 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 }}
               >
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="s6" sx={{ color: 'white' }}>
+                  <Typography
+                    variant="s6"
+                    sx={{
+                      color: theme.palette.mode === 'dark' ? 'white' : 'black'
+                    }}
+                  >
                     Price impact
                   </Typography>
                   {loadingPrice ? (
@@ -993,8 +1021,10 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <CurrencyContent
               style={{
                 order: 5,
-                backgroundColor: '#000000',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                backgroundColor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
+                border: `1px solid ${
+                  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                }`,
                 borderTopLeftRadius: '0',
                 borderTopRightRadius: '0',
                 borderBottomLeftRadius: '10px',
@@ -1040,9 +1070,11 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             width: '100%',
             mt: 4,
             mb: 3,
-            backgroundColor: '#000000',
+            backgroundColor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
             borderRadius: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: `1px solid ${
+              theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+            }`,
             padding: '12px'
           }}
         >
@@ -1068,13 +1100,24 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               <Stack spacing={0}>
                 <Typography
                   variant="s7"
-                  sx={{ color: 'white', fontSize: '0.825rem', lineHeight: 1.1 }}
+                  sx={{
+                    color: theme.palette.mode === 'dark' ? 'white' : 'black',
+                    fontSize: '0.825rem',
+                    lineHeight: 1.1
+                  }}
                 >
                   {token1.name}
                 </Typography>
                 <Typography
                   variant="caption"
-                  sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.675rem', lineHeight: 1 }}
+                  sx={{
+                    color:
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, 0.7)'
+                        : 'rgba(0, 0, 0, 0.7)',
+                    fontSize: '0.675rem',
+                    lineHeight: 1
+                  }}
                 >
                   {token1.issuer
                     ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
@@ -1086,7 +1129,12 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               <Typography
                 variant="s7"
                 align="right"
-                sx={{ mb: 0.1, color: 'white', fontSize: '0.825rem', lineHeight: 1.1 }}
+                sx={{
+                  mb: 0.1,
+                  color: theme.palette.mode === 'dark' ? 'white' : 'black',
+                  fontSize: '0.825rem',
+                  lineHeight: 1.1
+                }}
               >
                 {currencySymbols[activeFiatCurrency]} {fNumber(tokenExch1)}
               </Typography>
@@ -1119,13 +1167,24 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               <Stack spacing={0}>
                 <Typography
                   variant="s7"
-                  sx={{ color: 'white', fontSize: '0.825rem', lineHeight: 1.1 }}
+                  sx={{
+                    color: theme.palette.mode === 'dark' ? 'white' : 'black',
+                    fontSize: '0.825rem',
+                    lineHeight: 1.1
+                  }}
                 >
                   {token2.name}
                 </Typography>
                 <Typography
                   variant="caption"
-                  sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.675rem', lineHeight: 1 }}
+                  sx={{
+                    color:
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, 0.7)'
+                        : 'rgba(0, 0, 0, 0.7)',
+                    fontSize: '0.675rem',
+                    lineHeight: 1
+                  }}
                 >
                   {token2.issuer
                     ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
@@ -1137,7 +1196,12 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               <Typography
                 variant="s7"
                 align="right"
-                sx={{ mb: 0.1, color: 'white', fontSize: '0.825rem', lineHeight: 1.1 }}
+                sx={{
+                  mb: 0.1,
+                  color: theme.palette.mode === 'dark' ? 'white' : 'black',
+                  fontSize: '0.825rem',
+                  lineHeight: 1.1
+                }}
               >
                 {currencySymbols[activeFiatCurrency]} {fNumber(tokenExch2)}
               </Typography>
