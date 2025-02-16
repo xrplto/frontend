@@ -17,19 +17,19 @@ export default function BearBullChip({ value, tooltip, label, componentsProps })
     <Tooltip title={tooltip} arrow componentsProps={componentsProps}>
       <Stack direction="row" spacing={0.25} alignItems="center">
         {label && (
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
             {label}
           </Typography>
         )}
         <ChipComponent
-          icon={<Icon icon={isBearish ? caretDown : caretUp} width="14" height="14" color="#fff" />}
+          icon={<Icon icon={isBearish ? caretDown : caretUp} width="16" height="16" color="#fff" />}
           size="small"
           label={
             <WhiteTextTypography variant="caption" style={{ color: '#FFFFFF !important' }}>
               {strPro}
             </WhiteTextTypography>
           }
-          sx={{ height: '22px', '& .MuiChip-label': { px: 0.75 } }}
+          sx={{ height: '24px', '& .MuiChip-label': { px: 1 } }}
         />
       </Stack>
     </Tooltip>
@@ -66,7 +66,8 @@ const BullishChip = withStyles({
 const WhiteTextTypography = withStyles({
   root: {
     color: '#FFFFFF !important',
-    fontSize: '0.75rem !important',
-    lineHeight: 1.2
+    fontSize: '0.85rem !important',
+    lineHeight: 1.2,
+    fontWeight: 500
   }
 })(Typography);
