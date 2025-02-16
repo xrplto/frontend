@@ -212,7 +212,7 @@ export default function Header(props) {
               >
                 {t('Swap')}
               </StyledLink>
-              <StyledLink
+              {/* <StyledLink
                 underline="none"
                 color={darkMode ? 'white' : 'black'}
                 sx={{
@@ -226,7 +226,7 @@ export default function Header(props) {
                 href="/news"
               >
                 {t('News')}
-              </StyledLink>
+              </StyledLink> */}
             </Box>
           )}
 
