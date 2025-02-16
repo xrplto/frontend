@@ -228,7 +228,7 @@ const TradingHistory = ({ tokenId }) => {
 
     try {
       const response = await fetch(
-        `http://37.27.134.126/api//history?md5=${tokenId}&page=${page - 1}&limit=${limit}`
+        `http://api.xrpl.to/api//history?md5=${tokenId}&page=${page - 1}&limit=${limit}`
       );
       const data = await response.json();
       if (data.result === 'success') {
