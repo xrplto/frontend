@@ -14,7 +14,7 @@ import {
 // ----------------------------------------------------------------------
 // Redux
 import { useSelector, useDispatch } from 'react-redux';
-import { selectFilteredCount, update_filteredCount } from 'src/redux/statusSlice';
+import { selectFilteredCount } from 'src/redux/statusSlice';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 // ----------------------------------------------------------------------
@@ -33,22 +33,17 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 }));
 
 export default function TokenListToolbar({ rows, setRows, page, setPage, tokens }) {
-  const length = tokens?.length || 0;
+  const filteredCount = useSelector(selectFilteredCount);
   const dispatch = useDispatch();
   const router = useRouter();
 
-  // Update filtered count when tokens change
-  useEffect(() => {
-    dispatch(update_filteredCount({ filteredCount: length }));
-  }, [length, dispatch]);
-
-  const num = length / rows;
+  const num = filteredCount / rows;
   let page_count = Math.floor(num);
   if (num % 1 != 0) page_count++;
 
-  const start = length > 0 ? page * rows + 1 : 0;
+  const start = filteredCount > 0 ? page * rows + 1 : 0;
   let end = start + rows - 1;
-  if (end > length) end = length;
+  if (end > filteredCount) end = filteredCount;
 
   const handleChangeRows = (event) => {
     setRows(parseInt(event.target.value, 10));
@@ -193,7 +188,7 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
             </Box>{' '}
             of{' '}
             <Box component="span" sx={{ fontWeight: 'bold' }}>
-              {length}
+              {filteredCount}
             </Box>{' '}
             tokens
           </Typography>
