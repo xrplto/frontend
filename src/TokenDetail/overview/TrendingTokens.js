@@ -168,11 +168,6 @@ const TrendingTokens = () => {
                             noWrap
                           >
                             {name}
-                            {kyc && (
-                              <Typography variant="kyc" sx={{ ml: 0.2 }}>
-                                KYC
-                              </Typography>
-                            )}
                           </Typography>
                         </Stack>
                       </Stack>
@@ -186,7 +181,11 @@ const TrendingTokens = () => {
         </TableBody>
       </Table>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-        <Link color={darkMode ? '#22B14C' : '#3366FF'} underline="none" href={`/?sort=trendingScore&order=desc`}>
+        <Link
+          color={darkMode ? '#22B14C' : '#3366FF'}
+          underline="none"
+          href={`/?sort=trendingScore&order=desc`}
+        >
           {'View More >'}
         </Link>
       </div>
