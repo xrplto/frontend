@@ -999,16 +999,15 @@ export default function SearchToolbar({
             </Stack>
           </MenuItem>
           <MenuItem
-            onClick={() => handleTokenOptionSelect('/view/xrp-fun')}
+            onClick={() => handleTokenOptionSelect('/view/xrpfun')}
             sx={{
               backgroundColor:
-                router.query.view === 'xrp-fun'
+                router.query.view === 'xrpfun'
                   ? darkMode
                     ? 'rgba(0, 171, 85, 0.16)'
                     : 'rgba(0, 123, 85, 0.08)'
                   : 'transparent',
-              color:
-                router.query.view === 'xrp-fun' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
+              color: router.query.view === 'xrpfun' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
