@@ -157,7 +157,7 @@ export default function Header(props) {
               alignItems: 'center'
             }}
           >
-            <Logo alt="xrpl.to Logo" style={{ marginRight: 25 }} />
+            <Logo alt="xrpl.to Logo" style={{ marginRight: 35 }} />
 
             {isDesktop && (
               <>
