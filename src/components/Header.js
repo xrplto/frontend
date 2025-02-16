@@ -158,74 +158,79 @@ export default function Header(props) {
             }}
           >
             <Logo alt="xrpl.to Logo" style={{ marginRight: 35 }} />
-
-            {isDesktop && (
-              <>
-                <StyledLink
-                  underline="none"
-                  color={darkMode ? 'white' : 'black'}
-                  sx={{
-                    '&:hover': {
-                      color: darkMode ? '#22B14C !important' : '#3366FF !important'
-                    },
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                  href="/"
-                >
-                  {t('Tokens')}
-                </StyledLink>
-                <StyledLink
-                  underline="none"
-                  color={darkMode ? 'white' : 'black'}
-                  sx={{
-                    '&:hover': {
-                      color: darkMode ? '#22B14C !important' : '#3366FF !important'
-                    },
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                  href="/collections"
-                >
-                  {t('NFTs')}
-                </StyledLink>
-                <StyledLink
-                  underline="none"
-                  color={darkMode ? 'white' : 'black'}
-                  sx={{
-                    '&:hover': {
-                      color: darkMode ? '#22B14C !important' : '#3366FF !important'
-                    },
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                  href="/swap"
-                >
-                  {t('Swap')}
-                </StyledLink>
-                <StyledLink
-                  underline="none"
-                  color={darkMode ? 'white' : 'black'}
-                  sx={{
-                    '&:hover': {
-                      color: darkMode ? '#22B14C !important' : '#3366FF !important'
-                    },
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                  href="/news"
-                >
-                  {t('News')}
-                </StyledLink>
-              </>
-            )}
-
-            <WalletConnectModal />
           </Box>
+
+          {isDesktop && (
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              <StyledLink
+                underline="none"
+                color={darkMode ? 'white' : 'black'}
+                sx={{
+                  '&:hover': {
+                    color: darkMode ? '#22B14C !important' : '#3366FF !important'
+                  },
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                href="/"
+              >
+                {t('Tokens')}
+              </StyledLink>
+              <StyledLink
+                underline="none"
+                color={darkMode ? 'white' : 'black'}
+                sx={{
+                  '&:hover': {
+                    color: darkMode ? '#22B14C !important' : '#3366FF !important'
+                  },
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                href="/collections"
+              >
+                {t('NFTs')}
+              </StyledLink>
+              <StyledLink
+                underline="none"
+                color={darkMode ? 'white' : 'black'}
+                sx={{
+                  '&:hover': {
+                    color: darkMode ? '#22B14C !important' : '#3366FF !important'
+                  },
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                href="/swap"
+              >
+                {t('Swap')}
+              </StyledLink>
+              <StyledLink
+                underline="none"
+                color={darkMode ? 'white' : 'black'}
+                sx={{
+                  '&:hover': {
+                    color: darkMode ? '#22B14C !important' : '#3366FF !important'
+                  },
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                href="/news"
+              >
+                {t('News')}
+              </StyledLink>
+            </Box>
+          )}
+
+          <WalletConnectModal />
 
           {fullSearch && (
             <NavSearchBar
