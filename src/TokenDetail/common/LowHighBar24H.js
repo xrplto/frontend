@@ -96,16 +96,20 @@ export default function LowHighBar24H({ token, sx = {} }) {
     <Stack
       direction="row"
       alignItems="center"
-      spacing={2}
+      spacing={1}
       sx={{
-        py: 0.5,
-        px: { xs: 0, sm: 1 },
+        py: 0.25,
+        px: { xs: 0, sm: 0.75 },
         borderRadius: 1,
         bgcolor: alpha(theme.palette.primary.main, 0.04),
         ...sx
       }}
     >
-      <Typography variant="caption" color="text.secondary" sx={{ minWidth: 'max-content' }}>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ minWidth: 'max-content', fontSize: '0.75rem' }}
+      >
         Low:{' '}
         <NumberTooltip
           prepend={currencySymbols[activeFiatCurrency]}
@@ -120,11 +124,15 @@ export default function LowHighBar24H({ token, sx = {} }) {
           valueLabelDisplay="auto"
           aria-label="Low High Bar Slider"
           value={percent}
-          sx={{ mt: 0.5 }}
+          sx={{ mt: 0.25 }}
         />
       </Box>
 
-      <Typography variant="caption" color="text.secondary" sx={{ minWidth: 'max-content' }}>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ minWidth: 'max-content', fontSize: '0.75rem' }}
+      >
         High:{' '}
         <NumberTooltip
           prepend={currencySymbols[activeFiatCurrency]}
