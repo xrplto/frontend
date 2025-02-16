@@ -74,31 +74,6 @@ const SparklineChart = ({ url }) => {
                   shadowOffsetY: 5,
                   cap: 'round'
                 },
-                areaStyle: {
-                  opacity: 0.04,
-                  color: {
-                    type: 'linear',
-                    x: 0,
-                    y: 0,
-                    x2: 0,
-                    y2: 1,
-                    colorStops: [
-                      {
-                        offset: 0,
-                        color:
-                          chartColor === '#54D62C'
-                            ? theme.palette.primary.light
-                            : chartColor === '#FF6C40'
-                            ? theme.palette.error.main
-                            : chartColor
-                      },
-                      {
-                        offset: 1,
-                        color: 'transparent'
-                      }
-                    ]
-                  }
-                },
                 smooth: 0.3,
                 animation: false
               }
