@@ -1000,7 +1000,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 borderBottomLeftRadius: '10px',
                 borderBottomRightRadius: '10px',
                 margin: '0 16px 16px',
-                padding: '16px 24px'
+                padding: '24px 24px'
               }}
             >
               {accountProfile && accountProfile.account ? (
@@ -1013,7 +1013,20 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                   {handleMsg()}
                 </ExchangeButton>
               ) : (
-                <ConnectWallet pair={pair} />
+                <Box
+                  sx={{
+                    width: '100%',
+                    '& .MuiButton-root': {
+                      width: '100% !important',
+                      minWidth: '100% !important',
+                      padding: '12px 24px !important',
+                      minHeight: '48px !important',
+                      fontSize: '16px !important'
+                    }
+                  }}
+                >
+                  <ConnectWallet pair={pair} />
+                </Box>
               )}
             </CurrencyContent>
           </ConverterFrame>
