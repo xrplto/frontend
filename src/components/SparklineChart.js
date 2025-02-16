@@ -122,7 +122,7 @@ const SparklineChart = ({ url }) => {
   return (
     <ReactECharts
       option={chartOption}
-      style={{ height: '100%', width: '100%', minHeight: '60px' }}
+      style={{ height: '100%', width: '100%' }}
       opts={{ renderer: 'svg' }}
     />
   );

@@ -1034,7 +1034,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
         <Stack
           direction="column"
-          spacing={2}
+          spacing={0.5}
           alignItems="center"
           sx={{
             width: '100%',
@@ -1043,14 +1043,14 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             backgroundColor: '#000000',
             borderRadius: '16px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            padding: '16px'
+            padding: '10px'
           }}
         >
           <Stack
             direction="row"
-            alignItems="flex-start"
-            spacing={2}
-            sx={{ width: '100%', p: 1.5, pb: 0 }}
+            alignItems="center"
+            spacing={1.5}
+            sx={{ width: '100%', p: 0.75, pb: 0 }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
               <Box
@@ -1059,17 +1059,23 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 alt={token1.name}
                 onError={(e) => (e.target.src = '/static/alt.webp')}
                 sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '8px',
+                  width: 24,
+                  height: 24,
+                  borderRadius: '6px',
                   objectFit: 'cover'
                 }}
               />
-              <Stack>
-                <Typography variant="s7" sx={{ color: 'white' }}>
+              <Stack spacing={0}>
+                <Typography
+                  variant="s7"
+                  sx={{ color: 'white', fontSize: '0.8rem', lineHeight: 1.1 }}
+                >
                   {token1.name}
                 </Typography>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.65rem', lineHeight: 1 }}
+                >
                   {token1.issuer
                     ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
                     : 'XRPL'}
@@ -1077,10 +1083,14 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               </Stack>
             </Stack>
             <Stack sx={{ flex: 1 }}>
-              <Typography variant="s7" align="right" sx={{ mb: 0.2, color: 'white' }}>
+              <Typography
+                variant="s7"
+                align="right"
+                sx={{ mb: 0.1, color: 'white', fontSize: '0.8rem', lineHeight: 1.1 }}
+              >
                 {currencySymbols[activeFiatCurrency]} {fNumber(tokenExch1)}
               </Typography>
-              <Box sx={{ height: '35px', width: '100%' }}>
+              <Box sx={{ height: '28px', width: '100%', mt: '-1px' }}>
                 <SparklineChart
                   url={`${BASE_URL}/sparkline/${token1.md5}?period=24h&${token1.pro24h}`}
                 />
@@ -1089,9 +1099,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           </Stack>
           <Stack
             direction="row"
-            alignItems="flex-start"
-            spacing={2}
-            sx={{ width: '100%', p: 1.5, pt: 0 }}
+            alignItems="center"
+            spacing={1.5}
+            sx={{ width: '100%', p: 0.75, pt: 0 }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
               <Box
@@ -1100,17 +1110,23 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 alt={token2.name}
                 onError={(e) => (e.target.src = '/static/alt.webp')}
                 sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '8px',
+                  width: 24,
+                  height: 24,
+                  borderRadius: '6px',
                   objectFit: 'cover'
                 }}
               />
-              <Stack>
-                <Typography variant="s7" sx={{ color: 'white' }}>
+              <Stack spacing={0}>
+                <Typography
+                  variant="s7"
+                  sx={{ color: 'white', fontSize: '0.8rem', lineHeight: 1.1 }}
+                >
                   {token2.name}
                 </Typography>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.65rem', lineHeight: 1 }}
+                >
                   {token2.issuer
                     ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
                     : 'XRPL'}
@@ -1118,10 +1134,14 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               </Stack>
             </Stack>
             <Stack sx={{ flex: 1 }}>
-              <Typography variant="s7" align="right" sx={{ mb: 0.2, color: 'white' }}>
+              <Typography
+                variant="s7"
+                align="right"
+                sx={{ mb: 0.1, color: 'white', fontSize: '0.8rem', lineHeight: 1.1 }}
+              >
                 {currencySymbols[activeFiatCurrency]} {fNumber(tokenExch2)}
               </Typography>
-              <Box sx={{ height: '35px', width: '100%' }}>
+              <Box sx={{ height: '28px', width: '100%', mt: '-1px' }}>
                 <SparklineChart
                   url={`${BASE_URL}/sparkline/${token2.md5}?period=24h&${token2.pro24h}`}
                 />
