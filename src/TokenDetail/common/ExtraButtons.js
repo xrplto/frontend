@@ -103,11 +103,11 @@ export default function ExtraButtons({ token }) {
   return (
     <Stack
       alignItems="center"
-      spacing={isMobile ? 2 : 1}
+      spacing={isMobile ? 1.5 : 1}
       sx={{
         position: 'relative',
         width: '100%',
-        p: isMobile ? 2 : 0
+        p: isMobile ? 1 : 0
       }}
     >
       {trustToken && (
@@ -122,7 +122,7 @@ export default function ExtraButtons({ token }) {
       <Grid
         container
         direction="row"
-        spacing={isMobile ? 2 : 0.5}
+        spacing={isMobile ? 1 : 0.5}
         sx={{
           justifyContent: 'flex-end',
           width: '100%'
@@ -133,16 +133,16 @@ export default function ExtraButtons({ token }) {
             variant="contained"
             onClick={handleSetTrust}
             color={`${isRemove ? 'error' : 'primary'}`}
-            size={isMobile ? 'large' : 'small'}
+            size={isMobile ? 'medium' : 'small'}
             fullWidth={isMobile}
             disabled={CURRENCY_ISSUERS.XRP_MD5 === md5}
             sx={{
               minWidth: isMobile ? '100%' : 'auto',
-              px: isMobile ? 3 : 2,
-              py: isMobile ? 1.5 : 0.75,
+              px: isMobile ? 2 : 2,
+              py: isMobile ? 1 : 0.75,
               position: 'relative',
               overflow: 'hidden',
-              borderRadius: '12px',
+              borderRadius: '8px',
               backgroundColor: 'transparent',
               transition: 'all 0.3s ease',
               background: (theme) => `linear-gradient(45deg, 
@@ -156,20 +156,20 @@ export default function ExtraButtons({ token }) {
                 ${isRemove ? theme.palette.error.main : theme.palette.primary.main} 100%)`,
               backgroundSize: '200% 200%',
               animation: 'gradient 5s ease infinite',
-              fontSize: isMobile ? '1rem' : 'inherit',
-              fontWeight: isMobile ? 600 : 500,
+              fontSize: isMobile ? '0.9rem' : 'inherit',
+              fontWeight: isMobile ? 500 : 500,
               boxShadow: (theme) => `
-                0 0 10px ${alpha(
+                0 0 8px ${alpha(
                   isRemove ? theme.palette.error.main : theme.palette.primary.main,
-                  0.5
+                  0.4
                 )},
-                0 0 20px ${alpha(
-                  isRemove ? theme.palette.error.main : theme.palette.primary.main,
-                  0.3
-                )},
-                0 0 30px ${alpha(
+                0 0 16px ${alpha(
                   isRemove ? theme.palette.error.main : theme.palette.primary.main,
                   0.2
+                )},
+                0 0 24px ${alpha(
+                  isRemove ? theme.palette.error.main : theme.palette.primary.main,
+                  0.1
                 )}
               `,
               '@keyframes gradient': {
@@ -248,25 +248,26 @@ export default function ExtraButtons({ token }) {
           alignItems="center"
           sx={{
             backgroundColor: darkMode ? 'rgba(145, 158, 171, 0.08)' : 'rgba(145, 158, 171, 0.08)',
-            borderRadius: '6px',
-            px: isMobile ? 2 : 1,
-            py: isMobile ? 1 : 0.5,
+            borderRadius: '4px',
+            px: isMobile ? 1.5 : 1,
+            py: isMobile ? 0.75 : 0.5,
             alignSelf: isMobile ? 'stretch' : 'flex-end',
             width: isMobile ? '100%' : 'auto',
-            justifyContent: isMobile ? 'center' : 'flex-start'
+            justifyContent: isMobile ? 'center' : 'flex-start',
+            mt: isMobile ? 0.5 : 0
           }}
         >
           <Icon
             icon={calendarIcon}
-            width={isMobile ? 18 : 14}
-            height={isMobile ? 18 : 14}
+            width={isMobile ? 16 : 14}
+            height={isMobile ? 16 : 14}
             style={{ color: theme.palette.text.secondary }}
           />
           <Typography
             variant={isMobile ? 'body2' : 'caption'}
             noWrap
             sx={{
-              fontSize: isMobile ? '0.875rem' : '0.75rem',
+              fontSize: isMobile ? '0.8rem' : '0.75rem',
               fontWeight: 500,
               letterSpacing: '0.2px',
               color: 'text.secondary',
@@ -279,7 +280,7 @@ export default function ExtraButtons({ token }) {
             variant={isMobile ? 'body2' : 'caption'}
             noWrap
             sx={{
-              fontSize: isMobile ? '0.875rem' : '0.75rem',
+              fontSize: isMobile ? '0.8rem' : '0.75rem',
               color: 'text.primary',
               fontWeight: 400
             }}
@@ -292,23 +293,23 @@ export default function ExtraButtons({ token }) {
       <Stack
         direction="row"
         alignItems="center"
-        spacing={1}
+        spacing={0.75}
         sx={{
           width: '100%',
           justifyContent: isMobile ? 'center' : 'flex-end',
-          mt: isMobile ? 2 : 0
+          mt: isMobile ? 1 : 0
         }}
       >
         <LazyLoadImage
           src={darkMode ? '/static/sponsor-dark-theme.svg' : '/static/sponsor-light-theme.svg'}
-          width={isMobile ? 24 : 20}
-          height={isMobile ? 24 : 20}
+          width={isMobile ? 20 : 20}
+          height={isMobile ? 20 : 20}
         />
         <Typography
           variant="sponsored"
           sx={{
-            fontSize: isMobile ? '0.875rem' : '0.75rem',
-            fontWeight: isMobile ? 500 : 400
+            fontSize: isMobile ? '0.8rem' : '0.75rem',
+            fontWeight: isMobile ? 400 : 400
           }}
         >
           Sponsored
