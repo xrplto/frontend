@@ -63,7 +63,7 @@ import infoFilled from '@iconify/icons-ep/info-filled';
 import { AppContext } from 'src/AppContext';
 
 // Utils
-import { fNumber, fIntNumber } from 'src/utils/formatNumber';
+import { fNumber, fIntNumber, fNumberWithSuffix } from 'src/utils/formatNumber';
 
 // Components
 import ExplorersMenu from './ExplorersMenu';
@@ -536,7 +536,7 @@ export default function UserDesc({ token }) {
         <Chip
           label={
             <Typography variant={isTablet ? 'body2' : 's16'}>
-              {fIntNumber(holders)} Holders
+              {fNumberWithSuffix(holders)} Holders
             </Typography>
           }
           color="error"
@@ -547,7 +547,7 @@ export default function UserDesc({ token }) {
         <Chip
           label={
             <Typography variant={isTablet ? 'body2' : 's16'}>
-              {fIntNumber(offers)} Offers
+              {fNumberWithSuffix(offers)} Offers
             </Typography>
           }
           color="warning"
@@ -557,7 +557,9 @@ export default function UserDesc({ token }) {
         />
         <Chip
           label={
-            <Typography variant={isTablet ? 'body2' : 's16'}>{fNumber(vol24htx)} Trades</Typography>
+            <Typography variant={isTablet ? 'body2' : 's16'}>
+              {fNumberWithSuffix(vol24htx)} Trades
+            </Typography>
           }
           color="secondary"
           variant="outlined"
@@ -567,7 +569,7 @@ export default function UserDesc({ token }) {
         <Chip
           label={
             <Typography variant={isTablet ? 'body2' : 's16'}>
-              {fIntNumber(trustlines)} TrustLines
+              {fNumberWithSuffix(trustlines)} TrustLines
             </Typography>
           }
           color="info"
