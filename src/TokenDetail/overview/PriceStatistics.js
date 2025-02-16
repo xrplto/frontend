@@ -15,10 +15,12 @@ import {
   IconButton,
   Avatar,
   Chip,
-  Link
+  Link,
+  useMediaQuery
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import LockIcon from '@mui/icons-material/Lock';
 
 // Iconify
 import { Icon } from '@iconify/react';
@@ -63,6 +65,7 @@ export default function PriceStatistics({ token }) {
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency, openSnackbar } = useContext(AppContext);
   const [openIssuerInfo, setOpenIssuerInfo] = useState(false);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const {
     id,
@@ -153,11 +156,11 @@ export default function PriceStatistics({ token }) {
                       <Typography variant="s8">{truncate(issuer, 16)}</Typography>
                       {info.blackholed && (
                         <Tooltip title="Blackholed - Cannot issue more tokens">
-                          <Icon
-                            icon={blackholeIcon}
-                            width="16"
-                            height="16"
-                            style={{ color: '#ff0000' }}
+                          <LockIcon
+                            sx={{
+                              fontSize: isMobile ? '12px' : '14px',
+                              color: '#007B55'
+                            }}
                           />
                         </Tooltip>
                       )}
