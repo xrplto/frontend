@@ -142,9 +142,89 @@ const ToggleContent = styled('div')(
 const ExchangeButton = styled(Button)(
   ({ theme }) => `
     @media (max-width: 600px) {
-        // border-radius: 0px;
         margin-left: 10px;
         margin-right: 10px;
+    }
+    position: relative;
+    overflow: hidden;
+    padding: 8px 24px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    min-height: 48px;
+    background: linear-gradient(45deg, 
+      ${theme.palette.primary.main} 0%, 
+      ${alpha(theme.palette.primary.main, 0.8)} 25%,
+      ${alpha(theme.palette.primary.light, 0.9)} 50%,
+      ${alpha(theme.palette.primary.main, 0.8)} 75%,
+      ${theme.palette.primary.main} 100%);
+    background-size: 200% 200%;
+    animation: gradient 5s ease infinite;
+    box-shadow: 
+      0 0 10px ${alpha(theme.palette.primary.main, 0.5)},
+      0 0 20px ${alpha(theme.palette.primary.main, 0.3)},
+      0 0 30px ${alpha(theme.palette.primary.main, 0.2)};
+
+    @keyframes gradient {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, ${alpha(theme.palette.primary.light, 0.15)} 0%, transparent 70%);
+      animation: rotate 4s linear infinite;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    @keyframes rotate {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    &:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 
+        0 0 15px ${alpha(theme.palette.primary.main, 0.6)},
+        0 0 30px ${alpha(theme.palette.primary.main, 0.4)},
+        0 0 45px ${alpha(theme.palette.primary.main, 0.3)};
+      &::before {
+        opacity: 1;
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:disabled {
+      background: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'};
+      box-shadow: none;
+      &::before {
+        display: none;
+      }
+    }
+
+    & .MuiButton-label {
+      color: #fff;
+      font-weight: 500;
+      z-index: 1;
     }
 `
 );
