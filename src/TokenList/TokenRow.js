@@ -678,8 +678,8 @@ function FTokenRow({
         align="right"
         sx={{
           px: '0 !important',
-          width: '28px',
-          minWidth: '28px',
+          width: '160px',
+          minWidth: '160px',
           pr: '24px !important',
           pl: '24px !important',
           py: '12px !important'
@@ -697,12 +697,14 @@ function FTokenRow({
       <TableCell
         align="right"
         sx={{
-          width: '28px',
-          minWidth: '28px',
-          padding: '1px !important'
+          width: '80px',
+          minWidth: '80px',
+          pl: '24px !important',
+          pr: '16px !important',
+          py: '12px !important'
         }}
       >
-        <Stack direction="row" spacing={0.5} alignItems="center">
+        <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end">
           <Tooltip title="Set Trustline">
             <AddCircleOutlineIcon
               onClick={handleSetTrustline}
