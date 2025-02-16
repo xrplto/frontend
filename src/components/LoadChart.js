@@ -133,7 +133,7 @@ const LoadChart = ({ url }) => {
     <LazyLoadComponent threshold={100}>
       <ReactECharts
         option={chartOption}
-        style={{ height: 48, width: 160 }}
+        style={{ height: 48, width: 200 }}
         opts={{
           renderer: 'svg',
           width: 'auto',
