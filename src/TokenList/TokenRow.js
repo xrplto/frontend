@@ -685,8 +685,13 @@ function FTokenRow({
           py: '12px !important'
         }}
       >
-        <LazyLoadComponent threshold={100} placeholder={<Box sx={{ width: 160, height: 48 }} />}>
-          <LoadChart url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`} />
+        <LazyLoadComponent
+          threshold={100}
+          placeholder={<Box sx={{ width: 160, height: 48, minWidth: 160, minHeight: 48 }} />}
+        >
+          <Box sx={{ width: 160, height: 48, minWidth: 160, minHeight: 48 }}>
+            <LoadChart url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`} />
+          </Box>
         </LazyLoadComponent>
       </TableCell>
       <TableCell
