@@ -186,7 +186,7 @@ const TrendingTokens = () => {
         </TableBody>
       </Table>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-        <Link color={darkMode ? '#22B14C' : '#3366FF'} underline="none" href={`/trending-tokens`}>
+        <Link color={darkMode ? '#22B14C' : '#3366FF'} underline="none" href={`/?sort=trendingScore&order=desc`}>
           {'View More >'}
         </Link>
       </div>
