@@ -21,7 +21,9 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  Skeleton,
+  Tooltip
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Verified as VerifiedIcon } from '@mui/icons-material';
@@ -33,7 +35,7 @@ import {
   PointElement,
   LineElement,
   Title,
-  Tooltip,
+  Tooltip as ChartTooltip,
   Legend
 } from 'chart.js';
 import styled from '@emotion/styled';
@@ -50,8 +52,17 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import Ranks from './Ranks';
 import { activeRankColors, rankGlowEffect } from 'src/components/Chatbox/RankStyles';
 import axios from 'axios';
+import { useRouter } from 'next/router';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  ChartTooltip,
+  Legend
+);
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
@@ -160,12 +171,15 @@ const volumeData = {
 export default function Portfolio({ account, limit, collection, type }) {
   const theme = useTheme();
   const [activeRanks, setActiveRanks] = useState({});
+  const router = useRouter();
 
   // Fallback value for theme.palette.divider
   const dividerColor = theme?.palette?.divider || '#ccc';
 
   const [activeTab, setActiveTab] = useState(collection ? '1' : '0');
   const [filter, setFilter] = useState('All');
+  const [collections, setCollections] = useState([]);
+  const [loadingCollections, setLoadingCollections] = useState(false);
 
   const handleChange = (_, newValue) => {
     setActiveTab(newValue);
@@ -277,6 +291,31 @@ export default function Portfolio({ account, limit, collection, type }) {
     fetchActiveRanks();
   }, []);
 
+  useEffect(() => {
+    if (account) {
+      fetchCollections();
+    }
+  }, [account]);
+
+  const fetchCollections = async () => {
+    setLoadingCollections(true);
+    try {
+      const response = await axios.post('https://api.xrpnft.com/api/account/collectedCreated', {
+        account,
+        filter: 0,
+        limit: 16,
+        page: 0,
+        search: '',
+        subFilter: 'pricexrpasc',
+        type: 'collected'
+      });
+      setCollections(response.data.nfts);
+    } catch (error) {
+      console.error('Error fetching collections:', error);
+    }
+    setLoadingCollections(false);
+  };
+
   return (
     <OverviewWrapper>
       <Container maxWidth="xl" sx={{ mt: 4 }}>
@@ -374,44 +413,87 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </ButtonReceive>
                   </Stack>
 
-                  <Box sx={{ mt: 2 }}>
-                    <Grid container spacing={0} sx={{ maxWidth: 400 }}>
-                      {nftIcons.map((icon, index) => (
-                        <Grid
-                          item
-                          key={index}
-                          sx={{ p: '4px', flexBasis: '16.67%', maxWidth: '16.67%' }}
-                        >
-                          <Avatar src={icon} variant="rounded" sx={{ width: 28, height: 28 }} />
-                        </Grid>
-                      ))}
+                  <Box sx={{ mt: 2, mb: 2 }}>
+                    <Grid container spacing={1} sx={{ maxWidth: 400 }}>
+                      {loadingCollections
+                        ? Array(8)
+                            .fill(0)
+                            .map((_, index) => (
+                              <Grid
+                                item
+                                key={index}
+                                sx={{ p: '4px', flexBasis: '12.5%', maxWidth: '12.5%' }}
+                              >
+                                <Skeleton
+                                  variant="rounded"
+                                  width={32}
+                                  height={32}
+                                  sx={{ borderRadius: '8px' }}
+                                />
+                              </Grid>
+                            ))
+                        : collections.slice(0, 8).map((collection, index) => (
+                            <Grid
+                              item
+                              key={index}
+                              sx={{ p: '4px', flexBasis: '12.5%', maxWidth: '12.5%' }}
+                            >
+                              <Tooltip title={collection.collection.name}>
+                                <Avatar
+                                  src={`https://s1.xrpnft.com/collection/${collection.collection.logoImage}`}
+                                  variant="rounded"
+                                  sx={{
+                                    width: 32,
+                                    height: 32,
+                                    cursor: 'pointer',
+                                    borderRadius: '8px',
+                                    border: `2px solid ${theme.palette.primary.main}`,
+                                    boxShadow: `0 0 10px ${alpha(theme.palette.primary.main, 0.3)}`,
+                                    backgroundColor: theme.palette.background.paper,
+                                    '&:hover': {
+                                      transform: 'scale(1.1)',
+                                      transition: 'all 0.2s ease-in-out',
+                                      border: `2px solid ${theme.palette.primary.light}`,
+                                      boxShadow: `0 0 15px ${alpha(
+                                        theme.palette.primary.main,
+                                        0.5
+                                      )}`
+                                    }
+                                  }}
+                                  onClick={() =>
+                                    router.push(`/portfolio/collection/${account}?type=collected`)
+                                  }
+                                />
+                              </Tooltip>
+                            </Grid>
+                          ))}
                     </Grid>
                   </Box>
-                </Stack>
 
-                <Accordion
-                  sx={{
-                    borderRadius: '10px',
-                    '&.Mui-expanded': {
-                      mt: 3
-                    },
-                    flex: '0 0 auto',
-                    color: theme.palette.text.primary,
-                    border: `1px solid ${dividerColor}`
-                  }}
-                >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.text.primary }} />}
-                    aria-controls="panel1d-content"
-                    id="panel1d-header"
-                    sx={{ fontWeight: 'bold', color: theme.palette.text.primary }}
+                  <Accordion
+                    sx={{
+                      borderRadius: '10px',
+                      '&.Mui-expanded': {
+                        mt: 3
+                      },
+                      flex: '0 0 auto',
+                      color: theme.palette.text.primary,
+                      border: `1px solid ${dividerColor}`
+                    }}
                   >
-                    WatchList
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ color: theme.palette.text.primary }}></AccordionDetails>
-                </Accordion>
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.text.primary }} />}
+                      aria-controls="panel1d-content"
+                      id="panel1d-header"
+                      sx={{ fontWeight: 'bold', color: theme.palette.text.primary }}
+                    >
+                      WatchList
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ color: theme.palette.text.primary }}></AccordionDetails>
+                  </Accordion>
 
-                <Offer account={account} />
+                  <Offer account={account} />
+                </Stack>
               </Stack>
             </OuterBorderContainer>
           </Grid>
