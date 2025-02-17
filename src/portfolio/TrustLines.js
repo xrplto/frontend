@@ -51,7 +51,7 @@ const trustlineFlags = {
   lsfHighFreeze: 0x00800000
 };
 
-export default function TrustLines({ account }) {
+export default function TrustLines({ account, onUpdateTotalValue }) {
   const BASE_URL = process.env.API_URL;
 
   const theme = useTheme();
@@ -68,6 +68,7 @@ export default function TrustLines({ account }) {
   const [rows, setRows] = useState(50);
   const [total, setTotal] = useState(0);
   const [lines, setLines] = useState([]);
+  const [totalValue, setTotalValue] = useState(0);
 
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
 
@@ -97,6 +98,11 @@ export default function TrustLines({ account }) {
         if (ret && ret.success) {
           setTotal(ret.total);
           setLines(ret.trustlines);
+          const totalValue = ret.trustlines.reduce((acc, line) => {
+            const value = parseFloat(line.value) || 0;
+            return acc + value;
+          }, 0);
+          setTotalValue(totalValue);
         }
       })
       .catch((err) => {
@@ -110,6 +116,24 @@ export default function TrustLines({ account }) {
   useEffect(() => {
     getLines();
   }, [account, sync, page, rows]);
+
+  useEffect(() => {
+    if (lines.length > 0) {
+      const sum = lines.reduce((acc, line) => {
+        const value = parseFloat(line.value) || 0;
+        return acc + value;
+      }, 0);
+      setTotalValue(sum);
+      if (typeof onUpdateTotalValue === 'function') {
+        onUpdateTotalValue(sum);
+      }
+    } else {
+      setTotalValue(0);
+      if (typeof onUpdateTotalValue === 'function') {
+        onUpdateTotalValue(0);
+      }
+    }
+  }, [lines, onUpdateTotalValue]);
 
   const tableRef = useRef(null);
 

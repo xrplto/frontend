@@ -164,6 +164,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [filter, setFilter] = useState('All');
   const [collections, setCollections] = useState([]);
   const [loadingCollections, setLoadingCollections] = useState(false);
+  const [totalValue, setTotalValue] = useState(0);
 
   const handleChange = (_, newValue) => {
     setActiveTab(newValue);
@@ -294,6 +295,7 @@ export default function Portfolio({ account, limit, collection, type }) {
         type: 'collected'
       });
       setCollections(response.data.nfts);
+      setTotalValue(response.data.totalValue);
     } catch (error) {
       console.error('Error fetching collections:', error);
     }
@@ -368,13 +370,14 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                   <Box sx={{ textAlign: 'center', my: 3 }}>
                     <Typography sx={{ color: theme.palette.text.secondary, mb: 1 }} variant="h6">
-                      Total Balance
+                      Wallet Value
                     </Typography>
-                    <Balance sx={{ color: theme.palette.primary.main, mb: 1, fontWeight: 'bold' }}>
-                      215,438.97897 <span style={{ fontSize: '0.8em' }}>XRP</span>
-                    </Balance>
                     <Typography sx={{ color: theme.palette.success.main, mt: 1 }} variant="h4">
-                      $109,325.8132
+                      {(totalValue || 0).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}{' '}
+                      XRP
                     </Typography>
                   </Box>
 
@@ -589,23 +592,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                     <Paper
                       sx={{ width: '100%', overflow: 'hidden', color: theme.palette.text.primary }}
                     >
-                      <TrustLines account={account} />
-                      {/* <Table>
-                                                <TableHead>
-                                                    <TableRow>
-                                                        <TableCell sx={{ color: theme.palette.text.primary }}>Asset</TableCell>
-                                                        <TableCell sx={{ color: theme.palette.text.primary }}>Amount</TableCell>
-                                                        <TableCell sx={{ color: theme.palette.text.primary }}>Estimated Value</TableCell>
-                                                    </TableRow>
-                                                </TableHead>
-                                                <TableBody>
-                                                    <TableRow>
-                                                        <TableCell sx={{ color: theme.palette.text.primary, width: '160%' }} colSpan={4}>
-                                                            <TrustLines account={account} />
-                                                        </TableCell>
-                                                    </TableRow>
-                                                </TableBody>
-                                            </Table> */}
+                      <TrustLines
+                        account={account}
+                        onUpdateTotalValue={(value) => setTotalValue(value)}
+                      />
                     </Paper>
                   </TabPanel>
                   <TabPanel sx={{ p: 0 }} value="1">
