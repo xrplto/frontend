@@ -116,10 +116,10 @@ export default function NFTHistory({ account }) {
           src={imageUrl}
           alt={nft.name || 'NFT'}
           style={{
-            width: '32px',
-            height: '32px',
+            width: '28px',
+            height: '28px',
             objectFit: 'contain',
-            borderRadius: '3px'
+            borderRadius: '2px'
           }}
           onError={(e) => {
             console.error('Error loading NFT image:', e);
@@ -132,16 +132,18 @@ export default function NFTHistory({ account }) {
     return (
       <Box
         sx={{
-          width: '32px',
-          height: '32px',
+          width: '28px',
+          height: '28px',
           backgroundColor: 'grey.300',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: '3px'
+          borderRadius: '2px'
         }}
       >
-        <Typography variant="caption">No Image</Typography>
+        <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+          No
+        </Typography>
       </Box>
     );
   };
@@ -156,9 +158,11 @@ export default function NFTHistory({ account }) {
             <Avatar
               alt="C"
               src={`https://s1.xrpnft.com/collection/${data.logo}`}
-              sx={{ width: 20, height: 20 }}
+              sx={{ width: 18, height: 18 }}
             />
-            <Typography variant="s7">{data.name}</Typography>
+            <Typography variant="s7" sx={{ fontSize: '0.75rem' }}>
+              {data.name}
+            </Typography>
           </Stack>
         );
       case Activity.MINT_BULK:
@@ -168,9 +172,11 @@ export default function NFTHistory({ account }) {
               <Avatar
                 alt="C"
                 src={`https://gateway.xrpnft.com/ipfs/${data.meta.image}`}
-                sx={{ width: 20, height: 20 }}
+                sx={{ width: 18, height: 18 }}
               />
-              <Typography variant="s7">{data.cname || 'N/A'}</Typography>
+              <Typography variant="s7" sx={{ fontSize: '0.75rem' }}>
+                {data.cname || 'N/A'}
+              </Typography>
             </Stack>
             <FlagsContainer Flags={data.flag} />
           </Stack>
@@ -182,29 +188,25 @@ export default function NFTHistory({ account }) {
               <Avatar
                 alt="C"
                 src={`https://s1.xrpl.to/token/${data.cost?.md5}`}
-                sx={{ width: 20, height: 20 }}
+                sx={{ width: 18, height: 18 }}
               />
-              <Stack>
-                <Stack direction="row" spacing={0.5}>
-                  <Typography variant="caption" color="text.secondary">
-                    Collection:
-                  </Typography>
-                  <Typography variant="caption">{data.cname}</Typography>
-                </Stack>
+              <Stack spacing={0}>
+                <Typography variant="s7" sx={{ fontSize: '0.75rem' }}>
+                  {data.cname}
+                </Typography>
                 <Stack direction="row" spacing={0.5} alignItems="center">
-                  <Typography variant="caption" color="#EB5757">
+                  <Typography variant="caption" color="#EB5757" sx={{ fontSize: '0.7rem' }}>
                     {data.cost?.amount}
                   </Typography>
-                  <Typography variant="caption">{data.cost?.name}</Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
+                    {data.cost?.name}
+                  </Typography>
                 </Stack>
               </Stack>
             </Stack>
-            <Stack direction="row" spacing={0.5} alignItems="center">
-              <Typography variant="caption" color="text.secondary">
-                Qty:
-              </Typography>
-              <Typography variant="caption">{data.quantity}</Typography>
-            </Stack>
+            <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
+              Qty: {data.quantity}
+            </Typography>
           </Stack>
         );
       case Activity.CREATE_SELL_OFFER:
@@ -225,10 +227,14 @@ export default function NFTHistory({ account }) {
 
         return (
           <Stack direction="row" spacing={0.5} alignItems="center">
-            {nft ? renderNFTPreview(nft) : <Box sx={{ width: 32, height: 32 }} />}
+            {nft ? renderNFTPreview(nft) : <Box sx={{ width: 28, height: 28 }} />}
             <Stack spacing={0}>
-              <Typography variant="s7">{nft?.collection || 'N/A'}</Typography>
-              <Typography variant="s7">{nft?.name || 'N/A'}</Typography>
+              <Typography variant="s7" sx={{ fontSize: '0.75rem' }}>
+                {nft?.collection || 'N/A'}
+              </Typography>
+              <Typography variant="s7" sx={{ fontSize: '0.75rem' }}>
+                {nft?.name || 'N/A'}
+              </Typography>
             </Stack>
           </Stack>
         );
@@ -395,34 +401,37 @@ export default function NFTHistory({ account }) {
                     hover
                     sx={{ '&:hover': { backgroundColor: 'action.hover' } }}
                   >
-                    <TableCell align="left" sx={{ py: '2px', px: '8px' }}>
-                      <Stack spacing={0.25}>
+                    <TableCell align="left" sx={{ py: '1px', px: '6px' }}>
+                      <Stack spacing={0.15}>
                         <Stack
                           direction="row"
                           spacing={0.5}
                           justifyContent="space-between"
                           alignItems="flex-start"
                         >
-                          <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ fontWeight: 500, fontSize: '0.75rem' }}
+                          >
                             {activityName}
                           </Typography>
                           <Typography
                             variant="caption"
                             color="text.secondary"
-                            sx={{ fontSize: '0.7rem' }}
+                            sx={{ fontSize: '0.65rem' }}
                           >
                             {strDateTime}
                           </Typography>
                         </Stack>
-                        <Box sx={{ mt: 0.25 }}>{activityDetails}</Box>
+                        <Box sx={{ mt: 0.15 }}>{activityDetails}</Box>
                         {data.NFTokenID && (
-                          <Stack alignItems="flex-end" sx={{ mt: 0.25 }}>
+                          <Stack alignItems="flex-end" sx={{ mt: 0.15 }}>
                             <Link
                               color="inherit"
                               target="_blank"
                               href={`/nft/${data.NFTokenID}`}
                               rel="noreferrer noopener nofollow"
-                              sx={{ fontSize: '0.7rem', color: 'text.secondary' }}
+                              sx={{ fontSize: '0.65rem', color: 'text.secondary' }}
                             >
                               ID: {data.NFTokenID.slice(0, 12)}...
                             </Link>
