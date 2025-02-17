@@ -16,20 +16,47 @@ const History = ({ account }) => {
       <Typography sx={{ color: theme.palette.text.primary, mb: 3 }} variant="h5">
         Historical Trades
       </Typography>
-      <ToggleButtonGroup
-        value={filter}
-        exclusive
-        onChange={(e, newFilter) => newFilter && setFilter(newFilter)}
-        sx={{ mb: 2 }}
-        size="small"
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          py: 1,
+          overflow: 'auto',
+          width: '100%',
+          '& > *': {
+            scrollSnapAlign: 'center'
+          },
+          '::-webkit-scrollbar': { display: 'none' },
+          mb: 2
+        }}
       >
-        <ToggleButton value="token" sx={{ px: 1.5, py: 0.5 }}>
-          Tokens
-        </ToggleButton>
-        <ToggleButton value="nft" sx={{ px: 1.5, py: 0.5 }}>
-          NFTs
-        </ToggleButton>
-      </ToggleButtonGroup>
+        <ToggleButtonGroup
+          value={filter}
+          exclusive
+          onChange={(e, newFilter) => newFilter && setFilter(newFilter)}
+          sx={{
+            '& .MuiToggleButton-root': {
+              border: 'none',
+              color: theme.palette.text.primary,
+              fontSize: '0.875rem',
+              fontWeight: 'normal',
+              textTransform: 'none',
+              '&.Mui-selected': {
+                backgroundColor: 'transparent',
+                color: theme.palette.primary.main,
+                fontWeight: 'bold'
+              },
+              '&:hover': {
+                backgroundColor: 'transparent',
+                color: theme.palette.primary.main
+              }
+            }
+          }}
+        >
+          <ToggleButton value="token">Tokens</ToggleButton>
+          <ToggleButton value="nft">NFTs</ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
       <Paper
         sx={{
           width: '100%',
