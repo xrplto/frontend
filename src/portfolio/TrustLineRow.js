@@ -227,38 +227,47 @@ const TrustLineRow = ({
         sx={{
           '&:hover': {
             '& .MuiTableCell-root': {
-              backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+              backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.02)'
             }
           },
           '& .MuiTableCell-root': {
-            padding: '8px 6px',
+            padding: '4px',
             borderBottom: `1px solid ${
-              darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
+              darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
             }`
           }
         }}
       >
-        <TableCell align="left">
-          <Stack direction="row" spacing={1.5} alignItems="center">
+        <TableCell>
+          <Stack direction="row" spacing={1} alignItems="center">
             <Avatar
               src={`https://s1.xrpl.to/token/${md5}`}
               sx={{
-                width: 32,
-                height: 32,
-                borderRadius: '6px',
+                width: 28,
+                height: 28,
+                borderRadius: '4px',
                 '& img': {
                   objectFit: 'contain',
                   width: '100%',
                   height: '100%',
-                  borderRadius: '6px'
+                  borderRadius: '4px'
                 }
               }}
             />
             <Box>
-              <Typography variant="body2" noWrap>
+              <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
                 {currencyName}
               </Typography>
-              <Typography variant="caption" color="text.secondary" noWrap sx={{ lineHeight: 1.2 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                noWrap
+                sx={{
+                  lineHeight: 1,
+                  fontSize: '0.7rem',
+                  opacity: 0.8
+                }}
+              >
                 {issuer.substring(0, 6)}...{issuer.substring(issuer.length - 4)}
               </Typography>
             </Box>
@@ -266,13 +275,13 @@ const TrustLineRow = ({
         </TableCell>
 
         <TableCell align="right" sx={{ display: isMobile ? 'none' : 'table-cell' }}>
-          <Typography variant="body2" noWrap>
+          <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
             {computedBalance}
           </Typography>
         </TableCell>
 
         <TableCell align="right">
-          <Typography variant="body2" noWrap>
+          <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
             {currencySymbols[activeFiatCurrency]}
             {computedValue}
           </Typography>
@@ -281,13 +290,20 @@ const TrustLineRow = ({
         {isLoggedIn && accountProfile?.account === account && (
           <TableCell align="center">
             <Chip
-              icon={<DeleteOutlineIcon fontSize="small" />}
+              icon={<DeleteOutlineIcon sx={{ fontSize: '1rem' }} />}
               label="Remove"
               color="error"
               variant="outlined"
               size="small"
               onClick={handleCancel}
-              sx={{ cursor: 'pointer' }}
+              sx={{
+                cursor: 'pointer',
+                height: '24px',
+                '& .MuiChip-label': {
+                  px: 1,
+                  fontSize: '0.75rem'
+                }
+              }}
             />
           </TableCell>
         )}

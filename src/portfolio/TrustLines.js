@@ -134,28 +134,73 @@ export default function TrustLines({ account }) {
         <Box
           sx={{
             display: 'flex',
-            gap: 1,
-            py: 1,
+            gap: 0.5,
             overflow: 'auto',
             width: '100%',
             '& > *': {
               scrollSnapAlign: 'center'
             },
             '::-webkit-scrollbar': { display: 'none' },
-            mt: 2
+            mt: 1
           }}
           ref={tableRef}
         >
-          <Table>
+          <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Currency</TableCell>
-                <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                <TableCell
+                  sx={{
+                    py: 1,
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    borderBottom: `1px solid ${
+                      darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
+                    }`
+                  }}
+                >
+                  Currency
+                </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{
+                    display: { xs: 'none', sm: 'table-cell' },
+                    py: 1,
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    borderBottom: `1px solid ${
+                      darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
+                    }`
+                  }}
+                >
                   Balance
                 </TableCell>
-                <TableCell align="right">Value</TableCell>
+                <TableCell
+                  align="right"
+                  sx={{
+                    py: 1,
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    borderBottom: `1px solid ${
+                      darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
+                    }`
+                  }}
+                >
+                  Value
+                </TableCell>
                 {isLoggedIn && accountProfile?.account === account && (
-                  <TableCell align="center">Action</TableCell>
+                  <TableCell
+                    align="center"
+                    sx={{
+                      py: 1,
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      borderBottom: `1px solid ${
+                        darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
+                      }`
+                    }}
+                  >
+                    Action
+                  </TableCell>
                 )}
               </TableRow>
             </TableHead>
@@ -215,7 +260,7 @@ export default function TrustLines({ account }) {
         </Box>
       )}
       {total > 0 && (
-        <Box sx={{ px: 1 }}>
+        <Box sx={{ px: 0.5, mt: 0.5 }}>
           <ListToolbar count={total} rows={rows} setRows={setRows} page={page} setPage={setPage} />
         </Box>
       )}
