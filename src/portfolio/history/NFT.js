@@ -17,6 +17,7 @@ import {
   Typography
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 // Utils
 import { Activity } from 'src/utils/constants';
@@ -377,8 +378,20 @@ export default function NFTHistory({ account }) {
           <PulseLoader color="#00AB55" size={8} />
         </Stack>
       ) : acts.length === 0 ? (
-        <Stack alignItems="center" sx={{ mt: 2 }}>
-          <Typography variant="subtitle2">No activity found</Typography>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
+          spacing={1}
+          sx={{
+            py: 4,
+            opacity: 0.8
+          }}
+        >
+          <ErrorOutlineIcon fontSize="small" />
+          <Typography variant="body2" color="text.secondary">
+            No History
+          </Typography>
         </Stack>
       ) : (
         <Box sx={{ mt: 0.5, mb: 0.5 }}>

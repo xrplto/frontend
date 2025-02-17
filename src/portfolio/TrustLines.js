@@ -146,9 +146,19 @@ export default function TrustLines({ account, onUpdateTotalValue }) {
       ) : (
         lines &&
         lines.length === 0 && (
-          <Stack alignItems="center" sx={{ mt: 2, mb: 1 }}>
-            <Typography variant="s6" color="primary">
-              <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />[ No TrustLines ]
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            spacing={1}
+            sx={{
+              py: 4,
+              opacity: 0.8
+            }}
+          >
+            <ErrorOutlineIcon fontSize="small" />
+            <Typography variant="body2" color="text.secondary">
+              No TrustLines
             </Typography>
           </Stack>
         )

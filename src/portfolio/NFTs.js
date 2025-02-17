@@ -79,10 +79,19 @@ const NFTs = ({ account, collection, type = 'collected', limit, onSelect, smallS
       ) : (
         nfts &&
         nfts.length === 0 && (
-          <Stack alignItems="center" sx={{ mt: 2, mb: 1 }}>
-            <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
-            <Typography variant="s6" color="primary">
-              [ No NFTs ]
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            spacing={1}
+            sx={{
+              py: 4,
+              opacity: 0.8
+            }}
+          >
+            <ErrorOutlineIcon fontSize="small" />
+            <Typography variant="body2" color="text.secondary">
+              No NFTs
             </Typography>
           </Stack>
         )
