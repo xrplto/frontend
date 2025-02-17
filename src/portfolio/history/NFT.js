@@ -17,25 +17,6 @@ import {
   Typography
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import GridOnIcon from '@mui/icons-material/GridOn';
-import Grid4x4Icon from '@mui/icons-material/Grid4x4';
-import ApprovalIcon from '@mui/icons-material/Approval';
-import TokenIcon from '@mui/icons-material/Token';
-import CollectionsIcon from '@mui/icons-material/Collections';
-import CasinoIcon from '@mui/icons-material/Casino';
-import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import HowToRegIcon from '@mui/icons-material/HowToReg';
-import SportsScoreIcon from '@mui/icons-material/SportsScore';
-import FireplaceIcon from '@mui/icons-material/Fireplace';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import AnimationIcon from '@mui/icons-material/Animation';
-import PaymentIcon from '@mui/icons-material/Payment';
-import ImportExportIcon from '@mui/icons-material/ImportExport';
 
 // Utils
 import { Activity } from 'src/utils/constants';
@@ -165,55 +146,6 @@ export default function NFTHistory({ account }) {
     );
   };
 
-  const renderActivityIcon = (activity) => {
-    switch (activity) {
-      case Activity.UPDATE_PROFILE:
-        return <ManageAccountsIcon />;
-      case Activity.CREATE_COLLECTION:
-        return <GridOnIcon />;
-      case Activity.IMPORT_COLLECTION:
-        return <ImportExportIcon />;
-      case Activity.UPDATE_COLLECTION:
-        return <Grid4x4Icon />;
-      case Activity.MINT_BULK:
-        return <CollectionsIcon />;
-      case Activity.BUY_MINT:
-        return <ShoppingBagIcon />;
-      case Activity.BUY_RANDOM_NFT:
-        return <CasinoIcon />;
-      case Activity.BUY_SEQUENCE_NFT:
-        return <AnimationIcon />;
-      case Activity.BUY_BULK_NFT:
-        return <TaskAltIcon />;
-      case Activity.CREATE_SELL_OFFER:
-      case Activity.CREATE_BUY_OFFER:
-        return <LocalOfferIcon />;
-      case Activity.CANCEL_SELL_OFFER:
-      case Activity.CANCEL_BUY_OFFER:
-        return <HighlightOffIcon />;
-      case Activity.ACCEPT_BUY_OFFER:
-      case Activity.ACCEPT_SELL_OFFER:
-        return <CheckCircleOutlineIcon />;
-      case Activity.OWNER_ACCPETED_YOUR_BUY_OFFER:
-      case Activity.BUYER_ACCEPTED_YOUR_SELL_OFFER:
-      case Activity.BROKER_ACCEPTED_YOUR_BUY_OFFER:
-      case Activity.BROKER_ACCEPTED_YOUR_SELL_OFFER:
-        return <HowToRegIcon />;
-      case Activity.YOU_RECEIVED_A_NFT:
-        return <SportsScoreIcon />;
-      case Activity.MINT_NFT:
-        return <TokenIcon />;
-      case Activity.BURN_NFT:
-        return <FireplaceIcon />;
-      case Activity.SET_NFT_MINTER:
-        return <ApprovalIcon />;
-      case Activity.REFUND_BUYER:
-        return <PaymentIcon />;
-      default:
-        return <HelpOutlineIcon />;
-    }
-  };
-
   const renderActivityDetails = (activity, data) => {
     switch (activity) {
       case Activity.CREATE_COLLECTION:
@@ -226,16 +158,7 @@ export default function NFTHistory({ account }) {
               src={`https://s1.xrpnft.com/collection/${data.logo}`}
               sx={{ width: 24, height: 24 }}
             />
-            <Stack>
-              <Stack direction="row" spacing={1}>
-                <Typography variant="s7">Name: </Typography>
-                <Typography variant="s8">{data.name}</Typography>
-              </Stack>
-              <Stack direction="row" spacing={1}>
-                <Typography variant="s7">Type: </Typography>
-                <Typography variant="s8">{data.type}</Typography>
-              </Stack>
-            </Stack>
+            <Typography variant="s7">{data.name}</Typography>
           </Stack>
         );
       case Activity.MINT_BULK:
@@ -247,20 +170,7 @@ export default function NFTHistory({ account }) {
                 src={`https://gateway.xrpnft.com/ipfs/${data.meta.image}`}
                 sx={{ width: 24, height: 24 }}
               />
-              <Stack>
-                <Stack direction="row" spacing={1}>
-                  <Typography variant="s7">Minter: </Typography>
-                  <Typography variant="s8">{data.minter}</Typography>
-                </Stack>
-                <Stack direction="row" spacing={1}>
-                  <Typography variant="s7">Issuer: </Typography>
-                  <Typography variant="s8">{data.issuer}</Typography>
-                </Stack>
-                <Stack direction="row" spacing={1}>
-                  <Typography variant="s7">Total: </Typography>
-                  <Typography variant="s8">{data.count}</Typography>
-                </Stack>
-              </Stack>
+              <Typography variant="s7">{data.cname || 'N/A'}</Typography>
             </Stack>
             <Stack direction="row" spacing={1} alignItems="center">
               <FlagsContainer Flags={data.flag} />
@@ -316,82 +226,32 @@ export default function NFTHistory({ account }) {
         const nft = nftDetails[data.NFTokenID];
 
         return (
-          <Stack direction="row" spacing={0.5} alignItems="center">
+          <Stack direction="row" spacing={1} alignItems="center">
             {nft ? renderNFTPreview(nft) : <Box sx={{ width: 36, height: 36 }} />}
-            <Stack spacing={0}>
-              {nft && (
-                <Typography variant="caption" noWrap sx={{ maxWidth: 200 }}>
-                  {nft.name || 'N/A'} • {nft.collection || 'N/A'}
-                </Typography>
-              )}
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                  ID:
-                </Typography>
-                <Link
-                  color="inherit"
-                  target="_blank"
-                  href={`/nft/${data.NFTokenID}`}
-                  rel="noreferrer noopener nofollow"
-                  sx={{ fontSize: '0.7rem' }}
-                >
-                  {data.NFTokenID.slice(0, 12)}...
-                </Link>
-              </Stack>
+            <Stack>
+              <Typography variant="s7">{nft?.collection || 'N/A'}</Typography>
+              <Typography variant="s7">{nft?.name || 'N/A'}</Typography>
             </Stack>
           </Stack>
         );
       case Activity.MINT_NFT:
         return data.meta ? (
-          <Stack direction="row" spacing={0.5} justifyContent="space-between" alignItems="center">
-            <Stack direction="row" spacing={0.5}>
-              <Avatar
-                alt="C"
-                src={`https://gateway.xrpnft.com/ipfs/${data.meta.image}`}
-                sx={{ width: 20, height: 20 }}
-              />
-              <Stack spacing={0}>
-                <Typography variant="caption">{data.name}</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {data.type}
-                </Typography>
-              </Stack>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Avatar
+              alt="C"
+              src={`https://gateway.xrpnft.com/ipfs/${data.meta.image}`}
+              sx={{ width: 24, height: 24 }}
+            />
+            <Stack>
+              <Typography variant="s7">{data.collection || 'N/A'}</Typography>
+              <Typography variant="s7">{data.name || 'N/A'}</Typography>
             </Stack>
-            <FlagsContainer Flags={data.flag} />
           </Stack>
         ) : (
-          <Stack direction="row" spacing={0.5} alignItems="center">
-            <Typography variant="caption" color="text.secondary">
-              ID:
-            </Typography>
-            <Link
-              color="inherit"
-              target="_blank"
-              href={`/nft/${data.NFTokenID}`}
-              rel="noreferrer noopener nofollow"
-              sx={{ fontSize: '0.7rem' }}
-            >
-              {data.NFTokenID.slice(0, 12)}...
-            </Link>
-          </Stack>
+          <Typography variant="s7">{data.NFTokenID}</Typography>
         );
       case Activity.BURN_NFT:
-        return (
-          <Stack direction="row" spacing={0.5} alignItems="center">
-            <Typography variant="caption" color="text.secondary">
-              ID:
-            </Typography>
-            <Link
-              color="inherit"
-              target="_blank"
-              href={`/nft/${data.NFTokenID}`}
-              rel="noreferrer noopener nofollow"
-              sx={{ fontSize: '0.7rem' }}
-            >
-              {data.NFTokenID.slice(0, 12)}...
-            </Link>
-          </Stack>
-        );
+        return <Typography variant="s7">{data.NFTokenID}</Typography>;
       case Activity.SET_NFT_MINTER:
         return (
           <Stack direction="row" spacing={1}>
@@ -537,16 +397,13 @@ export default function NFTHistory({ account }) {
                     hover
                     sx={{ '&:hover': { backgroundColor: 'action.hover' } }}
                   >
-                    <TableCell align="left" sx={{ width: '32px', p: '4px' }}>
-                      <Box sx={{ fontSize: '1rem' }}>{renderActivityIcon(activity)}</Box>
-                    </TableCell>
                     <TableCell align="left" sx={{ py: '4px' }}>
                       <Stack spacing={0.25}>
                         <Stack
                           direction="row"
                           spacing={0.5}
                           justifyContent="space-between"
-                          alignItems="center"
+                          alignItems="flex-start"
                         >
                           <Typography variant="caption" sx={{ fontWeight: 500 }}>
                             {activityName}
@@ -560,6 +417,19 @@ export default function NFTHistory({ account }) {
                           </Typography>
                         </Stack>
                         {activityDetails}
+                        {data.NFTokenID && (
+                          <Stack alignItems="flex-end">
+                            <Link
+                              color="inherit"
+                              target="_blank"
+                              href={`/nft/${data.NFTokenID}`}
+                              rel="noreferrer noopener nofollow"
+                              sx={{ fontSize: '0.7rem', color: 'text.secondary' }}
+                            >
+                              ID: {data.NFTokenID.slice(0, 12)}...
+                            </Link>
+                          </Stack>
+                        )}
                       </Stack>
                     </TableCell>
                   </TableRow>
