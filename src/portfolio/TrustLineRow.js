@@ -97,7 +97,8 @@ const TrustLineRow = ({
   verified,
   rate,
   value,
-  origin
+  origin,
+  user
 }) => {
   const BASE_URL = process.env.API_URL;
   const { darkMode, activeFiatCurrency, openSnackbar, accountProfile, setSync } =
@@ -282,13 +283,11 @@ const TrustLineRow = ({
     }
   };
 
-  const computedBalance = useMemo(
-    () => parseFloat(parseFloat(balance).toFixed(2)).toString(),
-    [balance]
-  );
+  const computedBalance = useMemo(() => Number(balance).toFixed(8), [balance]);
   const computedValue = useMemo(() => {
-    const value = token.exch ? balance * fNumberWithCurreny(token.exch, exchRate) : 0;
-    return value.toFixed(2);
+    if (!balance || !token.exch || !exchRate) return '0.00';
+    const value = Number(balance) * Number(token.exch) * Number(exchRate);
+    return isNaN(value) ? '0.00' : value.toFixed(2);
   }, [balance, token.exch, exchRate]);
 
   return (
@@ -364,7 +363,11 @@ const TrustLineRow = ({
                   opacity: 0.8
                 }}
               >
-                {issuer.substring(0, 6)}...{issuer.substring(issuer.length - 4)}
+                <Tooltip title={issuer}>
+                  <span>
+                    {user || `${issuer.substring(0, 6)}...${issuer.substring(issuer.length - 4)}`}
+                  </span>
+                </Tooltip>
               </Typography>
             </Box>
           </Stack>

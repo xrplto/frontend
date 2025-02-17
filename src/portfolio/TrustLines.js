@@ -230,7 +230,8 @@ export default function TrustLines({ account }) {
                   md5,
                   percentOwned,
                   verified,
-                  origin
+                  origin,
+                  user
                 } = row;
                 const currencyName = normalizeCurrencyCodeXummImpl(currency);
 
@@ -250,6 +251,7 @@ export default function TrustLines({ account }) {
                     rate={rate}
                     value={value}
                     origin={origin}
+                    user={user}
                   />
                 );
               })}
