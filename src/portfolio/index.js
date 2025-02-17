@@ -76,22 +76,6 @@ const Balance = styled('div')(({ theme, sx }) => ({
   ...sx
 }));
 
-const ButtonSend = styled(Button)(({ theme }) => ({
-  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-  color: theme.palette.primary.main,
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.2)
-  }
-}));
-
-const ButtonReceive = styled(Button)(({ theme }) => ({
-  backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-  color: theme.palette.secondary.main,
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.secondary.main, 0.2)
-  }
-}));
-
 const tradesData = [
   {
     id: 1,
@@ -400,64 +384,63 @@ export default function Portfolio({ account, limit, collection, type }) {
                     <Line data={volumeData} options={volumeOptions} />
                   </Box>
 
-                  <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-                    <ButtonSend variant="contained" fullWidth startIcon={<SwapHorizIcon />}>
-                      Send
-                    </ButtonSend>
-                    <ButtonReceive
-                      variant="contained"
-                      fullWidth
-                      startIcon={<AccountBalanceWalletIcon />}
-                    >
-                      Receive
-                    </ButtonReceive>
-                  </Stack>
-
                   <Box sx={{ mt: 2, mb: 2 }}>
-                    <Grid container spacing={1} sx={{ maxWidth: 400 }}>
+                    <Grid
+                      container
+                      spacing={0}
+                      sx={{
+                        width: '100%',
+                        maxWidth: '100%',
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '4px',
+                        p: '3px'
+                      }}
+                    >
                       {loadingCollections
-                        ? Array(8)
+                        ? Array(28)
                             .fill(0)
                             .map((_, index) => (
-                              <Grid
-                                item
+                              <Box
                                 key={index}
-                                sx={{ p: '4px', flexBasis: '12.5%', maxWidth: '12.5%' }}
+                                sx={{
+                                  flexBasis: 'calc(7.143% - 4px)',
+                                  maxWidth: 'calc(7.143% - 4px)'
+                                }}
                               >
                                 <Skeleton
                                   variant="rounded"
-                                  width={32}
-                                  height={32}
-                                  sx={{ borderRadius: '8px' }}
+                                  width={28}
+                                  height={28}
+                                  sx={{ borderRadius: '4px' }}
                                 />
-                              </Grid>
+                              </Box>
                             ))
-                        : collections.slice(0, 8).map((collection, index) => (
-                            <Grid
-                              item
+                        : collections.map((collection, index) => (
+                            <Box
                               key={index}
-                              sx={{ p: '4px', flexBasis: '12.5%', maxWidth: '12.5%' }}
+                              sx={{
+                                flexBasis: 'calc(7.143% - 4px)',
+                                maxWidth: 'calc(7.143% - 4px)'
+                              }}
                             >
                               <Tooltip title={collection.collection.name}>
                                 <Avatar
                                   src={`https://s1.xrpnft.com/collection/${collection.collection.logoImage}`}
                                   variant="rounded"
                                   sx={{
-                                    width: 32,
-                                    height: 32,
+                                    width: 28,
+                                    height: 28,
                                     cursor: 'pointer',
-                                    borderRadius: '8px',
-                                    border: `2px solid ${theme.palette.primary.main}`,
-                                    boxShadow: `0 0 10px ${alpha(theme.palette.primary.main, 0.3)}`,
+                                    borderRadius: '4px',
+                                    border: `1px solid ${theme.palette.primary.main}`,
+                                    boxShadow: `0 0 4px ${alpha(theme.palette.primary.main, 0.3)}`,
                                     backgroundColor: theme.palette.background.paper,
                                     '&:hover': {
                                       transform: 'scale(1.1)',
                                       transition: 'all 0.2s ease-in-out',
-                                      border: `2px solid ${theme.palette.primary.light}`,
-                                      boxShadow: `0 0 15px ${alpha(
-                                        theme.palette.primary.main,
-                                        0.5
-                                      )}`
+                                      border: `1px solid ${theme.palette.primary.light}`,
+                                      boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.5)}`
                                     }
                                   }}
                                   onClick={() =>
@@ -465,7 +448,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                   }
                                 />
                               </Tooltip>
-                            </Grid>
+                            </Box>
                           ))}
                     </Grid>
                   </Box>
