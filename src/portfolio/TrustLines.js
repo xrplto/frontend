@@ -91,12 +91,12 @@ export default function TrustLines({ account }) {
   const getLines = () => {
     setLoading(true);
     axios
-      .get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=${rows}`)
+      .get(`https://api.xrpl.to/api/trustlines?account=${account}&includeRates=true`)
       .then((res) => {
         let ret = res.status === 200 ? res.data : undefined;
-        if (ret) {
+        if (ret && ret.success) {
           setTotal(ret.total);
-          setLines(ret.lines);
+          setLines(ret.trustlines);
         }
       })
       .catch((err) => {
@@ -187,6 +187,20 @@ export default function TrustLines({ account }) {
                 >
                   Value
                 </TableCell>
+                <TableCell
+                  align="right"
+                  sx={{
+                    display: { xs: 'none', md: 'table-cell' },
+                    py: 1,
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    borderBottom: `1px solid ${
+                      darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
+                    }`
+                  }}
+                >
+                  % Owned
+                </TableCell>
                 {isLoggedIn && accountProfile?.account === account && (
                   <TableCell
                     align="center"
@@ -206,44 +220,23 @@ export default function TrustLines({ account }) {
             </TableHead>
             <TableBody>
               {lines.map((row, idx) => {
-                const { _id, Balance, HighLimit, LowLimit } = row;
-                const currency = Balance.currency;
+                const {
+                  currency,
+                  issuer,
+                  balance,
+                  limit,
+                  rate,
+                  value,
+                  md5,
+                  percentOwned,
+                  verified,
+                  origin
+                } = row;
                 const currencyName = normalizeCurrencyCodeXummImpl(currency);
-                let balance = 0;
-                if (account === HighLimit.issuer) {
-                  balance = Decimal.abs(Balance.value).toString();
-                } else {
-                  balance = Balance.value;
-                }
 
-                let issuer = null;
-                let _balance = Number.parseFloat(Balance.value);
-                let highLimit = Number.parseFloat(HighLimit.value);
-                let lowLimit = Number.parseFloat(LowLimit.value);
-                if (_balance > 0) {
-                  issuer = HighLimit.issuer;
-                  account = LowLimit.issuer;
-                } else if (_balance < 0) {
-                  issuer = LowLimit.issuer;
-                  account = HighLimit.issuer;
-                } else {
-                  if (highLimit > 0 && lowLimit == 0) {
-                    issuer = LowLimit.issuer;
-                    account = HighLimit.issuer;
-                  } else if (lowLimit > 0 && highLimit == 0) {
-                    issuer = HighLimit.issuer;
-                    account = LowLimit.issuer;
-                  } else {
-                    issuer = null;
-                    account = null;
-                  }
-                }
-
-                let md5 = null;
-                if (issuer && currency) md5 = CryptoJS.MD5(issuer + '_' + currency).toString();
                 return (
                   <TrustLineRow
-                    key={_id}
+                    key={idx}
                     currencyName={currencyName}
                     currency={currency}
                     balance={balance}
@@ -251,7 +244,12 @@ export default function TrustLines({ account }) {
                     exchRate={exchRate}
                     issuer={issuer}
                     account={account}
-                    limit={highLimit || lowLimit}
+                    limit={limit}
+                    percentOwned={percentOwned}
+                    verified={verified}
+                    rate={rate}
+                    value={value}
+                    origin={origin}
                   />
                 );
               })}

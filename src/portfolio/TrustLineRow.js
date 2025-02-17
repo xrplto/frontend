@@ -6,7 +6,8 @@ import {
   Typography,
   useMediaQuery,
   Box,
-  Chip
+  Chip,
+  Tooltip
 } from '@mui/material';
 import { useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -18,6 +19,24 @@ import sdk from '@crossmarkio/sdk';
 import CustomQRDialog from 'src/components/QRDialog';
 import CustomDialog from 'src/components/Dialog';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import LockIcon from '@mui/icons-material/Lock';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+
+const getOriginIcon = (origin) => {
+  switch (origin) {
+    case 'FirstLedger':
+      return <RocketLaunchIcon sx={{ fontSize: '1rem', color: '#007B55' }} />;
+    case 'Magnetic X':
+      return <RocketLaunchIcon sx={{ fontSize: '1rem', color: '#2065D1' }} />;
+    case 'xrp.fun':
+      return <RocketLaunchIcon sx={{ fontSize: '1rem', color: '#B72136' }} />;
+    default:
+      return <RocketLaunchIcon sx={{ fontSize: '1rem', color: '#637381' }} />;
+  }
+};
 
 const TrustLineRow = ({
   limit,
@@ -27,7 +46,12 @@ const TrustLineRow = ({
   exchRate,
   issuer,
   account,
-  currency
+  currency,
+  percentOwned,
+  verified,
+  rate,
+  value,
+  origin
 }) => {
   const BASE_URL = process.env.API_URL;
   const { darkMode, activeFiatCurrency, openSnackbar, accountProfile, setSync } =
@@ -255,9 +279,35 @@ const TrustLineRow = ({
               }}
             />
             <Box>
-              <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
-                {currencyName}
-              </Typography>
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
+                  {currencyName}
+                </Typography>
+                {verified && (
+                  <Tooltip title="Verified Token">
+                    <VerifiedIcon sx={{ fontSize: '1rem', color: '#007B55' }} />
+                  </Tooltip>
+                )}
+                {origin && (
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
+                    <>
+                      <Tooltip title="Blackholed Issuer">
+                        <LockIcon sx={{ fontSize: '1rem', color: '#007B55' }} />
+                      </Tooltip>
+                      {origin === 'xrp.fun' ? (
+                        <Tooltip title="Liquidity Pool Not Burned">
+                          <ElectricBoltIcon sx={{ fontSize: '1rem', color: '#B72136' }} />
+                        </Tooltip>
+                      ) : (
+                        <Tooltip title="Burned Liquidity Pool">
+                          <LocalFireDepartmentIcon sx={{ fontSize: '1rem', color: '#2065D1' }} />
+                        </Tooltip>
+                      )}
+                    </>
+                  </Stack>
+                )}
+              </Stack>
               <Typography
                 variant="caption"
                 color="text.secondary"
@@ -274,7 +324,7 @@ const TrustLineRow = ({
           </Stack>
         </TableCell>
 
-        <TableCell align="right" sx={{ display: isMobile ? 'none' : 'table-cell' }}>
+        <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
           <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
             {computedBalance}
           </Typography>
@@ -284,6 +334,12 @@ const TrustLineRow = ({
           <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
             {currencySymbols[activeFiatCurrency]}
             {computedValue}
+          </Typography>
+        </TableCell>
+
+        <TableCell align="right" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+          <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
+            {parseFloat(percentOwned).toFixed(2)}%
           </Typography>
         </TableCell>
 
