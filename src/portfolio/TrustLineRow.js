@@ -7,7 +7,8 @@ import {
   useMediaQuery,
   Box,
   Chip,
-  Tooltip
+  Tooltip,
+  SvgIcon
 } from '@mui/material';
 import { useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -20,21 +21,66 @@ import CustomQRDialog from 'src/components/QRDialog';
 import CustomDialog from 'src/components/Dialog';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { Icon } from '@iconify/react';
+import chartLineUp from '@iconify/icons-ph/chart-line-up';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import LockIcon from '@mui/icons-material/Lock';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+
+// Add XPMarket icon component
+const XPMarketIcon = (props) => (
+  <SvgIcon {...props} viewBox="0 0 32 32">
+    <path
+      d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
+      fill="inherit"
+    />
+    <path
+      d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
+      fill="inherit"
+    />
+    <path
+      d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
+      fill="inherit"
+    />
+  </SvgIcon>
+);
 
 const getOriginIcon = (origin) => {
   switch (origin) {
     case 'FirstLedger':
-      return <RocketLaunchIcon sx={{ fontSize: '1rem', color: '#007B55' }} />;
+      return <OpenInNewIcon sx={{ fontSize: '1rem', color: '#0C53B7' }} />;
     case 'Magnetic X':
-      return <RocketLaunchIcon sx={{ fontSize: '1rem', color: '#2065D1' }} />;
+      return (
+        <Box
+          component="img"
+          src="/magneticx-logo.webp"
+          alt="Magnetic X"
+          sx={{
+            width: '16px',
+            height: '16px',
+            objectFit: 'contain'
+          }}
+        />
+      );
     case 'xrp.fun':
-      return <RocketLaunchIcon sx={{ fontSize: '1rem', color: '#B72136' }} />;
+      return (
+        <Icon
+          icon={chartLineUp}
+          style={{
+            fontSize: '16px',
+            color: '#B72136',
+            backgroundColor: '#fff',
+            borderRadius: '2px'
+          }}
+        />
+      );
+    case 'XPmarket':
+      return <XPMarketIcon sx={{ fontSize: '1rem', color: '#6D1FEE' }} />;
+    case null:
     default:
-      return <RocketLaunchIcon sx={{ fontSize: '1rem', color: '#637381' }} />;
+      return <AutoAwesomeIcon sx={{ fontSize: '16px', color: '#637381' }} />;
   }
 };
 
@@ -288,9 +334,9 @@ const TrustLineRow = ({
                     <VerifiedIcon sx={{ fontSize: '1rem', color: '#007B55' }} />
                   </Tooltip>
                 )}
-                {origin && (
-                  <Stack direction="row" spacing={0.5} alignItems="center">
-                    <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
+                  {origin && (
                     <>
                       <Tooltip title="Blackholed Issuer">
                         <LockIcon sx={{ fontSize: '1rem', color: '#007B55' }} />
@@ -305,8 +351,8 @@ const TrustLineRow = ({
                         </Tooltip>
                       )}
                     </>
-                  </Stack>
-                )}
+                  )}
+                </Stack>
               </Stack>
               <Typography
                 variant="caption"
