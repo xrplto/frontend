@@ -393,8 +393,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                         maxWidth: '100%',
                         display: 'flex',
                         flexWrap: 'wrap',
-                        gap: '4px',
-                        p: '3px'
+                        gap: '6px',
+                        p: '4px'
                       }}
                     >
                       {loadingCollections
@@ -404,15 +404,15 @@ export default function Portfolio({ account, limit, collection, type }) {
                               <Box
                                 key={index}
                                 sx={{
-                                  flexBasis: 'calc(7.143% - 4px)',
-                                  maxWidth: 'calc(7.143% - 4px)'
+                                  flexBasis: 'calc(7.143% - 6px)',
+                                  maxWidth: 'calc(7.143% - 6px)'
                                 }}
                               >
                                 <Skeleton
                                   variant="rounded"
-                                  width={28}
-                                  height={28}
-                                  sx={{ borderRadius: '4px' }}
+                                  width={30}
+                                  height={30}
+                                  sx={{ borderRadius: '5px' }}
                                 />
                               </Box>
                             ))
@@ -420,8 +420,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                             <Box
                               key={index}
                               sx={{
-                                flexBasis: 'calc(7.143% - 4px)',
-                                maxWidth: 'calc(7.143% - 4px)'
+                                flexBasis: 'calc(7.143% - 6px)',
+                                maxWidth: 'calc(7.143% - 6px)'
                               }}
                             >
                               <Tooltip title={collection.collection.name}>
@@ -429,18 +429,21 @@ export default function Portfolio({ account, limit, collection, type }) {
                                   src={`https://s1.xrpnft.com/collection/${collection.collection.logoImage}`}
                                   variant="rounded"
                                   sx={{
-                                    width: 28,
-                                    height: 28,
+                                    width: 30,
+                                    height: 30,
                                     cursor: 'pointer',
-                                    borderRadius: '4px',
+                                    borderRadius: '5px',
                                     border: `1px solid ${theme.palette.primary.main}`,
-                                    boxShadow: `0 0 4px ${alpha(theme.palette.primary.main, 0.3)}`,
+                                    boxShadow: `0 0 5px ${alpha(theme.palette.primary.main, 0.3)}`,
                                     backgroundColor: theme.palette.background.paper,
                                     '&:hover': {
                                       transform: 'scale(1.1)',
                                       transition: 'all 0.2s ease-in-out',
                                       border: `1px solid ${theme.palette.primary.light}`,
-                                      boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.5)}`
+                                      boxShadow: `0 0 10px ${alpha(
+                                        theme.palette.primary.main,
+                                        0.5
+                                      )}`
                                     }
                                   }}
                                   onClick={() =>
