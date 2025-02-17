@@ -105,7 +105,7 @@ const NFTs = ({ account, collection, type = 'collected', limit, onSelect, smallS
             xs={smallSize ? 6 : 12}
             sm={smallSize ? 4 : 6}
             md={smallSize ? 3 : 4}
-            lg={2.4}
+            lg={1.714}
           >
             {collection ? (
               <NFTCard nft={nft} smallSize={smallSize} onSelect={onSelect} />

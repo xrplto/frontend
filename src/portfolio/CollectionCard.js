@@ -193,36 +193,51 @@ export default function CollectionCard({ collectionData, type, account, handleRe
         {isVideo && <video src={imgUrl} style={{ display: 'none' }} onCanPlay={onImageLoaded} />}
         <CardContent
           sx={{
-            padding: 1.5,
+            padding: 1,
             background: theme.palette.background.default,
-            height: '25%', // Reduced from 30% to 25%
+            height: '25%',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            '& > *': { mb: 0.5 }
           }}
         >
           <Box>
             <Typography
-              variant="subtitle2"
+              variant="body2"
               sx={{
                 fontWeight: 'bold',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
                 WebkitLineClamp: 1,
-                WebkitBoxOrient: 'vertical'
+                WebkitBoxOrient: 'vertical',
+                fontSize: '0.8rem',
+                lineHeight: 1.2
               }}
             >
               {name}
             </Typography>
-            <Typography variant="caption" color="text.secondary">
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{
+                fontSize: '0.7rem',
+                lineHeight: 1.1
+              }}
+            >
               {collectionData.nftCount} item(s)
             </Typography>
           </Box>
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mt: 0.5 }}
+          >
             {destination && getMinterName(account) ? (
               <Tooltip title={`Sold & Transfer`}>
-                <SportsScoreIcon color="primary" fontSize="small" />
+                <SportsScoreIcon color="primary" sx={{ fontSize: '1rem' }} />
               </Tooltip>
             ) : (
               <Box /> // Empty box to maintain layout
@@ -231,11 +246,15 @@ export default function CollectionCard({ collectionData, type, account, handleRe
               <Chip
                 variant="filled"
                 color="secondary"
-                icon={<LeaderboardOutlinedIcon sx={{ width: '14px' }} />}
-                label={<Typography variant="caption">{fIntNumber(rarity_rank)}</Typography>}
+                icon={<LeaderboardOutlinedIcon sx={{ width: '12px', height: '12px' }} />}
+                label={
+                  <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
+                    {fIntNumber(rarity_rank)}
+                  </Typography>
+                }
                 size="small"
                 sx={{
-                  height: '20px',
+                  height: '16px',
                   '& .MuiChip-label': { px: 0.5 }
                 }}
               />
