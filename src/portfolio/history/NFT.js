@@ -116,8 +116,8 @@ export default function NFTHistory({ account }) {
           src={imageUrl}
           alt={nft.name || 'NFT'}
           style={{
-            width: '36px',
-            height: '36px',
+            width: '32px',
+            height: '32px',
             objectFit: 'contain',
             borderRadius: '3px'
           }}
@@ -132,8 +132,8 @@ export default function NFTHistory({ account }) {
     return (
       <Box
         sx={{
-          width: '36px',
-          height: '36px',
+          width: '32px',
+          height: '32px',
           backgroundColor: 'grey.300',
           display: 'flex',
           alignItems: 'center',
@@ -152,29 +152,27 @@ export default function NFTHistory({ account }) {
       case Activity.IMPORT_COLLECTION:
       case Activity.UPDATE_COLLECTION:
         return (
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={0.5} alignItems="center">
             <Avatar
               alt="C"
               src={`https://s1.xrpnft.com/collection/${data.logo}`}
-              sx={{ width: 24, height: 24 }}
+              sx={{ width: 20, height: 20 }}
             />
             <Typography variant="s7">{data.name}</Typography>
           </Stack>
         );
       case Activity.MINT_BULK:
         return (
-          <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="center">
-            <Stack direction="row" spacing={1}>
+          <Stack direction="row" spacing={0.5} justifyContent="space-between" alignItems="center">
+            <Stack direction="row" spacing={0.5}>
               <Avatar
                 alt="C"
                 src={`https://gateway.xrpnft.com/ipfs/${data.meta.image}`}
-                sx={{ width: 24, height: 24 }}
+                sx={{ width: 20, height: 20 }}
               />
               <Typography variant="s7">{data.cname || 'N/A'}</Typography>
             </Stack>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <FlagsContainer Flags={data.flag} />
-            </Stack>
+            <FlagsContainer Flags={data.flag} />
           </Stack>
         );
       case Activity.BUY_MINT:
@@ -226,9 +224,9 @@ export default function NFTHistory({ account }) {
         const nft = nftDetails[data.NFTokenID];
 
         return (
-          <Stack direction="row" spacing={1} alignItems="center">
-            {nft ? renderNFTPreview(nft) : <Box sx={{ width: 36, height: 36 }} />}
-            <Stack>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            {nft ? renderNFTPreview(nft) : <Box sx={{ width: 32, height: 32 }} />}
+            <Stack spacing={0}>
               <Typography variant="s7">{nft?.collection || 'N/A'}</Typography>
               <Typography variant="s7">{nft?.name || 'N/A'}</Typography>
             </Stack>
@@ -397,7 +395,7 @@ export default function NFTHistory({ account }) {
                     hover
                     sx={{ '&:hover': { backgroundColor: 'action.hover' } }}
                   >
-                    <TableCell align="left" sx={{ py: '4px' }}>
+                    <TableCell align="left" sx={{ py: '2px', px: '8px' }}>
                       <Stack spacing={0.25}>
                         <Stack
                           direction="row"
@@ -416,9 +414,9 @@ export default function NFTHistory({ account }) {
                             {strDateTime}
                           </Typography>
                         </Stack>
-                        {activityDetails}
+                        <Box sx={{ mt: 0.25 }}>{activityDetails}</Box>
                         {data.NFTokenID && (
-                          <Stack alignItems="flex-end">
+                          <Stack alignItems="flex-end" sx={{ mt: 0.25 }}>
                             <Link
                               color="inherit"
                               target="_blank"
