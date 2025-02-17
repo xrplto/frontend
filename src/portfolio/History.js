@@ -41,10 +41,20 @@ const History = ({ account }) => {
               fontSize: '0.875rem',
               fontWeight: 'normal',
               textTransform: 'none',
+              position: 'relative',
               '&.Mui-selected': {
                 backgroundColor: 'transparent',
                 color: theme.palette.primary.main,
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                '&:after': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: -1,
+                  left: 0,
+                  width: '100%',
+                  height: '2px',
+                  backgroundColor: theme.palette.primary.main
+                }
               },
               '&:hover': {
                 backgroundColor: 'transparent',
