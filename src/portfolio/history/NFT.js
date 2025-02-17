@@ -116,8 +116,8 @@ export default function NFTHistory({ account }) {
           src={imageUrl}
           alt={nft.name || 'NFT'}
           style={{
-            width: '28px',
-            height: '28px',
+            width: '24px',
+            height: '24px',
             objectFit: 'contain',
             borderRadius: '2px'
           }}
@@ -132,8 +132,8 @@ export default function NFTHistory({ account }) {
     return (
       <Box
         sx={{
-          width: '28px',
-          height: '28px',
+          width: '24px',
+          height: '24px',
           backgroundColor: 'grey.300',
           display: 'flex',
           alignItems: 'center',
@@ -142,7 +142,7 @@ export default function NFTHistory({ account }) {
         }}
       >
         <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-          No
+          N
         </Typography>
       </Box>
     );
@@ -154,27 +154,33 @@ export default function NFTHistory({ account }) {
       case Activity.IMPORT_COLLECTION:
       case Activity.UPDATE_COLLECTION:
         return (
-          <Stack direction="row" spacing={0.5} alignItems="center">
+          <Stack direction="row" spacing={0.5} alignItems="center" sx={{ minHeight: '24px' }}>
             <Avatar
               alt="C"
               src={`https://s1.xrpnft.com/collection/${data.logo}`}
-              sx={{ width: 18, height: 18 }}
+              sx={{ width: 16, height: 16 }}
             />
-            <Typography variant="s7" sx={{ fontSize: '0.75rem' }}>
+            <Typography variant="s7" sx={{ fontSize: '0.75rem', lineHeight: 1 }}>
               {data.name}
             </Typography>
           </Stack>
         );
       case Activity.MINT_BULK:
         return (
-          <Stack direction="row" spacing={0.5} justifyContent="space-between" alignItems="center">
+          <Stack
+            direction="row"
+            spacing={0.5}
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ minHeight: '24px' }}
+          >
             <Stack direction="row" spacing={0.5}>
               <Avatar
                 alt="C"
                 src={`https://gateway.xrpnft.com/ipfs/${data.meta.image}`}
-                sx={{ width: 18, height: 18 }}
+                sx={{ width: 16, height: 16 }}
               />
-              <Typography variant="s7" sx={{ fontSize: '0.75rem' }}>
+              <Typography variant="s7" sx={{ fontSize: '0.75rem', lineHeight: 1 }}>
                 {data.cname || 'N/A'}
               </Typography>
             </Stack>
@@ -226,13 +232,13 @@ export default function NFTHistory({ account }) {
         const nft = nftDetails[data.NFTokenID];
 
         return (
-          <Stack direction="row" spacing={0.5} alignItems="center">
-            {nft ? renderNFTPreview(nft) : <Box sx={{ width: 28, height: 28 }} />}
+          <Stack direction="row" spacing={0.5} alignItems="center" sx={{ minHeight: '24px' }}>
+            {nft ? renderNFTPreview(nft) : <Box sx={{ width: 24, height: 24 }} />}
             <Stack spacing={0}>
-              <Typography variant="s7" sx={{ fontSize: '0.75rem' }}>
+              <Typography variant="s7" sx={{ fontSize: '0.75rem', lineHeight: 1 }}>
                 {nft?.collection || 'N/A'}
               </Typography>
-              <Typography variant="s7" sx={{ fontSize: '0.75rem' }}>
+              <Typography variant="s7" sx={{ fontSize: '0.75rem', lineHeight: 1 }}>
                 {nft?.name || 'N/A'}
               </Typography>
             </Stack>
@@ -399,39 +405,43 @@ export default function NFTHistory({ account }) {
                   <TableRow
                     key={time}
                     hover
-                    sx={{ '&:hover': { backgroundColor: 'action.hover' } }}
+                    sx={{
+                      '&:hover': { backgroundColor: 'action.hover' },
+                      '& td': { borderBottom: 'none' }
+                    }}
                   >
-                    <TableCell align="left" sx={{ py: '1px', px: '6px' }}>
-                      <Stack spacing={0.15}>
+                    <TableCell align="left" sx={{ py: 0, px: '6px' }}>
+                      <Stack spacing={0.1}>
                         <Stack
                           direction="row"
                           spacing={0.5}
                           justifyContent="space-between"
-                          alignItems="flex-start"
+                          alignItems="center"
+                          sx={{ minHeight: '20px' }}
                         >
                           <Typography
                             variant="caption"
-                            sx={{ fontWeight: 500, fontSize: '0.75rem' }}
+                            sx={{ fontWeight: 500, fontSize: '0.75rem', lineHeight: 1 }}
                           >
                             {activityName}
                           </Typography>
                           <Typography
                             variant="caption"
                             color="text.secondary"
-                            sx={{ fontSize: '0.65rem' }}
+                            sx={{ fontSize: '0.65rem', lineHeight: 1 }}
                           >
                             {strDateTime}
                           </Typography>
                         </Stack>
-                        <Box sx={{ mt: 0.15 }}>{activityDetails}</Box>
+                        <Box>{activityDetails}</Box>
                         {data.NFTokenID && (
-                          <Stack alignItems="flex-end" sx={{ mt: 0.15 }}>
+                          <Stack alignItems="flex-end" sx={{ mt: 0.1 }}>
                             <Link
                               color="inherit"
                               target="_blank"
                               href={`/nft/${data.NFTokenID}`}
                               rel="noreferrer noopener nofollow"
-                              sx={{ fontSize: '0.65rem', color: 'text.secondary' }}
+                              sx={{ fontSize: '0.65rem', color: 'text.secondary', lineHeight: 1 }}
                             >
                               ID: {data.NFTokenID.slice(0, 12)}...
                             </Link>
