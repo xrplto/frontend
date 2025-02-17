@@ -1,10 +1,8 @@
 import {
   Avatar,
-  IconButton,
   Stack,
   TableCell,
   TableRow,
-  Tooltip,
   Typography,
   useMediaQuery,
   Box,
@@ -18,9 +16,7 @@ import axios from 'axios';
 import { isInstalled, submitTransaction } from '@gemwallet/api';
 import sdk from '@crossmarkio/sdk';
 import CustomQRDialog from 'src/components/QRDialog';
-import { useDispatch } from 'react-redux';
 import CustomDialog from 'src/components/Dialog';
-import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 const TrustLineRow = ({
@@ -34,24 +30,23 @@ const TrustLineRow = ({
   currency
 }) => {
   const BASE_URL = process.env.API_URL;
-
-  const dispatch = useDispatch();
-  const { darkMode, activeFiatCurrency, openSnackbar, accountProfile, sync, setSync } =
+  const { darkMode, activeFiatCurrency, openSnackbar, accountProfile, setSync } =
     useContext(AppContext);
   const isMobile = useMediaQuery('(max-width:600px)');
-  const isLoggedIn = accountProfile && accountProfile.account;
+  const isLoggedIn = accountProfile?.account;
 
   const [token, setToken] = useState({});
-  const [openScanQR, setOpenScanQR] = useState(false);
-  const [uuid, setUuid] = useState(null);
-  const [qrUrl, setQrUrl] = useState(null);
-  const [nextUrl, setNextUrl] = useState(null);
-  const [content, setContent] = useState('');
-  const [openConfirm, setOpenConfirm] = useState(false);
-  const [xamanStep, setXamanStep] = useState(0);
-  const [xamanTitle, setXamanTitle] = useState('');
-  const [stepTitle, setStepTitle] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [dialogState, setDialogState] = useState({
+    openScanQR: false,
+    openConfirm: false,
+    xamanStep: 0,
+    xamanTitle: '',
+    stepTitle: '',
+    content: '',
+    uuid: null,
+    qrUrl: null,
+    nextUrl: null
+  });
 
   const fetchToken = useCallback(async () => {
     if (md5) {
@@ -65,10 +60,10 @@ const TrustLineRow = ({
   }, [fetchToken]);
 
   useEffect(() => {
-    if (!openScanQR || !uuid) return;
+    if (!dialogState.openScanQR || !dialogState.uuid) return;
 
     const timer = setInterval(async () => {
-      const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+      const ret = await axios.get(`${BASE_URL}/xumm/payload/${dialogState.uuid}`);
       const res = ret.data.data.response;
       if (res.resolved_at) {
         clearInterval(timer);
@@ -77,19 +72,17 @@ const TrustLineRow = ({
     }, 2000);
 
     return () => clearInterval(timer);
-  }, [openScanQR, uuid]);
+  }, [dialogState.openScanQR, dialogState.uuid]);
 
   const startDispatchInterval = () => {
     let times = 0;
     const dispatchTimer = setInterval(async () => {
-      const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+      const ret = await axios.get(`${BASE_URL}/xumm/payload/${dialogState.uuid}`);
       const res = ret.data.data.response;
-      const dispatched_result = res.dispatched_result;
 
-      if (dispatched_result === 'tesSUCCESS') {
-        setXamanStep((prev) => prev + 1);
+      if (res.dispatched_result === 'tesSUCCESS') {
+        setDialogState((prev) => ({ ...prev, xamanStep: prev.xamanStep + 1, openScanQR: false }));
         clearInterval(dispatchTimer);
-        setOpenScanQR(false);
       } else if (++times >= 20) {
         openSnackbar('Operation rejected!', 'error');
         clearInterval(dispatchTimer);
@@ -115,17 +108,20 @@ const TrustLineRow = ({
       }
     ];
 
-    if (xamanStep > 0 && xamanStep < 4) {
-      const { title, content } = stepsContent[xamanStep - 1];
-      setXamanTitle(title);
-      setContent(content);
-      setStepTitle(xamanStep === 1 ? 'Warning' : 'Success');
-      setOpenConfirm(true);
-    } else if (xamanStep === 4) {
+    if (dialogState.xamanStep > 0 && dialogState.xamanStep < 4) {
+      const { title, content } = stepsContent[dialogState.xamanStep - 1];
+      setDialogState((prev) => ({
+        ...prev,
+        xamanTitle: title,
+        content,
+        stepTitle: dialogState.xamanStep === 1 ? 'Warning' : 'Success',
+        openConfirm: true
+      }));
+    } else if (dialogState.xamanStep === 4) {
       openSnackbar('You removed trustline', 'success');
       handleConfirmClose();
     }
-  }, [xamanStep]);
+  }, [dialogState.xamanStep]);
 
   const handleCancel = async () => {
     if (!isLoggedIn) {
@@ -133,50 +129,41 @@ const TrustLineRow = ({
     } else if (accountProfile.account !== account) {
       openSnackbar('You are not the owner of this offer!', 'error');
     } else {
-      await onTrustRemoveXumm();
+      setDialogState((prev) => ({ ...prev, xamanStep: balance > 0 ? 1 : 3 }));
     }
   };
 
   const handleScanQRClose = () => {
-    setOpenScanQR(false);
-    onDisconnectXumm(uuid);
-  };
-
-  const onTrustRemoveXumm = async () => {
-    setXamanStep(balance > 0 ? 1 : 3);
+    setDialogState((prev) => ({ ...prev, openScanQR: false }));
+    onDisconnectXumm(dialogState.uuid);
   };
 
   const onDisconnectXumm = async (uuid) => {
-    setLoading(true);
     await axios.delete(`${BASE_URL}/xumm/logout/${uuid}`);
-    setUuid(null);
-    setLoading(false);
+    setDialogState((prev) => ({ ...prev, uuid: null }));
   };
 
   const handleConfirmClose = () => {
-    setOpenConfirm(false);
-    setXamanStep(0);
+    setDialogState((prev) => ({ ...prev, openConfirm: false, xamanStep: 0 }));
     setSync((prev) => !prev);
   };
 
   const handleConfirmContinue = async () => {
-    const user_token = accountProfile?.user_token;
-    const wallet_type = accountProfile?.wallet_type;
+    const { user_token, wallet_type } = accountProfile;
     let body;
 
-    if (xamanStep === 3) {
+    if (dialogState.xamanStep === 3) {
       if (limit === 0) {
-        setXamanStep(4);
+        setDialogState((prev) => ({ ...prev, xamanStep: 4 }));
         return;
       }
-      const Flags = 0x00020000;
       body = {
         LimitAmount: { issuer, currency, value: '0' },
-        Flags,
+        Flags: 0x00020000,
         user_token,
         TransactionType: 'TrustSet'
       };
-    } else if (xamanStep === 1) {
+    } else if (dialogState.xamanStep === 1) {
       body = {
         TransactionType: 'Payment',
         Account: accountProfile.account,
@@ -188,51 +175,50 @@ const TrustLineRow = ({
       };
     }
 
-    if (wallet_type === 'xaman') {
-      const res = await axios.post(
-        `${BASE_URL}/xumm/${xamanStep === 3 ? 'trustset' : 'transfer'}`,
-        body
-      );
-      if (res.status === 200) {
-        const { uuid, qrUrl, next } = res.data.data;
-        setUuid(uuid);
-        setQrUrl(qrUrl);
-        setNextUrl(next);
-        setOpenScanQR(true);
-      }
-    } else if (wallet_type === 'gem') {
-      isInstalled().then(async (response) => {
-        if (response.result.isInstalled) {
-          const { type, result } = await submitTransaction({ transaction: body });
+    try {
+      if (wallet_type === 'xaman') {
+        const res = await axios.post(
+          `${BASE_URL}/xumm/${dialogState.xamanStep === 3 ? 'trustset' : 'transfer'}`,
+          body
+        );
+        if (res.status === 200) {
+          const { uuid, qrUrl, next } = res.data.data;
+          setDialogState((prev) => ({ ...prev, uuid, qrUrl, nextUrl: next, openScanQR: true }));
+        }
+      } else if (wallet_type === 'gem') {
+        const { isInstalled: installed } = await isInstalled();
+        if (installed) {
+          const { type } = await submitTransaction({ transaction: body });
           if (type === 'response') {
-            setXamanStep(xamanStep + 1);
+            setDialogState((prev) => ({ ...prev, xamanStep: prev.xamanStep + 1 }));
           } else {
             handleConfirmClose();
           }
         } else {
-          enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
+          openSnackbar('GemWallet is not installed', 'error');
           handleConfirmClose();
         }
-      });
-    } else if (wallet_type === 'crossmark') {
-      const { response } = await sdk.methods.signAndSubmitAndWait(body);
-      if (response.data.meta.isSuccess) {
-        setXamanStep(xamanStep + 1);
-      } else {
-        handleConfirmClose();
+      } else if (wallet_type === 'crossmark') {
+        const { response } = await sdk.methods.signAndSubmitAndWait(body);
+        if (response.data.meta.isSuccess) {
+          setDialogState((prev) => ({ ...prev, xamanStep: prev.xamanStep + 1 }));
+        } else {
+          handleConfirmClose();
+        }
       }
+    } catch (error) {
+      openSnackbar('Transaction failed', 'error');
+      handleConfirmClose();
     }
   };
 
-  const formatNumber = (num) => {
-    // Convert to regular notation, round to 2 decimal places, and remove trailing zeros
-    return parseFloat(parseFloat(num).toFixed(2)).toString();
-  };
-
-  const computedBalance = useMemo(() => formatNumber(balance), [balance]);
+  const computedBalance = useMemo(
+    () => parseFloat(parseFloat(balance).toFixed(2)).toString(),
+    [balance]
+  );
   const computedValue = useMemo(() => {
     const value = token.exch ? balance * fNumberWithCurreny(token.exch, exchRate) : 0;
-    return value.toFixed(2); // This will round to 2 decimal places
+    return value.toFixed(2);
   }, [balance, token.exch, exchRate]);
 
   return (
@@ -245,7 +231,7 @@ const TrustLineRow = ({
             }
           },
           '& .MuiTableCell-root': {
-            padding: '16px 8px',
+            padding: '8px 6px',
             borderBottom: `1px solid ${
               darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
             }`
@@ -253,26 +239,26 @@ const TrustLineRow = ({
         }}
       >
         <TableCell align="left">
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack direction="row" spacing={1.5} alignItems="center">
             <Avatar
               src={`https://s1.xrpl.to/token/${md5}`}
               sx={{
-                width: 40,
-                height: 40,
-                borderRadius: '8px',
+                width: 32,
+                height: 32,
+                borderRadius: '6px',
                 '& img': {
                   objectFit: 'contain',
                   width: '100%',
                   height: '100%',
-                  borderRadius: '8px'
+                  borderRadius: '6px'
                 }
               }}
             />
             <Box>
-              <Typography variant="subtitle2" noWrap>
+              <Typography variant="body2" noWrap>
                 {currencyName}
               </Typography>
-              <Typography variant="caption" color="text.secondary" noWrap>
+              <Typography variant="caption" color="text.secondary" noWrap sx={{ lineHeight: 1.2 }}>
                 {issuer.substring(0, 6)}...{issuer.substring(issuer.length - 4)}
               </Typography>
             </Box>
@@ -294,31 +280,31 @@ const TrustLineRow = ({
 
         {isLoggedIn && accountProfile?.account === account && (
           <TableCell align="center">
-            <Tooltip title="Remove TrustLine">
-              <Chip
-                icon={<DeleteOutlineIcon fontSize="small" />}
-                label="Remove"
-                color="error"
-                variant="outlined"
-                size="small"
-                onClick={handleCancel}
-                sx={{ cursor: 'pointer' }}
-              />
-            </Tooltip>
+            <Chip
+              icon={<DeleteOutlineIcon fontSize="small" />}
+              label="Remove"
+              color="error"
+              variant="outlined"
+              size="small"
+              onClick={handleCancel}
+              sx={{ cursor: 'pointer' }}
+            />
           </TableCell>
         )}
       </TableRow>
+
       <CustomQRDialog
-        open={openScanQR}
-        type={xamanTitle}
+        open={dialogState.openScanQR}
+        type={dialogState.xamanTitle}
         onClose={handleScanQRClose}
-        qrUrl={qrUrl}
-        nextUrl={nextUrl}
+        qrUrl={dialogState.qrUrl}
+        nextUrl={dialogState.nextUrl}
       />
+
       <CustomDialog
-        open={openConfirm}
-        content={content}
-        title={stepTitle}
+        open={dialogState.openConfirm}
+        content={dialogState.content}
+        title={dialogState.stepTitle}
         handleClose={handleConfirmClose}
         handleContinue={handleConfirmContinue}
       />

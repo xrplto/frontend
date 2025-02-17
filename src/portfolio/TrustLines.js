@@ -3,7 +3,18 @@ import { useState, useEffect, useRef } from 'react';
 import Decimal from 'decimal.js';
 import CryptoJS from 'crypto-js';
 // Material
-import { Box, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography, useMediaQuery, useTheme } from '@mui/material';
+import {
+  Box,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 // Loader
 import { PulseLoader } from 'react-spinners';
@@ -37,14 +48,15 @@ const trustlineFlags = {
   lsfLowNoRipple: 0x00100000,
   lsfHighNoRipple: 0x00200000,
   lsfLowFreeze: 0x00400000,
-  lsfHighFreeze: 0x00800000,
+  lsfHighFreeze: 0x00800000
 };
 
 export default function TrustLines({ account }) {
   const BASE_URL = process.env.API_URL;
 
   const theme = useTheme();
-  const { accountProfile, openSnackbar, sync, activeFiatCurrency, darkMode } = useContext(AppContext);
+  const { accountProfile, openSnackbar, sync, activeFiatCurrency, darkMode } =
+    useContext(AppContext);
   const isLoggedIn = accountProfile && accountProfile.account;
   const isMobile = useMediaQuery('(max-width:600px)');
   const dispatch = useDispatch();
@@ -53,17 +65,17 @@ export default function TrustLines({ account }) {
 
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
-  const [rows, setRows] = useState(10);
+  const [rows, setRows] = useState(50);
   const [total, setTotal] = useState(0);
   const [lines, setLines] = useState([]);
 
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
 
   const { sendJsonMessage, getWebSocket } = useWebSocket(WSS_FEED_URL, {
-    onOpen: () => { },
-    onClose: () => { },
+    onOpen: () => {},
+    onClose: () => {},
     shouldReconnect: (closeEvent) => true,
-    onMessage: (event) => processMessages(event),
+    onMessage: (event) => processMessages(event)
   });
 
   const processMessages = (event) => {
@@ -112,8 +124,7 @@ export default function TrustLines({ account }) {
         lines.length === 0 && (
           <Stack alignItems="center" sx={{ mt: 2, mb: 1 }}>
             <Typography variant="s6" color="primary">
-              <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />
-              [ No TrustLines ]
+              <ErrorOutlineIcon fontSize="small" sx={{ mr: '5px' }} />[ No TrustLines ]
             </Typography>
           </Stack>
         )
@@ -139,7 +150,9 @@ export default function TrustLines({ account }) {
             <TableHead>
               <TableRow>
                 <TableCell>Currency</TableCell>
-                <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Balance</TableCell>
+                <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                  Balance
+                </TableCell>
                 <TableCell align="right">Value</TableCell>
                 {isLoggedIn && accountProfile?.account === account && (
                   <TableCell align="center">Action</TableCell>
@@ -182,7 +195,7 @@ export default function TrustLines({ account }) {
                 }
 
                 let md5 = null;
-                if (issuer && currency) md5 = CryptoJS.MD5(issuer + "_" + currency).toString();
+                if (issuer && currency) md5 = CryptoJS.MD5(issuer + '_' + currency).toString();
                 return (
                   <TrustLineRow
                     key={_id}
@@ -203,13 +216,7 @@ export default function TrustLines({ account }) {
       )}
       {total > 0 && (
         <Box sx={{ px: 1 }}>
-          <ListToolbar
-            count={total}
-            rows={rows}
-            setRows={setRows}
-            page={page}
-            setPage={setPage}
-          />
+          <ListToolbar count={total} rows={rows} setRows={setRows} page={page} setPage={setPage} />
         </Box>
       )}
     </Box>
