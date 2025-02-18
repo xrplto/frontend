@@ -1,10 +1,11 @@
-import { Chip, Stack, Typography } from '@mui/material';
+import { Chip, Stack, Typography, IconButton } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useTheme, TableCell, TableRow } from '@mui/material';
 import EastIcon from '@mui/icons-material/East';
 import LinkIcon from '@mui/icons-material/Link';
 import CloseIcon from '@mui/icons-material/Close';
 import numeral from 'numeral';
+import { alpha } from '@mui/material/styles';
 
 const HistoryRow = (props) => {
   const {
@@ -17,8 +18,11 @@ const HistoryRow = (props) => {
     DeliveredAmount,
     SendMax,
     hash,
-    date
+    date,
+    source
   } = props;
+
+  console.log('HistoryRow Props:', { TransactionType, source }); // Debug log
   const theme = useTheme();
 
   const monthNames = [
@@ -211,103 +215,215 @@ const HistoryRow = (props) => {
   };
 
   return (
-    <TableRow>
-      <TableCell sx={{ color: theme.palette.text.primary }}>
-        {TransactionType === 'Payment' &&
-          // <Typography sx={{color: "#eee"}}>{t("swap")}</Typography>
-          (typeof Amount !== 'string' ? (
-            <Chip color="success" label="Buy" size="small" />
-          ) : (
-            <Chip color="error" label="Sell" size="small" />
-          ))}
-        {TransactionType === 'AMMDeposit' && (
-          <Chip color="secondaryOrigin" label="Add" size="small" />
-        )}
-        {TransactionType === 'AMMWithdraw' && (
-          // <Typography sx={{color: "#eee"}}>{t("amm withdraw")}</Typography>
-          <Chip color="warning" label="Remove" size="small" />
-        )}
+    <TableRow
+      sx={{
+        '& .MuiTableCell-root': {
+          py: 0.5,
+          px: 0.75,
+          height: '32px',
+          whiteSpace: 'nowrap'
+        }
+      }}
+    >
+      <TableCell sx={{ color: theme.palette.text.primary, minWidth: '140px' }}>
+        <Stack direction="row" spacing={0.25} alignItems="center">
+          {TransactionType === 'Payment' &&
+            (typeof Amount !== 'string' ? (
+              <Chip
+                color="success"
+                label="Buy"
+                size="small"
+                sx={{
+                  height: '18px',
+                  '& .MuiChip-label': {
+                    px: 0.75,
+                    fontSize: '0.7rem',
+                    lineHeight: 1
+                  }
+                }}
+              />
+            ) : (
+              <Chip
+                color="error"
+                label="Sell"
+                size="small"
+                sx={{
+                  height: '18px',
+                  '& .MuiChip-label': {
+                    px: 0.75,
+                    fontSize: '0.7rem',
+                    lineHeight: 1
+                  }
+                }}
+              />
+            ))}
+          {TransactionType === 'AMMDeposit' && (
+            <Chip
+              color="secondaryOrigin"
+              label="Add"
+              size="small"
+              sx={{
+                height: '18px',
+                '& .MuiChip-label': {
+                  px: 0.75,
+                  fontSize: '0.7rem',
+                  lineHeight: 1
+                }
+              }}
+            />
+          )}
+          {TransactionType === 'AMMWithdraw' && (
+            <Chip
+              color="warning"
+              label="Remove"
+              size="small"
+              sx={{
+                height: '18px',
+                '& .MuiChip-label': {
+                  px: 0.75,
+                  fontSize: '0.7rem',
+                  lineHeight: 1
+                }
+              }}
+            />
+          )}
+          {TransactionType === 'TrustSet' && (
+            <Chip
+              color="info"
+              label="Trust"
+              size="small"
+              sx={{
+                height: '18px',
+                '& .MuiChip-label': {
+                  px: 0.75,
+                  fontSize: '0.7rem',
+                  lineHeight: 1
+                }
+              }}
+            />
+          )}
+          {source && (
+            <Chip
+              size="small"
+              label={source}
+              sx={{
+                height: '18px',
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                color: theme.palette.primary.main,
+                borderRadius: '4px',
+                '& .MuiChip-label': {
+                  px: 0.75,
+                  fontSize: '0.7rem',
+                  lineHeight: 1
+                }
+              }}
+            />
+          )}
+        </Stack>
+      </TableCell>
+      <TableCell sx={{ color: theme.palette.text.primary, width: '70px' }}>
+        <Typography sx={{ fontSize: '0.75rem' }}>{getRelativeTime(rippleEpoch)}</Typography>
       </TableCell>
       <TableCell sx={{ color: theme.palette.text.primary }}>
-        {getRelativeTime(rippleEpoch)}
-      </TableCell>
-      <TableCell sx={{ color: theme.palette.text.primary }}>
         {TransactionType === 'AMMDeposit' && (
-          <Stack direction="row" alignItems="center" spacing={0.5}>
+          <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
             <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: '13px' }}>{assetValue.valueBeforeDot}</Typography>
+              <Typography sx={{ fontSize: '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
               {assetValue.valueAfterDot !== '' && (
-                <Typography sx={{ fontSize: '13px' }}>.{assetValue.valueAfterDot}</Typography>
+                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
-            <Typography sx={{ color: '#eee', fontSize: '13px' }}>{assetName}</Typography>
-            <Typography sx={{ color: '#eee' }}>/</Typography>
-
+            <Typography sx={{ color: '#eee', fontSize: '0.75rem' }}>{assetName}</Typography>
+            <Typography sx={{ color: '#eee', fontSize: '0.75rem' }}>/</Typography>
             <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: '13px' }}>{assetValue2.valueBeforeDot}</Typography>
+              <Typography sx={{ fontSize: '0.75rem' }}>{assetValue2.valueBeforeDot}</Typography>
               {assetValue2.valueAfterDot !== '' && (
-                <Typography sx={{ fontSize: '13px' }}>.{assetValue2.valueAfterDot}</Typography>
+                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue2.valueAfterDot}</Typography>
               )}
             </Stack>
-            <Typography sx={{ color: '#eee', fontSize: '13px' }}>{assetName2}</Typography>
+            <Typography sx={{ color: '#eee', fontSize: '0.75rem' }}>{assetName2}</Typography>
           </Stack>
         )}
         {TransactionType === 'AMMWithdraw' && (
-          <Stack direction="row" alignItems="center" spacing={0.5}>
+          <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
             {assetValue.valueAfterDot === '' && assetValue2.valueAfterDot === '' ? (
-              <Stack direction="row" spacing={0.5}>
-                <Typography sx={{ color: '#eee', fontSize: '13px' }}>{assetName}</Typography>
-                <Typography sx={{ color: '#eee' }}>/</Typography>
-                <Typography sx={{ color: '#eee', fontSize: '13px' }}>{assetName2}</Typography>
+              <Stack direction="row" spacing={0.25}>
+                <Typography sx={{ color: '#eee', fontSize: '0.75rem' }}>{assetName}</Typography>
+                <Typography sx={{ color: '#eee', fontSize: '0.75rem' }}>/</Typography>
+                <Typography sx={{ color: '#eee', fontSize: '0.75rem' }}>{assetName2}</Typography>
               </Stack>
             ) : (
-              <Stack direction="row" spacing={0.5}>
+              <Stack direction="row" spacing={0.25}>
                 <Stack direction="row" alignItems="baseline">
-                  <Typography sx={{ fontSize: '13px' }}>{assetValue.valueBeforeDot}</Typography>
+                  <Typography sx={{ fontSize: '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
                   {assetValue.valueAfterDot !== '' && (
-                    <Typography sx={{ fontSize: '13px' }}>.{assetValue.valueAfterDot}</Typography>
+                    <Typography sx={{ fontSize: '0.75rem' }}>
+                      .{assetValue.valueAfterDot}
+                    </Typography>
                   )}
                 </Stack>
-                <Typography sx={{ color: '#eee', fontSize: '13px' }}>{assetName}</Typography>
-                <Typography sx={{ color: '#eee' }}>/</Typography>
+                <Typography sx={{ color: '#eee', fontSize: '0.75rem' }}>{assetName}</Typography>
+                <Typography sx={{ color: '#eee', fontSize: '0.75rem' }}>/</Typography>
 
                 <Stack direction="row" alignItems="baseline">
-                  <Typography sx={{ fontSize: '13px' }}>{assetValue2.valueBeforeDot}</Typography>
+                  <Typography sx={{ fontSize: '0.75rem' }}>{assetValue2.valueBeforeDot}</Typography>
                   {assetValue2.valueAfterDot !== '' && (
-                    <Typography sx={{ fontSize: '13px' }}>.{assetValue2.valueAfterDot}</Typography>
+                    <Typography sx={{ fontSize: '0.75rem' }}>
+                      .{assetValue2.valueAfterDot}
+                    </Typography>
                   )}
                 </Stack>
-                <Typography sx={{ color: '#eee', fontSize: '13px' }}>{assetName2}</Typography>
+                <Typography sx={{ color: '#eee', fontSize: '0.75rem' }}>{assetName2}</Typography>
               </Stack>
             )}
           </Stack>
         )}
         {TransactionType === 'Payment' && (
-          <Stack direction="row" alignItems="center" spacing={0.5}>
+          <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
             <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: '13px' }}>{assetValue.valueBeforeDot}</Typography>
+              <Typography sx={{ fontSize: '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
               {assetValue.valueAfterDot && (
-                <Typography sx={{ fontSize: '13px' }}>.{assetValue.valueAfterDot}</Typography>
+                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
               )}
             </Stack>
-            <Typography sx={{ color: assetColor1 || '#eee', fontSize: '13px' }}>
+            <Typography sx={{ color: assetColor1 || '#eee', fontSize: '0.75rem' }}>
               {assetName}
             </Typography>
-            <EastIcon sx={{ color: '#eee' }} />
+            <EastIcon sx={{ color: '#eee', fontSize: '1rem' }} />
             <Stack direction="row" alignItems="baseline">
-              <Typography sx={{ fontSize: '13px' }}>{assetValue2.valueBeforeDot}</Typography>
+              <Typography sx={{ fontSize: '0.75rem' }}>{assetValue2.valueBeforeDot}</Typography>
               {assetValue2.valueAfterDot && (
-                <Typography sx={{ fontSize: '13px' }}>.{assetValue2.valueAfterDot}</Typography>
+                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue2.valueAfterDot}</Typography>
               )}
             </Stack>
-            <Typography sx={{ color: assetColor2 || '#eee', fontSize: '13px' }}>
+            <Typography sx={{ color: assetColor2 || '#eee', fontSize: '0.75rem' }}>
               {assetName2}
             </Typography>
           </Stack>
         )}
+        {TransactionType === 'TrustSet' && (
+          <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
+            <Typography sx={{ fontSize: '0.75rem', color: theme.palette.info.main }}>
+              Trust Line Set
+            </Typography>
+          </Stack>
+        )}
       </TableCell>
-      <TableCell>
-        <LinkIcon onClick={handleViewClick} />
+      <TableCell sx={{ width: '32px', p: 0.25 }}>
+        <IconButton
+          size="small"
+          onClick={handleViewClick}
+          sx={{
+            p: 0.25,
+            width: '20px',
+            height: '20px',
+            '& .MuiSvgIcon-root': {
+              fontSize: '0.875rem'
+            }
+          }}
+        >
+          <LinkIcon />
+        </IconButton>
       </TableCell>
     </TableRow>
   );

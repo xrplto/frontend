@@ -54,6 +54,8 @@ const DeFiHistory = ({ account }) => {
         forward: false
       };
       const response = await client.request(transaction);
+      console.log('Full API Response:', JSON.stringify(response, null, 2));
+      console.log('All Transactions:', JSON.stringify(response.result.transactions, null, 2));
       const totalTransactions = response.result.transactions;
       const filteredTransactions = totalTransactions.filter((item) => {
         const transactionType = item.tx.TransactionType;
@@ -65,26 +67,53 @@ const DeFiHistory = ({ account }) => {
             account === destination &&
             deliveredAmount !== undefined) ||
           transactionType === 'AMMDeposit' ||
-          transactionType === 'AMMWithdraw'
+          transactionType === 'AMMWithdraw' ||
+          transactionType === 'TrustSet'
         );
       });
-      const updatedArray = filteredTransactions.map((item) => ({
-        Account: item.tx.Account,
-        Destination: item.tx.Destination,
-        TransactionType: item.tx.TransactionType,
-        Amount: item.tx.Amount,
-        Amount2: item.tx.Amount2,
-        Asset: item.tx.Asset,
-        Asset2: item.tx.Asset2,
-        TransactionResult: item.meta.TransactionResult,
-        DeliveredAmount: item.meta.delivered_amount,
-        SendMax: item.tx.SendMax,
-        hash: item.tx.hash,
-        date: item.tx.date
-      }));
+      const updatedArray = filteredTransactions.map((item) => {
+        // Check SourceTag in tx object
+        const sourceTag = item.tx.SourceTag;
+        console.log('Processing transaction:', {
+          type: item.tx.TransactionType,
+          hash: item.tx.hash,
+          sourceTag: sourceTag,
+          fullTx: item.tx
+        });
+
+        // Determine source label based on SourceTag
+        let sourceLabel;
+        if (sourceTag === 74920348) {
+          sourceLabel = 'FirstLedger';
+        } else if (sourceTag === 10011010) {
+          sourceLabel = 'Magnetic X';
+        } else if (sourceTag === 20221212) {
+          sourceLabel = 'XPMarket';
+        } else if (sourceTag === 110100111) {
+          sourceLabel = 'Sologenic';
+        }
+
+        return {
+          Account: item.tx.Account,
+          Destination: item.tx.Destination,
+          TransactionType: item.tx.TransactionType,
+          Amount: item.tx.Amount,
+          Amount2: item.tx.Amount2,
+          Asset: item.tx.Asset,
+          Asset2: item.tx.Asset2,
+          TransactionResult: item.meta.TransactionResult,
+          DeliveredAmount: item.meta.delivered_amount,
+          SendMax: item.tx.SendMax,
+          hash: item.tx.hash,
+          date: item.tx.date,
+          source: sourceLabel,
+          LimitAmount: item.tx.LimitAmount
+        };
+      });
 
       for (let i = 0; i < updatedArray.length; i++) {
         const eachTransaction = updatedArray[i];
+        console.log('Processed Transaction:', eachTransaction);
         if (typeof eachTransaction.Destination === 'undefined') {
           eachTransaction.Destination = 'XRPL';
         }
