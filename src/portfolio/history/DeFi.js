@@ -232,11 +232,12 @@ const DeFiHistory = ({ account }) => {
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'center',
               alignItems: 'center',
               borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
               px: 2,
-              minHeight: '52px'
+              minHeight: '52px',
+              gap: 8
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -265,7 +266,7 @@ const DeFiHistory = ({ account }) => {
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="body2" color="text.secondary">
-                Rows per page:
+                items / page:
               </Typography>
               <Select
                 value={rowsPerPage}
