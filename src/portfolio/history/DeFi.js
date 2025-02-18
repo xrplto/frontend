@@ -244,6 +244,16 @@ const DeFiHistory = ({ account }) => {
                     color: theme.palette.primary.main,
                     fontWeight: 'bold',
                     borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.03)
+                  }}
+                >
+                  Source
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                     background: alpha(theme.palette.primary.main, 0.03),
                     width: '48px'
                   }}
