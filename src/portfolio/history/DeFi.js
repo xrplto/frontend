@@ -10,7 +10,10 @@ import {
   Box,
   alpha,
   TablePagination,
-  useMediaQuery
+  useMediaQuery,
+  IconButton,
+  Select,
+  MenuItem
 } from '@mui/material';
 import { Client } from 'xrpl';
 import { useContext, useEffect, useState } from 'react';
@@ -18,6 +21,7 @@ import { AppContext } from 'src/AppContext';
 import HistoryRow from './HistoryRow';
 import { PulseLoader } from 'react-spinners';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 
 const rippleServerUrl = process.env.NEXT_PUBLIC_RIPPLED_LIVE_DATA_ONLY_URL;
 const client = new Client(rippleServerUrl);
@@ -225,30 +229,66 @@ const DeFiHistory = ({ account }) => {
               ))}
             </TableBody>
           </Table>
-          <TablePagination
-            component="div"
-            count={activityHistory.length}
-            page={page}
-            onPageChange={handleChangePage}
-            rowsPerPage={rowsPerPage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            rowsPerPageOptions={[10, 25, 50]}
+          <Box
             sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
               borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-              '.MuiTablePagination-select': {
-                color: theme.palette.primary.main
-              },
-              '.MuiTablePagination-selectIcon': {
-                color: theme.palette.primary.main
-              },
-              '.MuiTablePagination-root': {
-                minHeight: '40px',
-                '.MuiToolbar-root': {
-                  minHeight: '40px'
-                }
-              }
+              px: 2,
+              minHeight: '52px'
             }}
-          />
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                {`${page * rowsPerPage + 1}-${Math.min(
+                  (page + 1) * rowsPerPage,
+                  activityHistory.length
+                )} of ${activityHistory.length}`}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton
+                  onClick={() => handleChangePage(null, page - 1)}
+                  disabled={page === 0}
+                  size="small"
+                >
+                  <KeyboardArrowLeft />
+                </IconButton>
+                <IconButton
+                  onClick={() => handleChangePage(null, page + 1)}
+                  disabled={page >= Math.ceil(activityHistory.length / rowsPerPage) - 1}
+                  size="small"
+                >
+                  <KeyboardArrowRight />
+                </IconButton>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Rows per page:
+              </Typography>
+              <Select
+                value={rowsPerPage}
+                onChange={handleChangeRowsPerPage}
+                size="small"
+                sx={{
+                  height: '32px',
+                  minWidth: '64px',
+                  color: theme.palette.primary.main,
+                  '.MuiSelect-select': {
+                    py: 0.5,
+                    px: 1
+                  }
+                }}
+              >
+                {[10, 25, 50].map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+          </Box>
         </>
       )}
     </Box>
