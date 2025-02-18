@@ -194,21 +194,21 @@ const DeFiHistory = ({ account }) => {
                     color: theme.palette.primary.main,
                     fontWeight: 'bold',
                     borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    background: alpha(theme.palette.primary.main, 0.03)
+                    background: alpha(theme.palette.primary.main, 0.03),
+                    display: isSmallScreen ? 'none' : 'table-cell'
                   }}
                 >
-                  Amount
+                  Date
                 </TableCell>
                 <TableCell
                   sx={{
                     color: theme.palette.primary.main,
                     fontWeight: 'bold',
                     borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    background: alpha(theme.palette.primary.main, 0.03),
-                    display: isSmallScreen ? 'none' : 'table-cell'
+                    background: alpha(theme.palette.primary.main, 0.03)
                   }}
                 >
-                  Date
+                  Amount
                 </TableCell>
                 <TableCell
                   sx={{

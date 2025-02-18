@@ -229,6 +229,9 @@ const HistoryRow = (props) => {
         )}
       </TableCell>
       <TableCell sx={{ color: theme.palette.text.primary }}>
+        {getRelativeTime(rippleEpoch)}
+      </TableCell>
+      <TableCell sx={{ color: theme.palette.text.primary }}>
         {TransactionType === 'AMMDeposit' && (
           <Stack direction="row" alignItems="center" spacing={0.5}>
             <Stack direction="row" alignItems="baseline">
@@ -302,9 +305,6 @@ const HistoryRow = (props) => {
             </Typography>
           </Stack>
         )}
-      </TableCell>
-      <TableCell sx={{ color: theme.palette.text.primary }}>
-        {getRelativeTime(rippleEpoch)}
       </TableCell>
       <TableCell>
         <LinkIcon onClick={handleViewClick} />
