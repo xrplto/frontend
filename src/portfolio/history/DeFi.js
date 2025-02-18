@@ -6,7 +6,11 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Stack
+  Stack,
+  Box,
+  alpha,
+  TablePagination,
+  useMediaQuery
 } from '@mui/material';
 import { Client } from 'xrpl';
 import { useContext, useEffect, useState } from 'react';
@@ -23,6 +27,9 @@ const DeFiHistory = ({ account }) => {
   const { darkMode } = useContext(AppContext);
   const [activityHistory, setActivityHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     accountHistory();
@@ -88,11 +95,42 @@ const DeFiHistory = ({ account }) => {
     setLoading(false);
   };
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedHistory = activityHistory.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
   return (
-    <>
+    <Box
+      sx={{
+        background: darkMode
+          ? `linear-gradient(${alpha(theme.palette.primary.main, 0.05)}, ${alpha(
+              theme.palette.primary.main,
+              0.02
+            )})`
+          : `linear-gradient(${alpha(theme.palette.primary.main, 0.02)}, ${alpha(
+              theme.palette.primary.main,
+              0.01
+            )})`,
+        borderRadius: 2,
+        p: isSmallScreen ? 0.5 : 1,
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
       {loading ? (
-        <Stack alignItems="center">
-          <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
+        <Stack alignItems="center" sx={{ py: 1 }}>
+          <PulseLoader color={theme.palette.primary.main} size={10} margin={3} />
         </Stack>
       ) : (
         activityHistory &&
@@ -103,35 +141,117 @@ const DeFiHistory = ({ account }) => {
             justifyContent="center"
             spacing={1}
             sx={{
-              py: 4,
-              opacity: 0.8
+              py: 1,
+              opacity: 0.8,
+              background: alpha(theme.palette.primary.main, 0.03),
+              borderRadius: 1
             }}
           >
-            <ErrorOutlineIcon fontSize="small" />
-            <Typography variant="body2" color="text.secondary">
+            <ErrorOutlineIcon fontSize="small" color="primary" />
+            <Typography variant="body2" color="primary.main">
               No History
             </Typography>
           </Stack>
         )
       )}
       {activityHistory.length > 0 && (
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ color: theme.palette.text.primary }}>Type</TableCell>
-              <TableCell sx={{ color: theme.palette.text.primary }}>Amount</TableCell>
-              <TableCell sx={{ color: theme.palette.text.primary }}>Date</TableCell>
-              <TableCell sx={{ color: theme.palette.text.primary }}>View</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {activityHistory.map((item, index) => (
-              <HistoryRow key={index} {...item} />
-            ))}
-          </TableBody>
-        </Table>
+        <>
+          <Table
+            size="small"
+            sx={{
+              '& .MuiTableCell-root': {
+                py: 0.75,
+                px: isSmallScreen ? 0.5 : 1,
+                fontSize: '0.875rem',
+                lineHeight: 1.2
+              }
+            }}
+          >
+            <TableHead>
+              <TableRow>
+                <TableCell
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.03),
+                    '&:first-of-type': {
+                      borderTopLeftRadius: 8
+                    },
+                    '&:last-child': {
+                      borderTopRightRadius: 8
+                    }
+                  }}
+                >
+                  Type
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.03)
+                  }}
+                >
+                  Amount
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.03),
+                    display: isSmallScreen ? 'none' : 'table-cell'
+                  }}
+                >
+                  Date
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.03),
+                    width: '48px'
+                  }}
+                >
+                  View
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedHistory.map((item, index) => (
+                <HistoryRow key={index} {...item} isSmallScreen={isSmallScreen} />
+              ))}
+            </TableBody>
+          </Table>
+          <TablePagination
+            component="div"
+            count={activityHistory.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[10, 25, 50]}
+            sx={{
+              borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+              '.MuiTablePagination-select': {
+                color: theme.palette.primary.main
+              },
+              '.MuiTablePagination-selectIcon': {
+                color: theme.palette.primary.main
+              },
+              '.MuiTablePagination-root': {
+                minHeight: '40px',
+                '.MuiToolbar-root': {
+                  minHeight: '40px'
+                }
+              }
+            }}
+          />
+        </>
       )}
-    </>
+    </Box>
   );
 };
 
