@@ -262,10 +262,7 @@ const DeFiHistory = ({ account }) => {
                   fontWeight: 500
                 }}
               >
-                {`${page * rowsPerPage + 1}-${Math.min(
-                  (page + 1) * rowsPerPage,
-                  activityHistory.length
-                )} of ${activityHistory.length}`}
+                {`${page + 1} / ${Math.ceil(activityHistory.length / rowsPerPage)} pages`}
               </Typography>
               <Box
                 sx={{
@@ -355,54 +352,64 @@ const DeFiHistory = ({ account }) => {
                 boxShadow: `0 0 12px ${alpha(theme.palette.primary.main, 0.1)}`
               }}
             >
-              <Typography
-                variant="body2"
-                sx={{
-                  color: theme.palette.primary.main,
-                  fontWeight: 500,
-                  fontSize: '0.875rem'
-                }}
-              >
-                items / page:
-              </Typography>
               <Select
                 value={rowsPerPage}
                 onChange={handleChangeRowsPerPage}
                 size="small"
                 sx={{
-                  height: '28px',
-                  minWidth: '64px',
+                  height: '36px',
+                  width: '48px',
+                  minWidth: '48px',
                   color: theme.palette.primary.main,
                   '.MuiSelect-select': {
-                    py: 0.5,
-                    px: 1,
-                    fontWeight: 500
+                    py: 0,
+                    px: 0,
+                    fontWeight: 500,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.9rem',
+                    letterSpacing: '0.5px',
+                    marginRight: '-8px',
+                    paddingLeft: '4px'
                   },
                   '.MuiOutlinedInput-notchedOutline': {
-                    borderColor: alpha(theme.palette.primary.main, 0.6),
-                    borderWidth: '2px',
-                    borderRadius: '4px'
+                    borderColor: alpha(theme.palette.primary.main, 0.2),
+                    borderWidth: '3px',
+                    borderRadius: '6px'
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: theme.palette.primary.main,
-                    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}`
+                    borderColor: alpha(theme.palette.primary.main, 0.4),
+                    boxShadow: `0 6px 12px ${alpha(theme.palette.primary.main, 0.35)}`
                   },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: theme.palette.primary.main,
-                    borderWidth: '2px'
+                    borderColor: alpha(theme.palette.primary.main, 0.4),
+                    borderWidth: '3px'
                   },
-                  transition: 'all 0.2s ease-in-out'
+                  transition: 'all 0.2s ease-in-out',
+                  background: alpha(theme.palette.primary.main, 0.05),
+                  boxShadow: `0 0 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+                  '&:hover': {
+                    background: alpha(theme.palette.primary.main, 0.15),
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 6px 12px ${alpha(theme.palette.primary.main, 0.35)}`
+                  }
                 }}
                 MenuProps={{
                   PaperProps: {
                     sx: {
+                      mt: 1,
                       borderRadius: '6px',
-                      boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.25)}`,
-                      border: `3px solid ${alpha(theme.palette.primary.main, 0.6)}`,
+                      boxShadow: `0 6px 12px ${alpha(theme.palette.primary.main, 0.35)}`,
+                      border: `3px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                       '.MuiMenuItem-root': {
                         color: theme.palette.primary.main,
+                        justifyContent: 'center',
+                        fontSize: '0.9rem',
+                        letterSpacing: '0.5px',
+                        py: 1,
                         '&:hover': {
-                          background: alpha(theme.palette.primary.main, 0.08)
+                          background: alpha(theme.palette.primary.main, 0.15)
                         },
                         '&.Mui-selected': {
                           background: alpha(theme.palette.primary.main, 0.12),
@@ -421,6 +428,16 @@ const DeFiHistory = ({ account }) => {
                   </MenuItem>
                 ))}
               </Select>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.primary.main,
+                  fontWeight: 500,
+                  fontSize: '0.875rem'
+                }}
+              >
+                items / page:
+              </Typography>
             </Box>
           </Box>
         </>
