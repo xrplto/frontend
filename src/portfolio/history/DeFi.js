@@ -281,13 +281,28 @@ const DeFiHistory = ({ account }) => {
                   size="small"
                   sx={{
                     color: theme.palette.primary.main,
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '6px',
+                    border: `3px solid ${alpha(theme.palette.primary.main, 0.6)}`,
+                    background: alpha(theme.palette.primary.main, 0.05),
+                    boxShadow: `0 0 12px ${alpha(theme.palette.primary.main, 0.15)}`,
                     '&:hover': {
-                      background: alpha(theme.palette.primary.main, 0.08)
+                      background: alpha(theme.palette.primary.main, 0.15),
+                      borderColor: theme.palette.primary.main,
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 6px 12px ${alpha(theme.palette.primary.main, 0.35)}`
                     },
                     '&.Mui-disabled': {
-                      color: alpha(theme.palette.primary.main, 0.3)
+                      color: alpha(theme.palette.primary.main, 0.3),
+                      borderColor: alpha(theme.palette.primary.main, 0.2),
+                      background: 'none',
+                      boxShadow: 'none'
                     },
-                    transition: 'all 0.2s ease-in-out'
+                    transition: 'all 0.2s ease-in-out',
+                    '& .MuiSvgIcon-root': {
+                      fontSize: '24px'
+                    }
                   }}
                 >
                   <KeyboardArrowLeft />
@@ -298,13 +313,28 @@ const DeFiHistory = ({ account }) => {
                   size="small"
                   sx={{
                     color: theme.palette.primary.main,
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '6px',
+                    border: `3px solid ${alpha(theme.palette.primary.main, 0.6)}`,
+                    background: alpha(theme.palette.primary.main, 0.05),
+                    boxShadow: `0 0 12px ${alpha(theme.palette.primary.main, 0.15)}`,
                     '&:hover': {
-                      background: alpha(theme.palette.primary.main, 0.08)
+                      background: alpha(theme.palette.primary.main, 0.15),
+                      borderColor: theme.palette.primary.main,
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 6px 12px ${alpha(theme.palette.primary.main, 0.35)}`
                     },
                     '&.Mui-disabled': {
-                      color: alpha(theme.palette.primary.main, 0.3)
+                      color: alpha(theme.palette.primary.main, 0.3),
+                      borderColor: alpha(theme.palette.primary.main, 0.2),
+                      background: 'none',
+                      boxShadow: 'none'
                     },
-                    transition: 'all 0.2s ease-in-out'
+                    transition: 'all 0.2s ease-in-out',
+                    '& .MuiSvgIcon-root': {
+                      fontSize: '24px'
+                    }
                   }}
                 >
                   <KeyboardArrowRight />
@@ -318,18 +348,19 @@ const DeFiHistory = ({ account }) => {
                 gap: 1,
                 background: alpha(theme.palette.background.paper, 0.8),
                 backdropFilter: 'blur(8px)',
-                borderRadius: 2,
+                borderRadius: '6px',
                 px: 2,
                 py: 0.5,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.05)}`
+                height: '36px',
+                boxShadow: `0 0 12px ${alpha(theme.palette.primary.main, 0.1)}`
               }}
             >
               <Typography
                 variant="body2"
                 sx={{
                   color: theme.palette.primary.main,
-                  fontWeight: 500
+                  fontWeight: 500,
+                  fontSize: '0.875rem'
                 }}
               >
                 items / page:
@@ -348,22 +379,26 @@ const DeFiHistory = ({ account }) => {
                     fontWeight: 500
                   },
                   '.MuiOutlinedInput-notchedOutline': {
-                    borderColor: alpha(theme.palette.primary.main, 0.2)
+                    borderColor: alpha(theme.palette.primary.main, 0.6),
+                    borderWidth: '2px',
+                    borderRadius: '4px'
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: theme.palette.primary.main
+                    borderColor: theme.palette.primary.main,
+                    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}`
                   },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: theme.palette.primary.main
+                    borderColor: theme.palette.primary.main,
+                    borderWidth: '2px'
                   },
                   transition: 'all 0.2s ease-in-out'
                 }}
                 MenuProps={{
                   PaperProps: {
                     sx: {
-                      borderRadius: 2,
-                      boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.15)}`,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                      borderRadius: '6px',
+                      boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.25)}`,
+                      border: `3px solid ${alpha(theme.palette.primary.main, 0.6)}`,
                       '.MuiMenuItem-root': {
                         color: theme.palette.primary.main,
                         '&:hover': {
