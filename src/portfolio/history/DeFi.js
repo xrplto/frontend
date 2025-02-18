@@ -237,21 +237,58 @@ const DeFiHistory = ({ account }) => {
               borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
               px: 2,
               minHeight: '52px',
-              gap: 8
+              gap: 8,
+              background: alpha(theme.palette.primary.main, 0.02)
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Typography variant="body2" color="text.secondary">
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                background: alpha(theme.palette.background.paper, 0.8),
+                backdropFilter: 'blur(8px)',
+                borderRadius: 2,
+                px: 2,
+                py: 0.5,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.05)}`
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.primary.main,
+                  fontWeight: 500
+                }}
+              >
                 {`${page * rowsPerPage + 1}-${Math.min(
                   (page + 1) * rowsPerPage,
                   activityHistory.length
                 )} of ${activityHistory.length}`}
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  gap: 0.5,
+                  borderLeft: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                  pl: 1
+                }}
+              >
                 <IconButton
                   onClick={() => handleChangePage(null, page - 1)}
                   disabled={page === 0}
                   size="small"
+                  sx={{
+                    color: theme.palette.primary.main,
+                    '&:hover': {
+                      background: alpha(theme.palette.primary.main, 0.08)
+                    },
+                    '&.Mui-disabled': {
+                      color: alpha(theme.palette.primary.main, 0.3)
+                    },
+                    transition: 'all 0.2s ease-in-out'
+                  }}
                 >
                   <KeyboardArrowLeft />
                 </IconButton>
@@ -259,13 +296,42 @@ const DeFiHistory = ({ account }) => {
                   onClick={() => handleChangePage(null, page + 1)}
                   disabled={page >= Math.ceil(activityHistory.length / rowsPerPage) - 1}
                   size="small"
+                  sx={{
+                    color: theme.palette.primary.main,
+                    '&:hover': {
+                      background: alpha(theme.palette.primary.main, 0.08)
+                    },
+                    '&.Mui-disabled': {
+                      color: alpha(theme.palette.primary.main, 0.3)
+                    },
+                    transition: 'all 0.2s ease-in-out'
+                  }}
                 >
                   <KeyboardArrowRight />
                 </IconButton>
               </Box>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" color="text.secondary">
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                background: alpha(theme.palette.background.paper, 0.8),
+                backdropFilter: 'blur(8px)',
+                borderRadius: 2,
+                px: 2,
+                py: 0.5,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.05)}`
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.primary.main,
+                  fontWeight: 500
+                }}
+              >
                 items / page:
               </Typography>
               <Select
@@ -273,12 +339,44 @@ const DeFiHistory = ({ account }) => {
                 onChange={handleChangeRowsPerPage}
                 size="small"
                 sx={{
-                  height: '32px',
+                  height: '28px',
                   minWidth: '64px',
                   color: theme.palette.primary.main,
                   '.MuiSelect-select': {
                     py: 0.5,
-                    px: 1
+                    px: 1,
+                    fontWeight: 500
+                  },
+                  '.MuiOutlinedInput-notchedOutline': {
+                    borderColor: alpha(theme.palette.primary.main, 0.2)
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.palette.primary.main
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.palette.primary.main
+                  },
+                  transition: 'all 0.2s ease-in-out'
+                }}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      borderRadius: 2,
+                      boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.15)}`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                      '.MuiMenuItem-root': {
+                        color: theme.palette.primary.main,
+                        '&:hover': {
+                          background: alpha(theme.palette.primary.main, 0.08)
+                        },
+                        '&.Mui-selected': {
+                          background: alpha(theme.palette.primary.main, 0.12),
+                          '&:hover': {
+                            background: alpha(theme.palette.primary.main, 0.16)
+                          }
+                        }
+                      }
+                    }
                   }
                 }}
               >
