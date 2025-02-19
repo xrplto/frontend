@@ -276,7 +276,7 @@ const DeFiHistory = ({ account }) => {
               borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
               px: 2,
               minHeight: '52px',
-              gap: 8,
+              gap: 4,
               background: alpha(theme.palette.primary.main, 0.02)
             }}
           >
@@ -284,14 +284,15 @@ const DeFiHistory = ({ account }) => {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 2,
+                gap: 1.5,
                 background: alpha(theme.palette.background.paper, 0.8),
                 backdropFilter: 'blur(8px)',
-                borderRadius: 2,
-                px: 2,
+                borderRadius: 1.5,
+                px: 1.5,
                 py: 0.5,
+                minHeight: '40px',
                 border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                boxShadow: `0 0 20px ${alpha(theme.palette.primary.main, 0.05)}`
+                boxShadow: theme.shadows[1]
               }}
             >
               <Typography
@@ -317,27 +318,22 @@ const DeFiHistory = ({ account }) => {
                   size="small"
                   sx={{
                     color: theme.palette.primary.main,
-                    width: '36px',
-                    height: '36px',
+                    width: '32px',
+                    height: '32px',
                     borderRadius: '6px',
-                    border: `3px solid ${alpha(theme.palette.primary.main, 0.6)}`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                     background: alpha(theme.palette.primary.main, 0.05),
-                    boxShadow: `0 0 12px ${alpha(theme.palette.primary.main, 0.15)}`,
                     '&:hover': {
                       background: alpha(theme.palette.primary.main, 0.15),
-                      borderColor: theme.palette.primary.main,
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 6px 12px ${alpha(theme.palette.primary.main, 0.35)}`
+                      borderColor: theme.palette.primary.main
                     },
                     '&.Mui-disabled': {
                       color: alpha(theme.palette.primary.main, 0.3),
-                      borderColor: alpha(theme.palette.primary.main, 0.2),
-                      background: 'none',
-                      boxShadow: 'none'
+                      borderColor: alpha(theme.palette.primary.main, 0.1),
+                      background: 'none'
                     },
-                    transition: 'all 0.2s ease-in-out',
                     '& .MuiSvgIcon-root': {
-                      fontSize: '24px'
+                      fontSize: '20px'
                     }
                   }}
                 >
@@ -349,27 +345,22 @@ const DeFiHistory = ({ account }) => {
                   size="small"
                   sx={{
                     color: theme.palette.primary.main,
-                    width: '36px',
-                    height: '36px',
+                    width: '32px',
+                    height: '32px',
                     borderRadius: '6px',
-                    border: `3px solid ${alpha(theme.palette.primary.main, 0.6)}`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                     background: alpha(theme.palette.primary.main, 0.05),
-                    boxShadow: `0 0 12px ${alpha(theme.palette.primary.main, 0.15)}`,
                     '&:hover': {
                       background: alpha(theme.palette.primary.main, 0.15),
-                      borderColor: theme.palette.primary.main,
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 6px 12px ${alpha(theme.palette.primary.main, 0.35)}`
+                      borderColor: theme.palette.primary.main
                     },
                     '&.Mui-disabled': {
                       color: alpha(theme.palette.primary.main, 0.3),
-                      borderColor: alpha(theme.palette.primary.main, 0.2),
-                      background: 'none',
-                      boxShadow: 'none'
+                      borderColor: alpha(theme.palette.primary.main, 0.1),
+                      background: 'none'
                     },
-                    transition: 'all 0.2s ease-in-out',
                     '& .MuiSvgIcon-root': {
-                      fontSize: '24px'
+                      fontSize: '20px'
                     }
                   }}
                 >
@@ -384,11 +375,12 @@ const DeFiHistory = ({ account }) => {
                 gap: 1,
                 background: alpha(theme.palette.background.paper, 0.8),
                 backdropFilter: 'blur(8px)',
-                borderRadius: '6px',
-                px: 2,
+                borderRadius: 1.5,
+                px: 1.5,
                 py: 0.5,
-                height: '36px',
-                boxShadow: `0 0 12px ${alpha(theme.palette.primary.main, 0.1)}`
+                minHeight: '40px',
+                boxShadow: theme.shadows[1],
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
               }}
             >
               <Select
@@ -396,9 +388,9 @@ const DeFiHistory = ({ account }) => {
                 onChange={handleChangeRowsPerPage}
                 size="small"
                 sx={{
-                  height: '36px',
-                  width: '48px',
-                  minWidth: '48px',
+                  height: '32px',
+                  width: '44px',
+                  minWidth: '44px',
                   color: theme.palette.primary.main,
                   '.MuiSelect-select': {
                     py: 0,
@@ -407,31 +399,26 @@ const DeFiHistory = ({ account }) => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '0.9rem',
+                    fontSize: '0.875rem',
                     letterSpacing: '0.5px',
                     marginRight: '-8px',
                     paddingLeft: '4px'
                   },
                   '.MuiOutlinedInput-notchedOutline': {
                     borderColor: alpha(theme.palette.primary.main, 0.2),
-                    borderWidth: '3px',
+                    borderWidth: '1px',
                     borderRadius: '6px'
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: alpha(theme.palette.primary.main, 0.4),
-                    boxShadow: `0 6px 12px ${alpha(theme.palette.primary.main, 0.35)}`
+                    borderColor: alpha(theme.palette.primary.main, 0.4)
                   },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
                     borderColor: alpha(theme.palette.primary.main, 0.4),
-                    borderWidth: '3px'
+                    borderWidth: '1px'
                   },
-                  transition: 'all 0.2s ease-in-out',
                   background: alpha(theme.palette.primary.main, 0.05),
-                  boxShadow: `0 0 12px ${alpha(theme.palette.primary.main, 0.15)}`,
                   '&:hover': {
-                    background: alpha(theme.palette.primary.main, 0.15),
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 6px 12px ${alpha(theme.palette.primary.main, 0.35)}`
+                    background: alpha(theme.palette.primary.main, 0.1)
                   }
                 }}
                 MenuProps={{
@@ -439,21 +426,21 @@ const DeFiHistory = ({ account }) => {
                     sx: {
                       mt: 1,
                       borderRadius: '6px',
-                      boxShadow: `0 6px 12px ${alpha(theme.palette.primary.main, 0.35)}`,
-                      border: `3px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      boxShadow: theme.shadows[2],
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
                       '.MuiMenuItem-root': {
                         color: theme.palette.primary.main,
                         justifyContent: 'center',
-                        fontSize: '0.9rem',
+                        fontSize: '0.875rem',
                         letterSpacing: '0.5px',
                         py: 1,
                         '&:hover': {
-                          background: alpha(theme.palette.primary.main, 0.15)
+                          background: alpha(theme.palette.primary.main, 0.1)
                         },
                         '&.Mui-selected': {
-                          background: alpha(theme.palette.primary.main, 0.12),
+                          background: alpha(theme.palette.primary.main, 0.08),
                           '&:hover': {
-                            background: alpha(theme.palette.primary.main, 0.16)
+                            background: alpha(theme.palette.primary.main, 0.12)
                           }
                         }
                       }
@@ -472,10 +459,12 @@ const DeFiHistory = ({ account }) => {
                 sx={{
                   color: theme.palette.primary.main,
                   fontWeight: 500,
-                  fontSize: '0.875rem'
+                  fontSize: '0.875rem',
+                  whiteSpace: 'nowrap',
+                  pr: 0.5
                 }}
               >
-                items / page:
+                items / page
               </Typography>
             </Box>
           </Box>

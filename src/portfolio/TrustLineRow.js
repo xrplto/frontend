@@ -300,7 +300,8 @@ const TrustLineRow = ({
             }
           },
           '& .MuiTableCell-root': {
-            padding: '4px',
+            padding: '2px 4px',
+            height: '40px',
             borderBottom: `1px solid ${
               darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
             }`
@@ -308,12 +309,12 @@ const TrustLineRow = ({
         }}
       >
         <TableCell>
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={0.5} alignItems="center">
             <Avatar
               src={`https://s1.xrpl.to/token/${md5}`}
               sx={{
-                width: 28,
-                height: 28,
+                width: 24,
+                height: 24,
                 borderRadius: '4px',
                 '& img': {
                   objectFit: 'contain',
@@ -325,28 +326,30 @@ const TrustLineRow = ({
             />
             <Box>
               <Stack direction="row" spacing={0.5} alignItems="center">
-                <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
+                <Typography variant="body2" noWrap sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
                   {currencyName}
                 </Typography>
                 {verified && (
                   <Tooltip title="Verified Token">
-                    <VerifiedIcon sx={{ fontSize: '1rem', color: '#007B55' }} />
+                    <VerifiedIcon sx={{ fontSize: '0.875rem', color: '#007B55' }} />
                   </Tooltip>
                 )}
-                <Stack direction="row" spacing={0.5} alignItems="center">
+                <Stack direction="row" spacing={0.25} alignItems="center">
                   <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
                   {origin && (
                     <>
                       <Tooltip title="Blackholed Issuer">
-                        <LockIcon sx={{ fontSize: '1rem', color: '#007B55' }} />
+                        <LockIcon sx={{ fontSize: '0.875rem', color: '#007B55' }} />
                       </Tooltip>
                       {origin === 'xrp.fun' ? (
                         <Tooltip title="Liquidity Pool Not Burned">
-                          <ElectricBoltIcon sx={{ fontSize: '1rem', color: '#B72136' }} />
+                          <ElectricBoltIcon sx={{ fontSize: '0.875rem', color: '#B72136' }} />
                         </Tooltip>
                       ) : (
                         <Tooltip title="Burned Liquidity Pool">
-                          <LocalFireDepartmentIcon sx={{ fontSize: '1rem', color: '#2065D1' }} />
+                          <LocalFireDepartmentIcon
+                            sx={{ fontSize: '0.875rem', color: '#2065D1' }}
+                          />
                         </Tooltip>
                       )}
                     </>
@@ -359,7 +362,7 @@ const TrustLineRow = ({
                 noWrap
                 sx={{
                   lineHeight: 1,
-                  fontSize: '0.7rem',
+                  fontSize: '0.65rem',
                   opacity: 0.8
                 }}
               >
@@ -374,20 +377,20 @@ const TrustLineRow = ({
         </TableCell>
 
         <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-          <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
+          <Typography variant="body2" noWrap sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
             {computedBalance}
           </Typography>
         </TableCell>
 
         <TableCell align="right">
-          <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
+          <Typography variant="body2" noWrap sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
             {currencySymbols[activeFiatCurrency]}
             {computedValue}
           </Typography>
         </TableCell>
 
         <TableCell align="right" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-          <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
+          <Typography variant="body2" noWrap sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
             {parseFloat(percentOwned).toFixed(2)}%
           </Typography>
         </TableCell>
@@ -395,7 +398,7 @@ const TrustLineRow = ({
         {isLoggedIn && accountProfile?.account === account && (
           <TableCell align="center">
             <Chip
-              icon={<DeleteOutlineIcon sx={{ fontSize: '1rem' }} />}
+              icon={<DeleteOutlineIcon sx={{ fontSize: '0.875rem' }} />}
               label="Remove"
               color="error"
               variant="outlined"
@@ -403,10 +406,10 @@ const TrustLineRow = ({
               onClick={handleCancel}
               sx={{
                 cursor: 'pointer',
-                height: '24px',
+                height: '20px',
                 '& .MuiChip-label': {
-                  px: 1,
-                  fontSize: '0.75rem'
+                  px: 0.5,
+                  fontSize: '0.7rem'
                 }
               }}
             />

@@ -29,7 +29,25 @@ const RootStyle = styled(Box)(({ theme }) => ({
 const CustomSelect = styled(Select)(({ theme }) => ({
   '& .MuiOutlinedInput-notchedOutline': {
     border: 'none'
+  },
+  '& .MuiSelect-select': {
+    paddingRight: theme.spacing(4),
+    fontWeight: 600,
+    color: theme.palette.primary.main
+  },
+  '&:hover': {
+    backgroundColor: theme.palette.action.hover
   }
+}));
+
+const StyledBox = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  padding: theme.spacing(1, 1.5),
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: theme.palette.background.paper,
+  boxShadow: theme.shadows[1]
 }));
 
 export default function TokenListToolbar({ rows, setRows, page, setPage, tokens }) {
@@ -287,13 +305,17 @@ export default function TokenListToolbar({ rows, setRows, page, setPage, tokens 
       </Grid>
 
       <Grid container item xs={6} md={4} lg={4} justifyContent="flex-end">
-        <Stack direction="row" alignItems="center">
-          Show Rows
-          <CustomSelect value={rows} onChange={handleChangeRows}>
-            <MenuItem value={100}>100</MenuItem>
-            <MenuItem value={50}>50</MenuItem>
-            <MenuItem value={20}>20</MenuItem>
-          </CustomSelect>
+        <Stack direction="row" alignItems="center" sx={{ width: '100%', pr: 1 }}>
+          <StyledBox sx={{ maxWidth: '100%' }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+              Show Rows
+            </Typography>
+            <CustomSelect value={rows} onChange={handleChangeRows}>
+              <MenuItem value={100}>100</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+              <MenuItem value={20}>20</MenuItem>
+            </CustomSelect>
+          </StyledBox>
         </Stack>
       </Grid>
     </Grid>
