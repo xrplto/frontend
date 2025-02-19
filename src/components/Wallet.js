@@ -134,21 +134,23 @@ export default function Wallet({ style }) {
           minHeight: '32px',
           background: (theme) => `linear-gradient(45deg, 
             ${theme.palette.primary.main} 0%, 
-            ${alpha(theme.palette.primary.main, 0.8)} 25%,
-            ${alpha(theme.palette.primary.light, 0.9)} 50%,
-            ${alpha(theme.palette.primary.main, 0.8)} 75%,
+            ${alpha(theme.palette.primary.light, 0.9)} 33%,
+            ${alpha(theme.palette.primary.main, 0.8)} 66%,
             ${theme.palette.primary.main} 100%)`,
-          backgroundSize: '200% 200%',
-          animation: 'gradient 5s ease infinite',
-          '@keyframes gradient': {
-            '0%': {
+          backgroundSize: '300% 300%',
+          animation: 'lavaLamp 7s ease-in-out infinite',
+          '@keyframes lavaLamp': {
+            '0%, 100%': {
               backgroundPosition: '0% 50%'
             },
-            '50%': {
+            '25%': {
               backgroundPosition: '100% 50%'
             },
-            '100%': {
-              backgroundPosition: '0% 50%'
+            '50%': {
+              backgroundPosition: '100% 0%'
+            },
+            '75%': {
+              backgroundPosition: '0% 100%'
             }
           },
           '&::before': {
@@ -161,18 +163,25 @@ export default function Wallet({ style }) {
             background: (theme) =>
               `radial-gradient(circle, ${alpha(
                 theme.palette.primary.light,
-                0.15
-              )} 0%, transparent 70%)`,
-            animation: 'rotate 4s linear infinite',
-            opacity: 0,
-            transition: 'opacity 0.3s ease'
+                0.3
+              )} 0%, transparent 50%)`,
+            animation: 'blob 15s ease-in-out infinite',
+            opacity: 0.7,
+            filter: 'blur(10px)',
+            transform: 'scale(1.2)'
           },
-          '@keyframes rotate': {
-            '0%': {
-              transform: 'rotate(0deg)'
+          '@keyframes blob': {
+            '0%, 100%': {
+              transform: 'translate(0%, 0%) rotate(0deg) scale(1)'
             },
-            '100%': {
-              transform: 'rotate(360deg)'
+            '25%': {
+              transform: 'translate(25%, 25%) rotate(90deg) scale(1.2)'
+            },
+            '50%': {
+              transform: 'translate(-15%, 15%) rotate(180deg) scale(0.9)'
+            },
+            '75%': {
+              transform: 'translate(15%, -25%) rotate(270deg) scale(1.1)'
             }
           },
           '&:hover': {
