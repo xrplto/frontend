@@ -181,29 +181,48 @@ export default function TrustLines({ account, onUpdateTotalValue }) {
       {total > 0 && (
         <Box
           sx={{
+            background: darkMode
+              ? `linear-gradient(${alpha(theme.palette.primary.main, 0.05)}, ${alpha(
+                  theme.palette.primary.main,
+                  0.02
+                )})`
+              : `linear-gradient(${alpha(theme.palette.primary.main, 0.02)}, ${alpha(
+                  theme.palette.primary.main,
+                  0.01
+                )})`,
+            borderRadius: 2,
+            p: isMobile ? 0.5 : 1,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
             display: 'flex',
-            gap: 0.5,
-            overflow: 'auto',
-            width: '100%',
-            '& > *': {
-              scrollSnapAlign: 'center'
-            },
-            '::-webkit-scrollbar': { display: 'none' },
-            mt: 1
+            flexDirection: 'column'
           }}
           ref={tableRef}
         >
-          <Table size="small">
+          <Table
+            size="small"
+            sx={{
+              '& .MuiTableCell-root': {
+                py: 0.75,
+                px: isMobile ? 0.5 : 1,
+                fontSize: '0.875rem',
+                lineHeight: 1.2
+              }
+            }}
+          >
             <TableHead>
               <TableRow>
                 <TableCell
                   sx={{
-                    py: 1,
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
-                    borderBottom: `1px solid ${
-                      darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
-                    }`
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.03),
+                    '&:first-of-type': {
+                      borderTopLeftRadius: 8
+                    },
+                    '&:last-child': {
+                      borderTopRightRadius: 8
+                    }
                   }}
                 >
                   Currency
@@ -212,12 +231,10 @@ export default function TrustLines({ account, onUpdateTotalValue }) {
                   align="right"
                   sx={{
                     display: { xs: 'none', sm: 'table-cell' },
-                    py: 1,
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
-                    borderBottom: `1px solid ${
-                      darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
-                    }`
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.03)
                   }}
                 >
                   Balance
@@ -225,12 +242,10 @@ export default function TrustLines({ account, onUpdateTotalValue }) {
                 <TableCell
                   align="right"
                   sx={{
-                    py: 1,
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
-                    borderBottom: `1px solid ${
-                      darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
-                    }`
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.03)
                   }}
                 >
                   Value
@@ -239,12 +254,10 @@ export default function TrustLines({ account, onUpdateTotalValue }) {
                   align="right"
                   sx={{
                     display: { xs: 'none', md: 'table-cell' },
-                    py: 1,
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
-                    borderBottom: `1px solid ${
-                      darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
-                    }`
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.03)
                   }}
                 >
                   % Owned
@@ -253,12 +266,11 @@ export default function TrustLines({ account, onUpdateTotalValue }) {
                   <TableCell
                     align="center"
                     sx={{
-                      py: 1,
-                      fontSize: '0.875rem',
-                      fontWeight: 600,
-                      borderBottom: `1px solid ${
-                        darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'
-                      }`
+                      color: theme.palette.primary.main,
+                      fontWeight: 'bold',
+                      borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      background: alpha(theme.palette.primary.main, 0.03),
+                      width: '48px'
                     }}
                   >
                     Action

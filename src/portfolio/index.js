@@ -23,7 +23,9 @@ import {
   TableRow,
   Paper,
   Skeleton,
-  Tooltip
+  Tooltip,
+  ToggleButton,
+  ToggleButtonGroup
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Verified as VerifiedIcon } from '@mui/icons-material';
@@ -577,15 +579,42 @@ export default function Portfolio({ account, limit, collection, type }) {
               <CardContent sx={{ px: 0 }}>
                 <TabContext value={activeTab}>
                   <Box>
-                    <Tabs
+                    <ToggleButtonGroup
                       value={activeTab}
-                      onChange={handleChange}
-                      aria-label="wrapped label tabs example"
+                      exclusive
+                      onChange={(e, newValue) => newValue && handleChange(e, newValue)}
+                      size="small"
+                      sx={{
+                        bgcolor: theme.palette.action.hover,
+                        borderRadius: '8px',
+                        padding: '2px',
+                        '& .MuiToggleButton-root': {
+                          border: 'none',
+                          borderRadius: '6px !important',
+                          color: theme.palette.text.secondary,
+                          fontSize: '0.875rem',
+                          fontWeight: 'normal',
+                          textTransform: 'none',
+                          px: 2,
+                          py: 0.5,
+                          minWidth: '80px',
+                          '&.Mui-selected': {
+                            bgcolor: theme.palette.background.paper,
+                            color: theme.palette.primary.main,
+                            fontWeight: 500,
+                            boxShadow: theme.shadows[1]
+                          },
+                          '&:hover': {
+                            bgcolor: theme.palette.background.paper,
+                            color: theme.palette.primary.main
+                          }
+                        }
+                      }}
                     >
-                      <Tab label="Tokens" value="0" />
-                      <Tab label="NFTs" value="1" />
-                      <Tab label="Ranks" value="2" />
-                    </Tabs>
+                      <ToggleButton value="0">Tokens</ToggleButton>
+                      <ToggleButton value="1">NFTs</ToggleButton>
+                      <ToggleButton value="2">Ranks</ToggleButton>
+                    </ToggleButtonGroup>
                   </Box>
 
                   <TabPanel sx={{ p: 0 }} value="0">
