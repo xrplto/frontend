@@ -13,9 +13,14 @@ import {
   TableRow,
   Typography,
   useMediaQuery,
-  useTheme
+  useTheme,
+  IconButton,
+  Select,
+  MenuItem,
+  alpha
 } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 // Loader
 import { PulseLoader } from 'react-spinners';
 // Utils
@@ -136,6 +141,15 @@ export default function TrustLines({ account, onUpdateTotalValue }) {
   }, [lines, onUpdateTotalValue]);
 
   const tableRef = useRef(null);
+
+  const handleChangePage = (newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRows(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   return (
     <Box>
@@ -294,8 +308,205 @@ export default function TrustLines({ account, onUpdateTotalValue }) {
         </Box>
       )}
       {total > 0 && (
-        <Box sx={{ px: 0.5, mt: 0.5 }}>
-          <ListToolbar count={total} rows={rows} setRows={setRows} page={page} setPage={setPage} />
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            px: 2,
+            minHeight: '52px',
+            gap: 4,
+            background: alpha(theme.palette.primary.main, 0.02)
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              background: alpha(theme.palette.background.paper, 0.8),
+              backdropFilter: 'blur(8px)',
+              borderRadius: 1.5,
+              px: 1.5,
+              py: 0.5,
+              minHeight: '40px',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+              boxShadow: theme.shadows[1]
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.primary.main,
+                fontWeight: 500
+              }}
+            >
+              {`${page + 1} / ${Math.ceil(total / rows)} pages`}
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 0.5,
+                borderLeft: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                pl: 1
+              }}
+            >
+              <IconButton
+                onClick={() => handleChangePage(page - 1)}
+                disabled={page === 0}
+                size="small"
+                sx={{
+                  color: theme.palette.primary.main,
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '6px',
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  background: alpha(theme.palette.primary.main, 0.05),
+                  '&:hover': {
+                    background: alpha(theme.palette.primary.main, 0.15),
+                    borderColor: theme.palette.primary.main
+                  },
+                  '&.Mui-disabled': {
+                    color: alpha(theme.palette.primary.main, 0.3),
+                    borderColor: alpha(theme.palette.primary.main, 0.1),
+                    background: 'none'
+                  },
+                  '& .MuiSvgIcon-root': {
+                    fontSize: '20px'
+                  }
+                }}
+              >
+                <KeyboardArrowLeft />
+              </IconButton>
+              <IconButton
+                onClick={() => handleChangePage(page + 1)}
+                disabled={page >= Math.ceil(total / rows) - 1}
+                size="small"
+                sx={{
+                  color: theme.palette.primary.main,
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '6px',
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  background: alpha(theme.palette.primary.main, 0.05),
+                  '&:hover': {
+                    background: alpha(theme.palette.primary.main, 0.15),
+                    borderColor: theme.palette.primary.main
+                  },
+                  '&.Mui-disabled': {
+                    color: alpha(theme.palette.primary.main, 0.3),
+                    borderColor: alpha(theme.palette.primary.main, 0.1),
+                    background: 'none'
+                  },
+                  '& .MuiSvgIcon-root': {
+                    fontSize: '20px'
+                  }
+                }}
+              >
+                <KeyboardArrowRight />
+              </IconButton>
+            </Box>
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              background: alpha(theme.palette.background.paper, 0.8),
+              backdropFilter: 'blur(8px)',
+              borderRadius: 1.5,
+              px: 1.5,
+              py: 0.5,
+              minHeight: '40px',
+              boxShadow: theme.shadows[1],
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+            }}
+          >
+            <Select
+              value={rows}
+              onChange={handleChangeRowsPerPage}
+              size="small"
+              sx={{
+                height: '32px',
+                width: '44px',
+                minWidth: '44px',
+                color: theme.palette.primary.main,
+                '.MuiSelect-select': {
+                  py: 0,
+                  px: 0,
+                  fontWeight: 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.875rem',
+                  letterSpacing: '0.5px',
+                  marginRight: '-8px',
+                  paddingLeft: '4px'
+                },
+                '.MuiOutlinedInput-notchedOutline': {
+                  borderColor: alpha(theme.palette.primary.main, 0.2),
+                  borderWidth: '1px',
+                  borderRadius: '6px'
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: alpha(theme.palette.primary.main, 0.4)
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: alpha(theme.palette.primary.main, 0.4),
+                  borderWidth: '1px'
+                },
+                background: alpha(theme.palette.primary.main, 0.05),
+                '&:hover': {
+                  background: alpha(theme.palette.primary.main, 0.1)
+                }
+              }}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    mt: 1,
+                    borderRadius: '6px',
+                    boxShadow: theme.shadows[2],
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                    '.MuiMenuItem-root': {
+                      color: theme.palette.primary.main,
+                      justifyContent: 'center',
+                      fontSize: '0.875rem',
+                      letterSpacing: '0.5px',
+                      py: 1,
+                      '&:hover': {
+                        background: alpha(theme.palette.primary.main, 0.1)
+                      },
+                      '&.Mui-selected': {
+                        background: alpha(theme.palette.primary.main, 0.08),
+                        '&:hover': {
+                          background: alpha(theme.palette.primary.main, 0.12)
+                        }
+                      }
+                    }
+                  }
+                }
+              }}
+            >
+              {[10, 25, 50].map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Select>
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.primary.main,
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                whiteSpace: 'nowrap',
+                pr: 0.5
+              }}
+            >
+              items / page
+            </Typography>
+          </Box>
         </Box>
       )}
     </Box>
