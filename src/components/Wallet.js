@@ -140,11 +140,6 @@ export default function Wallet({ style }) {
             ${theme.palette.primary.main} 100%)`,
           backgroundSize: '200% 200%',
           animation: 'gradient 5s ease infinite',
-          boxShadow: (theme) => `
-            0 0 10px ${alpha(theme.palette.primary.main, 0.5)},
-            0 0 20px ${alpha(theme.palette.primary.main, 0.3)},
-            0 0 30px ${alpha(theme.palette.primary.main, 0.2)}
-          `,
           '@keyframes gradient': {
             '0%': {
               backgroundPosition: '0% 50%'
@@ -181,12 +176,6 @@ export default function Wallet({ style }) {
             }
           },
           '&:hover': {
-            transform: 'translateY(-2px) scale(1.02)',
-            boxShadow: (theme) => `
-              0 0 15px ${alpha(theme.palette.primary.main, 0.6)},
-              0 0 30px ${alpha(theme.palette.primary.main, 0.4)},
-              0 0 45px ${alpha(theme.palette.primary.main, 0.3)}
-            `,
             '&::before': {
               opacity: 1
             }
