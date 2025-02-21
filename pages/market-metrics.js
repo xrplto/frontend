@@ -173,8 +173,8 @@ const MarketMetricsContent = () => {
   const [visibleLines, setVisibleLines] = useState({
     volumeAMM: true,
     volumeNonAMM: true,
-    tradesAMM: true,
-    tradesNonAMM: true,
+    tradesAMM: false,
+    tradesNonAMM: false,
     totalMarketcap: true,
     tokenCount: true
   });
