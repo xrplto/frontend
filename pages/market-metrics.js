@@ -127,7 +127,7 @@ const MarketMetrics = () => {
                 }
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
+              <Legend wrapperStyle={{ paddingTop: '10px' }} verticalAlign="top" height={36} />
               <Line
                 type="monotone"
                 dataKey="totalMarketcap"
@@ -155,7 +155,7 @@ const MarketMetrics = () => {
                 tickFormatter={(value) => value.toLocaleString()}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
+              <Legend wrapperStyle={{ paddingTop: '10px' }} verticalAlign="top" height={36} />
               <Line
                 type="monotone"
                 dataKey="tokenCount"
@@ -183,7 +183,7 @@ const MarketMetrics = () => {
                 tickFormatter={(value) => value.toLocaleString()}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
+              <Legend wrapperStyle={{ paddingTop: '10px' }} verticalAlign="top" height={36} />
               <Line
                 type="monotone"
                 dataKey="volumeAMM"
