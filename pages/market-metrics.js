@@ -11,12 +11,35 @@ import {
 } from 'recharts';
 import axios from 'axios';
 import moment from 'moment';
-import { Box, Typography, Container, Paper } from '@mui/material';
+import { Box, Typography, Container, Paper, useTheme } from '@mui/material';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';
 import { Provider } from 'react-redux';
 import store from 'src/redux/store';
+
+// Chart theme colors
+const chartColors = {
+  primary: {
+    main: '#3B82F6',
+    light: 'rgba(59, 130, 246, 0.1)',
+    dark: '#2563EB'
+  },
+  secondary: {
+    main: '#10B981',
+    light: 'rgba(16, 185, 129, 0.1)',
+    dark: '#059669'
+  },
+  tertiary: {
+    main: '#F59E0B',
+    light: 'rgba(245, 158, 11, 0.1)',
+    dark: '#D97706'
+  },
+  background: 'rgba(0, 0, 0, 0.3)',
+  cardBg: 'rgba(0, 0, 0, 0.5)',
+  text: '#E5E7EB',
+  grid: 'rgba(255, 255, 255, 0.03)'
+};
 
 // Custom tooltip styles
 const CustomTooltip = ({ active, payload, label }) => {
@@ -24,35 +47,125 @@ const CustomTooltip = ({ active, payload, label }) => {
     return (
       <Box
         sx={{
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          border: '1px solid #333',
-          p: 1.5,
-          borderRadius: 1,
-          color: 'white'
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          p: 2,
+          borderRadius: 2,
+          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)'
         }}
       >
-        <Typography variant="body2" sx={{ color: 'white', mb: 1 }}>
+        <Typography variant="subtitle2" sx={{ color: '#E5E7EB', mb: 1, fontWeight: 600 }}>
           {label}
         </Typography>
         {payload.map((entry, index) => (
-          <Typography key={index} variant="body2" sx={{ color: entry.color || entry.stroke }}>
-            {`${entry.name}: ${entry.value.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })}${
-              entry.name.includes('Market Cap')
-                ? ' XRP'
-                : entry.name.includes('Volume')
-                ? 'k XRP'
-                : ''
-            }`}
-          </Typography>
+          <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+            <Box
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                backgroundColor: entry.color || entry.stroke,
+                mr: 1,
+                boxShadow: '0 0 10px rgba(255, 255, 255, 0.1)'
+              }}
+            />
+            <Typography variant="body2" sx={{ color: '#E5E7EB' }}>
+              {`${entry.name}: ${entry.value.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })}${
+                entry.name.includes('Market Cap')
+                  ? ' XRP'
+                  : entry.name.includes('Volume')
+                  ? 'k XRP'
+                  : ''
+              }`}
+            </Typography>
+          </Box>
         ))}
       </Box>
     );
   }
   return null;
 };
+
+// Custom Legend Item Component
+const CustomLegendItem = ({ entry, visible, onClick }) => (
+  <Box
+    onClick={() => onClick(entry)}
+    sx={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      mr: 3,
+      cursor: 'pointer',
+      opacity: visible ? 1 : 0.4,
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        opacity: 0.8
+      }
+    }}
+  >
+    <Box
+      sx={{
+        width: 12,
+        height: 12,
+        borderRadius: '50%',
+        backgroundColor: entry.color || entry.stroke,
+        mr: 1,
+        boxShadow: visible ? '0 0 10px rgba(255, 255, 255, 0.1)' : 'none'
+      }}
+    />
+    <Typography
+      variant="body2"
+      sx={{
+        color: chartColors.text,
+        fontWeight: visible ? 500 : 400
+      }}
+    >
+      {entry.value}
+    </Typography>
+  </Box>
+);
+
+// Chart Container Component
+const ChartContainer = ({ title, children }) => (
+  <Paper
+    elevation={0}
+    sx={{
+      p: 3,
+      mb: 4,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      border: '1px solid rgba(255, 255, 255, 0.05)',
+      borderRadius: 2,
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
+      '&:hover': {
+        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        transition: 'all 0.3s ease-in-out'
+      }
+    }}
+  >
+    <Typography
+      variant="h6"
+      gutterBottom
+      sx={{
+        color: 'rgba(255, 255, 255, 0.95)',
+        fontWeight: 600,
+        mb: 3,
+        fontSize: '1.25rem',
+        letterSpacing: '0.025em',
+        textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+      }}
+    >
+      {title}
+    </Typography>
+    {children}
+  </Paper>
+);
 
 const MarketMetricsContent = () => {
   const [data, setData] = useState([]);
@@ -119,28 +232,65 @@ const MarketMetricsContent = () => {
   if (loading) {
     return (
       <Container>
-        <Typography variant="h6">Loading market metrics...</Typography>
+        <Typography variant="h6" sx={{ color: chartColors.text }}>
+          Loading market metrics...
+        </Typography>
       </Container>
     );
   }
 
-  return (
-    <Box sx={{ flex: 1, py: 3 }}>
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Paper elevation={3} sx={{ p: 3 }}>
-          <Typography variant="h4" gutterBottom>
-            XRPL Market Metrics
-          </Typography>
+  const chartConfig = {
+    margin: { top: 20, right: 30, left: 20, bottom: 5 },
+    gridStyle: {
+      strokeDasharray: '3 3',
+      stroke: chartColors.grid
+    },
+    axisStyle: {
+      fontSize: 12,
+      fontWeight: 500,
+      fill: chartColors.text
+    }
+  };
 
-          {/* Total Marketcap Chart */}
-          <Box sx={{ height: 400, mb: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              Total Market Cap (XRP)
-            </Typography>
+  return (
+    <Box
+      sx={{
+        flex: 1,
+        py: 3,
+        backgroundColor: 'transparent',
+        backgroundImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3))',
+        minHeight: '100vh'
+      }}
+    >
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{
+            color: 'rgba(255, 255, 255, 0.95)',
+            fontWeight: 700,
+            mb: 4,
+            textAlign: 'center',
+            letterSpacing: '0.025em',
+            textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+          }}
+        >
+          XRPL Market Analytics
+        </Typography>
+
+        <ChartContainer title="Total Market Cap (XRP)">
+          <Box sx={{ height: 400 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} interval={30} />
+              <LineChart data={data} margin={chartConfig.margin}>
+                <CartesianGrid {...chartConfig.gridStyle} />
+                <XAxis
+                  dataKey="date"
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  interval={30}
+                  tick={{ ...chartConfig.axisStyle }}
+                />
                 <YAxis
                   domain={['auto', 'auto']}
                   tickFormatter={(value) =>
@@ -149,224 +299,210 @@ const MarketMetricsContent = () => {
                       maximumFractionDigits: 2
                     }) + ' XRP'
                   }
+                  tick={{ ...chartConfig.axisStyle }}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend
-                  wrapperStyle={{ paddingTop: '10px' }}
+                  wrapperStyle={{
+                    paddingTop: '20px',
+                    color: chartColors.text
+                  }}
                   verticalAlign="top"
                   height={36}
                   onClick={handleLegendClick}
-                  formatter={(value, entry) => (
-                    <span style={{ color: visibleLines[entry.dataKey] ? entry.color : '#999' }}>
-                      {value}
-                    </span>
-                  )}
                 />
                 <Line
                   type="monotone"
                   dataKey="totalMarketcap"
-                  stroke="rgba(136, 132, 216, 0.8)"
+                  stroke={chartColors.primary.main}
                   name="Total Market Cap"
                   strokeWidth={2}
-                  hide={!visibleLines.totalMarketcap}
-                  dot={{
-                    r: 2,
-                    strokeWidth: 1,
-                    fill: 'rgba(136, 132, 216, 0.8)',
-                    stroke: 'rgba(136, 132, 216, 0.8)'
-                  }}
+                  dot={false}
                   activeDot={{
-                    r: 4,
-                    strokeWidth: 1,
-                    stroke: 'rgba(136, 132, 216, 1)',
-                    fill: '#fff'
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: chartColors.primary.main,
+                    fill: chartColors.background
                   }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </Box>
+        </ChartContainer>
 
-          {/* Token Count Chart */}
-          <Box sx={{ height: 400, mb: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              Number of Active Tokens
-            </Typography>
+        <ChartContainer title="Active Tokens">
+          <Box sx={{ height: 400 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} interval={30} />
+              <LineChart data={data} margin={chartConfig.margin}>
+                <CartesianGrid {...chartConfig.gridStyle} />
+                <XAxis
+                  dataKey="date"
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  interval={30}
+                  tick={{ ...chartConfig.axisStyle }}
+                />
                 <YAxis
                   domain={['dataMin - 5', 'dataMax + 5']}
                   tickFormatter={(value) => value.toLocaleString()}
+                  tick={{ ...chartConfig.axisStyle }}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend
-                  wrapperStyle={{ paddingTop: '10px' }}
+                  wrapperStyle={{
+                    paddingTop: '20px',
+                    color: chartColors.text
+                  }}
                   verticalAlign="top"
                   height={36}
                   onClick={handleLegendClick}
-                  formatter={(value, entry) => (
-                    <span style={{ color: visibleLines[entry.dataKey] ? entry.color : '#999' }}>
-                      {value}
-                    </span>
-                  )}
                 />
                 <Line
                   type="monotone"
                   dataKey="tokenCount"
-                  stroke="rgba(255, 99, 132, 0.8)"
+                  stroke={chartColors.secondary.main}
                   name="Active Tokens"
                   strokeWidth={2}
-                  hide={!visibleLines.tokenCount}
-                  dot={{
-                    r: 2,
-                    strokeWidth: 1,
-                    fill: 'rgba(255, 99, 132, 0.8)',
-                    stroke: 'rgba(255, 99, 132, 0.8)'
-                  }}
+                  dot={false}
                   activeDot={{
-                    r: 4,
-                    strokeWidth: 1,
-                    stroke: 'rgba(255, 99, 132, 1)',
-                    fill: '#fff'
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: chartColors.secondary.main,
+                    fill: chartColors.background
                   }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </Box>
+        </ChartContainer>
 
-          {/* Volume and Trades Chart */}
-          <Box sx={{ height: 400 }}>
-            <Typography variant="h6" gutterBottom>
-              Trading Activity
-            </Typography>
+        <ChartContainer title="Trading Activity">
+          <Box sx={{ height: 400, backgroundColor: 'transparent' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} interval={30} />
+              <LineChart
+                data={data}
+                margin={chartConfig.margin}
+                style={{
+                  backgroundColor: 'transparent'
+                }}
+              >
+                <CartesianGrid {...chartConfig.gridStyle} opacity={0.1} />
+                <XAxis
+                  dataKey="date"
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  interval={30}
+                  tick={{ ...chartConfig.axisStyle }}
+                />
                 <YAxis
                   yAxisId="volume"
                   orientation="left"
                   domain={['dataMin - 1000', 'dataMax + 1000']}
                   tickFormatter={(value) => value.toLocaleString() + 'k XRP'}
+                  tick={{ ...chartConfig.axisStyle }}
                 />
                 <YAxis
                   yAxisId="trades"
                   orientation="right"
                   domain={['dataMin - 100', 'dataMax + 100']}
                   tickFormatter={(value) => value.toLocaleString()}
+                  tick={{ ...chartConfig.axisStyle }}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend
-                  wrapperStyle={{ paddingTop: '10px' }}
-                  verticalAlign="top"
-                  height={36}
-                  onClick={handleLegendClick}
-                  formatter={(value, entry) => (
-                    <span
-                      style={{
-                        color: visibleLines[entry.dataKey]
-                          ? entry.dataKey.includes('trades')
-                            ? entry.stroke
-                            : entry.color
-                          : '#999',
-                        cursor: 'pointer'
+                  content={({ payload }) => (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        flexWrap: 'wrap',
+                        pt: 2,
+                        pb: 1
                       }}
                     >
-                      {value}
-                    </span>
+                      {payload.map((entry) => (
+                        <CustomLegendItem
+                          key={entry.value}
+                          entry={entry}
+                          visible={visibleLines[entry.dataKey]}
+                          onClick={handleLegendClick}
+                        />
+                      ))}
+                    </Box>
                   )}
                 />
                 <Line
                   yAxisId="volume"
                   type="monotone"
                   dataKey="volumeAMM"
-                  stroke="rgba(136, 132, 216, 0.8)"
+                  stroke={chartColors.primary.main}
                   name="AMM Volume"
                   strokeWidth={2}
+                  dot={false}
                   hide={!visibleLines.volumeAMM}
-                  dot={{
-                    r: 2,
-                    strokeWidth: 1,
-                    fill: 'rgba(136, 132, 216, 0.8)',
-                    stroke: 'rgba(136, 132, 216, 0.8)'
-                  }}
                   activeDot={{
-                    r: 4,
-                    strokeWidth: 1,
-                    stroke: 'rgba(136, 132, 216, 1)',
-                    fill: '#fff'
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: chartColors.primary.main,
+                    fill: chartColors.background
                   }}
                 />
                 <Line
                   yAxisId="volume"
                   type="monotone"
                   dataKey="volumeNonAMM"
-                  stroke="rgba(130, 202, 157, 0.8)"
+                  stroke={chartColors.secondary.main}
                   name="Non-AMM Volume"
                   strokeWidth={2}
+                  dot={false}
                   hide={!visibleLines.volumeNonAMM}
-                  dot={{
-                    r: 2,
-                    strokeWidth: 1,
-                    fill: 'rgba(130, 202, 157, 0.8)',
-                    stroke: 'rgba(130, 202, 157, 0.8)'
-                  }}
                   activeDot={{
-                    r: 4,
-                    strokeWidth: 1,
-                    stroke: 'rgba(130, 202, 157, 1)',
-                    fill: '#fff'
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: chartColors.secondary.main,
+                    fill: chartColors.background
                   }}
                 />
                 <Line
                   yAxisId="trades"
                   type="monotone"
                   dataKey="tradesAMM"
-                  stroke="rgba(136, 132, 216, 0.5)"
+                  stroke={`${chartColors.primary.main}80`}
                   name="AMM Trades"
                   strokeDasharray="5 5"
                   strokeWidth={2}
+                  dot={false}
                   hide={!visibleLines.tradesAMM}
-                  dot={{
-                    r: 2,
-                    strokeWidth: 1,
-                    fill: 'rgba(136, 132, 216, 0.5)',
-                    stroke: 'rgba(136, 132, 216, 0.5)'
-                  }}
                   activeDot={{
-                    r: 4,
-                    strokeWidth: 1,
-                    stroke: 'rgba(136, 132, 216, 0.8)',
-                    fill: '#fff'
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: chartColors.primary.main,
+                    fill: chartColors.background
                   }}
                 />
                 <Line
                   yAxisId="trades"
                   type="monotone"
                   dataKey="tradesNonAMM"
-                  stroke="rgba(130, 202, 157, 0.5)"
+                  stroke={`${chartColors.secondary.main}80`}
                   name="Non-AMM Trades"
                   strokeDasharray="5 5"
                   strokeWidth={2}
+                  dot={false}
                   hide={!visibleLines.tradesNonAMM}
-                  dot={{
-                    r: 2,
-                    strokeWidth: 1,
-                    fill: 'rgba(130, 202, 157, 0.5)',
-                    stroke: 'rgba(130, 202, 157, 0.5)'
-                  }}
                   activeDot={{
-                    r: 4,
-                    strokeWidth: 1,
-                    stroke: 'rgba(130, 202, 157, 0.8)',
-                    fill: '#fff'
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: chartColors.secondary.main,
+                    fill: chartColors.background
                   }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </Box>
-        </Paper>
+        </ChartContainer>
       </Container>
     </Box>
   );
