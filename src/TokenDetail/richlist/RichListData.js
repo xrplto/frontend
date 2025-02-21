@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Tooltip from '@mui/material/Tooltip';
 import InfoIcon from '@mui/icons-material/Info';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'; // Make sure this is imported
+import LinkIcon from '@mui/icons-material/Link'; // Add Link icon import
 
 // Material
 import {
@@ -58,15 +59,9 @@ export default function RichListData({ token }) {
   const BASE_URL = process.env.API_URL;
   const metrics = useSelector(selectMetrics);
 
-  const {
-    accountProfile,
-    setLoading,
-    openSnackbar,
-    darkMode,
-    activeFiatCurrency
-  } = useContext(AppContext);
-  const isAdmin =
-    accountProfile && accountProfile.account && accountProfile.admin;
+  const { accountProfile, setLoading, openSnackbar, darkMode, activeFiatCurrency } =
+    useContext(AppContext);
+  const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(20);
@@ -284,9 +279,7 @@ export default function RichListData({ token }) {
                   Frozen ({frozen ? 'YES' : 'ALL'})
                   {orderBy === vars.cellId ? (
                     <Box sx={{ ...visuallyHidden }}>
-                      {order === 'desc'
-                        ? 'sorted descending'
-                        : 'sorted ascending'}
+                      {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                     </Box>
                   ) : null}
                 </TableSortLabel>
@@ -308,9 +301,7 @@ export default function RichListData({ token }) {
                   Balance({name})
                   {orderBy === vars.cellId ? (
                     <Box sx={{ ...visuallyHidden }}>
-                      {order === 'desc'
-                        ? 'sorted descending'
-                        : 'sorted ascending'}
+                      {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                     </Box>
                   ) : null}
                 </TableSortLabel>
@@ -332,9 +323,7 @@ export default function RichListData({ token }) {
                   Change<span style={badge24hStyle}>24h</span>
                   {orderBy === vars.cellId ? (
                     <Box sx={{ ...visuallyHidden }}>
-                      {order === 'desc'
-                        ? 'sorted descending'
-                        : 'sorted ascending'}
+                      {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                     </Box>
                   ) : null}
                 </TableSortLabel>
@@ -356,9 +345,7 @@ export default function RichListData({ token }) {
                   Holding
                   {orderBy === vars.cellId ? (
                     <Box sx={{ ...visuallyHidden }}>
-                      {order === 'desc'
-                        ? 'sorted descending'
-                        : 'sorted ascending'}
+                      {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
                     </Box>
                   ) : null}
                 </TableSortLabel>
@@ -380,9 +367,7 @@ export default function RichListData({ token }) {
                 var balance24h = false;
                 if (row.balance24h) {
                   var change = balance - row.balance24h;
-                  var percentChange = Math.abs(
-                    (change / row.balance24h) * 100
-                  ).toFixed(2);
+                  var percentChange = Math.abs((change / row.balance24h) * 100).toFixed(2);
                   var color24h, icon24h;
                   if (change >= 0) {
                     color24h = '#54D62C';
@@ -405,9 +390,7 @@ export default function RichListData({ token }) {
                     sx={{
                       '&:hover': {
                         '& .MuiTableCell-root': {
-                          backgroundColor: darkMode
-                            ? '#232326 !important'
-                            : '#D9DCE0 !important'
+                          backgroundColor: darkMode ? '#232326 !important' : '#D9DCE0 !important'
                         }
                       }
                     }}
@@ -450,26 +433,15 @@ export default function RichListData({ token }) {
                         </Typography>
                       </Link>
                     </TableCell>
+                    <TableCell align="left">{freeze && <Icon icon={checkIcon} />}</TableCell>
                     <TableCell align="left">
-                      {freeze && <Icon icon={checkIcon} />}
-                    </TableCell>
-                    <TableCell align="left">
-                      <Typography variant="subtitle1">
-                        {fNumber(balance)}
-                      </Typography>
+                      <Typography variant="subtitle1">{fNumber(balance)}</Typography>
                     </TableCell>
                     <TableCell align="left">
                       {balance24h && (
-                        <Stack
-                          direction="row"
-                          spacing={0.1}
-                          alignItems="center"
-                        >
+                        <Stack direction="row" spacing={0.1} alignItems="center">
                           <Icon icon={icon24h} color={color24h} />
-                          <Typography
-                            sx={{ color: color24h }}
-                            variant="subtitle1"
-                          >
+                          <Typography sx={{ color: color24h }} variant="subtitle1">
                             <NumberTooltip number={Math.abs(change)} /> (
                             <NumberTooltip append="%" number={percentChange} />)
                           </Typography>
@@ -483,9 +455,7 @@ export default function RichListData({ token }) {
                       <Stack>
                         <Typography variant="h4" noWrap>
                           {currencySymbols[activeFiatCurrency]}{' '}
-                          {fNumber(
-                            (exch * balance) / metrics[activeFiatCurrency]
-                          )}
+                          {fNumber((exch * balance) / metrics[activeFiatCurrency])}
                         </Typography>
                       </Stack>
                     </TableCell>
@@ -513,27 +483,7 @@ export default function RichListData({ token }) {
                           rel="noreferrer noopener nofollow"
                         >
                           <IconButton edge="end" aria-label="bithomp">
-                            <Avatar
-                              alt="livenet.xrpl.org Explorer"
-                              src="/static/bithomp.ico"
-                              sx={{ width: 20, height: 20 }}
-                            />
-                          </IconButton>
-                        </Link>
-
-                        <Link
-                          underline="none"
-                          color="inherit"
-                          target="_blank"
-                          href={`https://livenet.xrpl.org/accounts/${account}`}
-                          rel="noreferrer noopener nofollow"
-                        >
-                          <IconButton edge="end" aria-label="livenetxrplorg">
-                            <Avatar
-                              alt="livenet.xrpl.org Explorer"
-                              src="/static/livenetxrplorg.ico"
-                              sx={{ width: 20, height: 20 }}
-                            />
+                            <LinkIcon />
                           </IconButton>
                         </Link>
                       </Stack>
@@ -546,13 +496,7 @@ export default function RichListData({ token }) {
         </Table>
       </Box>
 
-      <RichListToolbar
-        count={count}
-        rows={rows}
-        setRows={setRows}
-        page={page}
-        setPage={setPage}
-      />
+      <RichListToolbar count={count} rows={rows} setRows={setRows} page={page} setPage={setPage} />
     </>
   );
 }
