@@ -397,7 +397,11 @@ const Topbar = () => {
     {
       label: 'Vol',
       value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
-        Decimal.div(metrics.H24.tradedXRP24H, metrics[activeFiatCurrency]).toNumber()
+        metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
+          ? new Decimal(metrics.H24.tradedXRP24H || 0)
+              .div(new Decimal(metrics[activeFiatCurrency] || 1))
+              .toNumber()
+          : 0
       )}`,
       color: theme.palette.error.main
     },
@@ -506,7 +510,11 @@ const Topbar = () => {
                   <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
                   <Typography align="center" color={theme.palette.error.main} variant="body2">
                     {abbreviateNumber(
-                      Decimal.div(metrics.H24.tradedXRP24H, metrics[activeFiatCurrency]).toNumber()
+                      metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
+                        ? new Decimal(metrics.H24.tradedXRP24H || 0)
+                            .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                            .toNumber()
+                        : 0
                     )}
                   </Typography>
                 </Stack>

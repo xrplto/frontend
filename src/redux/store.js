@@ -44,22 +44,24 @@ const initialState = {
 
 const persistConfig = {
   key: 'root',
-  storage: new CookieStorage(Cookies /*, options */)
+  storage: new CookieStorage(Cookies)
 };
 
-const persistedReducer = persistReducer(
-  persistConfig,
-  combineReducers({
-    status: statusReducer,
-    transaction: transactionReducer,
-    chat: chatReducer,
-  })
-);
+const rootReducer = combineReducers({
+  status: statusReducer,
+  transaction: transactionReducer,
+  chat: chatReducer
+});
 
-export const store = configureStore({
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+const store = configureStore({
   reducer: persistedReducer,
+  preloadedState: { status: initialState },
   devTools: process.env.NODE_ENV !== 'production'
 });
+
+export default store;
 
 // export const persistor = globalThis.window ? persistStore(store) : store;
 

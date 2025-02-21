@@ -12,6 +12,11 @@ import {
 import axios from 'axios';
 import moment from 'moment';
 import { Box, Typography, Container, Paper } from '@mui/material';
+import Header from 'src/components/Header';
+import Footer from 'src/components/Footer';
+import Topbar from 'src/components/Topbar';
+import { Provider } from 'react-redux';
+import store from 'src/redux/store';
 
 // Custom tooltip styles
 const CustomTooltip = ({ active, payload, label }) => {
@@ -49,7 +54,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-const MarketMetrics = () => {
+const MarketMetricsContent = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [visibleLines, setVisibleLines] = useState({
@@ -120,248 +125,269 @@ const MarketMetrics = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          XRPL Market Metrics
-        </Typography>
-
-        {/* Total Marketcap Chart */}
-        <Box sx={{ height: 400, mb: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Total Market Cap (XRP)
+    <Box sx={{ flex: 1, py: 3 }}>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Paper elevation={3} sx={{ p: 3 }}>
+          <Typography variant="h4" gutterBottom>
+            XRPL Market Metrics
           </Typography>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} interval={30} />
-              <YAxis
-                domain={['auto', 'auto']}
-                tickFormatter={(value) =>
-                  value.toLocaleString(undefined, {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                  }) + ' XRP'
-                }
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                wrapperStyle={{ paddingTop: '10px' }}
-                verticalAlign="top"
-                height={36}
-                onClick={handleLegendClick}
-                formatter={(value, entry) => (
-                  <span style={{ color: visibleLines[entry.dataKey] ? entry.color : '#999' }}>
-                    {value}
-                  </span>
-                )}
-              />
-              <Line
-                type="monotone"
-                dataKey="totalMarketcap"
-                stroke="rgba(136, 132, 216, 0.8)"
-                name="Total Market Cap"
-                strokeWidth={2}
-                hide={!visibleLines.totalMarketcap}
-                dot={{
-                  r: 2,
-                  strokeWidth: 1,
-                  fill: 'rgba(136, 132, 216, 0.8)',
-                  stroke: 'rgba(136, 132, 216, 0.8)'
-                }}
-                activeDot={{
-                  r: 4,
-                  strokeWidth: 1,
-                  stroke: 'rgba(136, 132, 216, 1)',
-                  fill: '#fff'
-                }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
 
-        {/* Token Count Chart */}
-        <Box sx={{ height: 400, mb: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Number of Active Tokens
-          </Typography>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} interval={30} />
-              <YAxis
-                domain={['dataMin - 5', 'dataMax + 5']}
-                tickFormatter={(value) => value.toLocaleString()}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                wrapperStyle={{ paddingTop: '10px' }}
-                verticalAlign="top"
-                height={36}
-                onClick={handleLegendClick}
-                formatter={(value, entry) => (
-                  <span style={{ color: visibleLines[entry.dataKey] ? entry.color : '#999' }}>
-                    {value}
-                  </span>
-                )}
-              />
-              <Line
-                type="monotone"
-                dataKey="tokenCount"
-                stroke="rgba(255, 99, 132, 0.8)"
-                name="Active Tokens"
-                strokeWidth={2}
-                hide={!visibleLines.tokenCount}
-                dot={{
-                  r: 2,
-                  strokeWidth: 1,
-                  fill: 'rgba(255, 99, 132, 0.8)',
-                  stroke: 'rgba(255, 99, 132, 0.8)'
-                }}
-                activeDot={{
-                  r: 4,
-                  strokeWidth: 1,
-                  stroke: 'rgba(255, 99, 132, 1)',
-                  fill: '#fff'
-                }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
+          {/* Total Marketcap Chart */}
+          <Box sx={{ height: 400, mb: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Total Market Cap (XRP)
+            </Typography>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} interval={30} />
+                <YAxis
+                  domain={['auto', 'auto']}
+                  tickFormatter={(value) =>
+                    value.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) + ' XRP'
+                  }
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend
+                  wrapperStyle={{ paddingTop: '10px' }}
+                  verticalAlign="top"
+                  height={36}
+                  onClick={handleLegendClick}
+                  formatter={(value, entry) => (
+                    <span style={{ color: visibleLines[entry.dataKey] ? entry.color : '#999' }}>
+                      {value}
+                    </span>
+                  )}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="totalMarketcap"
+                  stroke="rgba(136, 132, 216, 0.8)"
+                  name="Total Market Cap"
+                  strokeWidth={2}
+                  hide={!visibleLines.totalMarketcap}
+                  dot={{
+                    r: 2,
+                    strokeWidth: 1,
+                    fill: 'rgba(136, 132, 216, 0.8)',
+                    stroke: 'rgba(136, 132, 216, 0.8)'
+                  }}
+                  activeDot={{
+                    r: 4,
+                    strokeWidth: 1,
+                    stroke: 'rgba(136, 132, 216, 1)',
+                    fill: '#fff'
+                  }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
 
-        {/* Volume and Trades Chart */}
-        <Box sx={{ height: 400 }}>
-          <Typography variant="h6" gutterBottom>
-            Trading Activity
-          </Typography>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} interval={30} />
-              <YAxis
-                yAxisId="volume"
-                orientation="left"
-                domain={['dataMin - 1000', 'dataMax + 1000']}
-                tickFormatter={(value) => value.toLocaleString() + 'k XRP'}
-              />
-              <YAxis
-                yAxisId="trades"
-                orientation="right"
-                domain={['dataMin - 100', 'dataMax + 100']}
-                tickFormatter={(value) => value.toLocaleString()}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                wrapperStyle={{ paddingTop: '10px' }}
-                verticalAlign="top"
-                height={36}
-                onClick={handleLegendClick}
-                formatter={(value, entry) => (
-                  <span
-                    style={{
-                      color: visibleLines[entry.dataKey]
-                        ? entry.dataKey.includes('trades')
-                          ? entry.stroke
-                          : entry.color
-                        : '#999',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {value}
-                  </span>
-                )}
-              />
-              <Line
-                yAxisId="volume"
-                type="monotone"
-                dataKey="volumeAMM"
-                stroke="rgba(136, 132, 216, 0.8)"
-                name="AMM Volume"
-                strokeWidth={2}
-                hide={!visibleLines.volumeAMM}
-                dot={{
-                  r: 2,
-                  strokeWidth: 1,
-                  fill: 'rgba(136, 132, 216, 0.8)',
-                  stroke: 'rgba(136, 132, 216, 0.8)'
-                }}
-                activeDot={{
-                  r: 4,
-                  strokeWidth: 1,
-                  stroke: 'rgba(136, 132, 216, 1)',
-                  fill: '#fff'
-                }}
-              />
-              <Line
-                yAxisId="volume"
-                type="monotone"
-                dataKey="volumeNonAMM"
-                stroke="rgba(130, 202, 157, 0.8)"
-                name="Non-AMM Volume"
-                strokeWidth={2}
-                hide={!visibleLines.volumeNonAMM}
-                dot={{
-                  r: 2,
-                  strokeWidth: 1,
-                  fill: 'rgba(130, 202, 157, 0.8)',
-                  stroke: 'rgba(130, 202, 157, 0.8)'
-                }}
-                activeDot={{
-                  r: 4,
-                  strokeWidth: 1,
-                  stroke: 'rgba(130, 202, 157, 1)',
-                  fill: '#fff'
-                }}
-              />
-              <Line
-                yAxisId="trades"
-                type="monotone"
-                dataKey="tradesAMM"
-                stroke="rgba(136, 132, 216, 0.5)"
-                name="AMM Trades"
-                strokeDasharray="5 5"
-                strokeWidth={2}
-                hide={!visibleLines.tradesAMM}
-                dot={{
-                  r: 2,
-                  strokeWidth: 1,
-                  fill: 'rgba(136, 132, 216, 0.5)',
-                  stroke: 'rgba(136, 132, 216, 0.5)'
-                }}
-                activeDot={{
-                  r: 4,
-                  strokeWidth: 1,
-                  stroke: 'rgba(136, 132, 216, 0.8)',
-                  fill: '#fff'
-                }}
-              />
-              <Line
-                yAxisId="trades"
-                type="monotone"
-                dataKey="tradesNonAMM"
-                stroke="rgba(130, 202, 157, 0.5)"
-                name="Non-AMM Trades"
-                strokeDasharray="5 5"
-                strokeWidth={2}
-                hide={!visibleLines.tradesNonAMM}
-                dot={{
-                  r: 2,
-                  strokeWidth: 1,
-                  fill: 'rgba(130, 202, 157, 0.5)',
-                  stroke: 'rgba(130, 202, 157, 0.5)'
-                }}
-                activeDot={{
-                  r: 4,
-                  strokeWidth: 1,
-                  stroke: 'rgba(130, 202, 157, 0.8)',
-                  fill: '#fff'
-                }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {/* Token Count Chart */}
+          <Box sx={{ height: 400, mb: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Number of Active Tokens
+            </Typography>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} interval={30} />
+                <YAxis
+                  domain={['dataMin - 5', 'dataMax + 5']}
+                  tickFormatter={(value) => value.toLocaleString()}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend
+                  wrapperStyle={{ paddingTop: '10px' }}
+                  verticalAlign="top"
+                  height={36}
+                  onClick={handleLegendClick}
+                  formatter={(value, entry) => (
+                    <span style={{ color: visibleLines[entry.dataKey] ? entry.color : '#999' }}>
+                      {value}
+                    </span>
+                  )}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="tokenCount"
+                  stroke="rgba(255, 99, 132, 0.8)"
+                  name="Active Tokens"
+                  strokeWidth={2}
+                  hide={!visibleLines.tokenCount}
+                  dot={{
+                    r: 2,
+                    strokeWidth: 1,
+                    fill: 'rgba(255, 99, 132, 0.8)',
+                    stroke: 'rgba(255, 99, 132, 0.8)'
+                  }}
+                  activeDot={{
+                    r: 4,
+                    strokeWidth: 1,
+                    stroke: 'rgba(255, 99, 132, 1)',
+                    fill: '#fff'
+                  }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
+
+          {/* Volume and Trades Chart */}
+          <Box sx={{ height: 400 }}>
+            <Typography variant="h6" gutterBottom>
+              Trading Activity
+            </Typography>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} interval={30} />
+                <YAxis
+                  yAxisId="volume"
+                  orientation="left"
+                  domain={['dataMin - 1000', 'dataMax + 1000']}
+                  tickFormatter={(value) => value.toLocaleString() + 'k XRP'}
+                />
+                <YAxis
+                  yAxisId="trades"
+                  orientation="right"
+                  domain={['dataMin - 100', 'dataMax + 100']}
+                  tickFormatter={(value) => value.toLocaleString()}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend
+                  wrapperStyle={{ paddingTop: '10px' }}
+                  verticalAlign="top"
+                  height={36}
+                  onClick={handleLegendClick}
+                  formatter={(value, entry) => (
+                    <span
+                      style={{
+                        color: visibleLines[entry.dataKey]
+                          ? entry.dataKey.includes('trades')
+                            ? entry.stroke
+                            : entry.color
+                          : '#999',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {value}
+                    </span>
+                  )}
+                />
+                <Line
+                  yAxisId="volume"
+                  type="monotone"
+                  dataKey="volumeAMM"
+                  stroke="rgba(136, 132, 216, 0.8)"
+                  name="AMM Volume"
+                  strokeWidth={2}
+                  hide={!visibleLines.volumeAMM}
+                  dot={{
+                    r: 2,
+                    strokeWidth: 1,
+                    fill: 'rgba(136, 132, 216, 0.8)',
+                    stroke: 'rgba(136, 132, 216, 0.8)'
+                  }}
+                  activeDot={{
+                    r: 4,
+                    strokeWidth: 1,
+                    stroke: 'rgba(136, 132, 216, 1)',
+                    fill: '#fff'
+                  }}
+                />
+                <Line
+                  yAxisId="volume"
+                  type="monotone"
+                  dataKey="volumeNonAMM"
+                  stroke="rgba(130, 202, 157, 0.8)"
+                  name="Non-AMM Volume"
+                  strokeWidth={2}
+                  hide={!visibleLines.volumeNonAMM}
+                  dot={{
+                    r: 2,
+                    strokeWidth: 1,
+                    fill: 'rgba(130, 202, 157, 0.8)',
+                    stroke: 'rgba(130, 202, 157, 0.8)'
+                  }}
+                  activeDot={{
+                    r: 4,
+                    strokeWidth: 1,
+                    stroke: 'rgba(130, 202, 157, 1)',
+                    fill: '#fff'
+                  }}
+                />
+                <Line
+                  yAxisId="trades"
+                  type="monotone"
+                  dataKey="tradesAMM"
+                  stroke="rgba(136, 132, 216, 0.5)"
+                  name="AMM Trades"
+                  strokeDasharray="5 5"
+                  strokeWidth={2}
+                  hide={!visibleLines.tradesAMM}
+                  dot={{
+                    r: 2,
+                    strokeWidth: 1,
+                    fill: 'rgba(136, 132, 216, 0.5)',
+                    stroke: 'rgba(136, 132, 216, 0.5)'
+                  }}
+                  activeDot={{
+                    r: 4,
+                    strokeWidth: 1,
+                    stroke: 'rgba(136, 132, 216, 0.8)',
+                    fill: '#fff'
+                  }}
+                />
+                <Line
+                  yAxisId="trades"
+                  type="monotone"
+                  dataKey="tradesNonAMM"
+                  stroke="rgba(130, 202, 157, 0.5)"
+                  name="Non-AMM Trades"
+                  strokeDasharray="5 5"
+                  strokeWidth={2}
+                  hide={!visibleLines.tradesNonAMM}
+                  dot={{
+                    r: 2,
+                    strokeWidth: 1,
+                    fill: 'rgba(130, 202, 157, 0.5)',
+                    stroke: 'rgba(130, 202, 157, 0.5)'
+                  }}
+                  activeDot={{
+                    r: 4,
+                    strokeWidth: 1,
+                    stroke: 'rgba(130, 202, 157, 0.8)',
+                    fill: '#fff'
+                  }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
+        </Paper>
+      </Container>
+    </Box>
+  );
+};
+
+const MarketMetrics = () => {
+  if (!store) {
+    return null; // or a loading state
+  }
+
+  return (
+    <Provider store={store}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Topbar />
+        <Header />
+        <Box sx={{ flex: 1 }}>
+          <MarketMetricsContent />
         </Box>
-      </Paper>
-    </Container>
+        <Footer />
+      </Box>
+    </Provider>
   );
 };
 
