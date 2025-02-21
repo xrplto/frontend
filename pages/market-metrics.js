@@ -164,14 +164,14 @@ const MarketMetrics = () => {
                 strokeWidth={2}
                 hide={!visibleLines.totalMarketcap}
                 dot={{
-                  r: 3,
-                  strokeWidth: 2,
-                  fill: '#fff',
+                  r: 2,
+                  strokeWidth: 1,
+                  fill: 'rgba(136, 132, 216, 0.8)',
                   stroke: 'rgba(136, 132, 216, 0.8)'
                 }}
                 activeDot={{
-                  r: 6,
-                  strokeWidth: 2,
+                  r: 4,
+                  strokeWidth: 1,
                   stroke: 'rgba(136, 132, 216, 1)',
                   fill: '#fff'
                 }}
@@ -213,14 +213,14 @@ const MarketMetrics = () => {
                 strokeWidth={2}
                 hide={!visibleLines.tokenCount}
                 dot={{
-                  r: 3,
-                  strokeWidth: 2,
-                  fill: '#fff',
+                  r: 2,
+                  strokeWidth: 1,
+                  fill: 'rgba(255, 99, 132, 0.8)',
                   stroke: 'rgba(255, 99, 132, 0.8)'
                 }}
                 activeDot={{
-                  r: 6,
-                  strokeWidth: 2,
+                  r: 4,
+                  strokeWidth: 1,
                   stroke: 'rgba(255, 99, 132, 1)',
                   fill: '#fff'
                 }}
@@ -280,14 +280,14 @@ const MarketMetrics = () => {
                 strokeWidth={2}
                 hide={!visibleLines.volumeAMM}
                 dot={{
-                  r: 3,
-                  strokeWidth: 2,
-                  fill: '#fff',
+                  r: 2,
+                  strokeWidth: 1,
+                  fill: 'rgba(136, 132, 216, 0.8)',
                   stroke: 'rgba(136, 132, 216, 0.8)'
                 }}
                 activeDot={{
-                  r: 6,
-                  strokeWidth: 2,
+                  r: 4,
+                  strokeWidth: 1,
                   stroke: 'rgba(136, 132, 216, 1)',
                   fill: '#fff'
                 }}
@@ -301,14 +301,14 @@ const MarketMetrics = () => {
                 strokeWidth={2}
                 hide={!visibleLines.volumeNonAMM}
                 dot={{
-                  r: 3,
-                  strokeWidth: 2,
-                  fill: '#fff',
+                  r: 2,
+                  strokeWidth: 1,
+                  fill: 'rgba(130, 202, 157, 0.8)',
                   stroke: 'rgba(130, 202, 157, 0.8)'
                 }}
                 activeDot={{
-                  r: 6,
-                  strokeWidth: 2,
+                  r: 4,
+                  strokeWidth: 1,
                   stroke: 'rgba(130, 202, 157, 1)',
                   fill: '#fff'
                 }}
@@ -323,14 +323,14 @@ const MarketMetrics = () => {
                 strokeWidth={2}
                 hide={!visibleLines.tradesAMM}
                 dot={{
-                  r: 3,
-                  strokeWidth: 2,
-                  fill: '#fff',
+                  r: 2,
+                  strokeWidth: 1,
+                  fill: 'rgba(136, 132, 216, 0.5)',
                   stroke: 'rgba(136, 132, 216, 0.5)'
                 }}
                 activeDot={{
-                  r: 6,
-                  strokeWidth: 2,
+                  r: 4,
+                  strokeWidth: 1,
                   stroke: 'rgba(136, 132, 216, 0.8)',
                   fill: '#fff'
                 }}
@@ -345,14 +345,14 @@ const MarketMetrics = () => {
                 strokeWidth={2}
                 hide={!visibleLines.tradesNonAMM}
                 dot={{
-                  r: 3,
-                  strokeWidth: 2,
-                  fill: '#fff',
+                  r: 2,
+                  strokeWidth: 1,
+                  fill: 'rgba(130, 202, 157, 0.5)',
                   stroke: 'rgba(130, 202, 157, 0.5)'
                 }}
                 activeDot={{
-                  r: 6,
-                  strokeWidth: 2,
+                  r: 4,
+                  strokeWidth: 1,
                   stroke: 'rgba(130, 202, 157, 0.8)',
                   fill: '#fff'
                 }}
