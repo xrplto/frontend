@@ -15,7 +15,8 @@ import {
   IconButton,
   Tooltip,
   CircularProgress,
-  Chip
+  Chip,
+  TableSortLabel
 } from '@mui/material';
 
 // Icons
@@ -45,6 +46,65 @@ function formatDuration(seconds) {
   return `${days}d`;
 }
 
+function descendingComparator(a, b, orderBy) {
+  let aValue = a[orderBy];
+  let bValue = b[orderBy];
+
+  // Special handling for calculated fields
+  if (orderBy === 'winRate') {
+    aValue = (a.profitableTrades / (a.profitableTrades + a.losingTrades)) * 100;
+    bValue = (b.profitableTrades / (b.profitableTrades + b.losingTrades)) * 100;
+  }
+
+  if (bValue < aValue) {
+    return -1;
+  }
+  if (bValue > aValue) {
+    return 1;
+  }
+  return 0;
+}
+
+function getComparator(order, orderBy) {
+  return order === 'desc'
+    ? (a, b) => descendingComparator(a, b, orderBy)
+    : (a, b) => -descendingComparator(a, b, orderBy);
+}
+
+const headCells = [
+  { id: 'rank', label: 'Rank', numeric: true, sortable: false },
+  { id: 'address', label: 'Address', numeric: false, sortable: false },
+  { id: 'profit24h', label: 'Profit (24h)', numeric: true, sortable: true },
+  { id: 'profit7d', label: 'Profit (7d)', numeric: true, sortable: true },
+  { id: 'profit2m', label: 'Profit (2m)', numeric: true, sortable: true },
+  { id: 'volume24h', label: 'Volume (24h)', numeric: true, sortable: true },
+  { id: 'volume7d', label: 'Volume (7d)', numeric: true, sortable: true },
+  { id: 'totalVolume', label: 'Total Volume', numeric: true, sortable: true },
+  { id: 'roi', label: 'ROI', numeric: true, sortable: true },
+  { id: 'winRate', label: 'Win Rate', numeric: true, sortable: true },
+  { id: 'trades', label: 'Trades', numeric: true, sortable: false },
+  { id: 'avgHoldingTime', label: 'Avg Hold', numeric: true, sortable: true },
+  { id: 'maxProfitTrade', label: 'Best Trade', numeric: true, sortable: true },
+  { id: 'maxLossTrade', label: 'Worst Trade', numeric: true, sortable: true },
+  { id: 'actions', label: 'Actions', numeric: false, sortable: false }
+];
+
+function ProfitCell({ value }) {
+  const isPositive = value >= 0;
+  return (
+    <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="flex-end">
+      {isPositive ? (
+        <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 16 }} />
+      ) : (
+        <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 16 }} />
+      )}
+      <Typography variant="subtitle1" sx={{ color: isPositive ? '#54D62C' : '#FF6C40' }}>
+        {fNumber(Math.abs(value))}
+      </Typography>
+    </Stack>
+  );
+}
+
 export default function TopTraders({ token }) {
   const BASE_URL = process.env.API_URL;
   const { darkMode } = useContext(AppContext);
@@ -53,6 +113,8 @@ export default function TopTraders({ token }) {
   const [loading, setLoading] = useState(true);
   const [selectedTrader, setSelectedTrader] = useState(null);
   const [traderStats, setTraderStats] = useState({});
+  const [order, setOrder] = useState('desc');
+  const [orderBy, setOrderBy] = useState('totalVolume');
 
   useEffect(() => {
     const fetchTopTraders = async () => {
@@ -72,6 +134,12 @@ export default function TopTraders({ token }) {
 
     fetchTopTraders();
   }, [token.md5]);
+
+  const handleRequestSort = (property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
 
   const handleOpenStats = (trader) => {
     setSelectedTrader(trader);
@@ -95,31 +163,41 @@ export default function TopTraders({ token }) {
     );
   }
 
+  // Sort traders
+  const sortedTraders = traders.slice().sort(getComparator(order, orderBy));
+
   return (
     <>
       <Box sx={{ overflow: 'auto', width: '100%' }}>
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell>Rank</TableCell>
-              <TableCell>Address</TableCell>
-              <TableCell>Volume (24h)</TableCell>
-              <TableCell>Volume (7d)</TableCell>
-              <TableCell>Total Volume</TableCell>
-              <TableCell>ROI</TableCell>
-              <TableCell>Win Rate</TableCell>
-              <TableCell>Trades</TableCell>
-              <TableCell>Avg Hold</TableCell>
-              <TableCell>Best Trade</TableCell>
-              <TableCell>Worst Trade</TableCell>
-              <TableCell>Actions</TableCell>
+              {headCells.map((headCell) => (
+                <TableCell
+                  key={headCell.id}
+                  align={headCell.numeric ? 'right' : 'left'}
+                  sortDirection={orderBy === headCell.id ? order : false}
+                >
+                  {headCell.sortable ? (
+                    <TableSortLabel
+                      active={orderBy === headCell.id}
+                      direction={orderBy === headCell.id ? order : 'asc'}
+                      onClick={() => handleRequestSort(headCell.id)}
+                    >
+                      {headCell.label}
+                    </TableSortLabel>
+                  ) : (
+                    headCell.label
+                  )}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {traders.map((trader, index) => (
+            {sortedTraders.map((trader, index) => (
               <TableRow key={trader.address}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>
+                <TableCell align="right">{index + 1}</TableCell>
+                <TableCell align="left">
                   <Stack direction="row" alignItems="center">
                     <Link
                       underline="none"
@@ -134,17 +212,31 @@ export default function TopTraders({ token }) {
                     </Link>
                   </Stack>
                 </TableCell>
-                <TableCell>
+                <TableCell align="right">
+                  <ProfitCell value={trader.profit24h} />
+                </TableCell>
+                <TableCell align="right">
+                  <ProfitCell value={trader.profit7d} />
+                </TableCell>
+                <TableCell align="right">
+                  <ProfitCell value={trader.profit2m} />
+                </TableCell>
+                <TableCell align="right">
                   <Typography variant="subtitle1">{fNumber(trader.volume24h)}</Typography>
                 </TableCell>
-                <TableCell>
+                <TableCell align="right">
                   <Typography variant="subtitle1">{fNumber(trader.volume7d)}</Typography>
                 </TableCell>
-                <TableCell>
+                <TableCell align="right">
                   <Typography variant="subtitle1">{fNumber(trader.totalVolume)}</Typography>
                 </TableCell>
-                <TableCell>
-                  <Stack direction="row" spacing={0.5} alignItems="center">
+                <TableCell align="right">
+                  <Stack
+                    direction="row"
+                    spacing={0.5}
+                    alignItems="center"
+                    justifyContent="flex-end"
+                  >
                     {trader.roi >= 0 ? (
                       <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 16 }} />
                     ) : (
@@ -158,22 +250,25 @@ export default function TopTraders({ token }) {
                     </Typography>
                   </Stack>
                 </TableCell>
-                <TableCell>
-                  <Chip
-                    label={fPercent(
-                      (trader.profitableTrades / (trader.profitableTrades + trader.losingTrades)) *
-                        100
-                    )}
-                    size="small"
-                    sx={{
-                      bgcolor: 'rgba(84, 214, 44, 0.16)',
-                      color: '#54D62C',
-                      height: '24px'
-                    }}
-                  />
+                <TableCell align="right">
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <Chip
+                      label={fPercent(
+                        (trader.profitableTrades /
+                          (trader.profitableTrades + trader.losingTrades)) *
+                          100
+                      )}
+                      size="small"
+                      sx={{
+                        bgcolor: 'rgba(84, 214, 44, 0.16)',
+                        color: '#54D62C',
+                        height: '24px'
+                      }}
+                    />
+                  </Box>
                 </TableCell>
-                <TableCell>
-                  <Stack direction="column" spacing={0.5}>
+                <TableCell align="right">
+                  <Stack direction="column" spacing={0.5} alignItems="flex-end">
                     <Typography variant="caption" color="text.secondary">
                       24h: {fNumber(trader.trades24h)}
                     </Typography>
@@ -182,23 +277,23 @@ export default function TopTraders({ token }) {
                     </Typography>
                   </Stack>
                 </TableCell>
-                <TableCell>
+                <TableCell align="right">
                   <Typography variant="subtitle1">
                     {formatDuration(trader.avgHoldingTime)}
                   </Typography>
                 </TableCell>
-                <TableCell>
+                <TableCell align="right">
                   <Typography variant="subtitle1" sx={{ color: '#54D62C' }}>
                     {fNumber(trader.maxProfitTrade)}
                   </Typography>
                 </TableCell>
-                <TableCell>
+                <TableCell align="right">
                   <Typography variant="subtitle1" sx={{ color: '#FF6C40' }}>
                     {fNumber(Math.abs(trader.maxLossTrade))}
                   </Typography>
                 </TableCell>
-                <TableCell>
-                  <Stack direction="row" alignItems="center" spacing={2}>
+                <TableCell align="right">
+                  <Stack direction="row" alignItems="center" spacing={2} justifyContent="flex-end">
                     <Link
                       underline="none"
                       color="inherit"
