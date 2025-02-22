@@ -6,6 +6,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'; // Make sure this is imported
 import LinkIcon from '@mui/icons-material/Link'; // Add Link icon import
 import BarChartIcon from '@mui/icons-material/BarChart';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'; // Add this import
 
 // Material
 import {
@@ -495,6 +496,37 @@ const StatsModal = ({ open, onClose, account, traderStats }) => {
   );
 };
 
+// Add this function before the RichListData component
+const CopyButton = ({ text }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  return (
+    <Tooltip title={copied ? 'Copied!' : 'Copy Address'}>
+      <IconButton
+        size="small"
+        onClick={handleCopy}
+        sx={{
+          ml: 1,
+          color: copied ? 'primary.main' : 'text.secondary',
+          '&:hover': { color: 'primary.main' }
+        }}
+      >
+        <ContentCopyIcon fontSize="small" />
+      </IconButton>
+    </Tooltip>
+  );
+};
+
 export default function RichListData({ token }) {
   const BASE_URL = process.env.API_URL;
   const metrics = useSelector(selectMetrics);
@@ -904,320 +936,375 @@ export default function RichListData({ token }) {
                       <Typography variant="subtitle1">{id}</Typography>
                     </TableCell>
                     <TableCell align="left">
-                      <Tooltip
-                        title={
-                          !traderStats[account] ? (
-                            <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <CircularProgress size={16} />
-                              <Typography variant="body2">Loading trader stats...</Typography>
-                            </Box>
-                          ) : !traderStats[account].hasData ? (
-                            <Box sx={{ p: 1 }}>
-                              <Typography variant="body2" color="text.secondary">
-                                No trading activity found for this address
-                              </Typography>
-                            </Box>
-                          ) : (
-                            <Box sx={{ p: 1, maxWidth: 600 }}>
-                              <Typography
-                                variant="subtitle2"
-                                gutterBottom
-                                sx={{ borderBottom: '1px solid rgba(255,255,255,0.1)', pb: 1 }}
-                              >
-                                Trader Statistics
-                              </Typography>
-
-                              {/* Two-column layout for stats */}
-                              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                                {/* Left column */}
-                                <Box>
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ display: 'block', mb: 1 }}
-                                  >
-                                    PERFORMANCE OVERVIEW
-                                  </Typography>
-                                  <Stack spacing={0.5}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Win Rate:</Typography>
-                                      <Typography variant="caption">
-                                        {(
-                                          (traderStats[account].profitableTrades /
-                                            (traderStats[account].profitableTrades +
-                                              traderStats[account].losingTrades)) *
-                                          100
-                                        ).toFixed(1)}
-                                        %
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Total Trades:</Typography>
-                                      <Typography variant="caption">
-                                        {fNumber(
-                                          traderStats[account].profitableTrades +
-                                            traderStats[account].losingTrades
-                                        )}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Total Volume:</Typography>
-                                      <Typography variant="caption">
-                                        {fNumber(traderStats[account].totalVolume)} {name}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">ROI:</Typography>
-                                      <Typography
-                                        variant="caption"
-                                        sx={{
-                                          color:
-                                            traderStats[account].roi * 100 >= 0
-                                              ? '#54D62C'
-                                              : '#FF6C40'
-                                        }}
-                                      >
-                                        {fNumber(Math.abs(traderStats[account].roi * 100))}%
-                                      </Typography>
-                                    </Box>
-                                  </Stack>
-
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ display: 'block', mt: 2, mb: 1 }}
-                                  >
-                                    TRADE BREAKDOWN
-                                  </Typography>
-                                  <Stack spacing={0.5}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Buy Volume:</Typography>
-                                      <Typography variant="caption" sx={{ color: '#54D62C' }}>
-                                        {fNumber(traderStats[account].buyVolume)}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Sell Volume:</Typography>
-                                      <Typography variant="caption" sx={{ color: '#FF6C40' }}>
-                                        {fNumber(traderStats[account].sellVolume)}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Profitable/Losing:</Typography>
-                                      <Typography variant="caption">
-                                        <span style={{ color: '#54D62C' }}>
-                                          {fNumber(traderStats[account].profitableTrades)}
-                                        </span>
-                                        {' / '}
-                                        <span style={{ color: '#FF6C40' }}>
-                                          {fNumber(traderStats[account].losingTrades)}
-                                        </span>
-                                      </Typography>
-                                    </Box>
-                                  </Stack>
-                                </Box>
-
-                                {/* Right column */}
-                                <Box>
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ display: 'block', mb: 1 }}
-                                  >
-                                    PROFIT METRICS
-                                  </Typography>
-                                  <Stack spacing={0.5}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Best Trade:</Typography>
-                                      <Typography variant="caption" sx={{ color: '#54D62C' }}>
-                                        {fNumber(traderStats[account].maxProfitTrade)}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Worst Trade:</Typography>
-                                      <Typography variant="caption" sx={{ color: '#FF6C40' }}>
-                                        {fNumber(Math.abs(traderStats[account].maxLossTrade))}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">24h Profit:</Typography>
-                                      <Typography
-                                        variant="caption"
-                                        sx={{
-                                          color:
-                                            traderStats[account].profit24h >= 0
-                                              ? '#54D62C'
-                                              : '#FF6C40'
-                                        }}
-                                      >
-                                        {fNumber(Math.abs(traderStats[account].profit24h))}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">7d Profit:</Typography>
-                                      <Typography
-                                        variant="caption"
-                                        sx={{
-                                          color:
-                                            traderStats[account].profit7d >= 0
-                                              ? '#54D62C'
-                                              : '#FF6C40'
-                                        }}
-                                      >
-                                        {fNumber(Math.abs(traderStats[account].profit7d))}
-                                      </Typography>
-                                    </Box>
-                                  </Stack>
-
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ display: 'block', mt: 2, mb: 1 }}
-                                  >
-                                    ACTIVITY METRICS
-                                  </Typography>
-                                  <Stack spacing={0.5}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">24h Volume:</Typography>
-                                      <Typography variant="caption">
-                                        {fNumber(traderStats[account].volume24h)}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">7d Volume:</Typography>
-                                      <Typography variant="caption">
-                                        {fNumber(traderStats[account].volume7d)}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">24h Trades:</Typography>
-                                      <Typography variant="caption">
-                                        {fNumber(traderStats[account].trades24h)}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">7d Trades:</Typography>
-                                      <Typography variant="caption">
-                                        {fNumber(traderStats[account].trades7d)}
-                                      </Typography>
-                                    </Box>
-                                  </Stack>
-                                </Box>
+                      <Stack direction="row" alignItems="center">
+                        <Tooltip
+                          title={
+                            !traderStats[account] ? (
+                              <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <CircularProgress size={16} />
+                                <Typography variant="body2">Loading trader stats...</Typography>
                               </Box>
-
-                              {/* Trading History */}
-                              <Box
-                                sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}
-                              >
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  sx={{ display: 'block', mb: 1 }}
-                                >
-                                  TRADING HISTORY
+                            ) : !traderStats[account].hasData ? (
+                              <Box sx={{ p: 1 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  No trading activity found for this address
                                 </Typography>
+                              </Box>
+                            ) : (
+                              <Box sx={{ p: 1, maxWidth: 600 }}>
+                                <Typography
+                                  variant="subtitle2"
+                                  gutterBottom
+                                  sx={{ borderBottom: '1px solid rgba(255,255,255,0.1)', pb: 1 }}
+                                >
+                                  Trader Statistics
+                                </Typography>
+
+                                {/* Two-column layout for stats */}
                                 <Box
                                   sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}
                                 >
-                                  <Stack spacing={0.5}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">First Trade:</Typography>
-                                      <Typography variant="caption">
-                                        {new Date(
-                                          traderStats[account].firstTradeDate
-                                        ).toLocaleDateString()}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Last Trade:</Typography>
-                                      <Typography variant="caption">
-                                        {new Date(
-                                          traderStats[account].lastTradeDate
-                                        ).toLocaleDateString()}
-                                      </Typography>
-                                    </Box>
-                                  </Stack>
-                                  <Stack spacing={0.5}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Avg Holding:</Typography>
-                                      <Typography variant="caption">
-                                        {Math.round(traderStats[account].avgHoldingTime / 3600)}h
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Trade Frequency:</Typography>
-                                      <Typography variant="caption">
-                                        {Math.round(traderStats[account].trades24h / 24)} /hr
-                                      </Typography>
-                                    </Box>
-                                  </Stack>
-                                </Box>
-                              </Box>
-
-                              {/* Volume Chart */}
-                              <Box
-                                sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}
-                              >
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  sx={{ display: 'block', mb: 1 }}
-                                >
-                                  TRADING HISTORY
-                                </Typography>
-                                {traderStats[account].dailyVolumes &&
-                                  traderStats[account].dailyVolumes.length > 0 && (
+                                  {/* Left column */}
+                                  <Box>
                                     <Typography
                                       variant="caption"
                                       color="text.secondary"
                                       sx={{ display: 'block', mb: 1 }}
                                     >
-                                      {new Date(
-                                        traderStats[account].firstTradeDate
-                                      ).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                      })}
-                                      {' - '}
-                                      {new Date(
-                                        traderStats[account].lastTradeDate
-                                      ).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric'
-                                      })}
+                                      PERFORMANCE OVERVIEW
                                     </Typography>
-                                  )}
-                                <DailyVolumeChart data={traderStats[account].dailyVolumes || []} />
+                                    <Stack spacing={0.5}>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">Win Rate:</Typography>
+                                        <Typography variant="caption">
+                                          {(
+                                            (traderStats[account].profitableTrades /
+                                              (traderStats[account].profitableTrades +
+                                                traderStats[account].losingTrades)) *
+                                            100
+                                          ).toFixed(1)}
+                                          %
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">Total Trades:</Typography>
+                                        <Typography variant="caption">
+                                          {fNumber(
+                                            traderStats[account].profitableTrades +
+                                              traderStats[account].losingTrades
+                                          )}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">Total Volume:</Typography>
+                                        <Typography variant="caption">
+                                          {fNumber(traderStats[account].totalVolume)} {name}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">ROI:</Typography>
+                                        <Typography
+                                          variant="caption"
+                                          sx={{
+                                            color:
+                                              traderStats[account].roi * 100 >= 0
+                                                ? '#54D62C'
+                                                : '#FF6C40'
+                                          }}
+                                        >
+                                          {fNumber(Math.abs(traderStats[account].roi * 100))}%
+                                        </Typography>
+                                      </Box>
+                                    </Stack>
+
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                      sx={{ display: 'block', mt: 2, mb: 1 }}
+                                    >
+                                      TRADE BREAKDOWN
+                                    </Typography>
+                                    <Stack spacing={0.5}>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">Buy Volume:</Typography>
+                                        <Typography variant="caption" sx={{ color: '#54D62C' }}>
+                                          {fNumber(traderStats[account].buyVolume)}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">Sell Volume:</Typography>
+                                        <Typography variant="caption" sx={{ color: '#FF6C40' }}>
+                                          {fNumber(traderStats[account].sellVolume)}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">
+                                          Profitable/Losing:
+                                        </Typography>
+                                        <Typography variant="caption">
+                                          <span style={{ color: '#54D62C' }}>
+                                            {fNumber(traderStats[account].profitableTrades)}
+                                          </span>
+                                          {' / '}
+                                          <span style={{ color: '#FF6C40' }}>
+                                            {fNumber(traderStats[account].losingTrades)}
+                                          </span>
+                                        </Typography>
+                                      </Box>
+                                    </Stack>
+                                  </Box>
+
+                                  {/* Right column */}
+                                  <Box>
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                      sx={{ display: 'block', mb: 1 }}
+                                    >
+                                      PROFIT METRICS
+                                    </Typography>
+                                    <Stack spacing={0.5}>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">Best Trade:</Typography>
+                                        <Typography variant="caption" sx={{ color: '#54D62C' }}>
+                                          {fNumber(traderStats[account].maxProfitTrade)}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">Worst Trade:</Typography>
+                                        <Typography variant="caption" sx={{ color: '#FF6C40' }}>
+                                          {fNumber(Math.abs(traderStats[account].maxLossTrade))}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">24h Profit:</Typography>
+                                        <Typography
+                                          variant="caption"
+                                          sx={{
+                                            color:
+                                              traderStats[account].profit24h >= 0
+                                                ? '#54D62C'
+                                                : '#FF6C40'
+                                          }}
+                                        >
+                                          {fNumber(Math.abs(traderStats[account].profit24h))}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">7d Profit:</Typography>
+                                        <Typography
+                                          variant="caption"
+                                          sx={{
+                                            color:
+                                              traderStats[account].profit7d >= 0
+                                                ? '#54D62C'
+                                                : '#FF6C40'
+                                          }}
+                                        >
+                                          {fNumber(Math.abs(traderStats[account].profit7d))}
+                                        </Typography>
+                                      </Box>
+                                    </Stack>
+
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                      sx={{ display: 'block', mt: 2, mb: 1 }}
+                                    >
+                                      ACTIVITY METRICS
+                                    </Typography>
+                                    <Stack spacing={0.5}>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">24h Volume:</Typography>
+                                        <Typography variant="caption">
+                                          {fNumber(traderStats[account].volume24h)}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">7d Volume:</Typography>
+                                        <Typography variant="caption">
+                                          {fNumber(traderStats[account].volume7d)}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">24h Trades:</Typography>
+                                        <Typography variant="caption">
+                                          {fNumber(traderStats[account].trades24h)}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">7d Trades:</Typography>
+                                        <Typography variant="caption">
+                                          {fNumber(traderStats[account].trades7d)}
+                                        </Typography>
+                                      </Box>
+                                    </Stack>
+                                  </Box>
+                                </Box>
+
+                                {/* Trading History */}
+                                <Box
+                                  sx={{
+                                    mt: 2,
+                                    pt: 2,
+                                    borderTop: '1px solid rgba(255,255,255,0.1)'
+                                  }}
+                                >
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: 'block', mb: 1 }}
+                                  >
+                                    TRADING HISTORY
+                                  </Typography>
+                                  <Box
+                                    sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}
+                                  >
+                                    <Stack spacing={0.5}>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">First Trade:</Typography>
+                                        <Typography variant="caption">
+                                          {new Date(
+                                            traderStats[account].firstTradeDate
+                                          ).toLocaleDateString()}
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">Last Trade:</Typography>
+                                        <Typography variant="caption">
+                                          {new Date(
+                                            traderStats[account].lastTradeDate
+                                          ).toLocaleDateString()}
+                                        </Typography>
+                                      </Box>
+                                    </Stack>
+                                    <Stack spacing={0.5}>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">Avg Holding:</Typography>
+                                        <Typography variant="caption">
+                                          {Math.round(traderStats[account].avgHoldingTime / 3600)}h
+                                        </Typography>
+                                      </Box>
+                                      <Box
+                                        sx={{ display: 'flex', justifyContent: 'space-between' }}
+                                      >
+                                        <Typography variant="caption">Trade Frequency:</Typography>
+                                        <Typography variant="caption">
+                                          {Math.round(traderStats[account].trades24h / 24)} /hr
+                                        </Typography>
+                                      </Box>
+                                    </Stack>
+                                  </Box>
+                                </Box>
+
+                                {/* Volume Chart */}
+                                <Box
+                                  sx={{
+                                    mt: 2,
+                                    pt: 2,
+                                    borderTop: '1px solid rgba(255,255,255,0.1)'
+                                  }}
+                                >
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: 'block', mb: 1 }}
+                                  >
+                                    TRADING HISTORY
+                                  </Typography>
+                                  {traderStats[account].dailyVolumes &&
+                                    traderStats[account].dailyVolumes.length > 0 && (
+                                      <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ display: 'block', mb: 1 }}
+                                      >
+                                        {new Date(
+                                          traderStats[account].firstTradeDate
+                                        ).toLocaleDateString('en-US', {
+                                          year: 'numeric',
+                                          month: 'long',
+                                          day: 'numeric'
+                                        })}
+                                        {' - '}
+                                        {new Date(
+                                          traderStats[account].lastTradeDate
+                                        ).toLocaleDateString('en-US', {
+                                          year: 'numeric',
+                                          month: 'long',
+                                          day: 'numeric'
+                                        })}
+                                      </Typography>
+                                    )}
+                                  <DailyVolumeChart
+                                    data={traderStats[account].dailyVolumes || []}
+                                  />
+                                </Box>
                               </Box>
-                            </Box>
-                          )
-                        }
-                        onOpen={() =>
-                          !traderStats[account]?.isLoaded && fetchTraderStats(account, token.md5)
-                        }
-                        PopperProps={{
-                          sx: {
-                            '& .MuiTooltip-tooltip': {
-                              bgcolor: darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(32, 32, 32, 0.9)',
-                              maxWidth: 'none'
-                            }
+                            )
                           }
-                        }}
-                      >
-                        <Link
-                          underline="none"
-                          color="inherit"
-                          target="_blank"
-                          href={`https://bithomp.com/explorer/${account}`}
-                          rel="noreferrer noopener nofollow"
+                          onOpen={() =>
+                            !traderStats[account]?.isLoaded && fetchTraderStats(account, token.md5)
+                          }
+                          PopperProps={{
+                            sx: {
+                              '& .MuiTooltip-tooltip': {
+                                bgcolor: darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(32, 32, 32, 0.9)',
+                                maxWidth: 'none'
+                              }
+                            }
+                          }}
                         >
-                          <Typography variant="subtitle1" color="primary">
-                            {truncate(account, 20)}
-                          </Typography>
-                        </Link>
-                      </Tooltip>
+                          <Link
+                            underline="none"
+                            color="inherit"
+                            target="_blank"
+                            href={`https://bithomp.com/explorer/${account}`}
+                            rel="noreferrer noopener nofollow"
+                          >
+                            <Typography variant="subtitle1" color="primary">
+                              {truncate(account, 20)}
+                            </Typography>
+                          </Link>
+                        </Tooltip>
+                        <CopyButton text={account} />
+                      </Stack>
                     </TableCell>
                     <TableCell align="left">{freeze && <Icon icon={checkIcon} />}</TableCell>
                     <TableCell align="left">
