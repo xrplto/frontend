@@ -80,6 +80,7 @@ const headCells = [
   { id: 'volume24h', label: 'Volume (24h)', numeric: true, sortable: true },
   { id: 'volume7d', label: 'Volume (7d)', numeric: true, sortable: true },
   { id: 'totalVolume', label: 'Total Volume', numeric: true, sortable: true },
+  { id: 'tradePercentage', label: 'Market Share', numeric: true, sortable: true },
   { id: 'roi', label: 'ROI', numeric: true, sortable: true },
   { id: 'winRate', label: 'Win Rate', numeric: true, sortable: true },
   { id: 'trades', label: 'Trades', numeric: true, sortable: false },
@@ -94,14 +95,32 @@ function ProfitCell({ value }) {
   return (
     <Stack direction="row" spacing={0.5} alignItems="center" justifyContent="flex-end">
       {isPositive ? (
-        <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 16 }} />
+        <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 14 }} />
       ) : (
-        <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 16 }} />
+        <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 14 }} />
       )}
-      <Typography variant="subtitle1" sx={{ color: isPositive ? '#54D62C' : '#FF6C40' }}>
+      <Typography variant="body2" sx={{ color: isPositive ? '#54D62C' : '#FF6C40' }}>
         {fNumber(Math.abs(value))}
       </Typography>
     </Stack>
+  );
+}
+
+function MarketShareCell({ value }) {
+  return (
+    <Chip
+      label={`${fPercent(value)}`}
+      size="small"
+      sx={{
+        bgcolor: 'rgba(0, 171, 85, 0.08)',
+        color: 'primary.main',
+        height: '20px',
+        '& .MuiChip-label': {
+          px: 0.75,
+          fontSize: '0.7rem'
+        }
+      }}
+    />
   );
 }
 
@@ -169,7 +188,22 @@ export default function TopTraders({ token }) {
   return (
     <>
       <Box sx={{ overflow: 'auto', width: '100%' }}>
-        <Table stickyHeader>
+        <Table
+          stickyHeader
+          size="small"
+          sx={{
+            '& .MuiTableCell-root': {
+              py: 0.75,
+              px: 1,
+              fontSize: '0.75rem',
+              whiteSpace: 'nowrap'
+            },
+            '& .MuiTableCell-head': {
+              fontWeight: 600,
+              bgcolor: (theme) => theme.palette.background.paper
+            }
+          }}
+        >
           <TableHead>
             <TableRow>
               {headCells.map((headCell) => (
@@ -183,8 +217,14 @@ export default function TopTraders({ token }) {
                       active={orderBy === headCell.id}
                       direction={orderBy === headCell.id ? order : 'asc'}
                       onClick={() => handleRequestSort(headCell.id)}
+                      sx={{ fontSize: '0.75rem' }}
                     >
                       {headCell.label}
+                      {headCell.id === 'tradePercentage' && (
+                        <Tooltip title="Trader's share of total market volume" placement="top">
+                          <span style={{ marginLeft: '2px', fontSize: '12px' }}>ⓘ</span>
+                        </Tooltip>
+                      )}
                     </TableSortLabel>
                   ) : (
                     headCell.label
@@ -195,10 +235,17 @@ export default function TopTraders({ token }) {
           </TableHead>
           <TableBody>
             {sortedTraders.map((trader, index) => (
-              <TableRow key={trader.address}>
+              <TableRow
+                key={trader.address}
+                sx={{
+                  '&:hover': {
+                    bgcolor: 'action.hover'
+                  }
+                }}
+              >
                 <TableCell align="right">{index + 1}</TableCell>
                 <TableCell align="left">
-                  <Stack direction="row" alignItems="center">
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
                     <Link
                       underline="none"
                       color="inherit"
@@ -206,7 +253,7 @@ export default function TopTraders({ token }) {
                       href={`https://bithomp.com/explorer/${trader.address}`}
                       rel="noreferrer noopener nofollow"
                     >
-                      <Typography variant="subtitle1" color="primary">
+                      <Typography variant="body2" color="primary">
                         {truncate(trader.address, 20)}
                       </Typography>
                     </Link>
@@ -222,13 +269,18 @@ export default function TopTraders({ token }) {
                   <ProfitCell value={trader.profit2m} />
                 </TableCell>
                 <TableCell align="right">
-                  <Typography variant="subtitle1">{fNumber(trader.volume24h)}</Typography>
+                  <Typography variant="body2">{fNumber(trader.volume24h)}</Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <Typography variant="subtitle1">{fNumber(trader.volume7d)}</Typography>
+                  <Typography variant="body2">{fNumber(trader.volume7d)}</Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <Typography variant="subtitle1">{fNumber(trader.totalVolume)}</Typography>
+                  <Typography variant="body2">{fNumber(trader.totalVolume)}</Typography>
+                </TableCell>
+                <TableCell align="right">
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <MarketShareCell value={trader.tradePercentage} />
+                  </Box>
                 </TableCell>
                 <TableCell align="right">
                   <Stack
@@ -238,12 +290,12 @@ export default function TopTraders({ token }) {
                     justifyContent="flex-end"
                   >
                     {trader.roi >= 0 ? (
-                      <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 16 }} />
+                      <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 14 }} />
                     ) : (
-                      <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 16 }} />
+                      <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 14 }} />
                     )}
                     <Typography
-                      variant="subtitle1"
+                      variant="body2"
                       sx={{ color: trader.roi >= 0 ? '#54D62C' : '#FF6C40' }}
                     >
                       {fPercent(trader.roi * 100)}
@@ -262,38 +314,48 @@ export default function TopTraders({ token }) {
                       sx={{
                         bgcolor: 'rgba(84, 214, 44, 0.16)',
                         color: '#54D62C',
-                        height: '24px'
+                        height: '20px',
+                        '& .MuiChip-label': {
+                          px: 0.75,
+                          fontSize: '0.7rem'
+                        }
                       }}
                     />
                   </Box>
                 </TableCell>
                 <TableCell align="right">
-                  <Stack direction="column" spacing={0.5} alignItems="flex-end">
-                    <Typography variant="caption" color="text.secondary">
+                  <Stack direction="column" spacing={0} alignItems="flex-end">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ fontSize: '0.65rem' }}
+                    >
                       24h: {fNumber(trader.trades24h)}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ fontSize: '0.65rem' }}
+                    >
                       Total: {fNumber(trader.totalTrades)}
                     </Typography>
                   </Stack>
                 </TableCell>
                 <TableCell align="right">
-                  <Typography variant="subtitle1">
-                    {formatDuration(trader.avgHoldingTime)}
-                  </Typography>
+                  <Typography variant="body2">{formatDuration(trader.avgHoldingTime)}</Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <Typography variant="subtitle1" sx={{ color: '#54D62C' }}>
+                  <Typography variant="body2" sx={{ color: '#54D62C' }}>
                     {fNumber(trader.maxProfitTrade)}
                   </Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <Typography variant="subtitle1" sx={{ color: '#FF6C40' }}>
+                  <Typography variant="body2" sx={{ color: '#FF6C40' }}>
                     {fNumber(Math.abs(trader.maxLossTrade))}
                   </Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <Stack direction="row" alignItems="center" spacing={2} justifyContent="flex-end">
+                  <Stack direction="row" alignItems="center" spacing={1} justifyContent="flex-end">
                     <Link
                       underline="none"
                       color="inherit"
@@ -301,8 +363,8 @@ export default function TopTraders({ token }) {
                       href={`https://bithomp.com/explorer/${trader.address}`}
                       rel="noreferrer noopener nofollow"
                     >
-                      <IconButton edge="end" aria-label="bithomp">
-                        <LinkIcon />
+                      <IconButton edge="end" aria-label="bithomp" size="small">
+                        <LinkIcon sx={{ fontSize: 16 }} />
                       </IconButton>
                     </Link>
                     <Tooltip title="View Trader Statistics">
@@ -310,8 +372,9 @@ export default function TopTraders({ token }) {
                         edge="end"
                         aria-label="stats"
                         onClick={() => handleOpenStats(trader)}
+                        size="small"
                       >
-                        <BarChartIcon />
+                        <BarChartIcon sx={{ fontSize: 16 }} />
                       </IconButton>
                     </Tooltip>
                   </Stack>
