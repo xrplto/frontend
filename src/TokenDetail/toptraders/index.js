@@ -41,9 +41,16 @@ function truncate(str, n) {
 
 function formatDuration(seconds) {
   const hours = Math.floor(seconds / 3600);
-  if (hours < 24) return `${hours}h`;
   const days = Math.floor(hours / 24);
-  return `${days}d`;
+  const months = Math.floor(days / 30);
+
+  if (months > 0) {
+    return `${months}m`;
+  } else if (days > 0) {
+    return `${days}d`;
+  } else {
+    return `${hours}h`;
+  }
 }
 
 function descendingComparator(a, b, orderBy) {
