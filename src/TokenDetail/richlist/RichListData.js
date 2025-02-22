@@ -64,6 +64,74 @@ import {
   Legend
 } from 'recharts';
 
+// Exchange address mapping
+const EXCHANGE_ADDRESSES = {
+  rNU4eAowPuixS5ZCWaRL72UUeKgxcKExpK: 'Binance',
+  rDAE53VfMvftPB4ogpWGWvzkQxfht6JPxr: 'Binance',
+  rfQ9EcLkU6WnNmkS3EwUkFeXeN47Rk8Cvi: 'Binance',
+  rarG6FaeYhnzSKSS5EEPofo4gFsPn2bZKk: 'Binance',
+  rBtttd61FExHC68vsZ8dqmS3DfjFEceA1A: 'Binance',
+  rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh: 'Binance',
+  rJb5KsHsDHF1YS5B5DU6QCkH5NsPaKQTcy: 'Binance',
+  rhWj9gaovwu2hZxYW7p388P8GRbuXFLQkK: 'Binance',
+  rLoD9U2ghXP2xUYbtML6G6v1p8LhM9mSnc: 'Bitstamp',
+  rUzWJkXyEtT8ekSSxkBYPqCvHpngcy6Fks: 'OKX',
+  rnW8je5SsuFjkMSWkgfXvqZH3gLTpXxfFH: 'Mercado Bitcoin',
+  rEeEWeP88cpKUddKk37B2EZeiHBGiBXY3: 'Binance.US',
+  rnd8KJ4qeip6FPJvC1fyv82nW2Lm8C8KjQ: 'Snapswap',
+  rBRVqcXrm1YAbanngTxDfH15LNb6TjNmxk: 'Snapswap',
+  rDCgaaSBAWYfsxUYhCk1n26Na7x8PQGmkq: 'Poloniex',
+  rKKbNYZRqwPgZYkFWvqNUFBuscEyiFyCE: 'Changenow',
+  rhotcWYdfn6qxhVMbPKGDF3XCKqwXar5J4: 'Gatehub',
+  rD4G6gtD2KwHqsRf7pcyA8r1neUzXT61ix: 'Bitgo',
+  r3ztejgGSdZNTXiUUMGYLLq93ibpRquQwM: 'Bitgo',
+  r3S8AV7DQ6URd9qhKkDc2vD6XCaNU34328: 'NEXO',
+  rwADc5YVbAfDmRyjbqPoG48H5jmnbD2xV5: 'NEXO',
+  rbrCJQZVk6jYra1MPuSvX3Vpe4to9fAvh: 'Bitpanda',
+  rrpNnNLKrartuEqfJGpqyDwPj1AFPg9vn1: 'Bitstamp',
+  rDsbeomae4FXwgQTJp9Rs64Qg9vDiTCdBv: 'Bitstamp',
+  rGFuMiw48HdbnrUbkRYuitXTmfrDBNTCnX: 'Bitstamp',
+  rPVMhWBsfF9iMXYj3aAzJVkPDTFNSyWdKy: 'Bittrex',
+  rBgnUKAEiFhCRLPoYNPPe3JUWayRjP6Ayg: 'CoinSpot',
+  rfNLrtuCRys9wMUAvQDTvBoQ9wQzsQBbGn: 'Bitgo',
+  rEW8BjpMyFZfGMjqbykbhpnr4KEb2qr6PC: 'Kucoin',
+  rhSmsXurfnFV4gpaqP6eJHAm9m2afrgL7h: 'Kucoin',
+  rLpvuHZFE46NUyZH5XaMvmYRJZF7aory7t: 'Kucoin',
+  r3ch8xGMeegCAJrCYiZe47GdnYVvKMfpdr: 'Coinsquare',
+  rBxszqhQkhPALtkSpGuVeqR6hNtZ8xTH3T: 'Kucoin',
+  rp4gqz1XdqMsWRZbzPdPAQWw1tg5LuwUVP: 'Kucoin',
+  rpVTz6jPYE3HbXX7RmCUMCirBYcfJU2q4j: 'Thodex',
+  rHcFoo6a9qT5NHiVn1THQRhsEGcxtYCV4d: 'Gate.io',
+  rDKsbvy9uaNpPtvVFraJyNGfjvTw8xivgK: 'HitBTC',
+  rwpMvfxoodXggJ1g4qv6MWAPQqWDwQyHUW: 'HitBTC',
+  rLCmrXtyLNSma1g4YPpnwWF664zGaUhMc8: 'HitBTC',
+  rNUyxNugxv67vhQZZCif2Ru1Hb4APNmwUS: 'HitBTC',
+  rnvV2fcH4LK2mnHQaeAus7RvRXUxijVBnT: 'Coinbase',
+  rKrYJvto1MH2QT3KV8MiZdc2NaSZztDSf: 'Coinbase',
+  rJXrgcmqaqKZnCE4TqEdbMxwJUbFVcpy27: 'Coinbase',
+  rPPBKe3eUjPNer5FUrEVJDK7kofTjYSS1v: 'Coinbase',
+  rLHzPsX6oXkzU2qL12kHCH8G8cnZv1rBJh: 'Kraken',
+  rfexLLNpC6dqyLagjV439EyvfqdYNHsWSH: 'Huobi',
+  raTQAD4isuvnGERc1jBhiFBpoTYMwQG7Yi: 'Huobi',
+  rMvCasZ9cohYrSZRNYPTZfoaaSUQMfgQ8G: 'Bybit',
+  rfKsmLP6sTfVGDvga6rW6XbmSFUzc3G9f3: 'Bitrue',
+  raLPjTYeGezfdb6crXZzcC8RkLBEwbBHJ5: 'Bitrue',
+  rs2dgzYeqYqsk8bvkQR5YPyqsXYcA24MP2: 'MXC',
+  rMdG3ju8pgyVh29ELPWaDuA74CpWW6Fxns: 'Uphold',
+  rQrQMKhcw3WnptGeWiYSwX5Tz3otyJqPnq: 'Uphold',
+  rKfzfrk1RsUxWmHimWyNwk8AoWHoFneu4m: 'Uphold',
+  r4DymtkgUAh2wqRxVfdd3Xtswzim6eC6c5: 'Crypto.com',
+  rRmgo6NW1W7GHjC5qEpcpQnq8NE74ZS1P: 'Coinbase',
+  r4sRyacXpbh4HbagmgfoQq8Q3j8ZJzbZ1J: 'Coinbase',
+  rLNaPoKeeBjZe2qs6x52yVPZpZ8td4dc6w: 'Coinbase',
+  rwpTh9DDa52XkM9nTKp2QrJuCGV5d1mQVP: 'Coinbase',
+  rw2ciyaNshpHe7bCHo4bRWq6pqqynnWKQg: 'Coinbase',
+  rUjfTQpvBr6wsGGxMw6sRmRQGG76nvp8Ln: 'Coinbase',
+  rwWr7KUZ3ZFwzgaDGjKBysADByzxvohQ3C: 'Bitcoin.co.id',
+  rffGCKC7Mk4cQ5aUGg8pfRe3MPC7Cy8gfe: 'FixedFloat',
+  rKwWsi1XWCevQmVL9VhPD8DuYF4dobFdoT: 'Unknown Exchange'
+};
+
 // ----------------------------------------------------------------------
 function truncate(str, n) {
   if (!str) return '';
@@ -1300,6 +1368,22 @@ export default function RichListData({ token }) {
                           >
                             <Typography variant="subtitle1" color="primary">
                               {truncate(account, 20)}
+                              {EXCHANGE_ADDRESSES[account] && (
+                                <Box
+                                  component="span"
+                                  sx={{
+                                    ml: 1,
+                                    px: 1,
+                                    py: 0.25,
+                                    borderRadius: 1,
+                                    fontSize: '0.75rem',
+                                    bgcolor: 'primary.main',
+                                    color: 'primary.contrastText'
+                                  }}
+                                >
+                                  {EXCHANGE_ADDRESSES[account]}
+                                </Box>
+                              )}
                             </Typography>
                           </Link>
                         </Tooltip>
