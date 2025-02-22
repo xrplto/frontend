@@ -14,12 +14,15 @@ import {
   Link,
   IconButton,
   Tooltip,
-  CircularProgress
+  CircularProgress,
+  Chip
 } from '@mui/material';
 
 // Icons
 import LinkIcon from '@mui/icons-material/Link';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -33,6 +36,13 @@ import { StatsModal } from 'src/components/trader/TraderStats';
 function truncate(str, n) {
   if (!str) return '';
   return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
+}
+
+function formatDuration(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d`;
 }
 
 export default function TopTraders({ token }) {
@@ -93,10 +103,15 @@ export default function TopTraders({ token }) {
             <TableRow>
               <TableCell>Rank</TableCell>
               <TableCell>Address</TableCell>
+              <TableCell>Volume (24h)</TableCell>
+              <TableCell>Volume (7d)</TableCell>
               <TableCell>Total Volume</TableCell>
               <TableCell>ROI</TableCell>
               <TableCell>Win Rate</TableCell>
-              <TableCell>Total Trades</TableCell>
+              <TableCell>Trades</TableCell>
+              <TableCell>Avg Hold</TableCell>
+              <TableCell>Best Trade</TableCell>
+              <TableCell>Worst Trade</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -120,26 +135,67 @@ export default function TopTraders({ token }) {
                   </Stack>
                 </TableCell>
                 <TableCell>
+                  <Typography variant="subtitle1">{fNumber(trader.volume24h)}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle1">{fNumber(trader.volume7d)}</Typography>
+                </TableCell>
+                <TableCell>
                   <Typography variant="subtitle1">{fNumber(trader.totalVolume)}</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ color: trader.roi >= 0 ? '#54D62C' : '#FF6C40' }}
-                  >
-                    {fPercent(trader.roi * 100)}
-                  </Typography>
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    {trader.roi >= 0 ? (
+                      <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 16 }} />
+                    ) : (
+                      <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 16 }} />
+                    )}
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ color: trader.roi >= 0 ? '#54D62C' : '#FF6C40' }}
+                    >
+                      {fPercent(trader.roi * 100)}
+                    </Typography>
+                  </Stack>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="subtitle1">
-                    {fPercent(
+                  <Chip
+                    label={fPercent(
                       (trader.profitableTrades / (trader.profitableTrades + trader.losingTrades)) *
                         100
                     )}
+                    size="small"
+                    sx={{
+                      bgcolor: 'rgba(84, 214, 44, 0.16)',
+                      color: '#54D62C',
+                      height: '24px'
+                    }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Stack direction="column" spacing={0.5}>
+                    <Typography variant="caption" color="text.secondary">
+                      24h: {fNumber(trader.trades24h)}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Total: {fNumber(trader.totalTrades)}
+                    </Typography>
+                  </Stack>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle1">
+                    {formatDuration(trader.avgHoldingTime)}
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="subtitle1">{fNumber(trader.totalTrades)}</Typography>
+                  <Typography variant="subtitle1" sx={{ color: '#54D62C' }}>
+                    {fNumber(trader.maxProfitTrade)}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="subtitle1" sx={{ color: '#FF6C40' }}>
+                    {fNumber(Math.abs(trader.maxLossTrade))}
+                  </Typography>
                 </TableCell>
                 <TableCell>
                   <Stack direction="row" alignItems="center" spacing={2}>
