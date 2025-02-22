@@ -74,6 +74,7 @@ const EXCHANGE_ADDRESSES = {
   rEb8TK3gBgk5auZkwc6sHnwrGVJH8DuaLh: 'Binance',
   rJb5KsHsDHF1YS5B5DU6QCkH5NsPaKQTcy: 'Binance',
   rhWj9gaovwu2hZxYW7p388P8GRbuXFLQkK: 'Binance',
+  rK7D3QnTrYdkp1fGKKzHFNXZpqN8dUCfaf: 'Coinfield',
   rLoD9U2ghXP2xUYbtML6G6v1p8LhM9mSnc: 'Bitstamp',
   rUzWJkXyEtT8ekSSxkBYPqCvHpngcy6Fks: 'OKX',
   rnW8je5SsuFjkMSWkgfXvqZH3gLTpXxfFH: 'Mercado Bitcoin',
