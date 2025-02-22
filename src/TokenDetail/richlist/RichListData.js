@@ -155,11 +155,25 @@ export default function RichListData({ token }) {
       if (response.status === 200) {
         setTraderStats((prev) => ({
           ...prev,
-          [address]: response.data
+          [address]: {
+            ...response.data,
+            isLoaded: true,
+            hasData:
+              response.data &&
+              (response.data.totalTrades > 0 || response.data.dailyVolumes?.length > 0)
+          }
         }));
       }
     } catch (error) {
       console.error('Error fetching trader stats:', error);
+      setTraderStats((prev) => ({
+        ...prev,
+        [address]: {
+          isLoaded: true,
+          hasData: false,
+          error: error.message
+        }
+      }));
     }
   };
 
@@ -497,7 +511,18 @@ export default function RichListData({ token }) {
                     <TableCell align="left">
                       <Tooltip
                         title={
-                          traderStats[account] ? (
+                          !traderStats[account] ? (
+                            <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <CircularProgress size={16} />
+                              <Typography variant="body2">Loading trader stats...</Typography>
+                            </Box>
+                          ) : !traderStats[account].hasData ? (
+                            <Box sx={{ p: 1 }}>
+                              <Typography variant="body2" color="text.secondary">
+                                No trading activity found for this address
+                              </Typography>
+                            </Box>
+                          ) : (
                             <Box sx={{ p: 1, maxWidth: 600 }}>
                               <Typography
                                 variant="subtitle2"
@@ -684,14 +709,11 @@ export default function RichListData({ token }) {
                                 <DailyVolumeChart data={traderStats[account].dailyVolumes || []} />
                               </Box>
                             </Box>
-                          ) : (
-                            <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <CircularProgress size={16} />
-                              <Typography variant="body2">Loading trader stats...</Typography>
-                            </Box>
                           )
                         }
-                        onOpen={() => !traderStats[account] && fetchTraderStats(account, token.md5)}
+                        onOpen={() =>
+                          !traderStats[account]?.isLoaded && fetchTraderStats(account, token.md5)
+                        }
                         PopperProps={{
                           sx: {
                             '& .MuiTooltip-tooltip': {
