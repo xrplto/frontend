@@ -541,19 +541,34 @@ export default function RichListData({ token }) {
                                     color="text.secondary"
                                     sx={{ display: 'block', mb: 1 }}
                                   >
-                                    OVERVIEW
+                                    PERFORMANCE OVERVIEW
                                   </Typography>
                                   <Stack spacing={0.5}>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Win Rate:</Typography>
+                                      <Typography variant="caption">
+                                        {(
+                                          (traderStats[account].profitableTrades /
+                                            (traderStats[account].profitableTrades +
+                                              traderStats[account].losingTrades)) *
+                                          100
+                                        ).toFixed(1)}
+                                        %
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                       <Typography variant="caption">Total Trades:</Typography>
                                       <Typography variant="caption">
-                                        {fNumber(traderStats[account].totalTrades || 0)}
+                                        {fNumber(
+                                          traderStats[account].profitableTrades +
+                                            traderStats[account].losingTrades
+                                        )}
                                       </Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                       <Typography variant="caption">Total Volume:</Typography>
                                       <Typography variant="caption">
-                                        {fNumber(traderStats[account].totalVolume || 0)} {name}
+                                        {fNumber(traderStats[account].totalVolume)} {name}
                                       </Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -562,12 +577,12 @@ export default function RichListData({ token }) {
                                         variant="caption"
                                         sx={{
                                           color:
-                                            (traderStats[account].roi || 0) >= 0
+                                            traderStats[account].roi * 100 >= 0
                                               ? '#54D62C'
                                               : '#FF6C40'
                                         }}
                                       >
-                                        {fNumber(Math.abs(traderStats[account].roi || 0))}%
+                                        {fNumber(Math.abs(traderStats[account].roi * 100))}%
                                       </Typography>
                                     </Box>
                                   </Stack>
@@ -577,31 +592,31 @@ export default function RichListData({ token }) {
                                     color="text.secondary"
                                     sx={{ display: 'block', mt: 2, mb: 1 }}
                                   >
-                                    TRADE PERFORMANCE
+                                    TRADE BREAKDOWN
                                   </Typography>
                                   <Stack spacing={0.5}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Buy Volume:</Typography>
+                                      <Typography variant="caption" sx={{ color: '#54D62C' }}>
+                                        {fNumber(traderStats[account].buyVolume)}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Sell Volume:</Typography>
+                                      <Typography variant="caption" sx={{ color: '#FF6C40' }}>
+                                        {fNumber(traderStats[account].sellVolume)}
+                                      </Typography>
+                                    </Box>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                       <Typography variant="caption">Profitable/Losing:</Typography>
                                       <Typography variant="caption">
                                         <span style={{ color: '#54D62C' }}>
-                                          {fNumber(traderStats[account].profitableTrades || 0)}
+                                          {fNumber(traderStats[account].profitableTrades)}
                                         </span>
                                         {' / '}
                                         <span style={{ color: '#FF6C40' }}>
-                                          {fNumber(traderStats[account].losingTrades || 0)}
+                                          {fNumber(traderStats[account].losingTrades)}
                                         </span>
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Max Profit:</Typography>
-                                      <Typography variant="caption" sx={{ color: '#54D62C' }}>
-                                        {fNumber(traderStats[account].maxProfitTrade || 0)}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">Max Loss:</Typography>
-                                      <Typography variant="caption" sx={{ color: '#FF6C40' }}>
-                                        {fNumber(Math.abs(traderStats[account].maxLossTrade || 0))}
                                       </Typography>
                                     </Box>
                                   </Stack>
@@ -614,21 +629,33 @@ export default function RichListData({ token }) {
                                     color="text.secondary"
                                     sx={{ display: 'block', mb: 1 }}
                                   >
-                                    RECENT ACTIVITY
+                                    PROFIT METRICS
                                   </Typography>
                                   <Stack spacing={0.5}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Best Trade:</Typography>
+                                      <Typography variant="caption" sx={{ color: '#54D62C' }}>
+                                        {fNumber(traderStats[account].maxProfitTrade)}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Worst Trade:</Typography>
+                                      <Typography variant="caption" sx={{ color: '#FF6C40' }}>
+                                        {fNumber(Math.abs(traderStats[account].maxLossTrade))}
+                                      </Typography>
+                                    </Box>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                       <Typography variant="caption">24h Profit:</Typography>
                                       <Typography
                                         variant="caption"
                                         sx={{
                                           color:
-                                            (traderStats[account].profit24h || 0) >= 0
+                                            traderStats[account].profit24h >= 0
                                               ? '#54D62C'
                                               : '#FF6C40'
                                         }}
                                       >
-                                        {fNumber(Math.abs(traderStats[account].profit24h || 0))}
+                                        {fNumber(Math.abs(traderStats[account].profit24h))}
                                       </Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -637,26 +664,12 @@ export default function RichListData({ token }) {
                                         variant="caption"
                                         sx={{
                                           color:
-                                            (traderStats[account].profit7d || 0) >= 0
+                                            traderStats[account].profit7d >= 0
                                               ? '#54D62C'
                                               : '#FF6C40'
                                         }}
                                       >
-                                        {fNumber(Math.abs(traderStats[account].profit7d || 0))}
-                                      </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                      <Typography variant="caption">30d Profit:</Typography>
-                                      <Typography
-                                        variant="caption"
-                                        sx={{
-                                          color:
-                                            (traderStats[account].profit1m || 0) >= 0
-                                              ? '#54D62C'
-                                              : '#FF6C40'
-                                        }}
-                                      >
-                                        {fNumber(Math.abs(traderStats[account].profit1m || 0))}
+                                        {fNumber(Math.abs(traderStats[account].profit7d))}
                                       </Typography>
                                     </Box>
                                   </Stack>
@@ -666,8 +679,51 @@ export default function RichListData({ token }) {
                                     color="text.secondary"
                                     sx={{ display: 'block', mt: 2, mb: 1 }}
                                   >
-                                    TRADING HISTORY
+                                    ACTIVITY METRICS
                                   </Typography>
+                                  <Stack spacing={0.5}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">24h Volume:</Typography>
+                                      <Typography variant="caption">
+                                        {fNumber(traderStats[account].volume24h)}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">7d Volume:</Typography>
+                                      <Typography variant="caption">
+                                        {fNumber(traderStats[account].volume7d)}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">24h Trades:</Typography>
+                                      <Typography variant="caption">
+                                        {fNumber(traderStats[account].trades24h)}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">7d Trades:</Typography>
+                                      <Typography variant="caption">
+                                        {fNumber(traderStats[account].trades7d)}
+                                      </Typography>
+                                    </Box>
+                                  </Stack>
+                                </Box>
+                              </Box>
+
+                              {/* Trading History */}
+                              <Box
+                                sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}
+                              >
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  sx={{ display: 'block', mb: 1 }}
+                                >
+                                  TRADING HISTORY
+                                </Typography>
+                                <Box
+                                  sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}
+                                >
                                   <Stack spacing={0.5}>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                       <Typography variant="caption">First Trade:</Typography>
@@ -685,10 +741,18 @@ export default function RichListData({ token }) {
                                         ).toLocaleDateString()}
                                       </Typography>
                                     </Box>
+                                  </Stack>
+                                  <Stack spacing={0.5}>
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                       <Typography variant="caption">Avg Holding:</Typography>
                                       <Typography variant="caption">
                                         {Math.round(traderStats[account].avgHoldingTime / 3600)}h
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Trade Frequency:</Typography>
+                                      <Typography variant="caption">
+                                        {Math.round(traderStats[account].trades24h / 24)} /hr
                                       </Typography>
                                     </Box>
                                   </Stack>
