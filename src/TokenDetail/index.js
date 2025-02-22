@@ -18,6 +18,7 @@ const Market = dynamic(() => import('./market'));
 const Trade = dynamic(() => import('./trade'));
 const RichList = dynamic(() => import('./richlist'));
 const Wallet = dynamic(() => import('./wallet'));
+const TopTraders = dynamic(() => import('./toptraders'));
 
 // ---------------------------------------------------
 
@@ -59,8 +60,8 @@ function a11yProps(index) {
   };
 }
 
-const tabValues = ['', 'markets', 'orderbook', 'holders', 'wallets'];
-const tabLabels = ['Overview', 'Markets', 'Orderbook', 'Holders', 'Wallets'];
+const tabValues = ['', 'markets', 'orderbook', 'holders', 'traders', 'wallets'];
+const tabLabels = ['Overview', 'Markets', 'Orderbook', 'Holders', 'Top Traders', 'Wallets'];
 
 function getTabID(tab) {
   if (!tab) return 0;
@@ -180,73 +181,40 @@ export default function TokenDetail({ token, tab }) {
             }
           }}
         >
-          <Tab
-            value={0}
-            label={tabLabels[0]}
-            {...a11yProps(0)}
-            sx={{
-              minHeight: '40px',
-              padding: '6px 16px',
-              textTransform: 'none'
-            }}
-          />
-          <Tab
-            value={1}
-            label={tabLabels[1]}
-            {...a11yProps(1)}
-            sx={{
-              minHeight: '40px',
-              padding: '6px 16px',
-              textTransform: 'none'
-            }}
-          />
-          <Tab
-            value={2}
-            label={tabLabels[2]}
-            {...a11yProps(2)}
-            sx={{
-              minHeight: '40px',
-              padding: '6px 16px',
-              textTransform: 'none'
-            }}
-          />
-          <Tab
-            value={3}
-            label={tabLabels[3]}
-            {...a11yProps(3)}
-            sx={{
-              minHeight: '40px',
-              padding: '6px 16px',
-              textTransform: 'none'
-            }}
-          />
-          <Tab
-            value={4}
-            label={tabLabels[4]}
-            {...a11yProps(4)}
-            sx={{
-              minHeight: '40px',
-              padding: '6px 16px',
-              textTransform: 'none'
-            }}
-          />
+          {tabLabels.map((label, index) => (
+            <Tab
+              key={index}
+              value={index}
+              label={label}
+              {...a11yProps(index)}
+              sx={{
+                minHeight: '40px',
+                padding: '6px 16px',
+                textTransform: 'none'
+              }}
+            />
+          ))}
         </Tabs>
-        <TabPanel value={tabID} id={0}>
-          <Overview token={token} />
-        </TabPanel>
-        <TabPanel value={tabID} id={1}>
-          <Market token={token} />
-        </TabPanel>
-        <TabPanel value={tabID} id={2}>
-          <Trade token={token} />
-        </TabPanel>
-        <TabPanel value={tabID} id={3}>
-          <RichList token={token} />
-        </TabPanel>
-        <TabPanel value={tabID} id={4}>
-          <Wallet />
-        </TabPanel>
       </Box>
+
+      <TabPanel value={tabID} id={0}>
+        <Overview token={token} />
+      </TabPanel>
+      <TabPanel value={tabID} id={1}>
+        <Market token={token} />
+      </TabPanel>
+      <TabPanel value={tabID} id={2}>
+        <Trade token={token} />
+      </TabPanel>
+      <TabPanel value={tabID} id={3}>
+        <RichList token={token} />
+      </TabPanel>
+      <TabPanel value={tabID} id={4}>
+        <TopTraders token={token} />
+      </TabPanel>
+      <TabPanel value={tabID} id={5}>
+        <Wallet />
+      </TabPanel>
     </Box>
   );
 }
