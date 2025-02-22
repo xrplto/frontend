@@ -20,7 +20,8 @@ import {
   TableHead,
   TableSortLabel,
   TableRow,
-  Typography
+  Typography,
+  CircularProgress
 } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 
@@ -48,12 +49,69 @@ import { fNumber, fPercent } from 'src/utils/formatNumber';
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
 
+// Recharts
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  Legend
+} from 'recharts';
+
 // ----------------------------------------------------------------------
 function truncate(str, n) {
   if (!str) return '';
   //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
   return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
 }
+
+// Add DailyVolumeChart component
+const DailyVolumeChart = ({ data }) => {
+  // Process and sort data by date
+  const chartData = data
+    .map((item) => ({
+      date: new Date(item.date).toLocaleDateString(),
+      Buy: item.buyVolume || 0,
+      Sell: item.sellVolume || 0,
+      Profit: item.profit
+    }))
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .slice(-30); // Show last 30 days
+
+  return (
+    <Box sx={{ width: '100%', height: 200, mt: 2 }}>
+      <ResponsiveContainer>
+        <BarChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis
+            dataKey="date"
+            angle={-45}
+            textAnchor="end"
+            height={60}
+            interval={4}
+            tick={{ fontSize: 10 }}
+          />
+          <YAxis tick={{ fontSize: 10 }} tickFormatter={(value) => value.toFixed(0)} />
+          <RechartsTooltip
+            contentStyle={{
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '12px'
+            }}
+            formatter={(value, name) => [fNumber(value), name]}
+          />
+          <Legend wrapperStyle={{ fontSize: '10px' }} />
+          <Bar dataKey="Buy" fill="#54D62C" stackId="stack" />
+          <Bar dataKey="Sell" fill="#FF6C40" stackId="stack" />
+        </BarChart>
+      </ResponsiveContainer>
+    </Box>
+  );
+};
 
 export default function RichListData({ token }) {
   const BASE_URL = process.env.API_URL;
@@ -87,6 +145,22 @@ export default function RichListData({ token }) {
     borderRadius: '4px',
     border: '1px solid #323546',
     padding: '1px 4px'
+  };
+
+  const [traderStats, setTraderStats] = useState({});
+
+  const fetchTraderStats = async (address, md5) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/analytics/trader/${address}/${md5}`);
+      if (response.status === 200) {
+        setTraderStats((prev) => ({
+          ...prev,
+          [address]: response.data
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching trader stats:', error);
+    }
   };
 
   useEffect(() => {
@@ -421,17 +495,224 @@ export default function RichListData({ token }) {
                       <Typography variant="subtitle1">{id}</Typography>
                     </TableCell>
                     <TableCell align="left">
-                      <Link
-                        underline="none"
-                        color="inherit"
-                        target="_blank"
-                        href={`https://bithomp.com/explorer/${account}`}
-                        rel="noreferrer noopener nofollow"
+                      <Tooltip
+                        title={
+                          traderStats[account] ? (
+                            <Box sx={{ p: 1, maxWidth: 600 }}>
+                              <Typography
+                                variant="subtitle2"
+                                gutterBottom
+                                sx={{ borderBottom: '1px solid rgba(255,255,255,0.1)', pb: 1 }}
+                              >
+                                Trader Statistics
+                              </Typography>
+
+                              {/* Two-column layout for stats */}
+                              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                                {/* Left column */}
+                                <Box>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: 'block', mb: 1 }}
+                                  >
+                                    OVERVIEW
+                                  </Typography>
+                                  <Stack spacing={0.5}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Total Trades:</Typography>
+                                      <Typography variant="caption">
+                                        {fNumber(traderStats[account].totalTrades || 0)}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Total Volume:</Typography>
+                                      <Typography variant="caption">
+                                        {fNumber(traderStats[account].totalVolume || 0)} {name}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">ROI:</Typography>
+                                      <Typography
+                                        variant="caption"
+                                        sx={{
+                                          color:
+                                            (traderStats[account].roi || 0) >= 0
+                                              ? '#54D62C'
+                                              : '#FF6C40'
+                                        }}
+                                      >
+                                        {fNumber(Math.abs(traderStats[account].roi || 0))}%
+                                      </Typography>
+                                    </Box>
+                                  </Stack>
+
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: 'block', mt: 2, mb: 1 }}
+                                  >
+                                    TRADE PERFORMANCE
+                                  </Typography>
+                                  <Stack spacing={0.5}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Profitable/Losing:</Typography>
+                                      <Typography variant="caption">
+                                        <span style={{ color: '#54D62C' }}>
+                                          {fNumber(traderStats[account].profitableTrades || 0)}
+                                        </span>
+                                        {' / '}
+                                        <span style={{ color: '#FF6C40' }}>
+                                          {fNumber(traderStats[account].losingTrades || 0)}
+                                        </span>
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Max Profit:</Typography>
+                                      <Typography variant="caption" sx={{ color: '#54D62C' }}>
+                                        {fNumber(traderStats[account].maxProfitTrade || 0)}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Max Loss:</Typography>
+                                      <Typography variant="caption" sx={{ color: '#FF6C40' }}>
+                                        {fNumber(Math.abs(traderStats[account].maxLossTrade || 0))}
+                                      </Typography>
+                                    </Box>
+                                  </Stack>
+                                </Box>
+
+                                {/* Right column */}
+                                <Box>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: 'block', mb: 1 }}
+                                  >
+                                    RECENT ACTIVITY
+                                  </Typography>
+                                  <Stack spacing={0.5}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">24h Profit:</Typography>
+                                      <Typography
+                                        variant="caption"
+                                        sx={{
+                                          color:
+                                            (traderStats[account].profit24h || 0) >= 0
+                                              ? '#54D62C'
+                                              : '#FF6C40'
+                                        }}
+                                      >
+                                        {fNumber(Math.abs(traderStats[account].profit24h || 0))}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">7d Profit:</Typography>
+                                      <Typography
+                                        variant="caption"
+                                        sx={{
+                                          color:
+                                            (traderStats[account].profit7d || 0) >= 0
+                                              ? '#54D62C'
+                                              : '#FF6C40'
+                                        }}
+                                      >
+                                        {fNumber(Math.abs(traderStats[account].profit7d || 0))}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">30d Profit:</Typography>
+                                      <Typography
+                                        variant="caption"
+                                        sx={{
+                                          color:
+                                            (traderStats[account].profit1m || 0) >= 0
+                                              ? '#54D62C'
+                                              : '#FF6C40'
+                                        }}
+                                      >
+                                        {fNumber(Math.abs(traderStats[account].profit1m || 0))}
+                                      </Typography>
+                                    </Box>
+                                  </Stack>
+
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: 'block', mt: 2, mb: 1 }}
+                                  >
+                                    TRADING HISTORY
+                                  </Typography>
+                                  <Stack spacing={0.5}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">First Trade:</Typography>
+                                      <Typography variant="caption">
+                                        {new Date(
+                                          traderStats[account].firstTradeDate
+                                        ).toLocaleDateString()}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Last Trade:</Typography>
+                                      <Typography variant="caption">
+                                        {new Date(
+                                          traderStats[account].lastTradeDate
+                                        ).toLocaleDateString()}
+                                      </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                      <Typography variant="caption">Avg Holding:</Typography>
+                                      <Typography variant="caption">
+                                        {Math.round(traderStats[account].avgHoldingTime / 3600)}h
+                                      </Typography>
+                                    </Box>
+                                  </Stack>
+                                </Box>
+                              </Box>
+
+                              {/* Volume Chart */}
+                              <Box
+                                sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}
+                              >
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  sx={{ display: 'block', mb: 1 }}
+                                >
+                                  DAILY VOLUMES (LAST 30 DAYS)
+                                </Typography>
+                                <DailyVolumeChart data={traderStats[account].dailyVolumes || []} />
+                              </Box>
+                            </Box>
+                          ) : (
+                            <Box sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <CircularProgress size={16} />
+                              <Typography variant="body2">Loading trader stats...</Typography>
+                            </Box>
+                          )
+                        }
+                        onOpen={() => !traderStats[account] && fetchTraderStats(account, token.md5)}
+                        PopperProps={{
+                          sx: {
+                            '& .MuiTooltip-tooltip': {
+                              bgcolor: darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(32, 32, 32, 0.9)',
+                              maxWidth: 'none'
+                            }
+                          }
+                        }}
                       >
-                        <Typography variant="subtitle1" color="primary">
-                          {truncate(account, 20)}
-                        </Typography>
-                      </Link>
+                        <Link
+                          underline="none"
+                          color="inherit"
+                          target="_blank"
+                          href={`https://bithomp.com/explorer/${account}`}
+                          rel="noreferrer noopener nofollow"
+                        >
+                          <Typography variant="subtitle1" color="primary">
+                            {truncate(account, 20)}
+                          </Typography>
+                        </Link>
+                      </Tooltip>
                     </TableCell>
                     <TableCell align="left">{freeze && <Icon icon={checkIcon} />}</TableCell>
                     <TableCell align="left">
