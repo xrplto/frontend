@@ -153,6 +153,24 @@ function PriceChart({ token }) {
       }
     }));
   }, [minTime, maxTime]);
+
+  // Add a useEffect to recalculate mediumValue when chart type changes
+  useEffect(() => {
+    if (chartType === 0 && data && data.length > 0) {
+      // For line chart
+      const prices = data.map((point) => point[1]);
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      setMediumValue((min + max) / 2);
+    } else if (chartType === 1 && dataOHLC && dataOHLC.length > 0) {
+      // For candlestick chart
+      const closes = dataOHLC.map((point) => point[4]); // Close prices
+      const min = Math.min(...closes);
+      const max = Math.max(...closes);
+      setMediumValue((min + max) / 2);
+    }
+  }, [chartType, data, dataOHLC]);
+
   console.log('data', data);
 
   const handleChange = (event, newRange) => {
@@ -223,7 +241,13 @@ function PriceChart({ token }) {
         }
       },
       zoomType: 'x', // Enable horizontal zooming
-      marginBottom: 100 // Add margin for volume chart
+      marginBottom: 100, // Add margin for volume chart
+      animation: {
+        duration: 800
+      },
+      style: {
+        fontFamily: theme.typography.fontFamily
+      }
     },
     legend: { enabled: false },
     credits: {
@@ -238,11 +262,18 @@ function PriceChart({ token }) {
       },
       labels: {
         style: {
-          color: theme.palette.text.primary
+          color: theme.palette.text.primary,
+          fontWeight: 500
+        },
+        formatter: function () {
+          const date = new Date(this.value);
+          return moment(date).format('MMM DD');
         }
       },
       lineColor: theme.palette.divider,
-      tickColor: theme.palette.divider
+      tickColor: theme.palette.divider,
+      minPadding: 0.05,
+      maxPadding: 0.05
     },
     yAxis: [
       {
@@ -255,7 +286,8 @@ function PriceChart({ token }) {
         gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
         labels: {
           style: {
-            color: theme.palette.text.primary
+            color: theme.palette.text.primary,
+            fontWeight: 500
           },
           formatter: function () {
             return fCurrency5(this.value);
@@ -368,12 +400,18 @@ function PriceChart({ token }) {
             }
           }
         ]
+      },
+      column: {
+        borderRadius: 1,
+        animation: {
+          duration: 1000
+        }
       }
     },
     series: [
       {
         name: 'Price',
-        data: data.map((point) => [point[0], point[1]]),
+        data: data && data.length > 0 ? data.map((point) => [point[0], point[1]]) : [],
         threshold: mediumValue,
         lineWidth: 2,
         animation: {
@@ -383,7 +421,7 @@ function PriceChart({ token }) {
       {
         type: 'column',
         name: 'Volume',
-        data: data.map((point) => [point[0], point[2]]),
+        data: data && data.length > 0 ? data.map((point) => [point[0], point[2]]) : [],
         yAxis: 1,
         color: {
           linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
@@ -404,6 +442,7 @@ function PriceChart({ token }) {
       style: {
         color: darkMode ? '#FFF' : '#333',
         fontSize: '12px',
+        fontFamily: theme.typography.fontFamily,
         filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.2))'
       },
       formatter: function () {
@@ -466,6 +505,26 @@ function PriceChart({ token }) {
       shared: true,
       split: false,
       useHTML: true
+    },
+    responsive: {
+      rules: [
+        {
+          condition: {
+            maxWidth: 500
+          },
+          chartOptions: {
+            yAxis: [
+              {
+                labels: {
+                  align: 'right',
+                  x: -5,
+                  y: 0
+                }
+              }
+            ]
+          }
+        }
+      ]
     }
   };
 
@@ -518,6 +577,12 @@ function PriceChart({ token }) {
             })
             .add();
         }
+      },
+      animation: {
+        duration: 800
+      },
+      style: {
+        fontFamily: theme.typography.fontFamily
       }
     },
     legend: { enabled: false },
@@ -533,11 +598,18 @@ function PriceChart({ token }) {
       },
       labels: {
         style: {
-          color: theme.palette.text.primary
+          color: theme.palette.text.primary,
+          fontWeight: 500
+        },
+        formatter: function () {
+          const date = new Date(this.value);
+          return moment(date).format('MMM DD');
         }
       },
       lineColor: theme.palette.divider,
-      tickColor: theme.palette.divider
+      tickColor: theme.palette.divider,
+      minPadding: 0.05,
+      maxPadding: 0.05
     },
     yAxis: {
       crosshair: {
@@ -550,55 +622,78 @@ function PriceChart({ token }) {
       },
       labels: {
         style: {
-          color: theme.palette.text.primary
+          color: theme.palette.text.primary,
+          fontWeight: 500
         },
         formatter: function () {
           return fCurrency5(this.value);
         }
       },
-      gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+      gridLineColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+      plotLines: mediumValue
+        ? [
+            {
+              width: 1,
+              value: mediumValue,
+              dashStyle: 'Dot',
+              color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
+            }
+          ]
+        : []
     },
     series: [
       {
         type: 'candlestick',
         name: `${user} ${name}`,
-        data: dataOHLC
+        data: dataOHLC,
+        animation: {
+          duration: 1000
+        }
       }
     ],
     tooltip: {
       backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-      borderRadius: 8,
+      borderRadius: 12,
       borderWidth: 0,
       shadow: true,
       style: {
         color: darkMode ? '#FFF' : '#333',
-        fontSize: '12px'
+        fontSize: '12px',
+        fontFamily: theme.typography.fontFamily
       },
       formatter: function () {
         const point = this.point;
         const change = point.close - point.open;
         const changePercent = (change / point.open) * 100;
-        const changeColor = change >= 0 ? '#94caae' : '#ff6968';
+        const changeColor = change >= 0 ? theme.palette.primary.main : theme.palette.error.main;
 
-        return `<div style="padding: 8px;">
-          <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">
+        return `<div style="padding: 12px; backdrop-filter: blur(8px);">
+          <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; 
+               background: ${
+                 darkMode
+                   ? 'linear-gradient(45deg, #fff, rgba(255,255,255,0.8))'
+                   : 'linear-gradient(45deg, #000, rgba(0,0,0,0.8))'
+               };
+               -webkit-background-clip: text;
+               -webkit-text-fill-color: ${darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'};">
             ${moment(point.x).format('MMM DD, YYYY HH:mm')}
           </div>
-          <table>
-            <tr><td>Open:</td><td style="text-align: right; padding-left: 10px;">${
+          <table style="border-spacing: 4px;">
+            <tr><td style="opacity: 0.8;">Open:</td><td style="text-align: right; padding-left: 16px; font-weight: 600;">${
               currencySymbols[activeFiatCurrency]
             }${fCurrency5(point.open)}</td></tr>
-            <tr><td>High:</td><td style="text-align: right; padding-left: 10px;">${
+            <tr><td style="opacity: 0.8;">High:</td><td style="text-align: right; padding-left: 16px; font-weight: 600;">${
               currencySymbols[activeFiatCurrency]
             }${fCurrency5(point.high)}</td></tr>
-            <tr><td>Low:</td><td style="text-align: right; padding-left: 10px;">${
+            <tr><td style="opacity: 0.8;">Low:</td><td style="text-align: right; padding-left: 16px; font-weight: 600;">${
               currencySymbols[activeFiatCurrency]
             }${fCurrency5(point.low)}</td></tr>
-            <tr><td>Close:</td><td style="text-align: right; padding-left: 10px;">${
+            <tr><td style="opacity: 0.8;">Close:</td><td style="text-align: right; padding-left: 16px; font-weight: 600;">${
               currencySymbols[activeFiatCurrency]
             }${fCurrency5(point.close)}</td></tr>
-            <tr><td colspan="2" style="padding-top: 5px;">
-              <span style="color: ${changeColor};">
+            <tr><td colspan="2" style="padding-top: 8px;">
+              <span style="color: ${changeColor}; font-weight: 600; 
+                    text-shadow: 0 0 8px ${changeColor}40;">
                 ${change >= 0 ? '▲' : '▼'} ${fCurrency5(Math.abs(change))} (${changePercent.toFixed(
           2
         )}%)
@@ -608,6 +703,24 @@ function PriceChart({ token }) {
         </div>`;
       },
       useHTML: true
+    },
+    responsive: {
+      rules: [
+        {
+          condition: {
+            maxWidth: 500
+          },
+          chartOptions: {
+            yAxis: {
+              labels: {
+                align: 'right',
+                x: -5,
+                y: 0
+              }
+            }
+          }
+        }
+      ]
     }
   };
 
@@ -693,10 +806,16 @@ function PriceChart({ token }) {
         >
           <CircularProgress />
         </Box>
-      ) : !chartType ? (
+      ) : chartType === 0 ? (
         data && data.length > 0 ? (
           <Stack>
-            <HighchartsReact highcharts={Highcharts} options={options1} allowChartUpdate={true} />
+            <HighchartsReact
+              highcharts={Highcharts}
+              options={options1}
+              allowChartUpdate={true}
+              constructorType={'chart'}
+              key={`line-chart-${range}`}
+            />
           </Stack>
         ) : (
           <Box
@@ -717,7 +836,13 @@ function PriceChart({ token }) {
         )
       ) : dataOHLC && dataOHLC.length > 0 ? (
         <Stack>
-          <HighchartsReact highcharts={Highcharts} options={options2} allowChartUpdate={true} />
+          <HighchartsReact
+            highcharts={Highcharts}
+            options={options2}
+            allowChartUpdate={true}
+            constructorType={'chart'}
+            key={`candlestick-chart-${range}`}
+          />
         </Stack>
       ) : (
         <Box
