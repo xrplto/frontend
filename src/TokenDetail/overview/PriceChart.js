@@ -46,7 +46,7 @@ const fiatMapping = {
 
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   [`& .${toggleButtonGroupClasses.grouped}`]: {
-    margin: theme.spacing(0.5),
+    margin: theme.spacing(0.25),
     border: 0,
     borderRadius: theme.shape.borderRadius,
     [`&.${toggleButtonGroupClasses.disabled}`]: {
@@ -867,7 +867,8 @@ function PriceChart({ token }) {
                 sx={{
                   display: 'flex',
                   border: (theme) => `1px solid ${theme.palette.divider}`,
-                  flexWrap: 'wrap'
+                  flexWrap: 'wrap',
+                  p: 0.25
                 }}
               >
                 <StyledToggleButtonGroup
@@ -876,16 +877,29 @@ function PriceChart({ token }) {
                   exclusive
                   onChange={(e, newType) => setChartType(newType)}
                   aria-label="chart type"
+                  sx={{ m: 0 }}
                 >
-                  <ToggleButton value={0} sx={{ pt: 0.25, pb: 0.25 }} aria-label="line chart">
-                    <ShowChartIcon />
+                  <ToggleButton
+                    value={0}
+                    sx={{
+                      p: 0.5,
+                      minWidth: '32px',
+                      height: '28px'
+                    }}
+                    aria-label="line chart"
+                  >
+                    <ShowChartIcon fontSize="small" />
                   </ToggleButton>
                   <ToggleButton
                     value={1}
-                    sx={{ pt: 0.25, pb: 0.25 }}
+                    sx={{
+                      p: 0.5,
+                      minWidth: '32px',
+                      height: '28px'
+                    }}
                     aria-label="candlestick chart"
                   >
-                    <CandlestickChartIcon />
+                    <CandlestickChartIcon fontSize="small" />
                   </ToggleButton>
                 </StyledToggleButtonGroup>
               </Paper>
@@ -898,7 +912,8 @@ function PriceChart({ token }) {
               sx={{
                 display: 'flex',
                 border: (theme) => `1px solid ${theme.palette.divider}`,
-                flexWrap: 'wrap'
+                flexWrap: 'wrap',
+                p: 0.25
               }}
             >
               <ToggleButtonGroup
@@ -907,23 +922,24 @@ function PriceChart({ token }) {
                 exclusive
                 onChange={handleChange}
                 size="small"
+                sx={{ m: 0 }}
               >
-                <ToggleButton sx={{ minWidth: '40px', pt: 0.25, pb: 0.25 }} value="1D">
+                <ToggleButton sx={{ minWidth: '36px', p: 0.5, height: '28px' }} value="1D">
                   1D
                 </ToggleButton>
-                <ToggleButton sx={{ minWidth: '40px', pt: 0.25, pb: 0.25 }} value="7D">
+                <ToggleButton sx={{ minWidth: '36px', p: 0.5, height: '28px' }} value="7D">
                   7D
                 </ToggleButton>
-                <ToggleButton sx={{ minWidth: '40px', pt: 0.25, pb: 0.25 }} value="1M">
+                <ToggleButton sx={{ minWidth: '36px', p: 0.5, height: '28px' }} value="1M">
                   1M
                 </ToggleButton>
-                <ToggleButton sx={{ minWidth: '40px', pt: 0.25, pb: 0.25 }} value="3M">
+                <ToggleButton sx={{ minWidth: '36px', p: 0.5, height: '28px' }} value="3M">
                   3M
                 </ToggleButton>
-                <ToggleButton sx={{ minWidth: '40px', pt: 0.25, pb: 0.25 }} value="1Y">
+                <ToggleButton sx={{ minWidth: '36px', p: 0.5, height: '28px' }} value="1Y">
                   1Y
                 </ToggleButton>
-                <ToggleButton sx={{ minWidth: '40px', pt: 0.25, pb: 0.25 }} value="ALL">
+                <ToggleButton sx={{ minWidth: '36px', p: 0.5, height: '28px' }} value="ALL">
                   ALL
                 </ToggleButton>
               </ToggleButtonGroup>
