@@ -21,6 +21,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
+import { alpha } from '@mui/material/styles';
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -727,17 +728,171 @@ function PriceChart({ token }) {
   return (
     <>
       <Grid container rowSpacing={1} alignItems="center" sx={{ mt: 0, mb: 1 }}>
-        <Grid container item xs={12} md={6}>
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Typography
-              variant="h4"
-              noWrap
-            >{`${user} ${name} to ${activeFiatCurrency}(${currencySymbols[activeFiatCurrency]}) Chart`}</Typography>
+        <Grid container item xs={12} alignItems="center" justifyContent="space-between">
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.75
+              }}
+            >
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 700,
+                  background:
+                    theme.palette.mode === 'dark'
+                      ? 'linear-gradient(90deg, #fff 0%, rgba(255,255,255,0.7) 100%)'
+                      : 'linear-gradient(90deg, #000 0%, rgba(0,0,0,0.8) 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow:
+                    theme.palette.mode === 'dark'
+                      ? '0px 0px 10px rgba(255,255,255,0.1)'
+                      : '0px 0px 10px rgba(0,0,0,0.1)',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {`${user} ${name}`}
+              </Typography>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontWeight: 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                to
+                <Box
+                  component="span"
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 600,
+                    mx: 0.5
+                  }}
+                >
+                  {currencySymbols[activeFiatCurrency]}
+                </Box>
+                {activeFiatCurrency}
+              </Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  ml: 0.5,
+                  pl: 0.5,
+                  borderLeft: `1px solid ${theme.palette.divider}`
+                }}
+              >
+                <Box
+                  sx={{
+                    height: '6px',
+                    width: '6px',
+                    borderRadius: '50%',
+                    bgcolor:
+                      range === '1D'
+                        ? theme.palette.primary.main
+                        : range === '7D'
+                        ? theme.palette.success.main
+                        : range === '1M'
+                        ? theme.palette.warning.main
+                        : range === '3M'
+                        ? theme.palette.info.main
+                        : range === '1Y'
+                        ? theme.palette.secondary.main
+                        : theme.palette.error.main,
+                    boxShadow: `0 0 8px ${
+                      range === '1D'
+                        ? theme.palette.primary.main
+                        : range === '7D'
+                        ? theme.palette.success.main
+                        : range === '1M'
+                        ? theme.palette.warning.main
+                        : range === '3M'
+                        ? theme.palette.info.main
+                        : range === '1Y'
+                        ? theme.palette.secondary.main
+                        : theme.palette.error.main
+                    }`
+                  }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color:
+                      range === '1D'
+                        ? theme.palette.primary.main
+                        : range === '7D'
+                        ? theme.palette.success.main
+                        : range === '1M'
+                        ? theme.palette.warning.main
+                        : range === '3M'
+                        ? theme.palette.info.main
+                        : range === '1Y'
+                        ? theme.palette.secondary.main
+                        : theme.palette.error.main,
+                    fontWeight: 600
+                  }}
+                >
+                  {range}
+                </Typography>
+              </Box>
+            </Box>
+
             {isAdmin && range !== 'OHLC' && (
-              <IconButton size="small" onClick={handleDownloadCSV}>
+              <IconButton
+                size="small"
+                onClick={handleDownloadCSV}
+                sx={{
+                  ml: 1,
+                  color: theme.palette.primary.main,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                  }
+                }}
+              >
                 <DownloadIcon fontSize="small" />
               </IconButton>
             )}
+
+            <Box sx={{ ml: 2 }}>
+              <Paper
+                elevation={0}
+                sx={{
+                  display: 'flex',
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  flexWrap: 'wrap'
+                }}
+              >
+                <StyledToggleButtonGroup
+                  size="small"
+                  value={chartType}
+                  exclusive
+                  onChange={(e, newType) => setChartType(newType)}
+                  aria-label="chart type"
+                >
+                  <ToggleButton value={0} sx={{ pt: 0.25, pb: 0.25 }} aria-label="line chart">
+                    <ShowChartIcon />
+                  </ToggleButton>
+                  <ToggleButton
+                    value={1}
+                    sx={{ pt: 0.25, pb: 0.25 }}
+                    aria-label="candlestick chart"
+                  >
+                    <CandlestickChartIcon />
+                  </ToggleButton>
+                </StyledToggleButtonGroup>
+              </Paper>
+            </Box>
+          </Box>
+
+          <Box>
             <Paper
               elevation={0}
               sx={{
@@ -746,50 +901,34 @@ function PriceChart({ token }) {
                 flexWrap: 'wrap'
               }}
             >
-              <StyledToggleButtonGroup
-                size="small"
-                value={chartType}
+              <ToggleButtonGroup
+                color="primary"
+                value={range}
                 exclusive
-                onChange={(e, newType) => setChartType(newType)}
-                aria-label="text alignment"
+                onChange={handleChange}
+                size="small"
               >
-                <ToggleButton value={0} sx={{ pt: 0.25, pb: 0.25 }} aria-label="left aligned">
-                  <ShowChartIcon />
+                <ToggleButton sx={{ minWidth: '40px', pt: 0.25, pb: 0.25 }} value="1D">
+                  1D
                 </ToggleButton>
-                <ToggleButton value={1} sx={{ pt: 0.25, pb: 0.25 }} aria-label="centered">
-                  <CandlestickChartIcon />
+                <ToggleButton sx={{ minWidth: '40px', pt: 0.25, pb: 0.25 }} value="7D">
+                  7D
                 </ToggleButton>
-              </StyledToggleButtonGroup>
+                <ToggleButton sx={{ minWidth: '40px', pt: 0.25, pb: 0.25 }} value="1M">
+                  1M
+                </ToggleButton>
+                <ToggleButton sx={{ minWidth: '40px', pt: 0.25, pb: 0.25 }} value="3M">
+                  3M
+                </ToggleButton>
+                <ToggleButton sx={{ minWidth: '40px', pt: 0.25, pb: 0.25 }} value="1Y">
+                  1Y
+                </ToggleButton>
+                <ToggleButton sx={{ minWidth: '40px', pt: 0.25, pb: 0.25 }} value="ALL">
+                  ALL
+                </ToggleButton>
+              </ToggleButtonGroup>
             </Paper>
-          </Stack>
-        </Grid>
-        <Grid container item xs={12} md={6} justifyContent="flex-end">
-          <ToggleButtonGroup
-            color="primary"
-            value={range}
-            exclusive
-            onChange={handleChange}
-            size="small"
-          >
-            <ToggleButton sx={{ minWidth: '40px', pt: 0, pb: 0 }} value="1D">
-              1D
-            </ToggleButton>
-            <ToggleButton sx={{ minWidth: '40px', pt: 0, pb: 0 }} value="7D">
-              7D
-            </ToggleButton>
-            <ToggleButton sx={{ minWidth: '40px', pt: 0, pb: 0 }} value="1M">
-              1M
-            </ToggleButton>
-            <ToggleButton sx={{ minWidth: '40px', pt: 0, pb: 0 }} value="3M">
-              3M
-            </ToggleButton>
-            <ToggleButton sx={{ minWidth: '40px', pt: 0, pb: 0 }} value="1Y">
-              1Y
-            </ToggleButton>
-            <ToggleButton sx={{ minWidth: '40px', pt: 0, pb: 0 }} value="ALL">
-              ALL
-            </ToggleButton>
-          </ToggleButtonGroup>
+          </Box>
         </Grid>
       </Grid>
       {isLoading ? (
