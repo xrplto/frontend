@@ -101,6 +101,27 @@ const ProgressBar = styled('div')(({ theme, width, color }) => ({
   transition: 'width 0.3s ease-in-out'
 }));
 
+// Custom styled Pagination component
+const StyledPagination = styled(Pagination)(({ theme }) => ({
+  '& .MuiPaginationItem-root': {
+    color: theme.palette.text.primary,
+    borderRadius: '4px', // Rounded edges instead of square
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, 0.1)'
+    }
+  },
+  '& .Mui-selected': {
+    backgroundColor: 'transparent !important', // Completely transparent background
+    color: '#fff', // White text
+    fontWeight: 'bold',
+    border: `1px solid ${theme.palette.primary.main}`, // Primary color outline
+    borderRadius: '4px', // Ensure rounded edges on selected item
+    '&:hover': {
+      backgroundColor: 'transparent !important' // Keep transparent on hover
+    }
+  }
+}));
+
 // Helper functions
 const formatRelativeTime = (timestamp) => {
   const now = Date.now();
@@ -216,7 +237,6 @@ const TradingHistory = ({ tokenId }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [newTradeIds, setNewTradeIds] = useState(new Set());
   const previousTradesRef = useRef(new Set());
-  const [filter, setFilter] = useState('All');
   const theme = useTheme();
   const limit = 20;
 
@@ -326,20 +346,6 @@ const TradingHistory = ({ tokenId }) => {
             </Typography>
           </LiveIndicator>
         </Box>
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <Select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            displayEmpty
-            inputProps={{ 'aria-label': 'Filter trades' }}
-          >
-            <MenuItem value="All">All</MenuItem>
-            <MenuItem value="🦐 <500 XRP">🦐 &lt;500 XRP</MenuItem>
-            <MenuItem value="🐬 500-5000 XRP">🐬 500-5000 XRP</MenuItem>
-            <MenuItem value="🐋 5000-10000 XRP">🐋 5000-10000 XRP</MenuItem>
-            <MenuItem value="🐳 10000+ XRP">🐳 10000+ XRP</MenuItem>
-          </Select>
-        </FormControl>
       </Box>
 
       {/* Add table header */}
@@ -367,7 +373,7 @@ const TradingHistory = ({ tokenId }) => {
       </Box>
 
       <List sx={{ width: '100%', padding: 0 }}>
-        {filterTrades(trades, filter).map((trade, index) => (
+        {trades.map((trade, index) => (
           <ListItem
             key={trade._id}
             sx={{
@@ -505,11 +511,10 @@ const TradingHistory = ({ tokenId }) => {
 
       {totalPages > 1 && (
         <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
-          <Pagination
+          <StyledPagination
             count={totalPages}
             page={page}
             onChange={handlePageChange}
-            color="primary"
             size="large"
             showFirstButton
             showLastButton
