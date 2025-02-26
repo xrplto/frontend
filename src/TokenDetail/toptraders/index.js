@@ -63,6 +63,18 @@ function descendingComparator(a, b, orderBy) {
     bValue = (b.profitableTrades / (b.profitableTrades + b.losingTrades)) * 100;
   }
 
+  // For profit fields, we want to sort by actual value, not absolute value
+  // This ensures that higher profits are ranked higher, even when comparing negative values
+  if (orderBy === 'profit24h' || orderBy === 'profit7d' || orderBy === 'profit2m') {
+    if (bValue < aValue) {
+      return -1;
+    }
+    if (bValue > aValue) {
+      return 1;
+    }
+    return 0;
+  }
+
   if (bValue < aValue) {
     return -1;
   }
@@ -140,7 +152,7 @@ export default function TopTraders({ token }) {
   const [selectedTrader, setSelectedTrader] = useState(null);
   const [traderStats, setTraderStats] = useState({});
   const [order, setOrder] = useState('desc');
-  const [orderBy, setOrderBy] = useState('totalVolume');
+  const [orderBy, setOrderBy] = useState('profit24h');
 
   useEffect(() => {
     const fetchTopTraders = async () => {
@@ -229,6 +241,11 @@ export default function TopTraders({ token }) {
                       {headCell.label}
                       {headCell.id === 'tradePercentage' && (
                         <Tooltip title="Trader's share of total market volume" placement="top">
+                          <span style={{ marginLeft: '2px', fontSize: '12px' }}>ⓘ</span>
+                        </Tooltip>
+                      )}
+                      {headCell.id === 'profit24h' && (
+                        <Tooltip title="Trader's profit in the last 24 hours" placement="top">
                           <span style={{ marginLeft: '2px', fontSize: '12px' }}>ⓘ</span>
                         </Tooltip>
                       )}
