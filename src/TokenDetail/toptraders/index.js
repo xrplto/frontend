@@ -24,6 +24,8 @@ import LinkIcon from '@mui/icons-material/Link';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CheckIcon from '@mui/icons-material/Check';
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -153,6 +155,7 @@ export default function TopTraders({ token }) {
   const [traderStats, setTraderStats] = useState({});
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('profit24h');
+  const [copiedTrader, setCopiedTrader] = useState(null);
 
   useEffect(() => {
     const fetchTopTraders = async () => {
@@ -189,6 +192,21 @@ export default function TopTraders({ token }) {
 
   const handleCloseStats = () => {
     setSelectedTrader(null);
+  };
+
+  const handleCopyJson = (trader) => {
+    const jsonData = JSON.stringify(trader, null, 2);
+    navigator.clipboard
+      .writeText(jsonData)
+      .then(() => {
+        setCopiedTrader(trader.address);
+        setTimeout(() => {
+          setCopiedTrader(null);
+        }, 2000);
+      })
+      .catch((error) => {
+        console.error('Error copying JSON data:', error);
+      });
   };
 
   if (loading) {
@@ -399,6 +417,20 @@ export default function TopTraders({ token }) {
                         size="small"
                       >
                         <BarChartIcon sx={{ fontSize: 16 }} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Copy JSON Data">
+                      <IconButton
+                        edge="end"
+                        aria-label="copy-json"
+                        onClick={() => handleCopyJson(trader)}
+                        size="small"
+                      >
+                        {copiedTrader === trader.address ? (
+                          <CheckIcon sx={{ fontSize: 16, color: '#54D62C' }} />
+                        ) : (
+                          <ContentCopyIcon sx={{ fontSize: 16 }} />
+                        )}
                       </IconButton>
                     </Tooltip>
                   </Stack>
