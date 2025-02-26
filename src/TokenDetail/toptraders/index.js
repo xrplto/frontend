@@ -16,7 +16,8 @@ import {
   Tooltip,
   CircularProgress,
   Chip,
-  TableSortLabel
+  TableSortLabel,
+  TablePagination
 } from '@mui/material';
 
 // Icons
@@ -156,6 +157,8 @@ export default function TopTraders({ token }) {
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('profit24h');
   const [copiedTrader, setCopiedTrader] = useState(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     const fetchTopTraders = async () => {
@@ -209,6 +212,15 @@ export default function TopTraders({ token }) {
       });
   };
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   if (loading) {
     return (
       <Box
@@ -221,6 +233,12 @@ export default function TopTraders({ token }) {
 
   // Sort traders
   const sortedTraders = traders.slice().sort(getComparator(order, orderBy));
+
+  // Apply pagination
+  const paginatedTraders = sortedTraders.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   return (
     <>
@@ -276,7 +294,7 @@ export default function TopTraders({ token }) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedTraders.map((trader, index) => (
+            {paginatedTraders.map((trader, index) => (
               <TableRow
                 key={trader.address}
                 sx={{
@@ -285,7 +303,7 @@ export default function TopTraders({ token }) {
                   }
                 }}
               >
-                <TableCell align="right">{index + 1}</TableCell>
+                <TableCell align="right">{page * rowsPerPage + index + 1}</TableCell>
                 <TableCell align="left">
                   <Stack direction="row" alignItems="center" spacing={0.5}>
                     <Link
@@ -439,6 +457,23 @@ export default function TopTraders({ token }) {
             ))}
           </TableBody>
         </Table>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25, 50, 100]}
+          component="div"
+          count={sortedTraders.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+          sx={{
+            '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+              fontSize: '0.75rem'
+            },
+            '.MuiTablePagination-select': {
+              fontSize: '0.75rem'
+            }
+          }}
+        />
       </Box>
 
       <StatsModal
