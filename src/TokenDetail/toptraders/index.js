@@ -358,7 +358,7 @@ export default function TopTraders({ token }) {
                       variant="body2"
                       sx={{ color: trader.roi >= 0 ? '#54D62C' : '#FF6C40' }}
                     >
-                      {fPercent(trader.roi * 100)}
+                      {fPercent(trader.roi)}
                     </Typography>
                   </Stack>
                 </TableCell>
