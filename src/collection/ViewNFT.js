@@ -221,134 +221,134 @@ export default function ViewNFT({ collection }) {
           </TwitterShareButton>
         </Stack>
       </Popover>
-      <IconCover>
-        <IconWrapper>
-          <IconImage src={`https://s1.xrpnft.com/collection/${logoImage}`} />
-          {accountLogin === collection.account && (
-            <Link href={`/collection/${slug}/edit`} underline="none">
-              <CardOverlay>
-                <EditIcon
-                  className="MuiIconEditButton-root"
-                  // color='primary'
-                  fontSize="large"
-                  sx={{ opacity: 0, zIndex: 1 }}
-                />
-              </CardOverlay>
-              <ImageBackdrop className="MuiImageBackdrop-root" />
-            </Link>
-          )}
-        </IconWrapper>
-      </IconCover>
-      <Stack
-        direction={fullScreen ? 'column' : 'row'}
-        spacing={1}
-        justifyContent="space-between"
-        sx={{ mt: 1, mb: 0.5 }}
-      >
-        <Stack direction="row" spacing={0.5} alignItems="center">
-          <Typography variant="h4" fontWeight="bold">
-            {name}
-          </Typography>
-          {verified === 'yes' && (
-            <Tooltip title="Verified">
-              <VerifiedIcon style={{ color: '#4589ff' }} />
-            </Tooltip>
-          )}
-        </Stack>
 
-        <Stack direction="row" alignItems="center" spacing={0.5}>
-          {accountLogin === collection.account && (
-            <Link href={`/collection/${slug}/edit`} underline="none">
-              <Tooltip title="Edit your collection">
-                <IconButton size="small" sx={{ padding: 0.5 }}>
-                  <EditIcon />
-                </IconButton>
-              </Tooltip>
-            </Link>
-          )}
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+        <Box>
+          <IconCover sx={{ mt: { xs: 7, md: 0 } }}>
+            <IconWrapper>
+              <IconImage src={`https://s1.xrpnft.com/collection/${logoImage}`} />
+              {accountLogin === collection.account && (
+                <Link href={`/collection/${slug}/edit`} underline="none">
+                  <CardOverlay>
+                    <EditIcon
+                      className="MuiIconEditButton-root"
+                      fontSize="large"
+                      sx={{ opacity: 0, zIndex: 1 }}
+                    />
+                  </CardOverlay>
+                  <ImageBackdrop className="MuiImageBackdrop-root" />
+                </Link>
+              )}
+            </IconWrapper>
+          </IconCover>
+        </Box>
 
-          <Tooltip title="Add to watchlist">
-            <Watch collection={collection} />
-          </Tooltip>
-
-          <Tooltip title="Share">
-            <IconButton
-              size="small"
-              sx={{ padding: 0.5 }}
-              ref={anchorRef}
-              onClick={handleOpenShare}
-            >
-              <ShareIcon />
-            </IconButton>
-          </Tooltip>
-        </Stack>
-      </Stack>
-
-      <Stack direction="row" sx={{ mt: 0.5, mb: 1 }} spacing={0.5}>
-        <Typography variant="body2" style={{ wordBreak: 'break-word' }}>
-          By&nbsp;
-          <Link color="inherit" href={`/account/${account}`}>
-            <Typography variant="body2" color="primary" component="span">
-              {accountName || account.slice(0, 4) + '...' + account.slice(-4)}
-            </Typography>
-          </Link>
-          <Typography variant="body2" component="span">
-            &nbsp;·&nbsp;Created{' '}
-            <Typography variant="body2" component="span">
-              {formatMonthYear(created)}
-            </Typography>
-          </Typography>
-        </Typography>
-      </Stack>
-
-      <SeeMoreTypography variant="body2" text={description} sx={{ mb: 2 }} />
-
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          py: 2,
-          overflow: 'auto',
-          width: '100%',
-          '& > *': {
-            scrollSnapAlign: 'center'
-          },
-          '::-webkit-scrollbar': { display: 'none' }
-        }}
-      >
-        <Stack
-          direction="row"
-          width="100%"
-          spacing={{ xs: 2, sm: 3 }}
-          alignItems="flex-start"
-          justifyContent={{ xs: 'space-around', sm: 'space-between' }}
-        >
-          {statsData.map((item, index) => (
-            <Stack key={index} alignItems="center" sx={{ minWidth: 80 }}>
-              <Typography variant="subtitle1" fontWeight="bold" noWrap>
-                {item.icon && <span style={{ marginRight: '2px' }}>{item.icon}</span>}
-                {item.value}
+        <Stack spacing={2} flex={1}>
+          <Stack
+            direction={fullScreen ? 'column' : 'row'}
+            spacing={1}
+            justifyContent="space-between"
+          >
+            <Stack direction="row" spacing={0.5} alignItems="center">
+              <Typography variant="h4" fontWeight="bold">
+                {name}
               </Typography>
-              <Typography variant="caption" color="text.secondary" noWrap>
-                {item.label}
-              </Typography>
-              {item.tooltip && (
-                <Tooltip title={`Volume on XRPNFT: ${volume1}`}>
-                  <Icon icon={infoFilled} style={{ marginTop: '2px', fontSize: '14px' }} />
+              {verified === 'yes' && (
+                <Tooltip title="Verified">
+                  <VerifiedIcon style={{ color: '#4589ff' }} />
                 </Tooltip>
               )}
             </Stack>
-          ))}
+
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              {accountLogin === collection.account && (
+                <Link href={`/collection/${slug}/edit`} underline="none">
+                  <Tooltip title="Edit your collection">
+                    <IconButton size="small" sx={{ padding: 0.5 }}>
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Link>
+              )}
+
+              <Tooltip title="Add to watchlist">
+                <Watch collection={collection} />
+              </Tooltip>
+
+              <Tooltip title="Share">
+                <IconButton
+                  size="small"
+                  sx={{ padding: 0.5 }}
+                  ref={anchorRef}
+                  onClick={handleOpenShare}
+                >
+                  <ShareIcon />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+          </Stack>
+
+          <Stack direction="row" spacing={0.5}>
+            <Typography variant="body2" style={{ wordBreak: 'break-word' }}>
+              By&nbsp;
+              <Link color="inherit" href={`/account/${account}`}>
+                <Typography variant="body2" color="primary" component="span">
+                  {accountName || account.slice(0, 4) + '...' + account.slice(-4)}
+                </Typography>
+              </Link>
+              <Typography variant="body2" component="span">
+                &nbsp;·&nbsp;Created{' '}
+                <Typography variant="body2" component="span">
+                  {formatMonthYear(created)}
+                </Typography>
+              </Typography>
+            </Typography>
+          </Stack>
+
+          <SeeMoreTypography variant="body2" text={description} />
+
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              py: 2,
+              overflow: 'auto',
+              width: '100%',
+              '& > *': {
+                scrollSnapAlign: 'center'
+              },
+              '::-webkit-scrollbar': { display: 'none' }
+            }}
+          >
+            <Stack
+              direction="row"
+              width="100%"
+              spacing={{ xs: 2, sm: 3 }}
+              alignItems="flex-start"
+              justifyContent={{ xs: 'space-around', sm: 'space-between' }}
+            >
+              {statsData.map((item, index) => (
+                <Stack key={index} alignItems="center" sx={{ minWidth: 80 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" noWrap>
+                    {item.icon && <span style={{ marginRight: '2px' }}>{item.icon}</span>}
+                    {item.value}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" noWrap>
+                    {item.label}
+                  </Typography>
+                  {item.tooltip && (
+                    <Tooltip title={`Volume on XRPNFT: ${volume1}`}>
+                      <Icon icon={infoFilled} style={{ marginTop: '2px', fontSize: '14px' }} />
+                    </Tooltip>
+                  )}
+                </Stack>
+              ))}
+            </Stack>
+          </Box>
         </Stack>
-      </Box>
+      </Stack>
 
       <ExploreNFT collection={collection} />
-
-      {/* <Button component={Link} href="/collection/create" variant="contained" color="primary">
-                Create a collection
-            </Button> */}
-      {/* <Stack sx={{mt:5, minHeight: '50vh'}}>
-            </Stack> */}
     </GlassBox>
   );
 }

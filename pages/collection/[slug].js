@@ -14,6 +14,7 @@ import Footer from 'src/components/Footer';
 import Collection from 'src/collection';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Topbar from 'src/components/Topbar';
+import CollectionBreadcrumb from 'src/collection/CollectionBreadcrumb';
 import useWebSocket from 'react-use-websocket';
 import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
@@ -23,57 +24,6 @@ const OverviewWrapper = styled(Box)(
         // overflow: hidden;
         flex: 1;
 `
-);
-
-// Update the BannerWrapper styling
-const BannerWrapper = styled('div')(
-  ({ theme }) => `
-    position: relative;
-    max-height: 200px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease-in-out;
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 100%);
-      backdrop-filter: blur(8px);
-      transition: all 0.3s ease;
-    }
-
-    &:hover::after {
-      backdrop-filter: blur(6px);
-      background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%);
-    }
-`
-);
-
-// Update the BannerImage styling
-const BannerImage = styled('img')(
-  ({ theme }) => `
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    transition: transform 0.5s ease;
-
-    &:hover {
-      transform: scale(1.02);
-    }
-  `
 );
 
 export default function Overview({ collection }) {
@@ -125,17 +75,9 @@ export default function Overview({ collection }) {
 
       <Header />
 
-      <BannerWrapper>
-        <div
-          style={{
-            height: 0,
-            paddingBottom: '15%',
-            position: 'relative'
-          }}
-        >
-          <BannerImage alt="Banner Image" src={bannerImage} decoding="async" />
-        </div>
-      </BannerWrapper>
+      <Container maxWidth="xl">
+        <CollectionBreadcrumb collection={collection} />
+      </Container>
 
       <Container maxWidth="xl">
         <Collection data={collection} />

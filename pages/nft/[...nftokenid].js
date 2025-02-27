@@ -12,6 +12,7 @@ import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
+import CollectionBreadcrumb from 'src/collection/CollectionBreadcrumb';
 import { useContext } from 'react';
 import TokenDetail from 'src/nft';
 import useWebSocket from 'react-use-websocket';
@@ -46,6 +47,19 @@ export default function Overview({ nft }) {
     }
   });
 
+  // Create the properly structured collection data
+  const collectionData = nft?.nft
+    ? {
+        collection: {
+          name: nft.nft.collection || 'No Collection',
+          slug: nft.nft.cslug || ''
+        }
+      }
+    : null;
+
+  const nftName = nft?.nft?.meta?.name || nft?.nft?.meta?.Name || 'No Name';
+  const nftId = nft?.nft?.NFTokenID;
+
   return (
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
@@ -53,6 +67,9 @@ export default function Overview({ nft }) {
       <Header />
 
       <Container maxWidth="xl">
+        {collectionData && (
+          <CollectionBreadcrumb collection={collectionData} nftName={nftName} nftId={nftId} />
+        )}
         <TokenDetail nft={nft.nft} />
       </Container>
 
