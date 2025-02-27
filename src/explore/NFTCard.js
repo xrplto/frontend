@@ -131,7 +131,7 @@ export default function NFTCard({ nft, handleRemove }) {
             SOLD
           </Label>
         )}
-        <Box sx={{ position: 'relative', height: '60%', overflow: 'hidden' }}>
+        <Box sx={{ position: 'relative', height: '65%', overflow: 'hidden' }}>
           <CardMedia
             component={loadingImg ? Skeleton : 'img'}
             image={imgUrl}
