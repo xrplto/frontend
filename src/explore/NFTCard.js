@@ -37,15 +37,18 @@ const CardWrapper = styled(Card)(({ theme }) => ({
   border: '1px solid rgba(255, 255, 255, 0.18)',
   padding: 0,
   cursor: 'pointer',
-  transition: 'all 0.3s ease-in-out',
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
   overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
   '&:hover': {
-    transform: 'translateY(-5px)',
-    boxShadow: '0 12px 40px 0 rgba(31, 38, 135, 0.5)'
+    transform: 'translateY(-8px)',
+    boxShadow: `0 20px 50px 0 ${alpha(theme.palette.primary.main, 0.2)}`,
+    '& .card-media': {
+      transform: 'scale(1.05)'
+    }
   },
-  height: 300 // Reduced from 340
+  height: 300
 }));
 
 export default function NFTCard({ nft, handleRemove }) {
@@ -97,7 +100,15 @@ export default function NFTCard({ nft, handleRemove }) {
               top: 8,
               right: 8,
               zIndex: 1500,
-              color: theme.palette.grey[300]
+              color: theme.palette.grey[300],
+              backgroundColor: alpha(theme.palette.background.paper, 0.8),
+              borderRadius: '50%',
+              padding: '4px',
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                color: theme.palette.error.main,
+                transform: 'rotate(90deg)'
+              }
             }}
             onClick={(e) => handleRemoveNft(e)}
           />
@@ -106,27 +117,37 @@ export default function NFTCard({ nft, handleRemove }) {
           <Label
             variant="filled"
             color="error"
-            sx={{ zIndex: 9, top: 24, right: 24, position: 'absolute', textTransform: 'uppercase' }}
+            sx={{
+              zIndex: 9,
+              top: 16,
+              right: 16,
+              position: 'absolute',
+              textTransform: 'uppercase',
+              borderRadius: '8px',
+              fontWeight: 'bold',
+              backdropFilter: 'blur(4px)'
+            }}
           >
             SOLD
           </Label>
         )}
-        <Box sx={{ position: 'relative', height: '60%' }}>
+        <Box sx={{ position: 'relative', height: '60%', overflow: 'hidden' }}>
           <CardMedia
             component={loadingImg ? Skeleton : 'img'}
             image={imgUrl}
             loading={loadingImg.toString()}
             alt={'NFT' + uuid}
+            className="card-media"
             sx={{
               width: '100%',
               height: '100%',
               objectFit: 'cover',
-              borderRadius: '16px 16px 0 0'
+              borderRadius: '16px 16px 0 0',
+              transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           />
           <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
 
-          {/* Offer and Event Display */}
           <Stack
             direction="column"
             alignItems="flex-end"
@@ -137,19 +158,21 @@ export default function NFTCard({ nft, handleRemove }) {
             {costb && costb.amount && (
               <Box
                 sx={{
-                  backgroundColor: theme.palette.primary.main,
-                  borderRadius: '8px',
-                  padding: '4px 8px',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                  borderRadius: '12px',
+                  padding: '6px 12px',
                   marginBottom: '8px',
-                  boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)'
+                  boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+                  backdropFilter: 'blur(4px)'
                 }}
               >
                 <Typography
                   variant="caption"
                   sx={{
-                    fontWeight: 'bold',
+                    fontWeight: 700,
                     color: '#fff',
-                    textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)'
+                    textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)',
+                    letterSpacing: '0.5px'
                   }}
                   noWrap
                 >
@@ -160,13 +183,22 @@ export default function NFTCard({ nft, handleRemove }) {
             {updateEvent && (
               <Box
                 sx={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                  backgroundColor: alpha(theme.palette.background.paper, 0.9),
                   borderRadius: '8px',
-                  padding: '2px 6px',
-                  boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)'
+                  padding: '4px 8px',
+                  boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.15)',
+                  backdropFilter: 'blur(4px)'
                 }}
               >
-                <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#fff' }} noWrap>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.text.primary,
+                    letterSpacing: '0.3px'
+                  }}
+                  noWrap
+                >
                   {updateEvent}
                 </Typography>
               </Box>
@@ -176,25 +208,28 @@ export default function NFTCard({ nft, handleRemove }) {
 
         <CardContent
           sx={{
-            padding: 1,
-            background: theme.palette.background.default,
+            padding: 1.5,
+            background: alpha(theme.palette.background.default, 0.95),
             flexGrow: 1,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            backdropFilter: 'blur(10px)'
           }}
         >
           <Box>
             <Typography
               variant="subtitle2"
               sx={{
-                fontWeight: 'bold',
+                fontWeight: 700,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
                 WebkitLineClamp: 1,
                 WebkitBoxOrient: 'vertical',
-                fontSize: '0.8rem'
+                fontSize: '0.9rem',
+                mb: 0.5,
+                letterSpacing: '0.2px'
               }}
             >
               {name}
@@ -204,7 +239,13 @@ export default function NFTCard({ nft, handleRemove }) {
                 variant="caption"
                 color="text.secondary"
                 noWrap
-                sx={{ fontSize: '0.7rem' }}
+                sx={{
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5
+                }}
               >
                 {cost
                   ? cost.currency === 'XRP'
@@ -215,58 +256,74 @@ export default function NFTCard({ nft, handleRemove }) {
             )}
             {destination && getMinterName(account) && (
               <Tooltip title={`Sold & Transfer`}>
-                <SportsScoreIcon color="primary" sx={{ fontSize: '1rem', mt: 0.5 }} />
+                <SportsScoreIcon
+                  color="primary"
+                  sx={{
+                    fontSize: '1.1rem',
+                    mt: 0.5,
+                    filter: 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))'
+                  }}
+                />
               </Tooltip>
             )}
           </Box>
 
-          {/* Buy Now button and Ranking */}
           <Stack
             direction="row"
             alignItems="center"
             justifyContent="space-between"
             width="100%"
-            mt={1}
+            mt={1.5}
+            spacing={1}
           >
             {showBuyNowButton && (
               <Button
                 variant="contained"
                 color="primary"
                 sx={{
-                  boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.2)',
+                  boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
                   borderRadius: '6px',
-                  transition: 'transform 0.2s',
-                  '&:hover': { transform: 'scale(1.02)' },
-                  padding: '2px 6px',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: '0px 6px 15px rgba(0, 0, 0, 0.2)'
+                  },
+                  padding: '2px 8px',
                   fontSize: '0.7rem',
+                  fontWeight: 600,
                   minHeight: '24px',
-                  maxWidth: '80px'
+                  maxWidth: '70px',
+                  minWidth: 'unset',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                  letterSpacing: '0.3px'
                 }}
               >
                 Buy Now
               </Button>
             )}
-            <Stack direction="row" spacing={0.5} alignItems="center">
+            <Stack direction="row" spacing={0.8} alignItems="center">
               {MasterSequence > 0 && (
                 <Tooltip title="On-Chain Rank">
                   <Chip
                     variant="filled"
                     color="info"
-                    icon={<NumbersIcon sx={{ width: '12px' }} />}
+                    icon={<NumbersIcon sx={{ width: '14px' }} />}
                     label={
-                      <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                      <Typography variant="caption" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
                         {fIntNumber(MasterSequence)}
                       </Typography>
                     }
                     size="small"
                     sx={{
-                      height: '20px',
-                      '& .MuiChip-label': { px: 0.5 },
+                      height: '24px',
+                      '& .MuiChip-label': { px: 0.8 },
                       background: (theme) =>
-                        `linear-gradient(45deg, ${theme.palette.info.main}, ${theme.palette.info.dark})`,
+                        `linear-gradient(135deg, ${theme.palette.info.main}, ${theme.palette.info.dark})`,
+                      boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.2s ease-in-out',
                       '&:hover': {
-                        background: (theme) =>
-                          `linear-gradient(45deg, ${theme.palette.info.dark}, ${theme.palette.info.main})`
+                        transform: 'scale(1.05)',
+                        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)'
                       }
                     }}
                   />
@@ -277,16 +334,24 @@ export default function NFTCard({ nft, handleRemove }) {
                   <Chip
                     variant="filled"
                     color="secondary"
-                    icon={<LeaderboardOutlinedIcon sx={{ width: '12px' }} />}
+                    icon={<LeaderboardOutlinedIcon sx={{ width: '14px' }} />}
                     label={
-                      <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                      <Typography variant="caption" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
                         {fIntNumber(rarity_rank)}
                       </Typography>
                     }
                     size="small"
                     sx={{
-                      height: '20px',
-                      '& .MuiChip-label': { px: 0.5 }
+                      height: '24px',
+                      '& .MuiChip-label': { px: 0.8 },
+                      background: (theme) =>
+                        `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.dark})`,
+                      boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.2s ease-in-out',
+                      '&:hover': {
+                        transform: 'scale(1.05)',
+                        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)'
+                      }
                     }}
                   />
                 </Tooltip>
