@@ -131,22 +131,43 @@ export const DailyVolumeChart = ({ data }) => {
             <YAxis
               yAxisId="left"
               tick={{ fontSize: 9 }}
-              tickFormatter={(value) => value.toFixed(0)}
-              width={60}
+              tickFormatter={(value) => `${value.toFixed(0)} XRP`}
+              width={70}
+              label={{
+                value: 'Volume (XRP)',
+                angle: -90,
+                position: 'insideLeft',
+                offset: 10,
+                style: { fontSize: '10px' }
+              }}
             />
             <YAxis
               yAxisId="right"
               orientation="right"
               tick={{ fontSize: 9 }}
-              tickFormatter={(value) => value.toFixed(0)}
-              width={60}
+              tickFormatter={(value) => `${value.toFixed(0)} XRP`}
+              width={70}
+              label={{
+                value: 'Profit (XRP)',
+                angle: 90,
+                position: 'insideRight',
+                offset: 10,
+                style: { fontSize: '10px' }
+              }}
             />
             <YAxis
               yAxisId="price"
               orientation="right"
               tick={{ fontSize: 9 }}
-              tickFormatter={(value) => value.toFixed(6)}
-              width={80}
+              tickFormatter={(value) => `${value.toFixed(6)} XRP`}
+              width={90}
+              label={{
+                value: 'Price (XRP)',
+                angle: 90,
+                position: 'insideRight',
+                offset: 25,
+                style: { fontSize: '10px' }
+              }}
             />
             <RechartsTooltip
               contentStyle={{
@@ -157,11 +178,13 @@ export const DailyVolumeChart = ({ data }) => {
                 padding: '4px 8px'
               }}
               formatter={(value, name, props) => [
-                name === 'avgPrice'
-                  ? fNumber(value, 6)
-                  : name === 'cumulativeProfit'
-                  ? fNumber(value, 2)
-                  : fNumber(value),
+                `${
+                  name === 'avgPrice'
+                    ? fNumber(value, 6)
+                    : name === 'cumulativeProfit'
+                    ? fNumber(value, 2)
+                    : fNumber(value)
+                } XRP`,
                 name === 'cumulativeProfit' ? 'Cumulative Profit' : name,
                 `Date: ${props.payload.fullDate.toLocaleDateString('en-US', {
                   year: 'numeric',
@@ -173,11 +196,11 @@ export const DailyVolumeChart = ({ data }) => {
             <Legend
               wrapperStyle={{ fontSize: '9px' }}
               payload={[
-                { value: 'Buy Volume', type: 'rect', color: '#54D62C' },
-                { value: 'Sell Volume', type: 'rect', color: '#FF6C40' },
-                { value: 'Daily Profit', type: 'rect', color: '#8884d8' },
-                { value: 'Cumulative Profit', type: 'line', color: '#82ca9d' },
-                { value: 'Avg Price', type: 'line', color: '#2196F3' }
+                { value: 'Buy Volume (XRP)', type: 'rect', color: '#54D62C' },
+                { value: 'Sell Volume (XRP)', type: 'rect', color: '#FF6C40' },
+                { value: 'Daily Profit (XRP)', type: 'rect', color: '#8884d8' },
+                { value: 'Cumulative Profit (XRP)', type: 'line', color: '#82ca9d' },
+                { value: 'Avg Price (XRP)', type: 'line', color: '#2196F3' }
               ]}
             />
             <Bar dataKey="Buy" fill="#54D62C" stackId="stack" yAxisId="left" />
