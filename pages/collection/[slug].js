@@ -29,8 +29,16 @@ const OverviewWrapper = styled(Box)(
 const BannerWrapper = styled('div')(
   ({ theme }) => `
     position: relative;
-    max-height: 320px;
+    max-height: 200px;
     overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+    }
+
     &::after {
       content: '';
       position: absolute;
@@ -38,7 +46,14 @@ const BannerWrapper = styled('div')(
       left: 0;
       right: 0;
       bottom: 0;
-      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.4) 100%);
+      backdrop-filter: blur(8px);
+      transition: all 0.3s ease;
+    }
+
+    &:hover::after {
+      backdrop-filter: blur(6px);
+      background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%);
     }
 `
 );
@@ -53,6 +68,11 @@ const BannerImage = styled('img')(
     height: 100%;
     object-fit: cover;
     object-position: center;
+    transition: transform 0.5s ease;
+
+    &:hover {
+      transform: scale(1.02);
+    }
   `
 );
 
@@ -109,7 +129,7 @@ export default function Overview({ collection }) {
         <div
           style={{
             height: 0,
-            paddingBottom: '25%',
+            paddingBottom: '15%',
             position: 'relative'
           }}
         >
