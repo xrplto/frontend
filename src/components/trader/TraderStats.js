@@ -511,12 +511,6 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">Created:</Typography>
-                <Typography variant="caption">
-                  {new Date(stats.createdAt).toLocaleDateString()}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="caption">Updated:</Typography>
                 <Typography variant="caption">
                   {new Date(stats.updatedAt).toLocaleDateString()}
