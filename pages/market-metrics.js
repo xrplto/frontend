@@ -17,6 +17,7 @@ import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';
 import { Provider } from 'react-redux';
 import store from 'src/redux/store';
+import { configureRedux } from 'src/redux/store';
 
 // Chart theme colors
 const chartColors = {
@@ -606,13 +607,16 @@ const MarketMetricsContent = () => {
   );
 };
 
-const MarketMetrics = () => {
-  if (!store) {
+const MarketMetrics = ({ data }) => {
+  // Configure Redux store with the fetched data
+  const configuredStore = configureRedux(data);
+
+  if (!configuredStore) {
     return null; // or a loading state
   }
 
   return (
-    <Provider store={store}>
+    <Provider store={configuredStore}>
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <Topbar />
         <Header />
@@ -626,3 +630,33 @@ const MarketMetrics = () => {
 };
 
 export default MarketMetrics;
+
+// This function gets called at build time on server-side.
+// It may be called again, on a serverless function, if
+// revalidation is enabled and a new request comes in
+export async function getStaticProps() {
+  const BASE_URL = process.env.API_URL;
+  let data = null;
+  try {
+    const res = await axios.get(`${BASE_URL}/banxa/currencies`);
+    data = res.data;
+  } catch (e) {
+    console.log(e);
+  }
+
+  let ret = {};
+  if (data) {
+    let ogp = {};
+    ogp.canonical = 'https://xrpl.to';
+    ogp.title = 'Market Metrics';
+    ogp.url = 'https://xrpl.to/market-metrics';
+    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
+
+    ret = { data, ogp };
+  }
+
+  return {
+    props: ret,
+    revalidate: 10 // In seconds
+  };
+}
