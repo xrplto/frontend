@@ -79,7 +79,7 @@ const CustomTooltip = ({ active, payload, label }) => {
                 entry.name.includes('Market Cap')
                   ? ' XRP'
                   : entry.name.includes('Volume')
-                  ? 'k XRP'
+                  ? ' XRP'
                   : ''
               }`}
             </Typography>
@@ -218,9 +218,9 @@ const MarketMetricsContent = () => {
             firstLedgerMarketcap: Number(item.firstLedgerMarketcap?.toFixed(2) || 0),
             magneticXMarketcap: Number(item.magneticXMarketcap?.toFixed(2) || 0),
             xpMarketMarketcap: Number(item.xpMarketMarketcap?.toFixed(2) || 0),
-            volumeNonAMM: Number((item.volumeNonAMM / 1000).toFixed(2)), // Convert to thousands XRP
-            volumeAMM: Number((item.volumeAMM / 1000).toFixed(2)), // Convert to thousands XRP
-            totalVolume: Number(((item.volumeAMM + item.volumeNonAMM) / 1000).toFixed(2)), // Total volume in thousands XRP
+            volumeNonAMM: Number(item.volumeNonAMM.toFixed(2)), // Remove division by 1000
+            volumeAMM: Number(item.volumeAMM.toFixed(2)), // Remove division by 1000
+            totalVolume: Number((item.volumeAMM + item.volumeNonAMM).toFixed(2)), // Remove division by 1000
             tokenCount: Number(item.tokenCount), // Add tokenCount to formatted data
             firstLedgerTokens: Number(item.firstLedgerTokenCount || 0),
             magneticXTokens: Number(item.magneticXTokenCount || 0),
@@ -498,7 +498,7 @@ const MarketMetricsContent = () => {
                   yAxisId="volume"
                   orientation="left"
                   domain={['dataMin - 1000', 'dataMax + 1000']}
-                  tickFormatter={(value) => value.toLocaleString() + 'k XRP'}
+                  tickFormatter={(value) => value.toLocaleString() + ' XRP'}
                   tick={{ ...chartConfig.axisStyle }}
                 />
                 <YAxis
