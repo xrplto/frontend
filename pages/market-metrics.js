@@ -179,7 +179,10 @@ const MarketMetricsContent = () => {
     tokenCount: true,
     firstLedgerMarketcap: true,
     magneticXMarketcap: true,
-    xpMarketMarketcap: true
+    xpMarketMarketcap: true,
+    firstLedgerTokens: true,
+    magneticXTokens: true,
+    xpMarketTokens: true
   });
 
   const handleLegendClick = (entry) => {
@@ -219,6 +222,9 @@ const MarketMetricsContent = () => {
             volumeAMM: Number((item.volumeAMM / 1000).toFixed(2)), // Convert to thousands XRP
             totalVolume: Number(((item.volumeAMM + item.volumeNonAMM) / 1000).toFixed(2)), // Total volume in thousands XRP
             tokenCount: Number(item.tokenCount), // Add tokenCount to formatted data
+            firstLedgerTokens: Number(item.firstLedgerTokenCount || 0),
+            magneticXTokens: Number(item.magneticXTokenCount || 0),
+            xpMarketTokens: Number(item.xpMarketTokenCount || 0),
             tradesAMM: Number(item.tradesAMM),
             tradesNonAMM: Number(item.tradesNonAMM),
             totalTrades: Number(item.totalTrades)
@@ -376,7 +382,7 @@ const MarketMetricsContent = () => {
           </Box>
         </ChartContainer>
 
-        <ChartContainer title="Active Tokens">
+        <ChartContainer title="Active Tokens by Exchange">
           <Box sx={{ height: 400 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data} margin={chartConfig.margin}>
@@ -390,7 +396,7 @@ const MarketMetricsContent = () => {
                   tick={{ ...chartConfig.axisStyle }}
                 />
                 <YAxis
-                  domain={['dataMin - 5', 'dataMax + 5']}
+                  domain={['auto', 'auto']}
                   tickFormatter={(value) => value.toLocaleString()}
                   tick={{ ...chartConfig.axisStyle }}
                 />
@@ -407,14 +413,60 @@ const MarketMetricsContent = () => {
                 <Line
                   type="monotone"
                   dataKey="tokenCount"
-                  stroke={chartColors.secondary.main}
-                  name="Active Tokens"
+                  stroke="#FFFFFF"
+                  name="Total Active Tokens"
+                  strokeWidth={3}
+                  dot={false}
+                  hide={!visibleLines.tokenCount}
+                  activeDot={{
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: '#FFFFFF',
+                    fill: chartColors.background
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="firstLedgerTokens"
+                  stroke={chartColors.primary.main}
+                  name="FirstLedger Tokens"
                   strokeWidth={2}
                   dot={false}
+                  hide={!visibleLines.firstLedgerTokens}
+                  activeDot={{
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: chartColors.primary.main,
+                    fill: chartColors.background
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="magneticXTokens"
+                  stroke={chartColors.secondary.main}
+                  name="Magnetic X Tokens"
+                  strokeWidth={2}
+                  dot={false}
+                  hide={!visibleLines.magneticXTokens}
                   activeDot={{
                     r: 6,
                     strokeWidth: 2,
                     stroke: chartColors.secondary.main,
+                    fill: chartColors.background
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="xpMarketTokens"
+                  stroke={chartColors.tertiary.main}
+                  name="XPMarket Tokens"
+                  strokeWidth={2}
+                  dot={false}
+                  hide={!visibleLines.xpMarketTokens}
+                  activeDot={{
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: chartColors.tertiary.main,
                     fill: chartColors.background
                   }}
                 />
