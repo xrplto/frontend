@@ -184,7 +184,8 @@ const MarketMetricsContent = () => {
     firstLedgerTokens: true,
     magneticXTokens: true,
     xpMarketTokens: true,
-    uniqueActiveAddresses: true
+    uniqueActiveAddressesAMM: true,
+    uniqueActiveAddressesNonAMM: true
   });
 
   const handleLegendClick = (entry) => {
@@ -230,7 +231,9 @@ const MarketMetricsContent = () => {
             tradesAMM: Number(item.tradesAMM),
             tradesNonAMM: Number(item.tradesNonAMM),
             totalTrades: Number(item.totalTrades),
-            uniqueActiveAddresses: Number(item.uniqueActiveAddresses || 0)
+            uniqueActiveAddresses: Number(item.uniqueActiveAddresses || 0),
+            uniqueActiveAddressesAMM: Number(item.uniqueActiveAddressesAMM || 0),
+            uniqueActiveAddressesNonAMM: Number(item.uniqueActiveAddressesNonAMM || 0)
           }));
 
         setData(formattedData);
@@ -635,16 +638,31 @@ const MarketMetricsContent = () => {
                 />
                 <Line
                   type="monotone"
-                  dataKey="uniqueActiveAddresses"
-                  stroke="#4F46E5"
-                  name="Unique Active Addresses"
-                  strokeWidth={3}
+                  dataKey="uniqueActiveAddressesAMM"
+                  stroke={chartColors.primary.main}
+                  name="AMM Active Addresses"
+                  strokeWidth={2}
                   dot={false}
-                  hide={!visibleLines.uniqueActiveAddresses}
+                  hide={!visibleLines.uniqueActiveAddressesAMM}
                   activeDot={{
                     r: 6,
                     strokeWidth: 2,
-                    stroke: '#4F46E5',
+                    stroke: chartColors.primary.main,
+                    fill: chartColors.background
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="uniqueActiveAddressesNonAMM"
+                  stroke={chartColors.secondary.main}
+                  name="Non-AMM Active Addresses"
+                  strokeWidth={2}
+                  dot={false}
+                  hide={!visibleLines.uniqueActiveAddressesNonAMM}
+                  activeDot={{
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: chartColors.secondary.main,
                     fill: chartColors.background
                   }}
                 />
