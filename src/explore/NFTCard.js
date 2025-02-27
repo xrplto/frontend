@@ -96,7 +96,7 @@ export default function NFTCard({ nft, handleRemove }) {
         sx={{
           margin: 'auto',
           maxWidth: 240,
-          height: 320,
+          height: 300,
           '&:hover': {
             transform: 'translateY(-4px)',
             '& .card-media': {
@@ -110,8 +110,8 @@ export default function NFTCard({ nft, handleRemove }) {
           <CloseIcon
             sx={{
               position: 'absolute',
-              top: 12,
-              right: 12,
+              top: 8,
+              right: 8,
               zIndex: 1500,
               color: theme.palette.grey[300],
               backgroundColor: alpha(theme.palette.background.paper, 0.9),
@@ -132,8 +132,8 @@ export default function NFTCard({ nft, handleRemove }) {
             color="error"
             sx={{
               zIndex: 9,
-              top: 16,
-              right: 16,
+              top: 12,
+              right: 12,
               position: 'absolute',
               textTransform: 'uppercase',
               borderRadius: '8px',
@@ -147,7 +147,7 @@ export default function NFTCard({ nft, handleRemove }) {
         <Box
           sx={{
             position: 'relative',
-            height: '70%',
+            height: '65%',
             overflow: 'hidden',
             '&::after': {
               content: '""',
@@ -188,10 +188,10 @@ export default function NFTCard({ nft, handleRemove }) {
               <Box
                 sx={{
                   background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                  borderRadius: '12px',
-                  padding: '6px 12px',
-                  marginBottom: '8px',
-                  boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+                  borderRadius: '10px',
+                  padding: '4px 8px',
+                  marginBottom: '4px',
+                  boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.15)',
                   backdropFilter: 'blur(4px)'
                 }}
               >
@@ -201,7 +201,8 @@ export default function NFTCard({ nft, handleRemove }) {
                     fontWeight: 700,
                     color: '#fff',
                     textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)',
-                    letterSpacing: '0.5px'
+                    letterSpacing: '0.5px',
+                    fontSize: '0.7rem'
                   }}
                   noWrap
                 >
@@ -214,7 +215,7 @@ export default function NFTCard({ nft, handleRemove }) {
                 sx={{
                   backgroundColor: alpha(theme.palette.background.paper, 0.9),
                   borderRadius: '8px',
-                  padding: '4px 8px',
+                  padding: '3px 6px',
                   boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.15)',
                   backdropFilter: 'blur(4px)'
                 }}
@@ -224,7 +225,8 @@ export default function NFTCard({ nft, handleRemove }) {
                   sx={{
                     fontWeight: 600,
                     color: theme.palette.text.primary,
-                    letterSpacing: '0.3px'
+                    letterSpacing: '0.3px',
+                    fontSize: '0.7rem'
                   }}
                   noWrap
                 >
@@ -237,9 +239,9 @@ export default function NFTCard({ nft, handleRemove }) {
 
         <CardContent
           sx={{
-            padding: 1.5,
+            padding: '12px 12px 8px',
             background: alpha(theme.palette.background.default, 0.95),
-            height: '30%',
+            height: '35%',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
@@ -257,10 +259,11 @@ export default function NFTCard({ nft, handleRemove }) {
                 display: '-webkit-box',
                 WebkitLineClamp: 1,
                 WebkitBoxOrient: 'vertical',
-                fontSize: '0.9rem',
+                fontSize: '0.85rem',
                 mb: 0.5,
                 letterSpacing: '0.2px',
-                color: theme.palette.text.primary
+                color: theme.palette.text.primary,
+                lineHeight: 1.2
               }}
             >
               {name}
@@ -271,11 +274,12 @@ export default function NFTCard({ nft, handleRemove }) {
                 color="text.secondary"
                 noWrap
                 sx={{
-                  fontSize: '0.8rem',
+                  fontSize: '0.75rem',
                   fontWeight: 600,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 0.5
+                  gap: 0.5,
+                  mb: 0.5
                 }}
               >
                 {cost
