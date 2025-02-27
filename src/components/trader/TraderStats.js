@@ -16,7 +16,9 @@ import {
   CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
-  Legend
+  Legend,
+  Line,
+  ComposedChart
 } from 'recharts';
 
 export const DailyVolumeChart = ({ data }) => {
@@ -49,8 +51,8 @@ export const DailyVolumeChart = ({ data }) => {
       date: new Date(item.date),
       Buy: item.buyVolume || 0,
       Sell: item.sellVolume || 0,
-      Profit: item.profit,
-      avgPrice: item.avgPrice,
+      Profit: item.profit || 0,
+      avgPrice: item.avgPrice || 0,
       fullDate: new Date(item.date)
     }))
     .sort((a, b) => a.fullDate - b.fullDate);
@@ -108,7 +110,7 @@ export const DailyVolumeChart = ({ data }) => {
       </Box>
       <Box sx={{ width: '100%', height: 250 }}>
         <ResponsiveContainer>
-          <BarChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 20 }}>
+          <ComposedChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="date"
@@ -119,7 +121,26 @@ export const DailyVolumeChart = ({ data }) => {
               tickFormatter={formatDate}
               tick={{ fontSize: 9 }}
             />
-            <YAxis tick={{ fontSize: 9 }} tickFormatter={(value) => value.toFixed(0)} width={60} />
+            <YAxis
+              yAxisId="left"
+              tick={{ fontSize: 9 }}
+              tickFormatter={(value) => value.toFixed(0)}
+              width={60}
+            />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              tick={{ fontSize: 9 }}
+              tickFormatter={(value) => value.toFixed(0)}
+              width={60}
+            />
+            <YAxis
+              yAxisId="price"
+              orientation="right"
+              tick={{ fontSize: 9 }}
+              tickFormatter={(value) => value.toFixed(6)}
+              width={80}
+            />
             <RechartsTooltip
               contentStyle={{
                 backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -139,10 +160,15 @@ export const DailyVolumeChart = ({ data }) => {
               ]}
             />
             <Legend wrapperStyle={{ fontSize: '9px' }} />
-            <Bar dataKey="Buy" fill="#54D62C" stackId="stack" />
-            <Bar dataKey="Sell" fill="#FF6C40" stackId="stack" />
-            <Bar dataKey="avgPrice" fill="#2196F3" />
-          </BarChart>
+            <Bar dataKey="Buy" fill="#54D62C" stackId="stack" yAxisId="left" />
+            <Bar dataKey="Sell" fill="#FF6C40" stackId="stack" yAxisId="left" />
+            <Bar
+              dataKey="Profit"
+              fill={chartData.map((entry) => (entry.Profit >= 0 ? '#54D62C' : '#FF6C40'))}
+              yAxisId="right"
+            />
+            <Line type="monotone" dataKey="avgPrice" stroke="#2196F3" dot={false} yAxisId="price" />
+          </ComposedChart>
         </ResponsiveContainer>
       </Box>
     </>
@@ -208,7 +234,14 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
         </Stack>
 
         {/* Grid layout for all stats */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 1.5, mt: 1 }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: 2,
+            mb: 2
+          }}
+        >
           {/* Performance Overview */}
           <Box>
             <Typography
@@ -305,8 +338,8 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
                 <Typography variant="caption">{fNumber(stats.volume7d)}</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">3m Volume:</Typography>
-                <Typography variant="caption">{fNumber(stats.volume3m)}</Typography>
+                <Typography variant="caption">2m Volume:</Typography>
+                <Typography variant="caption">{fNumber(stats.volume2m)}</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="caption">Avg Hold Time:</Typography>
@@ -344,12 +377,12 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">3m Profit:</Typography>
+                <Typography variant="caption">2m Profit:</Typography>
                 <Typography
                   variant="caption"
-                  sx={{ color: stats.profit3m >= 0 ? '#54D62C' : '#FF6C40' }}
+                  sx={{ color: stats.profit2m >= 0 ? '#54D62C' : '#FF6C40' }}
                 >
-                  {fNumber(stats.profit3m)}
+                  {fNumber(stats.profit2m)}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -386,8 +419,8 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
                 <Typography variant="caption">{fNumber(stats.trades7d)}</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption">3m Trades:</Typography>
-                <Typography variant="caption">{fNumber(stats.trades3m)}</Typography>
+                <Typography variant="caption">2m Trades:</Typography>
+                <Typography variant="caption">{fNumber(stats.trades2m)}</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="caption">Market Share:</Typography>
@@ -435,7 +468,7 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
         </Box>
 
         {/* Volume Chart */}
-        <Box sx={{ mt: 2 }}>
+        <Box>
           <Typography
             variant="caption"
             color="text.secondary"
