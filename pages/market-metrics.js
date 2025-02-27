@@ -134,7 +134,7 @@ const ChartContainer = ({ title, children }) => (
   <Paper
     elevation={0}
     sx={{
-      p: 3,
+      p: 4,
       mb: 4,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
       border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -240,7 +240,7 @@ const MarketMetricsContent = () => {
   }
 
   const chartConfig = {
-    margin: { top: 20, right: 30, left: 20, bottom: 5 },
+    margin: { top: 20, right: 40, left: 30, bottom: 20 },
     gridStyle: {
       strokeDasharray: '3 3',
       stroke: chartColors.grid
