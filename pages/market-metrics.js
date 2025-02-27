@@ -230,13 +230,7 @@ const MarketMetricsContent = () => {
   }, []);
 
   if (loading) {
-    return (
-      <Container>
-        <Typography variant="h6" sx={{ color: chartColors.text }}>
-          Loading market metrics...
-        </Typography>
-      </Container>
-    );
+    return <Container></Container>;
   }
 
   const chartConfig = {
