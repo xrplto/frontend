@@ -45,16 +45,23 @@ export const DailyVolumeChart = ({ data }) => {
     return filteredData;
   };
 
-  // Process and sort data by date
+  // Calculate cumulative profit
   const chartData = filterDataByInterval(data, interval)
-    .map((item) => ({
-      date: new Date(item.date),
-      Buy: item.buyVolume || 0,
-      Sell: item.sellVolume || 0,
-      Profit: item.profit || 0,
-      avgPrice: item.avgPrice || 0,
-      fullDate: new Date(item.date)
-    }))
+    .map((item, index, array) => {
+      const cumulativeProfit = array
+        .slice(0, index + 1)
+        .reduce((sum, entry) => sum + (entry.profit || 0), 0);
+
+      return {
+        date: new Date(item.date),
+        Buy: item.buyVolume || 0,
+        Sell: item.sellVolume || 0,
+        Profit: item.profit || 0,
+        avgPrice: item.avgPrice || 0,
+        cumulativeProfit,
+        fullDate: new Date(item.date)
+      };
+    })
     .sort((a, b) => a.fullDate - b.fullDate);
 
   // Calculate date range and determine appropriate interval
@@ -150,8 +157,12 @@ export const DailyVolumeChart = ({ data }) => {
                 padding: '4px 8px'
               }}
               formatter={(value, name, props) => [
-                name === 'avgPrice' ? fNumber(value, 6) : fNumber(value),
-                name,
+                name === 'avgPrice'
+                  ? fNumber(value, 6)
+                  : name === 'cumulativeProfit'
+                  ? fNumber(value, 2)
+                  : fNumber(value),
+                name === 'cumulativeProfit' ? 'Cumulative Profit' : name,
                 `Date: ${props.payload.fullDate.toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
@@ -159,15 +170,40 @@ export const DailyVolumeChart = ({ data }) => {
                 })}`
               ]}
             />
-            <Legend wrapperStyle={{ fontSize: '9px' }} />
+            <Legend
+              wrapperStyle={{ fontSize: '9px' }}
+              payload={[
+                { value: 'Buy Volume', type: 'rect', color: '#54D62C' },
+                { value: 'Sell Volume', type: 'rect', color: '#FF6C40' },
+                { value: 'Daily Profit', type: 'rect', color: '#8884d8' },
+                { value: 'Cumulative Profit', type: 'line', color: '#82ca9d' },
+                { value: 'Avg Price', type: 'line', color: '#2196F3' }
+              ]}
+            />
             <Bar dataKey="Buy" fill="#54D62C" stackId="stack" yAxisId="left" />
             <Bar dataKey="Sell" fill="#FF6C40" stackId="stack" yAxisId="left" />
             <Bar
               dataKey="Profit"
               fill={chartData.map((entry) => (entry.Profit >= 0 ? '#54D62C' : '#FF6C40'))}
               yAxisId="right"
+              opacity={0.7}
             />
-            <Line type="monotone" dataKey="avgPrice" stroke="#2196F3" dot={false} yAxisId="price" />
+            <Line
+              type="monotone"
+              dataKey="cumulativeProfit"
+              stroke="#82ca9d"
+              strokeWidth={2}
+              dot={false}
+              yAxisId="right"
+            />
+            <Line
+              type="monotone"
+              dataKey="avgPrice"
+              stroke="#2196F3"
+              strokeWidth={1}
+              dot={false}
+              yAxisId="price"
+            />
           </ComposedChart>
         </ResponsiveContainer>
       </Box>
