@@ -176,7 +176,10 @@ const MarketMetricsContent = () => {
     tradesAMM: false,
     tradesNonAMM: false,
     totalMarketcap: true,
-    tokenCount: true
+    tokenCount: true,
+    firstLedgerMarketcap: true,
+    magneticXMarketcap: true,
+    xpMarketMarketcap: true
   });
 
   const handleLegendClick = (entry) => {
@@ -209,6 +212,9 @@ const MarketMetricsContent = () => {
             ...item,
             date: moment(item.date).format('MMM DD YYYY'), // Added year for clarity in long timespan
             totalMarketcap: Number(item.totalMarketcap.toFixed(2)), // Remove the division by 1000000
+            firstLedgerMarketcap: Number(item.firstLedgerMarketcap?.toFixed(2) || 0),
+            magneticXMarketcap: Number(item.magneticXMarketcap?.toFixed(2) || 0),
+            xpMarketMarketcap: Number(item.xpMarketMarketcap?.toFixed(2) || 0),
             volumeNonAMM: Number((item.volumeNonAMM / 1000).toFixed(2)), // Convert to thousands XRP
             volumeAMM: Number((item.volumeAMM / 1000).toFixed(2)), // Convert to thousands XRP
             totalVolume: Number(((item.volumeAMM + item.volumeNonAMM) / 1000).toFixed(2)), // Total volume in thousands XRP
@@ -272,7 +278,7 @@ const MarketMetricsContent = () => {
           XRPL Market Analytics
         </Typography>
 
-        <ChartContainer title="Total Market Cap (XRP)">
+        <ChartContainer title="Market Cap by Exchange (XRP)">
           <Box sx={{ height: 400 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data} margin={chartConfig.margin}>
@@ -308,14 +314,60 @@ const MarketMetricsContent = () => {
                 <Line
                   type="monotone"
                   dataKey="totalMarketcap"
-                  stroke={chartColors.primary.main}
+                  stroke="#FFFFFF"
                   name="Total Market Cap"
+                  strokeWidth={3}
+                  dot={false}
+                  hide={!visibleLines.totalMarketcap}
+                  activeDot={{
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: '#FFFFFF',
+                    fill: chartColors.background
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="firstLedgerMarketcap"
+                  stroke={chartColors.primary.main}
+                  name="FirstLedger Market Cap"
                   strokeWidth={2}
                   dot={false}
+                  hide={!visibleLines.firstLedgerMarketcap}
                   activeDot={{
                     r: 6,
                     strokeWidth: 2,
                     stroke: chartColors.primary.main,
+                    fill: chartColors.background
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="magneticXMarketcap"
+                  stroke={chartColors.secondary.main}
+                  name="Magnetic X Market Cap"
+                  strokeWidth={2}
+                  dot={false}
+                  hide={!visibleLines.magneticXMarketcap}
+                  activeDot={{
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: chartColors.secondary.main,
+                    fill: chartColors.background
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="xpMarketMarketcap"
+                  stroke={chartColors.tertiary.main}
+                  name="XPMarket Market Cap"
+                  strokeWidth={2}
+                  dot={false}
+                  hide={!visibleLines.xpMarketMarketcap}
+                  activeDot={{
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: chartColors.tertiary.main,
                     fill: chartColors.background
                   }}
                 />
