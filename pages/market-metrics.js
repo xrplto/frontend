@@ -284,7 +284,7 @@ const MarketMetricsContent = () => {
           XRPL Market Analytics
         </Typography>
 
-        <ChartContainer title="Market Cap by Exchange (XRP)">
+        <ChartContainer title="Market Cap by DEX (XRP)">
           <Box sx={{ height: 400 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data} margin={chartConfig.margin}>
@@ -382,7 +382,7 @@ const MarketMetricsContent = () => {
           </Box>
         </ChartContainer>
 
-        <ChartContainer title="Active Tokens by Exchange">
+        <ChartContainer title="Active Tokens by DEX">
           <Box sx={{ height: 400 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data} margin={chartConfig.margin}>
