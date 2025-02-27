@@ -183,7 +183,8 @@ const MarketMetricsContent = () => {
     xpMarketMarketcap: true,
     firstLedgerTokens: true,
     magneticXTokens: true,
-    xpMarketTokens: true
+    xpMarketTokens: true,
+    uniqueActiveAddresses: true
   });
 
   const handleLegendClick = (entry) => {
@@ -228,7 +229,8 @@ const MarketMetricsContent = () => {
             xpMarketTokens: Number(item.xpMarketTokenCount || 0),
             tradesAMM: Number(item.tradesAMM),
             tradesNonAMM: Number(item.tradesNonAMM),
-            totalTrades: Number(item.totalTrades)
+            totalTrades: Number(item.totalTrades),
+            uniqueActiveAddresses: Number(item.uniqueActiveAddresses || 0)
           }));
 
         setData(formattedData);
@@ -595,6 +597,54 @@ const MarketMetricsContent = () => {
                     r: 6,
                     strokeWidth: 2,
                     stroke: chartColors.secondary.main,
+                    fill: chartColors.background
+                  }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
+        </ChartContainer>
+
+        <ChartContainer title="Unique Active Addresses">
+          <Box sx={{ height: 400 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data} margin={chartConfig.margin}>
+                <CartesianGrid {...chartConfig.gridStyle} />
+                <XAxis
+                  dataKey="date"
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  interval={30}
+                  tick={{ ...chartConfig.axisStyle }}
+                />
+                <YAxis
+                  domain={['auto', 'auto']}
+                  tickFormatter={(value) => value.toLocaleString()}
+                  tick={{ ...chartConfig.axisStyle }}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend
+                  wrapperStyle={{
+                    paddingTop: '20px',
+                    color: chartColors.text
+                  }}
+                  verticalAlign="top"
+                  height={36}
+                  onClick={handleLegendClick}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="uniqueActiveAddresses"
+                  stroke="#4F46E5"
+                  name="Unique Active Addresses"
+                  strokeWidth={3}
+                  dot={false}
+                  hide={!visibleLines.uniqueActiveAddresses}
+                  activeDot={{
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: '#4F46E5',
                     fill: chartColors.background
                   }}
                 />
