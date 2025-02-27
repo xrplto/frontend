@@ -67,6 +67,7 @@ import { convertHexToString, parseNFTokenID } from 'src/utils/parse/utils';
 import NFTPreview from './NFTPreview';
 import QRDialog from 'src/components/QRDialog';
 import ConfirmAcceptOfferDialog from './ConfirmAcceptOfferDialog';
+import CreateOfferDialog from './CreateOfferDialog';
 // import TimePeriods from './TimePeriodsDropdown';
 import OffersList from './OffersList';
 import SelectPriceDialog from './SelectPriceDialog';
@@ -556,6 +557,12 @@ export default function NFTDetailsMobile({ nft }) {
         onClose={handleScanQRClose}
         qrUrl={qrUrl}
         nextUrl={nextUrl}
+      />
+      <CreateOfferDialog
+        open={openCreateOffer}
+        setOpen={setOpenCreateOffer}
+        nft={nft}
+        isSellOffer={isSellOffer}
       />
       <TransferDialog open={openTransfer} setOpen={setOpenTransfer} nft={nft} />
       <SelectPriceDialog
