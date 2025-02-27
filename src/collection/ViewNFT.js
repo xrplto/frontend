@@ -241,11 +241,11 @@ export default function ViewNFT({ collection }) {
       </IconCover>
       <Stack
         direction={fullScreen ? 'column' : 'row'}
-        spacing={2}
+        spacing={1}
         justifyContent="space-between"
-        sx={{ mt: 1, mb: 1 }}
+        sx={{ mt: 1, mb: 0.5 }}
       >
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={0.5} alignItems="center">
           <Typography variant="h4" fontWeight="bold">
             {name}
           </Typography>
@@ -256,11 +256,11 @@ export default function ViewNFT({ collection }) {
           )}
         </Stack>
 
-        <Stack direction="row" alignItems="center" spacing={1}>
+        <Stack direction="row" alignItems="center" spacing={0.5}>
           {accountLogin === collection.account && (
             <Link href={`/collection/${slug}/edit`} underline="none">
               <Tooltip title="Edit your collection">
-                <IconButton size="medium" sx={{ padding: 1 }}>
+                <IconButton size="small" sx={{ padding: 0.5 }}>
                   <EditIcon />
                 </IconButton>
               </Tooltip>
@@ -272,44 +272,42 @@ export default function ViewNFT({ collection }) {
           </Tooltip>
 
           <Tooltip title="Share">
-            <IconButton size="medium" sx={{ padding: 1 }} ref={anchorRef} onClick={handleOpenShare}>
+            <IconButton
+              size="small"
+              sx={{ padding: 0.5 }}
+              ref={anchorRef}
+              onClick={handleOpenShare}
+            >
               <ShareIcon />
             </IconButton>
           </Tooltip>
         </Stack>
       </Stack>
 
-      <Stack direction="row" sx={{ mt: 2, mb: 3 }} spacing={1}>
-        <Typography variant="s5" style={{ wordBreak: 'break-word' }}>
+      <Stack direction="row" sx={{ mt: 0.5, mb: 1 }} spacing={0.5}>
+        <Typography variant="body2" style={{ wordBreak: 'break-word' }}>
           By&nbsp;
-          <Link
-            color="inherit"
-            // target="_blank"
-            href={`/account/${account}`}
-            // rel="noreferrer noopener nofollow"
-          >
-            <Typography variant="s5" color="primary">
+          <Link color="inherit" href={`/account/${account}`}>
+            <Typography variant="body2" color="primary" component="span">
               {accountName || account.slice(0, 4) + '...' + account.slice(-4)}
             </Typography>
           </Link>
-          <Typography variant="s10">
-            &nbsp;&nbsp;·&nbsp;Created{' '}
-            <Typography variant="s3">{formatMonthYear(created)}</Typography>
+          <Typography variant="body2" component="span">
+            &nbsp;·&nbsp;Created{' '}
+            <Typography variant="body2" component="span">
+              {formatMonthYear(created)}
+            </Typography>
           </Typography>
         </Typography>
       </Stack>
 
-      <SeeMoreTypography variant="d3" text={description} />
-
-      {/* {description &&
-                <Typography variant="d3" style={{ wordBreak: "break-word" }}>{description}</Typography>
-            } */}
+      <SeeMoreTypography variant="body2" text={description} sx={{ mb: 2 }} />
 
       <Box
         sx={{
           display: 'flex',
-          gap: 2,
-          py: 3,
+          gap: 1,
+          py: 2,
           overflow: 'auto',
           width: '100%',
           '& > *': {
@@ -321,22 +319,22 @@ export default function ViewNFT({ collection }) {
         <Stack
           direction="row"
           width="100%"
-          spacing={{ xs: 3, sm: 5 }}
+          spacing={{ xs: 2, sm: 3 }}
           alignItems="flex-start"
           justifyContent={{ xs: 'space-around', sm: 'space-between' }}
         >
           {statsData.map((item, index) => (
-            <Stack key={index} alignItems="center" sx={{ minWidth: 100 }}>
-              <Typography variant="h6" fontWeight="bold" noWrap>
-                {item.icon && <span style={{ marginRight: '4px' }}>{item.icon}</span>}
+            <Stack key={index} alignItems="center" sx={{ minWidth: 80 }}>
+              <Typography variant="subtitle1" fontWeight="bold" noWrap>
+                {item.icon && <span style={{ marginRight: '2px' }}>{item.icon}</span>}
                 {item.value}
               </Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
+              <Typography variant="caption" color="text.secondary" noWrap>
                 {item.label}
               </Typography>
               {item.tooltip && (
                 <Tooltip title={`Volume on XRPNFT: ${volume1}`}>
-                  <Icon icon={infoFilled} style={{ marginTop: '4px' }} />
+                  <Icon icon={infoFilled} style={{ marginTop: '2px', fontSize: '14px' }} />
                 </Tooltip>
               )}
             </Stack>
