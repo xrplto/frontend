@@ -8,13 +8,16 @@ import {
   Snackbar,
   Stack,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useTranslation } from 'react-i18next';
 import { useState, useContext, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -59,6 +62,16 @@ const StyledLink = styled(Link)(
 `
 );
 
+const StyledMenuItem = styled(MenuItem)(
+  ({ darkMode }) => `
+    color: ${darkMode ? 'white' : 'black'};
+    &:hover {
+      color: ${darkMode ? '#22B14C' : '#3366FF'};
+      background: ${darkMode ? 'rgba(34, 177, 76, 0.1)' : 'rgba(51, 102, 255, 0.1)'};
+    }
+`
+);
+
 export default function Header(props) {
   const { t } = useTranslation(); // set translation const
   const theme = useTheme();
@@ -73,6 +86,8 @@ export default function Header(props) {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const { darkMode, setDarkMode } = useContext(AppContext);
+  const [tokensAnchorEl, setTokensAnchorEl] = useState(null);
+  const openTokensMenu = Boolean(tokensAnchorEl);
 
   const handleFullSearch = (e) => {
     setFullSearch(true);
@@ -90,6 +105,14 @@ export default function Header(props) {
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
+  };
+
+  const handleTokensClick = (event) => {
+    setTokensAnchorEl(event.currentTarget);
+  };
+
+  const handleTokensClose = () => {
+    setTokensAnchorEl(null);
   };
 
   useEffect(() => {
@@ -178,10 +201,39 @@ export default function Header(props) {
                   alignItems: 'center',
                   gap: '8px'
                 }}
-                href="/"
+                onClick={handleTokensClick}
+                style={{ cursor: 'pointer' }}
               >
                 {t('Tokens')}
+                <KeyboardArrowDownIcon />
               </StyledLink>
+              <Menu
+                anchorEl={tokensAnchorEl}
+                open={openTokensMenu}
+                onClose={handleTokensClose}
+                MenuListProps={{
+                  'aria-labelledby': 'tokens-button'
+                }}
+                PaperProps={{
+                  sx: {
+                    mt: 1,
+                    backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.9)' : 'white',
+                    borderRadius: '10px',
+                    border: '1px solid',
+                    borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                  }
+                }}
+              >
+                <StyledMenuItem darkMode={darkMode} onClick={() => (window.location.href = '/')}>
+                  {t('All Tokens')}
+                </StyledMenuItem>
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  onClick={() => (window.location.href = '/market-metrics')}
+                >
+                  {t('Market Metrics')}
+                </StyledMenuItem>
+              </Menu>
               <StyledLink
                 underline="none"
                 color={darkMode ? 'white' : 'black'}
