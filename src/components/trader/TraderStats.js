@@ -5,7 +5,7 @@ import { Box, Typography, Modal, Stack, Link, IconButton } from '@mui/material';
 import LinkIcon from '@mui/icons-material/Link';
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber, fPercent } from 'src/utils/formatNumber';
 
 // Recharts
 import {
@@ -50,6 +50,7 @@ export const DailyVolumeChart = ({ data }) => {
       Buy: item.buyVolume || 0,
       Sell: item.sellVolume || 0,
       Profit: item.profit,
+      avgPrice: item.avgPrice,
       fullDate: new Date(item.date)
     }))
     .sort((a, b) => a.fullDate - b.fullDate);
@@ -128,7 +129,7 @@ export const DailyVolumeChart = ({ data }) => {
                 padding: '4px 8px'
               }}
               formatter={(value, name, props) => [
-                fNumber(value),
+                name === 'avgPrice' ? fNumber(value, 6) : fNumber(value),
                 name,
                 `Date: ${props.payload.fullDate.toLocaleDateString('en-US', {
                   year: 'numeric',
@@ -140,6 +141,7 @@ export const DailyVolumeChart = ({ data }) => {
             <Legend wrapperStyle={{ fontSize: '9px' }} />
             <Bar dataKey="Buy" fill="#54D62C" stackId="stack" />
             <Bar dataKey="Sell" fill="#FF6C40" stackId="stack" />
+            <Bar dataKey="avgPrice" fill="#2196F3" />
           </BarChart>
         </ResponsiveContainer>
       </Box>
@@ -150,6 +152,20 @@ export const DailyVolumeChart = ({ data }) => {
 export const StatsModal = ({ open, onClose, account, traderStats }) => {
   if (!traderStats || !traderStats[account]) return null;
   const stats = traderStats[account];
+
+  const formatDuration = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const days = Math.floor(hours / 24);
+    const months = Math.floor(days / 30);
+
+    if (months > 0) {
+      return `${months}m`;
+    } else if (days > 0) {
+      return `${days}d`;
+    } else {
+      return `${hours}h`;
+    }
+  };
 
   return (
     <Modal
@@ -227,7 +243,7 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
                   variant="caption"
                   sx={{ color: stats.roi >= 0 ? '#54D62C' : '#FF6C40' }}
                 >
-                  {fNumber(Math.abs(stats.roi * 100))}%
+                  {fPercent(stats.roi)}
                 </Typography>
               </Box>
             </Stack>
@@ -289,6 +305,79 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
                 <Typography variant="caption">{fNumber(stats.volume7d)}</Typography>
               </Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">3m Volume:</Typography>
+                <Typography variant="caption">{fNumber(stats.volume3m)}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">Avg Hold Time:</Typography>
+                <Typography variant="caption">{formatDuration(stats.avgHoldingTime)}</Typography>
+              </Box>
+            </Stack>
+          </Box>
+
+          {/* Profit Metrics */}
+          <Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+            >
+              PROFIT METRICS
+            </Typography>
+            <Stack spacing={0.25}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">24h Profit:</Typography>
+                <Typography
+                  variant="caption"
+                  sx={{ color: stats.profit24h >= 0 ? '#54D62C' : '#FF6C40' }}
+                >
+                  {fNumber(stats.profit24h)}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">7d Profit:</Typography>
+                <Typography
+                  variant="caption"
+                  sx={{ color: stats.profit7d >= 0 ? '#54D62C' : '#FF6C40' }}
+                >
+                  {fNumber(stats.profit7d)}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">3m Profit:</Typography>
+                <Typography
+                  variant="caption"
+                  sx={{ color: stats.profit3m >= 0 ? '#54D62C' : '#FF6C40' }}
+                >
+                  {fNumber(stats.profit3m)}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">Best Trade:</Typography>
+                <Typography variant="caption" sx={{ color: '#54D62C' }}>
+                  {fNumber(stats.maxProfitTrade)}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">Worst Trade:</Typography>
+                <Typography variant="caption" sx={{ color: '#FF6C40' }}>
+                  {fNumber(Math.abs(stats.maxLossTrade))}
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+
+          {/* Trade Activity */}
+          <Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+            >
+              TRADE ACTIVITY
+            </Typography>
+            <Stack spacing={0.25}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="caption">24h Trades:</Typography>
                 <Typography variant="caption">{fNumber(stats.trades24h)}</Typography>
               </Box>
@@ -296,73 +385,57 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
                 <Typography variant="caption">7d Trades:</Typography>
                 <Typography variant="caption">{fNumber(stats.trades7d)}</Typography>
               </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">3m Trades:</Typography>
+                <Typography variant="caption">{fNumber(stats.trades3m)}</Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">Market Share:</Typography>
+                <Typography variant="caption">{fPercent(stats.tradePercentage)}</Typography>
+              </Box>
             </Stack>
           </Box>
-        </Box>
 
-        {/* Trading History */}
-        <Box sx={{ mt: 1.5, pt: 0.5, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
-          >
-            TRADING HISTORY
-          </Typography>
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
-            <Stack direction="row" spacing={2}>
-              <Box sx={{ flex: 1 }}>
-                <Box
-                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                >
-                  <Typography variant="caption">First Trade:</Typography>
-                  <Typography variant="caption">
-                    {new Date(stats.firstTradeDate).toLocaleDateString()}
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mt: 0.25
-                  }}
-                >
-                  <Typography variant="caption">Last Trade:</Typography>
-                  <Typography variant="caption">
-                    {new Date(stats.lastTradeDate).toLocaleDateString()}
-                  </Typography>
-                </Box>
+          {/* Trading History */}
+          <Box>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mb: 0.25, display: 'block', fontWeight: 600 }}
+            >
+              TRADING HISTORY
+            </Typography>
+            <Stack spacing={0.25}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">First Trade:</Typography>
+                <Typography variant="caption">
+                  {new Date(stats.firstTradeDate).toLocaleDateString()}
+                </Typography>
               </Box>
-              <Box sx={{ flex: 1 }}>
-                <Box
-                  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                >
-                  <Typography variant="caption">Best Trade:</Typography>
-                  <Typography variant="caption" sx={{ color: '#54D62C' }}>
-                    {fNumber(stats.maxProfitTrade)}
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mt: 0.25
-                  }}
-                >
-                  <Typography variant="caption">Worst Trade:</Typography>
-                  <Typography variant="caption" sx={{ color: '#FF6C40' }}>
-                    {fNumber(Math.abs(stats.maxLossTrade))}
-                  </Typography>
-                </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">Last Trade:</Typography>
+                <Typography variant="caption">
+                  {new Date(stats.lastTradeDate).toLocaleDateString()}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">Created:</Typography>
+                <Typography variant="caption">
+                  {new Date(stats.createdAt).toLocaleDateString()}
+                </Typography>
+              </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption">Updated:</Typography>
+                <Typography variant="caption">
+                  {new Date(stats.updatedAt).toLocaleDateString()}
+                </Typography>
               </Box>
             </Stack>
           </Box>
         </Box>
 
         {/* Volume Chart */}
-        <Box sx={{ mt: 1.5, pt: 0.5, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <Box sx={{ mt: 2 }}>
           <Typography
             variant="caption"
             color="text.secondary"
