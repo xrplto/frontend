@@ -251,7 +251,7 @@ export default function NFTCard({ nft, handleRemove }) {
                 <Tooltip title="On-Chain Rank">
                   <Chip
                     variant="filled"
-                    color="warning"
+                    color="info"
                     icon={<NumbersIcon sx={{ width: '12px' }} />}
                     label={
                       <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
@@ -261,7 +261,13 @@ export default function NFTCard({ nft, handleRemove }) {
                     size="small"
                     sx={{
                       height: '20px',
-                      '& .MuiChip-label': { px: 0.5 }
+                      '& .MuiChip-label': { px: 0.5 },
+                      background: (theme) =>
+                        `linear-gradient(45deg, ${theme.palette.info.main}, ${theme.palette.info.dark})`,
+                      '&:hover': {
+                        background: (theme) =>
+                          `linear-gradient(45deg, ${theme.palette.info.dark}, ${theme.palette.info.main})`
+                      }
                     }}
                   />
                 </Tooltip>
