@@ -92,16 +92,29 @@ export default function NFTCard({ nft, handleRemove }) {
 
   return (
     <Link href={`/nft/${NFTokenID}`} underline="none" sx={{ position: 'relative' }}>
-      <CardWrapper sx={{ margin: 'auto', maxWidth: 240, height: 300 }}>
+      <CardWrapper
+        sx={{
+          margin: 'auto',
+          maxWidth: 240,
+          height: 320,
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            '& .card-media': {
+              transform: 'scale(1.05)'
+            }
+          },
+          transition: 'transform 0.3s ease-in-out'
+        }}
+      >
         {isAdmin && (
           <CloseIcon
             sx={{
               position: 'absolute',
-              top: 8,
-              right: 8,
+              top: 12,
+              right: 12,
               zIndex: 1500,
               color: theme.palette.grey[300],
-              backgroundColor: alpha(theme.palette.background.paper, 0.8),
+              backgroundColor: alpha(theme.palette.background.paper, 0.9),
               borderRadius: '50%',
               padding: '4px',
               transition: 'all 0.2s ease-in-out',
@@ -131,7 +144,23 @@ export default function NFTCard({ nft, handleRemove }) {
             SOLD
           </Label>
         )}
-        <Box sx={{ position: 'relative', height: '65%', overflow: 'hidden' }}>
+        <Box
+          sx={{
+            position: 'relative',
+            height: '70%',
+            overflow: 'hidden',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '30%',
+              background: 'linear-gradient(to top, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 100%)',
+              pointerEvents: 'none'
+            }
+          }}
+        >
           <CardMedia
             component={loadingImg ? Skeleton : 'img'}
             image={imgUrl}
@@ -210,11 +239,12 @@ export default function NFTCard({ nft, handleRemove }) {
           sx={{
             padding: 1.5,
             background: alpha(theme.palette.background.default, 0.95),
-            flexGrow: 1,
+            height: '30%',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
           }}
         >
           <Box>
@@ -229,7 +259,8 @@ export default function NFTCard({ nft, handleRemove }) {
                 WebkitBoxOrient: 'vertical',
                 fontSize: '0.9rem',
                 mb: 0.5,
-                letterSpacing: '0.2px'
+                letterSpacing: '0.2px',
+                color: theme.palette.text.primary
               }}
             >
               {name}
