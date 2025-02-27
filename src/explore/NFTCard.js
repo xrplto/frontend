@@ -33,17 +33,17 @@ const CardWrapper = styled(Card)(({ theme }) => ({
   borderRadius: 16,
   backdropFilter: 'blur(20px)',
   backgroundColor: alpha(theme.palette.background.paper, 0.8),
-  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-  border: '1px solid rgba(255, 255, 255, 0.18)',
+  boxShadow: '0 4px 20px 0 rgba(31, 38, 135, 0.15)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   padding: 0,
   cursor: 'pointer',
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'all 0.3s ease-in-out',
   overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
   '&:hover': {
-    transform: 'translateY(-8px)',
-    boxShadow: `0 20px 50px 0 ${alpha(theme.palette.primary.main, 0.2)}`,
+    border: `2px solid ${theme.palette.primary.main}`,
+    boxShadow: `0 4px 20px 0 ${alpha(theme.palette.primary.main, 0.15)}`,
     '& .card-media': {
       transform: 'scale(1.05)'
     }
