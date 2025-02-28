@@ -513,23 +513,34 @@ export default function Analytics() {
                         minWidth: 650,
                         '& .MuiTableCell-root': {
                           whiteSpace: 'nowrap',
-                          padding: '4px 12px',
-                          fontSize: '0.875rem'
+                          padding: '1px 6px',
+                          fontSize: '0.75rem',
+                          lineHeight: 1.2
                         },
                         '& .MuiTableHead-root .MuiTableCell-root': {
                           fontWeight: 600,
                           backgroundColor: 'background.default',
-                          fontSize: '0.75rem',
+                          fontSize: '0.7rem',
                           textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
+                          letterSpacing: '0.3px',
+                          padding: '3px 6px'
                         },
                         '& .MuiTableRow-root': {
-                          height: '48px'
+                          height: '32px'
                         },
                         '& .MuiIconButton-root': {
-                          padding: '4px',
+                          padding: '1px',
+                          width: '16px',
+                          height: '16px',
+                          marginLeft: '2px',
                           '& .MuiSvgIcon-root': {
-                            fontSize: '1rem'
+                            fontSize: '0.75rem'
+                          }
+                        },
+                        '& .MuiTableSortLabel-root': {
+                          height: '16px',
+                          '& .MuiTableSortLabel-icon': {
+                            fontSize: '0.75rem'
                           }
                         }
                       }}
