@@ -62,18 +62,10 @@ const StyledCardHeader = styled(CardHeader)(({ theme }) => ({
 }));
 
 const StyledTableContainer = styled(Box)(({ theme }) => ({
-  maxHeight: 180,
-  overflow: 'auto',
-  '&::-webkit-scrollbar': {
-    width: 6,
-    height: 6
-  },
-  '&::-webkit-scrollbar-thumb': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.2),
-    borderRadius: 3
-  },
-  '&::-webkit-scrollbar-track': {
-    backgroundColor: alpha(theme.palette.divider, 0.1)
+  width: '100%',
+  '& .MuiTable-root': {
+    borderCollapse: 'separate',
+    borderSpacing: 0
   }
 }));
 
@@ -81,8 +73,11 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   padding: theme.spacing(0.75),
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   whiteSpace: 'nowrap',
-  '&.highlight': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.05)
+  '&:last-child': {
+    paddingRight: theme.spacing(2)
+  },
+  '&:first-of-type': {
+    paddingLeft: theme.spacing(2)
   }
 }));
 
@@ -349,7 +344,7 @@ const Offer = ({ account }) => {
           </Stack>
         ) : (
           <StyledTableContainer>
-            <Table size="small" stickyHeader>
+            <Table size="small">
               <TableHead>
                 <TableRow>
                   <StyledTableCell>Taker Gets</StyledTableCell>
@@ -371,6 +366,9 @@ const Offer = ({ account }) => {
                       sx={{
                         '&:hover': {
                           backgroundColor: alpha(theme.palette.action.hover, 0.1)
+                        },
+                        '&:last-child td': {
+                          borderBottom: 0
                         }
                       }}
                     >
