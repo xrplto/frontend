@@ -9,6 +9,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Paper,
   CircularProgress,
   Card,
@@ -47,6 +48,8 @@ export default function Analytics() {
   const [traders, setTraders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [roiModalTrader, setRoiModalTrader] = useState(null);
+  const [orderBy, setOrderBy] = useState('volume24h');
+  const [order, setOrder] = useState('desc');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -451,6 +454,35 @@ export default function Analytics() {
     };
   };
 
+  const handleRequestSort = (property) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
+
+  const sortData = (data) => {
+    return data.sort((a, b) => {
+      let aValue = a[orderBy];
+      let bValue = b[orderBy];
+
+      if (orderBy === 'winRate') {
+        aValue = (a.profitableTrades / (a.profitableTrades + a.losingTrades)) * 100;
+        bValue = (b.profitableTrades / (b.profitableTrades + b.losingTrades)) * 100;
+      }
+
+      if (aValue == null) return 1;
+      if (bValue == null) return -1;
+
+      if (orderBy.includes('Date')) {
+        aValue = new Date(aValue).getTime();
+        bValue = new Date(bValue).getTime();
+      }
+
+      const result = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      return order === 'desc' ? -result : result;
+    });
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
@@ -506,25 +538,145 @@ export default function Analytics() {
                     >
                       <TableHead>
                         <TableRow>
-                          <TableCell>Address</TableCell>
-                          <TableCell align="right">Active Tokens (24h)</TableCell>
-                          <TableCell align="right">Volume (24h)</TableCell>
-                          <TableCell align="right">Profit/Loss (24h)</TableCell>
-                          <TableCell align="right">Total Trades</TableCell>
-                          <TableCell align="right">Win Rate</TableCell>
-                          <TableCell align="right">Total Profit</TableCell>
-                          <TableCell align="right">ROI</TableCell>
-                          <TableCell align="right">First Trade</TableCell>
-                          <TableCell align="right">Last Trade</TableCell>
-                          <TableCell align="right">Avg Hold Time (h)</TableCell>
-                          <TableCell align="right">Max Profit</TableCell>
-                          <TableCell align="right">Max Loss</TableCell>
-                          <TableCell align="right">Buy Volume</TableCell>
-                          <TableCell align="right">Sell Volume</TableCell>
+                          <TableCell>
+                            <TableSortLabel
+                              active={orderBy === 'address'}
+                              direction={orderBy === 'address' ? order : 'asc'}
+                              onClick={() => handleRequestSort('address')}
+                            >
+                              Address
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'activeTokens24h'}
+                              direction={orderBy === 'activeTokens24h' ? order : 'asc'}
+                              onClick={() => handleRequestSort('activeTokens24h')}
+                            >
+                              Active Tokens (24h)
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'volume24h'}
+                              direction={orderBy === 'volume24h' ? order : 'asc'}
+                              onClick={() => handleRequestSort('volume24h')}
+                            >
+                              Volume (24h)
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'profit24h'}
+                              direction={orderBy === 'profit24h' ? order : 'asc'}
+                              onClick={() => handleRequestSort('profit24h')}
+                            >
+                              Profit/Loss (24h)
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'totalTrades'}
+                              direction={orderBy === 'totalTrades' ? order : 'asc'}
+                              onClick={() => handleRequestSort('totalTrades')}
+                            >
+                              Total Trades
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'winRate'}
+                              direction={orderBy === 'winRate' ? order : 'asc'}
+                              onClick={() => handleRequestSort('winRate')}
+                            >
+                              Win Rate
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'totalProfit'}
+                              direction={orderBy === 'totalProfit' ? order : 'asc'}
+                              onClick={() => handleRequestSort('totalProfit')}
+                            >
+                              Total Profit
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'avgROI'}
+                              direction={orderBy === 'avgROI' ? order : 'asc'}
+                              onClick={() => handleRequestSort('avgROI')}
+                            >
+                              ROI
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'firstTradeDate'}
+                              direction={orderBy === 'firstTradeDate' ? order : 'asc'}
+                              onClick={() => handleRequestSort('firstTradeDate')}
+                            >
+                              First Trade
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'lastTradeDate'}
+                              direction={orderBy === 'lastTradeDate' ? order : 'asc'}
+                              onClick={() => handleRequestSort('lastTradeDate')}
+                            >
+                              Last Trade
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'avgHoldingTime'}
+                              direction={orderBy === 'avgHoldingTime' ? order : 'asc'}
+                              onClick={() => handleRequestSort('avgHoldingTime')}
+                            >
+                              Avg Hold Time (h)
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'maxProfitTrade'}
+                              direction={orderBy === 'maxProfitTrade' ? order : 'asc'}
+                              onClick={() => handleRequestSort('maxProfitTrade')}
+                            >
+                              Max Profit
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'maxLossTrade'}
+                              direction={orderBy === 'maxLossTrade' ? order : 'asc'}
+                              onClick={() => handleRequestSort('maxLossTrade')}
+                            >
+                              Max Loss
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'buyVolume'}
+                              direction={orderBy === 'buyVolume' ? order : 'asc'}
+                              onClick={() => handleRequestSort('buyVolume')}
+                            >
+                              Buy Volume
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right">
+                            <TableSortLabel
+                              active={orderBy === 'sellVolume'}
+                              direction={orderBy === 'sellVolume' ? order : 'asc'}
+                              onClick={() => handleRequestSort('sellVolume')}
+                            >
+                              Sell Volume
+                            </TableSortLabel>
+                          </TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {traders.map((trader) => (
+                        {sortData([...traders]).map((trader) => (
                           <TableRow
                             key={trader._id}
                             sx={{
