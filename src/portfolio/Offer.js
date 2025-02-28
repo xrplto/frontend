@@ -307,7 +307,7 @@ const Offer = ({ account }) => {
   };
 
   return (
-    <StyledAccordion defaultExpanded>
+    <StyledAccordion>
       <StyledAccordionSummary
         expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.text.primary }} />}
         aria-controls="offer-content"

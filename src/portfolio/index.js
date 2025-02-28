@@ -927,6 +927,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                   </Box>
 
                   <Accordion
+                    defaultExpanded={true}
                     sx={{
                       borderRadius: '10px',
                       '&.Mui-expanded': {
@@ -979,7 +980,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </AccordionDetails>
                   </Accordion>
 
-                  <Offer account={account} />
+                  <Offer account={account} defaultExpanded={false} />
                 </Stack>
               </Stack>
             </OuterBorderContainer>
