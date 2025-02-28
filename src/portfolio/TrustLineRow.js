@@ -294,61 +294,134 @@ const TrustLineRow = ({
     <>
       <TableRow
         sx={{
+          position: 'relative',
+          transition: 'all 0.2s ease-in-out',
           '&:hover': {
+            transform: 'translateY(-1px)',
+            boxShadow: (theme) =>
+              `0 0 8px 0 ${
+                theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)'
+              }`,
             '& .MuiTableCell-root': {
-              backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.02)'
+              backgroundColor: (theme) =>
+                theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.02)'
             }
           },
           '& .MuiTableCell-root': {
-            padding: '2px 4px',
-            height: '40px',
-            borderBottom: `1px solid ${
-              darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
-            }`
+            padding: '8px 16px',
+            height: '60px',
+            borderBottom: (theme) =>
+              `1px solid ${
+                theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
+              }`,
+            transition: 'all 0.2s ease-in-out'
           }
         }}
       >
         <TableCell>
-          <Stack direction="row" spacing={0.5} alignItems="center">
+          <Stack direction="row" spacing={1.5} alignItems="center">
             <Avatar
               src={`https://s1.xrpl.to/token/${md5}`}
               sx={{
-                width: 24,
-                height: 24,
-                borderRadius: '4px',
+                width: 32,
+                height: 32,
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px 0 rgba(0,0,0,0.1)',
+                backgroundColor: (theme) =>
+                  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : '#fff',
+                transition: 'transform 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'scale(1.1)'
+                },
                 '& img': {
                   objectFit: 'contain',
                   width: '100%',
                   height: '100%',
-                  borderRadius: '4px'
+                  borderRadius: '8px',
+                  padding: '2px'
                 }
               }}
             />
             <Box>
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <Typography variant="body2" noWrap sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
+              <Stack direction="row" spacing={0.75} alignItems="center">
+                <Typography
+                  variant="subtitle2"
+                  noWrap
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    letterSpacing: '0.015em'
+                  }}
+                >
                   {currencyName}
                 </Typography>
                 {verified && (
                   <Tooltip title="Verified Token">
-                    <VerifiedIcon sx={{ fontSize: '0.875rem', color: '#007B55' }} />
+                    <VerifiedIcon
+                      sx={{
+                        fontSize: '1rem',
+                        color: '#007B55',
+                        transition: 'transform 0.2s ease-in-out',
+                        '&:hover': {
+                          transform: 'scale(1.2)'
+                        }
+                      }}
+                    />
                   </Tooltip>
                 )}
-                <Stack direction="row" spacing={0.25} alignItems="center">
-                  <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Tooltip title={origin || 'Standard Launch'}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        transition: 'transform 0.2s ease-in-out',
+                        '&:hover': {
+                          transform: 'scale(1.2)'
+                        }
+                      }}
+                    >
+                      {getOriginIcon(origin)}
+                    </Box>
+                  </Tooltip>
                   {origin && (
                     <>
                       <Tooltip title="Blackholed Issuer">
-                        <LockIcon sx={{ fontSize: '0.875rem', color: '#007B55' }} />
+                        <LockIcon
+                          sx={{
+                            fontSize: '1rem',
+                            color: '#007B55',
+                            transition: 'transform 0.2s ease-in-out',
+                            '&:hover': {
+                              transform: 'scale(1.2)'
+                            }
+                          }}
+                        />
                       </Tooltip>
                       {origin === 'xrp.fun' ? (
                         <Tooltip title="Liquidity Pool Not Burned">
-                          <ElectricBoltIcon sx={{ fontSize: '0.875rem', color: '#B72136' }} />
+                          <ElectricBoltIcon
+                            sx={{
+                              fontSize: '1rem',
+                              color: '#B72136',
+                              transition: 'transform 0.2s ease-in-out',
+                              '&:hover': {
+                                transform: 'scale(1.2)'
+                              }
+                            }}
+                          />
                         </Tooltip>
                       ) : (
                         <Tooltip title="Burned Liquidity Pool">
                           <LocalFireDepartmentIcon
-                            sx={{ fontSize: '0.875rem', color: '#2065D1' }}
+                            sx={{
+                              fontSize: '1rem',
+                              color: '#2065D1',
+                              transition: 'transform 0.2s ease-in-out',
+                              '&:hover': {
+                                transform: 'scale(1.2)'
+                              }
+                            }}
                           />
                         </Tooltip>
                       )}
@@ -361,9 +434,10 @@ const TrustLineRow = ({
                 color="text.secondary"
                 noWrap
                 sx={{
-                  lineHeight: 1,
-                  fontSize: '0.65rem',
-                  opacity: 0.8
+                  lineHeight: 1.2,
+                  fontSize: '0.75rem',
+                  opacity: 0.9,
+                  mt: 0.5
                 }}
               >
                 <Tooltip title={issuer}>
@@ -376,21 +450,58 @@ const TrustLineRow = ({
           </Stack>
         </TableCell>
 
-        <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-          <Typography variant="body2" noWrap sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
+        <TableCell
+          align="right"
+          sx={{
+            display: { xs: 'none', sm: 'table-cell' }
+          }}
+        >
+          <Typography
+            variant="subtitle2"
+            noWrap
+            sx={{
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              fontFamily: 'monospace'
+            }}
+          >
             {computedBalance}
           </Typography>
         </TableCell>
 
         <TableCell align="right">
-          <Typography variant="body2" noWrap sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
+          <Typography
+            variant="subtitle2"
+            noWrap
+            sx={{
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              color: (theme) => theme.palette.primary.main
+            }}
+          >
             {currencySymbols[activeFiatCurrency]}
             {computedValue}
           </Typography>
         </TableCell>
 
-        <TableCell align="right" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-          <Typography variant="body2" noWrap sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
+        <TableCell
+          align="right"
+          sx={{
+            display: { xs: 'none', md: 'table-cell' }
+          }}
+        >
+          <Typography
+            variant="subtitle2"
+            noWrap
+            sx={{
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              color: (theme) =>
+                parseFloat(percentOwned) > 1
+                  ? theme.palette.success.main
+                  : theme.palette.text.primary
+            }}
+          >
             {parseFloat(percentOwned).toFixed(2)}%
           </Typography>
         </TableCell>
@@ -398,18 +509,32 @@ const TrustLineRow = ({
         {isLoggedIn && accountProfile?.account === account && (
           <TableCell align="center">
             <Chip
-              icon={<DeleteOutlineIcon sx={{ fontSize: '0.875rem' }} />}
+              icon={<DeleteOutlineIcon />}
               label="Remove"
               color="error"
               variant="outlined"
-              size="small"
               onClick={handleCancel}
               sx={{
                 cursor: 'pointer',
-                height: '20px',
+                height: '24px',
+                borderRadius: '12px',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                  backgroundColor: (theme) => theme.palette.error.light,
+                  color: (theme) => theme.palette.error.contrastText,
+                  '& .MuiSvgIcon-root': {
+                    color: (theme) => theme.palette.error.contrastText
+                  }
+                },
                 '& .MuiChip-label': {
-                  px: 0.5,
-                  fontSize: '0.7rem'
+                  px: 1,
+                  fontSize: '0.75rem',
+                  fontWeight: 500
+                },
+                '& .MuiSvgIcon-root': {
+                  fontSize: '1rem',
+                  transition: 'color 0.2s ease-in-out'
                 }
               }}
             />
