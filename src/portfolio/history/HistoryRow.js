@@ -1,4 +1,4 @@
-import { Chip, Stack, Typography, IconButton, Box, SvgIcon } from '@mui/material';
+import { Chip, Stack, Typography, IconButton, Box, SvgIcon, Tooltip } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useTheme, TableCell, TableRow } from '@mui/material';
 import EastIcon from '@mui/icons-material/East';
@@ -572,38 +572,41 @@ const HistoryRow = (props) => {
       </TableCell>
       <TableCell sx={{ color: theme.palette.text.primary }}>
         {source && (
-          <Chip
-            size="small"
-            icon={
-              SOURCE_TAGS[Object.keys(SOURCE_TAGS).find((key) => SOURCE_TAGS[key].label === source)]
-                ?.icon
-            }
-            label={source}
-            sx={{
-              height: '18px',
-              backgroundColor: alpha(
+          <Tooltip title={props.sourceTooltip} arrow placement="top">
+            <Chip
+              size="small"
+              icon={
                 SOURCE_TAGS[
                   Object.keys(SOURCE_TAGS).find((key) => SOURCE_TAGS[key].label === source)
-                ]?.color || theme.palette.primary.main,
-                0.1
-              ),
-              color:
-                SOURCE_TAGS[
-                  Object.keys(SOURCE_TAGS).find((key) => SOURCE_TAGS[key].label === source)
-                ]?.color || theme.palette.primary.main,
-              borderRadius: '4px',
-              '& .MuiChip-label': {
-                px: 0.75,
-                fontSize: '0.7rem',
-                lineHeight: 1
-              },
-              '& .MuiChip-icon': {
-                color: 'inherit',
-                marginLeft: '4px',
-                marginRight: '-4px'
+                ]?.icon
               }
-            }}
-          />
+              label={source}
+              sx={{
+                height: '18px',
+                backgroundColor: alpha(
+                  SOURCE_TAGS[
+                    Object.keys(SOURCE_TAGS).find((key) => SOURCE_TAGS[key].label === source)
+                  ]?.color || theme.palette.primary.main,
+                  0.1
+                ),
+                color:
+                  SOURCE_TAGS[
+                    Object.keys(SOURCE_TAGS).find((key) => SOURCE_TAGS[key].label === source)
+                  ]?.color || theme.palette.primary.main,
+                borderRadius: '4px',
+                '& .MuiChip-label': {
+                  px: 0.75,
+                  fontSize: '0.7rem',
+                  lineHeight: 1
+                },
+                '& .MuiChip-icon': {
+                  color: 'inherit',
+                  marginLeft: '4px',
+                  marginRight: '-4px'
+                }
+              }}
+            />
+          </Tooltip>
         )}
       </TableCell>
       <TableCell sx={{ width: '32px', p: 0.25 }}>

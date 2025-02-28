@@ -93,7 +93,15 @@ const DeFiHistory = ({ account }) => {
           sourceLabel = 'XPMarket';
         } else if (sourceTag === 110100111) {
           sourceLabel = 'Sologenic';
+        } else {
+          sourceLabel = 'XRP Ledger';
         }
+
+        // Add tooltip information
+        const tooltipInfo =
+          sourceLabel === 'XRP Ledger'
+            ? 'Direct interaction with the XRPL through API calls or SDK integration. These transactions are typically executed programmatically rather than through a third-party interface.'
+            : '';
 
         // For OfferCreate, include TakerGets and TakerPays
         const amount =
@@ -115,6 +123,7 @@ const DeFiHistory = ({ account }) => {
           hash: item.tx.hash,
           date: item.tx.date,
           source: sourceLabel,
+          sourceTooltip: tooltipInfo,
           LimitAmount: item.tx.LimitAmount,
           OfferSequence: item.tx.OfferSequence // For OfferCancel
         };
