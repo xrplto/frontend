@@ -24,6 +24,10 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import ReactECharts from 'echarts-for-react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
+import Topbar from '../src/components/Topbar';
+import useWebSocket from 'react-use-websocket';
+import { useDispatch, useSelector } from 'react-redux';
+import { update_metrics } from 'src/redux/statusSlice';
 
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: 'flex',
@@ -45,11 +49,58 @@ const ModalContent = styled(Paper)(({ theme }) => ({
 }));
 
 export default function Analytics() {
+  const dispatch = useDispatch();
+  const metrics = useSelector((state) => state.status.metrics);
   const [traders, setTraders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [roiModalTrader, setRoiModalTrader] = useState(null);
   const [orderBy, setOrderBy] = useState('volume24h');
   const [order, setOrder] = useState('desc');
+  const [error, setError] = useState(null);
+
+  // Add WebSocket connection
+  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
+  const { sendJsonMessage, lastMessage, readyState } = useWebSocket(WSS_FEED_URL, {
+    shouldReconnect: (closeEvent) => true,
+    reconnectInterval: 3000,
+    onOpen: () => {
+      console.log('WebSocket Connected');
+    },
+    onMessage: (event) => {
+      try {
+        const json = JSON.parse(event.data);
+        dispatch(update_metrics(json));
+      } catch (err) {
+        console.error('Error processing WebSocket message:', err);
+      }
+    },
+    onError: (error) => {
+      console.error('WebSocket error:', error);
+    },
+    onClose: () => {
+      console.log('WebSocket connection closed');
+    }
+  });
+
+  // Effect to handle WebSocket connection status
+  useEffect(() => {
+    if (readyState === 1) {
+      // WebSocket.OPEN
+      console.log('WebSocket connection established');
+    }
+  }, [readyState]);
+
+  // Effect to handle incoming WebSocket messages
+  useEffect(() => {
+    if (lastMessage !== null) {
+      try {
+        const data = JSON.parse(lastMessage.data);
+        console.log('Received WebSocket data:', data);
+      } catch (err) {
+        console.error('Error parsing WebSocket message:', err);
+      }
+    }
+  }, [lastMessage]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,6 +112,7 @@ export default function Analytics() {
         setTraders(data.traders);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError('Error fetching data');
       } finally {
         setLoading(false);
       }
@@ -485,14 +537,33 @@ export default function Analytics() {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
-        <CircularProgress />
-      </Box>
+      <>
+        <Topbar />
+        <Header />
+        <Container maxWidth="xl" sx={{ py: 4, textAlign: 'center' }}>
+          <CircularProgress />
+        </Container>
+        <Footer />
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Topbar />
+        <Header />
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Typography color="error">Error: {error}</Typography>
+        </Container>
+        <Footer />
+      </>
     );
   }
 
   return (
     <>
+      <Topbar />
       <Header />
       <Container maxWidth="xl">
         <Box sx={{ py: 5 }}>
