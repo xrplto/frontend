@@ -397,12 +397,12 @@ export default function Portfolio({ account, limit, collection, type }) {
             if (label) {
               label += ': ';
             }
+            const value = context.parsed.y || 0;
             if (context.dataset.yAxisID === 'y2') {
-              label += context.parsed.y.toLocaleString() + ' XRP';
+              return label + value.toLocaleString() + ' XRP';
             } else {
-              label += context.parsed.y.toFixed(2) + '%';
+              return label + value.toFixed(2) + '%';
             }
-            return label;
           }
         }
       }
