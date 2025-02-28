@@ -239,9 +239,11 @@ export default function TraderPerformance({ trader }) {
                 </Grid>
                 <Grid item xs={6} md={3}>
                   <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Buy Volume
+                    Total Volume
                   </Typography>
-                  <Typography>{formatCurrency(trader.buyVolume)}</Typography>
+                  <Typography>
+                    {formatCurrency(trader.totalVolume || trader.volume || 0)}
+                  </Typography>
                 </Grid>
               </Grid>
             </CardContent>

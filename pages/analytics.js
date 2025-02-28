@@ -1067,7 +1067,11 @@ export default function Analytics() {
                       Total Volume
                     </Typography>
                     <Typography variant="body1">
-                      {formatCurrency(roiModalTrader.buyVolume || 0)}
+                      {formatCurrency(
+                        roiModalTrader.totalVolume ||
+                          roiModalTrader.buyVolume + roiModalTrader.sellVolume ||
+                          0
+                      )}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
