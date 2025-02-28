@@ -1,7 +1,10 @@
-import { useContext, useEffect, useRef, useState } from 'react';
-import { Box, Card, CardContent, CardHeader, styled } from '@mui/material';
-
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {
+  Box,
+  Card,
+  CardContent,
+  CardHeader,
+  styled,
   IconButton,
   Link,
   Stack,
@@ -11,15 +14,21 @@ import {
   TableHead,
   TableRow,
   Tooltip,
-  Typography
+  Typography,
+  Chip,
+  useTheme,
+  alpha,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails
 } from '@mui/material';
-
 import { AppContext } from 'src/AppContext';
 import { PulseLoader } from 'react-spinners';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CancelIcon from '@mui/icons-material/Cancel';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import axios from 'axios';
-
 import QRDialog from 'src/components/QRDialog';
 import { useDispatch } from 'react-redux';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
@@ -27,16 +36,97 @@ import { enqueueSnackbar } from 'notistack';
 import { isInstalled, submitTransaction } from '@gemwallet/api';
 import sdk from '@crossmarkio/sdk';
 
-const OfferBox = styled(Box)(({ theme }) => ``);
+const StyledCard = styled(Card)(({ theme }) => ({
+  height: '100%',
+  transition: 'transform 0.3s, box-shadow 0.3s',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[4]
+  },
+  background: alpha(theme.palette.background.paper, 0.8),
+  backdropFilter: 'blur(8px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  borderRadius: theme.shape.borderRadius * 2
+}));
+
+const StyledCardHeader = styled(CardHeader)(({ theme }) => ({
+  padding: theme.spacing(3),
+  '& .MuiCardHeader-title': {
+    fontSize: '1.25rem',
+    fontWeight: 600,
+    color: theme.palette.text.primary,
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1)
+  }
+}));
+
+const StyledTableContainer = styled(Box)(({ theme }) => ({
+  maxHeight: 180,
+  overflow: 'auto',
+  '&::-webkit-scrollbar': {
+    width: 6,
+    height: 6
+  },
+  '&::-webkit-scrollbar-thumb': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.2),
+    borderRadius: 3
+  },
+  '&::-webkit-scrollbar-track': {
+    backgroundColor: alpha(theme.palette.divider, 0.1)
+  }
+}));
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  padding: theme.spacing(0.75),
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  whiteSpace: 'nowrap',
+  '&.highlight': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.05)
+  }
+}));
+
+const StyledAccordion = styled(Accordion)(({ theme }) => ({
+  borderRadius: '10px !important',
+  '&.Mui-expanded': {
+    margin: '8px 0'
+  },
+  flex: '0 0 auto',
+  color: theme.palette.text.primary,
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  background: alpha(theme.palette.background.paper, 0.8),
+  backdropFilter: 'blur(8px)',
+  '&:before': {
+    display: 'none'
+  }
+}));
+
+const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
+  minHeight: '48px !important',
+  padding: theme.spacing(0, 2),
+  '& .MuiAccordionSummary-content': {
+    margin: '8px 0',
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1)
+  }
+}));
 
 function truncate(str, n) {
   if (!str) return '';
-  return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
+  return str.length > n ? str.substr(0, n - 1) + '...' : str;
 }
 
-const Offer = ({ account }) => {
-  const BASE_URL = process.env.API_URL;
+const formatNumber = (value) => {
+  return Number(value).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+};
 
+const Offer = ({ account }) => {
+  const theme = useTheme();
+  const BASE_URL = process.env.API_URL;
   const dispatch = useDispatch();
   const { accountProfile, openSnackbar, sync, setSync, darkMode } = useContext(AppContext);
   const isLoggedIn = accountProfile && accountProfile.account;
@@ -44,14 +134,15 @@ const Offer = ({ account }) => {
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
-
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
-
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(10);
   const [total, setTotal] = useState(0);
   const [offers, setOffers] = useState([]);
+
+  const tableRef = useRef(null);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
   useEffect(() => {
     function getOffers() {
@@ -74,9 +165,6 @@ const Offer = ({ account }) => {
     }
     if (account) getOffers();
   }, [account, sync, page, rows]);
-
-  const tableRef = useRef(null);
-  const [scrollLeft, setScrollLeft] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -224,32 +312,153 @@ const Offer = ({ account }) => {
   };
 
   return (
-    <Card sx={{ mt: 3, height: '320px' }}>
-      <CardHeader title="Offer" />
-      <CardContent>
+    <StyledAccordion defaultExpanded>
+      <StyledAccordionSummary
+        expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.text.primary }} />}
+        aria-controls="offer-content"
+        id="offer-header"
+      >
+        <SwapHorizIcon sx={{ color: theme.palette.primary.main }} />
+        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+          Active Offers
+        </Typography>
+      </StyledAccordionSummary>
+      <AccordionDetails sx={{ p: 0 }}>
         {loading ? (
-          <Stack alignItems="center">
-            <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
+          <Stack alignItems="center" spacing={1} sx={{ py: 2 }}>
+            <PulseLoader color={theme.palette.primary.main} size={8} />
+            <Typography variant="body2" color="text.secondary">
+              Loading offers...
+            </Typography>
+          </Stack>
+        ) : offers && offers.length === 0 ? (
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            spacing={1}
+            sx={{
+              py: 2,
+              opacity: 0.8
+            }}
+          >
+            <ErrorOutlineIcon fontSize="small" />
+            <Typography variant="body2" color="text.secondary">
+              No active offers found
+            </Typography>
           </Stack>
         ) : (
-          offers &&
-          offers.length === 0 && (
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="center"
-              spacing={1}
-              sx={{
-                py: 4,
-                opacity: 0.8
-              }}
-            >
-              <ErrorOutlineIcon fontSize="small" />
-              <Typography variant="body2" color="text.secondary">
-                No Offers
-              </Typography>
-            </Stack>
-          )
+          <StyledTableContainer>
+            <Table size="small" stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell>Taker Gets</StyledTableCell>
+                  <StyledTableCell>Taker Pays</StyledTableCell>
+                  <StyledTableCell></StyledTableCell>
+                  {account && accountProfile?.account === account && (
+                    <StyledTableCell align="center" sx={{ width: '60px' }}>
+                      Actions
+                    </StyledTableCell>
+                  )}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {offers.map((row) => {
+                  const { _id, account, seq, gets, pays, chash } = row;
+                  return (
+                    <TableRow
+                      key={_id}
+                      sx={{
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.action.hover, 0.1)
+                        }
+                      }}
+                    >
+                      <StyledTableCell>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Chip
+                            label={gets.name}
+                            size="small"
+                            sx={{
+                              height: '20px',
+                              backgroundColor: alpha(theme.palette.success.main, 0.1),
+                              color: theme.palette.success.main,
+                              fontWeight: 500,
+                              '& .MuiChip-label': {
+                                px: 1
+                              }
+                            }}
+                          />
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {formatNumber(gets.value)}
+                          </Typography>
+                        </Stack>
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Chip
+                            label={pays.name}
+                            size="small"
+                            sx={{
+                              height: '20px',
+                              backgroundColor: alpha(theme.palette.error.main, 0.1),
+                              color: theme.palette.error.main,
+                              fontWeight: 500,
+                              '& .MuiChip-label': {
+                                px: 1
+                              }
+                            }}
+                          />
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {formatNumber(pays.value)}
+                          </Typography>
+                        </Stack>
+                      </StyledTableCell>
+                      <StyledTableCell>
+                        {chash && (
+                          <Link
+                            href={`https://bithomp.com/explorer/${chash}`}
+                            target="_blank"
+                            rel="noreferrer noopener nofollow"
+                            sx={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              color: theme.palette.primary.main,
+                              textDecoration: 'none',
+                              '&:hover': {
+                                textDecoration: 'underline'
+                              }
+                            }}
+                          >
+                            {truncate(chash, 16)}
+                          </Link>
+                        )}
+                      </StyledTableCell>
+                      {account && accountProfile?.account === account && (
+                        <StyledTableCell align="center">
+                          <Tooltip title="Cancel Offer">
+                            <IconButton
+                              color="error"
+                              size="small"
+                              onClick={(e) => handleCancel(e, account, seq)}
+                              sx={{
+                                padding: '4px',
+                                '&:hover': {
+                                  backgroundColor: alpha(theme.palette.error.main, 0.1)
+                                }
+                              }}
+                            >
+                              <CancelIcon sx={{ fontSize: '18px' }} />
+                            </IconButton>
+                          </Tooltip>
+                        </StyledTableCell>
+                      )}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </StyledTableContainer>
         )}
 
         <QRDialog
@@ -259,107 +468,8 @@ const Offer = ({ account }) => {
           qrUrl={qrUrl}
           nextUrl={nextUrl}
         />
-
-        {total > 0 && (
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 1,
-              py: 1,
-              overflow: 'auto',
-              width: '100%',
-              '& > *': {
-                scrollSnapAlign: 'center'
-              },
-              '::-webkit-scrollbar': { display: 'none' }
-            }}
-            ref={tableRef}
-          >
-            <Table
-              stickyHeader
-              size={'small'}
-              sx={{
-                '& .MuiTableCell-root': {
-                  borderBottom: 'none',
-                  boxShadow: darkMode
-                    ? 'inset 0 -1px 0 rgba(68 67 67), inset 0 -1px 0 rgba(255, 255, 255, 0.1)'
-                    : 'inset 0 -1px 0 #dadee3'
-                }
-              }}
-            >
-              <TableHead>
-                <TableRow>
-                  <TableCell align="left">Taker Gets</TableCell>
-                  <TableCell align="left">Taker Pays</TableCell>
-                  <TableCell align="left">Hash</TableCell>
-                  {account && accountProfile?.account == account && (
-                    <TableCell align="center">Actions</TableCell>
-                  )}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {offers.map((row, idx) => {
-                  const { _id, account, seq, gets, pays, chash } = row;
-
-                  return (
-                    <TableRow
-                      key={_id}
-                      sx={{
-                        '&:hover': {
-                          '& .MuiTableCell-root': {
-                            backgroundColor: darkMode ? '#232326 !important' : '#D9DCE0 !important'
-                          }
-                        }
-                      }}
-                    >
-                      <TableCell align="left">
-                        <Typography variant="s6" noWrap>
-                          {gets.value} <Typography variant="small">{gets.name}</Typography>
-                        </Typography>
-                      </TableCell>
-
-                      <TableCell align="left">
-                        <Typography variant="s6" noWrap>
-                          {pays.value} <Typography variant="small">{pays.name}</Typography>
-                        </Typography>
-                      </TableCell>
-
-                      <TableCell align="left">
-                        {chash && (
-                          <Link
-                            target="_blank"
-                            href={`https://bithomp.com/explorer/${chash}`}
-                            rel="noreferrer noopener nofollow"
-                          >
-                            <Typography variant="s6" noWrap color="primary">
-                              {truncate(chash, 16)}
-                            </Typography>
-                          </Link>
-                        )}
-                      </TableCell>
-
-                      {account && accountProfile?.account == account && (
-                        <TableCell align="center">
-                          <Tooltip title="Cancel Offer">
-                            <IconButton
-                              color="error"
-                              onClick={(e) => handleCancel(e, account, seq)}
-                              aria-label="cancel"
-                            >
-                              <CancelIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Box>
-        )}
-      </CardContent>
-    </Card>
+      </AccordionDetails>
+    </StyledAccordion>
   );
 };
 
