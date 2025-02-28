@@ -25,7 +25,9 @@ import {
   Skeleton,
   Tooltip,
   ToggleButton,
-  ToggleButtonGroup
+  ToggleButtonGroup,
+  IconButton,
+  Modal
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Verified as VerifiedIcon } from '@mui/icons-material';
@@ -52,6 +54,7 @@ import { alpha } from '@mui/material/styles';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import Ranks from './Ranks';
 import { activeRankColors, rankGlowEffect } from 'src/components/Chatbox/RankStyles';
 import axios from 'axios';
@@ -156,12 +159,32 @@ const volumeData = {
   ]
 };
 
+const StyledModal = styled(Modal)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(2)
+}));
+
+const ModalContent = styled(Paper)(({ theme }) => ({
+  position: 'relative',
+  width: '100%',
+  maxWidth: 1000,
+  maxHeight: '90vh',
+  overflow: 'auto',
+  padding: theme.spacing(3),
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: theme.shadows[24]
+}));
+
 export default function Portfolio({ account, limit, collection, type }) {
   const theme = useTheme();
   const [activeRanks, setActiveRanks] = useState({});
   const router = useRouter();
   const [traderStats, setTraderStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedChart, setSelectedChart] = useState(null);
 
   // Fallback value for theme.palette.divider
   const dividerColor = theme?.palette?.divider || '#ccc';
@@ -675,6 +698,14 @@ export default function Portfolio({ account, limit, collection, type }) {
     setLoadingCollections(false);
   };
 
+  const handleExpandChart = (chartType) => {
+    setSelectedChart(chartType);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedChart(null);
+  };
+
   return (
     <OverviewWrapper>
       <Container maxWidth="xl" sx={{ mt: 4 }}>
@@ -1078,10 +1109,29 @@ export default function Portfolio({ account, limit, collection, type }) {
             <Grid container spacing={2} sx={{ mb: 3 }}>
               <Grid item xs={12} md={4}>
                 <Card sx={{ p: 2, height: '100%' }}>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      mb: 1
+                    }}
+                  >
+                    <Typography variant="h6" color="text.secondary">
                       ROI Performance
                     </Typography>
+                    <IconButton
+                      onClick={() => handleExpandChart('roi')}
+                      size="small"
+                      sx={{
+                        color: 'primary.main',
+                        '&:hover': {
+                          color: 'primary.dark'
+                        }
+                      }}
+                    >
+                      <OpenInFullIcon />
+                    </IconButton>
                   </Box>
                   <Box sx={{ height: 350 }}>
                     {loading ? (
@@ -1112,10 +1162,29 @@ export default function Portfolio({ account, limit, collection, type }) {
 
               <Grid item xs={12} md={4}>
                 <Card sx={{ p: 2, height: '100%' }}>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      mb: 1
+                    }}
+                  >
+                    <Typography variant="h6" color="text.secondary">
                       Trading Activity
                     </Typography>
+                    <IconButton
+                      onClick={() => handleExpandChart('activity')}
+                      size="small"
+                      sx={{
+                        color: 'primary.main',
+                        '&:hover': {
+                          color: 'primary.dark'
+                        }
+                      }}
+                    >
+                      <OpenInFullIcon />
+                    </IconButton>
                   </Box>
                   <Box sx={{ height: 350 }}>
                     {loading ? (
@@ -1146,10 +1215,29 @@ export default function Portfolio({ account, limit, collection, type }) {
 
               <Grid item xs={12} md={4}>
                 <Card sx={{ p: 2, height: '100%' }}>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      mb: 1
+                    }}
+                  >
+                    <Typography variant="h6" color="text.secondary">
                       Volume History
                     </Typography>
+                    <IconButton
+                      onClick={() => handleExpandChart('volume')}
+                      size="small"
+                      sx={{
+                        color: 'primary.main',
+                        '&:hover': {
+                          color: 'primary.dark'
+                        }
+                      }}
+                    >
+                      <OpenInFullIcon />
+                    </IconButton>
                   </Box>
                   <Box sx={{ height: 350 }}>
                     {loading ? (
@@ -1178,6 +1266,61 @@ export default function Portfolio({ account, limit, collection, type }) {
                 </Card>
               </Grid>
             </Grid>
+
+            <StyledModal
+              open={Boolean(selectedChart)}
+              onClose={handleCloseModal}
+              aria-labelledby="chart-modal"
+            >
+              <ModalContent>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    mb: 3
+                  }}
+                >
+                  <Typography variant="h6">
+                    {selectedChart === 'roi' && 'ROI Performance'}
+                    {selectedChart === 'activity' && 'Trading Activity'}
+                    {selectedChart === 'volume' && 'Volume History'}
+                  </Typography>
+                  <IconButton onClick={handleCloseModal} size="small">
+                    <ExpandMoreIcon />
+                  </IconButton>
+                </Box>
+                <Box sx={{ height: 600, width: '100%' }}>
+                  {selectedChart === 'roi' && (
+                    <Line
+                      data={processChartData()}
+                      options={{
+                        ...chartOptions,
+                        maintainAspectRatio: false
+                      }}
+                    />
+                  )}
+                  {selectedChart === 'activity' && (
+                    <Line
+                      data={processTradeHistoryData()}
+                      options={{
+                        ...tradeHistoryOptions,
+                        maintainAspectRatio: false
+                      }}
+                    />
+                  )}
+                  {selectedChart === 'volume' && (
+                    <Line
+                      data={processVolumeHistoryData()}
+                      options={{
+                        ...volumeHistoryOptions,
+                        maintainAspectRatio: false
+                      }}
+                    />
+                  )}
+                </Box>
+              </ModalContent>
+            </StyledModal>
 
             <Card sx={{ flex: 1, mb: 2, color: theme.palette.text.primary }}>
               <CardContent sx={{ px: 0 }}>
