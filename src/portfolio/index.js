@@ -1341,9 +1341,33 @@ export default function Portfolio({ account, limit, collection, type }) {
             </StyledModal>
 
             <Card sx={{ flex: 1, mb: 2, color: theme.palette.text.primary }}>
-              <CardContent sx={{ px: 0 }}>
+              <CardContent sx={{ p: 0 }}>
                 <TabContext value={activeTab}>
-                  <Box>
+                  <Box
+                    sx={{
+                      px: 2.5,
+                      py: 2,
+                      borderBottom: `1px solid ${theme.palette.divider}`,
+                      bgcolor: theme.palette.background.paper
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
+                      <AccountBalanceWalletIcon
+                        sx={{ color: theme.palette.primary.main, fontSize: '1.3rem' }}
+                      />
+                      <Typography
+                        sx={{
+                          color: theme.palette.text.primary,
+                          fontSize: '1.1rem',
+                          fontWeight: 500,
+                          lineHeight: 1
+                        }}
+                        variant="h6"
+                      >
+                        Portfolio Assets
+                      </Typography>
+                    </Stack>
+
                     <ToggleButtonGroup
                       value={activeTab}
                       exclusive
