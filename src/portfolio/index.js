@@ -851,7 +851,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                           </Typography>
                           <Typography variant="body2">
                             {`${(
-                              (traderStats?.profitableTrades / (traderStats?.totalTrades || 1)) *
+                              (traderStats?.profitableTrades /
+                                (traderStats?.profitableTrades + traderStats?.losingTrades || 1)) *
                               100
                             ).toFixed(2)}%`}
                           </Typography>
