@@ -741,120 +741,93 @@ export default function Portfolio({ account, limit, collection, type }) {
                     />
                   </Box>
 
-                  <Box sx={{ textAlign: 'center', my: 3 }}>
-                    <Typography sx={{ color: theme.palette.text.secondary, mb: 1 }} variant="h6">
-                      Total Trading Volume
-                    </Typography>
-                    <Typography sx={{ color: theme.palette.success.main, mt: 1 }} variant="h4">
-                      {loading ? (
-                        <Skeleton width="100%" />
-                      ) : (
-                        `${traderStats?.totalVolume?.toLocaleString() || 0} XRP`
-                      )}
-                    </Typography>
-                  </Box>
+                  <Card sx={{ p: 1.5, borderRadius: '8px' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Typography variant="subtitle1" color="text.secondary" sx={{ flex: 1 }}>
+                        Total Trading Volume
+                      </Typography>
+                      <Typography variant="h5" sx={{ color: theme.palette.success.main }}>
+                        {loading ? (
+                          <Skeleton width={120} height={28} />
+                        ) : (
+                          `${traderStats?.totalVolume?.toLocaleString() || 0} XRP`
+                        )}
+                      </Typography>
+                    </Box>
 
-                  <Card sx={{ p: 2, mb: 3 }}>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="h6" color="text.secondary" gutterBottom>
-                        ROI Performance
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {`Trading Period: ${new Date(
-                          traderStats?.firstTradeDate
-                        ).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })} - ${new Date(traderStats?.lastTradeDate).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric'
-                        })}`}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ height: 400 }}>
-                      {loading ? (
-                        <Skeleton variant="rectangular" height={400} />
-                      ) : (
-                        <Line data={processChartData()} options={chartOptions} />
-                      )}
-                    </Box>
+                    <Grid container spacing={1}>
+                      <Grid item xs={6} sm={3}>
+                        <Box
+                          sx={{
+                            p: 1,
+                            bgcolor: alpha(theme.palette.primary.main, 0.05),
+                            borderRadius: 1
+                          }}
+                        >
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Average ROI
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            color={traderStats?.avgROI >= 0 ? 'success.main' : 'error.main'}
+                          >
+                            {`${(traderStats?.avgROI || 0).toFixed(2)}%`}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Box
+                          sx={{
+                            p: 1,
+                            bgcolor: alpha(theme.palette.primary.main, 0.05),
+                            borderRadius: 1
+                          }}
+                        >
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Holding Time
+                          </Typography>
+                          <Typography variant="body2">
+                            {`${Math.round((traderStats?.avgHoldingTime || 0) / 3600)}h`}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Box
+                          sx={{
+                            p: 1,
+                            bgcolor: alpha(theme.palette.primary.main, 0.05),
+                            borderRadius: 1
+                          }}
+                        >
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Total Volume
+                          </Typography>
+                          <Typography variant="body2">
+                            {`${(traderStats?.totalVolume || 0).toLocaleString()} XRP`}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Box
+                          sx={{
+                            p: 1,
+                            bgcolor: alpha(theme.palette.primary.main, 0.05),
+                            borderRadius: 1
+                          }}
+                        >
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Win Rate
+                          </Typography>
+                          <Typography variant="body2">
+                            {`${(
+                              (traderStats?.profitableTrades / (traderStats?.totalTrades || 1)) *
+                              100
+                            ).toFixed(2)}%`}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
                   </Card>
-
-                  <Card sx={{ p: 2, mb: 3 }}>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="h6" color="text.secondary" gutterBottom>
-                        Trading Activity
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Daily and Cumulative Trade Count
-                      </Typography>
-                    </Box>
-                    <Box sx={{ height: 400 }}>
-                      {loading ? (
-                        <Skeleton variant="rectangular" height={400} />
-                      ) : (
-                        <Line data={processTradeHistoryData()} options={tradeHistoryOptions} />
-                      )}
-                    </Box>
-                  </Card>
-
-                  <Card sx={{ p: 2, mb: 3 }}>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="h6" color="text.secondary" gutterBottom>
-                        Volume History
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Daily and Cumulative Trading Volume
-                      </Typography>
-                    </Box>
-                    <Box sx={{ height: 400 }}>
-                      {loading ? (
-                        <Skeleton variant="rectangular" height={400} />
-                      ) : (
-                        <Line data={processVolumeHistoryData()} options={volumeHistoryOptions} />
-                      )}
-                    </Box>
-                  </Card>
-
-                  <Grid container spacing={2} sx={{ mt: 2 }}>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Average ROI
-                      </Typography>
-                      <Typography color={traderStats?.avgROI >= 0 ? 'success.main' : 'error.main'}>
-                        {`${(traderStats?.avgROI || 0).toFixed(2)}%`}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Average Holding Time
-                      </Typography>
-                      <Typography>
-                        {`${Math.round((traderStats?.avgHoldingTime || 0) / 3600)} hours`}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Total Volume
-                      </Typography>
-                      <Typography>
-                        {`${(traderStats?.totalVolume || 0).toLocaleString()} XRP`}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Win Rate
-                      </Typography>
-                      <Typography>
-                        {`${(
-                          (traderStats?.profitableTrades / (traderStats?.totalTrades || 1)) *
-                          100
-                        ).toFixed(2)}%`}
-                      </Typography>
-                    </Grid>
-                  </Grid>
 
                   <Box sx={{ mt: 2 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
@@ -964,6 +937,110 @@ export default function Portfolio({ account, limit, collection, type }) {
           </Grid>
 
           <Grid item md={8} xs={12}>
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={4}>
+                <Card sx={{ p: 1.5, height: '100%' }}>
+                  <Box sx={{ mb: 1 }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      ROI Performance
+                    </Typography>
+                  </Box>
+                  <Box sx={{ height: 280 }}>
+                    {loading ? (
+                      <Skeleton variant="rectangular" height={280} />
+                    ) : (
+                      <Line
+                        data={processChartData()}
+                        options={{
+                          ...chartOptions,
+                          plugins: {
+                            ...chartOptions.plugins,
+                            legend: {
+                              ...chartOptions.plugins.legend,
+                              padding: 5
+                            },
+                            title: {
+                              ...chartOptions.plugins.title,
+                              padding: 5,
+                              display: false
+                            }
+                          }
+                        }}
+                      />
+                    )}
+                  </Box>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <Card sx={{ p: 1.5, height: '100%' }}>
+                  <Box sx={{ mb: 1 }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      Trading Activity
+                    </Typography>
+                  </Box>
+                  <Box sx={{ height: 280 }}>
+                    {loading ? (
+                      <Skeleton variant="rectangular" height={280} />
+                    ) : (
+                      <Line
+                        data={processTradeHistoryData()}
+                        options={{
+                          ...tradeHistoryOptions,
+                          plugins: {
+                            ...tradeHistoryOptions.plugins,
+                            legend: {
+                              ...tradeHistoryOptions.plugins.legend,
+                              padding: 5
+                            },
+                            title: {
+                              ...tradeHistoryOptions.plugins.title,
+                              padding: 5,
+                              display: false
+                            }
+                          }
+                        }}
+                      />
+                    )}
+                  </Box>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <Card sx={{ p: 1.5, height: '100%' }}>
+                  <Box sx={{ mb: 1 }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      Volume History
+                    </Typography>
+                  </Box>
+                  <Box sx={{ height: 280 }}>
+                    {loading ? (
+                      <Skeleton variant="rectangular" height={280} />
+                    ) : (
+                      <Line
+                        data={processVolumeHistoryData()}
+                        options={{
+                          ...volumeHistoryOptions,
+                          plugins: {
+                            ...volumeHistoryOptions.plugins,
+                            legend: {
+                              ...volumeHistoryOptions.plugins.legend,
+                              padding: 5
+                            },
+                            title: {
+                              ...volumeHistoryOptions.plugins.title,
+                              padding: 5,
+                              display: false
+                            }
+                          }
+                        }}
+                      />
+                    )}
+                  </Box>
+                </Card>
+              </Grid>
+            </Grid>
+
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <Box sx={{ mb: 3 }}>
