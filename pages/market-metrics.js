@@ -212,7 +212,15 @@ const MarketMetricsContent = () => {
           }
         });
 
-        const formattedData = response.data
+        // Ensure response.data is an array
+        const marketData = Array.isArray(response.data) ? response.data : response.data.data || [];
+
+        if (!marketData.length) {
+          console.warn('No market metrics data received');
+          return;
+        }
+
+        const formattedData = marketData
           .sort((a, b) => new Date(a.date) - new Date(b.date)) // Sort by date ascending
           .map((item) => ({
             ...item,
