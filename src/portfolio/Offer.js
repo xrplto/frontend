@@ -314,9 +314,7 @@ const Offer = ({ account }) => {
         id="offer-header"
       >
         <SwapHorizIcon sx={{ color: theme.palette.primary.main }} />
-        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          Active Offers
-        </Typography>
+        <Typography sx={{ fontWeight: 'bold' }}>Active Offers</Typography>
       </StyledAccordionSummary>
       <AccordionDetails sx={{ p: 0 }}>
         {loading ? (
