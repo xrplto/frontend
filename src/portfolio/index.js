@@ -937,110 +937,6 @@ export default function Portfolio({ account, limit, collection, type }) {
           </Grid>
 
           <Grid item md={8} xs={12}>
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid item xs={12} md={4}>
-                <Card sx={{ p: 1.5, height: '100%' }}>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
-                      ROI Performance
-                    </Typography>
-                  </Box>
-                  <Box sx={{ height: 280 }}>
-                    {loading ? (
-                      <Skeleton variant="rectangular" height={280} />
-                    ) : (
-                      <Line
-                        data={processChartData()}
-                        options={{
-                          ...chartOptions,
-                          plugins: {
-                            ...chartOptions.plugins,
-                            legend: {
-                              ...chartOptions.plugins.legend,
-                              padding: 5
-                            },
-                            title: {
-                              ...chartOptions.plugins.title,
-                              padding: 5,
-                              display: false
-                            }
-                          }
-                        }}
-                      />
-                    )}
-                  </Box>
-                </Card>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Card sx={{ p: 1.5, height: '100%' }}>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
-                      Trading Activity
-                    </Typography>
-                  </Box>
-                  <Box sx={{ height: 280 }}>
-                    {loading ? (
-                      <Skeleton variant="rectangular" height={280} />
-                    ) : (
-                      <Line
-                        data={processTradeHistoryData()}
-                        options={{
-                          ...tradeHistoryOptions,
-                          plugins: {
-                            ...tradeHistoryOptions.plugins,
-                            legend: {
-                              ...tradeHistoryOptions.plugins.legend,
-                              padding: 5
-                            },
-                            title: {
-                              ...tradeHistoryOptions.plugins.title,
-                              padding: 5,
-                              display: false
-                            }
-                          }
-                        }}
-                      />
-                    )}
-                  </Box>
-                </Card>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Card sx={{ p: 1.5, height: '100%' }}>
-                  <Box sx={{ mb: 1 }}>
-                    <Typography variant="h6" color="text.secondary" gutterBottom>
-                      Volume History
-                    </Typography>
-                  </Box>
-                  <Box sx={{ height: 280 }}>
-                    {loading ? (
-                      <Skeleton variant="rectangular" height={280} />
-                    ) : (
-                      <Line
-                        data={processVolumeHistoryData()}
-                        options={{
-                          ...volumeHistoryOptions,
-                          plugins: {
-                            ...volumeHistoryOptions.plugins,
-                            legend: {
-                              ...volumeHistoryOptions.plugins.legend,
-                              padding: 5
-                            },
-                            title: {
-                              ...volumeHistoryOptions.plugins.title,
-                              padding: 5,
-                              display: false
-                            }
-                          }
-                        }}
-                      />
-                    )}
-                  </Box>
-                </Card>
-              </Grid>
-            </Grid>
-
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <Box sx={{ mb: 3 }}>
@@ -1176,6 +1072,110 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </CardContent>
                   </Card>
                 </Box>
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={4}>
+                <Card sx={{ p: 1.5, height: '100%' }}>
+                  <Box sx={{ mb: 1 }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      ROI Performance
+                    </Typography>
+                  </Box>
+                  <Box sx={{ height: 280 }}>
+                    {loading ? (
+                      <Skeleton variant="rectangular" height={280} />
+                    ) : (
+                      <Line
+                        data={processChartData()}
+                        options={{
+                          ...chartOptions,
+                          plugins: {
+                            ...chartOptions.plugins,
+                            legend: {
+                              ...chartOptions.plugins.legend,
+                              padding: 5
+                            },
+                            title: {
+                              ...chartOptions.plugins.title,
+                              padding: 5,
+                              display: false
+                            }
+                          }
+                        }}
+                      />
+                    )}
+                  </Box>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <Card sx={{ p: 1.5, height: '100%' }}>
+                  <Box sx={{ mb: 1 }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      Trading Activity
+                    </Typography>
+                  </Box>
+                  <Box sx={{ height: 280 }}>
+                    {loading ? (
+                      <Skeleton variant="rectangular" height={280} />
+                    ) : (
+                      <Line
+                        data={processTradeHistoryData()}
+                        options={{
+                          ...tradeHistoryOptions,
+                          plugins: {
+                            ...tradeHistoryOptions.plugins,
+                            legend: {
+                              ...tradeHistoryOptions.plugins.legend,
+                              padding: 5
+                            },
+                            title: {
+                              ...tradeHistoryOptions.plugins.title,
+                              padding: 5,
+                              display: false
+                            }
+                          }
+                        }}
+                      />
+                    )}
+                  </Box>
+                </Card>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <Card sx={{ p: 1.5, height: '100%' }}>
+                  <Box sx={{ mb: 1 }}>
+                    <Typography variant="h6" color="text.secondary" gutterBottom>
+                      Volume History
+                    </Typography>
+                  </Box>
+                  <Box sx={{ height: 280 }}>
+                    {loading ? (
+                      <Skeleton variant="rectangular" height={280} />
+                    ) : (
+                      <Line
+                        data={processVolumeHistoryData()}
+                        options={{
+                          ...volumeHistoryOptions,
+                          plugins: {
+                            ...volumeHistoryOptions.plugins,
+                            legend: {
+                              ...volumeHistoryOptions.plugins.legend,
+                              padding: 5
+                            },
+                            title: {
+                              ...volumeHistoryOptions.plugins.title,
+                              padding: 5,
+                              display: false
+                            }
+                          }
+                        }}
+                      />
+                    )}
+                  </Box>
+                </Card>
               </Grid>
             </Grid>
 
