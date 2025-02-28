@@ -572,7 +572,38 @@ const HistoryRow = (props) => {
       </TableCell>
       <TableCell sx={{ color: theme.palette.text.primary }}>
         {source && (
-          <Tooltip title={props.sourceTooltip} arrow placement="top">
+          <Tooltip
+            title={props.sourceTooltip}
+            arrow
+            placement="top"
+            componentsProps={{
+              tooltip: {
+                sx: {
+                  bgcolor: theme.palette.mode === 'dark' ? 'black' : 'white',
+                  color: theme.palette.mode === 'dark' ? 'white' : 'black',
+                  border: `1px solid ${
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.2)'
+                      : 'rgba(0, 0, 0, 0.2)'
+                  }`,
+                  '& .MuiTooltip-arrow': {
+                    color: theme.palette.mode === 'dark' ? 'black' : 'white',
+                    '&:before': {
+                      border: `1px solid ${
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(255, 255, 255, 0.2)'
+                          : 'rgba(0, 0, 0, 0.2)'
+                      }`
+                    }
+                  },
+                  boxShadow: theme.shadows[1],
+                  fontSize: '0.75rem',
+                  padding: '8px 12px',
+                  maxWidth: 300
+                }
+              }
+            }}
+          >
             <Chip
               size="small"
               icon={
