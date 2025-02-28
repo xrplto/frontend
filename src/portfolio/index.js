@@ -775,7 +775,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                   <Card sx={{ p: 1.5, borderRadius: '8px' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <Typography variant="subtitle1" color="text.secondary" sx={{ flex: 1 }}>
-                        Total Trading Volume
+                        Trading Overview
                       </Typography>
                       <Typography variant="h5" sx={{ color: theme.palette.success.main }}>
                         {loading ? (
@@ -796,13 +796,26 @@ export default function Portfolio({ account, limit, collection, type }) {
                           }}
                         >
                           <Typography variant="caption" color="text.secondary" display="block">
-                            Average ROI
+                            Buy Volume
                           </Typography>
-                          <Typography
-                            variant="body2"
-                            color={traderStats?.avgROI >= 0 ? 'success.main' : 'error.main'}
-                          >
-                            {`${(traderStats?.avgROI || 0).toFixed(2)}%`}
+                          <Typography variant="body2" color="success.main">
+                            {`${(traderStats?.buyVolume || 0).toLocaleString()} XRP`}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6} sm={3}>
+                        <Box
+                          sx={{
+                            p: 1,
+                            bgcolor: alpha(theme.palette.primary.main, 0.05),
+                            borderRadius: 1
+                          }}
+                        >
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Sell Volume
+                          </Typography>
+                          <Typography variant="body2" color="error.main">
+                            {`${(traderStats?.sellVolume || 0).toLocaleString()} XRP`}
                           </Typography>
                         </Box>
                       </Grid>
@@ -819,22 +832,6 @@ export default function Portfolio({ account, limit, collection, type }) {
                           </Typography>
                           <Typography variant="body2">
                             {`${Math.round((traderStats?.avgHoldingTime || 0) / 3600)}h`}
-                          </Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={6} sm={3}>
-                        <Box
-                          sx={{
-                            p: 1,
-                            bgcolor: alpha(theme.palette.primary.main, 0.05),
-                            borderRadius: 1
-                          }}
-                        >
-                          <Typography variant="caption" color="text.secondary" display="block">
-                            Total Volume
-                          </Typography>
-                          <Typography variant="body2">
-                            {`${(traderStats?.totalVolume || 0).toLocaleString()} XRP`}
                           </Typography>
                         </Box>
                       </Grid>
