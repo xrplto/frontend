@@ -481,9 +481,27 @@ export default function Analytics() {
                         minWidth: 650,
                         '& .MuiTableCell-root': {
                           whiteSpace: 'nowrap',
-                          padding: '8px 16px'
+                          padding: '4px 12px',
+                          fontSize: '0.875rem'
+                        },
+                        '& .MuiTableHead-root .MuiTableCell-root': {
+                          fontWeight: 600,
+                          backgroundColor: 'background.default',
+                          fontSize: '0.75rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        },
+                        '& .MuiTableRow-root': {
+                          height: '48px'
+                        },
+                        '& .MuiIconButton-root': {
+                          padding: '4px',
+                          '& .MuiSvgIcon-root': {
+                            fontSize: '1rem'
+                          }
                         }
                       }}
+                      size="small"
                       aria-label="trader analytics table"
                     >
                       <TableHead>
