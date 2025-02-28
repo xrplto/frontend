@@ -80,8 +80,13 @@ export default function Analytics() {
       new Intl.NumberFormat('en-US', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      }).format(value || 0) + ' XRP'
+      }).format(value || 0) + ' Ꭓ'
     );
+  };
+
+  const abbreviateAddress = (address) => {
+    if (!address) return '';
+    return `${address.substring(0, 4)}...${address.substring(address.length - 4)}`;
   };
 
   const formatPercentage = (value) => {
@@ -471,7 +476,16 @@ export default function Analytics() {
                     Top Traders
                   </Typography>
                   <TableContainer>
-                    <Table sx={{ minWidth: 650 }} aria-label="trader analytics table">
+                    <Table
+                      sx={{
+                        minWidth: 650,
+                        '& .MuiTableCell-root': {
+                          whiteSpace: 'nowrap',
+                          padding: '8px 16px'
+                        }
+                      }}
+                      aria-label="trader analytics table"
+                    >
                       <TableHead>
                         <TableRow>
                           <TableCell>Address</TableCell>
@@ -482,6 +496,13 @@ export default function Analytics() {
                           <TableCell align="right">Win Rate</TableCell>
                           <TableCell align="right">Total Profit</TableCell>
                           <TableCell align="right">ROI</TableCell>
+                          <TableCell align="right">First Trade</TableCell>
+                          <TableCell align="right">Last Trade</TableCell>
+                          <TableCell align="right">Avg Hold Time (h)</TableCell>
+                          <TableCell align="right">Max Profit</TableCell>
+                          <TableCell align="right">Max Loss</TableCell>
+                          <TableCell align="right">Buy Volume</TableCell>
+                          <TableCell align="right">Sell Volume</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -501,10 +522,11 @@ export default function Analytics() {
                           >
                             <TableCell component="th" scope="row">
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                {trader.address}
+                                {abbreviateAddress(trader.address)}
                                 <IconButton
                                   size="small"
                                   onClick={(e) => handleRoiClick(trader, e)}
+                                  title={trader.address}
                                   sx={{
                                     color: 'primary.main',
                                     '&:hover': {
@@ -550,6 +572,33 @@ export default function Analytics() {
                             >
                               {formatPercentage(trader.avgROI)}
                             </TableCell>
+                            <TableCell align="right">
+                              {new Date(trader.firstTradeDate).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell align="right">
+                              {new Date(trader.lastTradeDate).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell align="right">
+                              {(trader.avgHoldingTime / 3600).toFixed(2)}
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{
+                                color: 'success.main'
+                              }}
+                            >
+                              {formatCurrency(trader.maxProfitTrade)}
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{
+                                color: 'error.main'
+                              }}
+                            >
+                              {formatCurrency(trader.maxLossTrade)}
+                            </TableCell>
+                            <TableCell align="right">{formatCurrency(trader.buyVolume)}</TableCell>
+                            <TableCell align="right">{formatCurrency(trader.sellVolume)}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
