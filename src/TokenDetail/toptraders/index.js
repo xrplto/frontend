@@ -161,7 +161,7 @@ export default function TopTraders({ token }) {
   const [orderBy, setOrderBy] = useState('profit24h');
   const [copiedTrader, setCopiedTrader] = useState(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(20);
 
   useEffect(() => {
     const fetchTopTraders = async () => {
@@ -480,7 +480,7 @@ export default function TopTraders({ token }) {
           </TableBody>
         </Table>
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25, 50, 100]}
+          rowsPerPageOptions={[5, 10, 20, 25, 50, 100]}
           component="div"
           count={sortedTraders.length}
           rowsPerPage={rowsPerPage}
