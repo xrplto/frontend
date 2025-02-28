@@ -679,7 +679,7 @@ export default function Portfolio({ account, limit, collection, type }) {
     <OverviewWrapper>
       <Container maxWidth="xl" sx={{ mt: 4 }}>
         <Grid container spacing={3}>
-          <Grid item md={4} xs={12}>
+          <Grid item md={3} xs={12}>
             <OuterBorderContainer>
               <Stack sx={{ height: '100%', justifyContent: 'space-between' }}>
                 <Stack
@@ -936,7 +936,7 @@ export default function Portfolio({ account, limit, collection, type }) {
             </OuterBorderContainer>
           </Grid>
 
-          <Grid item md={8} xs={12}>
+          <Grid item md={9} xs={12}>
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <Box sx={{ mb: 3 }}>
@@ -1077,15 +1077,15 @@ export default function Portfolio({ account, limit, collection, type }) {
 
             <Grid container spacing={2} sx={{ mb: 3 }}>
               <Grid item xs={12} md={4}>
-                <Card sx={{ p: 1.5, height: '100%' }}>
+                <Card sx={{ p: 2, height: '100%' }}>
                   <Box sx={{ mb: 1 }}>
                     <Typography variant="h6" color="text.secondary" gutterBottom>
                       ROI Performance
                     </Typography>
                   </Box>
-                  <Box sx={{ height: 280 }}>
+                  <Box sx={{ height: 350 }}>
                     {loading ? (
-                      <Skeleton variant="rectangular" height={280} />
+                      <Skeleton variant="rectangular" height={350} />
                     ) : (
                       <Line
                         data={processChartData()}
@@ -1111,15 +1111,15 @@ export default function Portfolio({ account, limit, collection, type }) {
               </Grid>
 
               <Grid item xs={12} md={4}>
-                <Card sx={{ p: 1.5, height: '100%' }}>
+                <Card sx={{ p: 2, height: '100%' }}>
                   <Box sx={{ mb: 1 }}>
                     <Typography variant="h6" color="text.secondary" gutterBottom>
                       Trading Activity
                     </Typography>
                   </Box>
-                  <Box sx={{ height: 280 }}>
+                  <Box sx={{ height: 350 }}>
                     {loading ? (
-                      <Skeleton variant="rectangular" height={280} />
+                      <Skeleton variant="rectangular" height={350} />
                     ) : (
                       <Line
                         data={processTradeHistoryData()}
@@ -1145,15 +1145,15 @@ export default function Portfolio({ account, limit, collection, type }) {
               </Grid>
 
               <Grid item xs={12} md={4}>
-                <Card sx={{ p: 1.5, height: '100%' }}>
+                <Card sx={{ p: 2, height: '100%' }}>
                   <Box sx={{ mb: 1 }}>
                     <Typography variant="h6" color="text.secondary" gutterBottom>
                       Volume History
                     </Typography>
                   </Box>
-                  <Box sx={{ height: 280 }}>
+                  <Box sx={{ height: 350 }}>
                     {loading ? (
-                      <Skeleton variant="rectangular" height={280} />
+                      <Skeleton variant="rectangular" height={350} />
                     ) : (
                       <Line
                         data={processVolumeHistoryData()}
