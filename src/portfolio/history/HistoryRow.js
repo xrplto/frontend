@@ -260,6 +260,24 @@ const HistoryRow = (props) => {
         setAssetValue2(getFormat(Number(DeliveredAmount) / 1000000));
       }
     }
+
+    if (TransactionType === 'OfferCreate') {
+      if (SendMax?.currency && SendMax?.value) {
+        setAssetName(normalizeCurrencyCode(SendMax.currency));
+        setAssetValue(getFormat(Number(SendMax.value)));
+      } else if (SendMax) {
+        setAssetName('XRP');
+        setAssetValue(getFormat(Number(SendMax) / 1000000));
+      }
+
+      if (Amount?.currency && Amount?.value) {
+        setAssetName2(normalizeCurrencyCode(Amount.currency));
+        setAssetValue2(getFormat(Number(Amount.value)));
+      } else if (Amount) {
+        setAssetName2('XRP');
+        setAssetValue2(getFormat(Number(Amount) / 1000000));
+      }
+    }
   }, [TransactionType]);
 
   const getRelativeTime = (timestamp) => {
@@ -379,6 +397,40 @@ const HistoryRow = (props) => {
               }}
             />
           )}
+          {TransactionType === 'OfferCreate' && (
+            <Chip
+              color="info"
+              label="Offer"
+              size="small"
+              sx={{
+                height: '18px',
+                backgroundColor: alpha('#8B5CF6', 0.1),
+                color: '#8B5CF6',
+                '& .MuiChip-label': {
+                  px: 0.75,
+                  fontSize: '0.7rem',
+                  lineHeight: 1
+                }
+              }}
+            />
+          )}
+          {TransactionType === 'OfferCancel' && (
+            <Chip
+              color="error"
+              label="Cancel"
+              size="small"
+              sx={{
+                height: '18px',
+                backgroundColor: alpha('#B72136', 0.1),
+                color: '#B72136',
+                '& .MuiChip-label': {
+                  px: 0.75,
+                  fontSize: '0.7rem',
+                  lineHeight: 1
+                }
+              }}
+            />
+          )}
         </Stack>
       </TableCell>
       <TableCell sx={{ color: theme.palette.text.primary, width: '70px' }}>
@@ -487,6 +539,34 @@ const HistoryRow = (props) => {
         {TransactionType === 'TrustSet' && (
           <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
             <Typography sx={{ fontSize: '0.75rem', color: '#0C53B7' }}>Trust Line Set</Typography>
+          </Stack>
+        )}
+        {TransactionType === 'OfferCreate' && (
+          <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
+            <Stack direction="row" alignItems="baseline">
+              <Typography sx={{ fontSize: '0.75rem' }}>{assetValue.valueBeforeDot}</Typography>
+              {assetValue.valueAfterDot !== '' && (
+                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue.valueAfterDot}</Typography>
+              )}
+            </Stack>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
+              {assetName}
+            </Typography>
+            <EastIcon sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '1rem' }} />
+            <Stack direction="row" alignItems="baseline">
+              <Typography sx={{ fontSize: '0.75rem' }}>{assetValue2.valueBeforeDot}</Typography>
+              {assetValue2.valueAfterDot !== '' && (
+                <Typography sx={{ fontSize: '0.75rem' }}>.{assetValue2.valueAfterDot}</Typography>
+              )}
+            </Stack>
+            <Typography sx={{ color: theme.palette.primary.main, fontSize: '0.75rem' }}>
+              {assetName2}
+            </Typography>
+          </Stack>
+        )}
+        {TransactionType === 'OfferCancel' && (
+          <Stack direction="row" alignItems="center" spacing={0.25} sx={{ typography: 'body2' }}>
+            <Typography sx={{ fontSize: '0.75rem', color: '#B72136' }}>Offer Cancelled</Typography>
           </Stack>
         )}
       </TableCell>

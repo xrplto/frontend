@@ -68,7 +68,9 @@ const DeFiHistory = ({ account }) => {
             deliveredAmount !== undefined) ||
           transactionType === 'AMMDeposit' ||
           transactionType === 'AMMWithdraw' ||
-          transactionType === 'TrustSet'
+          transactionType === 'TrustSet' ||
+          transactionType === 'OfferCreate' ||
+          transactionType === 'OfferCancel'
         );
       });
       const updatedArray = filteredTransactions.map((item) => {
@@ -93,21 +95,28 @@ const DeFiHistory = ({ account }) => {
           sourceLabel = 'Sologenic';
         }
 
+        // For OfferCreate, include TakerGets and TakerPays
+        const amount =
+          item.tx.TransactionType === 'OfferCreate' ? item.tx.TakerPays : item.tx.Amount;
+        const sendMax =
+          item.tx.TransactionType === 'OfferCreate' ? item.tx.TakerGets : item.tx.SendMax;
+
         return {
           Account: item.tx.Account,
           Destination: item.tx.Destination,
           TransactionType: item.tx.TransactionType,
-          Amount: item.tx.Amount,
+          Amount: amount,
           Amount2: item.tx.Amount2,
           Asset: item.tx.Asset,
           Asset2: item.tx.Asset2,
           TransactionResult: item.meta.TransactionResult,
           DeliveredAmount: item.meta.delivered_amount,
-          SendMax: item.tx.SendMax,
+          SendMax: sendMax,
           hash: item.tx.hash,
           date: item.tx.date,
           source: sourceLabel,
-          LimitAmount: item.tx.LimitAmount
+          LimitAmount: item.tx.LimitAmount,
+          OfferSequence: item.tx.OfferSequence // For OfferCancel
         };
       });
 
