@@ -397,7 +397,9 @@ export default function Portfolio({ account, limit, collection, type }) {
             if (label) {
               label += ': ';
             }
-            const value = context.parsed.y || 0;
+            const value = context.parsed?.y;
+            if (!value) return label + '0%';
+
             if (context.dataset.yAxisID === 'y2') {
               return label + value.toLocaleString() + ' XRP';
             } else {
@@ -491,7 +493,17 @@ export default function Portfolio({ account, limit, collection, type }) {
         bodyColor: theme.palette.text.secondary,
         borderColor: theme.palette.divider,
         borderWidth: 1,
-        padding: 12
+        padding: 12,
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            const value = context.parsed?.y;
+            return label + (value ? value.toLocaleString() : '0');
+          }
+        }
       }
     },
     scales: {
@@ -581,7 +593,8 @@ export default function Portfolio({ account, limit, collection, type }) {
             if (label) {
               label += ': ';
             }
-            return label + context.parsed.y.toLocaleString() + ' XRP';
+            const value = context.parsed?.y;
+            return label + (value ? value.toLocaleString() : '0') + ' XRP';
           }
         }
       }
