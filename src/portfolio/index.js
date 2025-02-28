@@ -772,86 +772,106 @@ export default function Portfolio({ account, limit, collection, type }) {
                     />
                   </Box>
 
-                  <Card sx={{ p: 1.5, borderRadius: '8px' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <Typography variant="subtitle1" color="text.secondary" sx={{ flex: 1 }}>
+                  <Card sx={{ p: 1, borderRadius: '8px' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                      <Typography variant="subtitle2" color="text.secondary" sx={{ flex: 1 }}>
                         Trading Overview
                       </Typography>
-                      <Typography variant="h5" sx={{ color: theme.palette.success.main }}>
+                      <Typography variant="h6" sx={{ color: theme.palette.success.main }}>
                         {loading ? (
-                          <Skeleton width={120} height={28} />
+                          <Skeleton width={100} height={24} />
                         ) : (
                           `${traderStats?.totalVolume?.toLocaleString() || 0} XRP`
                         )}
                       </Typography>
                     </Box>
 
-                    <Grid container spacing={1}>
-                      <Grid item xs={6} sm={3}>
+                    <Grid container spacing={0.5}>
+                      <Grid item xs={6}>
                         <Box
                           sx={{
-                            p: 1,
+                            p: 0.75,
                             bgcolor: alpha(theme.palette.primary.main, 0.05),
                             borderRadius: 1
                           }}
                         >
-                          <Typography variant="caption" color="text.secondary" display="block">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            noWrap
+                          >
                             Buy Volume
                           </Typography>
-                          <Typography variant="body2" color="success.main">
+                          <Typography variant="body2" color="success.main" noWrap>
                             {`${(traderStats?.buyVolume || 0).toLocaleString()} XRP`}
                           </Typography>
                         </Box>
                       </Grid>
-                      <Grid item xs={6} sm={3}>
+                      <Grid item xs={6}>
                         <Box
                           sx={{
-                            p: 1,
+                            p: 0.75,
                             bgcolor: alpha(theme.palette.primary.main, 0.05),
                             borderRadius: 1
                           }}
                         >
-                          <Typography variant="caption" color="text.secondary" display="block">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            noWrap
+                          >
                             Sell Volume
                           </Typography>
-                          <Typography variant="body2" color="error.main">
+                          <Typography variant="body2" color="error.main" noWrap>
                             {`${(traderStats?.sellVolume || 0).toLocaleString()} XRP`}
                           </Typography>
                         </Box>
                       </Grid>
-                      <Grid item xs={6} sm={3}>
+                      <Grid item xs={6}>
                         <Box
                           sx={{
-                            p: 1,
+                            p: 0.75,
                             bgcolor: alpha(theme.palette.primary.main, 0.05),
                             borderRadius: 1
                           }}
                         >
-                          <Typography variant="caption" color="text.secondary" display="block">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            noWrap
+                          >
                             Holding Time
                           </Typography>
-                          <Typography variant="body2">
+                          <Typography variant="body2" noWrap>
                             {`${Math.round((traderStats?.avgHoldingTime || 0) / 3600)}h`}
                           </Typography>
                         </Box>
                       </Grid>
-                      <Grid item xs={6} sm={3}>
+                      <Grid item xs={6}>
                         <Box
                           sx={{
-                            p: 1,
+                            p: 0.75,
                             bgcolor: alpha(theme.palette.primary.main, 0.05),
                             borderRadius: 1
                           }}
                         >
-                          <Typography variant="caption" color="text.secondary" display="block">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            noWrap
+                          >
                             Win Rate
                           </Typography>
-                          <Typography variant="body2">
+                          <Typography variant="body2" noWrap>
                             {`${(
                               (traderStats?.profitableTrades /
                                 (traderStats?.profitableTrades + traderStats?.losingTrades || 1)) *
                               100
-                            ).toFixed(2)}%`}
+                            ).toFixed(1)}%`}
                           </Typography>
                         </Box>
                       </Grid>
