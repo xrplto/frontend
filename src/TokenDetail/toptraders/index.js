@@ -150,6 +150,9 @@ export default function TopTraders({ token }) {
   const BASE_URL = process.env.API_URL;
   const { darkMode } = useContext(AppContext);
 
+  console.log('Token prop:', token); // Debug token prop
+  console.log('BASE_URL:', BASE_URL); // Debug API URL
+
   const [traders, setTraders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTrader, setSelectedTrader] = useState(null);
@@ -163,21 +166,43 @@ export default function TopTraders({ token }) {
   useEffect(() => {
     const fetchTopTraders = async () => {
       try {
+        console.log('Fetching traders for token:', token.md5);
         const response = await axios.get(
           `${BASE_URL}/analytics/top-traders/${token.md5}?limit=1000`
         );
+        console.log('API Response:', response.data);
         if (response.status === 200) {
-          setTraders(response.data);
+          // Extract the traders array from response.data.data
+          const tradersData = Array.isArray(response.data.data) ? response.data.data : [];
+          console.log('Setting traders state:', tradersData);
+          setTraders(tradersData);
         }
       } catch (error) {
         console.error('Error fetching top traders:', error);
+        setTraders([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTopTraders();
-  }, [token.md5]);
+    if (token?.md5) {
+      fetchTopTraders();
+    } else {
+      console.log('No token.md5 provided');
+      setLoading(false);
+    }
+  }, [token?.md5, BASE_URL]);
+
+  // Add debug log for traders state changes
+  useEffect(() => {
+    console.log('Current traders state:', traders);
+  }, [traders]);
+
+  // Debug sorted traders
+  const sortedTraders = Array.isArray(traders)
+    ? traders.slice().sort(getComparator(order, orderBy))
+    : [];
+  console.log('Sorted traders:', sortedTraders);
 
   const handleRequestSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -230,9 +255,6 @@ export default function TopTraders({ token }) {
       </Box>
     );
   }
-
-  // Sort traders
-  const sortedTraders = traders.slice().sort(getComparator(order, orderBy));
 
   // Apply pagination
   const paginatedTraders = sortedTraders.slice(
