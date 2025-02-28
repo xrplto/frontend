@@ -57,6 +57,10 @@ export default function Analytics() {
   const [orderBy, setOrderBy] = useState('volume24h');
   const [order, setOrder] = useState('desc');
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage] = useState(100);
 
   // Add WebSocket connection
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
@@ -105,24 +109,52 @@ export default function Analytics() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const response = await fetch(
-          'https://api.xrpl.to/api/analytics/cumulative-stats?page=1&limit=100'
+          `https://api.xrpl.to/api/analytics/cumulative-stats?page=${page}&limit=${itemsPerPage}&sortBy=${orderBy}&sortOrder=${order}`
         );
-        const data = await response.json();
-        setTraders(data.traders);
+        const responseData = await response.json();
+        console.log('Fetched traders data:', responseData);
+
+        // Handle the nested data.traders structure and pagination
+        if (responseData && responseData.data) {
+          if (Array.isArray(responseData.data.traders)) {
+            setTraders(responseData.data.traders);
+            // Set pagination data
+            if (responseData.data.pagination) {
+              setTotalPages(responseData.data.pagination.totalPages);
+              setTotalItems(responseData.data.pagination.totalItems);
+            }
+            setError(null);
+          } else {
+            console.error('Unexpected data structure:', responseData);
+            setError('Invalid data format received from server');
+            setTraders([]);
+          }
+        } else {
+          setError('Invalid data format received from server');
+          setTraders([]);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Error fetching data');
+        setTraders([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [page, itemsPerPage, orderBy, order]);
+
+  useEffect(() => {
+    console.log('Current traders state:', traders);
+  }, [traders]);
 
   const handleRoiClick = (trader, event) => {
-    event.stopPropagation();
+    if (event) {
+      event.stopPropagation();
+    }
     setRoiModalTrader(trader);
   };
 
@@ -513,7 +545,19 @@ export default function Analytics() {
   };
 
   const sortData = (data) => {
+    if (!Array.isArray(data)) {
+      console.error('sortData received non-array:', data);
+      return [];
+    }
+
+    console.log('Sorting data:', { orderBy, order, dataLength: data.length });
+
     return data.sort((a, b) => {
+      if (!a || !b) {
+        console.error('Invalid trader objects in sort:', { a, b });
+        return 0;
+      }
+
       let aValue = a[orderBy];
       let bValue = b[orderBy];
 
@@ -758,7 +802,7 @@ export default function Analytics() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sortData([...traders]).map((trader) => (
+                        {sortData(traders ? [...traders] : []).map((trader) => (
                           <TableRow
                             key={trader._id}
                             sx={{
@@ -856,6 +900,66 @@ export default function Analytics() {
                       </TableBody>
                     </Table>
                   </TableContainer>
+                  <Box
+                    sx={{
+                      py: 2,
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      alignItems: 'center',
+                      gap: 2
+                    }}
+                  >
+                    <Typography variant="body2" color="text.secondary">
+                      {`${(page - 1) * itemsPerPage + 1}-${Math.min(
+                        page * itemsPerPage,
+                        totalItems
+                      )} of ${totalItems}`}
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <IconButton
+                        onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                        disabled={page === 1}
+                        size="small"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M15 18L9 12L15 6"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </IconButton>
+                      <IconButton
+                        onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                        disabled={page >= totalPages}
+                        size="small"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M9 6L15 12L9 18"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </IconButton>
+                    </Box>
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
