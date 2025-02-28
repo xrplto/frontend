@@ -18,9 +18,13 @@ import {
   Divider,
   IconButton,
   Modal,
-  styled
+  styled,
+  TextField,
+  InputAdornment
 } from '@mui/material';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
+import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 import ReactECharts from 'echarts-for-react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -61,6 +65,22 @@ export default function Analytics() {
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage] = useState(100);
+  const [searchAddress, setSearchAddress] = useState('');
+  const [debouncedSearchAddress, setDebouncedSearchAddress] = useState('');
+
+  // Add debounce effect for search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchAddress(searchAddress);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchAddress]);
+
+  // Reset page when search changes
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearchAddress]);
 
   // Add WebSocket connection
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
@@ -110,8 +130,19 @@ export default function Analytics() {
     const fetchData = async () => {
       try {
         setLoading(true);
+        const queryParams = new URLSearchParams({
+          page: page,
+          limit: itemsPerPage,
+          sortBy: orderBy,
+          sortOrder: order
+        });
+
+        if (debouncedSearchAddress) {
+          queryParams.append('address', debouncedSearchAddress);
+        }
+
         const response = await fetch(
-          `https://api.xrpl.to/api/analytics/cumulative-stats?page=${page}&limit=${itemsPerPage}&sortBy=${orderBy}&sortOrder=${order}`
+          `https://api.xrpl.to/api/analytics/cumulative-stats?${queryParams.toString()}`
         );
         const responseData = await response.json();
         console.log('Fetched traders data:', responseData);
@@ -145,7 +176,7 @@ export default function Analytics() {
     };
 
     fetchData();
-  }, [page, itemsPerPage, orderBy, order]);
+  }, [page, itemsPerPage, orderBy, order, debouncedSearchAddress]);
 
   useEffect(() => {
     console.log('Current traders state:', traders);
@@ -619,6 +650,39 @@ export default function Analytics() {
             <Grid item xs={12}>
               <Card>
                 <CardContent>
+                  <Box sx={{ mb: 3 }}>
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      placeholder="Search by address..."
+                      value={searchAddress}
+                      onChange={(e) => setSearchAddress(e.target.value)}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon />
+                          </InputAdornment>
+                        ),
+                        endAdornment: searchAddress && (
+                          <InputAdornment position="end">
+                            <IconButton
+                              size="small"
+                              onClick={() => setSearchAddress('')}
+                              edge="end"
+                            >
+                              <ClearIcon />
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }}
+                      sx={{
+                        maxWidth: 400,
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2
+                        }
+                      }}
+                    />
+                  </Box>
                   <Typography variant="h5" gutterBottom>
                     Top Traders
                   </Typography>
