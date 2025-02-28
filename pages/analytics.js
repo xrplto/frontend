@@ -1073,6 +1073,12 @@ export default function Analytics() {
                           0
                       )}
                     </Typography>
+                    <Typography variant="body2" color="success.main" sx={{ mt: 1 }}>
+                      Buy: {formatCurrency(roiModalTrader.buyVolume || 0)}
+                    </Typography>
+                    <Typography variant="body2" color="error.main">
+                      Sell: {formatCurrency(roiModalTrader.sellVolume || 0)}
+                    </Typography>
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
                     <Typography variant="body2" color="text.secondary">
