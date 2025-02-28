@@ -36,6 +36,7 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   Tooltip as ChartTooltip,
   Legend
@@ -61,6 +62,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
+  BarElement,
   Title,
   ChartTooltip,
   Legend
@@ -203,52 +205,270 @@ export default function Portfolio({ account, limit, collection, type }) {
     );
 
     return {
-      labels: sortedHistory.map((item) => new Date(item.date).toLocaleDateString()),
+      labels: sortedHistory.map((item) =>
+        new Date(item.date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        })
+      ),
       datasets: [
+        {
+          label: 'Daily ROI',
+          data: sortedHistory.map((item) => item.dailyRoi),
+          fill: false,
+          backgroundColor: theme.palette.primary.light,
+          borderColor: theme.palette.primary.main,
+          tension: 0.4,
+          yAxisID: 'y',
+          type: 'line',
+          pointRadius: 2,
+          pointHoverRadius: 4
+        },
         {
           label: 'Cumulative ROI',
           data: sortedHistory.map((item) => item.cumulativeRoi),
           fill: false,
-          backgroundColor: 'rgba(75,192,192,0.2)',
-          borderColor: 'rgba(75,192,192,1)',
+          backgroundColor: theme.palette.success.light,
+          borderColor: theme.palette.success.main,
           tension: 0.4,
-          yAxisID: 'y'
+          yAxisID: 'y1',
+          type: 'line',
+          pointRadius: 2,
+          pointHoverRadius: 4
         },
         {
-          label: 'Daily Volume',
+          label: 'Volume',
           data: sortedHistory.map((item) => item.volume),
-          fill: false,
-          backgroundColor: 'rgba(255,99,132,0.2)',
-          borderColor: 'rgba(255,99,132,1)',
+          fill: true,
+          backgroundColor: alpha(theme.palette.info.main, 0.1),
+          borderColor: theme.palette.info.main,
           tension: 0.4,
-          yAxisID: 'y1'
+          yAxisID: 'y2',
+          type: 'bar'
         }
       ]
     };
   };
 
-  const volumeOptions = {
+  // Process trade history data for the chart
+  const processTradeHistoryData = () => {
+    if (!traderStats?.tradeHistory) return null;
+
+    const sortedHistory = [...traderStats.tradeHistory].sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+
+    return {
+      labels: sortedHistory.map((item) =>
+        new Date(item.date).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        })
+      ),
+      datasets: [
+        {
+          label: 'Daily Trades',
+          data: sortedHistory.map((item) => item.trades),
+          fill: false,
+          backgroundColor: theme.palette.primary.light,
+          borderColor: theme.palette.primary.main,
+          tension: 0.4,
+          yAxisID: 'y',
+          type: 'bar'
+        },
+        {
+          label: 'Cumulative Trades',
+          data: sortedHistory.map((item) => item.cumulativeTrades),
+          fill: false,
+          backgroundColor: theme.palette.success.light,
+          borderColor: theme.palette.success.main,
+          tension: 0.4,
+          yAxisID: 'y1',
+          type: 'line',
+          pointRadius: 2,
+          pointHoverRadius: 4
+        }
+      ]
+    };
+  };
+
+  const processVolumeHistoryData = () => {
+    if (!traderStats?.volumeHistory) return null;
+
+    const sortedHistory = [...traderStats.volumeHistory].sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+
+    return {
+      labels: sortedHistory.map((item) =>
+        new Date(item.date).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        })
+      ),
+      datasets: [
+        {
+          label: 'Daily Volume',
+          data: sortedHistory.map((item) => item.volume),
+          backgroundColor: alpha(theme.palette.primary.main, 0.2),
+          borderColor: theme.palette.primary.main,
+          type: 'bar',
+          yAxisID: 'y'
+        },
+        {
+          label: 'Cumulative Volume',
+          data: sortedHistory.map((item) => item.cumulativeVolume),
+          fill: false,
+          backgroundColor: theme.palette.success.light,
+          borderColor: theme.palette.success.main,
+          tension: 0.4,
+          type: 'line',
+          yAxisID: 'y1',
+          pointRadius: 2,
+          pointHoverRadius: 4
+        }
+      ]
+    };
+  };
+
+  const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
       mode: 'index',
       intersect: false
     },
-    stacked: false,
     plugins: {
       title: {
         display: true,
         text: 'Trading Performance',
-        color: theme.palette.text.primary
+        color: theme.palette.text.primary,
+        font: {
+          size: 16,
+          weight: 'bold'
+        },
+        padding: 20
       },
       legend: {
         position: 'bottom',
         labels: {
-          color: theme.palette.text.primary
+          color: theme.palette.text.primary,
+          padding: 20,
+          usePointStyle: true,
+          pointStyle: 'circle'
         }
       },
       tooltip: {
-        mode: 'index'
+        mode: 'index',
+        intersect: false,
+        backgroundColor: alpha(theme.palette.background.paper, 0.9),
+        titleColor: theme.palette.text.primary,
+        bodyColor: theme.palette.text.secondary,
+        borderColor: theme.palette.divider,
+        borderWidth: 1,
+        padding: 12,
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.dataset.yAxisID === 'y2') {
+              label += context.parsed.y.toLocaleString() + ' XRP';
+            } else {
+              label += context.parsed.y.toFixed(2) + '%';
+            }
+            return label;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+          drawBorder: false
+        },
+        ticks: {
+          color: theme.palette.text.secondary,
+          maxRotation: 45,
+          minRotation: 45
+        }
+      },
+      y: {
+        type: 'linear',
+        display: true,
+        position: 'left',
+        title: {
+          display: true,
+          text: 'Daily ROI (%)',
+          color: theme.palette.text.secondary
+        },
+        ticks: {
+          color: theme.palette.text.secondary,
+          callback: (value) => `${value.toFixed(2)}%`
+        },
+        grid: {
+          color: alpha(theme.palette.divider, 0.1)
+        }
+      },
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        title: {
+          display: true,
+          text: 'Cumulative ROI (%)',
+          color: theme.palette.text.secondary
+        },
+        ticks: {
+          color: theme.palette.text.secondary,
+          callback: (value) => `${value.toFixed(2)}%`
+        },
+        grid: {
+          display: false
+        }
+      }
+    }
+  };
+
+  const tradeHistoryOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false
+    },
+    plugins: {
+      title: {
+        display: true,
+        text: 'Trading Activity',
+        color: theme.palette.text.primary,
+        font: {
+          size: 16,
+          weight: 'bold'
+        },
+        padding: 20
+      },
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: theme.palette.text.primary,
+          padding: 20,
+          usePointStyle: true,
+          pointStyle: 'circle'
+        }
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: alpha(theme.palette.background.paper, 0.9),
+        titleColor: theme.palette.text.primary,
+        bodyColor: theme.palette.text.secondary,
+        borderColor: theme.palette.divider,
+        borderWidth: 1,
+        padding: 12
       }
     },
     scales: {
@@ -266,12 +486,15 @@ export default function Portfolio({ account, limit, collection, type }) {
         position: 'left',
         title: {
           display: true,
-          text: 'ROI (%)',
+          text: 'Daily Trades',
           color: theme.palette.text.secondary
         },
         ticks: {
           color: theme.palette.text.secondary,
-          callback: (value) => `${value.toFixed(2)}%`
+          stepSize: 1
+        },
+        grid: {
+          color: alpha(theme.palette.divider, 0.1)
         }
       },
       y1: {
@@ -280,7 +503,82 @@ export default function Portfolio({ account, limit, collection, type }) {
         position: 'right',
         title: {
           display: true,
-          text: 'Volume (XRP)',
+          text: 'Cumulative Trades',
+          color: theme.palette.text.secondary
+        },
+        ticks: {
+          color: theme.palette.text.secondary
+        },
+        grid: {
+          display: false
+        }
+      }
+    }
+  };
+
+  const volumeHistoryOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false
+    },
+    plugins: {
+      title: {
+        display: true,
+        text: 'Volume History',
+        color: theme.palette.text.primary,
+        font: {
+          size: 16,
+          weight: 'bold'
+        },
+        padding: 20
+      },
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: theme.palette.text.primary,
+          padding: 20,
+          usePointStyle: true,
+          pointStyle: 'circle'
+        }
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        backgroundColor: alpha(theme.palette.background.paper, 0.9),
+        titleColor: theme.palette.text.primary,
+        bodyColor: theme.palette.text.secondary,
+        borderColor: theme.palette.divider,
+        borderWidth: 1,
+        padding: 12,
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            return label + context.parsed.y.toLocaleString() + ' XRP';
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: theme.palette.text.secondary
+        }
+      },
+      y: {
+        type: 'linear',
+        display: true,
+        position: 'left',
+        title: {
+          display: true,
+          text: 'Daily Volume (XRP)',
           color: theme.palette.text.secondary
         },
         ticks: {
@@ -288,7 +586,24 @@ export default function Portfolio({ account, limit, collection, type }) {
           callback: (value) => value.toLocaleString()
         },
         grid: {
-          drawOnChartArea: false
+          color: alpha(theme.palette.divider, 0.1)
+        }
+      },
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        title: {
+          display: true,
+          text: 'Cumulative Volume (XRP)',
+          color: theme.palette.text.secondary
+        },
+        ticks: {
+          color: theme.palette.text.secondary,
+          callback: (value) => value.toLocaleString()
+        },
+        grid: {
+          display: false
         }
       }
     }
@@ -439,13 +754,107 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </Typography>
                   </Box>
 
-                  <Box sx={{ mt: 2, mb: 3, height: 300 }}>
-                    {loading ? (
-                      <Skeleton variant="rectangular" height={300} />
-                    ) : (
-                      <Line data={processChartData()} options={volumeOptions} />
-                    )}
-                  </Box>
+                  <Card sx={{ p: 2, mb: 3 }}>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="h6" color="text.secondary" gutterBottom>
+                        ROI Performance
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {`Trading Period: ${new Date(
+                          traderStats?.firstTradeDate
+                        ).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })} - ${new Date(traderStats?.lastTradeDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}`}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ height: 400 }}>
+                      {loading ? (
+                        <Skeleton variant="rectangular" height={400} />
+                      ) : (
+                        <Line data={processChartData()} options={chartOptions} />
+                      )}
+                    </Box>
+                  </Card>
+
+                  <Card sx={{ p: 2, mb: 3 }}>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="h6" color="text.secondary" gutterBottom>
+                        Trading Activity
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Daily and Cumulative Trade Count
+                      </Typography>
+                    </Box>
+                    <Box sx={{ height: 400 }}>
+                      {loading ? (
+                        <Skeleton variant="rectangular" height={400} />
+                      ) : (
+                        <Line data={processTradeHistoryData()} options={tradeHistoryOptions} />
+                      )}
+                    </Box>
+                  </Card>
+
+                  <Card sx={{ p: 2, mb: 3 }}>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="h6" color="text.secondary" gutterBottom>
+                        Volume History
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Daily and Cumulative Trading Volume
+                      </Typography>
+                    </Box>
+                    <Box sx={{ height: 400 }}>
+                      {loading ? (
+                        <Skeleton variant="rectangular" height={400} />
+                      ) : (
+                        <Line data={processVolumeHistoryData()} options={volumeHistoryOptions} />
+                      )}
+                    </Box>
+                  </Card>
+
+                  <Grid container spacing={2} sx={{ mt: 2 }}>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Average ROI
+                      </Typography>
+                      <Typography color={traderStats?.avgROI >= 0 ? 'success.main' : 'error.main'}>
+                        {`${(traderStats?.avgROI || 0).toFixed(2)}%`}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Average Holding Time
+                      </Typography>
+                      <Typography>
+                        {`${Math.round((traderStats?.avgHoldingTime || 0) / 3600)} hours`}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Total Volume
+                      </Typography>
+                      <Typography>
+                        {`${(traderStats?.totalVolume || 0).toLocaleString()} XRP`}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Win Rate
+                      </Typography>
+                      <Typography>
+                        {`${(
+                          (traderStats?.profitableTrades / (traderStats?.totalTrades || 1)) *
+                          100
+                        ).toFixed(2)}%`}
+                      </Typography>
+                    </Grid>
+                  </Grid>
 
                   <Box sx={{ mt: 2 }}>
                     <Typography variant="h6" sx={{ mb: 2 }}>
@@ -530,19 +939,6 @@ export default function Portfolio({ account, limit, collection, type }) {
                           <Typography>Losing Trades</Typography>
                           <Typography sx={{ color: theme.palette.error.main }}>
                             {traderStats?.losingTrades || 0}
-                          </Typography>
-                        </Box>
-                        <Box display="flex" justifyContent="space-between">
-                          <Typography>Average ROI</Typography>
-                          <Typography
-                            sx={{
-                              color:
-                                traderStats?.avgROI >= 0
-                                  ? theme.palette.success.main
-                                  : theme.palette.error.main
-                            }}
-                          >
-                            {traderStats?.avgROI?.toFixed(2) || 0}%
                           </Typography>
                         </Box>
                         <Box display="flex" justifyContent="space-between">
