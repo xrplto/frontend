@@ -457,41 +457,18 @@ const MarketMetricsContent = () => {
   // Add this state for progressive data loading
   const [progressiveData, setProgressiveData] = useState([]);
 
-  // Replace the existing useLayoutEffect with this implementation
+  // Modify the useLayoutEffect implementation to load data all at once
   useLayoutEffect(() => {
     if (sampledData.length > 0) {
-      setAnimationComplete(false);
-      setChartReady(false);
-
       // Clear any existing progressive data
       setProgressiveData([]);
 
       // Use a short timeout to allow the component to render first
       setTimeout(() => {
-        setChartReady(true);
-
-        // Load data progressively in chunks
-        const chunkSize = Math.max(5, Math.floor(sampledData.length / 10));
-        let currentIndex = 0;
-
-        const loadNextChunk = () => {
-          if (currentIndex >= sampledData.length) {
-            // All data loaded
-            setAnimationComplete(true);
-            return;
-          }
-
-          const nextIndex = Math.min(currentIndex + chunkSize, sampledData.length);
-          setProgressiveData(sampledData.slice(0, nextIndex));
-          currentIndex = nextIndex;
-
-          // Schedule next chunk
-          setTimeout(loadNextChunk, 50);
-        };
-
-        // Start loading data
-        loadNextChunk();
-      }, 50);
+        // Load all data at once without animation
+        setProgressiveData(sampledData);
+        setAnimationComplete(true);
+      }, 10); // Shorter timeout for faster loading
     }
   }, [sampledData]);
 
