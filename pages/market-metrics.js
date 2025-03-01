@@ -871,7 +871,7 @@ const MarketMetricsContent = () => {
                   XRP
                 </Typography>
 
-                <Box sx={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <Box>
                   {Object.keys(selectedDataPoint)
                     .filter((key) => key.endsWith('_marketcap') && selectedDataPoint[key] > 0)
                     .sort((a, b) => selectedDataPoint[b] - selectedDataPoint[a])
@@ -1155,7 +1155,7 @@ const MarketMetricsContent = () => {
                   </Box>
                 </Box>
 
-                <Box sx={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <Box>
                   {selectedTokens
                     .filter((token) => selectedDataPoint[`${token}_marketcap`] > 0)
                     .sort(
