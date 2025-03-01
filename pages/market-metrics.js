@@ -132,43 +132,71 @@ const CustomTooltip = ({ active, payload, label }) => {
           >
             {label}
           </Typography>
-          {sortedPayload.map((entry, index) => (
-            <Box
-              key={index}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                mb: 0.5,
-                justifyContent: 'space-between'
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                <Box
-                  sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    backgroundColor: entry.color || entry.stroke,
-                    mr: 1,
-                    boxShadow: '0 0 10px rgba(255, 255, 255, 0.1)'
-                  }}
-                />
-                <Typography variant="body2" sx={{ color: '#E5E7EB', fontWeight: 500, mr: 1 }}>
-                  {entry.name}:
-                </Typography>
-              </Box>
-              <Typography
-                variant="body2"
-                sx={{ color: '#E5E7EB', fontWeight: 600, textAlign: 'right' }}
+          {sortedPayload.map((entry, index) => {
+            // Check if this is a token marketcap entry and if there's a corresponding avgPrice entry
+            const isTokenMarketcap = entry.dataKey && entry.dataKey.endsWith('_marketcap');
+            const tokenName = isTokenMarketcap ? entry.dataKey.replace('_marketcap', '') : '';
+            const avgPriceKey = `${tokenName}_avgPrice`;
+            const hasAvgPrice =
+              isTokenMarketcap &&
+              payload.some((p) => p.dataKey === avgPriceKey) &&
+              payload.find((p) => p.dataKey === avgPriceKey).value > 0;
+            const avgPrice = hasAvgPrice
+              ? payload.find((p) => p.dataKey === avgPriceKey).value
+              : null;
+
+            return (
+              <Box
+                key={index}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  mb: 0.5,
+                  justifyContent: 'space-between'
+                }}
               >
-                {entry.value.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                })}
-                {entry.name.includes('Volume') ? ' XRP' : ''}
-              </Typography>
-            </Box>
-          ))}
+                <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      backgroundColor: entry.color || entry.stroke,
+                      mr: 1,
+                      boxShadow: '0 0 10px rgba(255, 255, 255, 0.1)'
+                    }}
+                  />
+                  <Typography variant="body2" sx={{ color: '#E5E7EB', fontWeight: 500, mr: 1 }}>
+                    {entry.name}:
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: '#E5E7EB', fontWeight: 600, textAlign: 'right' }}
+                  >
+                    {entry.value.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
+                    {entry.name.includes('Volume') ? ' XRP' : ''}
+                  </Typography>
+                  {hasAvgPrice && (
+                    <Typography
+                      variant="caption"
+                      sx={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'right' }}
+                    >
+                      Avg Price:{' '}
+                      {avgPrice.toLocaleString(undefined, {
+                        minimumFractionDigits: 6,
+                        maximumFractionDigits: 6
+                      })}
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            );
+          })}
         </Paper>
       </Portal>
     );
@@ -505,11 +533,14 @@ const MarketMetricsContent = () => {
           .map((item) => {
             // Process token-specific market caps
             const tokenMarketcaps = {};
+            const tokenAvgPrices = {}; // Add object to store average prices
             if (item.dailyTokenMarketcaps && Array.isArray(item.dailyTokenMarketcaps)) {
               item.dailyTokenMarketcaps.forEach((token) => {
                 if (token.name && token.marketcap) {
                   const tokenKey = `${token.name}_marketcap`;
+                  const priceKey = `${token.name}_avgPrice`; // Create key for average price
                   tokenMarketcaps[tokenKey] = Number(token.marketcap.toFixed(2));
+                  tokenAvgPrices[priceKey] = Number(token.avgPrice?.toFixed(6) || 0); // Store average price with 6 decimal places
                   uniqueTokens.add(token.name);
                 }
               });
@@ -518,6 +549,7 @@ const MarketMetricsContent = () => {
             return {
               ...item,
               ...tokenMarketcaps, // Add token-specific market caps to the data object
+              ...tokenAvgPrices, // Add token-specific average prices to the data object
               date: moment(item.date).format('MMM DD YYYY'), // Added year for clarity in long timespan
               totalMarketcap: Number(item.totalMarketcap.toFixed(2)), // Remove the division by 1000000
               firstLedgerMarketcap: Number(item.firstLedgerMarketcap?.toFixed(2) || 0),
@@ -1164,6 +1196,7 @@ const MarketMetricsContent = () => {
                     )
                     .map((token) => {
                       const marketCap = selectedDataPoint[`${token}_marketcap`];
+                      const avgPrice = selectedDataPoint[`${token}_avgPrice`];
 
                       return (
                         <Box
@@ -1197,19 +1230,42 @@ const MarketMetricsContent = () => {
                           >
                             {token}
                           </Typography>
-                          <Typography
-                            variant="body2"
+                          <Box
                             sx={{
-                              color: 'rgba(255, 255, 255, 0.9)',
-                              textAlign: 'right'
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'flex-end'
                             }}
                           >
-                            {marketCap.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2
-                            })}{' '}
-                            XRP
-                          </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                textAlign: 'right'
+                              }}
+                            >
+                              {marketCap.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                              })}{' '}
+                              XRP
+                            </Typography>
+                            {avgPrice > 0 && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: 'rgba(255, 255, 255, 0.7)',
+                                  textAlign: 'right'
+                                }}
+                              >
+                                Avg Price:{' '}
+                                {avgPrice.toLocaleString(undefined, {
+                                  minimumFractionDigits: 6,
+                                  maximumFractionDigits: 6
+                                })}
+                              </Typography>
+                            )}
+                          </Box>
                         </Box>
                       );
                     })}
