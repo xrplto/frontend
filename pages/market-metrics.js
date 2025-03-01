@@ -434,6 +434,14 @@ const MarketMetricsContent = () => {
     [data, sampleDataByTimeRange]
   );
 
+  // Add a new state to track the selected data point
+  const [selectedDataPoint, setSelectedDataPoint] = useState(null);
+
+  // Add a function to handle data point click
+  const handleDataPointClick = (data) => {
+    setSelectedDataPoint(data);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -667,7 +675,15 @@ const MarketMetricsContent = () => {
 
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={sampledData} margin={chartConfig.margin}>
+                <LineChart 
+                  data={sampledData} 
+                  margin={chartConfig.margin}
+                  onClick={(data) => {
+                    if (data && data.activePayload && data.activePayload.length > 0) {
+                      handleDataPointClick(data.activePayload[0].payload);
+                    }
+                  }}
+                >
                   <CartesianGrid {...chartConfig.gridStyle} />
                   <XAxis
                     dataKey="date"
@@ -717,10 +733,11 @@ const MarketMetricsContent = () => {
                     dot={false}
                     hide={!visibleLines.totalMarketcap}
                     activeDot={{
-                      r: 6,
+                      r: 8,
                       strokeWidth: 2,
                       stroke: '#FFFFFF',
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                   <Line
@@ -771,6 +788,111 @@ const MarketMetricsContent = () => {
                 </LineChart>
               </ResponsiveContainer>
             </Box>
+            
+            {/* Token breakdown section - appears when a data point is clicked */}
+            {selectedDataPoint && (
+              <Box 
+                sx={{ 
+                  mt: 3, 
+                  p: 2, 
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  borderRadius: 2,
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                    Token Breakdown for {selectedDataPoint.date}
+                  </Typography>
+                  <Box 
+                    sx={{ 
+                      cursor: 'pointer', 
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      '&:hover': { color: 'rgba(255, 255, 255, 0.9)' }
+                    }}
+                    onClick={() => setSelectedDataPoint(null)}
+                  >
+                    ✕
+                  </Box>
+                </Box>
+                
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
+                  Total Market Cap: {selectedDataPoint.totalMarketcap.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })} XRP
+                </Typography>
+                
+                <Box sx={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  {Object.keys(selectedDataPoint)
+                    .filter(key => key.endsWith('_marketcap') && selectedDataPoint[key] > 0)
+                    .sort((a, b) => selectedDataPoint[b] - selectedDataPoint[a])
+                    .map(key => {
+                      const tokenName = key.replace('_marketcap', '');
+                      const marketCap = selectedDataPoint[key];
+                      const percentage = (marketCap / selectedDataPoint.totalMarketcap) * 100;
+                      
+                      return (
+                        <Box 
+                          key={key} 
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            mb: 1,
+                            p: 1,
+                            borderRadius: 1,
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                          }}
+                        >
+                          <Box 
+                            sx={{ 
+                              width: 12, 
+                              height: 12, 
+                              borderRadius: '50%', 
+                              backgroundColor: getTokenColor(tokenName, availableTokens.indexOf(tokenName)),
+                              mr: 1.5
+                            }} 
+                          />
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              color: 'rgba(255, 255, 255, 0.9)', 
+                              fontWeight: 500,
+                              flex: 1
+                            }}
+                          >
+                            {tokenName}
+                          </Typography>
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              color: 'rgba(255, 255, 255, 0.9)',
+                              mr: 2,
+                              textAlign: 'right'
+                            }}
+                          >
+                            {marketCap.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2
+                            })} XRP
+                          </Typography>
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              color: 'rgba(255, 255, 255, 0.7)',
+                              width: '60px',
+                              textAlign: 'right'
+                            }}
+                          >
+                            {percentage.toFixed(2)}%
+                          </Typography>
+                        </Box>
+                      );
+                    })}
+                </Box>
+              </Box>
+            )}
           </ChartContainer>
         )}
 
@@ -778,7 +900,9 @@ const MarketMetricsContent = () => {
         {activeTab === 1 && (
           <ChartContainer title="Token Market Caps (XRP)">
             {/* Add time range selector */}
-            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box
+              sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            >
               <Box sx={{ flex: 1 }}>
                 <Autocomplete
                   multiple
