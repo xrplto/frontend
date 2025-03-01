@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   LineChart,
   Line,
@@ -390,6 +390,50 @@ const MarketMetricsContent = () => {
     setSelectedTokens(newValue);
   };
 
+  // Add state for data sampling and time range
+  const [sampledData, setSampledData] = useState([]);
+  const [timeRange, setTimeRange] = useState('all'); // 'all', '5y', '1y', '6m', '1m'
+
+  // Function to sample data based on time range
+  const sampleDataByTimeRange = useCallback((fullData, range) => {
+    if (!fullData || fullData.length === 0) return [];
+
+    let filteredData = [...fullData];
+    const now = moment();
+
+    // Filter data based on selected time range
+    if (range !== 'all') {
+      const rangeMap = {
+        '5y': 5,
+        '1y': 1,
+        '6m': 0.5,
+        '1m': 1 / 12
+      };
+
+      const cutoffDate = now.clone().subtract(rangeMap[range], 'years');
+      filteredData = fullData.filter((item) =>
+        moment(item.date, 'MMM DD YYYY').isAfter(cutoffDate)
+      );
+    }
+
+    // Sample data if there are too many points
+    if (filteredData.length > 500) {
+      const sampleRate = Math.ceil(filteredData.length / 500);
+      return filteredData.filter((_, index) => index % sampleRate === 0);
+    }
+
+    return filteredData;
+  }, []);
+
+  // Handle time range change
+  const handleTimeRangeChange = useCallback(
+    (newRange) => {
+      setTimeRange(newRange);
+      setSampledData(sampleDataByTimeRange(data, newRange));
+    },
+    [data, sampleDataByTimeRange]
+  );
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -490,6 +534,8 @@ const MarketMetricsContent = () => {
         }
 
         setData(formattedData);
+        // Initialize sampled data with the full dataset
+        setSampledData(sampleDataByTimeRange(formattedData, timeRange));
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -498,7 +544,7 @@ const MarketMetricsContent = () => {
     };
 
     fetchData();
-  }, []);
+  }, [timeRange, sampleDataByTimeRange]);
 
   if (loading) {
     return <Container></Container>;
@@ -585,16 +631,58 @@ const MarketMetricsContent = () => {
         {/* Tab Panel 0: Market Cap by DEX */}
         {activeTab === 0 && (
           <ChartContainer title="Market Cap by DEX (XRP)">
+            {/* Add time range selector */}
+            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+              <Tabs
+                value={timeRange}
+                onChange={(e, newValue) => handleTimeRangeChange(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  minHeight: '36px',
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    height: '2px'
+                  },
+                  '& .MuiTab-root': {
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    minHeight: '36px',
+                    padding: '6px 12px',
+                    minWidth: '60px',
+                    fontSize: '0.75rem',
+                    '&.Mui-selected': {
+                      color: 'rgba(255, 255, 255, 0.95)',
+                      fontWeight: 600
+                    }
+                  }
+                }}
+              >
+                <Tab label="All Time" value="all" />
+                <Tab label="5Y" value="5y" />
+                <Tab label="1Y" value="1y" />
+                <Tab label="6M" value="6m" />
+                <Tab label="1M" value="1m" />
+              </Tabs>
+            </Box>
+
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data} margin={chartConfig.margin}>
+                <LineChart data={sampledData} margin={chartConfig.margin}>
                   <CartesianGrid {...chartConfig.gridStyle} />
                   <XAxis
                     dataKey="date"
                     angle={-45}
                     textAnchor="end"
                     height={60}
-                    interval={30}
+                    interval={
+                      timeRange === 'all'
+                        ? 30
+                        : timeRange === '5y'
+                        ? 20
+                        : timeRange === '1y'
+                        ? 10
+                        : 5
+                    }
                     tick={{ ...chartConfig.axisStyle }}
                   />
                   <YAxis
