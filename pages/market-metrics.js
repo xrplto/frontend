@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import axios from 'axios';
 import moment from 'moment';
-import { Box, Typography, Container, Paper, useTheme } from '@mui/material';
+import { Box, Typography, Container, Paper, useTheme, Portal } from '@mui/material';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';
@@ -44,52 +44,125 @@ const chartColors = {
 
 // Custom tooltip styles
 const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
+  const [tooltipRoot, setTooltipRoot] = useState(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Create tooltip root element
+  useEffect(() => {
+    // Create a div for the portal if it doesn't exist
+    if (!document.getElementById('tooltip-root')) {
+      const div = document.createElement('div');
+      div.id = 'tooltip-root';
+      div.style.position = 'fixed';
+      div.style.zIndex = '9999';
+      div.style.pointerEvents = 'none';
+      document.body.appendChild(div);
+      setTooltipRoot(div);
+    } else {
+      setTooltipRoot(document.getElementById('tooltip-root'));
+    }
+
+    // Cleanup function
+    return () => {
+      const div = document.getElementById('tooltip-root');
+      if (div && div.childElementCount === 0) {
+        document.body.removeChild(div);
+      }
+    };
+  }, []);
+
+  // Track mouse position
+  useEffect(() => {
+    const updateTooltipPosition = (e) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+
+    document.addEventListener('mousemove', updateTooltipPosition);
+    return () => {
+      document.removeEventListener('mousemove', updateTooltipPosition);
+    };
+  }, []);
+
+  // Update tooltip position
+  useEffect(() => {
+    if (tooltipRoot) {
+      tooltipRoot.style.top = `${mousePosition.y - 10}px`;
+      tooltipRoot.style.left = `${mousePosition.x + 20}px`;
+    }
+  }, [mousePosition, tooltipRoot]);
+
+  if (active && payload && payload.length && tooltipRoot) {
     // Sort payload by value in descending order
     const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
 
     return (
-      <Box
-        sx={{
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          p: 2,
-          borderRadius: 2,
-          boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)'
-        }}
-      >
-        <Typography variant="subtitle2" sx={{ color: '#E5E7EB', mb: 1, fontWeight: 600 }}>
-          {label}
-        </Typography>
-        {sortedPayload.map((entry, index) => (
-          <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+      <Portal container={tooltipRoot}>
+        <Paper
+          elevation={6}
+          sx={{
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            p: 2,
+            borderRadius: 2,
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            maxWidth: 300,
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}
+        >
+          <Typography
+            variant="subtitle2"
+            sx={{
+              color: '#E5E7EB',
+              mb: 1,
+              fontWeight: 600,
+              borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+              pb: 1
+            }}
+          >
+            {label}
+          </Typography>
+          {sortedPayload.map((entry, index) => (
             <Box
+              key={index}
               sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                backgroundColor: entry.color || entry.stroke,
-                mr: 1,
-                boxShadow: '0 0 10px rgba(255, 255, 255, 0.1)'
+                display: 'flex',
+                alignItems: 'center',
+                mb: 0.5,
+                justifyContent: 'space-between'
               }}
-            />
-            <Typography variant="body2" sx={{ color: '#E5E7EB' }}>
-              {`${entry.name}: ${entry.value.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })}${
-                entry.name.includes('Market Cap')
-                  ? ' XRP'
-                  : entry.name.includes('Volume')
-                  ? ' XRP'
-                  : ''
-              }`}
-            </Typography>
-          </Box>
-        ))}
-      </Box>
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    backgroundColor: entry.color || entry.stroke,
+                    mr: 1,
+                    boxShadow: '0 0 10px rgba(255, 255, 255, 0.1)'
+                  }}
+                />
+                <Typography variant="body2" sx={{ color: '#E5E7EB', fontWeight: 500, mr: 1 }}>
+                  {entry.name}:
+                </Typography>
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{ color: '#E5E7EB', fontWeight: 600, textAlign: 'right' }}
+              >
+                {entry.value.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}
+                {entry.name.includes('Volume') ? ' XRP' : ''}
+              </Typography>
+            </Box>
+          ))}
+        </Paper>
+      </Portal>
     );
   }
   return null;
@@ -398,7 +471,10 @@ const MarketMetricsContent = () => {
                   }
                   tick={{ ...chartConfig.axisStyle }}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                />
                 <Legend
                   wrapperStyle={{
                     paddingTop: '20px',
@@ -496,7 +572,10 @@ const MarketMetricsContent = () => {
                   }
                   tick={{ ...chartConfig.axisStyle }}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                />
                 <Legend
                   wrapperStyle={{
                     paddingTop: '20px',
@@ -551,7 +630,10 @@ const MarketMetricsContent = () => {
                   tickFormatter={(value) => value.toLocaleString()}
                   tick={{ ...chartConfig.axisStyle }}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                />
                 <Legend
                   wrapperStyle={{
                     paddingTop: '20px',
@@ -659,7 +741,10 @@ const MarketMetricsContent = () => {
                   tickFormatter={(value) => value.toLocaleString()}
                   tick={{ ...chartConfig.axisStyle }}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                />
                 <Legend
                   content={({ payload }) => (
                     <Box
@@ -771,7 +856,10 @@ const MarketMetricsContent = () => {
                   tickFormatter={(value) => value.toLocaleString()}
                   tick={{ ...chartConfig.axisStyle }}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                />
                 <Legend
                   wrapperStyle={{
                     paddingTop: '20px',
