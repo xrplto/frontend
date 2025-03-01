@@ -675,8 +675,8 @@ const MarketMetricsContent = () => {
 
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart 
-                  data={sampledData} 
+                <LineChart
+                  data={sampledData}
                   margin={chartConfig.margin}
                   onClick={(data) => {
                     if (data && data.activePayload && data.activePayload.length > 0) {
@@ -752,7 +752,8 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.primary.main,
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                   <Line
@@ -767,7 +768,8 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.secondary.main,
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                   <Line
@@ -782,31 +784,39 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.tertiary.main,
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </Box>
-            
+
             {/* Token breakdown section - appears when a data point is clicked */}
             {selectedDataPoint && (
-              <Box 
-                sx={{ 
-                  mt: 3, 
-                  p: 2, 
+              <Box
+                sx={{
+                  mt: 3,
+                  p: 2,
                   backgroundColor: 'rgba(0, 0, 0, 0.4)',
                   borderRadius: 2,
                   border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}
               >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2
+                  }}
+                >
                   <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
                     Token Breakdown for {selectedDataPoint.date}
                   </Typography>
-                  <Box 
-                    sx={{ 
-                      cursor: 'pointer', 
+                  <Box
+                    sx={{
+                      cursor: 'pointer',
                       color: 'rgba(255, 255, 255, 0.6)',
                       '&:hover': { color: 'rgba(255, 255, 255, 0.9)' }
                     }}
@@ -815,29 +825,31 @@ const MarketMetricsContent = () => {
                     ✕
                   </Box>
                 </Box>
-                
+
                 <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
-                  Total Market Cap: {selectedDataPoint.totalMarketcap.toLocaleString(undefined, {
+                  Total Market Cap:{' '}
+                  {selectedDataPoint.totalMarketcap.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
-                  })} XRP
+                  })}{' '}
+                  XRP
                 </Typography>
-                
+
                 <Box sx={{ maxHeight: '300px', overflowY: 'auto' }}>
                   {Object.keys(selectedDataPoint)
-                    .filter(key => key.endsWith('_marketcap') && selectedDataPoint[key] > 0)
+                    .filter((key) => key.endsWith('_marketcap') && selectedDataPoint[key] > 0)
                     .sort((a, b) => selectedDataPoint[b] - selectedDataPoint[a])
-                    .map(key => {
+                    .map((key) => {
                       const tokenName = key.replace('_marketcap', '');
                       const marketCap = selectedDataPoint[key];
                       const percentage = (marketCap / selectedDataPoint.totalMarketcap) * 100;
-                      
+
                       return (
-                        <Box 
-                          key={key} 
-                          sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
+                        <Box
+                          key={key}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
                             mb: 1,
                             p: 1,
                             borderRadius: 1,
@@ -845,28 +857,31 @@ const MarketMetricsContent = () => {
                             '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
                           }}
                         >
-                          <Box 
-                            sx={{ 
-                              width: 12, 
-                              height: 12, 
-                              borderRadius: '50%', 
-                              backgroundColor: getTokenColor(tokenName, availableTokens.indexOf(tokenName)),
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
+                              backgroundColor: getTokenColor(
+                                tokenName,
+                                availableTokens.indexOf(tokenName)
+                              ),
                               mr: 1.5
-                            }} 
+                            }}
                           />
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
-                              color: 'rgba(255, 255, 255, 0.9)', 
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'rgba(255, 255, 255, 0.9)',
                               fontWeight: 500,
                               flex: 1
                             }}
                           >
                             {tokenName}
                           </Typography>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
+                          <Typography
+                            variant="body2"
+                            sx={{
                               color: 'rgba(255, 255, 255, 0.9)',
                               mr: 2,
                               textAlign: 'right'
@@ -875,11 +890,12 @@ const MarketMetricsContent = () => {
                             {marketCap.toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2
-                            })} XRP
+                            })}{' '}
+                            XRP
                           </Typography>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
+                          <Typography
+                            variant="body2"
+                            sx={{
                               color: 'rgba(255, 255, 255, 0.7)',
                               width: '60px',
                               textAlign: 'right'
@@ -992,7 +1008,15 @@ const MarketMetricsContent = () => {
             </Typography>
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={sampledData} margin={chartConfig.margin}>
+                <LineChart 
+                  data={sampledData} 
+                  margin={chartConfig.margin}
+                  onClick={(data) => {
+                    if (data && data.activePayload && data.activePayload.length > 0) {
+                      handleDataPointClick(data.activePayload[0].payload);
+                    }
+                  }}
+                >
                   <CartesianGrid {...chartConfig.gridStyle} />
                   <XAxis
                     dataKey="date"
@@ -1033,7 +1057,6 @@ const MarketMetricsContent = () => {
                       />
                     )}
                   />
-                  {/* Only render selected tokens */}
                   {selectedTokens.map((token, index) => {
                     const dataKey = `${token}_marketcap`;
                     return (
@@ -1050,7 +1073,8 @@ const MarketMetricsContent = () => {
                           r: 6,
                           strokeWidth: 2,
                           stroke: getTokenColor(token, index),
-                          fill: chartColors.background
+                          fill: chartColors.background,
+                          onClick: (data) => handleDataPointClick(data.payload)
                         }}
                       />
                     );
@@ -1058,6 +1082,99 @@ const MarketMetricsContent = () => {
                 </LineChart>
               </ResponsiveContainer>
             </Box>
+            
+            {/* Token breakdown section - appears when a data point is clicked */}
+            {selectedDataPoint && (
+              <Box 
+                sx={{ 
+                  mt: 3, 
+                  p: 2, 
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  borderRadius: 2,
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2
+                  }}
+                >
+                  <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                    Token Details for {selectedDataPoint.date}
+                  </Typography>
+                  <Box
+                    sx={{
+                      cursor: 'pointer',
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      '&:hover': { color: 'rgba(255, 255, 255, 0.9)' }
+                    }}
+                    onClick={() => setSelectedDataPoint(null)}
+                  >
+                    ✕
+                  </Box>
+                </Box>
+                
+                <Box sx={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  {selectedTokens
+                    .filter(token => selectedDataPoint[`${token}_marketcap`] > 0)
+                    .sort((a, b) => selectedDataPoint[`${b}_marketcap`] - selectedDataPoint[`${a}_marketcap`])
+                    .map(token => {
+                      const marketCap = selectedDataPoint[`${token}_marketcap`];
+                      
+                      return (
+                        <Box 
+                          key={token} 
+                          sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            mb: 1,
+                            p: 1,
+                            borderRadius: 1,
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                          }}
+                        >
+                          <Box 
+                            sx={{ 
+                              width: 12, 
+                              height: 12, 
+                              borderRadius: '50%', 
+                              backgroundColor: getTokenColor(token, availableTokens.indexOf(token)),
+                              mr: 1.5
+                            }} 
+                          />
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              color: 'rgba(255, 255, 255, 0.9)', 
+                              fontWeight: 500,
+                              flex: 1
+                            }}
+                          >
+                            {token}
+                          </Typography>
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              color: 'rgba(255, 255, 255, 0.9)',
+                              textAlign: 'right'
+                            }}
+                          >
+                            {marketCap.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2
+                            })}{' '}
+                            XRP
+                          </Typography>
+                        </Box>
+                      );
+                    })}
+                </Box>
+              </Box>
+            )}
           </ChartContainer>
         )}
 
@@ -1099,7 +1216,15 @@ const MarketMetricsContent = () => {
             </Box>
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={sampledData} margin={chartConfig.margin}>
+                <LineChart 
+                  data={sampledData} 
+                  margin={chartConfig.margin}
+                  onClick={(data) => {
+                    if (data && data.activePayload && data.activePayload.length > 0) {
+                      handleDataPointClick(data.activePayload[0].payload);
+                    }
+                  }}
+                >
                   <CartesianGrid {...chartConfig.gridStyle} />
                   <XAxis
                     dataKey="date"
@@ -1144,10 +1269,11 @@ const MarketMetricsContent = () => {
                     dot={false}
                     hide={!visibleLines.tokenCount}
                     activeDot={{
-                      r: 6,
+                      r: 8,
                       strokeWidth: 2,
                       stroke: '#FFFFFF',
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                   <Line
@@ -1162,7 +1288,8 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.primary.main,
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                   <Line
@@ -1177,7 +1304,8 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.secondary.main,
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                   <Line
@@ -1192,12 +1320,123 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.tertiary.main,
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </Box>
+            
+            {/* Token count breakdown section - appears when a data point is clicked */}
+            {selectedDataPoint && (
+              <Box 
+                sx={{ 
+                  mt: 3, 
+                  p: 2, 
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  borderRadius: 2,
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2
+                  }}
+                >
+                  <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                    Token Count Details for {selectedDataPoint.date}
+                  </Typography>
+                  <Box
+                    sx={{
+                      cursor: 'pointer',
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      '&:hover': { color: 'rgba(255, 255, 255, 0.9)' }
+                    }}
+                    onClick={() => setSelectedDataPoint(null)}
+                  >
+                    ✕
+                  </Box>
+                </Box>
+                
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
+                  <Box 
+                    sx={{ 
+                      p: 2, 
+                      borderRadius: 1, 
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                      Total Active Tokens
+                    </Typography>
+                    <Typography variant="h5" sx={{ color: 'white', fontWeight: 600 }}>
+                      {selectedDataPoint.tokenCount.toLocaleString()}
+                    </Typography>
+                  </Box>
+                  
+                  <Box 
+                    sx={{ 
+                      p: 2, 
+                      borderRadius: 1, 
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                      FirstLedger Tokens
+                    </Typography>
+                    <Typography variant="h5" sx={{ color: chartColors.primary.main, fontWeight: 600 }}>
+                      {selectedDataPoint.firstLedgerTokens.toLocaleString()}
+                    </Typography>
+                  </Box>
+                  
+                  <Box 
+                    sx={{ 
+                      p: 2, 
+                      borderRadius: 1, 
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                      Magnetic X Tokens
+                    </Typography>
+                    <Typography variant="h5" sx={{ color: chartColors.secondary.main, fontWeight: 600 }}>
+                      {selectedDataPoint.magneticXTokens.toLocaleString()}
+                    </Typography>
+                  </Box>
+                  
+                  <Box 
+                    sx={{ 
+                      p: 2, 
+                      borderRadius: 1, 
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                      XPMarket Tokens
+                    </Typography>
+                    <Typography variant="h5" sx={{ color: chartColors.tertiary.main, fontWeight: 600 }}>
+                      {selectedDataPoint.xpMarketTokens.toLocaleString()}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            )}
           </ChartContainer>
         )}
 
@@ -1244,6 +1483,11 @@ const MarketMetricsContent = () => {
                   margin={chartConfig.margin}
                   style={{
                     backgroundColor: 'transparent'
+                  }}
+                  onClick={(data) => {
+                    if (data && data.activePayload && data.activePayload.length > 0) {
+                      handleDataPointClick(data.activePayload[0].payload);
+                    }
                   }}
                 >
                   <CartesianGrid {...chartConfig.gridStyle} opacity={0.1} />
@@ -1300,10 +1544,11 @@ const MarketMetricsContent = () => {
                     dot={false}
                     hide={!visibleLines.volumeAMM}
                     activeDot={{
-                      r: 6,
+                      r: 8,
                       strokeWidth: 2,
                       stroke: chartColors.primary.main,
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                   <Line
@@ -1319,7 +1564,8 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.secondary.main,
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                   <Line
@@ -1336,7 +1582,8 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.primary.main,
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                   <Line
@@ -1353,12 +1600,145 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.secondary.main,
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </Box>
+            
+            {/* Trading activity breakdown section - appears when a data point is clicked */}
+            {selectedDataPoint && (
+              <Box 
+                sx={{ 
+                  mt: 3, 
+                  p: 2, 
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  borderRadius: 2,
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2
+                  }}
+                >
+                  <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                    Trading Activity for {selectedDataPoint.date}
+                  </Typography>
+                  <Box
+                    sx={{
+                      cursor: 'pointer',
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      '&:hover': { color: 'rgba(255, 255, 255, 0.9)' }
+                    }}
+                    onClick={() => setSelectedDataPoint(null)}
+                  >
+                    ✕
+                  </Box>
+                </Box>
+                
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
+                  <Box 
+                    sx={{ 
+                      p: 2, 
+                      borderRadius: 1, 
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1 }}>
+                      Volume
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2" sx={{ color: chartColors.primary.main }}>
+                        AMM:
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'white', fontWeight: 500 }}>
+                        {selectedDataPoint.volumeAMM.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}{' '}
+                        XRP
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2" sx={{ color: chartColors.secondary.main }}>
+                        Non-AMM:
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'white', fontWeight: 500 }}>
+                        {selectedDataPoint.volumeNonAMM.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}{' '}
+                        XRP
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 1, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                      <Typography variant="body2" sx={{ color: 'white' }}>
+                        Total:
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
+                        {selectedDataPoint.totalVolume.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        })}{' '}
+                        XRP
+                      </Typography>
+                    </Box>
+                  </Box>
+                  
+                  <Box 
+                    sx={{ 
+                      p: 2, 
+                      borderRadius: 1, 
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1 }}>
+                      Trades
+                    </Typography>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2" sx={{ color: chartColors.primary.main }}>
+                        AMM:
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'white', fontWeight: 500 }}>
+                        {selectedDataPoint.tradesAMM.toLocaleString()}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2" sx={{ color: chartColors.secondary.main }}>
+                        Non-AMM:
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'white', fontWeight: 500 }}>
+                        {selectedDataPoint.tradesNonAMM.toLocaleString()}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 1, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                      <Typography variant="body2" sx={{ color: 'white' }}>
+                        Total:
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
+                        {selectedDataPoint.totalTrades.toLocaleString()}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
+            )}
           </ChartContainer>
         )}
 
@@ -1400,7 +1780,15 @@ const MarketMetricsContent = () => {
             </Box>
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={sampledData} margin={chartConfig.margin}>
+                <LineChart 
+                  data={sampledData} 
+                  margin={chartConfig.margin}
+                  onClick={(data) => {
+                    if (data && data.activePayload && data.activePayload.length > 0) {
+                      handleDataPointClick(data.activePayload[0].payload);
+                    }
+                  }}
+                >
                   <CartesianGrid {...chartConfig.gridStyle} />
                   <XAxis
                     dataKey="date"
@@ -1445,10 +1833,11 @@ const MarketMetricsContent = () => {
                     dot={false}
                     hide={!visibleLines.uniqueActiveAddressesAMM}
                     activeDot={{
-                      r: 6,
+                      r: 8,
                       strokeWidth: 2,
                       stroke: chartColors.primary.main,
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                   <Line
@@ -1463,12 +1852,105 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.secondary.main,
-                      fill: chartColors.background
+                      fill: chartColors.background,
+                      onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </Box>
+            
+            {/* Active addresses breakdown section - appears when a data point is clicked */}
+            {selectedDataPoint && (
+              <Box 
+                sx={{ 
+                  mt: 3, 
+                  p: 2, 
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  borderRadius: 2,
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2
+                  }}
+                >
+                  <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                    Active Addresses for {selectedDataPoint.date}
+                  </Typography>
+                  <Box
+                    sx={{
+                      cursor: 'pointer',
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      '&:hover': { color: 'rgba(255, 255, 255, 0.9)' }
+                    }}
+                    onClick={() => setSelectedDataPoint(null)}
+                  >
+                    ✕
+                  </Box>
+                </Box>
+                
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
+                  <Box 
+                    sx={{ 
+                      p: 2, 
+                      borderRadius: 1, 
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: chartColors.primary.main }}>
+                      AMM Active Addresses
+                    </Typography>
+                    <Typography variant="h5" sx={{ color: 'white', fontWeight: 600 }}>
+                      {selectedDataPoint.uniqueActiveAddressesAMM.toLocaleString()}
+                    </Typography>
+                  </Box>
+                  
+                  <Box 
+                    sx={{ 
+                      p: 2, 
+                      borderRadius: 1, 
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: chartColors.secondary.main }}>
+                      Non-AMM Active Addresses
+                    </Typography>
+                    <Typography variant="h5" sx={{ color: 'white', fontWeight: 600 }}>
+                      {selectedDataPoint.uniqueActiveAddressesNonAMM.toLocaleString()}
+                    </Typography>
+                  </Box>
+                  
+                  <Box 
+                    sx={{ 
+                      p: 2, 
+                      borderRadius: 1, 
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: 'white' }}>
+                      Total Active Addresses
+                    </Typography>
+                    <Typography variant="h5" sx={{ color: 'white', fontWeight: 600 }}>
+                      {selectedDataPoint.uniqueActiveAddresses.toLocaleString()}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            )}
           </ChartContainer>
         )}
       </Container>
