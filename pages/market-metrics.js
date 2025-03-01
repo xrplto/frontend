@@ -412,7 +412,7 @@ const MarketMetricsContent = () => {
                   type="monotone"
                   dataKey="totalMarketcap"
                   stroke="#FFFFFF"
-                  name="Total Market Cap"
+                  name="Total"
                   strokeWidth={3}
                   dot={false}
                   hide={!visibleLines.totalMarketcap}
@@ -427,7 +427,7 @@ const MarketMetricsContent = () => {
                   type="monotone"
                   dataKey="firstLedgerMarketcap"
                   stroke={chartColors.primary.main}
-                  name="FirstLedger Market Cap"
+                  name="FirstLedger"
                   strokeWidth={2}
                   dot={false}
                   hide={!visibleLines.firstLedgerMarketcap}
@@ -442,7 +442,7 @@ const MarketMetricsContent = () => {
                   type="monotone"
                   dataKey="magneticXMarketcap"
                   stroke={chartColors.secondary.main}
-                  name="Magnetic X Market Cap"
+                  name="Magnetic X"
                   strokeWidth={2}
                   dot={false}
                   hide={!visibleLines.magneticXMarketcap}
@@ -457,7 +457,7 @@ const MarketMetricsContent = () => {
                   type="monotone"
                   dataKey="xpMarketMarketcap"
                   stroke={chartColors.tertiary.main}
-                  name="XPMarket Market Cap"
+                  name="XPMarket"
                   strokeWidth={2}
                   dot={false}
                   hide={!visibleLines.xpMarketMarketcap}
@@ -515,7 +515,7 @@ const MarketMetricsContent = () => {
                       type="monotone"
                       dataKey={dataKey}
                       stroke={getTokenColor(token, index)}
-                      name={`${token} Market Cap`}
+                      name={`${token}`}
                       strokeWidth={2}
                       dot={false}
                       hide={!visibleLines[dataKey]}
@@ -580,7 +580,7 @@ const MarketMetricsContent = () => {
                   type="monotone"
                   dataKey="firstLedgerTokens"
                   stroke={chartColors.primary.main}
-                  name="FirstLedger Tokens"
+                  name="FirstLedger"
                   strokeWidth={2}
                   dot={false}
                   hide={!visibleLines.firstLedgerTokens}
@@ -595,7 +595,7 @@ const MarketMetricsContent = () => {
                   type="monotone"
                   dataKey="magneticXTokens"
                   stroke={chartColors.secondary.main}
-                  name="Magnetic X Tokens"
+                  name="Magnetic X"
                   strokeWidth={2}
                   dot={false}
                   hide={!visibleLines.magneticXTokens}
@@ -610,7 +610,7 @@ const MarketMetricsContent = () => {
                   type="monotone"
                   dataKey="xpMarketTokens"
                   stroke={chartColors.tertiary.main}
-                  name="XPMarket Tokens"
+                  name="XPMarket"
                   strokeWidth={2}
                   dot={false}
                   hide={!visibleLines.xpMarketTokens}
