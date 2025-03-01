@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -442,6 +442,59 @@ const MarketMetricsContent = () => {
     setSelectedDataPoint(data);
   };
 
+  // Add this state and ref at the top
+  const [animationComplete, setAnimationComplete] = useState(false);
+  const chartRef = useRef(null);
+
+  // Add this function to handle animation completion
+  const handleAnimationEnd = () => {
+    setAnimationComplete(true);
+  };
+
+  // Add this state to preprocess data and prepare chart rendering
+  const [chartReady, setChartReady] = useState(false);
+
+  // Add this state for progressive data loading
+  const [progressiveData, setProgressiveData] = useState([]);
+
+  // Replace the existing useLayoutEffect with this implementation
+  useLayoutEffect(() => {
+    if (sampledData.length > 0) {
+      setAnimationComplete(false);
+      setChartReady(false);
+
+      // Clear any existing progressive data
+      setProgressiveData([]);
+
+      // Use a short timeout to allow the component to render first
+      setTimeout(() => {
+        setChartReady(true);
+
+        // Load data progressively in chunks
+        const chunkSize = Math.max(5, Math.floor(sampledData.length / 10));
+        let currentIndex = 0;
+
+        const loadNextChunk = () => {
+          if (currentIndex >= sampledData.length) {
+            // All data loaded
+            setAnimationComplete(true);
+            return;
+          }
+
+          const nextIndex = Math.min(currentIndex + chunkSize, sampledData.length);
+          setProgressiveData(sampledData.slice(0, nextIndex));
+          currentIndex = nextIndex;
+
+          // Schedule next chunk
+          setTimeout(loadNextChunk, 50);
+        };
+
+        // Start loading data
+        loadNextChunk();
+      }, 50);
+    }
+  }, [sampledData]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -676,8 +729,10 @@ const MarketMetricsContent = () => {
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
-                  data={sampledData}
+                  ref={chartRef}
+                  data={progressiveData}
                   margin={chartConfig.margin}
+                  isAnimationActive={false}
                   onClick={(data) => {
                     if (data && data.activePayload && data.activePayload.length > 0) {
                       handleDataPointClick(data.activePayload[0].payload);
@@ -732,6 +787,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={3}
                     dot={false}
                     hide={!visibleLines.totalMarketcap}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 8,
                       strokeWidth: 2,
@@ -748,6 +804,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={2}
                     dot={false}
                     hide={!visibleLines.firstLedgerMarketcap}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 6,
                       strokeWidth: 2,
@@ -764,6 +821,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={2}
                     dot={false}
                     hide={!visibleLines.magneticXMarketcap}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 6,
                       strokeWidth: 2,
@@ -780,6 +838,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={2}
                     dot={false}
                     hide={!visibleLines.xpMarketMarketcap}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 6,
                       strokeWidth: 2,
@@ -1008,9 +1067,10 @@ const MarketMetricsContent = () => {
             </Typography>
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart 
-                  data={sampledData} 
+                <LineChart
+                  data={progressiveData}
                   margin={chartConfig.margin}
+                  isAnimationActive={false}
                   onClick={(data) => {
                     if (data && data.activePayload && data.activePayload.length > 0) {
                       handleDataPointClick(data.activePayload[0].payload);
@@ -1069,6 +1129,7 @@ const MarketMetricsContent = () => {
                         strokeWidth={2}
                         dot={false}
                         hide={!visibleLines[dataKey]}
+                        isAnimationActive={false}
                         activeDot={{
                           r: 6,
                           strokeWidth: 2,
@@ -1082,13 +1143,13 @@ const MarketMetricsContent = () => {
                 </LineChart>
               </ResponsiveContainer>
             </Box>
-            
+
             {/* Token breakdown section - appears when a data point is clicked */}
             {selectedDataPoint && (
-              <Box 
-                sx={{ 
-                  mt: 3, 
-                  p: 2, 
+              <Box
+                sx={{
+                  mt: 3,
+                  p: 2,
                   backgroundColor: 'rgba(0, 0, 0, 0.4)',
                   borderRadius: 2,
                   border: '1px solid rgba(255, 255, 255, 0.1)'
@@ -1116,20 +1177,23 @@ const MarketMetricsContent = () => {
                     ✕
                   </Box>
                 </Box>
-                
+
                 <Box sx={{ maxHeight: '300px', overflowY: 'auto' }}>
                   {selectedTokens
-                    .filter(token => selectedDataPoint[`${token}_marketcap`] > 0)
-                    .sort((a, b) => selectedDataPoint[`${b}_marketcap`] - selectedDataPoint[`${a}_marketcap`])
-                    .map(token => {
+                    .filter((token) => selectedDataPoint[`${token}_marketcap`] > 0)
+                    .sort(
+                      (a, b) =>
+                        selectedDataPoint[`${b}_marketcap`] - selectedDataPoint[`${a}_marketcap`]
+                    )
+                    .map((token) => {
                       const marketCap = selectedDataPoint[`${token}_marketcap`];
-                      
+
                       return (
-                        <Box 
-                          key={token} 
-                          sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
+                        <Box
+                          key={token}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
                             mb: 1,
                             p: 1,
                             borderRadius: 1,
@@ -1137,28 +1201,28 @@ const MarketMetricsContent = () => {
                             '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
                           }}
                         >
-                          <Box 
-                            sx={{ 
-                              width: 12, 
-                              height: 12, 
-                              borderRadius: '50%', 
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
                               backgroundColor: getTokenColor(token, availableTokens.indexOf(token)),
                               mr: 1.5
-                            }} 
+                            }}
                           />
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
-                              color: 'rgba(255, 255, 255, 0.9)', 
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'rgba(255, 255, 255, 0.9)',
                               fontWeight: 500,
                               flex: 1
                             }}
                           >
                             {token}
                           </Typography>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
+                          <Typography
+                            variant="body2"
+                            sx={{
                               color: 'rgba(255, 255, 255, 0.9)',
                               textAlign: 'right'
                             }}
@@ -1216,9 +1280,10 @@ const MarketMetricsContent = () => {
             </Box>
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart 
-                  data={sampledData} 
+                <LineChart
+                  data={progressiveData}
                   margin={chartConfig.margin}
+                  isAnimationActive={false}
                   onClick={(data) => {
                     if (data && data.activePayload && data.activePayload.length > 0) {
                       handleDataPointClick(data.activePayload[0].payload);
@@ -1268,6 +1333,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={3}
                     dot={false}
                     hide={!visibleLines.tokenCount}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 8,
                       strokeWidth: 2,
@@ -1284,6 +1350,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={2}
                     dot={false}
                     hide={!visibleLines.firstLedgerTokens}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 6,
                       strokeWidth: 2,
@@ -1300,6 +1367,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={2}
                     dot={false}
                     hide={!visibleLines.magneticXTokens}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 6,
                       strokeWidth: 2,
@@ -1316,6 +1384,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={2}
                     dot={false}
                     hide={!visibleLines.xpMarketTokens}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 6,
                       strokeWidth: 2,
@@ -1327,13 +1396,13 @@ const MarketMetricsContent = () => {
                 </LineChart>
               </ResponsiveContainer>
             </Box>
-            
+
             {/* Token count breakdown section - appears when a data point is clicked */}
             {selectedDataPoint && (
-              <Box 
-                sx={{ 
-                  mt: 3, 
-                  p: 2, 
+              <Box
+                sx={{
+                  mt: 3,
+                  p: 2,
                   backgroundColor: 'rgba(0, 0, 0, 0.4)',
                   borderRadius: 2,
                   border: '1px solid rgba(255, 255, 255, 0.1)'
@@ -1361,12 +1430,12 @@ const MarketMetricsContent = () => {
                     ✕
                   </Box>
                 </Box>
-                
+
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
-                  <Box 
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 1, 
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
                       display: 'flex',
                       flexDirection: 'column',
@@ -1380,11 +1449,11 @@ const MarketMetricsContent = () => {
                       {selectedDataPoint.tokenCount.toLocaleString()}
                     </Typography>
                   </Box>
-                  
-                  <Box 
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 1, 
+
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
                       display: 'flex',
                       flexDirection: 'column',
@@ -1394,15 +1463,18 @@ const MarketMetricsContent = () => {
                     <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                       FirstLedger Tokens
                     </Typography>
-                    <Typography variant="h5" sx={{ color: chartColors.primary.main, fontWeight: 600 }}>
+                    <Typography
+                      variant="h5"
+                      sx={{ color: chartColors.primary.main, fontWeight: 600 }}
+                    >
                       {selectedDataPoint.firstLedgerTokens.toLocaleString()}
                     </Typography>
                   </Box>
-                  
-                  <Box 
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 1, 
+
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
                       display: 'flex',
                       flexDirection: 'column',
@@ -1412,15 +1484,18 @@ const MarketMetricsContent = () => {
                     <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                       Magnetic X Tokens
                     </Typography>
-                    <Typography variant="h5" sx={{ color: chartColors.secondary.main, fontWeight: 600 }}>
+                    <Typography
+                      variant="h5"
+                      sx={{ color: chartColors.secondary.main, fontWeight: 600 }}
+                    >
                       {selectedDataPoint.magneticXTokens.toLocaleString()}
                     </Typography>
                   </Box>
-                  
-                  <Box 
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 1, 
+
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
                       display: 'flex',
                       flexDirection: 'column',
@@ -1430,7 +1505,10 @@ const MarketMetricsContent = () => {
                     <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                       XPMarket Tokens
                     </Typography>
-                    <Typography variant="h5" sx={{ color: chartColors.tertiary.main, fontWeight: 600 }}>
+                    <Typography
+                      variant="h5"
+                      sx={{ color: chartColors.tertiary.main, fontWeight: 600 }}
+                    >
                       {selectedDataPoint.xpMarketTokens.toLocaleString()}
                     </Typography>
                   </Box>
@@ -1479,11 +1557,12 @@ const MarketMetricsContent = () => {
             <Box sx={{ height: 400, backgroundColor: 'transparent' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
-                  data={sampledData}
+                  data={progressiveData}
                   margin={chartConfig.margin}
                   style={{
                     backgroundColor: 'transparent'
                   }}
+                  isAnimationActive={false}
                   onClick={(data) => {
                     if (data && data.activePayload && data.activePayload.length > 0) {
                       handleDataPointClick(data.activePayload[0].payload);
@@ -1543,6 +1622,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={2}
                     dot={false}
                     hide={!visibleLines.volumeAMM}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 8,
                       strokeWidth: 2,
@@ -1560,6 +1640,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={2}
                     dot={false}
                     hide={!visibleLines.volumeNonAMM}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 6,
                       strokeWidth: 2,
@@ -1578,6 +1659,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={2}
                     dot={false}
                     hide={!visibleLines.tradesAMM}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 6,
                       strokeWidth: 2,
@@ -1596,6 +1678,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={2}
                     dot={false}
                     hide={!visibleLines.tradesNonAMM}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 6,
                       strokeWidth: 2,
@@ -1607,13 +1690,13 @@ const MarketMetricsContent = () => {
                 </LineChart>
               </ResponsiveContainer>
             </Box>
-            
+
             {/* Trading activity breakdown section - appears when a data point is clicked */}
             {selectedDataPoint && (
-              <Box 
-                sx={{ 
-                  mt: 3, 
-                  p: 2, 
+              <Box
+                sx={{
+                  mt: 3,
+                  p: 2,
                   backgroundColor: 'rgba(0, 0, 0, 0.4)',
                   borderRadius: 2,
                   border: '1px solid rgba(255, 255, 255, 0.1)'
@@ -1641,12 +1724,12 @@ const MarketMetricsContent = () => {
                     ✕
                   </Box>
                 </Box>
-                
+
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
-                  <Box 
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 1, 
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
                       display: 'flex',
                       flexDirection: 'column'
@@ -1655,7 +1738,7 @@ const MarketMetricsContent = () => {
                     <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1 }}>
                       Volume
                     </Typography>
-                    
+
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: chartColors.primary.main }}>
                         AMM:
@@ -1668,7 +1751,7 @@ const MarketMetricsContent = () => {
                         XRP
                       </Typography>
                     </Box>
-                    
+
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: chartColors.secondary.main }}>
                         Non-AMM:
@@ -1681,8 +1764,15 @@ const MarketMetricsContent = () => {
                         XRP
                       </Typography>
                     </Box>
-                    
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 1, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        pt: 1,
+                        borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+                      }}
+                    >
                       <Typography variant="body2" sx={{ color: 'white' }}>
                         Total:
                       </Typography>
@@ -1695,11 +1785,11 @@ const MarketMetricsContent = () => {
                       </Typography>
                     </Box>
                   </Box>
-                  
-                  <Box 
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 1, 
+
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
                       display: 'flex',
                       flexDirection: 'column'
@@ -1708,7 +1798,7 @@ const MarketMetricsContent = () => {
                     <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1 }}>
                       Trades
                     </Typography>
-                    
+
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: chartColors.primary.main }}>
                         AMM:
@@ -1717,7 +1807,7 @@ const MarketMetricsContent = () => {
                         {selectedDataPoint.tradesAMM.toLocaleString()}
                       </Typography>
                     </Box>
-                    
+
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" sx={{ color: chartColors.secondary.main }}>
                         Non-AMM:
@@ -1726,8 +1816,15 @@ const MarketMetricsContent = () => {
                         {selectedDataPoint.tradesNonAMM.toLocaleString()}
                       </Typography>
                     </Box>
-                    
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', pt: 1, borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        pt: 1,
+                        borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+                      }}
+                    >
                       <Typography variant="body2" sx={{ color: 'white' }}>
                         Total:
                       </Typography>
@@ -1780,9 +1877,10 @@ const MarketMetricsContent = () => {
             </Box>
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart 
-                  data={sampledData} 
+                <LineChart
+                  data={progressiveData}
                   margin={chartConfig.margin}
+                  isAnimationActive={false}
                   onClick={(data) => {
                     if (data && data.activePayload && data.activePayload.length > 0) {
                       handleDataPointClick(data.activePayload[0].payload);
@@ -1832,6 +1930,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={2}
                     dot={false}
                     hide={!visibleLines.uniqueActiveAddressesAMM}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 8,
                       strokeWidth: 2,
@@ -1848,6 +1947,7 @@ const MarketMetricsContent = () => {
                     strokeWidth={2}
                     dot={false}
                     hide={!visibleLines.uniqueActiveAddressesNonAMM}
+                    isAnimationActive={false}
                     activeDot={{
                       r: 6,
                       strokeWidth: 2,
@@ -1859,13 +1959,13 @@ const MarketMetricsContent = () => {
                 </LineChart>
               </ResponsiveContainer>
             </Box>
-            
+
             {/* Active addresses breakdown section - appears when a data point is clicked */}
             {selectedDataPoint && (
-              <Box 
-                sx={{ 
-                  mt: 3, 
-                  p: 2, 
+              <Box
+                sx={{
+                  mt: 3,
+                  p: 2,
                   backgroundColor: 'rgba(0, 0, 0, 0.4)',
                   borderRadius: 2,
                   border: '1px solid rgba(255, 255, 255, 0.1)'
@@ -1893,12 +1993,12 @@ const MarketMetricsContent = () => {
                     ✕
                   </Box>
                 </Box>
-                
+
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2 }}>
-                  <Box 
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 1, 
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
                       display: 'flex',
                       flexDirection: 'column',
@@ -1912,11 +2012,11 @@ const MarketMetricsContent = () => {
                       {selectedDataPoint.uniqueActiveAddressesAMM.toLocaleString()}
                     </Typography>
                   </Box>
-                  
-                  <Box 
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 1, 
+
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
                       display: 'flex',
                       flexDirection: 'column',
@@ -1930,11 +2030,11 @@ const MarketMetricsContent = () => {
                       {selectedDataPoint.uniqueActiveAddressesNonAMM.toLocaleString()}
                     </Typography>
                   </Box>
-                  
-                  <Box 
-                    sx={{ 
-                      p: 2, 
-                      borderRadius: 1, 
+
+                  <Box
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
                       backgroundColor: 'rgba(255, 255, 255, 0.05)',
                       display: 'flex',
                       flexDirection: 'column',
