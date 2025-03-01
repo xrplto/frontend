@@ -11,7 +11,18 @@ import {
 } from 'recharts';
 import axios from 'axios';
 import moment from 'moment';
-import { Box, Typography, Container, Paper, useTheme, Portal } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Container,
+  Paper,
+  Tabs,
+  Tab,
+  Portal,
+  TextField,
+  Autocomplete,
+  Chip
+} from '@mui/material';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';
@@ -360,6 +371,25 @@ const MarketMetricsContent = () => {
     }));
   };
 
+  // Add a new state for the active tab
+  const [activeTab, setActiveTab] = useState(0);
+
+  // Add tab change handler
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  // Add state for selected tokens to display
+  const [selectedTokens, setSelectedTokens] = useState([]);
+
+  // Add state for max tokens to display
+  const [maxTokensToDisplay, setMaxTokensToDisplay] = useState(10);
+
+  // Add this function to handle token selection
+  const handleTokenSelection = (event, newValue) => {
+    setSelectedTokens(newValue);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -443,6 +473,22 @@ const MarketMetricsContent = () => {
           ...tokenVisibility
         }));
 
+        // Initialize with top tokens by market cap (if available)
+        if (tokenArray.length > 0) {
+          // Get the most recent data point
+          const latestData = formattedData[formattedData.length - 1];
+
+          // Sort tokens by market cap
+          const sortedTokens = tokenArray
+            .filter((token) => latestData[`${token}_marketcap`])
+            .sort(
+              (a, b) => (latestData[`${b}_marketcap`] || 0) - (latestData[`${a}_marketcap`] || 0)
+            )
+            .slice(0, maxTokensToDisplay);
+
+          setSelectedTokens(sortedTokens);
+        }
+
         setData(formattedData);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -497,448 +543,558 @@ const MarketMetricsContent = () => {
           XRPL Market Analytics
         </Typography>
 
-        <ChartContainer title="Market Cap by DEX (XRP)">
-          <Box sx={{ height: 400 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={chartConfig.margin}>
-                <CartesianGrid {...chartConfig.gridStyle} />
-                <XAxis
-                  dataKey="date"
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                  interval={30}
-                  tick={{ ...chartConfig.axisStyle }}
-                />
-                <YAxis
-                  domain={['auto', 'auto']}
-                  tickFormatter={(value) =>
-                    value.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    }) + ' XRP'
-                  }
-                  tick={{ ...chartConfig.axisStyle }}
-                />
-                <Tooltip
-                  content={<CustomTooltip />}
-                  cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
-                />
-                <Legend
-                  content={({ payload }) => (
-                    <CustomLegend
-                      payload={payload}
-                      visibleLines={visibleLines}
-                      handleLegendClick={handleLegendClick}
-                    />
-                  )}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="totalMarketcap"
-                  stroke="#FFFFFF"
-                  name="Total"
-                  strokeWidth={3}
-                  dot={false}
-                  hide={!visibleLines.totalMarketcap}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: '#FFFFFF',
-                    fill: chartColors.background
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="firstLedgerMarketcap"
-                  stroke={chartColors.primary.main}
-                  name="FirstLedger"
-                  strokeWidth={2}
-                  dot={false}
-                  hide={!visibleLines.firstLedgerMarketcap}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: chartColors.primary.main,
-                    fill: chartColors.background
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="magneticXMarketcap"
-                  stroke={chartColors.secondary.main}
-                  name="Magnetic X"
-                  strokeWidth={2}
-                  dot={false}
-                  hide={!visibleLines.magneticXMarketcap}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: chartColors.secondary.main,
-                    fill: chartColors.background
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="xpMarketMarketcap"
-                  stroke={chartColors.tertiary.main}
-                  name="XPMarket"
-                  strokeWidth={2}
-                  dot={false}
-                  hide={!visibleLines.xpMarketMarketcap}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: chartColors.tertiary.main,
-                    fill: chartColors.background
-                  }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </Box>
-        </ChartContainer>
+        {/* Add tabs for chart categories */}
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 4,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            borderRadius: 2,
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)'
+          }}
+        >
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            sx={{
+              '& .MuiTabs-indicator': {
+                backgroundColor: 'rgba(255, 255, 255, 0.8)'
+              },
+              '& .MuiTab-root': {
+                color: 'rgba(255, 255, 255, 0.6)',
+                '&.Mui-selected': {
+                  color: 'rgba(255, 255, 255, 0.95)',
+                  fontWeight: 600
+                }
+              }
+            }}
+          >
+            <Tab label="Market Cap by DEX" />
+            <Tab label="Token Market Caps" />
+            <Tab label="Active Tokens" />
+            <Tab label="Trading Activity" />
+            <Tab label="Active Addresses" />
+          </Tabs>
+        </Paper>
 
-        <ChartContainer title="Token Market Caps (XRP)">
-          <Box sx={{ height: 400 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={chartConfig.margin}>
-                <CartesianGrid {...chartConfig.gridStyle} />
-                <XAxis
-                  dataKey="date"
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                  interval={30}
-                  tick={{ ...chartConfig.axisStyle }}
-                />
-                <YAxis
-                  domain={['auto', 'auto']}
-                  tickFormatter={(value) =>
-                    value.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    }) + ' XRP'
-                  }
-                  tick={{ ...chartConfig.axisStyle }}
-                />
-                <Tooltip
-                  content={<CustomTooltip />}
-                  cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
-                />
-                <Legend
-                  content={({ payload }) => (
-                    <CustomLegend
-                      payload={payload}
-                      visibleLines={visibleLines}
-                      handleLegendClick={handleLegendClick}
-                    />
-                  )}
-                />
-                {/* Dynamically generate lines for each token */}
-                {availableTokens.map((token, index) => {
-                  const dataKey = `${token}_marketcap`;
-                  return (
-                    <Line
-                      key={dataKey}
-                      type="monotone"
-                      dataKey={dataKey}
-                      stroke={getTokenColor(token, index)}
-                      name={`${token}`}
-                      strokeWidth={2}
-                      dot={false}
-                      hide={!visibleLines[dataKey]}
-                      activeDot={{
-                        r: 6,
-                        strokeWidth: 2,
-                        stroke: getTokenColor(token, index),
-                        fill: chartColors.background
+        {/* Tab Panel 0: Market Cap by DEX */}
+        {activeTab === 0 && (
+          <ChartContainer title="Market Cap by DEX (XRP)">
+            <Box sx={{ height: 400 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data} margin={chartConfig.margin}>
+                  <CartesianGrid {...chartConfig.gridStyle} />
+                  <XAxis
+                    dataKey="date"
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                    interval={30}
+                    tick={{ ...chartConfig.axisStyle }}
+                  />
+                  <YAxis
+                    domain={['auto', 'auto']}
+                    tickFormatter={(value) =>
+                      value.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      }) + ' XRP'
+                    }
+                    tick={{ ...chartConfig.axisStyle }}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                  />
+                  <Legend
+                    content={({ payload }) => (
+                      <CustomLegend
+                        payload={payload}
+                        visibleLines={visibleLines}
+                        handleLegendClick={handleLegendClick}
+                      />
+                    )}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="totalMarketcap"
+                    stroke="#FFFFFF"
+                    name="Total"
+                    strokeWidth={3}
+                    dot={false}
+                    hide={!visibleLines.totalMarketcap}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: '#FFFFFF',
+                      fill: chartColors.background
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="firstLedgerMarketcap"
+                    stroke={chartColors.primary.main}
+                    name="FirstLedger"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.firstLedgerMarketcap}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.primary.main,
+                      fill: chartColors.background
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="magneticXMarketcap"
+                    stroke={chartColors.secondary.main}
+                    name="Magnetic X"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.magneticXMarketcap}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.secondary.main,
+                      fill: chartColors.background
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="xpMarketMarketcap"
+                    stroke={chartColors.tertiary.main}
+                    name="XPMarket"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.xpMarketMarketcap}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.tertiary.main,
+                      fill: chartColors.background
+                    }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
+          </ChartContainer>
+        )}
+
+        {/* Tab Panel 1: Token Market Caps */}
+        {activeTab === 1 && (
+          <ChartContainer title="Token Market Caps (XRP)">
+            <Box sx={{ mb: 2 }}>
+              <Autocomplete
+                multiple
+                id="token-selector"
+                options={availableTokens}
+                value={selectedTokens}
+                onChange={handleTokenSelection}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    variant="outlined"
+                    label="Select Tokens (max 10 recommended)"
+                    placeholder="Add token"
+                    sx={{
+                      backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                      borderRadius: 1,
+                      '& .MuiOutlinedInput-root': {
+                        '& fieldset': {
+                          borderColor: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        '&:hover fieldset': {
+                          borderColor: 'rgba(255, 255, 255, 0.2)'
+                        }
+                      },
+                      '& .MuiInputLabel-root': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      },
+                      '& .MuiInputBase-input': {
+                        color: 'rgba(255, 255, 255, 0.9)'
+                      }
+                    }}
+                  />
+                )}
+                renderTags={(selected, getTagProps) =>
+                  selected.map((option, index) => (
+                    <Chip
+                      key={option}
+                      label={option}
+                      {...getTagProps({ index })}
+                      sx={{
+                        backgroundColor: getTokenColor(option, availableTokens.indexOf(option)),
+                        color: 'white'
                       }}
                     />
-                  );
-                })}
-              </LineChart>
-            </ResponsiveContainer>
-          </Box>
-        </ChartContainer>
-
-        <ChartContainer title="Active Tokens by DEX">
-          <Box sx={{ height: 400 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={chartConfig.margin}>
-                <CartesianGrid {...chartConfig.gridStyle} />
-                <XAxis
-                  dataKey="date"
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                  interval={30}
-                  tick={{ ...chartConfig.axisStyle }}
-                />
-                <YAxis
-                  domain={['auto', 'auto']}
-                  tickFormatter={(value) => value.toLocaleString()}
-                  tick={{ ...chartConfig.axisStyle }}
-                />
-                <Tooltip
-                  content={<CustomTooltip />}
-                  cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
-                />
-                <Legend
-                  content={({ payload }) => (
-                    <CustomLegend
-                      payload={payload}
-                      visibleLines={visibleLines}
-                      handleLegendClick={handleLegendClick}
-                    />
-                  )}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="tokenCount"
-                  stroke="#FFFFFF"
-                  name="Total Active Tokens"
-                  strokeWidth={3}
-                  dot={false}
-                  hide={!visibleLines.tokenCount}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: '#FFFFFF',
-                    fill: chartColors.background
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="firstLedgerTokens"
-                  stroke={chartColors.primary.main}
-                  name="FirstLedger"
-                  strokeWidth={2}
-                  dot={false}
-                  hide={!visibleLines.firstLedgerTokens}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: chartColors.primary.main,
-                    fill: chartColors.background
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="magneticXTokens"
-                  stroke={chartColors.secondary.main}
-                  name="Magnetic X"
-                  strokeWidth={2}
-                  dot={false}
-                  hide={!visibleLines.magneticXTokens}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: chartColors.secondary.main,
-                    fill: chartColors.background
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="xpMarketTokens"
-                  stroke={chartColors.tertiary.main}
-                  name="XPMarket"
-                  strokeWidth={2}
-                  dot={false}
-                  hide={!visibleLines.xpMarketTokens}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: chartColors.tertiary.main,
-                    fill: chartColors.background
-                  }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </Box>
-        </ChartContainer>
-
-        <ChartContainer title="Trading Activity">
-          <Box sx={{ height: 400, backgroundColor: 'transparent' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={data}
-                margin={chartConfig.margin}
-                style={{
-                  backgroundColor: 'transparent'
-                }}
+                  ))
+                }
+                sx={{ mb: 2 }}
+              />
+              <Typography
+                variant="caption"
+                sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mt: 1 }}
               >
-                <CartesianGrid {...chartConfig.gridStyle} opacity={0.1} />
-                <XAxis
-                  dataKey="date"
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                  interval={30}
-                  tick={{ ...chartConfig.axisStyle }}
-                />
-                <YAxis
-                  yAxisId="volume"
-                  orientation="left"
-                  domain={['dataMin - 1000', 'dataMax + 1000']}
-                  tickFormatter={(value) => value.toLocaleString() + ' XRP'}
-                  tick={{ ...chartConfig.axisStyle }}
-                />
-                <YAxis
-                  yAxisId="trades"
-                  orientation="right"
-                  domain={['dataMin - 100', 'dataMax + 100']}
-                  tickFormatter={(value) => value.toLocaleString()}
-                  tick={{ ...chartConfig.axisStyle }}
-                />
-                <Tooltip
-                  content={<CustomTooltip />}
-                  cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
-                />
-                <Legend
-                  content={({ payload }) => (
-                    <CustomLegend
-                      payload={payload}
-                      visibleLines={visibleLines}
-                      handleLegendClick={handleLegendClick}
-                    />
-                  )}
-                />
-                <Line
-                  yAxisId="volume"
-                  type="monotone"
-                  dataKey="volumeAMM"
-                  stroke={chartColors.primary.main}
-                  name="AMM Volume"
-                  strokeWidth={2}
-                  dot={false}
-                  hide={!visibleLines.volumeAMM}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: chartColors.primary.main,
-                    fill: chartColors.background
-                  }}
-                />
-                <Line
-                  yAxisId="volume"
-                  type="monotone"
-                  dataKey="volumeNonAMM"
-                  stroke={chartColors.secondary.main}
-                  name="Non-AMM Volume"
-                  strokeWidth={2}
-                  dot={false}
-                  hide={!visibleLines.volumeNonAMM}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: chartColors.secondary.main,
-                    fill: chartColors.background
-                  }}
-                />
-                <Line
-                  yAxisId="trades"
-                  type="monotone"
-                  dataKey="tradesAMM"
-                  stroke={`${chartColors.primary.main}80`}
-                  name="AMM Trades"
-                  strokeDasharray="5 5"
-                  strokeWidth={2}
-                  dot={false}
-                  hide={!visibleLines.tradesAMM}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: chartColors.primary.main,
-                    fill: chartColors.background
-                  }}
-                />
-                <Line
-                  yAxisId="trades"
-                  type="monotone"
-                  dataKey="tradesNonAMM"
-                  stroke={`${chartColors.secondary.main}80`}
-                  name="Non-AMM Trades"
-                  strokeDasharray="5 5"
-                  strokeWidth={2}
-                  dot={false}
-                  hide={!visibleLines.tradesNonAMM}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: chartColors.secondary.main,
-                    fill: chartColors.background
-                  }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </Box>
-        </ChartContainer>
+                Showing {selectedTokens.length} of {availableTokens.length} available tokens. Select
+                fewer tokens for better performance.
+              </Typography>
+            </Box>
+            <Box sx={{ height: 400 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data} margin={chartConfig.margin}>
+                  <CartesianGrid {...chartConfig.gridStyle} />
+                  <XAxis
+                    dataKey="date"
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                    interval={30}
+                    tick={{ ...chartConfig.axisStyle }}
+                  />
+                  <YAxis
+                    domain={['auto', 'auto']}
+                    tickFormatter={(value) =>
+                      value.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      }) + ' XRP'
+                    }
+                    tick={{ ...chartConfig.axisStyle }}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                  />
+                  <Legend
+                    content={({ payload }) => (
+                      <CustomLegend
+                        payload={payload}
+                        visibleLines={visibleLines}
+                        handleLegendClick={handleLegendClick}
+                      />
+                    )}
+                  />
+                  {/* Only render selected tokens */}
+                  {selectedTokens.map((token, index) => {
+                    const dataKey = `${token}_marketcap`;
+                    return (
+                      <Line
+                        key={dataKey}
+                        type="monotone"
+                        dataKey={dataKey}
+                        stroke={getTokenColor(token, index)}
+                        name={`${token}`}
+                        strokeWidth={2}
+                        dot={false}
+                        hide={!visibleLines[dataKey]}
+                        activeDot={{
+                          r: 6,
+                          strokeWidth: 2,
+                          stroke: getTokenColor(token, index),
+                          fill: chartColors.background
+                        }}
+                      />
+                    );
+                  })}
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
+          </ChartContainer>
+        )}
 
-        <ChartContainer title="Unique Active Addresses">
-          <Box sx={{ height: 400 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data} margin={chartConfig.margin}>
-                <CartesianGrid {...chartConfig.gridStyle} />
-                <XAxis
-                  dataKey="date"
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                  interval={30}
-                  tick={{ ...chartConfig.axisStyle }}
-                />
-                <YAxis
-                  domain={['auto', 'auto']}
-                  tickFormatter={(value) => value.toLocaleString()}
-                  tick={{ ...chartConfig.axisStyle }}
-                />
-                <Tooltip
-                  content={<CustomTooltip />}
-                  cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
-                />
-                <Legend
-                  content={({ payload }) => (
-                    <CustomLegend
-                      payload={payload}
-                      visibleLines={visibleLines}
-                      handleLegendClick={handleLegendClick}
-                    />
-                  )}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="uniqueActiveAddressesAMM"
-                  stroke={chartColors.primary.main}
-                  name="AMM Active Addresses"
-                  strokeWidth={2}
-                  dot={false}
-                  hide={!visibleLines.uniqueActiveAddressesAMM}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: chartColors.primary.main,
-                    fill: chartColors.background
+        {/* Tab Panel 2: Active Tokens by DEX */}
+        {activeTab === 2 && (
+          <ChartContainer title="Active Tokens by DEX">
+            <Box sx={{ height: 400 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data} margin={chartConfig.margin}>
+                  <CartesianGrid {...chartConfig.gridStyle} />
+                  <XAxis
+                    dataKey="date"
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                    interval={30}
+                    tick={{ ...chartConfig.axisStyle }}
+                  />
+                  <YAxis
+                    domain={['auto', 'auto']}
+                    tickFormatter={(value) => value.toLocaleString()}
+                    tick={{ ...chartConfig.axisStyle }}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                  />
+                  <Legend
+                    content={({ payload }) => (
+                      <CustomLegend
+                        payload={payload}
+                        visibleLines={visibleLines}
+                        handleLegendClick={handleLegendClick}
+                      />
+                    )}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="tokenCount"
+                    stroke="#FFFFFF"
+                    name="Total Active Tokens"
+                    strokeWidth={3}
+                    dot={false}
+                    hide={!visibleLines.tokenCount}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: '#FFFFFF',
+                      fill: chartColors.background
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="firstLedgerTokens"
+                    stroke={chartColors.primary.main}
+                    name="FirstLedger"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.firstLedgerTokens}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.primary.main,
+                      fill: chartColors.background
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="magneticXTokens"
+                    stroke={chartColors.secondary.main}
+                    name="Magnetic X"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.magneticXTokens}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.secondary.main,
+                      fill: chartColors.background
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="xpMarketTokens"
+                    stroke={chartColors.tertiary.main}
+                    name="XPMarket"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.xpMarketTokens}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.tertiary.main,
+                      fill: chartColors.background
+                    }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
+          </ChartContainer>
+        )}
+
+        {/* Tab Panel 3: Trading Activity */}
+        {activeTab === 3 && (
+          <ChartContainer title="Trading Activity">
+            <Box sx={{ height: 400, backgroundColor: 'transparent' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={data}
+                  margin={chartConfig.margin}
+                  style={{
+                    backgroundColor: 'transparent'
                   }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="uniqueActiveAddressesNonAMM"
-                  stroke={chartColors.secondary.main}
-                  name="Non-AMM Active Addresses"
-                  strokeWidth={2}
-                  dot={false}
-                  hide={!visibleLines.uniqueActiveAddressesNonAMM}
-                  activeDot={{
-                    r: 6,
-                    strokeWidth: 2,
-                    stroke: chartColors.secondary.main,
-                    fill: chartColors.background
-                  }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </Box>
-        </ChartContainer>
+                >
+                  <CartesianGrid {...chartConfig.gridStyle} opacity={0.1} />
+                  <XAxis
+                    dataKey="date"
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                    interval={30}
+                    tick={{ ...chartConfig.axisStyle }}
+                  />
+                  <YAxis
+                    yAxisId="volume"
+                    orientation="left"
+                    domain={['dataMin - 1000', 'dataMax + 1000']}
+                    tickFormatter={(value) => value.toLocaleString() + ' XRP'}
+                    tick={{ ...chartConfig.axisStyle }}
+                  />
+                  <YAxis
+                    yAxisId="trades"
+                    orientation="right"
+                    domain={['dataMin - 100', 'dataMax + 100']}
+                    tickFormatter={(value) => value.toLocaleString()}
+                    tick={{ ...chartConfig.axisStyle }}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                  />
+                  <Legend
+                    content={({ payload }) => (
+                      <CustomLegend
+                        payload={payload}
+                        visibleLines={visibleLines}
+                        handleLegendClick={handleLegendClick}
+                      />
+                    )}
+                  />
+                  <Line
+                    yAxisId="volume"
+                    type="monotone"
+                    dataKey="volumeAMM"
+                    stroke={chartColors.primary.main}
+                    name="AMM Volume"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.volumeAMM}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.primary.main,
+                      fill: chartColors.background
+                    }}
+                  />
+                  <Line
+                    yAxisId="volume"
+                    type="monotone"
+                    dataKey="volumeNonAMM"
+                    stroke={chartColors.secondary.main}
+                    name="Non-AMM Volume"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.volumeNonAMM}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.secondary.main,
+                      fill: chartColors.background
+                    }}
+                  />
+                  <Line
+                    yAxisId="trades"
+                    type="monotone"
+                    dataKey="tradesAMM"
+                    stroke={`${chartColors.primary.main}80`}
+                    name="AMM Trades"
+                    strokeDasharray="5 5"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.tradesAMM}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.primary.main,
+                      fill: chartColors.background
+                    }}
+                  />
+                  <Line
+                    yAxisId="trades"
+                    type="monotone"
+                    dataKey="tradesNonAMM"
+                    stroke={`${chartColors.secondary.main}80`}
+                    name="Non-AMM Trades"
+                    strokeDasharray="5 5"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.tradesNonAMM}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.secondary.main,
+                      fill: chartColors.background
+                    }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
+          </ChartContainer>
+        )}
+
+        {/* Tab Panel 4: Unique Active Addresses */}
+        {activeTab === 4 && (
+          <ChartContainer title="Unique Active Addresses">
+            <Box sx={{ height: 400 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data} margin={chartConfig.margin}>
+                  <CartesianGrid {...chartConfig.gridStyle} />
+                  <XAxis
+                    dataKey="date"
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                    interval={30}
+                    tick={{ ...chartConfig.axisStyle }}
+                  />
+                  <YAxis
+                    domain={['auto', 'auto']}
+                    tickFormatter={(value) => value.toLocaleString()}
+                    tick={{ ...chartConfig.axisStyle }}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                  />
+                  <Legend
+                    content={({ payload }) => (
+                      <CustomLegend
+                        payload={payload}
+                        visibleLines={visibleLines}
+                        handleLegendClick={handleLegendClick}
+                      />
+                    )}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="uniqueActiveAddressesAMM"
+                    stroke={chartColors.primary.main}
+                    name="AMM Active Addresses"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.uniqueActiveAddressesAMM}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.primary.main,
+                      fill: chartColors.background
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="uniqueActiveAddressesNonAMM"
+                    stroke={chartColors.secondary.main}
+                    name="Non-AMM Active Addresses"
+                    strokeWidth={2}
+                    dot={false}
+                    hide={!visibleLines.uniqueActiveAddressesNonAMM}
+                    activeDot={{
+                      r: 6,
+                      strokeWidth: 2,
+                      stroke: chartColors.secondary.main,
+                      fill: chartColors.background
+                    }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
+          </ChartContainer>
+        )}
       </Container>
     </Box>
   );
