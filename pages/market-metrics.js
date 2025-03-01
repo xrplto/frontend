@@ -45,6 +45,9 @@ const chartColors = {
 // Custom tooltip styles
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
+    // Sort payload by value in descending order
+    const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
+
     return (
       <Box
         sx={{
@@ -60,7 +63,7 @@ const CustomTooltip = ({ active, payload, label }) => {
         <Typography variant="subtitle2" sx={{ color: '#E5E7EB', mb: 1, fontWeight: 600 }}>
           {label}
         </Typography>
-        {payload.map((entry, index) => (
+        {sortedPayload.map((entry, index) => (
           <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
             <Box
               sx={{
@@ -188,6 +191,46 @@ const MarketMetricsContent = () => {
     uniqueActiveAddressesNonAMM: true
   });
 
+  // Add state to track available tokens
+  const [availableTokens, setAvailableTokens] = useState([]);
+
+  // Token color map - will be used to assign consistent colors to tokens
+  const tokenColorMap = {
+    SOLO: '#FF6B6B',
+    BTC: '#F7931A',
+    CORE: '#4BC0C0',
+    ETH: '#627EEA',
+    USD: '#26A17B',
+    CNY: '#E91E63',
+    XCORE: '#9C27B0'
+    // Add more colors as needed
+  };
+
+  // Function to get a color for a token (either from map or generate one)
+  const getTokenColor = (tokenName, index) => {
+    if (tokenColorMap[tokenName]) {
+      return tokenColorMap[tokenName];
+    }
+
+    // Generate colors for tokens not in the map
+    const colors = [
+      '#8884d8',
+      '#82ca9d',
+      '#ffc658',
+      '#ff7300',
+      '#0088FE',
+      '#00C49F',
+      '#FFBB28',
+      '#FF8042',
+      '#a4de6c',
+      '#d0ed57',
+      '#8dd1e1',
+      '#83a6ed'
+    ];
+
+    return colors[index % colors.length];
+  };
+
   const handleLegendClick = (entry) => {
     setVisibleLines((prev) => ({
       ...prev,
@@ -220,29 +263,63 @@ const MarketMetricsContent = () => {
           return;
         }
 
+        // Track all unique tokens across all data points
+        const uniqueTokens = new Set();
+
         const formattedData = marketData
           .sort((a, b) => new Date(a.date) - new Date(b.date)) // Sort by date ascending
-          .map((item) => ({
-            ...item,
-            date: moment(item.date).format('MMM DD YYYY'), // Added year for clarity in long timespan
-            totalMarketcap: Number(item.totalMarketcap.toFixed(2)), // Remove the division by 1000000
-            firstLedgerMarketcap: Number(item.firstLedgerMarketcap?.toFixed(2) || 0),
-            magneticXMarketcap: Number(item.magneticXMarketcap?.toFixed(2) || 0),
-            xpMarketMarketcap: Number(item.xpMarketMarketcap?.toFixed(2) || 0),
-            volumeNonAMM: Number(item.volumeNonAMM.toFixed(2)), // Remove division by 1000
-            volumeAMM: Number(item.volumeAMM.toFixed(2)), // Remove division by 1000
-            totalVolume: Number((item.volumeAMM + item.volumeNonAMM).toFixed(2)), // Remove division by 1000
-            tokenCount: Number(item.tokenCount), // Add tokenCount to formatted data
-            firstLedgerTokens: Number(item.firstLedgerTokenCount || 0),
-            magneticXTokens: Number(item.magneticXTokenCount || 0),
-            xpMarketTokens: Number(item.xpMarketTokenCount || 0),
-            tradesAMM: Number(item.tradesAMM),
-            tradesNonAMM: Number(item.tradesNonAMM),
-            totalTrades: Number(item.totalTrades),
-            uniqueActiveAddresses: Number(item.uniqueActiveAddresses || 0),
-            uniqueActiveAddressesAMM: Number(item.uniqueActiveAddressesAMM || 0),
-            uniqueActiveAddressesNonAMM: Number(item.uniqueActiveAddressesNonAMM || 0)
-          }));
+          .map((item) => {
+            // Process token-specific market caps
+            const tokenMarketcaps = {};
+            if (item.dailyTokenMarketcaps && Array.isArray(item.dailyTokenMarketcaps)) {
+              item.dailyTokenMarketcaps.forEach((token) => {
+                if (token.name && token.marketcap) {
+                  const tokenKey = `${token.name}_marketcap`;
+                  tokenMarketcaps[tokenKey] = Number(token.marketcap.toFixed(2));
+                  uniqueTokens.add(token.name);
+                }
+              });
+            }
+
+            return {
+              ...item,
+              ...tokenMarketcaps, // Add token-specific market caps to the data object
+              date: moment(item.date).format('MMM DD YYYY'), // Added year for clarity in long timespan
+              totalMarketcap: Number(item.totalMarketcap.toFixed(2)), // Remove the division by 1000000
+              firstLedgerMarketcap: Number(item.firstLedgerMarketcap?.toFixed(2) || 0),
+              magneticXMarketcap: Number(item.magneticXMarketcap?.toFixed(2) || 0),
+              xpMarketMarketcap: Number(item.xpMarketMarketcap?.toFixed(2) || 0),
+              volumeNonAMM: Number(item.volumeNonAMM.toFixed(2)), // Remove division by 1000
+              volumeAMM: Number(item.volumeAMM.toFixed(2)), // Remove division by 1000
+              totalVolume: Number((item.volumeAMM + item.volumeNonAMM).toFixed(2)), // Remove division by 1000
+              tokenCount: Number(item.tokenCount), // Add tokenCount to formatted data
+              firstLedgerTokens: Number(item.firstLedgerTokenCount || 0),
+              magneticXTokens: Number(item.magneticXTokenCount || 0),
+              xpMarketTokens: Number(item.xpMarketTokenCount || 0),
+              tradesAMM: Number(item.tradesAMM),
+              tradesNonAMM: Number(item.tradesNonAMM),
+              totalTrades: Number(item.totalTrades),
+              uniqueActiveAddresses: Number(item.uniqueActiveAddresses || 0),
+              uniqueActiveAddressesAMM: Number(item.uniqueActiveAddressesAMM || 0),
+              uniqueActiveAddressesNonAMM: Number(item.uniqueActiveAddressesNonAMM || 0)
+            };
+          });
+
+        // Convert Set to Array and sort alphabetically
+        const tokenArray = Array.from(uniqueTokens).sort();
+
+        // Initialize visibility state for all tokens (default to true)
+        const tokenVisibility = {};
+        tokenArray.forEach((token) => {
+          tokenVisibility[`${token}_marketcap`] = true;
+        });
+
+        // Update state with the token list and visibility
+        setAvailableTokens(tokenArray);
+        setVisibleLines((prev) => ({
+          ...prev,
+          ...tokenVisibility
+        }));
 
         setData(formattedData);
       } catch (error) {
@@ -391,6 +468,66 @@ const MarketMetricsContent = () => {
                     fill: chartColors.background
                   }}
                 />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
+        </ChartContainer>
+
+        <ChartContainer title="Token Market Caps (XRP)">
+          <Box sx={{ height: 400 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data} margin={chartConfig.margin}>
+                <CartesianGrid {...chartConfig.gridStyle} />
+                <XAxis
+                  dataKey="date"
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  interval={30}
+                  tick={{ ...chartConfig.axisStyle }}
+                />
+                <YAxis
+                  domain={['auto', 'auto']}
+                  tickFormatter={(value) =>
+                    value.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }) + ' XRP'
+                  }
+                  tick={{ ...chartConfig.axisStyle }}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend
+                  wrapperStyle={{
+                    paddingTop: '20px',
+                    color: chartColors.text
+                  }}
+                  verticalAlign="top"
+                  height={36}
+                  onClick={handleLegendClick}
+                />
+                {/* Dynamically generate lines for each token */}
+                {availableTokens.map((token, index) => {
+                  const dataKey = `${token}_marketcap`;
+                  return (
+                    <Line
+                      key={dataKey}
+                      type="monotone"
+                      dataKey={dataKey}
+                      stroke={getTokenColor(token, index)}
+                      name={`${token} Market Cap`}
+                      strokeWidth={2}
+                      dot={false}
+                      hide={!visibleLines[dataKey]}
+                      activeDot={{
+                        r: 6,
+                        strokeWidth: 2,
+                        stroke: getTokenColor(token, index),
+                        fill: chartColors.background
+                      }}
+                    />
+                  );
+                })}
               </LineChart>
             </ResponsiveContainer>
           </Box>
