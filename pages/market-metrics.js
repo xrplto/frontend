@@ -777,72 +777,113 @@ const MarketMetricsContent = () => {
         {/* Tab Panel 1: Token Market Caps */}
         {activeTab === 1 && (
           <ChartContainer title="Token Market Caps (XRP)">
-            <Box sx={{ mb: 2 }}>
-              <Autocomplete
-                multiple
-                id="token-selector"
-                options={availableTokens}
-                value={selectedTokens}
-                onChange={handleTokenSelection}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    variant="outlined"
-                    label="Select Tokens (max 10 recommended)"
-                    placeholder="Add token"
-                    sx={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                      borderRadius: 1,
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': {
-                          borderColor: 'rgba(255, 255, 255, 0.1)'
-                        },
-                        '&:hover fieldset': {
-                          borderColor: 'rgba(255, 255, 255, 0.2)'
-                        }
-                      },
-                      '& .MuiInputLabel-root': {
-                        color: 'rgba(255, 255, 255, 0.7)'
-                      },
-                      '& .MuiInputBase-input': {
-                        color: 'rgba(255, 255, 255, 0.9)'
-                      }
-                    }}
-                  />
-                )}
-                renderTags={(selected, getTagProps) =>
-                  selected.map((option, index) => (
-                    <Chip
-                      key={option}
-                      label={option}
-                      {...getTagProps({ index })}
+            {/* Add time range selector */}
+            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box sx={{ flex: 1 }}>
+                <Autocomplete
+                  multiple
+                  id="token-selector"
+                  options={availableTokens}
+                  value={selectedTokens}
+                  onChange={handleTokenSelection}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="outlined"
+                      label="Select Tokens (max 10 recommended)"
+                      placeholder="Add token"
                       sx={{
-                        backgroundColor: getTokenColor(option, availableTokens.indexOf(option)),
-                        color: 'white'
+                        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                        borderRadius: 1,
+                        '& .MuiOutlinedInput-root': {
+                          '& fieldset': {
+                            borderColor: 'rgba(255, 255, 255, 0.1)'
+                          },
+                          '&:hover fieldset': {
+                            borderColor: 'rgba(255, 255, 255, 0.2)'
+                          }
+                        },
+                        '& .MuiInputLabel-root': {
+                          color: 'rgba(255, 255, 255, 0.7)'
+                        },
+                        '& .MuiInputBase-input': {
+                          color: 'rgba(255, 255, 255, 0.9)'
+                        }
                       }}
                     />
-                  ))
-                }
-                sx={{ mb: 2 }}
-              />
-              <Typography
-                variant="caption"
-                sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mt: 1 }}
+                  )}
+                  renderTags={(selected, getTagProps) =>
+                    selected.map((option, index) => (
+                      <Chip
+                        key={option}
+                        label={option}
+                        {...getTagProps({ index })}
+                        sx={{
+                          backgroundColor: getTokenColor(option, availableTokens.indexOf(option)),
+                          color: 'white'
+                        }}
+                      />
+                    ))
+                  }
+                />
+              </Box>
+              <Tabs
+                value={timeRange}
+                onChange={(e, newValue) => handleTimeRangeChange(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  minHeight: '36px',
+                  ml: 2,
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    height: '2px'
+                  },
+                  '& .MuiTab-root': {
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    minHeight: '36px',
+                    padding: '6px 12px',
+                    minWidth: '60px',
+                    fontSize: '0.75rem',
+                    '&.Mui-selected': {
+                      color: 'rgba(255, 255, 255, 0.95)',
+                      fontWeight: 600
+                    }
+                  }
+                }}
               >
-                Showing {selectedTokens.length} of {availableTokens.length} available tokens. Select
-                fewer tokens for better performance.
-              </Typography>
+                <Tab label="All Time" value="all" />
+                <Tab label="5Y" value="5y" />
+                <Tab label="1Y" value="1y" />
+                <Tab label="6M" value="6m" />
+                <Tab label="1M" value="1m" />
+              </Tabs>
             </Box>
+            <Typography
+              variant="caption"
+              sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mt: 1, mb: 2 }}
+            >
+              Showing {selectedTokens.length} of {availableTokens.length} available tokens. Select
+              fewer tokens for better performance.
+            </Typography>
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data} margin={chartConfig.margin}>
+                <LineChart data={sampledData} margin={chartConfig.margin}>
                   <CartesianGrid {...chartConfig.gridStyle} />
                   <XAxis
                     dataKey="date"
                     angle={-45}
                     textAnchor="end"
                     height={60}
-                    interval={30}
+                    interval={
+                      timeRange === 'all'
+                        ? 30
+                        : timeRange === '5y'
+                        ? 20
+                        : timeRange === '1y'
+                        ? 10
+                        : 5
+                    }
                     tick={{ ...chartConfig.axisStyle }}
                   />
                   <YAxis
@@ -899,16 +940,57 @@ const MarketMetricsContent = () => {
         {/* Tab Panel 2: Active Tokens by DEX */}
         {activeTab === 2 && (
           <ChartContainer title="Active Tokens by DEX">
+            {/* Add time range selector */}
+            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+              <Tabs
+                value={timeRange}
+                onChange={(e, newValue) => handleTimeRangeChange(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  minHeight: '36px',
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    height: '2px'
+                  },
+                  '& .MuiTab-root': {
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    minHeight: '36px',
+                    padding: '6px 12px',
+                    minWidth: '60px',
+                    fontSize: '0.75rem',
+                    '&.Mui-selected': {
+                      color: 'rgba(255, 255, 255, 0.95)',
+                      fontWeight: 600
+                    }
+                  }
+                }}
+              >
+                <Tab label="All Time" value="all" />
+                <Tab label="5Y" value="5y" />
+                <Tab label="1Y" value="1y" />
+                <Tab label="6M" value="6m" />
+                <Tab label="1M" value="1m" />
+              </Tabs>
+            </Box>
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data} margin={chartConfig.margin}>
+                <LineChart data={sampledData} margin={chartConfig.margin}>
                   <CartesianGrid {...chartConfig.gridStyle} />
                   <XAxis
                     dataKey="date"
                     angle={-45}
                     textAnchor="end"
                     height={60}
-                    interval={30}
+                    interval={
+                      timeRange === 'all'
+                        ? 30
+                        : timeRange === '5y'
+                        ? 20
+                        : timeRange === '1y'
+                        ? 10
+                        : 5
+                    }
                     tick={{ ...chartConfig.axisStyle }}
                   />
                   <YAxis
@@ -998,10 +1080,43 @@ const MarketMetricsContent = () => {
         {/* Tab Panel 3: Trading Activity */}
         {activeTab === 3 && (
           <ChartContainer title="Trading Activity">
+            {/* Add time range selector */}
+            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+              <Tabs
+                value={timeRange}
+                onChange={(e, newValue) => handleTimeRangeChange(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  minHeight: '36px',
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    height: '2px'
+                  },
+                  '& .MuiTab-root': {
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    minHeight: '36px',
+                    padding: '6px 12px',
+                    minWidth: '60px',
+                    fontSize: '0.75rem',
+                    '&.Mui-selected': {
+                      color: 'rgba(255, 255, 255, 0.95)',
+                      fontWeight: 600
+                    }
+                  }
+                }}
+              >
+                <Tab label="All Time" value="all" />
+                <Tab label="5Y" value="5y" />
+                <Tab label="1Y" value="1y" />
+                <Tab label="6M" value="6m" />
+                <Tab label="1M" value="1m" />
+              </Tabs>
+            </Box>
             <Box sx={{ height: 400, backgroundColor: 'transparent' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
-                  data={data}
+                  data={sampledData}
                   margin={chartConfig.margin}
                   style={{
                     backgroundColor: 'transparent'
@@ -1013,7 +1128,15 @@ const MarketMetricsContent = () => {
                     angle={-45}
                     textAnchor="end"
                     height={60}
-                    interval={30}
+                    interval={
+                      timeRange === 'all'
+                        ? 30
+                        : timeRange === '5y'
+                        ? 20
+                        : timeRange === '1y'
+                        ? 10
+                        : 5
+                    }
                     tick={{ ...chartConfig.axisStyle }}
                   />
                   <YAxis
@@ -1118,16 +1241,57 @@ const MarketMetricsContent = () => {
         {/* Tab Panel 4: Unique Active Addresses */}
         {activeTab === 4 && (
           <ChartContainer title="Unique Active Addresses">
+            {/* Add time range selector */}
+            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+              <Tabs
+                value={timeRange}
+                onChange={(e, newValue) => handleTimeRangeChange(newValue)}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  minHeight: '36px',
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    height: '2px'
+                  },
+                  '& .MuiTab-root': {
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    minHeight: '36px',
+                    padding: '6px 12px',
+                    minWidth: '60px',
+                    fontSize: '0.75rem',
+                    '&.Mui-selected': {
+                      color: 'rgba(255, 255, 255, 0.95)',
+                      fontWeight: 600
+                    }
+                  }
+                }}
+              >
+                <Tab label="All Time" value="all" />
+                <Tab label="5Y" value="5y" />
+                <Tab label="1Y" value="1y" />
+                <Tab label="6M" value="6m" />
+                <Tab label="1M" value="1m" />
+              </Tabs>
+            </Box>
             <Box sx={{ height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data} margin={chartConfig.margin}>
+                <LineChart data={sampledData} margin={chartConfig.margin}>
                   <CartesianGrid {...chartConfig.gridStyle} />
                   <XAxis
                     dataKey="date"
                     angle={-45}
                     textAnchor="end"
                     height={60}
-                    interval={30}
+                    interval={
+                      timeRange === 'all'
+                        ? 30
+                        : timeRange === '5y'
+                        ? 20
+                        : timeRange === '1y'
+                        ? 10
+                        : 5
+                    }
                     tick={{ ...chartConfig.axisStyle }}
                   />
                   <YAxis
