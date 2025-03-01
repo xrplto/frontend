@@ -400,70 +400,133 @@ const MarketCapChart = ({ data, visibleLines, handleLegendClick, chartConfig, ch
   </ChartContainer>
 );
 
-const TokenMarketCapChart = ({ data, visibleLines, handleLegendClick, chartConfig, chartColors, availableTokens, getTokenColor }) => (
-  <ChartContainer title="Token Market Caps (XRP)">
-    <Box sx={{ height: 400 }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={chartConfig.margin}>
-          <CartesianGrid {...chartConfig.gridStyle} />
-          <XAxis
-            dataKey="date"
-            angle={-45}
-            textAnchor="end"
-            height={60}
-            interval={30}
-            tick={{ ...chartConfig.axisStyle }}
-          />
-          <YAxis
-            domain={['auto', 'auto']}
-            tickFormatter={(value) =>
-              value.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              }) + ' XRP'
-            }
-            tick={{ ...chartConfig.axisStyle }}
-          />
-          <Tooltip
-            content={<CustomTooltip />}
-            cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
-          />
-          <Legend
-            content={({ payload }) => (
-              <CustomLegend
-                payload={payload}
-                visibleLines={visibleLines}
-                handleLegendClick={handleLegendClick}
-              />
-            )}
-          />
-          {/* Dynamically generate lines for each token */}
-          {availableTokens.map((token, index) => {
-            const dataKey = `${token}_marketcap`;
-            return (
-              <Line
-                key={dataKey}
-                type="monotone"
-                dataKey={dataKey}
-                stroke={getTokenColor(token, index)}
-                name={`${token}`}
-                strokeWidth={2}
-                dot={false}
-                hide={!visibleLines[dataKey]}
-                activeDot={{
-                  r: 6,
-                  strokeWidth: 2,
-                  stroke: getTokenColor(token, index),
-                  fill: chartColors.background
-                }}
-              />
-            );
-          })}
-        </LineChart>
-      </ResponsiveContainer>
-    </Box>
-  </ChartContainer>
-);
+// Modify the TokenMarketCapChart component to limit the number of tokens displayed initially
+const TokenMarketCapChart = ({ data, visibleLines, handleLegendClick, chartConfig, chartColors, availableTokens, getTokenColor }) => {
+  // State to track how many tokens to display
+  const [tokensToShow, setTokensToShow] = useState(10);
+  
+  // Get the top tokens by market cap (from the most recent data point)
+  const getTopTokens = () => {
+    if (!data || data.length === 0) return [];
+    
+    const latestDataPoint = data[data.length - 1];
+    
+    // Create array of [token, marketcap] pairs
+    const tokenMarketcaps = availableTokens
+      .map(token => {
+        const marketcapKey = `${token}_marketcap`;
+        return [token, latestDataPoint[marketcapKey] || 0];
+      })
+      // Filter out tokens with no market cap
+      .filter(([_, marketcap]) => marketcap > 0)
+      // Sort by market cap descending
+      .sort(([_, marketcapA], [__, marketcapB]) => marketcapB - marketcapA)
+      // Take only the top N tokens
+      .slice(0, tokensToShow)
+      // Extract just the token names
+      .map(([token]) => token);
+    
+    return tokenMarketcaps;
+  };
+  
+  const topTokens = getTopTokens();
+  
+  // Function to load more tokens
+  const handleLoadMore = () => {
+    setTokensToShow(prev => Math.min(prev + 10, availableTokens.length));
+  };
+
+  return (
+    <ChartContainer title="Token Market Caps (XRP)">
+      <Box sx={{ height: 400 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={chartConfig.margin}>
+            <CartesianGrid {...chartConfig.gridStyle} />
+            <XAxis
+              dataKey="date"
+              angle={-45}
+              textAnchor="end"
+              height={60}
+              interval={30}
+              tick={{ ...chartConfig.axisStyle }}
+            />
+            <YAxis
+              domain={['auto', 'auto']}
+              tickFormatter={(value) =>
+                value.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                }) + ' XRP'
+              }
+              tick={{ ...chartConfig.axisStyle }}
+            />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+            />
+            <Legend
+              content={({ payload }) => (
+                <CustomLegend
+                  payload={payload}
+                  visibleLines={visibleLines}
+                  handleLegendClick={handleLegendClick}
+                />
+              )}
+            />
+            {/* Only render the top tokens */}
+            {topTokens.map((token, index) => {
+              const dataKey = `${token}_marketcap`;
+              return (
+                <Line
+                  key={dataKey}
+                  type="monotone"
+                  dataKey={dataKey}
+                  stroke={getTokenColor(token, index)}
+                  name={`${token}`}
+                  strokeWidth={2}
+                  dot={false}
+                  hide={!visibleLines[dataKey]}
+                  activeDot={{
+                    r: 6,
+                    strokeWidth: 2,
+                    stroke: getTokenColor(token, index),
+                    fill: chartColors.background
+                  }}
+                />
+              );
+            })}
+          </LineChart>
+        </ResponsiveContainer>
+      </Box>
+      
+      {/* Load more button */}
+      {tokensToShow < availableTokens.length && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <Box 
+            onClick={handleLoadMore}
+            sx={{
+              px: 3,
+              py: 1,
+              borderRadius: 1,
+              cursor: 'pointer',
+              backgroundColor: 'rgba(59, 130, 246, 0.2)',
+              color: '#fff',
+              border: '1px solid rgba(59, 130, 246, 0.3)',
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                backgroundColor: 'rgba(59, 130, 246, 0.3)',
+              }
+            }}
+          >
+            <Typography variant="body2">
+              Show More Tokens ({tokensToShow} of {availableTokens.length})
+            </Typography>
+          </Box>
+        </Box>
+      )}
+    </ChartContainer>
+  );
+};
 
 const ActiveTokensChart = ({ data, visibleLines, handleLegendClick, chartConfig, chartColors }) => (
   <ChartContainer title="Active Tokens by DEX">
