@@ -175,19 +175,24 @@ const CustomLegendItem = ({ entry, visible, onClick }) => (
     sx={{
       display: 'inline-flex',
       alignItems: 'center',
-      mr: 3,
+      mr: 2,
+      mb: 1,
       cursor: 'pointer',
       opacity: visible ? 1 : 0.4,
       transition: 'all 0.2s ease-in-out',
+      padding: '2px 8px',
+      borderRadius: '4px',
+      backgroundColor: visible ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
       '&:hover': {
-        opacity: 0.8
+        opacity: 0.8,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)'
       }
     }}
   >
     <Box
       sx={{
-        width: 12,
-        height: 12,
+        width: 10,
+        height: 10,
         borderRadius: '50%',
         backgroundColor: entry.color || entry.stroke,
         mr: 1,
@@ -198,13 +203,60 @@ const CustomLegendItem = ({ entry, visible, onClick }) => (
       variant="body2"
       sx={{
         color: chartColors.text,
-        fontWeight: visible ? 500 : 400
+        fontWeight: visible ? 500 : 400,
+        fontSize: '0.75rem'
       }}
     >
       {entry.value}
     </Typography>
   </Box>
 );
+
+// Custom Legend Container Component
+const CustomLegend = ({ payload, visibleLines, handleLegendClick }) => {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        mt: 2
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          maxHeight: '80px',
+          overflowY: 'auto',
+          padding: '4px',
+          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          borderRadius: '4px',
+          '&::-webkit-scrollbar': {
+            width: '6px',
+            height: '6px'
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'rgba(0, 0, 0, 0.1)'
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            borderRadius: '3px'
+          }
+        }}
+      >
+        {payload.map((entry) => (
+          <CustomLegendItem
+            key={entry.value}
+            entry={entry}
+            visible={visibleLines[entry.dataKey]}
+            onClick={handleLegendClick}
+          />
+        ))}
+      </Box>
+    </Box>
+  );
+};
 
 // Chart Container Component
 const ChartContainer = ({ title, children }) => (
@@ -476,13 +528,13 @@ const MarketMetricsContent = () => {
                   cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
                 />
                 <Legend
-                  wrapperStyle={{
-                    paddingTop: '20px',
-                    color: chartColors.text
-                  }}
-                  verticalAlign="top"
-                  height={36}
-                  onClick={handleLegendClick}
+                  content={({ payload }) => (
+                    <CustomLegend
+                      payload={payload}
+                      visibleLines={visibleLines}
+                      handleLegendClick={handleLegendClick}
+                    />
+                  )}
                 />
                 <Line
                   type="monotone"
@@ -577,13 +629,13 @@ const MarketMetricsContent = () => {
                   cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
                 />
                 <Legend
-                  wrapperStyle={{
-                    paddingTop: '20px',
-                    color: chartColors.text
-                  }}
-                  verticalAlign="top"
-                  height={36}
-                  onClick={handleLegendClick}
+                  content={({ payload }) => (
+                    <CustomLegend
+                      payload={payload}
+                      visibleLines={visibleLines}
+                      handleLegendClick={handleLegendClick}
+                    />
+                  )}
                 />
                 {/* Dynamically generate lines for each token */}
                 {availableTokens.map((token, index) => {
@@ -635,13 +687,13 @@ const MarketMetricsContent = () => {
                   cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
                 />
                 <Legend
-                  wrapperStyle={{
-                    paddingTop: '20px',
-                    color: chartColors.text
-                  }}
-                  verticalAlign="top"
-                  height={36}
-                  onClick={handleLegendClick}
+                  content={({ payload }) => (
+                    <CustomLegend
+                      payload={payload}
+                      visibleLines={visibleLines}
+                      handleLegendClick={handleLegendClick}
+                    />
+                  )}
                 />
                 <Line
                   type="monotone"
@@ -747,24 +799,11 @@ const MarketMetricsContent = () => {
                 />
                 <Legend
                   content={({ payload }) => (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        flexWrap: 'wrap',
-                        pt: 2,
-                        pb: 1
-                      }}
-                    >
-                      {payload.map((entry) => (
-                        <CustomLegendItem
-                          key={entry.value}
-                          entry={entry}
-                          visible={visibleLines[entry.dataKey]}
-                          onClick={handleLegendClick}
-                        />
-                      ))}
-                    </Box>
+                    <CustomLegend
+                      payload={payload}
+                      visibleLines={visibleLines}
+                      handleLegendClick={handleLegendClick}
+                    />
                   )}
                 />
                 <Line
@@ -861,13 +900,13 @@ const MarketMetricsContent = () => {
                   cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
                 />
                 <Legend
-                  wrapperStyle={{
-                    paddingTop: '20px',
-                    color: chartColors.text
-                  }}
-                  verticalAlign="top"
-                  height={36}
-                  onClick={handleLegendClick}
+                  content={({ payload }) => (
+                    <CustomLegend
+                      payload={payload}
+                      visibleLines={visibleLines}
+                      handleLegendClick={handleLegendClick}
+                    />
+                  )}
                 />
                 <Line
                   type="monotone"
