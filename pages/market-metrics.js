@@ -2035,7 +2035,11 @@ const MarketMetricsContent = () => {
                         Total:
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
-                        {selectedDataPoint.totalTrades.toLocaleString()}
+                        {(
+                          selectedDataPoint.totalTrades ||
+                          0 ||
+                          (selectedDataPoint.tradesAMM || 0) + (selectedDataPoint.tradesNonAMM || 0)
+                        ).toLocaleString()}
                       </Typography>
                     </Box>
                   </Box>
@@ -2258,8 +2262,10 @@ const MarketMetricsContent = () => {
                       Total Active Addresses
                     </Typography>
                     <Typography variant="h5" sx={{ color: 'white', fontWeight: 600 }}>
-                      {(selectedDataPoint.uniqueActiveAddresses || 
-                        (selectedDataPoint.uniqueActiveAddressesAMM + selectedDataPoint.uniqueActiveAddressesNonAMM)
+                      {(
+                        selectedDataPoint.uniqueActiveAddresses ||
+                        selectedDataPoint.uniqueActiveAddressesAMM +
+                          selectedDataPoint.uniqueActiveAddressesNonAMM
                       ).toLocaleString()}
                     </Typography>
                   </Box>
