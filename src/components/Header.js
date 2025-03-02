@@ -233,6 +233,12 @@ export default function Header(props) {
                 >
                   {t('Market Metrics')}
                 </StyledMenuItem>
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  onClick={() => (window.location.href = '/top-traders')}
+                >
+                  {t('Top Traders')}
+                </StyledMenuItem>
               </Menu>
               <StyledLink
                 underline="none"
