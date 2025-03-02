@@ -185,6 +185,8 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [traderStats, setTraderStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedChart, setSelectedChart] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [chartData, setChartData] = useState(null);
 
   // Fallback value for theme.palette.divider
   const dividerColor = theme?.palette?.divider || '#ccc';
@@ -719,6 +721,38 @@ export default function Portfolio({ account, limit, collection, type }) {
     setSelectedChart(null);
   };
 
+  const renderChart = (chartData) => {
+    if (!chartData || !chartData.labels) {
+      return <Box>Loading chart data...</Box>;
+    }
+
+    return <Line data={chartData} options={{ ...chartOptions, maintainAspectRatio: false }} />;
+  };
+
+  useEffect(() => {
+    // Fetch data
+    const fetchData = async () => {
+      try {
+        // Your data fetching logic
+        const result = await fetchChartData();
+        setChartData(result);
+      } catch (error) {
+        console.error('Error fetching chart data:', error);
+        // Set empty but valid chart data structure
+        setChartData({ labels: [], datasets: [] });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [account, collection, type]);
+
+  // Render loading state or error state
+  if (isLoading) {
+    return <Box>Loading...</Box>;
+  }
+
   return (
     <OverviewWrapper>
       <Container maxWidth="xl" sx={{ mt: 4 }}>
@@ -1169,24 +1203,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     {loading ? (
                       <Skeleton variant="rectangular" height={350} />
                     ) : (
-                      <Line
-                        data={processChartData()}
-                        options={{
-                          ...chartOptions,
-                          plugins: {
-                            ...chartOptions.plugins,
-                            legend: {
-                              ...chartOptions.plugins.legend,
-                              padding: 5
-                            },
-                            title: {
-                              ...chartOptions.plugins.title,
-                              padding: 5,
-                              display: false
-                            }
-                          }
-                        }}
-                      />
+                      renderChart(processChartData())
                     )}
                   </Box>
                 </Card>
@@ -1222,24 +1239,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     {loading ? (
                       <Skeleton variant="rectangular" height={350} />
                     ) : (
-                      <Line
-                        data={processTradeHistoryData()}
-                        options={{
-                          ...tradeHistoryOptions,
-                          plugins: {
-                            ...tradeHistoryOptions.plugins,
-                            legend: {
-                              ...tradeHistoryOptions.plugins.legend,
-                              padding: 5
-                            },
-                            title: {
-                              ...tradeHistoryOptions.plugins.title,
-                              padding: 5,
-                              display: false
-                            }
-                          }
-                        }}
-                      />
+                      renderChart(processTradeHistoryData())
                     )}
                   </Box>
                 </Card>
@@ -1275,24 +1275,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     {loading ? (
                       <Skeleton variant="rectangular" height={350} />
                     ) : (
-                      <Line
-                        data={processVolumeHistoryData()}
-                        options={{
-                          ...volumeHistoryOptions,
-                          plugins: {
-                            ...volumeHistoryOptions.plugins,
-                            legend: {
-                              ...volumeHistoryOptions.plugins.legend,
-                              padding: 5
-                            },
-                            title: {
-                              ...volumeHistoryOptions.plugins.title,
-                              padding: 5,
-                              display: false
-                            }
-                          }
-                        }}
-                      />
+                      renderChart(processVolumeHistoryData())
                     )}
                   </Box>
                 </Card>
@@ -1323,33 +1306,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                   </IconButton>
                 </Box>
                 <Box sx={{ height: 600, width: '100%' }}>
-                  {selectedChart === 'roi' && (
-                    <Line
-                      data={processChartData()}
-                      options={{
-                        ...chartOptions,
-                        maintainAspectRatio: false
-                      }}
-                    />
-                  )}
-                  {selectedChart === 'activity' && (
-                    <Line
-                      data={processTradeHistoryData()}
-                      options={{
-                        ...tradeHistoryOptions,
-                        maintainAspectRatio: false
-                      }}
-                    />
-                  )}
-                  {selectedChart === 'volume' && (
-                    <Line
-                      data={processVolumeHistoryData()}
-                      options={{
-                        ...volumeHistoryOptions,
-                        maintainAspectRatio: false
-                      }}
-                    />
-                  )}
+                  {selectedChart === 'roi' && renderChart(processChartData())}
+                  {selectedChart === 'activity' && renderChart(processTradeHistoryData())}
+                  {selectedChart === 'volume' && renderChart(processVolumeHistoryData())}
                 </Box>
               </ModalContent>
             </StyledModal>
