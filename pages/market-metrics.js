@@ -1360,8 +1360,6 @@ const MarketMetricsContent = () => {
                         <Box
                           key={token}
                           sx={{
-                            display: 'flex',
-                            alignItems: 'center',
                             mb: 1,
                             p: 1,
                             borderRadius: 1,
@@ -1373,22 +1371,36 @@ const MarketMetricsContent = () => {
                             flexDirection: 'column'
                           }}
                         >
-                          <Typography
-                            variant="body2"
-                            sx={{ color: themeColors.textSecondary, mb: 1 }}
-                          >
-                            Volume
-                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            <Box
+                              sx={{
+                                width: 10,
+                                height: 10,
+                                borderRadius: '50%',
+                                backgroundColor: getTokenColor(
+                                  token,
+                                  availableTokens.indexOf(token)
+                                ),
+                                mr: 1
+                              }}
+                            />
+                            <Typography
+                              variant="body1"
+                              sx={{ color: themeColors.text, fontWeight: 600 }}
+                            >
+                              {token}
+                            </Typography>
+                          </Box>
 
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="body2" sx={{ color: chartColors.primary.main }}>
-                              AMM:
+                            <Typography variant="body2" sx={{ color: themeColors.textSecondary }}>
+                              Market Cap:
                             </Typography>
                             <Typography
                               variant="body2"
                               sx={{ color: themeColors.text, fontWeight: 500 }}
                             >
-                              {selectedDataPoint.volumeAMM.toLocaleString(undefined, {
+                              {marketCap.toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
                               })}{' '}
@@ -1396,41 +1408,23 @@ const MarketMetricsContent = () => {
                             </Typography>
                           </Box>
 
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="body2" sx={{ color: chartColors.secondary.main }}>
-                              Non-AMM:
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{ color: themeColors.text, fontWeight: 500 }}
-                            >
-                              {selectedDataPoint.volumeNonAMM.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                              })}{' '}
-                              XRP
-                            </Typography>
-                          </Box>
-
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              pt: 1,
-                              borderTop: '1px solid rgba(255, 255, 255, 0.1)'
-                            }}
-                          >
-                            <Typography variant="body2" sx={{ color: 'white' }}>
-                              Total:
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
-                              {selectedDataPoint.totalVolume.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                              })}{' '}
-                              XRP
-                            </Typography>
-                          </Box>
+                          {avgPrice > 0 && (
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                              <Typography variant="body2" sx={{ color: themeColors.textSecondary }}>
+                                Average Price:
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: themeColors.text, fontWeight: 500 }}
+                              >
+                                {avgPrice.toLocaleString(undefined, {
+                                  minimumFractionDigits: 6,
+                                  maximumFractionDigits: 6
+                                })}{' '}
+                                XRP
+                              </Typography>
+                            </Box>
+                          )}
                         </Box>
                       );
                     })}
