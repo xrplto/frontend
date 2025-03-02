@@ -2258,7 +2258,9 @@ const MarketMetricsContent = () => {
                       Total Active Addresses
                     </Typography>
                     <Typography variant="h5" sx={{ color: 'white', fontWeight: 600 }}>
-                      {selectedDataPoint.uniqueActiveAddresses.toLocaleString()}
+                      {(selectedDataPoint.uniqueActiveAddresses || 
+                        (selectedDataPoint.uniqueActiveAddressesAMM + selectedDataPoint.uniqueActiveAddressesNonAMM)
+                      ).toLocaleString()}
                     </Typography>
                   </Box>
                 </Box>
