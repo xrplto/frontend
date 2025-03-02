@@ -916,7 +916,20 @@ export default function Analytics() {
                           >
                             <TableCell component="th" scope="row">
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                {abbreviateAddress(trader.address)}
+                                <Typography
+                                  component="a"
+                                  href={`/profile/${trader.address}`}
+                                  sx={{
+                                    textDecoration: 'none',
+                                    color: 'primary.main',
+                                    '&:hover': {
+                                      textDecoration: 'underline'
+                                    }
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {abbreviateAddress(trader.address)}
+                                </Typography>
                                 <IconButton
                                   size="small"
                                   onClick={(e) => handleRoiClick(trader, e)}
@@ -1074,7 +1087,20 @@ export default function Analytics() {
               <>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
                   <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    Trader Analytics - {roiModalTrader.address}
+                    Trader Analytics -{' '}
+                    <Typography
+                      component="a"
+                      href={`/profile/${roiModalTrader.address}`}
+                      sx={{
+                        textDecoration: 'none',
+                        color: 'primary.main',
+                        '&:hover': {
+                          textDecoration: 'underline'
+                        }
+                      }}
+                    >
+                      {roiModalTrader.address}
+                    </Typography>
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     First Trade: {new Date(roiModalTrader.firstTradeDate).toLocaleDateString()}
