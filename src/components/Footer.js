@@ -59,6 +59,7 @@ function Footer() {
                   links: [
                     { href: '/swap', label: 'Token Swap' },
                     { href: '/market-metrics', label: 'Market Metrics' },
+                    { href: '/top-traders', label: 'Top Traders' },
                     { href: '/api-docs', label: 'Token API' },
                     { href: '/sitemap/tokens', label: 'Sitemap' }
                   ]
