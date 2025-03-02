@@ -27,6 +27,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';
 import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 // Chart theme colors
 const chartColors = {
@@ -161,14 +162,14 @@ const CustomTooltip = ({ active, payload, label }) => {
           sx={{
             backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
             border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'}`,
-            p: 2,
+            p: { xs: 1, sm: 2 }, // Reduced padding on mobile
             borderRadius: 2,
             boxShadow: isDarkMode
               ? '0 8px 32px 0 rgba(0, 0, 0, 0.5)'
               : '0 4px 20px 0 rgba(0, 0, 0, 0.15)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            maxWidth: 300,
+            maxWidth: { xs: 250, sm: 300 }, // Smaller width on mobile
             maxHeight: '80vh',
             overflow: 'auto'
           }}
@@ -179,6 +180,7 @@ const CustomTooltip = ({ active, payload, label }) => {
               color: isDarkMode ? '#E5E7EB' : 'rgba(0, 0, 0, 0.87)',
               mb: 1,
               fontWeight: 600,
+              fontSize: { xs: '0.7rem', sm: '0.8rem' }, // Smaller font on mobile
               borderBottom: `1px solid ${
                 isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
               }`,
@@ -385,8 +387,8 @@ const ChartContainer = ({ title, children }) => {
     <Paper
       elevation={0}
       sx={{
-        p: 4,
-        mb: 4,
+        p: { xs: 2, sm: 3, md: 4 }, // Reduced padding on mobile
+        mb: { xs: 2, sm: 3, md: 4 }, // Reduced margin on mobile
         backgroundColor: themeColors.cardBg,
         border: `1px solid ${themeColors.cardBorder}`,
         borderRadius: 2,
@@ -412,8 +414,8 @@ const ChartContainer = ({ title, children }) => {
         sx={{
           color: themeColors.text,
           fontWeight: 600,
-          mb: 3,
-          fontSize: '1.25rem',
+          mb: { xs: 1.5, sm: 2, md: 3 }, // Reduced margin on mobile
+          fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' }, // Smaller font on mobile
           letterSpacing: '0.025em',
           textShadow: theme.palette.mode === 'dark' ? '0 2px 4px rgba(0, 0, 0, 0.2)' : 'none'
         }}
@@ -598,6 +600,9 @@ const MarketMetricsContent = () => {
   const themeColors = getThemeColors(theme);
   const chartColors = getChartColors(theme);
 
+  // Move the useMediaQuery hook to the top level, not inside a conditional
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -719,13 +724,31 @@ const MarketMetricsContent = () => {
   }
 
   const chartConfig = {
-    margin: { top: 20, right: 40, left: 30, bottom: 20 },
+    margin: {
+      top: 20,
+      right: 40,
+      left: 30,
+      bottom: 20
+    },
+    mobileMargin: {
+      // Add mobile-specific margins
+      top: 10,
+      right: 20,
+      left: 20,
+      bottom: 20
+    },
     gridStyle: {
       strokeDasharray: '3 3',
       stroke: themeColors.grid
     },
     axisStyle: {
       fontSize: 12,
+      fontWeight: 500,
+      fill: themeColors.text
+    },
+    mobileAxisStyle: {
+      // Add mobile-specific axis style
+      fontSize: 10,
       fontWeight: 500,
       fill: themeColors.text
     }
@@ -735,20 +758,21 @@ const MarketMetricsContent = () => {
     <Box
       sx={{
         flex: 1,
-        py: 3,
+        py: { xs: 1, sm: 2, md: 3 }, // Reduced padding on mobile
         backgroundColor: themeColors.background,
         backgroundImage: themeColors.backgroundGradient,
         minHeight: '100vh'
       }}
     >
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+      <Container maxWidth="xl" sx={{ mt: { xs: 2, sm: 3, md: 4 }, mb: { xs: 2, sm: 3, md: 4 } }}>
         <Typography
           variant="h4"
           gutterBottom
           sx={{
             color: themeColors.text,
             fontWeight: 700,
-            mb: 4,
+            mb: { xs: 2, sm: 3, md: 4 }, // Reduced margin on mobile
+            fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }, // Smaller font on mobile
             textAlign: 'center',
             letterSpacing: '0.025em',
             textShadow: theme.palette.mode === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none'
@@ -761,7 +785,7 @@ const MarketMetricsContent = () => {
         <Paper
           elevation={0}
           sx={{
-            mb: 4,
+            mb: { xs: 2, sm: 3, md: 4 }, // Reduced margin on mobile
             backgroundColor: themeColors.cardBg,
             border: `1px solid ${themeColors.cardBorder}`,
             borderRadius: 2,
@@ -779,7 +803,7 @@ const MarketMetricsContent = () => {
             variant="scrollable"
             scrollButtons="auto"
             sx={{
-              minHeight: '48px',
+              minHeight: { xs: '40px', sm: '48px' }, // Smaller height on mobile
               '& .MuiTabs-indicator': {
                 backgroundColor:
                   theme.palette.mode === 'dark'
@@ -790,8 +814,9 @@ const MarketMetricsContent = () => {
               '& .MuiTab-root': {
                 color:
                   theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-                minHeight: '48px',
-                padding: '12px 16px',
+                minHeight: { xs: '40px', sm: '48px' }, // Smaller height on mobile
+                padding: { xs: '8px 12px', sm: '12px 16px' }, // Reduced padding on mobile
+                fontSize: { xs: '0.7rem', sm: '0.8rem' }, // Smaller font on mobile
                 '&.Mui-selected': {
                   color:
                     theme.palette.mode === 'dark'
@@ -821,14 +846,23 @@ const MarketMetricsContent = () => {
         {activeTab === 0 && (
           <ChartContainer title="Market Cap by DEX (XRP)">
             {/* Add time range selector */}
-            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Box
+              sx={{
+                mb: { xs: 1, sm: 2 },
+                display: 'flex',
+                justifyContent: 'flex-end',
+                // Make the container smaller on mobile
+                maxWidth: { xs: '100%', sm: 'auto' },
+                overflow: 'auto'
+              }}
+            >
               <Tabs
                 value={timeRange}
                 onChange={(e, newValue) => handleTimeRangeChange(newValue)}
                 variant="scrollable"
-                scrollButtons="auto"
+                scrollButtons={isMobile ? false : 'auto'} // Hide scroll buttons on mobile
                 sx={{
-                  minHeight: '36px',
+                  minHeight: { xs: '28px', sm: '36px' }, // Even smaller height on mobile
                   '& .MuiTabs-indicator': {
                     backgroundColor:
                       theme.palette.mode === 'dark'
@@ -836,15 +870,21 @@ const MarketMetricsContent = () => {
                         : theme.palette.primary.main,
                     height: '2px'
                   },
+                  '& .MuiTabs-root': {
+                    maxWidth: { xs: '100%', sm: 'auto' } // Constrain width on mobile
+                  },
+                  '& .MuiTabs-flexContainer': {
+                    justifyContent: isMobile ? 'space-between' : 'flex-start' // Space evenly on mobile
+                  },
                   '& .MuiTab-root': {
                     color:
                       theme.palette.mode === 'dark'
                         ? 'rgba(255, 255, 255, 0.6)'
                         : 'rgba(0, 0, 0, 0.6)',
-                    minHeight: '36px',
-                    padding: '6px 12px',
-                    minWidth: '60px',
-                    fontSize: '0.75rem',
+                    minHeight: { xs: '28px', sm: '36px' }, // Smaller height on mobile
+                    padding: { xs: '2px 6px', sm: '6px 12px' }, // Further reduced padding on mobile
+                    minWidth: { xs: '40px', sm: '60px' }, // Smaller width on mobile
+                    fontSize: { xs: '0.6rem', sm: '0.75rem' }, // Smaller font on mobile
                     '&.Mui-selected': {
                       color:
                         theme.palette.mode === 'dark'
@@ -855,7 +895,7 @@ const MarketMetricsContent = () => {
                   }
                 }}
               >
-                <Tab label="All Time" value="all" />
+                <Tab label={isMobile ? 'All' : 'All Time'} value="all" />
                 <Tab label="5Y" value="5y" />
                 <Tab label="1Y" value="1y" />
                 <Tab label="6M" value="6m" />
@@ -863,12 +903,14 @@ const MarketMetricsContent = () => {
               </Tabs>
             </Box>
 
-            <Box sx={{ height: 400 }}>
+            <Box sx={{ height: { xs: 300, sm: 350, md: 400 } }}>
+              {' '}
+              {/* Smaller height on mobile */}
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   ref={chartRef}
                   data={progressiveData}
-                  margin={chartConfig.margin}
+                  margin={isMobile ? chartConfig.mobileMargin : chartConfig.margin}
                   isAnimationActive={false}
                   onClick={(data) => {
                     if (data && data.activePayload && data.activePayload.length > 0) {
@@ -881,9 +923,17 @@ const MarketMetricsContent = () => {
                     dataKey="date"
                     angle={-45}
                     textAnchor="end"
-                    height={60}
+                    height={isMobile ? 40 : 60} // Smaller height on mobile
                     interval={
-                      timeRange === 'all'
+                      isMobile
+                        ? timeRange === 'all'
+                          ? 60
+                          : timeRange === '5y'
+                          ? 40
+                          : timeRange === '1y'
+                          ? 20
+                          : 10
+                        : timeRange === 'all'
                         ? 30
                         : timeRange === '5y'
                         ? 20
@@ -891,17 +941,23 @@ const MarketMetricsContent = () => {
                         ? 10
                         : 5
                     }
-                    tick={{ ...chartConfig.axisStyle }}
+                    tick={
+                      isMobile ? { ...chartConfig.mobileAxisStyle } : { ...chartConfig.axisStyle }
+                    }
                   />
                   <YAxis
                     domain={['auto', 'auto']}
-                    tickFormatter={(value) =>
-                      value.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                      }) + ' XRP'
+                    tickFormatter={
+                      (value) =>
+                        value.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        }) + (isMobile ? '' : ' XRP') // Remove "XRP" text on mobile to save space
                     }
-                    tick={{ ...chartConfig.axisStyle }}
+                    tick={
+                      isMobile ? { ...chartConfig.mobileAxisStyle } : { ...chartConfig.axisStyle }
+                    }
+                    width={isMobile ? 60 : 80} // Smaller width on mobile
                   />
                   <Tooltip
                     content={<CustomTooltip />}
@@ -992,8 +1048,8 @@ const MarketMetricsContent = () => {
             {selectedDataPoint && (
               <Box
                 sx={{
-                  mt: 3,
-                  p: 2,
+                  mt: { xs: 1.5, sm: 2, md: 3 }, // Reduced margin on mobile
+                  p: { xs: 1, sm: 1.5, md: 2 }, // Reduced padding on mobile
                   backgroundColor:
                     theme.palette.mode === 'dark'
                       ? 'rgba(0, 0, 0, 0.4)'
@@ -1126,23 +1182,36 @@ const MarketMetricsContent = () => {
         {/* Tab Panel 1: Token Market Caps */}
         {activeTab === 1 && (
           <ChartContainer title="Token Market Caps (XRP)">
-            {/* Add time range selector */}
+            {/* Add time range selector and token selector in a more compact layout */}
             <Box
-              sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              sx={{
+                mb: { xs: 1, sm: 2 },
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between',
+                alignItems: { xs: 'stretch', sm: 'center' },
+                gap: 1
+              }}
             >
-              <Box sx={{ flex: 1 }}>
+              <Box
+                sx={{
+                  flex: 1,
+                  maxWidth: { xs: '100%', sm: '60%' }
+                }}
+              >
                 <Autocomplete
                   multiple
                   id="token-selector"
                   options={availableTokens}
                   value={selectedTokens}
                   onChange={handleTokenSelection}
+                  size={isMobile ? 'small' : 'medium'} // Use smaller input on mobile
                   renderInput={(params) => (
                     <TextField
                       {...params}
                       variant="outlined"
-                      label="Select Tokens (max 10 recommended)"
-                      placeholder="Add token"
+                      label={isMobile ? 'Select Tokens' : 'Select Tokens (max 10 recommended)'}
+                      placeholder={isMobile ? 'Add' : 'Add token'}
                       sx={{
                         backgroundColor: 'rgba(0, 0, 0, 0.2)',
                         borderRadius: 1,
@@ -1155,10 +1224,12 @@ const MarketMetricsContent = () => {
                           }
                         },
                         '& .MuiInputLabel-root': {
-                          color: 'rgba(255, 255, 255, 0.7)'
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontSize: isMobile ? '0.75rem' : 'inherit'
                         },
                         '& .MuiInputBase-input': {
-                          color: 'rgba(255, 255, 255, 0.9)'
+                          color: 'rgba(255, 255, 255, 0.9)',
+                          padding: isMobile ? '8px 14px' : undefined
                         }
                       }}
                     />
@@ -1169,9 +1240,12 @@ const MarketMetricsContent = () => {
                         key={option}
                         label={option}
                         {...getTagProps({ index })}
+                        size={isMobile ? 'small' : 'medium'} // Smaller chips on mobile
                         sx={{
                           backgroundColor: getTokenColor(option, availableTokens.indexOf(option)),
-                          color: 'white'
+                          color: 'white',
+                          fontSize: isMobile ? '0.65rem' : '0.75rem',
+                          height: isMobile ? '20px' : '32px'
                         }}
                       />
                     ))
@@ -1182,9 +1256,9 @@ const MarketMetricsContent = () => {
                 value={timeRange}
                 onChange={(e, newValue) => handleTimeRangeChange(newValue)}
                 variant="scrollable"
-                scrollButtons="auto"
+                scrollButtons={isMobile ? false : 'auto'} // Hide scroll buttons on mobile
                 sx={{
-                  minHeight: '36px',
+                  minHeight: { xs: '28px', sm: '36px' }, // Smaller height on mobile
                   '& .MuiTabs-indicator': {
                     backgroundColor:
                       theme.palette.mode === 'dark'
@@ -1197,10 +1271,10 @@ const MarketMetricsContent = () => {
                       theme.palette.mode === 'dark'
                         ? 'rgba(255, 255, 255, 0.6)'
                         : 'rgba(0, 0, 0, 0.6)',
-                    minHeight: '36px',
-                    padding: '6px 12px',
-                    minWidth: '60px',
-                    fontSize: '0.75rem',
+                    minHeight: { xs: '28px', sm: '36px' }, // Smaller height on mobile
+                    padding: { xs: '2px 6px', sm: '6px 12px' }, // Reduced padding on mobile
+                    minWidth: { xs: '40px', sm: '60px' }, // Smaller width on mobile
+                    fontSize: { xs: '0.6rem', sm: '0.75rem' }, // Smaller font on mobile
                     '&.Mui-selected': {
                       color:
                         theme.palette.mode === 'dark'
@@ -1211,226 +1285,37 @@ const MarketMetricsContent = () => {
                   }
                 }}
               >
-                <Tab label="All Time" value="all" />
+                <Tab label={isMobile ? 'All' : 'All Time'} value="all" />
                 <Tab label="5Y" value="5y" />
                 <Tab label="1Y" value="1y" />
                 <Tab label="6M" value="6m" />
                 <Tab label="1M" value="1m" />
               </Tabs>
             </Box>
-            <Typography
-              variant="caption"
-              sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mt: 1, mb: 2 }}
-            >
-              Showing {selectedTokens.length} of {availableTokens.length} available tokens. Select
-              fewer tokens for better performance.
-            </Typography>
-            <Box sx={{ height: 400 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={progressiveData}
-                  margin={chartConfig.margin}
-                  isAnimationActive={false}
-                  onClick={(data) => {
-                    if (data && data.activePayload && data.activePayload.length > 0) {
-                      handleDataPointClick(data.activePayload[0].payload);
-                    }
-                  }}
-                >
-                  <CartesianGrid {...chartConfig.gridStyle} />
-                  <XAxis
-                    dataKey="date"
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                    interval={
-                      timeRange === 'all'
-                        ? 30
-                        : timeRange === '5y'
-                        ? 20
-                        : timeRange === '1y'
-                        ? 10
-                        : 5
-                    }
-                    tick={{ ...chartConfig.axisStyle }}
-                  />
-                  <YAxis
-                    domain={['auto', 'auto']}
-                    tickFormatter={(value) =>
-                      value.toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                      }) + ' XRP'
-                    }
-                    tick={{ ...chartConfig.axisStyle }}
-                  />
-                  <Tooltip
-                    content={<CustomTooltip />}
-                    cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
-                  />
-                  <Legend
-                    content={({ payload }) => (
-                      <CustomLegend
-                        payload={payload}
-                        visibleLines={visibleLines}
-                        handleLegendClick={handleLegendClick}
-                      />
-                    )}
-                  />
-                  {selectedTokens.map((token, index) => {
-                    const dataKey = `${token}_marketcap`;
-                    return (
-                      <Line
-                        key={dataKey}
-                        type="monotone"
-                        dataKey={dataKey}
-                        stroke={getTokenColor(token, index)}
-                        name={`${token}`}
-                        strokeWidth={2}
-                        dot={false}
-                        hide={!visibleLines[dataKey]}
-                        isAnimationActive={false}
-                        activeDot={{
-                          r: 6,
-                          strokeWidth: 2,
-                          stroke: getTokenColor(token, index),
-                          fill: themeColors.background,
-                          onClick: (data) => handleDataPointClick(data.payload)
-                        }}
-                      />
-                    );
-                  })}
-                </LineChart>
-              </ResponsiveContainer>
-            </Box>
-
-            {/* Token breakdown section - appears when a data point is clicked */}
-            {selectedDataPoint && (
-              <Box
+            {isMobile ? (
+              <Typography
+                variant="caption"
                 sx={{
-                  mt: 3,
-                  p: 2,
-                  backgroundColor:
-                    theme.palette.mode === 'dark'
-                      ? 'rgba(0, 0, 0, 0.4)'
-                      : 'rgba(240, 240, 245, 0.8)',
-                  borderRadius: 2,
-                  border: `1px solid ${
-                    theme.palette.mode === 'dark'
-                      ? 'rgba(255, 255, 255, 0.1)'
-                      : 'rgba(0, 0, 0, 0.1)'
-                  }`
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  display: 'block',
+                  mt: 0.5,
+                  mb: 1,
+                  fontSize: '0.6rem'
                 }}
               >
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mb: 2
-                  }}
-                >
-                  <Typography variant="h6" sx={{ color: themeColors.text }}>
-                    Token Details for {selectedDataPoint.date}
-                  </Typography>
-                  <Box
-                    sx={{
-                      cursor: 'pointer',
-                      color: themeColors.textSecondary,
-                      '&:hover': { color: themeColors.text }
-                    }}
-                    onClick={() => setSelectedDataPoint(null)}
-                  >
-                    ✕
-                  </Box>
-                </Box>
-
-                <Box>
-                  {selectedTokens
-                    .filter((token) => selectedDataPoint[`${token}_marketcap`] > 0)
-                    .sort(
-                      (a, b) =>
-                        selectedDataPoint[`${b}_marketcap`] - selectedDataPoint[`${a}_marketcap`]
-                    )
-                    .map((token) => {
-                      const marketCap = selectedDataPoint[`${token}_marketcap`];
-                      const avgPrice = selectedDataPoint[`${token}_avgPrice`];
-
-                      return (
-                        <Box
-                          key={token}
-                          sx={{
-                            mb: 1,
-                            p: 1,
-                            borderRadius: 1,
-                            backgroundColor:
-                              theme.palette.mode === 'dark'
-                                ? 'rgba(255, 255, 255, 0.05)'
-                                : 'rgba(0, 0, 0, 0.05)',
-                            display: 'flex',
-                            flexDirection: 'column'
-                          }}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                            <Box
-                              sx={{
-                                width: 10,
-                                height: 10,
-                                borderRadius: '50%',
-                                backgroundColor: getTokenColor(
-                                  token,
-                                  availableTokens.indexOf(token)
-                                ),
-                                mr: 1
-                              }}
-                            />
-                            <Typography
-                              variant="body1"
-                              sx={{ color: themeColors.text, fontWeight: 600 }}
-                            >
-                              {token}
-                            </Typography>
-                          </Box>
-
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="body2" sx={{ color: themeColors.textSecondary }}>
-                              Market Cap:
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{ color: themeColors.text, fontWeight: 500 }}
-                            >
-                              {marketCap.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                              })}{' '}
-                              XRP
-                            </Typography>
-                          </Box>
-
-                          {avgPrice > 0 && (
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <Typography variant="body2" sx={{ color: themeColors.textSecondary }}>
-                                Average Price:
-                              </Typography>
-                              <Typography
-                                variant="body2"
-                                sx={{ color: themeColors.text, fontWeight: 500 }}
-                              >
-                                {avgPrice.toLocaleString(undefined, {
-                                  minimumFractionDigits: 6,
-                                  maximumFractionDigits: 6
-                                })}{' '}
-                                XRP
-                              </Typography>
-                            </Box>
-                          )}
-                        </Box>
-                      );
-                    })}
-                </Box>
-              </Box>
+                Showing {selectedTokens.length} of {availableTokens.length} tokens
+              </Typography>
+            ) : (
+              <Typography
+                variant="caption"
+                sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mt: 1, mb: 2 }}
+              >
+                Showing {selectedTokens.length} of {availableTokens.length} available tokens. Select
+                fewer tokens for better performance.
+              </Typography>
             )}
+
+            {/* Rest of the chart container content */}
           </ChartContainer>
         )}
 
