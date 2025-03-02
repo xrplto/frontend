@@ -1315,7 +1315,236 @@ const MarketMetricsContent = () => {
               </Typography>
             )}
 
-            {/* Rest of the chart container content */}
+            {/* Add the missing chart content */}
+            <Box sx={{ height: { xs: 300, sm: 350, md: 400 } }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={progressiveData}
+                  margin={isMobile ? chartConfig.mobileMargin : chartConfig.margin}
+                  isAnimationActive={false}
+                  onClick={(data) => {
+                    if (data && data.activePayload && data.activePayload.length > 0) {
+                      handleDataPointClick(data.activePayload[0].payload);
+                    }
+                  }}
+                >
+                  <CartesianGrid {...chartConfig.gridStyle} />
+                  <XAxis
+                    dataKey="date"
+                    angle={-45}
+                    textAnchor="end"
+                    height={isMobile ? 40 : 60}
+                    interval={
+                      isMobile
+                        ? timeRange === 'all'
+                          ? 60
+                          : timeRange === '5y'
+                          ? 40
+                          : timeRange === '1y'
+                          ? 20
+                          : 10
+                        : timeRange === 'all'
+                        ? 30
+                        : timeRange === '5y'
+                        ? 20
+                        : timeRange === '1y'
+                        ? 10
+                        : 5
+                    }
+                    tick={
+                      isMobile ? { ...chartConfig.mobileAxisStyle } : { ...chartConfig.axisStyle }
+                    }
+                  />
+                  <YAxis
+                    domain={['auto', 'auto']}
+                    tickFormatter={(value) =>
+                      value.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      }) + (isMobile ? '' : ' XRP')
+                    }
+                    tick={
+                      isMobile ? { ...chartConfig.mobileAxisStyle } : { ...chartConfig.axisStyle }
+                    }
+                    width={isMobile ? 60 : 80}
+                  />
+                  <Tooltip
+                    content={<CustomTooltip />}
+                    cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
+                  />
+                  <Legend
+                    content={({ payload }) => (
+                      <CustomLegend
+                        payload={payload}
+                        visibleLines={visibleLines}
+                        handleLegendClick={handleLegendClick}
+                      />
+                    )}
+                  />
+
+                  {/* Dynamically render lines for selected tokens */}
+                  {selectedTokens.map((token, index) => {
+                    const tokenKey = `${token}_marketcap`;
+                    return (
+                      <Line
+                        key={tokenKey}
+                        type="monotone"
+                        dataKey={tokenKey}
+                        stroke={getTokenColor(token, index)}
+                        name={token}
+                        strokeWidth={2}
+                        dot={false}
+                        hide={!visibleLines[tokenKey]}
+                        isAnimationActive={false}
+                        activeDot={{
+                          r: 6,
+                          strokeWidth: 2,
+                          stroke: getTokenColor(token, index),
+                          fill: themeColors.background,
+                          onClick: (data) => handleDataPointClick(data.payload)
+                        }}
+                      />
+                    );
+                  })}
+                </LineChart>
+              </ResponsiveContainer>
+            </Box>
+
+            {/* Token breakdown section - appears when a data point is clicked */}
+            {selectedDataPoint && (
+              <Box
+                sx={{
+                  mt: { xs: 1.5, sm: 2, md: 3 },
+                  p: { xs: 1, sm: 1.5, md: 2 },
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(0, 0, 0, 0.4)'
+                      : 'rgba(240, 240, 245, 0.8)',
+                  borderRadius: 2,
+                  border: `1px solid ${
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.1)'
+                  }`
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2
+                  }}
+                >
+                  <Typography variant="h6" sx={{ color: themeColors.text }}>
+                    Token Details for {selectedDataPoint.date}
+                  </Typography>
+                  <Box
+                    sx={{
+                      cursor: 'pointer',
+                      color: themeColors.textSecondary,
+                      '&:hover': { color: themeColors.text }
+                    }}
+                    onClick={() => setSelectedDataPoint(null)}
+                  >
+                    ✕
+                  </Box>
+                </Box>
+
+                <Box>
+                  {selectedTokens
+                    .filter((token) => selectedDataPoint[`${token}_marketcap`] > 0)
+                    .sort(
+                      (a, b) =>
+                        selectedDataPoint[`${b}_marketcap`] - selectedDataPoint[`${a}_marketcap`]
+                    )
+                    .map((token) => {
+                      const marketCapKey = `${token}_marketcap`;
+                      const avgPriceKey = `${token}_avgPrice`;
+                      const marketCap = selectedDataPoint[marketCapKey] || 0;
+                      const avgPrice = selectedDataPoint[avgPriceKey] || 0;
+
+                      return (
+                        <Box
+                          key={token}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            mb: 1,
+                            p: 1,
+                            borderRadius: 1,
+                            backgroundColor:
+                              theme.palette.mode === 'dark'
+                                ? 'rgba(255, 255, 255, 0.05)'
+                                : 'rgba(0, 0, 0, 0.05)',
+                            '&:hover': {
+                              backgroundColor:
+                                theme.palette.mode === 'dark'
+                                  ? 'rgba(255, 255, 255, 0.1)'
+                                  : 'rgba(0, 0, 0, 0.1)'
+                            }
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
+                              backgroundColor: getTokenColor(token, availableTokens.indexOf(token)),
+                              mr: 1.5
+                            }}
+                          />
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: themeColors.text,
+                              fontWeight: 500,
+                              flex: 1
+                            }}
+                          >
+                            {token}
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'flex-end'
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: themeColors.text,
+                                fontWeight: 500
+                              }}
+                            >
+                              {marketCap.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                              })}{' '}
+                              XRP
+                            </Typography>
+                            {avgPrice > 0 && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: themeColors.textSecondary
+                                }}
+                              >
+                                Avg Price:{' '}
+                                {avgPrice.toLocaleString(undefined, {
+                                  minimumFractionDigits: 6,
+                                  maximumFractionDigits: 6
+                                })}
+                              </Typography>
+                            )}
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                </Box>
+              </Box>
+            )}
           </ChartContainer>
         )}
 
