@@ -1,8 +1,8 @@
 import Decimal from 'decimal.js';
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 // Material
 import { withStyles } from '@mui/styles';
-import { alpha, Link, Stack, Typography } from '@mui/material';
+import { alpha, Link, Stack, Typography, Skeleton } from '@mui/material';
 
 // import i18n (needs to be bundled ;))
 import 'src/utils/i18n';
@@ -26,7 +26,8 @@ const ContentTypography = withStyles({
   root: {
     color: alpha('#919EAB', 0.99),
     display: 'inline', // Ensure it's displayed inline
-    verticalAlign: 'middle' // Align vertically with surrounding text
+    verticalAlign: 'middle', // Align vertically with surrounding text
+    lineHeight: 1.6 // Improve readability with better line height
   }
 })(Typography);
 
@@ -40,6 +41,24 @@ export default function Summary() {
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency } = useContext(AppContext);
   const [showContent, setShowContent] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [contentHeight, setContentHeight] = useState('0px');
+  const contentRef = useRef(null);
+
+  // Simulate loading completion after data is available
+  useEffect(() => {
+    if (metrics.global && metrics[activeFiatCurrency]) {
+      setIsLoading(false);
+    }
+  }, [metrics, activeFiatCurrency]);
+
+  useEffect(() => {
+    if (showContent && contentRef.current) {
+      setContentHeight(`${contentRef.current.scrollHeight}px`);
+    } else {
+      setContentHeight('0px');
+    }
+  }, [showContent]);
 
   if (
     !metrics.global ||
@@ -108,69 +127,98 @@ export default function Summary() {
   };
 
   return (
-    <Stack sx={{ mt: 2 }}>
-      <Typography variant="h1">{t("Today's Top XRPL Token Prices by Volume")}</Typography>
+    <Stack sx={{ mt: 2, mb: 3 }}>
+      <Typography variant="h1" sx={{ mb: 1.5 }}>
+        {t("Today's Top XRPL Token Prices by Volume")}
+      </Typography>
 
-      <ContentTypography variant="subtitle1" sx={{ mt: 2 }}>
-        The global token market cap stands at{' '}
-        <strong>
-          {currencySymbols[activeFiatCurrency]}
-          {fNumberWithSuffix(Number(gMarketcap))}
-        </strong>{' '}
-        marking a <BearBull value={gMarketcapPro} sx={{ pl: 1, pr: 1 }} />{' '}
-        {gMarketcapPro < 0 ? 'decrease' : 'increase'} over the last 24 hours.
-        <Link
-          component="button"
-          underline="always"
-          variant="body2"
-          color="#637381"
-          onClick={() => {
-            setShowContent(!showContent);
-          }}
-          sx={{ verticalAlign: 'baseline', ml: 1 }} // Adjust marginLeft here to create space
-        >
-          {showContent ? 'Read Less' : 'Read More'}
-        </Link>
-      </ContentTypography>
+      {isLoading ? (
+        <>
+          <Skeleton variant="text" width="100%" height={40} />
+          <Skeleton variant="text" width="90%" height={40} />
+        </>
+      ) : (
+        <>
+          <ContentTypography variant="subtitle1" sx={{ mt: 2 }}>
+            The global token market cap stands at{' '}
+            <strong>
+              {currencySymbols[activeFiatCurrency]}
+              {fNumberWithSuffix(Number(gMarketcap))}
+            </strong>{' '}
+            marking a <BearBull value={gMarketcapPro} sx={{ pl: 1, pr: 1 }} />{' '}
+            {gMarketcapPro < 0 ? 'decrease' : 'increase'} over the last 24 hours.
+            <Link
+              component="button"
+              underline="always"
+              variant="body2"
+              color="primary"
+              onClick={() => {
+                setShowContent(!showContent);
+              }}
+              sx={{
+                verticalAlign: 'baseline',
+                ml: 1,
+                fontWeight: 500,
+                transition: 'all 0.2s'
+              }}
+            >
+              {showContent ? 'Read Less' : 'Read More'}
+            </Link>
+          </ContentTypography>
 
-      <div
-        style={{
-          display: showContent ? 'flex' : 'none',
-          flexDirection: 'column'
-        }}
-      >
-        <ContentTypography variant="subtitle1" sx={{ mt: 2 }} gutterBottom>
-          The total XRPL DEX volume in the past 24 hours is{' '}
-          <strong>
-            {currencySymbols[activeFiatCurrency]}
-            {fNumberWithSuffix(gDexVolume)}
-          </strong>
-          , marking a <BearBull value={gDexVolumePro} sx={{ pl: 1, pr: 1 }} />{' '}
-          {gDexVolumePro < 0 ? 'decrease' : 'increase'}. Currently, the total volume in Collectibles
-          & NFTs is{' '}
-          <strong>
-            {currencySymbols[activeFiatCurrency]}
-            {fNumberWithSuffix(gNFTIOUVolume)}
-          </strong>
-          , accounting for <strong>{gNFTIOUVolumePro}%</strong> of the total XRPL token market's
-          24-hour volume. The volume of all stablecoins currently stands at{' '}
-          <strong>
-            {currencySymbols[activeFiatCurrency]}
-            {fNumberWithSuffix(gStableVolume)}
-          </strong>
-          , representing <strong>{gStableVolumePro}%</strong> of the total token market's 24-hour
-          volume.
-        </ContentTypography>
-        <ContentTypography variant="subtitle1" gutterBottom>
-          The current XRP price is{' '}
-          <strong>
-            {currencySymbols[activeFiatCurrency]}
-            {Rate(1, metrics[activeFiatCurrency])}
-          </strong>
-          .
-        </ContentTypography>
-        {/* <ContentTypography variant='subtitle1'>XRP dominance currently stands at ---%, experiencing a decrease of -% over the past 24 hours.</ContentTypography> */}
-      </div>
+          <div
+            ref={contentRef}
+            style={{
+              height: showContent ? contentHeight : '0px',
+              overflow: 'hidden',
+              transition: 'height 0.3s ease-in-out',
+              marginTop: showContent ? '16px' : 0,
+              borderTop: showContent ? '1px solid rgba(145, 158, 171, 0.12)' : 'none',
+              paddingTop: showContent ? '16px' : 0
+            }}
+          >
+            <ContentTypography variant="subtitle1" sx={{ mt: 2, pb: 1 }} gutterBottom>
+              The total XRPL DEX volume in the past 24 hours is{' '}
+              <strong>
+                {currencySymbols[activeFiatCurrency]}
+                {fNumberWithSuffix(gDexVolume)}
+              </strong>
+              , marking a <BearBull value={gDexVolumePro} sx={{ pl: 1, pr: 1 }} />{' '}
+              {gDexVolumePro < 0 ? 'decrease' : 'increase'}.
+            </ContentTypography>
+
+            <ContentTypography variant="subtitle1" sx={{ pb: 1 }} gutterBottom>
+              Currently, the total volume in Collectibles & NFTs is{' '}
+              <strong>
+                {currencySymbols[activeFiatCurrency]}
+                {fNumberWithSuffix(gNFTIOUVolume)}
+              </strong>
+              , accounting for <strong>{gNFTIOUVolumePro}%</strong> of the total XRPL token market's
+              24-hour volume.
+            </ContentTypography>
+
+            <ContentTypography variant="subtitle1" sx={{ pb: 1 }} gutterBottom>
+              The volume of all stablecoins currently stands at{' '}
+              <strong>
+                {currencySymbols[activeFiatCurrency]}
+                {fNumberWithSuffix(gStableVolume)}
+              </strong>
+              , representing <strong>{gStableVolumePro}%</strong> of the total token market's
+              24-hour volume.
+            </ContentTypography>
+
+            <ContentTypography variant="subtitle1" gutterBottom>
+              The current XRP price is{' '}
+              <strong>
+                {currencySymbols[activeFiatCurrency]}
+                {Rate(1, metrics[activeFiatCurrency])}
+              </strong>
+              .
+            </ContentTypography>
+            {/* <ContentTypography variant='subtitle1'>XRP dominance currently stands at ---%, experiencing a decrease of -% over the past 24 hours.</ContentTypography> */}
+          </div>
+        </>
+      )}
     </Stack>
   );
 }
