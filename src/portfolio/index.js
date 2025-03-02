@@ -854,12 +854,17 @@ export default function Portfolio({ account, limit, collection, type }) {
         borderColor: theme.palette.divider,
         borderWidth: 1,
         padding: 12,
+        position: 'nearest',
+        z: 9999, // Add high z-index to ensure tooltip appears above other elements
         callbacks: {
           label: function (context) {
             const value = context.raw;
             const total = context.dataset.data.reduce((a, b) => a + b, 0);
             const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
             return `${context.label}: ${value.toLocaleString()} XRP (${percentage}%)`;
+          },
+          title: function (context) {
+            return 'XRP Value';
           }
         }
       }
@@ -1592,7 +1597,16 @@ export default function Portfolio({ account, limit, collection, type }) {
                           >
                             {assetDistribution ? (
                               <>
-                                <Pie data={assetDistribution} options={pieChartOptions} />
+                                <Box
+                                  sx={{
+                                    position: 'relative',
+                                    width: '100%',
+                                    height: '100%',
+                                    zIndex: 1
+                                  }}
+                                >
+                                  <Pie data={assetDistribution} options={pieChartOptions} />
+                                </Box>
                                 <Box
                                   sx={{
                                     position: 'absolute',
@@ -1600,7 +1614,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                                     left: '50%',
                                     transform: 'translate(-50%, -50%)',
                                     textAlign: 'center',
-                                    pointerEvents: 'none'
+                                    pointerEvents: 'none',
+                                    zIndex: 0 // Lower z-index than the chart
                                   }}
                                 >
                                   <Typography
