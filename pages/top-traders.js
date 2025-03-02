@@ -23,7 +23,9 @@ import {
   InputAdornment,
   Tabs,
   Tab,
-  Chip
+  Chip,
+  FormControlLabel,
+  Switch
 } from '@mui/material';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import SearchIcon from '@mui/icons-material/Search';
@@ -98,6 +100,7 @@ export default function Analytics() {
   const [searchAddress, setSearchAddress] = useState('');
   const [debouncedSearchAddress, setDebouncedSearchAddress] = useState('');
   const [activeTab, setActiveTab] = useState(0);
+  const [hideAmm, setHideAmm] = useState(false);
 
   // Add debounce effect for search
   useEffect(() => {
@@ -612,9 +615,11 @@ export default function Analytics() {
       return [];
     }
 
-    console.log('Sorting data:', { orderBy, order, dataLength: data.length });
+    let filteredData = hideAmm ? data.filter((trader) => !trader.AMM) : data;
 
-    return data.sort((a, b) => {
+    console.log('Sorting data:', { orderBy, order, dataLength: filteredData.length });
+
+    return filteredData.sort((a, b) => {
       if (!a || !b) {
         console.error('Invalid trader objects in sort:', { a, b });
         return 0;
@@ -686,37 +691,48 @@ export default function Analytics() {
               <Card>
                 <CardContent>
                   <Box sx={{ mb: 3 }}>
-                    <TextField
-                      fullWidth
-                      variant="outlined"
-                      placeholder="Search by address..."
-                      value={searchAddress}
-                      onChange={(e) => setSearchAddress(e.target.value)}
-                      InputProps={{
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <SearchIcon />
-                          </InputAdornment>
-                        ),
-                        endAdornment: searchAddress && (
-                          <InputAdornment position="end">
-                            <IconButton
-                              size="small"
-                              onClick={() => setSearchAddress('')}
-                              edge="end"
-                            >
-                              <ClearIcon />
-                            </IconButton>
-                          </InputAdornment>
-                        )
-                      }}
-                      sx={{
-                        maxWidth: 400,
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 2
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                      <TextField
+                        fullWidth
+                        variant="outlined"
+                        placeholder="Search by address..."
+                        value={searchAddress}
+                        onChange={(e) => setSearchAddress(e.target.value)}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SearchIcon />
+                            </InputAdornment>
+                          ),
+                          endAdornment: searchAddress && (
+                            <InputAdornment position="end">
+                              <IconButton
+                                size="small"
+                                onClick={() => setSearchAddress('')}
+                                edge="end"
+                              >
+                                <ClearIcon />
+                              </IconButton>
+                            </InputAdornment>
+                          )
+                        }}
+                        sx={{
+                          maxWidth: 400,
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: 2
+                          }
+                        }}
+                      />
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={hideAmm}
+                            onChange={(e) => setHideAmm(e.target.checked)}
+                          />
                         }
-                      }}
-                    />
+                        label="Hide AMM"
+                      />
+                    </Box>
                   </Box>
                   <Typography variant="h5" gutterBottom>
                     Top Traders
