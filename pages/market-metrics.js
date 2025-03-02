@@ -26,6 +26,7 @@ import {
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';
+import { useTheme } from '@mui/material/styles';
 
 // Chart theme colors
 const chartColors = {
@@ -48,6 +49,53 @@ const chartColors = {
   cardBg: 'rgba(0, 0, 0, 0.5)',
   text: '#E5E7EB',
   grid: 'rgba(255, 255, 255, 0.03)'
+};
+
+// Add theme-aware colors
+const getThemeColors = (theme) => {
+  const isDarkMode = theme.palette.mode === 'dark';
+
+  return {
+    background: isDarkMode ? 'transparent' : '#ffffff',
+    backgroundGradient: isDarkMode
+      ? 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3))'
+      : 'linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(245, 245, 250, 1))',
+    cardBg: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 1)',
+    cardBorder: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+    cardHoverBorder: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+    text: isDarkMode ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.87)',
+    textSecondary: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+    grid: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'
+  };
+};
+
+// Add theme-aware colors for chart elements
+const getChartColors = (theme) => {
+  const isDarkMode = theme.palette.mode === 'dark';
+
+  return {
+    totalLine: isDarkMode ? '#FFFFFF' : '#000000',
+    totalLineFill: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.8)',
+    cursorColor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+    legendBg: isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.05)',
+    scrollThumb: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+    // Add these color sets
+    primary: {
+      main: '#3B82F6',
+      light: 'rgba(59, 130, 246, 0.1)',
+      dark: '#2563EB'
+    },
+    secondary: {
+      main: '#10B981',
+      light: 'rgba(16, 185, 129, 0.1)',
+      dark: '#059669'
+    },
+    tertiary: {
+      main: '#F59E0B',
+      light: 'rgba(245, 158, 11, 0.1)',
+      dark: '#D97706'
+    }
+  };
 };
 
 // Custom tooltip styles
@@ -99,6 +147,9 @@ const CustomTooltip = ({ active, payload, label }) => {
     }
   }, [mousePosition, tooltipRoot]);
 
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+
   if (active && payload && payload.length && tooltipRoot) {
     // Sort payload by value in descending order
     const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
@@ -108,11 +159,13 @@ const CustomTooltip = ({ active, payload, label }) => {
         <Paper
           elevation={6}
           sx={{
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
+            border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'}`,
             p: 2,
             borderRadius: 2,
-            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+            boxShadow: isDarkMode
+              ? '0 8px 32px 0 rgba(0, 0, 0, 0.5)'
+              : '0 4px 20px 0 rgba(0, 0, 0, 0.15)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
             maxWidth: 300,
@@ -123,10 +176,12 @@ const CustomTooltip = ({ active, payload, label }) => {
           <Typography
             variant="subtitle2"
             sx={{
-              color: '#E5E7EB',
+              color: isDarkMode ? '#E5E7EB' : 'rgba(0, 0, 0, 0.87)',
               mb: 1,
               fontWeight: 600,
-              borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+              borderBottom: `1px solid ${
+                isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+              }`,
               pb: 1
             }}
           >
@@ -166,14 +221,25 @@ const CustomTooltip = ({ active, payload, label }) => {
                       boxShadow: '0 0 10px rgba(255, 255, 255, 0.1)'
                     }}
                   />
-                  <Typography variant="body2" sx={{ color: '#E5E7EB', fontWeight: 500, mr: 1 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: isDarkMode ? '#E5E7EB' : 'rgba(0, 0, 0, 0.87)',
+                      fontWeight: 500,
+                      mr: 1
+                    }}
+                  >
                     {entry.name}:
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                   <Typography
                     variant="body2"
-                    sx={{ color: '#E5E7EB', fontWeight: 600, textAlign: 'right' }}
+                    sx={{
+                      color: isDarkMode ? '#E5E7EB' : 'rgba(0, 0, 0, 0.87)',
+                      fontWeight: 600,
+                      textAlign: 'right'
+                    }}
                   >
                     {entry.value.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
@@ -184,7 +250,10 @@ const CustomTooltip = ({ active, payload, label }) => {
                   {hasAvgPrice && (
                     <Typography
                       variant="caption"
-                      sx={{ color: 'rgba(255, 255, 255, 0.7)', textAlign: 'right' }}
+                      sx={{
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                        textAlign: 'right'
+                      }}
                     >
                       Avg Price:{' '}
                       {avgPrice.toLocaleString(undefined, {
@@ -205,51 +274,64 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 // Custom Legend Item Component
-const CustomLegendItem = ({ entry, visible, onClick }) => (
-  <Box
-    onClick={() => onClick(entry)}
-    sx={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      mr: 2,
-      mb: 1,
-      cursor: 'pointer',
-      opacity: visible ? 1 : 0.4,
-      transition: 'all 0.2s ease-in-out',
-      padding: '2px 8px',
-      borderRadius: '4px',
-      backgroundColor: visible ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
-      '&:hover': {
-        opacity: 0.8,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)'
-      }
-    }}
-  >
+const CustomLegendItem = ({ entry, visible, onClick }) => {
+  const theme = useTheme();
+  const themeColors = getThemeColors(theme);
+
+  return (
     <Box
+      onClick={() => onClick(entry)}
       sx={{
-        width: 10,
-        height: 10,
-        borderRadius: '50%',
-        backgroundColor: entry.color || entry.stroke,
-        mr: 1,
-        boxShadow: visible ? '0 0 10px rgba(255, 255, 255, 0.1)' : 'none'
-      }}
-    />
-    <Typography
-      variant="body2"
-      sx={{
-        color: chartColors.text,
-        fontWeight: visible ? 500 : 400,
-        fontSize: '0.75rem'
+        display: 'inline-flex',
+        alignItems: 'center',
+        mr: 2,
+        mb: 1,
+        cursor: 'pointer',
+        opacity: visible ? 1 : 0.4,
+        transition: 'all 0.2s ease-in-out',
+        padding: '2px 8px',
+        borderRadius: '4px',
+        backgroundColor: visible
+          ? theme.palette.mode === 'dark'
+            ? 'rgba(255, 255, 255, 0.05)'
+            : 'rgba(0, 0, 0, 0.05)'
+          : 'transparent',
+        '&:hover': {
+          opacity: 0.8,
+          backgroundColor:
+            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+        }
       }}
     >
-      {entry.value}
-    </Typography>
-  </Box>
-);
+      <Box
+        sx={{
+          width: 10,
+          height: 10,
+          borderRadius: '50%',
+          backgroundColor: entry.color || entry.stroke,
+          mr: 1,
+          boxShadow: visible ? '0 0 10px rgba(0, 0, 0, 0.1)' : 'none'
+        }}
+      />
+      <Typography
+        variant="body2"
+        sx={{
+          color: themeColors.text,
+          fontWeight: visible ? 500 : 400,
+          fontSize: '0.75rem'
+        }}
+      >
+        {entry.value}
+      </Typography>
+    </Box>
+  );
+};
 
 // Custom Legend Container Component
 const CustomLegend = ({ payload, visibleLines, handleLegendClick }) => {
+  const theme = useTheme();
+  const chartColors = getChartColors(theme);
+
   return (
     <Box
       sx={{
@@ -266,7 +348,7 @@ const CustomLegend = ({ payload, visibleLines, handleLegendClick }) => {
           maxHeight: '80px',
           overflowY: 'auto',
           padding: '4px',
-          backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          backgroundColor: chartColors.legendBg,
           borderRadius: '4px',
           '&::-webkit-scrollbar': {
             width: '6px',
@@ -276,7 +358,7 @@ const CustomLegend = ({ payload, visibleLines, handleLegendClick }) => {
             backgroundColor: 'rgba(0, 0, 0, 0.1)'
           },
           '&::-webkit-scrollbar-thumb': {
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            backgroundColor: chartColors.scrollThumb,
             borderRadius: '3px'
           }
         }}
@@ -295,42 +377,53 @@ const CustomLegend = ({ payload, visibleLines, handleLegendClick }) => {
 };
 
 // Chart Container Component
-const ChartContainer = ({ title, children }) => (
-  <Paper
-    elevation={0}
-    sx={{
-      p: 4,
-      mb: 4,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      border: '1px solid rgba(255, 255, 255, 0.05)',
-      borderRadius: 2,
-      backdropFilter: 'blur(16px)',
-      WebkitBackdropFilter: 'blur(16px)',
-      boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)',
-      '&:hover': {
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.4)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        transition: 'all 0.3s ease-in-out'
-      }
-    }}
-  >
-    <Typography
-      variant="h6"
-      gutterBottom
+const ChartContainer = ({ title, children }) => {
+  const theme = useTheme();
+  const themeColors = getThemeColors(theme);
+
+  return (
+    <Paper
+      elevation={0}
       sx={{
-        color: 'rgba(255, 255, 255, 0.95)',
-        fontWeight: 600,
-        mb: 3,
-        fontSize: '1.25rem',
-        letterSpacing: '0.025em',
-        textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+        p: 4,
+        mb: 4,
+        backgroundColor: themeColors.cardBg,
+        border: `1px solid ${themeColors.cardBorder}`,
+        borderRadius: 2,
+        backdropFilter: theme.palette.mode === 'dark' ? 'blur(16px)' : 'none',
+        WebkitBackdropFilter: theme.palette.mode === 'dark' ? 'blur(16px)' : 'none',
+        boxShadow:
+          theme.palette.mode === 'dark'
+            ? '0 8px 32px 0 rgba(0, 0, 0, 0.3)'
+            : '0 4px 12px 0 rgba(0, 0, 0, 0.05)',
+        '&:hover': {
+          boxShadow:
+            theme.palette.mode === 'dark'
+              ? '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
+              : '0 6px 16px 0 rgba(0, 0, 0, 0.08)',
+          border: `1px solid ${themeColors.cardHoverBorder}`,
+          transition: 'all 0.3s ease-in-out'
+        }
       }}
     >
-      {title}
-    </Typography>
-    {children}
-  </Paper>
-);
+      <Typography
+        variant="h6"
+        gutterBottom
+        sx={{
+          color: themeColors.text,
+          fontWeight: 600,
+          mb: 3,
+          fontSize: '1.25rem',
+          letterSpacing: '0.025em',
+          textShadow: theme.palette.mode === 'dark' ? '0 2px 4px rgba(0, 0, 0, 0.2)' : 'none'
+        }}
+      >
+        {title}
+      </Typography>
+      {children}
+    </Paper>
+  );
+};
 
 const MarketMetricsContent = () => {
   const [data, setData] = useState([]);
@@ -500,6 +593,11 @@ const MarketMetricsContent = () => {
     }
   }, [sampledData]);
 
+  // Add theme hook
+  const theme = useTheme();
+  const themeColors = getThemeColors(theme);
+  const chartColors = getChartColors(theme);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -624,12 +722,12 @@ const MarketMetricsContent = () => {
     margin: { top: 20, right: 40, left: 30, bottom: 20 },
     gridStyle: {
       strokeDasharray: '3 3',
-      stroke: chartColors.grid
+      stroke: themeColors.grid
     },
     axisStyle: {
       fontSize: 12,
       fontWeight: 500,
-      fill: chartColors.text
+      fill: themeColors.text
     }
   };
 
@@ -638,8 +736,8 @@ const MarketMetricsContent = () => {
       sx={{
         flex: 1,
         py: 3,
-        backgroundColor: 'transparent',
-        backgroundImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3))',
+        backgroundColor: themeColors.background,
+        backgroundImage: themeColors.backgroundGradient,
         minHeight: '100vh'
       }}
     >
@@ -648,12 +746,12 @@ const MarketMetricsContent = () => {
           variant="h4"
           gutterBottom
           sx={{
-            color: 'rgba(255, 255, 255, 0.95)',
+            color: themeColors.text,
             fontWeight: 700,
             mb: 4,
             textAlign: 'center',
             letterSpacing: '0.025em',
-            textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+            textShadow: theme.palette.mode === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none'
           }}
         >
           XRPL Market Analytics
@@ -664,12 +762,15 @@ const MarketMetricsContent = () => {
           elevation={0}
           sx={{
             mb: 4,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
+            backgroundColor: themeColors.cardBg,
+            border: `1px solid ${themeColors.cardBorder}`,
             borderRadius: 2,
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
-            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.3)'
+            boxShadow:
+              theme.palette.mode === 'dark'
+                ? '0 8px 32px 0 rgba(0, 0, 0, 0.3)'
+                : '0 4px 12px 0 rgba(0, 0, 0, 0.05)'
           }}
         >
           <Tabs
@@ -678,23 +779,39 @@ const MarketMetricsContent = () => {
             variant="scrollable"
             scrollButtons="auto"
             sx={{
+              minHeight: '48px',
               '& .MuiTabs-indicator': {
-                backgroundColor: 'rgba(255, 255, 255, 0.8)'
+                backgroundColor: theme.palette.mode === 'dark' 
+                  ? 'rgba(255, 255, 255, 0.8)' 
+                  : theme.palette.primary.main,
+                height: '2px'
               },
               '& .MuiTab-root': {
-                color: 'rgba(255, 255, 255, 0.6)',
+                color: theme.palette.mode === 'dark' 
+                  ? 'rgba(255, 255, 255, 0.6)' 
+                  : 'rgba(0, 0, 0, 0.6)',
+                minHeight: '48px',
+                padding: '12px 16px',
                 '&.Mui-selected': {
-                  color: 'rgba(255, 255, 255, 0.95)',
+                  color: theme.palette.mode === 'dark' 
+                    ? 'rgba(255, 255, 255, 0.95)' 
+                    : theme.palette.primary.main,
                   fontWeight: 600
+                },
+                '&:hover': {
+                  color: theme.palette.mode === 'dark' 
+                    ? 'rgba(255, 255, 255, 0.8)' 
+                    : theme.palette.primary.dark,
+                  opacity: 0.8
                 }
               }
             }}
           >
             <Tab label="Market Cap by DEX" />
             <Tab label="Token Market Caps" />
-            <Tab label="Active Tokens" />
+            <Tab label="Active Tokens by DEX" />
             <Tab label="Trading Activity" />
-            <Tab label="Active Addresses" />
+            <Tab label="Unique Active Addresses" />
           </Tabs>
         </Paper>
 
@@ -711,17 +828,23 @@ const MarketMetricsContent = () => {
                 sx={{
                   minHeight: '36px',
                   '& .MuiTabs-indicator': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backgroundColor: theme.palette.mode === 'dark' 
+                      ? 'rgba(255, 255, 255, 0.8)' 
+                      : theme.palette.primary.main,
                     height: '2px'
                   },
                   '& .MuiTab-root': {
-                    color: 'rgba(255, 255, 255, 0.6)',
+                    color: theme.palette.mode === 'dark' 
+                      ? 'rgba(255, 255, 255, 0.6)' 
+                      : 'rgba(0, 0, 0, 0.6)',
                     minHeight: '36px',
                     padding: '6px 12px',
                     minWidth: '60px',
                     fontSize: '0.75rem',
                     '&.Mui-selected': {
-                      color: 'rgba(255, 255, 255, 0.95)',
+                      color: theme.palette.mode === 'dark' 
+                        ? 'rgba(255, 255, 255, 0.95)' 
+                        : theme.palette.primary.main,
                       fontWeight: 600
                     }
                   }
@@ -777,7 +900,7 @@ const MarketMetricsContent = () => {
                   />
                   <Tooltip
                     content={<CustomTooltip />}
-                    cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                    cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
                   <Legend
                     content={({ payload }) => (
@@ -791,7 +914,7 @@ const MarketMetricsContent = () => {
                   <Line
                     type="monotone"
                     dataKey="totalMarketcap"
-                    stroke="#FFFFFF"
+                    stroke={chartColors.totalLine}
                     name="Total"
                     strokeWidth={3}
                     dot={false}
@@ -800,8 +923,8 @@ const MarketMetricsContent = () => {
                     activeDot={{
                       r: 8,
                       strokeWidth: 2,
-                      stroke: '#FFFFFF',
-                      fill: chartColors.background,
+                      stroke: chartColors.totalLine,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -818,7 +941,7 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.primary.main,
-                      fill: chartColors.background,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -835,7 +958,7 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.secondary.main,
-                      fill: chartColors.background,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -852,7 +975,7 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.tertiary.main,
-                      fill: chartColors.background,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -866,9 +989,16 @@ const MarketMetricsContent = () => {
                 sx={{
                   mt: 3,
                   p: 2,
-                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(0, 0, 0, 0.4)'
+                      : 'rgba(240, 240, 245, 0.8)',
                   borderRadius: 2,
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                  border: `1px solid ${
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.1)'
+                  }`
                 }}
               >
                 <Box
@@ -1042,19 +1172,24 @@ const MarketMetricsContent = () => {
                 scrollButtons="auto"
                 sx={{
                   minHeight: '36px',
-                  ml: 2,
                   '& .MuiTabs-indicator': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    backgroundColor: theme.palette.mode === 'dark' 
+                      ? 'rgba(255, 255, 255, 0.8)' 
+                      : theme.palette.primary.main,
                     height: '2px'
                   },
                   '& .MuiTab-root': {
-                    color: 'rgba(255, 255, 255, 0.6)',
+                    color: theme.palette.mode === 'dark' 
+                      ? 'rgba(255, 255, 255, 0.6)' 
+                      : 'rgba(0, 0, 0, 0.6)',
                     minHeight: '36px',
                     padding: '6px 12px',
                     minWidth: '60px',
                     fontSize: '0.75rem',
                     '&.Mui-selected': {
-                      color: 'rgba(255, 255, 255, 0.95)',
+                      color: theme.palette.mode === 'dark' 
+                        ? 'rgba(255, 255, 255, 0.95)' 
+                        : theme.palette.primary.main,
                       fontWeight: 600
                     }
                   }
@@ -1115,7 +1250,7 @@ const MarketMetricsContent = () => {
                   />
                   <Tooltip
                     content={<CustomTooltip />}
-                    cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                    cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
                   <Legend
                     content={({ payload }) => (
@@ -1143,7 +1278,7 @@ const MarketMetricsContent = () => {
                           r: 6,
                           strokeWidth: 2,
                           stroke: getTokenColor(token, index),
-                          fill: chartColors.background,
+                          fill: themeColors.background,
                           onClick: (data) => handleDataPointClick(data.payload)
                         }}
                       />
@@ -1159,9 +1294,16 @@ const MarketMetricsContent = () => {
                 sx={{
                   mt: 3,
                   p: 2,
-                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(0, 0, 0, 0.4)'
+                      : 'rgba(240, 240, 245, 0.8)',
                   borderRadius: 2,
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                  border: `1px solid ${
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.1)'
+                  }`
                 }}
               >
                 <Box
@@ -1172,14 +1314,14 @@ const MarketMetricsContent = () => {
                     mb: 2
                   }}
                 >
-                  <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                  <Typography variant="h6" sx={{ color: themeColors.text }}>
                     Token Details for {selectedDataPoint.date}
                   </Typography>
                   <Box
                     sx={{
                       cursor: 'pointer',
-                      color: 'rgba(255, 255, 255, 0.6)',
-                      '&:hover': { color: 'rgba(255, 255, 255, 0.9)' }
+                      color: themeColors.textSecondary,
+                      '&:hover': { color: themeColors.text }
                     }}
                     onClick={() => setSelectedDataPoint(null)}
                   >
@@ -1207,64 +1349,71 @@ const MarketMetricsContent = () => {
                             mb: 1,
                             p: 1,
                             borderRadius: 1,
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                            backgroundColor:
+                              theme.palette.mode === 'dark'
+                                ? 'rgba(255, 255, 255, 0.05)'
+                                : 'rgba(0, 0, 0, 0.05)',
+                            display: 'flex',
+                            flexDirection: 'column'
                           }}
                         >
-                          <Box
-                            sx={{
-                              width: 12,
-                              height: 12,
-                              borderRadius: '50%',
-                              backgroundColor: getTokenColor(token, availableTokens.indexOf(token)),
-                              mr: 1.5
-                            }}
-                          />
                           <Typography
                             variant="body2"
-                            sx={{
-                              color: 'rgba(255, 255, 255, 0.9)',
-                              fontWeight: 500,
-                              flex: 1
-                            }}
+                            sx={{ color: themeColors.textSecondary, mb: 1 }}
                           >
-                            {token}
+                            Volume
                           </Typography>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'flex-end'
-                            }}
-                          >
+
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="body2" sx={{ color: chartColors.primary.main }}>
+                              AMM:
+                            </Typography>
                             <Typography
                               variant="body2"
-                              sx={{
-                                color: 'rgba(255, 255, 255, 0.9)',
-                                textAlign: 'right'
-                              }}
+                              sx={{ color: themeColors.text, fontWeight: 500 }}
                             >
-                              {marketCap.toLocaleString(undefined, {
+                              {selectedDataPoint.volumeAMM.toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
                               })}{' '}
                               XRP
                             </Typography>
-                            {avgPrice > 0 && (
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  color: 'rgba(255, 255, 255, 0.7)',
-                                  textAlign: 'right'
-                                }}
-                              >
-                                Avg Price:{' '}
-                                {avgPrice.toLocaleString(undefined, {
-                                  minimumFractionDigits: 6,
-                                  maximumFractionDigits: 6
-                                })}
-                              </Typography>
-                            )}
+                          </Box>
+
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="body2" sx={{ color: chartColors.secondary.main }}>
+                              Non-AMM:
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{ color: themeColors.text, fontWeight: 500 }}
+                            >
+                              {selectedDataPoint.volumeNonAMM.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                              })}{' '}
+                              XRP
+                            </Typography>
+                          </Box>
+
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              pt: 1,
+                              borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+                            }}
+                          >
+                            <Typography variant="body2" sx={{ color: 'white' }}>
+                              Total:
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
+                              {selectedDataPoint.totalVolume.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                              })}{' '}
+                              XRP
+                            </Typography>
                           </Box>
                         </Box>
                       );
@@ -1347,7 +1496,7 @@ const MarketMetricsContent = () => {
                   />
                   <Tooltip
                     content={<CustomTooltip />}
-                    cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                    cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
                   <Legend
                     content={({ payload }) => (
@@ -1361,7 +1510,7 @@ const MarketMetricsContent = () => {
                   <Line
                     type="monotone"
                     dataKey="tokenCount"
-                    stroke="#FFFFFF"
+                    stroke={chartColors.totalLine}
                     name="Total Active Tokens"
                     strokeWidth={3}
                     dot={false}
@@ -1370,8 +1519,8 @@ const MarketMetricsContent = () => {
                     activeDot={{
                       r: 8,
                       strokeWidth: 2,
-                      stroke: '#FFFFFF',
-                      fill: chartColors.background,
+                      stroke: chartColors.totalLine,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -1388,7 +1537,7 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.primary.main,
-                      fill: chartColors.background,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -1405,7 +1554,7 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.secondary.main,
-                      fill: chartColors.background,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -1422,7 +1571,7 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.tertiary.main,
-                      fill: chartColors.background,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -1436,9 +1585,16 @@ const MarketMetricsContent = () => {
                 sx={{
                   mt: 3,
                   p: 2,
-                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(0, 0, 0, 0.4)'
+                      : 'rgba(240, 240, 245, 0.8)',
                   borderRadius: 2,
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                  border: `1px solid ${
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.1)'
+                  }`
                 }}
               >
                 <Box
@@ -1635,7 +1791,7 @@ const MarketMetricsContent = () => {
                   />
                   <Tooltip
                     content={<CustomTooltip />}
-                    cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                    cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
                   <Legend
                     content={({ payload }) => (
@@ -1660,7 +1816,7 @@ const MarketMetricsContent = () => {
                       r: 8,
                       strokeWidth: 2,
                       stroke: chartColors.primary.main,
-                      fill: chartColors.background,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -1678,7 +1834,7 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.secondary.main,
-                      fill: chartColors.background,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -1697,7 +1853,7 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.primary.main,
-                      fill: chartColors.background,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -1716,7 +1872,7 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.secondary.main,
-                      fill: chartColors.background,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -1730,9 +1886,16 @@ const MarketMetricsContent = () => {
                 sx={{
                   mt: 3,
                   p: 2,
-                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(0, 0, 0, 0.4)'
+                      : 'rgba(240, 240, 245, 0.8)',
                   borderRadius: 2,
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                  border: `1px solid ${
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.1)'
+                  }`
                 }}
               >
                 <Box
@@ -1743,14 +1906,14 @@ const MarketMetricsContent = () => {
                     mb: 2
                   }}
                 >
-                  <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                  <Typography variant="h6" sx={{ color: themeColors.text }}>
                     Trading Activity for {selectedDataPoint.date}
                   </Typography>
                   <Box
                     sx={{
                       cursor: 'pointer',
-                      color: 'rgba(255, 255, 255, 0.6)',
-                      '&:hover': { color: 'rgba(255, 255, 255, 0.9)' }
+                      color: themeColors.textSecondary,
+                      '&:hover': { color: themeColors.text }
                     }}
                     onClick={() => setSelectedDataPoint(null)}
                   >
@@ -1768,7 +1931,7 @@ const MarketMetricsContent = () => {
                       flexDirection: 'column'
                     }}
                   >
-                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1 }}>
+                    <Typography variant="body2" sx={{ color: themeColors.textSecondary, mb: 1 }}>
                       Volume
                     </Typography>
 
@@ -1776,7 +1939,7 @@ const MarketMetricsContent = () => {
                       <Typography variant="body2" sx={{ color: chartColors.primary.main }}>
                         AMM:
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'white', fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ color: themeColors.text, fontWeight: 500 }}>
                         {selectedDataPoint.volumeAMM.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2
@@ -1789,7 +1952,7 @@ const MarketMetricsContent = () => {
                       <Typography variant="body2" sx={{ color: chartColors.secondary.main }}>
                         Non-AMM:
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'white', fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ color: themeColors.text, fontWeight: 500 }}>
                         {selectedDataPoint.volumeNonAMM.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2
@@ -1944,7 +2107,7 @@ const MarketMetricsContent = () => {
                   />
                   <Tooltip
                     content={<CustomTooltip />}
-                    cursor={{ stroke: 'rgba(255, 255, 255, 0.2)', strokeWidth: 1 }}
+                    cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
                   />
                   <Legend
                     content={({ payload }) => (
@@ -1968,7 +2131,7 @@ const MarketMetricsContent = () => {
                       r: 8,
                       strokeWidth: 2,
                       stroke: chartColors.primary.main,
-                      fill: chartColors.background,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -1985,7 +2148,7 @@ const MarketMetricsContent = () => {
                       r: 6,
                       strokeWidth: 2,
                       stroke: chartColors.secondary.main,
-                      fill: chartColors.background,
+                      fill: themeColors.background,
                       onClick: (data) => handleDataPointClick(data.payload)
                     }}
                   />
@@ -1999,9 +2162,16 @@ const MarketMetricsContent = () => {
                 sx={{
                   mt: 3,
                   p: 2,
-                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(0, 0, 0, 0.4)'
+                      : 'rgba(240, 240, 245, 0.8)',
                   borderRadius: 2,
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                  border: `1px solid ${
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.1)'
+                  }`
                 }}
               >
                 <Box
