@@ -192,6 +192,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [assetDistribution, setAssetDistribution] = useState(null);
   const [xrpBalance, setXrpBalance] = useState(null);
   const [loadingBalance, setLoadingBalance] = useState(true);
+  const [isAmm, setIsAmm] = useState(false);
 
   // Fallback value for theme.palette.divider
   const dividerColor = theme?.palette?.divider || '#ccc';
@@ -210,6 +211,8 @@ export default function Portfolio({ account, limit, collection, type }) {
           `https://api.xrpl.to/api/analytics/trader-stats/${account}`
         );
         setTraderStats(response.data.data);
+        // Set AMM status based on response
+        setIsAmm(!!response.data.data?.AMM);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching trader stats:', error);
@@ -909,43 +912,57 @@ export default function Portfolio({ account, limit, collection, type }) {
                       border: `1px solid ${dividerColor}`
                     }}
                   >
-                    <Chip
-                      avatar={
-                        <Avatar
-                          src={getHashIcon(account)}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Chip
+                        avatar={
+                          <Avatar
+                            src={getHashIcon(account)}
+                            sx={{
+                              border: `3px solid ${
+                                activeRankColors[activeRanks[account]] || '#808080'
+                              }`,
+                              boxShadow: `0 0 15px ${
+                                activeRankColors[activeRanks[account]] || '#808080'
+                              }`
+                            }}
+                          />
+                        }
+                        label={
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {account}
+                            {activeRanks[account] === 'verified' && (
+                              <VerifiedIcon
+                                sx={{
+                                  fontSize: '1.2rem',
+                                  ml: 0.5,
+                                  color: '#1DA1F2'
+                                }}
+                              />
+                            )}
+                          </Box>
+                        }
+                        sx={{
+                          fontSize: '1rem',
+                          color: activeRankColors[activeRanks[account]] || '#808080',
+                          bgcolor: 'transparent',
+                          '& .MuiChip-label': {
+                            color: activeRankColors[activeRanks[account]] || '#808080'
+                          }
+                        }}
+                      />
+                      {isAmm && (
+                        <Chip
+                          label="AMM"
+                          size="small"
                           sx={{
-                            border: `3px solid ${
-                              activeRankColors[activeRanks[account]] || '#808080'
-                            }`,
-                            boxShadow: `0 0 15px ${
-                              activeRankColors[activeRanks[account]] || '#808080'
-                            }`
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            color: theme.palette.primary.main,
+                            fontWeight: 500,
+                            fontSize: '0.75rem'
                           }}
                         />
-                      }
-                      label={
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          {account}
-                          {activeRanks[account] === 'verified' && (
-                            <VerifiedIcon
-                              sx={{
-                                fontSize: '1.2rem',
-                                ml: 0.5,
-                                color: '#1DA1F2'
-                              }}
-                            />
-                          )}
-                        </Box>
-                      }
-                      sx={{
-                        fontSize: '1rem',
-                        color: activeRankColors[activeRanks[account]] || '#808080',
-                        bgcolor: 'transparent',
-                        '& .MuiChip-label': {
-                          color: activeRankColors[activeRanks[account]] || '#808080'
-                        }
-                      }}
-                    />
+                      )}
+                    </Box>
                   </Box>
 
                   <Card sx={{ p: 1, borderRadius: '8px' }}>
