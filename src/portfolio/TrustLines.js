@@ -70,7 +70,7 @@ export default function TrustLines({ account, onUpdateTotalValue, onTrustlinesDa
 
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(0);
-  const [rows, setRows] = useState(50);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [total, setTotal] = useState(0);
   const [lines, setLines] = useState([]);
   const [totalValue, setTotalValue] = useState(0);
@@ -97,7 +97,11 @@ export default function TrustLines({ account, onUpdateTotalValue, onTrustlinesDa
   const getLines = () => {
     setLoading(true);
     axios
-      .get(`https://api.xrpl.to/api/trustlines?account=${account}&includeRates=true`)
+      .get(
+        `https://api.xrpl.to/api/trustlines?account=${account}&includeRates=true&limit=${rowsPerPage}&offset=${
+          page * rowsPerPage
+        }`
+      )
       .then((res) => {
         let ret = res.status === 200 ? res.data : undefined;
         if (ret && ret.success) {
@@ -120,7 +124,7 @@ export default function TrustLines({ account, onUpdateTotalValue, onTrustlinesDa
 
   useEffect(() => {
     getLines();
-  }, [account, sync, page, rows]);
+  }, [account, sync, page, rowsPerPage]);
 
   useEffect(() => {
     if (lines.length > 0) {
@@ -150,7 +154,7 @@ export default function TrustLines({ account, onUpdateTotalValue, onTrustlinesDa
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRows(parseInt(event.target.value, 10));
+    setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
@@ -357,7 +361,7 @@ export default function TrustLines({ account, onUpdateTotalValue, onTrustlinesDa
                 fontWeight: 500
               }}
             >
-              {`${page + 1} / ${Math.ceil(total / rows)} pages`}
+              {`${page + 1} / ${Math.ceil(total / rowsPerPage)} pages`}
             </Typography>
             <Box
               sx={{
@@ -396,7 +400,7 @@ export default function TrustLines({ account, onUpdateTotalValue, onTrustlinesDa
               </IconButton>
               <IconButton
                 onClick={() => handleChangePage(page + 1)}
-                disabled={page >= Math.ceil(total / rows) - 1}
+                disabled={page >= Math.ceil(total / rowsPerPage) - 1}
                 size="small"
                 sx={{
                   color: theme.palette.primary.main,
@@ -439,7 +443,7 @@ export default function TrustLines({ account, onUpdateTotalValue, onTrustlinesDa
             }}
           >
             <Select
-              value={rows}
+              value={rowsPerPage}
               onChange={handleChangeRowsPerPage}
               size="small"
               sx={{

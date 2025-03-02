@@ -203,6 +203,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [loadingCollections, setLoadingCollections] = useState(false);
   const [totalValue, setTotalValue] = useState(0);
   const [selectedInterval, setSelectedInterval] = useState('24h');
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     const fetchTraderStats = async () => {
