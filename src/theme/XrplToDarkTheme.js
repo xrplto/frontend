@@ -423,6 +423,7 @@ export const XrplToDarkTheme = createTheme({
         root: {
           paddingLeft: '16px !important',
           paddingRight: '16px !important',
+          maxWidth: '100% !important'
         }
       }
     },
