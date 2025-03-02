@@ -58,6 +58,7 @@ function Footer() {
                   title: 'Products',
                   links: [
                     { href: '/swap', label: 'Token Swap' },
+                    { href: '/market-metrics', label: 'Market Metrics' },
                     { href: '/api-docs', label: 'Token API' },
                     { href: '/sitemap/tokens', label: 'Sitemap' }
                   ]
