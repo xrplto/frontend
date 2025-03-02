@@ -459,27 +459,38 @@ const TradingHistory = ({ tokenId }) => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <Tooltip title={`Maker: ${trade.maker}\nTaker: ${trade.taker}`}>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Typography
-                      component="span"
+                    <Link
+                      href={`/profile/${trade.maker}`}
                       sx={{
-                        fontSize: '0.8rem',
-                        color: theme.palette.text.secondary
+                        textDecoration: 'none',
+                        color: theme.palette.text.secondary,
+                        '&:hover': {
+                          textDecoration: 'underline',
+                          color: theme.palette.primary.main
+                        }
                       }}
                     >
-                      {`${trade.maker.slice(0, 4)}...${trade.maker.slice(-4)}`}
-                      {getTradeSizeEmoji(getXRPAmount(trade))}
-                      {(BOT_ADDRESSES.includes(trade.maker) ||
-                        BOT_ADDRESSES.includes(trade.taker)) && (
-                        <SmartToy
-                          style={{
-                            color: theme.palette.warning.main,
-                            fontSize: '0.9rem',
-                            marginLeft: '2px',
-                            verticalAlign: 'middle'
-                          }}
-                        />
-                      )}
-                    </Typography>
+                      <Typography
+                        component="span"
+                        sx={{
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                        {`${trade.maker.slice(0, 4)}...${trade.maker.slice(-4)}`}
+                        {getTradeSizeEmoji(getXRPAmount(trade))}
+                        {(BOT_ADDRESSES.includes(trade.maker) ||
+                          BOT_ADDRESSES.includes(trade.taker)) && (
+                          <SmartToy
+                            style={{
+                              color: theme.palette.warning.main,
+                              fontSize: '0.9rem',
+                              marginLeft: '2px',
+                              verticalAlign: 'middle'
+                            }}
+                          />
+                        )}
+                      </Typography>
+                    </Link>
                   </Box>
                 </Tooltip>
               </Box>
