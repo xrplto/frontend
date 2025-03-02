@@ -338,6 +338,20 @@ export default function TopTraders({ token }) {
                         {truncate(trader.address, 20)}
                       </Typography>
                     </Link>
+                    {trader.AMM && (
+                      <Chip
+                        label="AMM"
+                        size="small"
+                        color="secondary"
+                        sx={{
+                          height: 20,
+                          fontSize: '0.65rem',
+                          '& .MuiChip-label': {
+                            px: 0.75
+                          }
+                        }}
+                      />
+                    )}
                   </Stack>
                 </TableCell>
                 <TableCell align="right">
@@ -502,6 +516,7 @@ export default function TopTraders({ token }) {
         onClose={handleCloseStats}
         account={selectedTrader?.address}
         traderStats={traderStats}
+        isAmm={selectedTrader?.AMM}
       />
     </>
   );
