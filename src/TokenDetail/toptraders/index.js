@@ -331,9 +331,8 @@ export default function TopTraders({ token }) {
                     <Link
                       underline="none"
                       color="inherit"
-                      target="_blank"
-                      href={`https://bithomp.com/explorer/${trader.address}`}
-                      rel="noreferrer noopener nofollow"
+                      href={`/profile/${trader.address}`}
+                      rel="noreferrer"
                     >
                       <Typography variant="body2" color="primary">
                         {truncate(trader.address, 20)}
