@@ -10,7 +10,9 @@ import {
   useMediaQuery,
   useTheme,
   Menu,
-  MenuItem
+  MenuItem,
+  Divider,
+  SvgIcon
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
@@ -18,6 +20,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useTranslation } from 'react-i18next';
 import { useState, useContext, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -28,6 +32,32 @@ import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
 import WalletConnectModal from './WalletConnectModal';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
+
+// Iconify
+import { Icon } from '@iconify/react';
+import chartLineUp from '@iconify/icons-ph/chart-line-up';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import FiberNewIcon from '@mui/icons-material/FiberNew';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+
+// Add XPMarket icon component
+const XPMarketIcon = (props) => (
+  <SvgIcon {...props} viewBox="0 0 32 32">
+    <path
+      d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
+      fill="inherit"
+    />
+    <path
+      d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
+      fill="inherit"
+    />
+    <path
+      d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
+      fill="inherit"
+    />
+  </SvgIcon>
+);
 
 const HeaderWrapper = styled(Box)(
   ({ theme }) => `
@@ -113,6 +143,11 @@ export default function Header(props) {
 
   const handleTokensClose = () => {
     setTokensAnchorEl(null);
+  };
+
+  const handleTokenOptionSelect = (path) => {
+    window.location.href = path;
+    handleTokensClose();
   };
 
   useEffect(() => {
@@ -207,6 +242,7 @@ export default function Header(props) {
                 {t('Tokens')}
                 <KeyboardArrowDownIcon />
               </StyledLink>
+
               <Menu
                 anchorEl={tokensAnchorEl}
                 open={openTokensMenu}
@@ -224,22 +260,202 @@ export default function Header(props) {
                   }
                 }}
               >
-                <StyledMenuItem darkMode={darkMode} onClick={() => (window.location.href = '/')}>
-                  {t('All Tokens')}
-                </StyledMenuItem>
                 <StyledMenuItem
                   darkMode={darkMode}
-                  onClick={() => (window.location.href = '/market-metrics')}
+                  onClick={() => handleTokenOptionSelect('/')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <AutoAwesomeIcon sx={{ fontSize: '16px', color: '#637381' }} />
+                    <span>{t('All Tokens')}</span>
+                  </Box>
+                </StyledMenuItem>
+
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  onClick={() => handleTokenOptionSelect('/view/firstledger')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <OpenInNewIcon sx={{ fontSize: '16px', color: '#0C53B7' }} />
+                    <span>FirstLedger</span>
+                  </Box>
+                </StyledMenuItem>
+
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  onClick={() => handleTokenOptionSelect('/view/magnetic-x')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box
+                      component="img"
+                      src="/magneticx-logo.webp"
+                      alt="Magnetic X"
+                      sx={{
+                        width: '16px',
+                        height: '16px',
+                        objectFit: 'contain'
+                      }}
+                    />
+                    <span>Magnetic X</span>
+                  </Box>
+                </StyledMenuItem>
+
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  onClick={() => handleTokenOptionSelect('/view/xpmarket')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <XPMarketIcon sx={{ fontSize: '16px', color: '#6D1FEE' }} />
+                    <span>XPmarket</span>
+                  </Box>
+                </StyledMenuItem>
+
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  onClick={() => handleTokenOptionSelect('/view/xrpfun')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Icon
+                      icon={chartLineUp}
+                      style={{
+                        fontSize: '16px',
+                        color: '#B72136',
+                        backgroundColor: '#fff',
+                        borderRadius: '2px'
+                      }}
+                    />
+                    <span>xrp.fun</span>
+                  </Box>
+                </StyledMenuItem>
+
+                <Divider sx={{ my: 1 }} />
+
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  onClick={() => handleTokenOptionSelect('/?sort=trendingScore&order=desc')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <LocalFireDepartmentIcon
+                      sx={{ fontSize: '16px', color: darkMode ? '#FF5630' : '#B71D18' }}
+                    />
+                    <span>Trending</span>
+                  </Box>
+                </StyledMenuItem>
+
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  onClick={() => handleTokenOptionSelect('/?sort=assessmentScore&order=desc')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <SearchIcon
+                      sx={{ fontSize: '16px', color: darkMode ? '#2499EF' : '#0C53B7' }}
+                    />
+                    <span>Spotlight</span>
+                  </Box>
+                </StyledMenuItem>
+
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  onClick={() => handleTokenOptionSelect('/?sort=views&order=desc')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <VisibilityIcon
+                      sx={{ fontSize: '16px', color: darkMode ? '#9155FD' : '#7635DC' }}
+                    />
+                    <span>Most Viewed</span>
+                  </Box>
+                </StyledMenuItem>
+
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  onClick={() => handleTokenOptionSelect('/?sort=pro24h&order=desc')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <TrendingUpIcon
+                      sx={{ fontSize: '16px', color: darkMode ? '#00AB55' : '#007B55' }}
+                    />
+                    <span>Gainers</span>
+                  </Box>
+                </StyledMenuItem>
+
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  onClick={() => handleTokenOptionSelect('/?sort=dateon&order=desc')}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <FiberNewIcon
+                      sx={{ fontSize: '16px', color: darkMode ? '#FFA000' : '#B76E00' }}
+                    />
+                    <span>New</span>
+                  </Box>
+                </StyledMenuItem>
+
+                <Divider sx={{ my: 1 }} />
+
+                <StyledMenuItem
+                  darkMode={darkMode}
+                  onClick={() => handleTokenOptionSelect('/market-metrics')}
                 >
                   {t('Market Metrics')}
                 </StyledMenuItem>
+
                 <StyledMenuItem
                   darkMode={darkMode}
-                  onClick={() => (window.location.href = '/top-traders')}
+                  onClick={() => handleTokenOptionSelect('/top-traders')}
                 >
                   {t('Top Traders')}
                 </StyledMenuItem>
               </Menu>
+
               <StyledLink
                 underline="none"
                 color={darkMode ? 'white' : 'black'}
