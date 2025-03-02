@@ -796,15 +796,23 @@ export default function Portfolio({ account, limit, collection, type }) {
     const topAssets = sortedTrustlines.slice(0, 5);
     const otherAssets = sortedTrustlines.slice(5);
 
+    // Ensure we have valid numeric values
     const labels = topAssets.map((asset) => asset.currency);
-    const data = topAssets.map((asset) => asset.value);
+    const data = topAssets.map((asset) => parseFloat(asset.value) || 0);
 
     // Add "Others" category if there are more than 5 assets
     if (otherAssets.length > 0) {
-      const othersValue = otherAssets.reduce((sum, asset) => sum + asset.value, 0);
+      const othersValue = otherAssets.reduce(
+        (sum, asset) => sum + (parseFloat(asset.value) || 0),
+        0
+      );
       labels.push('Others');
       data.push(othersValue);
     }
+
+    // Verify we have valid data
+    const totalValue = data.reduce((sum, value) => sum + value, 0);
+    console.log('Pie chart data:', { labels, data, totalValue });
 
     // Generate colors for each segment
     const backgroundColors = [
@@ -850,7 +858,7 @@ export default function Portfolio({ account, limit, collection, type }) {
           label: function (context) {
             const value = context.raw;
             const total = context.dataset.data.reduce((a, b) => a + b, 0);
-            const percentage = ((value / total) * 100).toFixed(1);
+            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
             return `${context.label}: ${value.toLocaleString()} XRP (${percentage}%)`;
           }
         }
@@ -1600,7 +1608,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                                     color="text.primary"
                                     sx={{ fontWeight: 500 }}
                                   >
-                                    {totalValue.toLocaleString()}
+                                    {(totalValue || 0).toLocaleString()}
                                   </Typography>
                                   <Typography
                                     variant="caption"
