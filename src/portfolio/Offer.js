@@ -140,11 +140,20 @@ const Offer = ({ account }) => {
   const [scrollLeft, setScrollLeft] = useState(0);
 
   useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
     function getOffers() {
+      if (!account) return;
+
       setLoading(true);
       axios
-        .get(`${BASE_URL}/account/offers/${account}?page=${page}&limit=${rows}`)
+        .get(`${BASE_URL}/account/offers/${account}?page=${page}&limit=${rows}`, {
+          signal: controller.signal
+        })
         .then((res) => {
+          if (!isMounted) return;
+
           let ret = res.status === 200 ? res.data : undefined;
           if (ret) {
             setTotal(ret.total);
@@ -152,14 +161,30 @@ const Offer = ({ account }) => {
           }
         })
         .catch((err) => {
-          console.log('Error on getting account orders!!!', err);
+          if (axios.isCancel(err)) {
+            console.log('Request canceled');
+          } else {
+            console.log('Error on getting account offers!!!', err);
+          }
         })
-        .then(function () {
-          setLoading(false);
+        .finally(() => {
+          if (isMounted) {
+            setLoading(false);
+          }
         });
     }
-    if (account) getOffers();
-  }, [account, sync, page, rows]);
+
+    // Debounce the API call
+    const timeoutId = setTimeout(() => {
+      getOffers();
+    }, 300); // 300ms debounce
+
+    return () => {
+      isMounted = false;
+      controller.abort(); // Cancel any in-flight requests
+      clearTimeout(timeoutId); // Clear the timeout if component unmounts
+    };
+  }, [account, sync, page, rows, BASE_URL]);
 
   useEffect(() => {
     const handleScroll = () => {
