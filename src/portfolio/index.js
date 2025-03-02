@@ -190,6 +190,8 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [isLoading, setIsLoading] = useState(true);
   const [chartData, setChartData] = useState(null);
   const [assetDistribution, setAssetDistribution] = useState(null);
+  const [xrpBalance, setXrpBalance] = useState(null);
+  const [loadingBalance, setLoadingBalance] = useState(true);
 
   // Fallback value for theme.palette.divider
   const dividerColor = theme?.palette?.divider || '#ccc';
@@ -215,8 +217,40 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     };
 
+    const fetchXrpBalance = async () => {
+      try {
+        setLoadingBalance(true);
+        const response = await axios.post('https://xrplcluster.com/', {
+          method: 'account_info',
+          params: [
+            {
+              account: account,
+              strict: true,
+              ledger_index: 'current',
+              queue: true
+            }
+          ]
+        });
+
+        if (response.data && response.data.result && response.data.result.account_data) {
+          // XRP balance is stored in drops (1 XRP = 1,000,000 drops)
+          const balanceInDrops = response.data.result.account_data.Balance;
+          const balanceInXrp = parseInt(balanceInDrops) / 1000000;
+          setXrpBalance(balanceInXrp);
+        } else {
+          setXrpBalance(0);
+        }
+        setLoadingBalance(false);
+      } catch (error) {
+        console.error('Error fetching XRP balance:', error);
+        setXrpBalance(0);
+        setLoadingBalance(false);
+      }
+    };
+
     if (account) {
       fetchTraderStats();
+      fetchXrpBalance();
     }
   }, [account]);
 
@@ -913,6 +947,42 @@ export default function Portfolio({ account, limit, collection, type }) {
                           `${traderStats?.totalVolume?.toLocaleString() || 0} XRP`
                         )}
                       </Typography>
+                    </Box>
+
+                    {/* XRP Balance Display */}
+                    <Box
+                      sx={{
+                        p: 0.75,
+                        mb: 1.5,
+                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                        borderRadius: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        color="text.primary"
+                        display="flex"
+                        alignItems="center"
+                      >
+                        <AccountBalanceWalletIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
+                        XRP Balance
+                      </Typography>
+                      {loadingBalance ? (
+                        <Skeleton width={80} height={20} />
+                      ) : (
+                        <Typography variant="body2" color="primary.main" fontWeight="medium">
+                          {xrpBalance !== null
+                            ? xrpBalance.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                              })
+                            : '0.00'}{' '}
+                          XRP
+                        </Typography>
+                      )}
                     </Box>
 
                     <Grid container spacing={0.5}>
