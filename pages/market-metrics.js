@@ -781,27 +781,29 @@ const MarketMetricsContent = () => {
             sx={{
               minHeight: '48px',
               '& .MuiTabs-indicator': {
-                backgroundColor: theme.palette.mode === 'dark' 
-                  ? 'rgba(255, 255, 255, 0.8)' 
-                  : theme.palette.primary.main,
+                backgroundColor:
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(255, 255, 255, 0.8)'
+                    : theme.palette.primary.main,
                 height: '2px'
               },
               '& .MuiTab-root': {
-                color: theme.palette.mode === 'dark' 
-                  ? 'rgba(255, 255, 255, 0.6)' 
-                  : 'rgba(0, 0, 0, 0.6)',
+                color:
+                  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
                 minHeight: '48px',
                 padding: '12px 16px',
                 '&.Mui-selected': {
-                  color: theme.palette.mode === 'dark' 
-                    ? 'rgba(255, 255, 255, 0.95)' 
-                    : theme.palette.primary.main,
+                  color:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.95)'
+                      : theme.palette.primary.main,
                   fontWeight: 600
                 },
                 '&:hover': {
-                  color: theme.palette.mode === 'dark' 
-                    ? 'rgba(255, 255, 255, 0.8)' 
-                    : theme.palette.primary.dark,
+                  color:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.8)'
+                      : theme.palette.primary.dark,
                   opacity: 0.8
                 }
               }
@@ -828,23 +830,26 @@ const MarketMetricsContent = () => {
                 sx={{
                   minHeight: '36px',
                   '& .MuiTabs-indicator': {
-                    backgroundColor: theme.palette.mode === 'dark' 
-                      ? 'rgba(255, 255, 255, 0.8)' 
-                      : theme.palette.primary.main,
+                    backgroundColor:
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, 0.8)'
+                        : theme.palette.primary.main,
                     height: '2px'
                   },
                   '& .MuiTab-root': {
-                    color: theme.palette.mode === 'dark' 
-                      ? 'rgba(255, 255, 255, 0.6)' 
-                      : 'rgba(0, 0, 0, 0.6)',
+                    color:
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, 0.6)'
+                        : 'rgba(0, 0, 0, 0.6)',
                     minHeight: '36px',
                     padding: '6px 12px',
                     minWidth: '60px',
                     fontSize: '0.75rem',
                     '&.Mui-selected': {
-                      color: theme.palette.mode === 'dark' 
-                        ? 'rgba(255, 255, 255, 0.95)' 
-                        : theme.palette.primary.main,
+                      color:
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(255, 255, 255, 0.95)'
+                          : theme.palette.primary.main,
                       fontWeight: 600
                     }
                   }
@@ -1009,14 +1014,14 @@ const MarketMetricsContent = () => {
                     mb: 2
                   }}
                 >
-                  <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                  <Typography variant="h6" sx={{ color: themeColors.text }}>
                     Token Breakdown for {selectedDataPoint.date}
                   </Typography>
                   <Box
                     sx={{
                       cursor: 'pointer',
-                      color: 'rgba(255, 255, 255, 0.6)',
-                      '&:hover': { color: 'rgba(255, 255, 255, 0.9)' }
+                      color: themeColors.textSecondary,
+                      '&:hover': { color: themeColors.text }
                     }}
                     onClick={() => setSelectedDataPoint(null)}
                   >
@@ -1024,7 +1029,7 @@ const MarketMetricsContent = () => {
                   </Box>
                 </Box>
 
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
+                <Typography variant="body2" sx={{ color: themeColors.textSecondary, mb: 2 }}>
                   Total Market Cap:{' '}
                   {selectedDataPoint.totalMarketcap.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
@@ -1051,8 +1056,16 @@ const MarketMetricsContent = () => {
                             mb: 1,
                             p: 1,
                             borderRadius: 1,
-                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                            '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                            backgroundColor:
+                              theme.palette.mode === 'dark'
+                                ? 'rgba(255, 255, 255, 0.05)'
+                                : 'rgba(0, 0, 0, 0.05)',
+                            '&:hover': {
+                              backgroundColor:
+                                theme.palette.mode === 'dark'
+                                  ? 'rgba(255, 255, 255, 0.1)'
+                                  : 'rgba(0, 0, 0, 0.1)'
+                            }
                           }}
                         >
                           <Box
@@ -1070,7 +1083,7 @@ const MarketMetricsContent = () => {
                           <Typography
                             variant="body2"
                             sx={{
-                              color: 'rgba(255, 255, 255, 0.9)',
+                              color: themeColors.text,
                               fontWeight: 500,
                               flex: 1
                             }}
@@ -1080,7 +1093,7 @@ const MarketMetricsContent = () => {
                           <Typography
                             variant="body2"
                             sx={{
-                              color: 'rgba(255, 255, 255, 0.9)',
+                              color: themeColors.text,
                               mr: 2,
                               textAlign: 'right'
                             }}
@@ -1094,7 +1107,7 @@ const MarketMetricsContent = () => {
                           <Typography
                             variant="body2"
                             sx={{
-                              color: 'rgba(255, 255, 255, 0.7)',
+                              color: themeColors.textSecondary,
                               width: '60px',
                               textAlign: 'right'
                             }}
@@ -1173,23 +1186,26 @@ const MarketMetricsContent = () => {
                 sx={{
                   minHeight: '36px',
                   '& .MuiTabs-indicator': {
-                    backgroundColor: theme.palette.mode === 'dark' 
-                      ? 'rgba(255, 255, 255, 0.8)' 
-                      : theme.palette.primary.main,
+                    backgroundColor:
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, 0.8)'
+                        : theme.palette.primary.main,
                     height: '2px'
                   },
                   '& .MuiTab-root': {
-                    color: theme.palette.mode === 'dark' 
-                      ? 'rgba(255, 255, 255, 0.6)' 
-                      : 'rgba(0, 0, 0, 0.6)',
+                    color:
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(255, 255, 255, 0.6)'
+                        : 'rgba(0, 0, 0, 0.6)',
                     minHeight: '36px',
                     padding: '6px 12px',
                     minWidth: '60px',
                     fontSize: '0.75rem',
                     '&.Mui-selected': {
-                      color: theme.palette.mode === 'dark' 
-                        ? 'rgba(255, 255, 255, 0.95)' 
-                        : theme.palette.primary.main,
+                      color:
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(255, 255, 255, 0.95)'
+                          : theme.palette.primary.main,
                       fontWeight: 600
                     }
                   }
