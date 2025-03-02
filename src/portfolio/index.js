@@ -31,7 +31,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Verified as VerifiedIcon } from '@mui/icons-material';
-import { Line } from 'react-chartjs-2';
+import { Line, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -41,7 +41,8 @@ import {
   BarElement,
   Title,
   Tooltip as ChartTooltip,
-  Legend
+  Legend,
+  ArcElement
 } from 'chart.js';
 import styled from '@emotion/styled';
 import { getHashIcon } from 'src/utils/extra';
@@ -68,7 +69,8 @@ ChartJS.register(
   BarElement,
   Title,
   ChartTooltip,
-  Legend
+  Legend,
+  ArcElement
 );
 
 const OverviewWrapper = styled(Box)(
@@ -187,6 +189,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [selectedChart, setSelectedChart] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [chartData, setChartData] = useState(null);
+  const [assetDistribution, setAssetDistribution] = useState(null);
 
   // Fallback value for theme.palette.divider
   const dividerColor = theme?.palette?.divider || '#ccc';
@@ -747,6 +750,85 @@ export default function Portfolio({ account, limit, collection, type }) {
 
     fetchData();
   }, [account, collection, type]);
+
+  // Add function to process asset distribution data for pie chart
+  const processAssetDistribution = (trustlines) => {
+    if (!trustlines || trustlines.length === 0) return null;
+
+    // Sort trustlines by value (descending)
+    const sortedTrustlines = [...trustlines].sort((a, b) => b.value - a.value);
+
+    // Take top 5 assets and group the rest as "Others"
+    const topAssets = sortedTrustlines.slice(0, 5);
+    const otherAssets = sortedTrustlines.slice(5);
+
+    const labels = topAssets.map((asset) => asset.currency);
+    const data = topAssets.map((asset) => asset.value);
+
+    // Add "Others" category if there are more than 5 assets
+    if (otherAssets.length > 0) {
+      const othersValue = otherAssets.reduce((sum, asset) => sum + asset.value, 0);
+      labels.push('Others');
+      data.push(othersValue);
+    }
+
+    // Generate colors for each segment
+    const backgroundColors = [
+      alpha(theme.palette.primary.main, 0.8),
+      alpha(theme.palette.success.main, 0.8),
+      alpha(theme.palette.warning.main, 0.8),
+      alpha(theme.palette.error.main, 0.8),
+      alpha(theme.palette.info.main, 0.8),
+      alpha(theme.palette.grey[500], 0.8)
+    ];
+
+    return {
+      labels,
+      datasets: [
+        {
+          data,
+          backgroundColor: backgroundColors,
+          borderColor: theme.palette.background.paper,
+          borderWidth: 2,
+          hoverOffset: 15
+        }
+      ]
+    };
+  };
+
+  // Update pie chart options
+  const pieChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '60%', // Make it a donut chart for better aesthetics
+    plugins: {
+      legend: {
+        display: false // Hide the legend since we're showing custom labels below
+      },
+      tooltip: {
+        backgroundColor: alpha(theme.palette.background.paper, 0.9),
+        titleColor: theme.palette.text.primary,
+        bodyColor: theme.palette.text.secondary,
+        borderColor: theme.palette.divider,
+        borderWidth: 1,
+        padding: 12,
+        callbacks: {
+          label: function (context) {
+            const value = context.raw;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${context.label}: ${value.toLocaleString()} XRP (${percentage}%)`;
+          }
+        }
+      }
+    }
+  };
+
+  // Update the TrustLines component to pass data to parent
+  const handleTrustlinesData = (trustlines) => {
+    const pieData = processAssetDistribution(trustlines);
+    setAssetDistribution(pieData);
+  };
 
   // Render loading state or error state
   if (isLoading) {
@@ -1380,14 +1462,156 @@ export default function Portfolio({ account, limit, collection, type }) {
                   </Box>
 
                   <TabPanel sx={{ p: 0 }} value="0">
-                    <Paper
-                      sx={{ width: '100%', overflow: 'hidden', color: theme.palette.text.primary }}
-                    >
-                      <TrustLines
-                        account={account}
-                        onUpdateTotalValue={(value) => setTotalValue(value)}
-                      />
-                    </Paper>
+                    <Grid container spacing={0}>
+                      {/* Add pie chart section */}
+                      <Grid item xs={12} md={4}>
+                        <Box
+                          sx={{
+                            height: '100%',
+                            p: { xs: 1.5, md: 1.5 },
+                            background: alpha(theme.palette.primary.main, 0.02),
+                            borderRadius: '10px 0 0 10px',
+                            borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                            display: 'flex',
+                            flexDirection: 'column'
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            sx={{
+                              mb: 1,
+                              color: theme.palette.primary.main,
+                              fontWeight: 500,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.75,
+                              fontSize: '0.8rem'
+                            }}
+                          >
+                            <Box
+                              component="span"
+                              sx={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: '50%',
+                                bgcolor: theme.palette.primary.main,
+                                display: 'inline-block'
+                              }}
+                            />
+                            Asset Distribution
+                          </Typography>
+
+                          <Box
+                            sx={{
+                              flex: 1,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              position: 'relative',
+                              minHeight: 220,
+                              maxHeight: 240
+                            }}
+                          >
+                            {assetDistribution ? (
+                              <>
+                                <Pie data={assetDistribution} options={pieChartOptions} />
+                                <Box
+                                  sx={{
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    textAlign: 'center',
+                                    pointerEvents: 'none'
+                                  }}
+                                >
+                                  <Typography
+                                    variant="subtitle1"
+                                    color="text.primary"
+                                    sx={{ fontWeight: 500 }}
+                                  >
+                                    {totalValue.toLocaleString()}
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ fontSize: '0.7rem' }}
+                                  >
+                                    XRP Value
+                                  </Typography>
+                                </Box>
+                              </>
+                            ) : (
+                              <Box sx={{ textAlign: 'center' }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  No asset data
+                                </Typography>
+                              </Box>
+                            )}
+                          </Box>
+
+                          {assetDistribution && assetDistribution.labels && (
+                            <Box sx={{ mt: 1 }}>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                {assetDistribution.labels.slice(0, 3).map((label, index) => (
+                                  <Box
+                                    key={index}
+                                    sx={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      p: 0.5,
+                                      borderRadius: 1,
+                                      bgcolor: alpha(theme.palette.background.paper, 0.5),
+                                      fontSize: '0.75rem'
+                                    }}
+                                  >
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                      <Box
+                                        sx={{
+                                          width: 8,
+                                          height: 8,
+                                          borderRadius: '50%',
+                                          bgcolor:
+                                            assetDistribution.datasets[0].backgroundColor[index]
+                                        }}
+                                      />
+                                      <Typography variant="caption" noWrap sx={{ maxWidth: 100 }}>
+                                        {label}
+                                      </Typography>
+                                    </Box>
+                                    <Typography variant="caption" color="text.secondary">
+                                      {assetDistribution.datasets[0].data[index].toLocaleString()}{' '}
+                                      XRP
+                                    </Typography>
+                                  </Box>
+                                ))}
+                              </Box>
+                            </Box>
+                          )}
+                        </Box>
+                      </Grid>
+
+                      {/* Trustlines table */}
+                      <Grid item xs={12} md={8}>
+                        <Paper
+                          sx={{
+                            width: '100%',
+                            overflow: 'hidden',
+                            color: theme.palette.text.primary,
+                            borderRadius: { md: '0 10px 10px 0' },
+                            boxShadow: 'none',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                          }}
+                        >
+                          <TrustLines
+                            account={account}
+                            onUpdateTotalValue={(value) => setTotalValue(value)}
+                            onTrustlinesData={handleTrustlinesData}
+                          />
+                        </Paper>
+                      </Grid>
+                    </Grid>
                   </TabPanel>
                   <TabPanel sx={{ p: 0 }} value="1">
                     <Paper

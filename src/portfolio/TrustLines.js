@@ -56,7 +56,7 @@ const trustlineFlags = {
   lsfHighFreeze: 0x00800000
 };
 
-export default function TrustLines({ account, onUpdateTotalValue }) {
+export default function TrustLines({ account, onUpdateTotalValue, onTrustlinesData }) {
   const BASE_URL = process.env.API_URL;
 
   const theme = useTheme();
@@ -132,13 +132,16 @@ export default function TrustLines({ account, onUpdateTotalValue }) {
       if (typeof onUpdateTotalValue === 'function') {
         onUpdateTotalValue(sum);
       }
+      if (typeof onTrustlinesData === 'function') {
+        onTrustlinesData(lines);
+      }
     } else {
       setTotalValue(0);
       if (typeof onUpdateTotalValue === 'function') {
         onUpdateTotalValue(0);
       }
     }
-  }, [lines, onUpdateTotalValue]);
+  }, [lines, onUpdateTotalValue, onTrustlinesData]);
 
   const tableRef = useRef(null);
 
