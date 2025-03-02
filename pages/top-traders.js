@@ -22,7 +22,8 @@ import {
   TextField,
   InputAdornment,
   Tabs,
-  Tab
+  Tab,
+  Chip
 } from '@mui/material';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import SearchIcon from '@mui/icons-material/Search';
@@ -930,6 +931,20 @@ export default function Analytics() {
                                 >
                                   {abbreviateAddress(trader.address)}
                                 </Typography>
+                                {trader.AMM && (
+                                  <Chip
+                                    label="AMM"
+                                    size="small"
+                                    color="secondary"
+                                    sx={{
+                                      height: 20,
+                                      fontSize: '0.65rem',
+                                      '& .MuiChip-label': {
+                                        px: 1
+                                      }
+                                    }}
+                                  />
+                                )}
                                 <IconButton
                                   size="small"
                                   onClick={(e) => handleRoiClick(trader, e)}
@@ -1088,19 +1103,32 @@ export default function Analytics() {
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
                   <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                     Trader Analytics -{' '}
-                    <Typography
-                      component="a"
-                      href={`/profile/${roiModalTrader.address}`}
-                      sx={{
-                        textDecoration: 'none',
-                        color: 'primary.main',
-                        '&:hover': {
-                          textDecoration: 'underline'
-                        }
-                      }}
-                    >
-                      {roiModalTrader.address}
-                    </Typography>
+                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                      <Typography
+                        component="a"
+                        href={`/profile/${roiModalTrader.address}`}
+                        sx={{
+                          textDecoration: 'none',
+                          color: 'primary.main',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }}
+                      >
+                        {roiModalTrader.address}
+                      </Typography>
+                      {roiModalTrader.AMM && (
+                        <Chip
+                          label="AMM"
+                          size="small"
+                          color="secondary"
+                          sx={{
+                            height: 20,
+                            fontSize: '0.75rem'
+                          }}
+                        />
+                      )}
+                    </Box>
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     First Trade: {new Date(roiModalTrader.firstTradeDate).toLocaleDateString()}
