@@ -194,12 +194,30 @@ const CustomTooltip = ({ active, payload, label }) => {
             const isTokenMarketcap = entry.dataKey && entry.dataKey.endsWith('_marketcap');
             const tokenName = isTokenMarketcap ? entry.dataKey.replace('_marketcap', '') : '';
             const avgPriceKey = `${tokenName}_avgPrice`;
+            const volumeKey = `${tokenName}_volume`;
+            const tradesKey = `${tokenName}_trades`;
+
             const hasAvgPrice =
               isTokenMarketcap &&
               payload.some((p) => p.dataKey === avgPriceKey) &&
               payload.find((p) => p.dataKey === avgPriceKey).value > 0;
+            const hasVolume =
+              isTokenMarketcap &&
+              payload.some((p) => p.dataKey === volumeKey) &&
+              payload.find((p) => p.dataKey === volumeKey).value > 0;
+            const hasTrades =
+              isTokenMarketcap &&
+              payload.some((p) => p.dataKey === tradesKey) &&
+              payload.find((p) => p.dataKey === tradesKey).value > 0;
+
             const avgPrice = hasAvgPrice
               ? payload.find((p) => p.dataKey === avgPriceKey).value
+              : null;
+            const volume = hasVolume
+              ? payload.find((p) => p.dataKey === volumeKey).value
+              : null;
+            const trades = hasTrades
+              ? payload.find((p) => p.dataKey === tradesKey).value
               : null;
 
             return (
@@ -262,6 +280,32 @@ const CustomTooltip = ({ active, payload, label }) => {
                         minimumFractionDigits: 6,
                         maximumFractionDigits: 6
                       })}
+                    </Typography>
+                  )}
+                  {hasVolume && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                        textAlign: 'right'
+                      }}
+                    >
+                      Volume:{' '}
+                      {volume.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })} XRP
+                    </Typography>
+                  )}
+                  {hasTrades && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                        textAlign: 'right'
+                      }}
+                    >
+                      Trades: {trades.toLocaleString()}
                     </Typography>
                   )}
                 </Box>
@@ -637,13 +681,21 @@ const MarketMetricsContent = () => {
             // Process token-specific market caps
             const tokenMarketcaps = {};
             const tokenAvgPrices = {}; // Add object to store average prices
+            const tokenVolumes = {}; // Add object to store token volumes
+            const tokenTrades = {}; // Add object to store token trades
+
             if (item.dailyTokenMarketcaps && Array.isArray(item.dailyTokenMarketcaps)) {
               item.dailyTokenMarketcaps.forEach((token) => {
                 if (token.name && token.marketcap) {
                   const tokenKey = `${token.name}_marketcap`;
                   const priceKey = `${token.name}_avgPrice`; // Create key for average price
+                  const volumeKey = `${token.name}_volume`; // Create key for volume
+                  const tradesKey = `${token.name}_trades`; // Create key for trades
+                  
                   tokenMarketcaps[tokenKey] = Number(token.marketcap.toFixed(2));
                   tokenAvgPrices[priceKey] = Number(token.avgPrice?.toFixed(6) || 0); // Store average price with 6 decimal places
+                  tokenVolumes[volumeKey] = Number(token.volume?.toFixed(2) || 0); // Store volume with 2 decimal places
+                  tokenTrades[tradesKey] = Number(token.trades || 0); // Store trades count
                   uniqueTokens.add(token.name);
                 }
               });
@@ -653,6 +705,8 @@ const MarketMetricsContent = () => {
               ...item,
               ...tokenMarketcaps, // Add token-specific market caps to the data object
               ...tokenAvgPrices, // Add token-specific average prices to the data object
+              ...tokenVolumes, // Add token-specific volumes to the data object
+              ...tokenTrades, // Add token-specific trades to the data object
               date: moment(item.date).format('MMM DD YYYY'), // Added year for clarity in long timespan
               totalMarketcap: Number(item.totalMarketcap.toFixed(2)), // Remove the division by 1000000
               firstLedgerMarketcap: Number(item.firstLedgerMarketcap?.toFixed(2) || 0),
@@ -1414,8 +1468,8 @@ const MarketMetricsContent = () => {
             {selectedDataPoint && (
               <Box
                 sx={{
-                  mt: { xs: 1.5, sm: 2, md: 3 },
-                  p: { xs: 1, sm: 1.5, md: 2 },
+                  mt: { xs: 1.5, sm: 2, md: 3 }, // Reduced margin on mobile
+                  p: { xs: 1, sm: 1.5, md: 2 }, // Reduced padding on mobile
                   backgroundColor:
                     theme.palette.mode === 'dark'
                       ? 'rgba(0, 0, 0, 0.4)'
@@ -1461,15 +1515,20 @@ const MarketMetricsContent = () => {
                     .map((token) => {
                       const marketCapKey = `${token}_marketcap`;
                       const avgPriceKey = `${token}_avgPrice`;
+                      const volumeKey = `${token}_volume`;
+                      const tradesKey = `${token}_trades`;
+                      
                       const marketCap = selectedDataPoint[marketCapKey] || 0;
                       const avgPrice = selectedDataPoint[avgPriceKey] || 0;
+                      const volume = selectedDataPoint[volumeKey] || 0;
+                      const trades = selectedDataPoint[tradesKey] || 0;
 
                       return (
                         <Box
                           key={token}
                           sx={{
                             display: 'flex',
-                            alignItems: 'center',
+                            flexDirection: 'column',
                             mb: 1,
                             p: 1,
                             borderRadius: 1,
@@ -1485,32 +1544,26 @@ const MarketMetricsContent = () => {
                             }
                           }}
                         >
-                          <Box
-                            sx={{
-                              width: 12,
-                              height: 12,
-                              borderRadius: '50%',
-                              backgroundColor: getTokenColor(token, availableTokens.indexOf(token)),
-                              mr: 1.5
-                            }}
-                          />
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: themeColors.text,
-                              fontWeight: 500,
-                              flex: 1
-                            }}
-                          >
-                            {token}
-                          </Typography>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'flex-end'
-                            }}
-                          >
+                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            <Box
+                              sx={{
+                                width: 12,
+                                height: 12,
+                                borderRadius: '50%',
+                                backgroundColor: getTokenColor(token, availableTokens.indexOf(token)),
+                                mr: 1.5
+                              }}
+                            />
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: themeColors.text,
+                                fontWeight: 600,
+                                flex: 1
+                              }}
+                            >
+                              {token}
+                            </Typography>
                             <Typography
                               variant="body2"
                               sx={{
@@ -1524,6 +1577,14 @@ const MarketMetricsContent = () => {
                               })}{' '}
                               XRP
                             </Typography>
+                          </Box>
+                          
+                          <Box sx={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+                            gap: 1,
+                            ml: 3.5
+                          }}>
                             {avgPrice > 0 && (
                               <Typography
                                 variant="caption"
@@ -1536,6 +1597,30 @@ const MarketMetricsContent = () => {
                                   minimumFractionDigits: 6,
                                   maximumFractionDigits: 6
                                 })}
+                              </Typography>
+                            )}
+                            {volume > 0 && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: themeColors.textSecondary
+                                }}
+                              >
+                                Volume:{' '}
+                                {volume.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })} XRP
+                              </Typography>
+                            )}
+                            {trades > 0 && (
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: themeColors.textSecondary
+                                }}
+                              >
+                                Trades: {trades.toLocaleString()}
                               </Typography>
                             )}
                           </Box>
