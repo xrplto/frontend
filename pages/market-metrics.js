@@ -213,12 +213,8 @@ const CustomTooltip = ({ active, payload, label }) => {
             const avgPrice = hasAvgPrice
               ? payload.find((p) => p.dataKey === avgPriceKey).value
               : null;
-            const volume = hasVolume
-              ? payload.find((p) => p.dataKey === volumeKey).value
-              : null;
-            const trades = hasTrades
-              ? payload.find((p) => p.dataKey === tradesKey).value
-              : null;
+            const volume = hasVolume ? payload.find((p) => p.dataKey === volumeKey).value : null;
+            const trades = hasTrades ? payload.find((p) => p.dataKey === tradesKey).value : null;
 
             return (
               <Box
@@ -294,7 +290,8 @@ const CustomTooltip = ({ active, payload, label }) => {
                       {volume.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2
-                      })} XRP
+                      })}{' '}
+                      XRP
                     </Typography>
                   )}
                   {hasTrades && (
@@ -423,7 +420,7 @@ const CustomLegend = ({ payload, visibleLines, handleLegendClick }) => {
 };
 
 // Chart Container Component
-const ChartContainer = ({ title, children }) => {
+const ChartContainer = ({ title, children, showFilter, onFilterChange, filterActive }) => {
   const theme = useTheme();
   const themeColors = getThemeColors(theme);
 
@@ -452,20 +449,76 @@ const ChartContainer = ({ title, children }) => {
         }
       }}
     >
-      <Typography
-        variant="h6"
-        gutterBottom
+      <Box
         sx={{
-          color: themeColors.text,
-          fontWeight: 600,
-          mb: { xs: 1.5, sm: 2, md: 3 }, // Reduced margin on mobile
-          fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' }, // Smaller font on mobile
-          letterSpacing: '0.025em',
-          textShadow: theme.palette.mode === 'dark' ? '0 2px 4px rgba(0, 0, 0, 0.2)' : 'none'
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: { xs: 1.5, sm: 2, md: 3 }
         }}
       >
-        {title}
-      </Typography>
+        <Typography
+          variant="h6"
+          sx={{
+            color: themeColors.text,
+            fontWeight: 600,
+            fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' }, // Smaller font on mobile
+            letterSpacing: '0.025em',
+            textShadow: theme.palette.mode === 'dark' ? '0 2px 4px rgba(0, 0, 0, 0.2)' : 'none'
+          }}
+        >
+          {title}
+        </Typography>
+
+        {showFilter && (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography
+              variant="body2"
+              sx={{
+                mr: 1,
+                color: themeColors.textSecondary,
+                fontSize: { xs: '0.7rem', sm: '0.8rem' }
+              }}
+            >
+              Hide PLR, XRPS, mula
+            </Typography>
+            <Box
+              onClick={onFilterChange}
+              sx={{
+                width: { xs: 36, sm: 42 },
+                height: { xs: 20, sm: 24 },
+                backgroundColor: filterActive
+                  ? theme.palette.mode === 'dark'
+                    ? 'rgba(59, 130, 246, 0.8)'
+                    : '#3B82F6'
+                  : theme.palette.mode === 'dark'
+                  ? 'rgba(255, 255, 255, 0.2)'
+                  : 'rgba(0, 0, 0, 0.2)',
+                borderRadius: 12,
+                position: 'relative',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 2px'
+              }}
+            >
+              <Box
+                sx={{
+                  width: { xs: 16, sm: 20 },
+                  height: { xs: 16, sm: 20 },
+                  backgroundColor: theme.palette.mode === 'dark' ? '#FFFFFF' : '#FFFFFF',
+                  borderRadius: '50%',
+                  position: 'absolute',
+                  left: filterActive ? 'calc(100% - 22px)' : '2px',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)'
+                }}
+              />
+            </Box>
+          </Box>
+        )}
+      </Box>
       {children}
     </Paper>
   );
@@ -647,6 +700,10 @@ const MarketMetricsContent = () => {
   // Move the useMediaQuery hook to the top level, not inside a conditional
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  // Add this after the visibleLines state declaration
+  const [hideSpecificTokens, setHideSpecificTokens] = useState(false);
+  const tokensToFilter = ['PLR', 'XRPS', 'mula']; // Tokens to potentially hide
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -691,7 +748,7 @@ const MarketMetricsContent = () => {
                   const priceKey = `${token.name}_avgPrice`; // Create key for average price
                   const volumeKey = `${token.name}_volume`; // Create key for volume
                   const tradesKey = `${token.name}_trades`; // Create key for trades
-                  
+
                   tokenMarketcaps[tokenKey] = Number(token.marketcap.toFixed(2));
                   tokenAvgPrices[priceKey] = Number(token.avgPrice?.toFixed(6) || 0); // Store average price with 6 decimal places
                   tokenVolumes[volumeKey] = Number(token.volume?.toFixed(2) || 0); // Store volume with 2 decimal places
@@ -898,7 +955,12 @@ const MarketMetricsContent = () => {
 
         {/* Tab Panel 0: Market Cap by DEX */}
         {activeTab === 0 && (
-          <ChartContainer title="Market Cap by DEX (XRP)">
+          <ChartContainer
+            title="Market Cap by DEX (XRP)"
+            showFilter={true}
+            onFilterChange={() => setHideSpecificTokens(!hideSpecificTokens)}
+            filterActive={hideSpecificTokens}
+          >
             {/* Add time range selector */}
             <Box
               sx={{
@@ -958,12 +1020,34 @@ const MarketMetricsContent = () => {
             </Box>
 
             <Box sx={{ height: { xs: 300, sm: 350, md: 400 } }}>
-              {' '}
-              {/* Smaller height on mobile */}
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   ref={chartRef}
-                  data={progressiveData}
+                  data={progressiveData.map((dataPoint) => {
+                    if (hideSpecificTokens) {
+                      // Create a filtered copy of the data point
+                      const filteredDataPoint = { ...dataPoint };
+
+                      // Calculate the total marketcap excluding filtered tokens
+                      let filteredTotalMarketcap = dataPoint.totalMarketcap;
+
+                      // Subtract the marketcap of filtered tokens
+                      tokensToFilter.forEach((token) => {
+                        const tokenMarketcapKey = `${token}_marketcap`;
+                        if (filteredDataPoint[tokenMarketcapKey]) {
+                          filteredTotalMarketcap -= filteredDataPoint[tokenMarketcapKey];
+                          // Remove the token's marketcap from the data point
+                          delete filteredDataPoint[tokenMarketcapKey];
+                        }
+                      });
+
+                      // Update the total marketcap
+                      filteredDataPoint.totalMarketcap = filteredTotalMarketcap;
+
+                      return filteredDataPoint;
+                    }
+                    return dataPoint;
+                  })}
                   margin={isMobile ? chartConfig.mobileMargin : chartConfig.margin}
                   isAnimationActive={false}
                   onClick={(data) => {
@@ -1146,11 +1230,33 @@ const MarketMetricsContent = () => {
                     maximumFractionDigits: 2
                   })}{' '}
                   XRP
+                  {hideSpecificTokens && (
+                    <Typography
+                      component="span"
+                      variant="caption"
+                      sx={{
+                        ml: 1,
+                        color:
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255, 255, 255, 0.6)'
+                            : 'rgba(0, 0, 0, 0.6)',
+                        fontStyle: 'italic'
+                      }}
+                    >
+                      (excluding PLR, XRPS, mula)
+                    </Typography>
+                  )}
                 </Typography>
 
                 <Box>
                   {Object.keys(selectedDataPoint)
-                    .filter((key) => key.endsWith('_marketcap') && selectedDataPoint[key] > 0)
+                    .filter(
+                      (key) =>
+                        key.endsWith('_marketcap') &&
+                        selectedDataPoint[key] > 0 &&
+                        (!hideSpecificTokens ||
+                          !tokensToFilter.includes(key.replace('_marketcap', '')))
+                    )
                     .sort((a, b) => selectedDataPoint[b] - selectedDataPoint[a])
                     .map((key) => {
                       const tokenName = key.replace('_marketcap', '');
@@ -1235,7 +1341,12 @@ const MarketMetricsContent = () => {
 
         {/* Tab Panel 1: Token Market Caps */}
         {activeTab === 1 && (
-          <ChartContainer title="Token Market Caps (XRP)">
+          <ChartContainer
+            title="Token Market Caps (XRP)"
+            showFilter={true}
+            onFilterChange={() => setHideSpecificTokens(!hideSpecificTokens)}
+            filterActive={hideSpecificTokens}
+          >
             {/* Add time range selector and token selector in a more compact layout */}
             <Box
               sx={{
@@ -1256,8 +1367,14 @@ const MarketMetricsContent = () => {
                 <Autocomplete
                   multiple
                   id="token-selector"
-                  options={availableTokens}
-                  value={selectedTokens}
+                  options={
+                    hideSpecificTokens
+                      ? availableTokens.filter((token) => !tokensToFilter.includes(token))
+                      : availableTokens
+                  }
+                  value={selectedTokens.filter(
+                    (token) => !hideSpecificTokens || !tokensToFilter.includes(token)
+                  )}
                   onChange={handleTokenSelection}
                   size={isMobile ? 'small' : 'medium'} // Use smaller input on mobile
                   renderInput={(params) => (
@@ -1517,7 +1634,7 @@ const MarketMetricsContent = () => {
                       const avgPriceKey = `${token}_avgPrice`;
                       const volumeKey = `${token}_volume`;
                       const tradesKey = `${token}_trades`;
-                      
+
                       const marketCap = selectedDataPoint[marketCapKey] || 0;
                       const avgPrice = selectedDataPoint[avgPriceKey] || 0;
                       const volume = selectedDataPoint[volumeKey] || 0;
@@ -1550,7 +1667,10 @@ const MarketMetricsContent = () => {
                                 width: 12,
                                 height: 12,
                                 borderRadius: '50%',
-                                backgroundColor: getTokenColor(token, availableTokens.indexOf(token)),
+                                backgroundColor: getTokenColor(
+                                  token,
+                                  availableTokens.indexOf(token)
+                                ),
                                 mr: 1.5
                               }}
                             />
@@ -1578,13 +1698,15 @@ const MarketMetricsContent = () => {
                               XRP
                             </Typography>
                           </Box>
-                          
-                          <Box sx={{ 
-                            display: 'grid', 
-                            gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
-                            gap: 1,
-                            ml: 3.5
-                          }}>
+
+                          <Box
+                            sx={{
+                              display: 'grid',
+                              gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
+                              gap: 1,
+                              ml: 3.5
+                            }}
+                          >
                             {avgPrice > 0 && (
                               <Typography
                                 variant="caption"
@@ -1610,7 +1732,8 @@ const MarketMetricsContent = () => {
                                 {volume.toLocaleString(undefined, {
                                   minimumFractionDigits: 2,
                                   maximumFractionDigits: 2
-                                })} XRP
+                                })}{' '}
+                                XRP
                               </Typography>
                             )}
                             {trades > 0 && (
