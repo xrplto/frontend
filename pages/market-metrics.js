@@ -480,7 +480,7 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
                 fontSize: { xs: '0.7rem', sm: '0.8rem' }
               }}
             >
-              Hide PLR, XRPS, mula
+              Hide PLR, XRPS, mula, XAH
             </Typography>
             <Box
               onClick={onFilterChange}
@@ -702,7 +702,7 @@ const MarketMetricsContent = () => {
 
   // Add this after the visibleLines state declaration
   const [hideSpecificTokens, setHideSpecificTokens] = useState(false);
-  const tokensToFilter = ['PLR', 'XRPS', 'mula']; // Tokens to potentially hide
+  const tokensToFilter = ['PLR', 'XRPS', 'mula', 'XAH']; // Tokens to potentially hide
 
   useEffect(() => {
     const fetchData = async () => {
@@ -1243,7 +1243,7 @@ const MarketMetricsContent = () => {
                         fontStyle: 'italic'
                       }}
                     >
-                      (excluding PLR, XRPS, mula)
+                      (excluding PLR, XRPS, mula, XAH)
                     </Typography>
                   )}
                 </Typography>
