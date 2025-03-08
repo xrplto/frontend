@@ -759,7 +759,8 @@ const MarketMetricsContent = () => {
               ...tokenAvgPrices, // Add token-specific average prices to the data object
               ...tokenVolumes, // Add token-specific volumes to the data object
               ...tokenTrades, // Add token-specific trades to the data object
-              date: moment(item.date).format('MMM DD YYYY'), // Added year for clarity in long timespan
+              // Fix the date format to match the API response format
+              date: moment.utc(item.date).format('MMM DD YYYY'), // Use UTC to avoid timezone issues
               totalMarketcap: Number(item.totalMarketcap.toFixed(2)), // Remove the division by 1000000
               firstLedgerMarketcap: Number(item.firstLedgerMarketcap?.toFixed(2) || 0),
               magneticXMarketcap: Number(item.magneticXMarketcap?.toFixed(2) || 0),
