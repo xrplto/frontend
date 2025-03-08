@@ -636,12 +636,7 @@ const MarketMetricsContent = () => {
       );
     }
 
-    // Sample data if there are too many points
-    if (filteredData.length > 500) {
-      const sampleRate = Math.ceil(filteredData.length / 500);
-      return filteredData.filter((_, index) => index % sampleRate === 0);
-    }
-
+    // Return all data points without sampling to ensure daily data
     return filteredData;
   }, []);
 
