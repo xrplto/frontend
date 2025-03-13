@@ -131,10 +131,10 @@
     "xrpl": "^3.1.0"
   },
   "scripts": {
-    "dev": "next",
+    "dev": "next dev -p 3001",
     "build": "next build",
     "builds": "next build && next export",
-    "start": "next start",
+    "start": "next start -p 3001",
     "analyze": "set \"ANALYZE=true\" && next build",
     "production": "next start -p 80",
     "export": "next export",
