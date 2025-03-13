@@ -166,6 +166,16 @@ export default function Header(props) {
     const initializeCrossmark = async () => {
       if (isDesktop && typeof window !== 'undefined') {
         try {
+          // Check if we're in a desktop browser environment before importing
+          const userAgent = window.navigator.userAgent.toLowerCase();
+          const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+            userAgent
+          );
+
+          if (isMobile) {
+            return; // Don't attempt to load Crossmark on mobile devices
+          }
+
           // Dynamically import the SDK
           const { default: CrossmarkSDK } = await import('@crossmarkio/sdk');
 
@@ -185,7 +195,8 @@ export default function Header(props) {
             };
           }
         } catch (error) {
-          console.error('Failed to load Crossmark SDK:', error);
+          // Log error but don't display to user
+          console.debug('Crossmark SDK not available:', error);
         }
       }
     };
