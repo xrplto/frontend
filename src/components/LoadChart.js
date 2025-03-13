@@ -5,7 +5,7 @@ import { useTheme } from '@mui/material/styles';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
 import Decimal from 'decimal.js';
 
-const LoadChart = ({ url }) => {
+const LoadChart = ({ url, ...props }) => {
   const theme = useTheme();
   const [chartOption, setChartOption] = useState(null);
   const [isError, setIsError] = useState(false);
@@ -168,18 +168,19 @@ const LoadChart = ({ url }) => {
 
   if (isError || !chartOption) return null;
 
+  const option = {
+    width: '100%',
+    height: '100%',
+    ...chartOption
+  };
+
   return (
     <LazyLoadComponent threshold={100}>
       <ReactECharts
-        option={chartOption}
-        style={{ height: 48, width: 200 }}
-        opts={{
-          renderer: 'svg',
-          width: 'auto',
-          height: 'auto'
-        }}
-        notMerge={true}
-        lazyUpdate={true}
+        option={option}
+        style={{ height: '100%', width: '100%' }}
+        opts={{ renderer: 'svg' }}
+        {...props}
       />
     </LazyLoadComponent>
   );

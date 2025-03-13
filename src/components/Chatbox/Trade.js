@@ -727,7 +727,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
 
   const renderSelectedAssets = (assets) => (
     <Box>
-      {assets.map((asset) => (
+      {assets && assets.map((asset) => (
         <Typography key={asset.NFTokenID || asset.id} variant="body2">
           {asset.meta?.name || asset.meta?.Name || 'Unnamed NFT'} ({asset.NFTokenID || asset.id})
         </Typography>
@@ -837,7 +837,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
     return loggedInUserHasItem && partnerHasItem && noBalanceWarnings && noTrustlineWarnings;
   };
 
-  // Move the check here, after all hooks have been called
+  // Update the check here, after all hooks have been called
   if (!accountProfile || !tradePartner) {
     return null; // or return a loading indicator
   }
@@ -891,12 +891,16 @@ const Trade = ({ open, onClose, tradePartner }) => {
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 Select Assets to Offer:
               </Typography>
-              <TradeNFTPicker
-                onSelect={handleLoggedInUserAssetSelect}
-                account={accountProfile.account}
-                isPartner={false}
-                selectedAssets={selectedLoggedInUserAssets}
-              />
+              {accountProfile && accountProfile.account ? (
+                <TradeNFTPicker
+                  onSelect={handleLoggedInUserAssetSelect}
+                  account={accountProfile.account}
+                  isPartner={false}
+                  selectedAssets={selectedLoggedInUserAssets}
+                />
+              ) : (
+                <Typography variant="body2" color="text.secondary">Loading your assets...</Typography>
+              )}
               {nftWarning && (
                 <Box mt={2} p={2} bgcolor="warning.light" borderRadius={2}>
                   <Typography
@@ -939,12 +943,16 @@ const Trade = ({ open, onClose, tradePartner }) => {
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 Select Assets to Request:
               </Typography>
-              <TradeNFTPicker
-                onSelect={handlePartnerAssetSelect}
-                account={tradePartner.username}
-                isPartner={true}
-                selectedAssets={selectedPartnerAssets} // Pass selected assets
-              />
+              {tradePartner && tradePartner.username ? (
+                <TradeNFTPicker
+                  onSelect={handlePartnerAssetSelect}
+                  account={tradePartner.username}
+                  isPartner={true}
+                  selectedAssets={selectedPartnerAssets}
+                />
+              ) : (
+                <Typography variant="body2" color="text.secondary">Loading partner's assets...</Typography>
+              )}
               <Box mt={3}>
                 <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                   Selected Assets:
@@ -969,7 +977,7 @@ const Trade = ({ open, onClose, tradePartner }) => {
           variant="contained"
           color="primary"
           startIcon={<SwapHorizIcon />}
-          disabled={!isTradeValid()} // Disable the button if the trade is not valid
+          disabled={!isTradeValid()}
         >
           Propose Exchange
         </StyledButton>

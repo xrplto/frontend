@@ -115,23 +115,28 @@ const formatDate = (dateString) => {
   return `${days}d ${hours}h`;
 };
 
-// Update XPMarketIcon to use forwardRef
-const XPMarketIcon = React.forwardRef((props, ref) => (
-  <SvgIcon {...props} ref={ref} viewBox="0 0 32 32">
-    <path
-      d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
-      fill="inherit"
-    />
-    <path
-      d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
-      fill="inherit"
-    />
-    <path
-      d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
-      fill="inherit"
-    />
-  </SvgIcon>
-));
+// Update XPMarketIcon to use forwardRef and ensure proper width handling
+const XPMarketIcon = React.forwardRef((props, ref) => {
+  // Remove any width="auto" that might be in props
+  const { width, ...otherProps } = props;
+
+  return (
+    <SvgIcon {...otherProps} ref={ref} viewBox="0 0 32 32">
+      <path
+        d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
+        fill="inherit"
+      />
+      <path
+        d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
+        fill="inherit"
+      />
+      <path
+        d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
+        fill="inherit"
+      />
+    </SvgIcon>
+  );
+});
 
 // Add display name for better debugging
 XPMarketIcon.displayName = 'XPMarketIcon';
@@ -221,7 +226,7 @@ function FTokenRow({
       '& .MuiTableCell-root': {
         padding: isMobile ? '1px 1px' : '1px 2px',
         whiteSpace: 'nowrap',
-        '&:not(:first-child)': {
+        '&:not(:first-of-type)': {
           paddingLeft: '4px'
         }
       }
@@ -693,7 +698,11 @@ function FTokenRow({
           placeholder={<Box sx={{ width: 160, height: 48, minWidth: 160, minHeight: 48 }} />}
         >
           <Box sx={{ width: 160, height: 48, minWidth: 160, minHeight: 48 }}>
-            <LoadChart url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`} />
+            <LoadChart
+              url={`${BASE_URL}/sparkline/${md5}?period=24h&${pro24h}`}
+              style={{ width: '100%', height: '100%' }}
+              opts={{ renderer: 'svg', width: 160, height: 48 }}
+            />
           </Box>
         </LazyLoadComponent>
       </TableCell>
