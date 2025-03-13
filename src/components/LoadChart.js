@@ -3,6 +3,7 @@ import { useEffect, useState, useMemo, memo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { useTheme } from '@mui/material/styles';
 import { LazyLoadComponent } from 'react-lazy-load-image-component';
+import Decimal from 'decimal.js';
 
 const LoadChart = ({ url }) => {
   const theme = useTheme();
@@ -12,13 +13,37 @@ const LoadChart = ({ url }) => {
   // Memoize the chart options creation function
   const createChartOptions = useMemo(
     () => (data) => {
-      const { coodinate, chartColor } = data;
+      const { chartColor, data: chartData } = data;
 
-      // Invert the negative values to fix upside-down chart
-      const normalizedCoordinates = coodinate.map(([x, y]) => {
-        // If y is negative, make it positive (invert it)
-        return [x, y < 0 ? Math.abs(y) : y];
-      });
+      // Parse prices as Decimal objects to handle very small numbers correctly
+      // Then normalize the values for display while preserving the shape
+      const priceCoordinates = [];
+      if (chartData?.prices?.length) {
+        // Find min and max to normalize values
+        let minPrice = new Decimal(chartData.prices[0]);
+        let maxPrice = new Decimal(chartData.prices[0]);
+
+        chartData.prices.forEach((price) => {
+          const decPrice =
+            typeof price === 'string' ? new Decimal(price) : new Decimal(price.toString());
+          if (decPrice.lt(minPrice)) minPrice = decPrice;
+          if (decPrice.gt(maxPrice)) maxPrice = decPrice;
+        });
+
+        // Calculate range for normalization
+        const range = maxPrice.minus(minPrice);
+
+        // Create normalized coordinates that preserve the shape
+        chartData.prices.forEach((price, index) => {
+          const decPrice =
+            typeof price === 'string' ? new Decimal(price) : new Decimal(price.toString());
+          // Normalize to values between 0 and 100 for better display
+          const normalizedValue = range.isZero()
+            ? 50
+            : decPrice.minus(minPrice).div(range).times(100).toNumber();
+          priceCoordinates.push([index, normalizedValue]);
+        });
+      }
 
       return {
         grid: {
@@ -44,6 +69,13 @@ const LoadChart = ({ url }) => {
             color: '#fff',
             fontSize: 12
           },
+          formatter: function (params) {
+            // Format the tooltip to show the full decimal value
+            const value = params[0].value[1];
+            const formattedValue =
+              typeof value === 'object' && value.toString ? value.toString() : value;
+            return formattedValue;
+          },
           padding: [8, 12]
         },
         xAxis: {
@@ -58,7 +90,7 @@ const LoadChart = ({ url }) => {
         },
         series: [
           {
-            data: normalizedCoordinates,
+            data: priceCoordinates,
             type: 'line',
             color:
               chartColor === '#54D62C'
