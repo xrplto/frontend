@@ -41,7 +41,7 @@ function Logo({ style }) {
   };
 
   return (
-    <a href="/" style={logoStyle} onClick={handleClick}>
+    <NextLink href="/" onClick={handleClick} style={logoStyle}>
       {imageError ? (
         <Box
           sx={{
@@ -70,7 +70,7 @@ function Logo({ style }) {
           onError={handleImageError}
         />
       )}
-    </a>
+    </NextLink>
   );
 }
 
