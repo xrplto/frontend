@@ -115,9 +115,9 @@ const formatDate = (dateString) => {
   return `${days}d ${hours}h`;
 };
 
-// Add XPMarket icon component
-const XPMarketIcon = (props) => (
-  <SvgIcon {...props} viewBox="0 0 32 32">
+// Update XPMarketIcon to use forwardRef
+const XPMarketIcon = React.forwardRef((props, ref) => (
+  <SvgIcon {...props} ref={ref} viewBox="0 0 32 32">
     <path
       d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
       fill="inherit"
@@ -131,7 +131,10 @@ const XPMarketIcon = (props) => (
       fill="inherit"
     />
   </SvgIcon>
-);
+));
+
+// Add display name for better debugging
+XPMarketIcon.displayName = 'XPMarketIcon';
 
 const getOriginIcon = (origin) => {
   switch (origin) {

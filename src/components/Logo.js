@@ -4,6 +4,8 @@ import { Box, Skeleton } from '@mui/material';
 import NextLink from 'next/link';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
+import React from 'react';
+import Link from 'next/link';
 
 import { AppContext } from 'src/AppContext';
 
@@ -41,36 +43,38 @@ function Logo({ style }) {
   };
 
   return (
-    <NextLink href="/" onClick={handleClick} style={logoStyle}>
-      {imageError ? (
-        <Box
-          sx={{
-            width: '125px',
-            height: '46px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: darkMode ? 'white' : 'black'
-          }}
-        >
-          XRPL.to
-        </Box>
-      ) : (
-        <Image
-          src={img}
-          width={125}
-          height={46}
-          alt="XRPL.to Logo"
-          priority
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain'
-          }}
-          onError={handleImageError}
-        />
-      )}
-    </NextLink>
+    <Link href="/" passHref legacyBehavior>
+      <a>
+        {imageError ? (
+          <Box
+            sx={{
+              width: '125px',
+              height: '46px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: darkMode ? 'white' : 'black'
+            }}
+          >
+            XRPL.to
+          </Box>
+        ) : (
+          <Image
+            src={img}
+            width={125}
+            height={46}
+            alt="XRPL.to Logo"
+            priority
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain'
+            }}
+            onError={handleImageError}
+          />
+        )}
+      </a>
+    </Link>
   );
 }
 
