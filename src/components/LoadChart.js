@@ -13,6 +13,13 @@ const LoadChart = ({ url }) => {
   const createChartOptions = useMemo(
     () => (data) => {
       const { coodinate, chartColor } = data;
+
+      // Invert the negative values to fix upside-down chart
+      const normalizedCoordinates = coodinate.map(([x, y]) => {
+        // If y is negative, make it positive (invert it)
+        return [x, y < 0 ? Math.abs(y) : y];
+      });
+
       return {
         grid: {
           left: 0,
@@ -51,7 +58,7 @@ const LoadChart = ({ url }) => {
         },
         series: [
           {
-            data: coodinate,
+            data: normalizedCoordinates,
             type: 'line',
             color:
               chartColor === '#54D62C'
