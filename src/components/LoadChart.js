@@ -18,6 +18,7 @@ const LoadChart = ({ url, ...props }) => {
       // Parse prices as Decimal objects to handle very small numbers correctly
       // Then normalize the values for display while preserving the shape
       const priceCoordinates = [];
+      const originalPrices = [];
       if (chartData?.prices?.length) {
         // Find min and max to normalize values
         let minPrice = new Decimal(chartData.prices[0]);
@@ -37,6 +38,8 @@ const LoadChart = ({ url, ...props }) => {
         chartData.prices.forEach((price, index) => {
           const decPrice =
             typeof price === 'string' ? new Decimal(price) : new Decimal(price.toString());
+          // Store original price for tooltip
+          originalPrices[index] = price;
           // Normalize to values between 0 and 100 for better display
           const normalizedValue = range.isZero()
             ? 50
@@ -56,11 +59,7 @@ const LoadChart = ({ url, ...props }) => {
         tooltip: {
           trigger: 'axis',
           axisPointer: {
-            type: 'cross',
-            animation: false,
-            label: {
-              backgroundColor: '#202020'
-            }
+            type: 'none'
           },
           backgroundColor: 'rgba(32, 32, 32, 0.9)',
           borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -70,11 +69,21 @@ const LoadChart = ({ url, ...props }) => {
             fontSize: 12
           },
           formatter: function (params) {
-            // Format the tooltip to show the full decimal value
-            const value = params[0].value[1];
-            const formattedValue =
-              typeof value === 'object' && value.toString ? value.toString() : value;
-            return formattedValue;
+            // Get the index from the x-value of the data point
+            const index = params[0].value[0];
+            // Use the original price value from our stored array
+            const originalPrice = originalPrices[index];
+            // Get the timestamp from the data
+            const timestamp = chartData.timestamps[index];
+            // Format timestamp to readable date/time
+            const date = new Date(timestamp);
+            const formattedDate = date.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+
+            // Return only the formatted date and price
+            return `${formattedDate}<br/>Price: ${originalPrice}`;
           },
           padding: [8, 12]
         },
@@ -92,22 +101,12 @@ const LoadChart = ({ url, ...props }) => {
           {
             data: priceCoordinates,
             type: 'line',
-            color:
-              chartColor === '#54D62C'
-                ? theme.palette.primary.light
-                : chartColor === '#FF6C40'
-                ? theme.palette.error.main
-                : chartColor,
+            color: chartColor,
             showSymbol: false,
             symbolSize: 0,
             lineStyle: {
               width: 2,
-              shadowColor:
-                chartColor === '#54D62C'
-                  ? theme.palette.primary.light
-                  : chartColor === '#FF6C40'
-                  ? theme.palette.error.main
-                  : chartColor,
+              shadowColor: chartColor,
               shadowBlur: 10,
               shadowOffsetY: 5,
               cap: 'round'
@@ -166,18 +165,13 @@ const LoadChart = ({ url, ...props }) => {
     };
   }, [url, fetchChartData, createChartOptions]);
 
-  if (isError || !chartOption) return null;
-
-  const option = {
-    width: '100%',
-    height: '100%',
-    ...chartOption
-  };
+  if (isError) return null;
+  if (!chartOption) return null; // Add this check to prevent rendering with null options
 
   return (
     <LazyLoadComponent threshold={100}>
       <ReactECharts
-        option={option}
+        option={chartOption}
         style={{ height: '100%', width: '100%' }}
         opts={{ renderer: 'svg' }}
         {...props}
