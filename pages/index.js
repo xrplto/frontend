@@ -164,12 +164,24 @@ export async function getStaticProps() {
   if (data) {
     let ogp = {};
 
+    // Enhanced SEO metadata
     ogp.canonical = 'https://xrpl.to';
-    ogp.title = 'XRPL Token Prices: Charts, Market Volume, and Activity Insights';
+    ogp.title = 'XRPL Token Prices | Real-Time Charts & Market Data | XRP Ledger';
     ogp.url = 'https://xrpl.to/';
     ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
     ogp.desc =
-      'Discover the latest XRPL DEX token prices and charts, ranked by 24-hour trading volume. Access real-time and historical data for the XRP ecosystem. Browse a comprehensive list of all XRPL tokens, updated automatically.';
+      'Track real-time XRPL token prices, charts, and market activity. Compare tokens by volume, price changes, and market cap. The most comprehensive XRP Ledger token explorer updated in real-time.';
+
+    // Additional structured metadata for better SEO
+    ogp.keywords =
+      'XRPL, XRP Ledger, cryptocurrency prices, token charts, crypto market data, DEX tokens, XRP ecosystem';
+    ogp.type = 'website';
+    ogp.siteName = 'XRPL.to';
+    ogp.locale = 'en_US';
+
+    // Twitter card metadata
+    ogp.twitterCard = 'summary_large_image';
+    ogp.twitterCreator = '@xrplto';
 
     ret = { data, ogp };
   }
