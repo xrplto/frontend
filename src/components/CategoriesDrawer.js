@@ -7,8 +7,20 @@ import CategoryIcon from '@mui/icons-material/Category';
 import Drawer from './Drawer';
 import { AppContext } from 'src/AppContext';
 
-export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, normalizeTag, md5 }) {
+export default function CategoriesDrawer({ tags, isOpen, toggleDrawer, md5 }) {
   const { darkMode } = useContext(AppContext);
+
+  // Define normalizeTag function within the component
+  const normalizeTag = (tag) => {
+    if (tag && tag.length > 0) {
+      const tag1 = tag.split(' ').join('-'); // Replace space
+      const tag2 = tag1.replace(/&/g, 'and'); // Replace &
+      const tag3 = tag2.toLowerCase(); // Make lowercase
+      const final = tag3.replace(/[^a-zA-Z0-9-]/g, '');
+      return final;
+    }
+    return '';
+  };
 
   return (
     <Drawer

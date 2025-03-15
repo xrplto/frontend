@@ -805,7 +805,6 @@ export default function SearchToolbar({
           isOpen={openCategoriesDrawer}
           toggleDrawer={toggleCategoriesDrawer}
           tags={tags}
-          normalizeTag={normalizeTag}
         />
 
         <Menu
