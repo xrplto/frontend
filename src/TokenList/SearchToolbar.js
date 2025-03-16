@@ -182,12 +182,14 @@ export default function SearchToolbar({
   const [openCategoriesDrawer, setOpenCategoriesDrawer] = useState(false);
   const [gainersAnchorEl, setGainersAnchorEl] = useState(null);
   const [tokensAnchorEl, setTokensAnchorEl] = useState(null);
+  const [trendingCategoriesAnchorEl, setTrendingCategoriesAnchorEl] = useState(null);
   const [isLoading, setIsLoading] = useState({
     new: false,
     gainers: false,
     mostViewed: false,
     spotlight: false,
-    trending: false
+    trending: false,
+    trendingCategories: false
   });
 
   // Get current sorting period from URL
@@ -290,6 +292,27 @@ export default function SearchToolbar({
     }
   }, []);
 
+  const handleTrendingCategoriesClick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setTrendingCategoriesAnchorEl(event.currentTarget);
+  };
+
+  const handleTrendingCategoriesClose = () => {
+    setTrendingCategoriesAnchorEl(null);
+  };
+
+  const handleCategorySelect = useCallback(async (category) => {
+    setIsLoading((prev) => ({ ...prev, trendingCategories: true }));
+    try {
+      // Use the view path format with lowercase category
+      window.location.href = `/view/${category.toLowerCase()}`;
+    } finally {
+      setIsLoading((prev) => ({ ...prev, trendingCategories: false }));
+      handleTrendingCategoriesClose();
+    }
+  }, []);
+
   const ShadowContent = styled('div')(
     ({ theme }) => `
         -webkit-box-flex: 1;
@@ -311,6 +334,50 @@ export default function SearchToolbar({
         }
     `
   );
+
+  // Define trending categories from the existing tags
+  // These would typically be determined by popularity metrics
+  const getTrendingCategories = useCallback(() => {
+    if (!tags || tags.length === 0) return [];
+    
+    // Map colors to categories
+    const categoryColors = {
+      'defi': '#FF5630',
+      'meme': '#FFAB00',
+      'ai': '#36B37E',
+      'gaming': '#9155FD',
+      'nft': '#2499EF',
+      'metaverse': '#7635DC',
+      'exchange': '#00AB55',
+      'privacy': '#B71D18'
+    };
+    
+    // Select 4 popular categories from tags
+    // In a real app, these would be determined by analytics
+    const popularCategories = ['defi', 'meme', 'ai', 'gaming'].filter(cat => 
+      tags.includes(cat)
+    );
+    
+    // If we don't have enough categories from our predefined list, add more from tags
+    let result = [...popularCategories];
+    let i = 0;
+    while (result.length < 4 && i < tags.length) {
+      const tag = tags[i];
+      if (!result.includes(tag)) {
+        result.push(tag);
+      }
+      i++;
+    }
+    
+    // Map to the format we need
+    return result.slice(0, 4).map(cat => ({
+      name: cat.charAt(0).toUpperCase() + cat.slice(1), // Capitalize first letter
+      tag: cat,
+      color: categoryColors[cat] || '#637381' // Use predefined color or default
+    }));
+  }, [tags]);
+
+  const trendingCategories = getTrendingCategories();
 
   return (
     <>
@@ -752,6 +819,38 @@ export default function SearchToolbar({
               paddingRight: 0
             }}
           />
+
+          {/* Trending Categories */}
+          {trendingCategories.map((category) => (
+            <Tab
+              key={category.tag}
+              disableRipple
+              label={
+                <Chip
+                  size="small"
+                  icon={<WhatshotIcon sx={{ fontSize: '16px', color: category.color }} />}
+                  label={category.name}
+                  onClick={() => handleCategorySelect(category.tag)}
+                  sx={{
+                    borderRadius: '4px',
+                    height: '24px',
+                    backgroundColor: alpha(category.color, darkMode ? 0.16 : 0.08),
+                    color: darkMode ? category.color : alpha(category.color, 0.8),
+                    '&:hover': {
+                      backgroundColor: alpha(category.color, darkMode ? 0.24 : 0.16)
+                    },
+                    '& .MuiChip-label': {
+                      px: 1
+                    }
+                  }}
+                />
+              }
+              style={{
+                paddingLeft: 0,
+                paddingRight: 0
+              }}
+            />
+          ))}
 
           {/* Categories Tab */}
           <Tab
