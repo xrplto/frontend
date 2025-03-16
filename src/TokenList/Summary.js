@@ -223,12 +223,7 @@ export default function Summary() {
                     {fNumberWithSuffix(Number(gMarketcap))}
                   </MetricValue>
                   <ContentTypography sx={{ fontSize: '0.75rem' }}>
-                    <BearBull
-                      value={gMarketcapPro}
-                      sx={{ display: 'inline-flex', mr: 0.5, fontSize: '0.75rem' }}
-                    />
-                    {gMarketcapPro < 0 ? '-' : '+'}
-                    {Math.abs(gMarketcapPro).toFixed(2)}%
+                    {gMarketcapPro >= 0 ? '↑' : '↓'} {Math.abs(gMarketcapPro).toFixed(2)}%
                   </ContentTypography>
                 </div>
               </MetricBox>
@@ -244,12 +239,7 @@ export default function Summary() {
                     {fNumberWithSuffix(gDexVolume)}
                   </MetricValue>
                   <ContentTypography sx={{ fontSize: '0.75rem' }}>
-                    <BearBull
-                      value={gDexVolumePro}
-                      sx={{ display: 'inline-flex', mr: 0.5, fontSize: '0.75rem' }}
-                    />
-                    {gDexVolumePro < 0 ? '-' : '+'}
-                    {Math.abs(gDexVolumePro).toFixed(2)}%
+                    {gDexVolumePro >= 0 ? '↑' : '↓'} {Math.abs(gDexVolumePro).toFixed(2)}%
                   </ContentTypography>
                 </div>
               </MetricBox>
