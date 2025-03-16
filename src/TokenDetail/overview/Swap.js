@@ -75,7 +75,6 @@ const OverviewWrapper = styled('div')(
     display: flex;
     border: ${theme.palette.divider};
     padding-bottom: 10px;
-    max-width: 600px;
     width: 100%;
     background-color: ${theme.palette.background.default};
     @media (max-width: 600px) {
@@ -131,7 +130,7 @@ const ToggleContent = styled('div')(
 const ExchangeButton = styled(Button)(
   ({ theme }) => `
     width: 100%;
-    max-width: 600px;
+    max-width: 100%;
     position: relative;
     overflow: hidden;
     border-radius: 12px;
