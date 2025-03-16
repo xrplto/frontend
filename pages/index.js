@@ -102,11 +102,12 @@ function Overview({ data }) {
       <Header />
       {isMobile ? <Topbar /> : ''}
 
+      <Box sx={{ width: '100%', px: { xs: 1, sm: 2, md: 3 } }}>
+        <Summary />
+      </Box>
+
       <Container maxWidth="xl">
         <Grid container direction="row" justifyContent="left" alignItems="stretch" spacing={3}>
-          <Grid item xs={12} md={12} lg={8}>
-            <Summary />
-          </Grid>
           <Grid item xs={12} md={12} lg={12}>
             {data && data.tags ? (
               <>

@@ -2,7 +2,7 @@ import Decimal from 'decimal.js';
 import { useContext, useState, useEffect, useRef } from 'react';
 // Material
 import { withStyles } from '@mui/styles';
-import { alpha, Link, Stack, Typography, Skeleton } from '@mui/material';
+import { alpha, Box, Grid, Stack, Typography, Skeleton, Paper } from '@mui/material';
 
 // import i18n (needs to be bundled ;))
 import 'src/utils/i18n';
@@ -25,9 +25,46 @@ import { AppContext } from 'src/AppContext';
 const ContentTypography = withStyles({
   root: {
     color: alpha('#919EAB', 0.99),
-    display: 'inline', // Ensure it's displayed inline
-    verticalAlign: 'middle', // Align vertically with surrounding text
-    lineHeight: 1.6 // Improve readability with better line height
+    display: 'block',
+    lineHeight: 1.3,
+    whiteSpace: 'normal',
+    wordWrap: 'break-word',
+    fontSize: '0.9rem'
+  }
+})(Typography);
+
+// Styled box for each metric section
+const MetricBox = withStyles({
+  root: {
+    padding: '8px 10px',
+    borderRadius: '8px',
+    backgroundColor: alpha('#F4F6F8', 0.8),
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    minWidth: '140px'
+  }
+})(Paper);
+
+// Title for each metric box
+const MetricTitle = withStyles({
+  root: {
+    fontSize: '0.75rem',
+    fontWeight: 600,
+    color: alpha('#637381', 0.9),
+    marginBottom: '4px',
+    whiteSpace: 'nowrap'
+  }
+})(Typography);
+
+// Value for each metric
+const MetricValue = withStyles({
+  root: {
+    fontSize: '0.95rem',
+    fontWeight: 700,
+    color: '#212B36',
+    marginBottom: '2px'
   }
 })(Typography);
 
@@ -40,10 +77,7 @@ export default function Summary() {
   const { t } = useTranslation(); // set translation const
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency } = useContext(AppContext);
-  const [showContent, setShowContent] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [contentHeight, setContentHeight] = useState('0px');
-  const contentRef = useRef(null);
 
   // Simulate loading completion after data is available
   useEffect(() => {
@@ -52,14 +86,6 @@ export default function Summary() {
     }
   }, [metrics, activeFiatCurrency]);
 
-  useEffect(() => {
-    if (showContent && contentRef.current) {
-      setContentHeight(`${contentRef.current.scrollHeight}px`);
-    } else {
-      setContentHeight('0px');
-    }
-  }, [showContent]);
-
   if (
     !metrics.global ||
     !metrics[activeFiatCurrency] ||
@@ -67,8 +93,6 @@ export default function Summary() {
     !metrics.global.gMarketcapPro ||
     !metrics.global.gDexVolume ||
     !metrics.global.gDexVolumePro
-    //|| !metrics.global.gScamVolume || !metrics.global.gStableVolume || !metrics.global.gStableVolumePro
-    //|| !metrics.global.gXRPdominance || !metrics.global.gXRPdominancePro
   ) {
     console.log(
       '----------->Empty metrics value detected (Summary block disabled): metrics.global',
@@ -76,24 +100,16 @@ export default function Summary() {
       'metrics[activeFiatCurrency]',
       metrics[activeFiatCurrency]
     );
-    //return null;
   }
 
   const gMarketcap = new Decimal(metrics.global.gMarketcap)
     .div(metrics[activeFiatCurrency])
     .toFixed(2, Decimal.ROUND_DOWN);
-  const gMarketcapPro = new Decimal(metrics.global.gMarketcapPro || 0).toNumber(); // may be infinity? and trigger Error: [DecimalError] Invalid argument: null
+  const gMarketcapPro = new Decimal(metrics.global.gMarketcapPro || 0).toNumber();
   const gDexVolume = new Decimal(metrics.global.gDexVolume)
     .div(metrics[activeFiatCurrency])
     .toNumber();
-  const gDexVolumePro = new Decimal(metrics.global.gDexVolumePro || 0).toNumber(); // may be infinity and trigger Error: [DecimalError] Invalid argument: null
-  const gScamVolume = new Decimal(metrics.global.gScamVolume)
-    .div(metrics[activeFiatCurrency])
-    .toNumber();
-  const gScamVolumePro = new Decimal(metrics.global.gScamVolumePro || 0).toFixed(
-    2,
-    Decimal.ROUND_DOWN
-  );
+  const gDexVolumePro = new Decimal(metrics.global.gDexVolumePro || 0).toNumber();
   const gNFTIOUVolume = new Decimal(metrics.global.gNFTIOUVolume || 0)
     .div(metrics[activeFiatCurrency])
     .toNumber();
@@ -115,126 +131,179 @@ export default function Summary() {
     2,
     Decimal.ROUND_DOWN
   );
-  const gXRPdominance = new Decimal(metrics.global.gXRPdominance).toNumber();
-  const gXRPdominancePro = new Decimal(metrics.global.gXRPdominancePro || 0).toNumber();
-
-  // Format number with commas
-  function formatNumberWithCommas(number) {
-    return number.toLocaleString('en-US', {
-      maximumFractionDigits: 0 // Removes the decimal part
-    });
-  }
-
-  // Format numbers as percentages with two decimal places
-  const formatAsPercentage = (value) => {
-    return (value * 100).toLocaleString('en-US', {
-      style: 'percent',
-      minimumFractionDigits: 2
-    });
-  };
+  const xrpPrice = Rate(1, metrics[activeFiatCurrency]);
 
   return (
-    <Stack sx={{ mt: 2, mb: 3 }}>
-      <Typography variant="h1" sx={{ mb: 1.5 }}>
+    <Stack
+      sx={{
+        mt: 1,
+        mb: 2,
+        width: '100%',
+        maxWidth: '100%',
+        px: 0 // Remove any horizontal padding
+      }}
+    >
+      <Typography
+        variant="h1"
+        sx={{
+          mb: 1,
+          fontSize: '1.3rem',
+          width: '100%' // Ensure title takes full width
+        }}
+      >
         {t("Today's Top XRPL Token Prices by Volume")}
       </Typography>
 
       {isLoading ? (
-        <>
-          <Skeleton variant="text" width="100%" height={40} />
-          <Skeleton variant="text" width="90%" height={40} />
-        </>
-      ) : (
-        <>
-          <ContentTypography variant="subtitle1" sx={{ mt: 2 }}>
-            The global token market cap stands at{' '}
-            <strong>
-              {currencySymbols[activeFiatCurrency]}
-              {fNumberWithSuffix(Number(gMarketcap))}
-            </strong>{' '}
-            marking a <BearBull value={gMarketcapPro} sx={{ pl: 1, pr: 1 }} />{' '}
-            {gMarketcapPro < 0 ? 'decrease' : 'increase'} over the last 24 hours.
-            <Link
-              component="button"
-              underline="always"
-              variant="body2"
-              color="primary"
-              onClick={() => {
-                setShowContent(!showContent);
-              }}
-              sx={{
-                verticalAlign: 'baseline',
-                ml: 1,
-                fontWeight: 500,
-                transition: 'all 0.2s'
-              }}
-            >
-              {showContent ? 'Read Less' : 'Read More'}
-            </Link>
-          </ContentTypography>
-
-          <div
-            ref={contentRef}
-            style={{
-              height: showContent ? contentHeight : '0px',
-              overflow: 'hidden',
-              transition: 'height 0.3s ease-in-out',
-              marginTop: showContent ? '16px' : 0,
-              borderTop: showContent ? '1px solid rgba(145, 158, 171, 0.12)' : 'none',
-              paddingTop: showContent ? '16px' : 0
+        <Box
+          sx={{
+            overflowX: 'auto',
+            width: '100%',
+            maxWidth: '100vw' // Allow full viewport width
+          }}
+        >
+          <Grid
+            container
+            spacing={1}
+            sx={{
+              flexWrap: 'nowrap',
+              minWidth: '900px',
+              width: '100%'
             }}
           >
-            <ContentTypography variant="subtitle1" sx={{ mt: 2, pb: 1 }} gutterBottom>
-              The total XRPL DEX volume in the past 24 hours is{' '}
-              <strong>
-                {currencySymbols[activeFiatCurrency]}
-                {fNumberWithSuffix(gDexVolume)}
-              </strong>
-              , marking a <BearBull value={gDexVolumePro} sx={{ pl: 1, pr: 1 }} />{' '}
-              {gDexVolumePro < 0 ? 'decrease' : 'increase'}.
-            </ContentTypography>
+            {[...Array(6)].map((_, index) => (
+              <Grid item key={index} sx={{ flex: '1 0 auto' }}>
+                <Skeleton
+                  variant="rectangular"
+                  height={80}
+                  sx={{ borderRadius: '8px', minWidth: '140px' }}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            overflowX: 'auto',
+            width: '100%',
+            maxWidth: '100vw' // Allow full viewport width
+          }}
+        >
+          <Grid
+            container
+            spacing={1}
+            sx={{
+              flexWrap: 'nowrap',
+              minWidth: '900px',
+              width: '100%'
+            }}
+          >
+            {/* Market Cap Box */}
+            <Grid item sx={{ flex: '1 0 auto' }}>
+              <MetricBox elevation={0}>
+                <MetricTitle>{t('Global Market Cap')}</MetricTitle>
+                <div>
+                  <MetricValue>
+                    {currencySymbols[activeFiatCurrency]}
+                    {fNumberWithSuffix(Number(gMarketcap))}
+                  </MetricValue>
+                  <ContentTypography sx={{ fontSize: '0.75rem' }}>
+                    <BearBull
+                      value={gMarketcapPro}
+                      sx={{ display: 'inline-flex', mr: 0.5, fontSize: '0.75rem' }}
+                    />
+                    {gMarketcapPro < 0 ? '-' : '+'}
+                    {Math.abs(gMarketcapPro).toFixed(2)}%
+                  </ContentTypography>
+                </div>
+              </MetricBox>
+            </Grid>
 
-            <ContentTypography variant="subtitle1" sx={{ pb: 1 }} gutterBottom>
-              Currently, the total volume in Collectibles & NFTs is{' '}
-              <strong>
-                {currencySymbols[activeFiatCurrency]}
-                {fNumberWithSuffix(gNFTIOUVolume)}
-              </strong>
-              , accounting for <strong>{gNFTIOUVolumePro}%</strong> of the total XRPL token market's
-              24-hour volume.
-            </ContentTypography>
+            {/* DEX Volume Box */}
+            <Grid item sx={{ flex: '1 0 auto' }}>
+              <MetricBox elevation={0}>
+                <MetricTitle>{t('24h DEX Volume')}</MetricTitle>
+                <div>
+                  <MetricValue>
+                    {currencySymbols[activeFiatCurrency]}
+                    {fNumberWithSuffix(gDexVolume)}
+                  </MetricValue>
+                  <ContentTypography sx={{ fontSize: '0.75rem' }}>
+                    <BearBull
+                      value={gDexVolumePro}
+                      sx={{ display: 'inline-flex', mr: 0.5, fontSize: '0.75rem' }}
+                    />
+                    {gDexVolumePro < 0 ? '-' : '+'}
+                    {Math.abs(gDexVolumePro).toFixed(2)}%
+                  </ContentTypography>
+                </div>
+              </MetricBox>
+            </Grid>
 
-            <ContentTypography variant="subtitle1" sx={{ pb: 1 }} gutterBottom>
-              The volume of all stablecoins currently stands at{' '}
-              <strong>
-                {currencySymbols[activeFiatCurrency]}
-                {fNumberWithSuffix(gStableVolume)}
-              </strong>
-              , representing <strong>{gStableVolumePro}%</strong> of the total token market's
-              24-hour volume.
-            </ContentTypography>
+            {/* XRP Price Box */}
+            <Grid item sx={{ flex: '1 0 auto' }}>
+              <MetricBox elevation={0}>
+                <MetricTitle>{t('XRP Price')}</MetricTitle>
+                <div>
+                  <MetricValue>
+                    {currencySymbols[activeFiatCurrency]}
+                    {xrpPrice}
+                  </MetricValue>
+                  <ContentTypography sx={{ fontSize: '0.75rem' }}>Native XRPL</ContentTypography>
+                </div>
+              </MetricBox>
+            </Grid>
 
-            <ContentTypography variant="subtitle1" sx={{ pb: 1 }} gutterBottom>
-              Meme tokens have a 24-hour volume of{' '}
-              <strong>
-                {currencySymbols[activeFiatCurrency]}
-                {fNumberWithSuffix(gMemeVolume)}
-              </strong>
-              , which is <strong>{gMemeVolumePro}%</strong> of the total XRPL token market's 24-hour
-              volume.
-            </ContentTypography>
+            {/* NFT Volume Box */}
+            <Grid item sx={{ flex: '1 0 auto' }}>
+              <MetricBox elevation={0}>
+                <MetricTitle>{t('Collectibles & NFTs')}</MetricTitle>
+                <div>
+                  <MetricValue>
+                    {currencySymbols[activeFiatCurrency]}
+                    {fNumberWithSuffix(gNFTIOUVolume)}
+                  </MetricValue>
+                  <ContentTypography sx={{ fontSize: '0.75rem' }}>
+                    {gNFTIOUVolumePro}% of volume
+                  </ContentTypography>
+                </div>
+              </MetricBox>
+            </Grid>
 
-            <ContentTypography variant="subtitle1" gutterBottom>
-              The current XRP price is{' '}
-              <strong>
-                {currencySymbols[activeFiatCurrency]}
-                {Rate(1, metrics[activeFiatCurrency])}
-              </strong>
-              .
-            </ContentTypography>
-            {/* <ContentTypography variant='subtitle1'>XRP dominance currently stands at ---%, experiencing a decrease of -% over the past 24 hours.</ContentTypography> */}
-          </div>
-        </>
+            {/* Stablecoins Box */}
+            <Grid item sx={{ flex: '1 0 auto' }}>
+              <MetricBox elevation={0}>
+                <MetricTitle>{t('Stablecoins')}</MetricTitle>
+                <div>
+                  <MetricValue>
+                    {currencySymbols[activeFiatCurrency]}
+                    {fNumberWithSuffix(gStableVolume)}
+                  </MetricValue>
+                  <ContentTypography sx={{ fontSize: '0.75rem' }}>
+                    {gStableVolumePro}% of volume
+                  </ContentTypography>
+                </div>
+              </MetricBox>
+            </Grid>
+
+            {/* Meme Tokens Box */}
+            <Grid item sx={{ flex: '1 0 auto' }}>
+              <MetricBox elevation={0}>
+                <MetricTitle>{t('Meme Tokens')}</MetricTitle>
+                <div>
+                  <MetricValue>
+                    {currencySymbols[activeFiatCurrency]}
+                    {fNumberWithSuffix(gMemeVolume)}
+                  </MetricValue>
+                  <ContentTypography sx={{ fontSize: '0.75rem' }}>
+                    {gMemeVolumePro}% of volume
+                  </ContentTypography>
+                </div>
+              </MetricBox>
+            </Grid>
+          </Grid>
+        </Box>
       )}
     </Stack>
   );
