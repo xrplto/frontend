@@ -108,6 +108,13 @@ export default function Summary() {
     2,
     Decimal.ROUND_DOWN
   );
+  const gMemeVolume = new Decimal(metrics.global.gMemeVolume || 0)
+    .div(metrics[activeFiatCurrency])
+    .toNumber();
+  const gMemeVolumePro = new Decimal(metrics.global.gMemeVolumePro || 0).toFixed(
+    2,
+    Decimal.ROUND_DOWN
+  );
   const gXRPdominance = new Decimal(metrics.global.gXRPdominance).toNumber();
   const gXRPdominancePro = new Decimal(metrics.global.gXRPdominancePro || 0).toNumber();
 
@@ -205,6 +212,16 @@ export default function Summary() {
               </strong>
               , representing <strong>{gStableVolumePro}%</strong> of the total token market's
               24-hour volume.
+            </ContentTypography>
+
+            <ContentTypography variant="subtitle1" sx={{ pb: 1 }} gutterBottom>
+              Meme tokens have a 24-hour volume of{' '}
+              <strong>
+                {currencySymbols[activeFiatCurrency]}
+                {fNumberWithSuffix(gMemeVolume)}
+              </strong>
+              , which is <strong>{gMemeVolumePro}%</strong> of the total XRPL token market's 24-hour
+              volume.
             </ContentTypography>
 
             <ContentTypography variant="subtitle1" gutterBottom>
