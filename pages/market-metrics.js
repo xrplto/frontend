@@ -480,7 +480,7 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
                 fontSize: { xs: '0.7rem', sm: '0.8rem' }
               }}
             >
-              Hide PLR, XRPS, mula, XAH
+              Hide PLR, XRPS, mula, XAH, TON
             </Typography>
             <Box
               onClick={onFilterChange}
@@ -697,7 +697,7 @@ const MarketMetricsContent = () => {
 
   // Add this after the visibleLines state declaration
   const [hideSpecificTokens, setHideSpecificTokens] = useState(false);
-  const tokensToFilter = ['PLR', 'XRPS', 'mula', 'XAH']; // Tokens to potentially hide
+  const tokensToFilter = ['PLR', 'XRPS', 'mula', 'XAH', 'TON']; // Added TON to the tokens to potentially hide
 
   useEffect(() => {
     const fetchData = async () => {
@@ -1026,19 +1026,50 @@ const MarketMetricsContent = () => {
 
                       // Calculate the total marketcap excluding filtered tokens
                       let filteredTotalMarketcap = dataPoint.totalMarketcap;
+                      // Also track FirstLedger marketcap adjustment
+                      let filteredFirstLedgerMarketcap = dataPoint.firstLedgerMarketcap || 0;
+                      // Also track MagneticX marketcap adjustment
+                      let filteredMagneticXMarketcap = dataPoint.magneticXMarketcap || 0;
+                      // Also track XPMarket marketcap adjustment
+                      let filteredXPMarketMarketcap = dataPoint.xpMarketMarketcap || 0;
 
                       // Subtract the marketcap of filtered tokens
                       tokensToFilter.forEach((token) => {
                         const tokenMarketcapKey = `${token}_marketcap`;
                         if (filteredDataPoint[tokenMarketcapKey]) {
-                          filteredTotalMarketcap -= filteredDataPoint[tokenMarketcapKey];
+                          const tokenMarketcap = filteredDataPoint[tokenMarketcapKey];
+                          filteredTotalMarketcap -= tokenMarketcap;
+                          
+                          // If this token is part of FirstLedger, subtract from FirstLedger marketcap
+                          // Note: This is an approximation as we don't have exact per-DEX token data
+                          // We're assuming tokens are distributed proportionally across DEXes
+                          if (filteredFirstLedgerMarketcap > 0 && dataPoint.firstLedgerMarketcap > 0) {
+                            const firstLedgerRatio = dataPoint.firstLedgerMarketcap / dataPoint.totalMarketcap;
+                            filteredFirstLedgerMarketcap -= tokenMarketcap * firstLedgerRatio;
+                          }
+                          
+                          // Similarly for MagneticX
+                          if (filteredMagneticXMarketcap > 0 && dataPoint.magneticXMarketcap > 0) {
+                            const magneticXRatio = dataPoint.magneticXMarketcap / dataPoint.totalMarketcap;
+                            filteredMagneticXMarketcap -= tokenMarketcap * magneticXRatio;
+                          }
+                          
+                          // Similarly for XPMarket
+                          if (filteredXPMarketMarketcap > 0 && dataPoint.xpMarketMarketcap > 0) {
+                            const xpMarketRatio = dataPoint.xpMarketMarketcap / dataPoint.totalMarketcap;
+                            filteredXPMarketMarketcap -= tokenMarketcap * xpMarketRatio;
+                          }
+                          
                           // Remove the token's marketcap from the data point
                           delete filteredDataPoint[tokenMarketcapKey];
                         }
                       });
 
-                      // Update the total marketcap
+                      // Update the marketcap values
                       filteredDataPoint.totalMarketcap = filteredTotalMarketcap;
+                      filteredDataPoint.firstLedgerMarketcap = Math.max(0, filteredFirstLedgerMarketcap);
+                      filteredDataPoint.magneticXMarketcap = Math.max(0, filteredMagneticXMarketcap);
+                      filteredDataPoint.xpMarketMarketcap = Math.max(0, filteredXPMarketMarketcap);
 
                       return filteredDataPoint;
                     }
@@ -1239,7 +1270,7 @@ const MarketMetricsContent = () => {
                         fontStyle: 'italic'
                       }}
                     >
-                      (excluding PLR, XRPS, mula, XAH)
+                      (excluding PLR, XRPS, mula, XAH, TON)
                     </Typography>
                   )}
                 </Typography>
