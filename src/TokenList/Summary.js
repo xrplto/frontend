@@ -80,6 +80,14 @@ function Rate(num, exch) {
   return fNumber(num / exch);
 }
 
+// Helper function for consistent number formatting with 2 decimal places
+const formatNumberWithDecimals = (num) => {
+  if (num >= 1e9) return `${(num / 1e9).toFixed(2)}B`;
+  if (num >= 1e6) return `${(num / 1e6).toFixed(2)}M`;
+  if (num >= 1e3) return `${(num / 1e3).toFixed(2)}K`;
+  return num.toFixed(2);
+};
+
 export default function Summary() {
   const { t } = useTranslation(); // set translation const
   const metrics = useSelector(selectMetrics);
@@ -220,7 +228,7 @@ export default function Summary() {
                 <div>
                   <MetricValue>
                     {currencySymbols[activeFiatCurrency]}
-                    {fNumberWithSuffix(Number(gMarketcap))}
+                    {formatNumberWithDecimals(Number(gMarketcap))}
                   </MetricValue>
                   <ContentTypography sx={{ fontSize: '0.75rem' }}>
                     {gMarketcapPro >= 0 ? '↑' : '↓'} {Math.abs(gMarketcapPro).toFixed(2)}%
@@ -236,7 +244,7 @@ export default function Summary() {
                 <div>
                   <MetricValue>
                     {currencySymbols[activeFiatCurrency]}
-                    {fNumberWithSuffix(gDexVolume)}
+                    {formatNumberWithDecimals(gDexVolume)}
                   </MetricValue>
                   <ContentTypography sx={{ fontSize: '0.75rem' }}>
                     {gDexVolumePro >= 0 ? '↑' : '↓'} {Math.abs(gDexVolumePro).toFixed(2)}%
@@ -268,7 +276,7 @@ export default function Summary() {
                 <div>
                   <MetricValue>
                     {currencySymbols[activeFiatCurrency]}
-                    {fNumberWithSuffix(gNFTIOUVolume)}
+                    {fNumberWithSuffix(gNFTIOUVolume, 2)}
                   </MetricValue>
                   <ContentTypography sx={{ fontSize: '0.75rem' }}>
                     {gNFTIOUVolumePro}% of volume
@@ -284,7 +292,7 @@ export default function Summary() {
                 <div>
                   <MetricValue>
                     {currencySymbols[activeFiatCurrency]}
-                    {fNumberWithSuffix(gStableVolume)}
+                    {fNumberWithSuffix(gStableVolume, 2)}
                   </MetricValue>
                   <ContentTypography sx={{ fontSize: '0.75rem' }}>
                     {gStableVolumePro}% of volume
@@ -300,7 +308,7 @@ export default function Summary() {
                 <div>
                   <MetricValue>
                     {currencySymbols[activeFiatCurrency]}
-                    {fNumberWithSuffix(gMemeVolume)}
+                    {fNumberWithSuffix(gMemeVolume, 2)}
                   </MetricValue>
                   <ContentTypography sx={{ fontSize: '0.75rem' }}>
                     {gMemeVolumePro}% of volume
