@@ -3,6 +3,7 @@ import { useContext, useState, useEffect, useRef } from 'react';
 // Material
 import { withStyles } from '@mui/styles';
 import { alpha, Box, Grid, Stack, Typography, Skeleton, Paper } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 // import i18n (needs to be bundled ;))
 import 'src/utils/i18n';
@@ -21,52 +22,58 @@ import BearBull from 'src/components/BearBull';
 import { currencySymbols } from 'src/utils/constants';
 import { AppContext } from 'src/AppContext';
 
-// CBCCD2
-const ContentTypography = withStyles({
-  root: {
-    color: alpha('#919EAB', 0.99),
-    display: 'block',
-    lineHeight: 1.3,
-    whiteSpace: 'normal',
-    wordWrap: 'break-word',
-    fontSize: '0.9rem'
-  }
-})(Typography);
+// Updated styled components with much higher contrast for dark theme
+const ContentTypography = styled(Typography)(({ theme }) => ({
+  color: theme.palette.mode === 'dark' ? '#FFFFFF' : alpha('#919EAB', 0.99),
+  display: 'block',
+  lineHeight: 1.3,
+  whiteSpace: 'normal',
+  wordWrap: 'break-word',
+  fontSize: '0.9rem'
+}));
 
 // Styled box for each metric section
-const MetricBox = withStyles({
-  root: {
-    padding: '8px 10px',
-    borderRadius: '8px',
-    backgroundColor: alpha('#F4F6F8', 0.8),
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    minWidth: '140px'
-  }
-})(Paper);
+const MetricBox = styled(Paper)(({ theme }) => ({
+  padding: '8px 10px',
+  borderRadius: '8px',
+  backgroundColor:
+    theme.palette.mode === 'dark'
+      ? alpha('#121212', 0.95) // Nearly black background
+      : alpha('#F4F6F8', 0.8),
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  minWidth: '140px',
+  // Add stronger border in dark mode for better visibility
+  border:
+    theme.palette.mode === 'dark' ? `1px solid ${alpha(theme.palette.common.white, 0.2)}` : 'none',
+  // Add box shadow in dark mode for better separation
+  boxShadow: theme.palette.mode === 'dark' ? '0 4px 8px rgba(0,0,0,0.3)' : 'none'
+}));
 
 // Title for each metric box
-const MetricTitle = withStyles({
-  root: {
-    fontSize: '0.75rem',
-    fontWeight: 600,
-    color: alpha('#637381', 0.9),
-    marginBottom: '4px',
-    whiteSpace: 'nowrap'
-  }
-})(Typography);
+const MetricTitle = styled(Typography)(({ theme }) => ({
+  fontSize: '0.75rem',
+  fontWeight: 600,
+  color:
+    theme.palette.mode === 'dark'
+      ? '#FFFFFF' // Pure white for maximum visibility
+      : alpha('#637381', 0.9),
+  marginBottom: '4px',
+  whiteSpace: 'nowrap'
+}));
 
 // Value for each metric
-const MetricValue = withStyles({
-  root: {
-    fontSize: '0.95rem',
-    fontWeight: 700,
-    color: '#212B36',
-    marginBottom: '2px'
-  }
-})(Typography);
+const MetricValue = styled(Typography)(({ theme }) => ({
+  fontSize: '0.95rem',
+  fontWeight: 700,
+  color:
+    theme.palette.mode === 'dark'
+      ? '#FFFFFF' // Pure white for maximum visibility
+      : '#212B36',
+  marginBottom: '2px'
+}));
 
 function Rate(num, exch) {
   if (num === 0 || exch === 0) return 0;
