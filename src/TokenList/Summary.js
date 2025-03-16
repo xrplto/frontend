@@ -131,7 +131,14 @@ export default function Summary() {
     2,
     Decimal.ROUND_DOWN
   );
-  const xrpPrice = Rate(1, metrics[activeFiatCurrency]);
+
+  // Show XRP price in USD when currency is XRP, otherwise show in active currency
+  const xrpPrice =
+    activeFiatCurrency === 'XRP' ? Rate(1, metrics.USD) : Rate(1, metrics[activeFiatCurrency]);
+
+  // Get the currency symbol for XRP price display
+  const xrpPriceSymbol =
+    activeFiatCurrency === 'XRP' ? currencySymbols.USD : currencySymbols[activeFiatCurrency];
 
   return (
     <Stack
@@ -247,10 +254,12 @@ export default function Summary() {
                 <MetricTitle>{t('XRP Price')}</MetricTitle>
                 <div>
                   <MetricValue>
-                    {currencySymbols[activeFiatCurrency]}
+                    {xrpPriceSymbol}
                     {xrpPrice}
                   </MetricValue>
-                  <ContentTypography sx={{ fontSize: '0.75rem' }}>Native XRPL</ContentTypography>
+                  <ContentTypography sx={{ fontSize: '0.75rem' }}>
+                    {activeFiatCurrency === 'XRP' ? 'USD Value' : 'Native XRPL'}
+                  </ContentTypography>
                 </div>
               </MetricBox>
             </Grid>
