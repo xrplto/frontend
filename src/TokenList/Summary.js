@@ -32,24 +32,26 @@ const ContentTypography = styled(Typography)(({ theme }) => ({
   fontSize: '0.9rem'
 }));
 
-// Styled box for each metric section
+// Updated MetricBox with hover effects and transitions
 const MetricBox = styled(Paper)(({ theme }) => ({
-  padding: '8px 10px',
-  borderRadius: '8px',
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? alpha('#121212', 0.95) // Nearly black background
-      : alpha('#F4F6F8', 0.8),
+  padding: '12px 14px', // Slightly more padding
+  borderRadius: '12px', // Increased border radius
+  backgroundColor: theme.palette.mode === 'dark' ? alpha('#121212', 0.95) : alpha('#F4F6F8', 0.8),
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
   minWidth: '140px',
-  // Add stronger border in dark mode for better visibility
   border:
     theme.palette.mode === 'dark' ? `1px solid ${alpha(theme.palette.common.white, 0.2)}` : 'none',
-  // Add box shadow in dark mode for better separation
-  boxShadow: theme.palette.mode === 'dark' ? '0 4px 8px rgba(0,0,0,0.3)' : 'none'
+  boxShadow: theme.palette.mode === 'dark' ? '0 4px 8px rgba(0,0,0,0.3)' : 'none',
+  transition: 'all 0.2s ease-in-out', // Smooth transition for hover effects
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow:
+      theme.palette.mode === 'dark' ? '0 6px 12px rgba(0,0,0,0.4)' : '0 6px 12px rgba(0,0,0,0.1)',
+    backgroundColor: theme.palette.mode === 'dark' ? alpha('#1A1A1A', 0.95) : alpha('#FFFFFF', 0.95)
+  }
 }));
 
 // Title for each metric box
@@ -73,6 +75,23 @@ const MetricValue = styled(Typography)(({ theme }) => ({
       ? '#FFFFFF' // Pure white for maximum visibility
       : '#212B36',
   marginBottom: '2px'
+}));
+
+// Add this new styled component for percentage changes
+const PercentageChange = styled(Typography)(({ theme, isPositive }) => ({
+  fontSize: '0.75rem',
+  color: isPositive ? theme.palette.success.main : theme.palette.error.main,
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4px'
+}));
+
+// Add a new styled component for volume percentage
+const VolumePercentage = styled(Typography)(({ theme }) => ({
+  fontSize: '0.75rem',
+  color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.7) : alpha('#637381', 0.9),
+  display: 'flex',
+  alignItems: 'center'
 }));
 
 function Rate(num, exch) {
@@ -209,7 +228,25 @@ export default function Summary() {
           sx={{
             overflowX: 'auto',
             width: '100%',
-            maxWidth: '100vw' // Allow full viewport width
+            maxWidth: '100vw',
+            pb: 1, // Add padding bottom to account for hover shadow
+            '&::-webkit-scrollbar': {
+              height: '8px'
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: (theme) =>
+                theme.palette.mode === 'dark' ? alpha('#FFF', 0.05) : alpha('#000', 0.05),
+              borderRadius: '4px'
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: (theme) =>
+                theme.palette.mode === 'dark' ? alpha('#FFF', 0.2) : alpha('#000', 0.2),
+              borderRadius: '4px',
+              '&:hover': {
+                backgroundColor: (theme) =>
+                  theme.palette.mode === 'dark' ? alpha('#FFF', 0.3) : alpha('#000', 0.3)
+              }
+            }
           }}
         >
           <Grid
@@ -230,9 +267,9 @@ export default function Summary() {
                     {currencySymbols[activeFiatCurrency]}
                     {formatNumberWithDecimals(Number(gMarketcap))}
                   </MetricValue>
-                  <ContentTypography sx={{ fontSize: '0.75rem' }}>
-                    {gMarketcapPro >= 0 ? '↑' : '↓'} {Math.abs(gMarketcapPro).toFixed(2)}%
-                  </ContentTypography>
+                  <PercentageChange isPositive={gMarketcapPro >= 0}>
+                    {gMarketcapPro >= 0 ? '▲' : '▼'} {Math.abs(gMarketcapPro).toFixed(2)}%
+                  </PercentageChange>
                 </div>
               </MetricBox>
             </Grid>
@@ -246,9 +283,9 @@ export default function Summary() {
                     {currencySymbols[activeFiatCurrency]}
                     {formatNumberWithDecimals(gDexVolume)}
                   </MetricValue>
-                  <ContentTypography sx={{ fontSize: '0.75rem' }}>
-                    {gDexVolumePro >= 0 ? '↑' : '↓'} {Math.abs(gDexVolumePro).toFixed(2)}%
-                  </ContentTypography>
+                  <PercentageChange isPositive={gDexVolumePro >= 0}>
+                    {gDexVolumePro >= 0 ? '▲' : '▼'} {Math.abs(gDexVolumePro).toFixed(2)}%
+                  </PercentageChange>
                 </div>
               </MetricBox>
             </Grid>
@@ -276,11 +313,9 @@ export default function Summary() {
                 <div>
                   <MetricValue>
                     {currencySymbols[activeFiatCurrency]}
-                    {fNumberWithSuffix(gNFTIOUVolume, 2)}
+                    {formatNumberWithDecimals(gNFTIOUVolume)}
                   </MetricValue>
-                  <ContentTypography sx={{ fontSize: '0.75rem' }}>
-                    {gNFTIOUVolumePro}% of volume
-                  </ContentTypography>
+                  <VolumePercentage>{gNFTIOUVolumePro}% of volume</VolumePercentage>
                 </div>
               </MetricBox>
             </Grid>
@@ -292,11 +327,9 @@ export default function Summary() {
                 <div>
                   <MetricValue>
                     {currencySymbols[activeFiatCurrency]}
-                    {fNumberWithSuffix(gStableVolume, 2)}
+                    {formatNumberWithDecimals(gStableVolume)}
                   </MetricValue>
-                  <ContentTypography sx={{ fontSize: '0.75rem' }}>
-                    {gStableVolumePro}% of volume
-                  </ContentTypography>
+                  <VolumePercentage>{gStableVolumePro}% of volume</VolumePercentage>
                 </div>
               </MetricBox>
             </Grid>
@@ -308,11 +341,9 @@ export default function Summary() {
                 <div>
                   <MetricValue>
                     {currencySymbols[activeFiatCurrency]}
-                    {fNumberWithSuffix(gMemeVolume, 2)}
+                    {formatNumberWithDecimals(gMemeVolume)}
                   </MetricValue>
-                  <ContentTypography sx={{ fontSize: '0.75rem' }}>
-                    {gMemeVolumePro}% of volume
-                  </ContentTypography>
+                  <VolumePercentage>{gMemeVolumePro}% of volume</VolumePercentage>
                 </div>
               </MetricBox>
             </Grid>
