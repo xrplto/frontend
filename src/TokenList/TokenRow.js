@@ -102,17 +102,25 @@ const formatDate = (dateString) => {
   const diffInMs = now - createdDate;
   const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
   const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-  const days = Math.floor(diffInHours / 24);
-  const hours = diffInHours % 24;
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+  const diffInMonths = Math.floor(diffInDays / 30);
 
   if (diffInMinutes < 1) {
     return 'Just now';
-  } else if (diffInMinutes < 60) {
-    return `${diffInMinutes}m`;
-  } else if (days === 0) {
-    return `${hours}h`;
   }
-  return `${days}d ${hours}h`;
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes}m ago`;
+  }
+  if (diffInHours < 24) {
+    return `${diffInHours}h ago`;
+  }
+  if (diffInDays < 30) {
+    return `${diffInDays}d ago`;
+  }
+  if (diffInMonths < 12) {
+    return `${diffInMonths}mo ago`;
+  }
+  return `${Math.floor(diffInMonths / 12)}y ago`;
 };
 
 // Update XPMarketIcon to use forwardRef and ensure proper width handling
@@ -512,7 +520,6 @@ function FTokenRow({
         }}
       >
         <Typography variant="caption" sx={dateTypographyStyle}>
-          <CalendarTodayIcon sx={{ fontSize: isMobile ? '10px' : '12px' }} />
           {formatDate(dateon)}
         </Typography>
       </TableCell>
