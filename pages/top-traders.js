@@ -181,14 +181,14 @@ export default function Analytics() {
         const responseData = await response.json();
         console.log('Fetched traders data:', responseData);
 
-        // Handle the nested data.traders structure and pagination
+        // Handle the data structure and pagination
         if (responseData && responseData.data) {
-          if (Array.isArray(responseData.data.traders)) {
-            setTraders(responseData.data.traders);
-            // Set pagination data
-            if (responseData.data.pagination) {
-              setTotalPages(responseData.data.pagination.totalPages);
-              setTotalItems(responseData.data.pagination.totalItems);
+          if (Array.isArray(responseData.data)) {
+            setTraders(responseData.data);
+            // Set pagination data if available
+            if (responseData.pagination) {
+              setTotalPages(responseData.pagination.totalPages);
+              setTotalItems(responseData.pagination.total);
             }
             setError(null);
           } else {
