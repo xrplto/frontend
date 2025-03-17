@@ -72,19 +72,20 @@ const APILabel = styled('a')(({ theme }) => ({
   color: theme.palette.text.primary,
   textDecoration: 'none',
   marginLeft: theme.spacing(1),
-  backgroundColor: alpha(theme.palette.primary.main, 0.3),
-  padding: '4px 12px',
-  borderRadius: '8px',
+  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+  padding: '6px 14px',
+  borderRadius: '12px',
   display: 'flex',
   alignItems: 'center',
-  gap: '4px',
+  gap: '6px',
   minHeight: '32px',
-  transition: 'all 0.2s ease-in-out',
+  backdropFilter: 'blur(8px)',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.2),
-    textDecoration: 'none',
-    cursor: 'pointer',
-    transform: 'translateY(-1px)'
+    backgroundColor: alpha(theme.palette.primary.main, 0.12),
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 8px ${alpha(theme.palette.primary.main, 0.1)}`
   },
   '&:active': {
     transform: 'translateY(0)'
@@ -137,20 +138,28 @@ const PulsatingCircle = styled('div')(({ theme }) => ({
   width: '6px',
   height: '6px',
   borderRadius: '50%',
-  backgroundColor: theme.palette.success.main,
-  animation: 'pulse 1.5s infinite',
-  '@keyframes pulse': {
-    '0%': {
-      transform: 'scale(0.9)',
-      opacity: 0.7
+  backgroundColor: theme.palette.primary.main,
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: '100%',
+    height: '100%',
+    borderRadius: '50%',
+    backgroundColor: 'inherit',
+    animation: 'pulse-modern 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+  },
+  '@keyframes pulse-modern': {
+    '0%, 100%': {
+      transform: 'translate(-50%, -50%) scale(1)',
+      opacity: 0.5
     },
     '50%': {
-      transform: 'scale(1.1)',
-      opacity: 1
-    },
-    '100%': {
-      transform: 'scale(0.9)',
-      opacity: 0.7
+      transform: 'translate(-50%, -50%) scale(1.5)',
+      opacity: 0.2
     }
   }
 }));
@@ -159,30 +168,47 @@ const PulsatingCircle = styled('div')(({ theme }) => ({
 const LiveIndicator = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
-  gap: theme.spacing(1),
-  padding: theme.spacing(0.5, 1),
-  borderRadius: '16px',
-  backgroundColor: alpha(theme.palette.error.main, 0.1)
+  gap: theme.spacing(0.75),
+  padding: theme.spacing(0.25, 1),
+  borderRadius: '20px',
+  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+  backdropFilter: 'blur(8px)',
+  transition: 'all 0.2s ease-in-out',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.12),
+    transform: 'translateY(-1px)'
+  }
 }));
 
 const LiveCircle = styled('div')(({ theme }) => ({
-  width: '8px',
-  height: '8px',
+  width: '6px',
+  height: '6px',
   borderRadius: '50%',
-  backgroundColor: theme.palette.error.main,
-  animation: 'pulse 1.5s infinite',
-  '@keyframes pulse': {
+  backgroundColor: theme.palette.primary.main,
+  position: 'relative',
+  '&::before, &::after': {
+    content: '""',
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: '100%',
+    height: '100%',
+    borderRadius: '50%',
+    backgroundColor: 'inherit',
+    animation: 'ripple-modern 2s cubic-bezier(0.4, 0, 0.2, 1) infinite'
+  },
+  '&::after': {
+    animationDelay: '-0.5s'
+  },
+  '@keyframes ripple-modern': {
     '0%': {
-      transform: 'scale(0.9)',
-      opacity: 0.7
-    },
-    '50%': {
-      transform: 'scale(1.1)',
-      opacity: 1
+      transform: 'translate(-50%, -50%) scale(1)',
+      opacity: 0.8
     },
     '100%': {
-      transform: 'scale(0.9)',
-      opacity: 0.7
+      transform: 'translate(-50%, -50%) scale(4)',
+      opacity: 0
     }
   }
 }));
@@ -583,7 +609,7 @@ const Topbar = () => {
             <Typography variant="h6">Global Trades</Typography>
             <LiveIndicator>
               <LiveCircle />
-              <Typography variant="body2" color="error.main">
+              <Typography variant="body2" color="primary">
                 LIVE
               </Typography>
             </LiveIndicator>
