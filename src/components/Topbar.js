@@ -337,6 +337,27 @@ const BOT_ADDRESSES = [
   'raKTPwoUnGbdSquoiZLX5bLZwY2JAvS5o9'
 ];
 
+// Add these new styled components after the existing styled components
+const MetricContainer = styled(Stack)(({ theme }) => ({
+  padding: theme.spacing(0.5, 1),
+  borderRadius: theme.spacing(1),
+  backgroundColor: alpha(theme.palette.background.default, 0.6),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.background.default, 0.8)
+  }
+}));
+
+const MetricLabel = styled(Typography)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  fontWeight: 500,
+  fontSize: '0.85rem'
+}));
+
+const MetricValue = styled(Typography)(({ theme }) => ({
+  fontWeight: 600,
+  fontSize: '0.9rem'
+}));
+
 const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -460,55 +481,52 @@ const Topbar = () => {
             </MobileMetric>
           ) : (
             <Stack direction="row" spacing={2} alignItems="center" sx={{ flex: 1 }}>
-              <Typography variant="body2" color="#a1a7bb" sx={{ fontWeight: 500 }}>
-                {t('Tokens')}:
-              </Typography>
-              <Typography variant="body2">{abbreviateNumber(metrics.total)}</Typography>
-              <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
-                {t('Addresses')}:
-              </Typography>
-              <Typography align="center" color="#54D62C" variant="body2">
-                {abbreviateNumber(metrics.H24.totalAddresses)}
-              </Typography>
-              <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
-                {t('Offers')}:
-              </Typography>
-              <Typography align="center" color="#FFC107" variant="body2">
-                {abbreviateNumber(metrics.H24.totalOffers)}
-              </Typography>
-              <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
-                {t('Trustlines')}:
-              </Typography>
-              <Typography align="center" color="#FFA48D" variant="body2">
-                {abbreviateNumber(metrics.H24.totalTrustLines)}
-              </Typography>
+              <MetricContainer direction="row" spacing={1} alignItems="center">
+                <MetricLabel>{t('Tokens')}</MetricLabel>
+                <MetricValue>{abbreviateNumber(metrics.total)}</MetricValue>
+              </MetricContainer>
+
+              <MetricContainer direction="row" spacing={1} alignItems="center">
+                <MetricLabel>{t('Addresses')}</MetricLabel>
+                <MetricValue sx={{ color: '#54D62C' }}>
+                  {abbreviateNumber(metrics.H24.totalAddresses)}
+                </MetricValue>
+              </MetricContainer>
+
+              <MetricContainer direction="row" spacing={1} alignItems="center">
+                <MetricLabel>{t('Offers')}</MetricLabel>
+                <MetricValue sx={{ color: '#FFC107' }}>
+                  {abbreviateNumber(metrics.H24.totalOffers)}
+                </MetricValue>
+              </MetricContainer>
+
+              <MetricContainer direction="row" spacing={1} alignItems="center">
+                <MetricLabel>{t('Trustlines')}</MetricLabel>
+                <MetricValue sx={{ color: '#FFA48D' }}>
+                  {abbreviateNumber(metrics.H24.totalTrustLines)}
+                </MetricValue>
+              </MetricContainer>
+
               <H24Style>
-                <Tooltip title="Statistics from the past 24 hours.">
-                  <Stack spacing={0} alignItems="center">
-                    <Typography
-                      align="center"
-                      style={{ wordWrap: 'break-word' }}
-                      variant="body2"
-                      color="#ececec"
-                    >
-                      24h
-                    </Typography>
-                  </Stack>
+                <Tooltip title="Statistics from the past 24 hours">
+                  <Typography variant="body2" color="#ececec" sx={{ px: 1 }}>
+                    24h
+                  </Typography>
                 </Tooltip>
               </H24Style>
-              <Typography variant="body2" color="#a1a7bb" sx={{ fontWeight: 500 }}>
-                {t('Trades')}:
-              </Typography>
-              <Typography align="center" color="#74CAFF" variant="body2">
-                {abbreviateNumber(metrics.H24.transactions24H)}
-              </Typography>
-              <Typography variant="body2" color="#a1a7bb" sx={{ fontWeight: 500 }}>
-                {t('Vol')}:
-              </Typography>
-              <Typography align="center" variant="body2">
+
+              <MetricContainer direction="row" spacing={1} alignItems="center">
+                <MetricLabel>{t('Trades')}</MetricLabel>
+                <MetricValue sx={{ color: '#74CAFF' }}>
+                  {abbreviateNumber(metrics.H24.transactions24H)}
+                </MetricValue>
+              </MetricContainer>
+
+              <MetricContainer direction="row" spacing={1} alignItems="center">
+                <MetricLabel>{t('Vol')}</MetricLabel>
                 <Stack direction="row" spacing={0.5} alignItems="center">
-                  <Typography>{currencySymbols[activeFiatCurrency]}</Typography>
-                  <Typography align="center" color={theme.palette.error.main} variant="body2">
+                  <Typography variant="body2">{currencySymbols[activeFiatCurrency]}</Typography>
+                  <MetricValue sx={{ color: theme.palette.error.main }}>
                     {abbreviateNumber(
                       metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
                         ? new Decimal(metrics.H24.tradedXRP24H || 0)
@@ -516,21 +534,23 @@ const Topbar = () => {
                             .toNumber()
                         : 0
                     )}
-                  </Typography>
+                  </MetricValue>
                 </Stack>
-              </Typography>
-              <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
-                {t('Tokens Traded')}:
-              </Typography>
-              <Typography align="center" color="#3366FF" variant="body2">
-                {abbreviateNumber(metrics.H24.tradedTokens24H)}
-              </Typography>
-              <Typography variant="body2" noWrap color="#a1a7bb" sx={{ fontWeight: 500 }}>
-                {t('Active Addresses')}:
-              </Typography>
-              <Typography align="center" color="#54D62C" variant="body2">
-                {abbreviateNumber(metrics.H24.activeAddresses24H)}
-              </Typography>
+              </MetricContainer>
+
+              <MetricContainer direction="row" spacing={1} alignItems="center">
+                <MetricLabel>{t('Tokens Traded')}</MetricLabel>
+                <MetricValue sx={{ color: '#3366FF' }}>
+                  {abbreviateNumber(metrics.H24.tradedTokens24H)}
+                </MetricValue>
+              </MetricContainer>
+
+              <MetricContainer direction="row" spacing={1} alignItems="center">
+                <MetricLabel>{t('Active Addresses')}</MetricLabel>
+                <MetricValue sx={{ color: '#54D62C' }}>
+                  {abbreviateNumber(metrics.H24.activeAddresses24H)}
+                </MetricValue>
+              </MetricContainer>
             </Stack>
           )}
           {!isMobile && (
