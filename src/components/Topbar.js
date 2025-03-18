@@ -259,10 +259,11 @@ const formatRelativeTime = (timestamp) => {
 const getTradeSizeEmoji = (value) => {
   const xrpValue = parseFloat(value);
   if (xrpValue < 500) return '🦐';
-  if (xrpValue >= 500 && xrpValue < 5000) return '🐬';
-  if (xrpValue >= 5000 && xrpValue < 10000) return '🐋';
-  if (xrpValue >= 10000) return '🐳';
-  return '';
+  if (xrpValue < 1000) return '🐟';
+  if (xrpValue < 2500) return '🐬';
+  if (xrpValue < 5000) return '🦈';
+  if (xrpValue < 10000) return '🐋';
+  return '🐳';
 };
 
 // Add this helper function near the top of the file
@@ -319,70 +320,27 @@ const parseValue = (value) => {
   return parseFloat(value);
 };
 
-const filterTrades = (trades, selectedFilter) => {
-  if (!trades?.hists) return [];
+// First, let's create a helper function to get the API URL with the correct minXrpValue
+const getTradeApiUrl = (filter) => {
+  const baseUrl =
+    'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=50';
 
-  const filters = {
-    All: () => true,
-    '🦐 <500 XRP': (trade) => {
-      const xrpAmount = getXRPAmount(trade);
-      return xrpAmount > 0 && xrpAmount < 500;
-    },
-    '🐬 500-5000 XRP': (trade) => {
-      const xrpAmount = getXRPAmount(trade);
-      return xrpAmount >= 500 && xrpAmount < 5000;
-    },
-    '🐋 5000-10000 XRP': (trade) => {
-      const xrpAmount = getXRPAmount(trade);
-      return xrpAmount >= 5000 && xrpAmount < 10000;
-    },
-    '🐳 10000+ XRP': (trade) => {
-      const xrpAmount = getXRPAmount(trade);
-      return xrpAmount >= 10000;
-    }
-  };
-
-  const filteredTrades = trades.hists.filter(filters[selectedFilter]);
-
-  // Sort by timestamp in descending order (most recent first)
-  return filteredTrades.sort((a, b) => b.time - a.time);
-};
-
-// Add this constant before the Topbar component
-const BOT_ADDRESSES = [
-  'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6',
-  'rfmdBKhtJw2J22rw1JxQcchQTM68qzE4N2',
-  'rpiFwLYi6Gb1ESHYorn2QG1WU5vw2u4exQ',
-  'rpP3jobib3bCGbK1EHUsyeFJF1LXcUBymq',
-  'rhubarbMVC2nzASf3qSGQcUKtLnAzqcBjp',
-  'rBYuQZgRnsSNTuGsxz7wmGt53GYDEg1qzf',
-  'rippLE4uy7r898MzuHTeTe7sPfuUDafLB',
-  'raKT8yExRhuK9xAqYeWezH8RAp6vNoU3Jo',
-  'rhB5snxAxsZ2cKf8iDJYiBpX8nrTxJfHoH',
-  'rN7SthSu7RZXo2LNmsh4QPgXcBzhTgmDDg',
-  'raKTPwoUnGbdSquoiZLX5bLZwY2JAvS5o9'
-];
-
-// Add these new styled components after the existing styled components
-const MetricContainer = styled(Stack)(({ theme }) => ({
-  padding: theme.spacing(0.5, 1),
-  borderRadius: theme.spacing(1),
-  backgroundColor: alpha(theme.palette.background.default, 0.6),
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.background.default, 0.8)
+  // Add minXrpValue based on filter
+  switch (filter) {
+    case '500+ XRP':
+      return `${baseUrl}&minXrpValue=500`;
+    case '1000+ XRP':
+      return `${baseUrl}&minXrpValue=1000`;
+    case '2500+ XRP':
+      return `${baseUrl}&minXrpValue=2500`;
+    case '5000+ XRP':
+      return `${baseUrl}&minXrpValue=5000`;
+    case '10000+ XRP':
+      return `${baseUrl}&minXrpValue=10000`;
+    default:
+      return baseUrl;
   }
-}));
-
-const MetricLabel = styled(Typography)(({ theme }) => ({
-  color: theme.palette.text.secondary,
-  fontWeight: 500,
-  fontSize: '0.85rem'
-}));
-
-const MetricValue = styled(Typography)(({ theme }) => ({
-  fontWeight: 600,
-  fontSize: '0.9rem'
-}));
+};
 
 const Topbar = () => {
   const { t } = useTranslation();
@@ -402,17 +360,6 @@ const Topbar = () => {
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const [currentMetricIndex, setCurrentMetricIndex] = useState(0);
   const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
-  const { data: trades, error } = useSWR(
-    tradeDrawerOpen
-      ? 'https://api.xrpl.to/api//history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=50' //supports only 50 it seems
-      : null,
-    fetcher,
-    {
-      refreshInterval: tradeDrawerOpen ? 5000 : 0, // Refresh every 5 seconds when drawer is open
-      dedupingInterval: 2000, // Dedupe requests within 2 seconds
-      revalidateOnFocus: false // Don't revalidate on window focus
-    }
-  );
   const [filter, setFilter] = useState('All');
 
   const mobileMetrics = [
@@ -482,6 +429,55 @@ const Topbar = () => {
   const handleTradeDrawerClose = () => {
     setTradeDrawerOpen(false);
   };
+
+  // Move the useSWR hook inside the component
+  const { data: trades, error } = useSWR(tradeDrawerOpen ? getTradeApiUrl(filter) : null, fetcher, {
+    refreshInterval: tradeDrawerOpen ? 5000 : 0,
+    dedupingInterval: 2000,
+    revalidateOnFocus: false
+  });
+
+  // Simplify the filterTrades function since filtering will now be done on the API side
+  const filterTrades = (trades, selectedFilter) => {
+    if (!trades?.hists) return [];
+    return trades.hists.sort((a, b) => b.time - a.time);
+  };
+
+  // Add this constant before the Topbar component
+  const BOT_ADDRESSES = [
+    'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6',
+    'rfmdBKhtJw2J22rw1JxQcchQTM68qzE4N2',
+    'rpiFwLYi6Gb1ESHYorn2QG1WU5vw2u4exQ',
+    'rpP3jobib3bCGbK1EHUsyeFJF1LXcUBymq',
+    'rhubarbMVC2nzASf3qSGQcUKtLnAzqcBjp',
+    'rBYuQZgRnsSNTuGsxz7wmGt53GYDEg1qzf',
+    'rippLE4uy7r898MzuHTeTe7sPfuUDafLB',
+    'raKT8yExRhuK9xAqYeWezH8RAp6vNoU3Jo',
+    'rhB5snxAxsZ2cKf8iDJYiBpX8nrTxJfHoH',
+    'rN7SthSu7RZXo2LNmsh4QPgXcBzhTgmDDg',
+    'raKTPwoUnGbdSquoiZLX5bLZwY2JAvS5o9'
+  ];
+
+  // Add these new styled components after the existing styled components
+  const MetricContainer = styled(Stack)(({ theme }) => ({
+    padding: theme.spacing(0.5, 1),
+    borderRadius: theme.spacing(1),
+    backgroundColor: alpha(theme.palette.background.default, 0.6),
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.background.default, 0.8)
+    }
+  }));
+
+  const MetricLabel = styled(Typography)(({ theme }) => ({
+    color: theme.palette.text.secondary,
+    fontWeight: 500,
+    fontSize: '0.85rem'
+  }));
+
+  const MetricValue = styled(Typography)(({ theme }) => ({
+    fontWeight: 600,
+    fontSize: '0.9rem'
+  }));
 
   return (
     <TopWrapper>
@@ -621,11 +617,12 @@ const Topbar = () => {
               displayEmpty
               inputProps={{ 'aria-label': 'Filter trades' }}
             >
-              <MenuItem value="All">All</MenuItem>
-              <MenuItem value="🦐 <500 XRP">🦐 &lt;500 XRP</MenuItem>
-              <MenuItem value="🐬 500-5000 XRP">🐬 500-5000 XRP</MenuItem>
-              <MenuItem value="🐋 5000-10000 XRP">🐋 5000-10000 XRP</MenuItem>
-              <MenuItem value="🐳 10000+ XRP">🐳 10000+ XRP</MenuItem>
+              <MenuItem value="All">All Trades</MenuItem>
+              <MenuItem value="500+ XRP">🐟 500+ XRP</MenuItem>
+              <MenuItem value="1000+ XRP">🐬 1000+ XRP</MenuItem>
+              <MenuItem value="2500+ XRP">🦈 2500+ XRP</MenuItem>
+              <MenuItem value="5000+ XRP">🐋 5000+ XRP</MenuItem>
+              <MenuItem value="10000+ XRP">🐳 10000+ XRP</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -642,9 +639,9 @@ const Topbar = () => {
           </Box>
         ) : (
           <List sx={{ width: '100%', padding: 0 }}>
-            {filterTrades(trades, filter).map((trade, index) => (
+            {filterTrades(trades, filter).map((trade) => (
               <ListItem
-                key={index}
+                key={`${trade.time}-${trade.maker}-${trade.taker}`}
                 sx={{
                   borderBottom: `1px solid ${theme.palette.divider}`,
                   position: 'relative',
