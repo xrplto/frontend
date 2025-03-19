@@ -193,10 +193,6 @@ const NFTDisplay = ({ nftLink }) => {
   /**
    * Updated getMediaPreview to utilize the files array for image display.
    * Prioritizes displaying the small thumbnail if available.
-   * Uses the https://s2.xrpnft.com/d1/ base URL for all image sources.
-   * Removes IPFS-related logic.
-   * Updates video type check to use file.type === 'video'.
-   * Incorporates logic from ChatNFTCard to ensure consistent media handling.
    */
   const getMediaPreview = () => {
     if (!nft || !nft.files || nft.files.length === 0) return null;
@@ -231,7 +227,10 @@ const NFTDisplay = ({ nftLink }) => {
           loop
           autoPlay
           playsInline
-          style={{ borderRadius: '3px' }}
+          style={{
+            borderRadius: '4px',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+          }}
         >
           <source src={mediaUrl} type="video/mp4" />
           Your browser does not support the video tag.
@@ -256,24 +255,20 @@ const NFTDisplay = ({ nftLink }) => {
   };
 
   /**
-   * New function to get the full-size image for the tooltip.
-   * This ensures that the tooltip displays a larger version of the NFT image.
+   * Get the full-size image for the tooltip.
    */
   const getFullSizeMedia = () => {
     if (!nft || !nft.files || nft.files.length === 0) return null;
 
-    // Use the first file in the files array (similar to ChatNFTCard)
     const file = nft.files[0];
-
     if (!file) return null;
 
-    // Determine the image URL based on priority
     let mediaUrl = null;
 
-    if (file.thumbnail?.small) {
-      mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.small}`;
-    } else if (file.thumbnail?.big) {
+    if (file.thumbnail?.big) {
       mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.big}`;
+    } else if (file.thumbnail?.small) {
+      mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.small}`;
     } else if (file.convertedFile) {
       mediaUrl = `${IMAGE_BASE_URL}${file.convertedFile}`;
     } else if (file.dfile) {
@@ -291,7 +286,11 @@ const NFTDisplay = ({ nftLink }) => {
           muted
           loop
           controls
-          style={{ borderRadius: '3px', marginBottom: theme.spacing(1) }}
+          style={{
+            borderRadius: '8px',
+            marginBottom: theme.spacing(1.5),
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+          }}
         >
           <source src={mediaUrl} type="video/mp4" />
           Your browser does not support the video tag.
@@ -308,8 +307,9 @@ const NFTDisplay = ({ nftLink }) => {
           width: '100%',
           height: 'auto',
           objectFit: 'contain',
-          borderRadius: '3px',
-          marginBottom: theme.spacing(1)
+          borderRadius: '8px',
+          marginBottom: theme.spacing(1.5),
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
         }}
       />
     );
@@ -485,7 +485,7 @@ const NFTDisplay = ({ nftLink }) => {
     doProcessOffer(acceptOffer, true);
   };
 
-  // Find the getMediaPreview function and add a new function to get the best image URL
+  // Get the best image URL for other dialogs
   const getBestImageUrl = () => {
     if (!nft || !nft.files || nft.files.length === 0) return null;
 
@@ -515,27 +515,35 @@ const NFTDisplay = ({ nftLink }) => {
           <Paper elevation={0}>
             <Box
               sx={{
-                p: 1.5,
+                p: 2,
                 maxHeight: '80vh',
                 overflowY: 'auto',
                 '&::-webkit-scrollbar': {
-                  width: '4px'
+                  width: '6px'
                 },
                 '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                  borderRadius: '2px'
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.2)'
+                      : 'rgba(0, 0, 0, 0.2)',
+                  borderRadius: '3px'
                 }
               }}
             >
               {/* Media display */}
               <Box
                 sx={{
-                  mb: 1.5,
-                  borderRadius: 1.5,
+                  mb: 2,
+                  borderRadius: 2,
                   overflow: 'hidden',
-                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+                  boxShadow:
+                    theme.palette.mode === 'dark'
+                      ? '0 4px 20px rgba(0, 0, 0, 0.3)'
+                      : '0 4px 20px rgba(0, 0, 0, 0.1)',
                   position: 'relative',
+                  transition: 'transform 0.2s ease',
                   '&:hover': {
+                    transform: 'scale(1.01)',
                     '& .media-overlay': {
                       opacity: 1
                     }
@@ -551,20 +559,21 @@ const NFTDisplay = ({ nftLink }) => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.4) 100%)',
+                    background: 'linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.6) 100%)',
                     opacity: 0,
-                    transition: 'opacity 0.2s ease',
+                    transition: 'opacity 0.3s ease',
                     display: 'flex',
                     alignItems: 'flex-end',
-                    padding: 1.5
+                    padding: 2
                   }}
                 >
                   <Typography
                     variant="caption"
                     sx={{
                       color: '#fff',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                      fontSize: '0.7rem'
+                      textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                      fontSize: '0.75rem',
+                      fontWeight: 500
                     }}
                   >
                     Click to view full size
@@ -578,15 +587,16 @@ const NFTDisplay = ({ nftLink }) => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  mb: 1
+                  mb: 1.5
                 }}
               >
                 <Typography
-                  variant="subtitle1"
+                  variant="h6"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 700,
                     color: theme.palette.primary.main,
-                    letterSpacing: '-0.02em'
+                    letterSpacing: '-0.02em',
+                    fontSize: '1.1rem'
                   }}
                 >
                   {nft ? nft.name : name}
@@ -599,10 +609,17 @@ const NFTDisplay = ({ nftLink }) => {
                       bgcolor:
                         theme.palette.mode === 'dark'
                           ? 'rgba(255,255,255,0.1)'
-                          : 'rgba(0,0,0,0.05)',
-                      px: 1,
+                          : theme.palette.primary.lighter,
+                      color:
+                        theme.palette.mode === 'dark'
+                          ? theme.palette.primary.lighter
+                          : theme.palette.primary.dark,
+                      px: 1.5,
                       py: 0.5,
-                      borderRadius: 1
+                      borderRadius: 1.5,
+                      fontSize: '0.7rem',
+                      boxShadow:
+                        theme.palette.mode === 'dark' ? 'none' : '0 2px 6px rgba(0,0,0,0.08)'
                     }}
                   >
                     Rank: {nft.rarity_rank} / {nft.total}
@@ -611,10 +628,21 @@ const NFTDisplay = ({ nftLink }) => {
               </Box>
 
               {/* Collection and other details */}
-              <Box sx={{ mb: 1 }}>
+              <Box
+                sx={{
+                  mb: 2,
+                  p: 1.5,
+                  borderRadius: 1.5,
+                  backgroundColor:
+                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                  border: `1px solid ${
+                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+                  }`
+                }}
+              >
                 {nft?.collection && (
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="body2" color="text.secondary">
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       Collection:
                     </Typography>
                     <Typography variant="body2" fontWeight="medium">
@@ -623,8 +651,8 @@ const NFTDisplay = ({ nftLink }) => {
                   </Box>
                 )}
                 {nft?.royalty && (
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="body2" color="text.secondary">
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       Royalty:
                     </Typography>
                     <Typography variant="body2" fontWeight="medium">
@@ -633,8 +661,8 @@ const NFTDisplay = ({ nftLink }) => {
                   </Box>
                 )}
                 {nft?.cfloor && (
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                    <Typography variant="body2" color="text.secondary">
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0 }}>
+                    <Typography variant="body2" color="text.secondary" fontWeight={500}>
                       Floor Price:
                     </Typography>
                     <Typography variant="body2" fontWeight="bold" color="primary.main">
@@ -644,18 +672,18 @@ const NFTDisplay = ({ nftLink }) => {
                 )}
               </Box>
 
-              <Divider sx={{ my: 1 }} />
-
               {/* Properties */}
               {nft?.props && nft.props.length > 0 && (
                 <>
                   <Typography
                     variant="subtitle2"
                     sx={{
-                      mb: 0.75,
+                      mb: 1,
                       fontWeight: 600,
-                      color: theme.palette.text.secondary,
-                      fontSize: '0.75rem'
+                      color: theme.palette.text.primary,
+                      fontSize: '0.8rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
                     }}
                   >
                     Properties
@@ -664,29 +692,30 @@ const NFTDisplay = ({ nftLink }) => {
                     sx={{
                       display: 'grid',
                       gridTemplateColumns: 'repeat(3, 1fr)',
-                      gap: 0.75,
-                      mb: 1
+                      gap: 1,
+                      mb: 2
                     }}
                   >
                     {nft.props.map((prop, index) => (
                       <Box
                         key={index}
                         sx={{
-                          p: 0.75,
-                          borderRadius: 1,
+                          p: 1,
+                          borderRadius: 1.5,
                           backgroundColor:
                             theme.palette.mode === 'dark'
                               ? 'rgba(255,255,255,0.05)'
-                              : 'rgba(0,0,0,0.02)',
+                              : theme.palette.background.neutral,
                           border: `1px solid ${
                             theme.palette.mode === 'dark'
                               ? 'rgba(255,255,255,0.1)'
                               : 'rgba(0,0,0,0.05)'
                           }`,
-                          transition: 'transform 0.2s ease',
+                          transition: 'all 0.2s ease',
                           '&:hover': {
-                            transform: 'translateY(-1px)',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            borderColor: theme.palette.primary.lighter
                           }
                         }}
                       >
@@ -695,11 +724,13 @@ const NFTDisplay = ({ nftLink }) => {
                           sx={{
                             color: theme.palette.text.secondary,
                             display: 'block',
-                            mb: 0.25,
+                            mb: 0.5,
                             fontSize: '0.65rem',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
-                            textOverflow: 'ellipsis'
+                            textOverflow: 'ellipsis',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
                           }}
                         >
                           {prop.type}
@@ -708,10 +739,11 @@ const NFTDisplay = ({ nftLink }) => {
                           variant="body2"
                           sx={{
                             fontWeight: 600,
-                            fontSize: '0.7rem',
+                            fontSize: '0.75rem',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
-                            textOverflow: 'ellipsis'
+                            textOverflow: 'ellipsis',
+                            color: theme.palette.primary.main
                           }}
                         >
                           {prop.value}
@@ -722,8 +754,15 @@ const NFTDisplay = ({ nftLink }) => {
                 </>
               )}
 
-              {/* Replace Token ID with Copy Button */}
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0.5 }}>
+              {/* Token ID with Copy Button */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  mb: 1,
+                  mt: 1
+                }}
+              >
                 <Tooltip title="Copy Token ID">
                   <Button
                     size="small"
@@ -733,27 +772,38 @@ const NFTDisplay = ({ nftLink }) => {
                       openSnackbar('Token ID copied to clipboard', 'success');
                     }}
                     sx={{
-                      fontSize: '0.65rem',
-                      py: 0.25,
-                      px: 1,
+                      fontSize: '0.7rem',
+                      py: 0.5,
+                      px: 1.5,
                       minHeight: 0,
-                      textTransform: 'none'
+                      textTransform: 'none',
+                      borderRadius: 1.5,
+                      backgroundColor:
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(255,255,255,0.05)'
+                          : 'rgba(0,0,0,0.03)',
+                      '&:hover': {
+                        backgroundColor:
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255,255,255,0.1)'
+                            : 'rgba(0,0,0,0.05)'
+                      }
                     }}
                   >
-                    Copy ID
+                    Copy Token ID
                   </Button>
                 </Tooltip>
               </Box>
 
-              <Divider sx={{ my: 0.75 }} />
+              <Divider sx={{ my: 1.5 }} />
 
               {/* Action Buttons */}
               {isOwner ? (
                 <Box
                   sx={{
                     display: 'flex',
-                    gap: 1,
-                    mt: 1
+                    gap: 1.5,
+                    mt: 1.5
                   }}
                 >
                   <Button
@@ -764,17 +814,19 @@ const NFTDisplay = ({ nftLink }) => {
                     color="primary"
                     disabled={!accountLogin || burnt}
                     sx={{
-                      borderRadius: 1,
-                      py: 0.5,
-                      px: 1.5,
+                      borderRadius: 2,
+                      py: 1,
+                      px: 2,
                       minHeight: 0,
                       textTransform: 'none',
                       fontWeight: 600,
-                      fontSize: '0.75rem',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      fontSize: '0.8rem',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                       '&:hover': {
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                      }
+                        boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
+                        transform: 'translateY(-1px)'
+                      },
+                      transition: 'all 0.2s ease'
                     }}
                   >
                     Sell
@@ -787,14 +839,19 @@ const NFTDisplay = ({ nftLink }) => {
                     color="primary"
                     disabled={!accountLogin || burnt}
                     sx={{
-                      borderRadius: 1,
-                      py: 0.5,
-                      px: 1.5,
+                      borderRadius: 2,
+                      py: 1,
+                      px: 2,
                       minHeight: 0,
                       textTransform: 'none',
                       fontWeight: 600,
-                      fontSize: '0.75rem',
-                      borderWidth: 1
+                      fontSize: '0.8rem',
+                      borderWidth: 1,
+                      '&:hover': {
+                        borderWidth: 1,
+                        transform: 'translateY(-1px)'
+                      },
+                      transition: 'all 0.2s ease'
                     }}
                   >
                     Send
@@ -804,34 +861,41 @@ const NFTDisplay = ({ nftLink }) => {
                     onHandleBurn={onHandleBurn}
                     sx={{
                       minWidth: 'auto',
-                      borderRadius: 1,
-                      py: 0.5,
-                      px: 1.5,
+                      borderRadius: 2,
+                      py: 1,
+                      px: 2,
                       minHeight: 0,
-                      fontSize: '0.75rem',
-                      borderWidth: 1
+                      fontSize: '0.8rem',
+                      borderWidth: 1,
+                      '&:hover': {
+                        borderWidth: 1,
+                        transform: 'translateY(-1px)'
+                      },
+                      transition: 'all 0.2s ease'
                     }}
                   />
                 </Box>
               ) : (
-                <Stack spacing={1} direction="row" sx={{ mt: 1 }}>
+                <Stack spacing={1.5} direction="row" sx={{ mt: 1.5 }}>
                   <Button
                     fullWidth
                     disabled={!cost || burnt}
                     variant="contained"
                     onClick={handleBuyNow}
                     sx={{
-                      borderRadius: 1,
-                      py: 0.5,
-                      px: 1.5,
+                      borderRadius: 2,
+                      py: 1,
+                      px: 2,
                       minHeight: 0,
                       textTransform: 'none',
                       fontWeight: 600,
-                      fontSize: '0.75rem',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      fontSize: '0.8rem',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                       '&:hover': {
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-                      }
+                        boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
+                        transform: 'translateY(-1px)'
+                      },
+                      transition: 'all 0.2s ease'
                     }}
                   >
                     Buy Now
@@ -842,14 +906,19 @@ const NFTDisplay = ({ nftLink }) => {
                     variant="outlined"
                     onClick={handleCreateBuyOffer}
                     sx={{
-                      borderRadius: 1,
-                      py: 0.5,
-                      px: 1.5,
+                      borderRadius: 2,
+                      py: 1,
+                      px: 2,
                       minHeight: 0,
                       textTransform: 'none',
                       fontWeight: 600,
-                      fontSize: '0.75rem',
-                      borderWidth: 1
+                      fontSize: '0.8rem',
+                      borderWidth: 1,
+                      '&:hover': {
+                        borderWidth: 1,
+                        transform: 'translateY(-1px)'
+                      },
+                      transition: 'all 0.2s ease'
                     }}
                   >
                     Offer
@@ -869,14 +938,23 @@ const NFTDisplay = ({ nftLink }) => {
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 0.75,
-            padding: '3px 6px',
-            borderRadius: 1,
+            gap: 1,
+            padding: '4px 8px',
+            borderRadius: 1.5,
+            backgroundColor:
+              theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+            border: `1px solid ${
+              theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+            }`,
             '&:hover': {
-              backgroundColor: theme.palette.action.hover
+              backgroundColor:
+                theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+              borderColor: theme.palette.primary.lighter,
+              transform: 'translateY(-1px)'
             },
-            transition: 'background-color 0.2s',
-            cursor: 'pointer'
+            transition: 'all 0.2s ease',
+            cursor: 'pointer',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
           }}
         >
           {getMediaPreview()}
@@ -886,7 +964,7 @@ const NFTDisplay = ({ nftLink }) => {
               sx={{
                 color: theme.palette.primary.main,
                 fontWeight: 600,
-                fontSize: '0.75rem',
+                fontSize: '0.8rem',
                 lineHeight: 1.2
               }}
             >
@@ -897,7 +975,7 @@ const NFTDisplay = ({ nftLink }) => {
                 variant="caption"
                 sx={{
                   color: theme.palette.success.main,
-                  fontSize: '0.65rem',
+                  fontSize: '0.7rem',
                   fontWeight: 500,
                   lineHeight: 1.2
                 }}
@@ -959,66 +1037,6 @@ const NFTDisplay = ({ nftLink }) => {
         nextUrl={nextUrl}
       />
     </>
-  );
-};
-
-/**
- * Helper function to render the full-size media for the tooltip.
- * This ensures that the tooltip displays a larger version of the NFT image or video.
- */
-const getFullSizeMedia = (nft, IMAGE_BASE_URL, theme) => {
-  if (!nft || !nft.files || nft.files.length === 0) return null;
-
-  // Use the first file in the files array
-  const file = nft.files[0];
-
-  if (!file) return null;
-
-  // Determine the image URL based on priority
-  let mediaUrl = null;
-
-  if (file.thumbnail?.small) {
-    mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.small}`;
-  } else if (file.thumbnail?.big) {
-    mediaUrl = `${IMAGE_BASE_URL}${file.thumbnail.big}`;
-  } else if (file.convertedFile) {
-    mediaUrl = `${IMAGE_BASE_URL}${file.convertedFile}`;
-  } else if (file.dfile) {
-    mediaUrl = `${IMAGE_BASE_URL}${file.dfile}`;
-  }
-
-  if (!mediaUrl) return null;
-
-  // Check if the file is a video
-  if (file.type === 'video') {
-    return (
-      <video
-        width="100%"
-        height="auto"
-        muted
-        loop
-        controls
-        style={{ borderRadius: '3px', marginBottom: theme.spacing(1) }}
-      >
-        <source src={mediaUrl} type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-    );
-  }
-
-  // Otherwise, render an image
-  return (
-    <img
-      src={mediaUrl}
-      alt={nft.name || 'Unnamed NFT'}
-      style={{
-        width: '100%',
-        height: 'auto',
-        objectFit: 'contain',
-        borderRadius: '3px',
-        marginBottom: theme.spacing(1)
-      }}
-    />
   );
 };
 
