@@ -23,6 +23,8 @@ import {
   FormControl
 } from '@mui/material';
 import SmartToy from '@mui/icons-material/SmartToy';
+import { Chat as ChatIcon } from '@mui/icons-material';
+import { useRouter } from 'next/router';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
@@ -342,6 +344,30 @@ const getTradeApiUrl = (filter) => {
   }
 };
 
+// Add this styled component with the other styled components
+const ChatButton = styled(IconButton)(({ theme }) => ({
+  marginLeft: theme.spacing(1),
+  padding: theme.spacing(1),
+  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  borderRadius: '8px',
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.2)
+  },
+  position: 'relative'
+}));
+
+// Add this styled component for the notification badge
+const NotificationBadge = styled('span')(({ theme }) => ({
+  position: 'absolute',
+  top: 2,
+  right: 2,
+  width: 8,
+  height: 8,
+  backgroundColor: theme.palette.error.main,
+  borderRadius: '50%',
+  animation: 'pulse 2s infinite'
+}));
+
 const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -361,6 +387,7 @@ const Topbar = () => {
   const [currentMetricIndex, setCurrentMetricIndex] = useState(0);
   const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
   const [filter, setFilter] = useState('All');
+  const router = useRouter();
 
   const mobileMetrics = [
     {
@@ -479,6 +506,11 @@ const Topbar = () => {
     fontSize: '0.9rem'
   }));
 
+  const handleChatClick = (e) => {
+    e.preventDefault(); // Prevent default navigation
+    dispatch(toggleChatOpen());
+  };
+
   return (
     <TopWrapper>
       <StyledContainer maxWidth={false}>
@@ -584,6 +616,18 @@ const Topbar = () => {
                 <PulsatingCircle />
                 Global Trades
               </APILabel>
+              <ChatButton
+                onClick={handleChatClick}
+                sx={{
+                  color: theme.palette.text.primary,
+                  '&:hover': {
+                    color: theme.palette.primary.main
+                  }
+                }}
+              >
+                <ChatIcon />
+                <NotificationBadge />
+              </ChatButton>
               {!fullSearch && isDesktop && <Wallet style={{ marginRight: '9px' }} />}
             </Box>
           )}
