@@ -33,17 +33,13 @@ import { useTheme } from '@mui/material/styles';
 import PersonIcon from '@mui/icons-material/Person';
 import ChatNFTPicker from './ChatNFTPicker';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'; // Updated Spark-themed icon
 import SettingsIcon from '@mui/icons-material/Settings';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
-import AIChat from './AIChat'; // If you have an AIChat component, rename accordingly
 import ChatSettings from './ChatSettings';
 import StoreIcon from '@mui/icons-material/Store';
 import Store from './Store';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import Trades from './Trades';
-import TerminalIcon from '@mui/icons-material/Terminal'; // Import Terminal Icon
-import Terminal from './Terminal'; // Import Terminal Component
 
 // Styled component for custom scrollbar
 const CustomScrollBox = styled(Box)(({ theme }) => ({
@@ -452,13 +448,6 @@ function Chatbox() {
                 </ListItemIcon>
                 <ListItemText>Chatbox</ListItemText>
               </MenuItem>
-              <MenuItem onClick={() => handleOptionSelect('AI Chat')}>
-                <ListItemIcon>
-                  <AutoAwesomeIcon fontSize="small" /> {/* Updated Spark-themed icon */}
-                  {/* <FlashOnIcon fontSize="small" /> */} {/* Alternative Spark-themed icon */}
-                </ListItemIcon>
-                <ListItemText>AI Chat</ListItemText>
-              </MenuItem>
               <MenuItem onClick={() => handleOptionSelect('Trades')}>
                 <ListItemIcon>
                   <SwapHorizIcon fontSize="small" />
@@ -470,12 +459,6 @@ function Chatbox() {
                   <StoreIcon fontSize="small" />
                 </ListItemIcon>
                 <ListItemText>Store</ListItemText>
-              </MenuItem>
-              <MenuItem onClick={() => handleOptionSelect('Terminal')}>
-                <ListItemIcon>
-                  <TerminalIcon fontSize="small" /> {/* Terminal Icon */}
-                </ListItemIcon>
-                <ListItemText>Terminal</ListItemText>
               </MenuItem>
               <MenuItem onClick={() => handleOptionSelect('Settings')}>
                 <ListItemIcon>
@@ -504,10 +487,8 @@ function Chatbox() {
         {selectedOption === 'Chatbox' && (
           <ChatPanel chats={chatHistory} onStartPrivateMessage={startPrivateMessage} />
         )}
-        {selectedOption === 'AI Chat' && <AIChat />}
         {selectedOption === 'Trades' && <Trades />}
         {selectedOption === 'Store' && <Store />}
-        {selectedOption === 'Terminal' && <Terminal />} {/* Render Terminal */}
         {selectedOption === 'Settings' && <ChatSettings />}
       </CustomScrollBox>
       {accountProfile?.account && selectedOption === 'Chatbox' && (
