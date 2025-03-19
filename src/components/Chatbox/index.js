@@ -111,13 +111,13 @@ function EmojiPicker({ onSelect }) {
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(6, 1fr)', // Changed from 4 to 6 columns
-        gap: '6px', // Reduced from 12px
+        gridTemplateColumns: 'repeat(6, 1fr)',
+        gap: '4px', // Further reduced from 6px to 4px
         backgroundColor: backgroundColor,
         boxShadow: '0px 0px 10px rgba(0,0,0,0.3)',
-        borderRadius: '8px', // Reduced from 12px
-        padding: '10px', // Reduced from 16px
-        maxWidth: '240px', // Reduced from 280px
+        borderRadius: '8px',
+        padding: '8px', // Reduced from 10px to 8px
+        maxWidth: '260px', // Increased from 240px to 260px
         zIndex: 1000,
         border: '1px solid #333333'
       }}
@@ -126,15 +126,15 @@ function EmojiPicker({ onSelect }) {
         <Box
           key={index}
           sx={{
-            fontSize: '22px', // Reduced from 28px
-            padding: '4px', // Reduced from 8px
+            fontSize: '18px', // Reduced from 22px to 18px
+            padding: '3px', // Reduced from 4px to 3px
             cursor: 'pointer',
             userSelect: 'none',
             textAlign: 'center',
             color: emojiColor,
             '&:hover': {
               backgroundColor: hoverColor,
-              borderRadius: '4px' // Reduced from 8px
+              borderRadius: '4px'
             }
           }}
           onClick={() => onSelect(emoji)}
