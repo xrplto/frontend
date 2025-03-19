@@ -12,7 +12,11 @@ import {
   Divider,
   Backdrop
 } from '@mui/material';
-import { Send as SendIcon, LocalOffer as LocalOfferIcon } from '@mui/icons-material';
+import {
+  Send as SendIcon,
+  LocalOffer as LocalOfferIcon,
+  ContentCopy as ContentCopyIcon
+} from '@mui/icons-material';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import CreateOfferDialog from 'src/nft/CreateOfferDialog';
@@ -35,7 +39,7 @@ const StyledTooltip = styled(({ className, ...props }) => (
   [`& .${tooltipClasses.tooltip}`]: {
     backgroundColor: theme.palette.mode === 'dark' ? '#1A1A1A' : theme.palette.background.paper,
     color: theme.palette.text.primary,
-    maxWidth: 360,
+    maxWidth: 420,
     fontSize: theme.typography.pxToRem(12),
     padding: 0,
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
@@ -523,9 +527,10 @@ const NFTDisplay = ({ nftLink }) => {
                 }
               }}
             >
+              {/* Media display */}
               <Box
                 sx={{
-                  mb: 2,
+                  mb: 1.5,
                   borderRadius: 1.5,
                   overflow: 'hidden',
                   boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
@@ -567,57 +572,81 @@ const NFTDisplay = ({ nftLink }) => {
                 </Box>
               </Box>
 
-              <Typography
-                variant="subtitle1"
-                gutterBottom
+              {/* NFT Title and Info */}
+              <Box
                 sx={{
-                  fontWeight: 600,
-                  color: theme.palette.primary.main,
-                  letterSpacing: '-0.02em',
-                  mb: 1.5
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  mb: 1
                 }}
               >
-                {nft ? nft.name : name}
-              </Typography>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.primary.main,
+                    letterSpacing: '-0.02em'
+                  }}
+                >
+                  {nft ? nft.name : name}
+                </Typography>
+                {nft?.rarity_rank && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: 'bold',
+                      bgcolor:
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(255,255,255,0.1)'
+                          : 'rgba(0,0,0,0.05)',
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: 1
+                    }}
+                  >
+                    Rank: {nft.rarity_rank} / {nft.total}
+                  </Typography>
+                )}
+              </Box>
 
-              <Divider sx={{ my: 1.5, opacity: 0.6 }} />
-
-              {nft?.collection && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2">Collection:</Typography>
-                  <Typography variant="body2" fontWeight="bold">
-                    {nft.collection}
-                  </Typography>
-                </Box>
-              )}
-              {nft?.rarity_rank && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2">Rarity Rank:</Typography>
-                  <Typography variant="body2" fontWeight="bold">
-                    {nft.rarity_rank} / {nft.total}
-                  </Typography>
-                </Box>
-              )}
-              {nft?.royalty && (
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="body2">Royalty:</Typography>
-                  <Typography variant="body2" fontWeight="bold">
-                    {(nft.royalty / 1000).toFixed(2)}%
-                  </Typography>
-                </Box>
-              )}
-              {nft?.cfloor && (
-                <>
-                  <Divider sx={{ my: 1 }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">Floor Price:</Typography>
-                    <Typography variant="body2" fontWeight="bold">
+              {/* Collection and other details */}
+              <Box sx={{ mb: 1 }}>
+                {nft?.collection && (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Collection:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="medium">
+                      {nft.collection}
+                    </Typography>
+                  </Box>
+                )}
+                {nft?.royalty && (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Royalty:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="medium">
+                      {(nft.royalty / 1000).toFixed(2)}%
+                    </Typography>
+                  </Box>
+                )}
+                {nft?.cfloor && (
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Floor Price:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold" color="primary.main">
                       {nft.cfloor.amount} {nft.cfloor.currency}
                     </Typography>
                   </Box>
-                </>
-              )}
+                )}
+              </Box>
+
               <Divider sx={{ my: 1 }} />
+
+              {/* Properties */}
               {nft?.props && nft.props.length > 0 && (
                 <>
                   <Typography
@@ -634,8 +663,8 @@ const NFTDisplay = ({ nftLink }) => {
                   <Box
                     sx={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                      gap: 0.5,
+                      gridTemplateColumns: 'repeat(3, 1fr)',
+                      gap: 0.75,
                       mb: 1
                     }}
                   >
@@ -692,25 +721,39 @@ const NFTDisplay = ({ nftLink }) => {
                   </Box>
                 </>
               )}
+
+              {/* Replace Token ID with Copy Button */}
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0.5 }}>
+                <Tooltip title="Copy Token ID">
+                  <Button
+                    size="small"
+                    startIcon={<ContentCopyIcon fontSize="small" />}
+                    onClick={() => {
+                      navigator.clipboard.writeText(tokenId);
+                      openSnackbar('Token ID copied to clipboard', 'success');
+                    }}
+                    sx={{
+                      fontSize: '0.65rem',
+                      py: 0.25,
+                      px: 1,
+                      minHeight: 0,
+                      textTransform: 'none'
+                    }}
+                  >
+                    Copy ID
+                  </Button>
+                </Tooltip>
+              </Box>
+
               <Divider sx={{ my: 0.75 }} />
-              <Typography
-                variant="caption"
-                color="textSecondary"
-                sx={{
-                  fontSize: '0.65rem',
-                  display: 'block',
-                  py: 0.25
-                }}
-              >
-                Token ID: {tokenId}
-              </Typography>
-              <Divider sx={{ my: 0.75 }} />
+
+              {/* Action Buttons */}
               {isOwner ? (
                 <Box
                   sx={{
                     display: 'flex',
                     gap: 1,
-                    mt: 1.5
+                    mt: 1
                   }}
                 >
                   <Button
@@ -771,7 +814,7 @@ const NFTDisplay = ({ nftLink }) => {
                   />
                 </Box>
               ) : (
-                <Stack spacing={1} direction="row" sx={{ mt: 1.5 }}>
+                <Stack spacing={1} direction="row" sx={{ mt: 1 }}>
                   <Button
                     fullWidth
                     disabled={!cost || burnt}
@@ -821,31 +864,48 @@ const NFTDisplay = ({ nftLink }) => {
         enterDelay={200}
         leaveDelay={200}
       >
+        {/* Main compact display */}
         <Box
           sx={{
             display: 'flex',
             alignItems: 'center',
-            marginLeft: 0.5,
-            gap: 1,
-            padding: '4px 8px',
+            gap: 0.75,
+            padding: '3px 6px',
             borderRadius: 1,
             '&:hover': {
               backgroundColor: theme.palette.action.hover
             },
-            transition: 'background-color 0.2s'
+            transition: 'background-color 0.2s',
+            cursor: 'pointer'
           }}
         >
           {getMediaPreview()}
-          <Typography
-            variant="caption"
-            sx={{
-              color: theme.palette.primary.main,
-              fontWeight: 600,
-              fontSize: '0.8rem'
-            }}
-          >
-            {nft ? nft.name : name}
-          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: theme.palette.primary.main,
+                fontWeight: 600,
+                fontSize: '0.75rem',
+                lineHeight: 1.2
+              }}
+            >
+              {nft ? nft.name : name}
+            </Typography>
+            {cost && (
+              <Typography
+                variant="caption"
+                sx={{
+                  color: theme.palette.success.main,
+                  fontSize: '0.65rem',
+                  fontWeight: 500,
+                  lineHeight: 1.2
+                }}
+              >
+                {cost.amount} {cost.currency}
+              </Typography>
+            )}
+          </Box>
         </Box>
       </StyledTooltip>
       <Backdrop
