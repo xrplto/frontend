@@ -232,7 +232,7 @@ const UserSummary = ({ user, rankName = 'Member', rank, handleTrade }) => {
       <Paper
         elevation={3}
         sx={{
-          p: 4,
+          p: 2.5,
           maxWidth: 450,
           width: '100%',
           border: '2px solid white',
@@ -240,26 +240,26 @@ const UserSummary = ({ user, rankName = 'Member', rank, handleTrade }) => {
           boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)'
         }}
       >
-        <Stack spacing={3}>
-          <Stack direction="row" spacing={3} alignItems="center">
+        <Stack spacing={2}>
+          <Stack direction="row" spacing={2} alignItems="center">
             <Avatar
               alt={username}
               src={userImage || '/static/crossmark.webp'}
               sx={{
-                width: 90,
-                height: 90,
-                border: `3px solid ${activeRankColors[rank] || '#808080'}`, // Circle border according to rank, default to gray
-                boxShadow: `0 0 15px ${activeRankColors[rank] || '#808080'}` // Glow effect similar to ChatPanel, default to gray
+                width: 70,
+                height: 70,
+                border: `3px solid ${activeRankColors[rank] || '#808080'}`,
+                boxShadow: `0 0 15px ${activeRankColors[rank] || '#808080'}`
               }}
             />
             <Box>
               <Typography
-                variant="h5"
+                variant="h6"
                 fontWeight="bold"
                 noWrap
                 gutterBottom
                 sx={{
-                  color: activeRankColors[rank] || '#808080', // Default to gray if no rank
+                  color: activeRankColors[rank] || '#808080',
                   display: 'flex',
                   alignItems: 'center'
                 }}
@@ -270,7 +270,7 @@ const UserSummary = ({ user, rankName = 'Member', rank, handleTrade }) => {
                     sx={{
                       fontSize: '1.2rem',
                       ml: 0.5,
-                      color: '#1DA1F2' // Twitter blue color for verified icon
+                      color: '#1DA1F2'
                     }}
                   />
                 )}
@@ -278,12 +278,12 @@ const UserSummary = ({ user, rankName = 'Member', rank, handleTrade }) => {
               <Chip
                 label={rankName}
                 sx={{
-                  bgcolor: activeRankColors[rank] || '#808080', // Default to gray if no rank
+                  bgcolor: activeRankColors[rank] || '#808080',
                   color: '#fff',
                   fontWeight: 'bold',
                   boxShadow: rankGlowEffect(theme)[rank] || 'none',
-                  padding: '6px 10px',
-                  fontSize: '0.9rem'
+                  padding: '4px 8px',
+                  fontSize: '0.85rem'
                 }}
               />
             </Box>
@@ -291,78 +291,83 @@ const UserSummary = ({ user, rankName = 'Member', rank, handleTrade }) => {
 
           <Divider sx={{ borderColor: 'rgba(0, 0, 0, 0.08)' }} />
 
-          <Grid container spacing={2}>
-            <InfoItem label="Account" value={user.username} />
-            <InfoItem label="XUMM KYC" value={kycStatus || 'Loading...'} />
-            <InfoItem label="Joined" value={joinedDate || 'Loading...'} />
-            <InfoItem label="Last Active" value={lastActive || 'Loading...'} />
-            <InfoItem
-              label="P/L"
-              value={user.profitLoss || 'N/A'}
-              valueColor={getPLColor(user.profitLoss)}
-            />
-            <InfoItem label="NFTs" value={nftCount || 'None'} />
-            <InfoItem label="Tokens" value={tokenCount || 'None'} />
-            <InfoItem label="Chats" value={user.activePosts} />
-            <InfoItem label="Currently" value={getCurrentStatus()} />
-            <InfoItem label="Reserve XRP" value={reserveXrp ? `${reserveXrp} XRP` : 'Loading...'} />
-            <InfoItem
-              label="Available XRP"
-              value={availableXrpBalance ? `${availableXrpBalance} XRP` : 'Loading...'}
-            />
+          <Grid container spacing={1.5}>
+            <Grid item xs={6}>
+              <InfoItem label="Account" value={user.username} />
+              <InfoItem label="XUMM KYC" value={kycStatus || 'Loading...'} />
+              <InfoItem label="Joined" value={joinedDate || 'Loading...'} />
+              <InfoItem label="Last Active" value={lastActive || 'Loading...'} />
+              <InfoItem
+                label="P/L"
+                value={user.profitLoss || 'N/A'}
+                valueColor={getPLColor(user.profitLoss)}
+              />
+              <InfoItem label="Currently" value={getCurrentStatus()} />
+            </Grid>
+            <Grid item xs={6}>
+              <InfoItem label="NFTs" value={nftCount || 'None'} />
+              <InfoItem label="Tokens" value={tokenCount || 'None'} />
+              <InfoItem label="Chats" value={user.activePosts} />
+              <InfoItem
+                label="Reserve XRP"
+                value={reserveXrp ? `${reserveXrp} XRP` : 'Loading...'}
+              />
+              <InfoItem
+                label="Available XRP"
+                value={availableXrpBalance ? `${availableXrpBalance} XRP` : 'Loading...'}
+              />
+            </Grid>
           </Grid>
 
-          <Stack direction="row" spacing={2} justifyContent="center" mt={2}>
-            {!isOwnProfile && (
-              <>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleSend}
-                  sx={{
-                    borderRadius: '20px',
-                    padding: '8px 16px',
-                    fontWeight: 'bold',
-                    textTransform: 'none',
-                    fontSize: '0.9rem',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-                  }}
-                >
-                  Send
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  onClick={handleTrade}
-                  sx={{
-                    borderRadius: '20px',
-                    padding: '8px 16px',
-                    fontWeight: 'bold',
-                    textTransform: 'none',
-                    fontSize: '0.9rem',
-                    borderWidth: '2px'
-                  }}
-                >
-                  Trade
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={() => handleSendMessage(user)}
-                  sx={{
-                    borderRadius: '20px',
-                    padding: '8px 16px',
-                    fontWeight: 'bold',
-                    textTransform: 'none',
-                    fontSize: '0.9rem',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-                  }}
-                >
-                  Message
-                </Button>
-              </>
-            )}
-          </Stack>
+          {!isOwnProfile && (
+            <Stack direction="row" spacing={1.5} justifyContent="center" mt={1}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSend}
+                sx={{
+                  borderRadius: '20px',
+                  padding: '6px 12px',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  fontSize: '0.85rem',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                }}
+              >
+                Send
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleTrade}
+                sx={{
+                  borderRadius: '20px',
+                  padding: '6px 12px',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  fontSize: '0.85rem',
+                  borderWidth: '2px'
+                }}
+              >
+                Trade
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => handleSendMessage(user)}
+                sx={{
+                  borderRadius: '20px',
+                  padding: '6px 12px',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  fontSize: '0.85rem',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                }}
+              >
+                Message
+              </Button>
+            </Stack>
+          )}
         </Stack>
       </Paper>
 
@@ -372,14 +377,14 @@ const UserSummary = ({ user, rankName = 'Member', rank, handleTrade }) => {
 };
 
 const InfoItem = ({ label, value, valueColor }) => (
-  <Grid item xs={6}>
-    <Typography variant="caption" color="text.secondary" gutterBottom>
+  <Box mb={0.75}>
+    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.25 }}>
       {label}
     </Typography>
-    <Typography variant="body2" fontWeight="medium" color={valueColor}>
+    <Typography variant="body2" fontWeight="medium" color={valueColor} sx={{ lineHeight: 1.2 }}>
       {value}
     </Typography>
-  </Grid>
+  </Box>
 );
 
 const handleSendTip = (user) => {
