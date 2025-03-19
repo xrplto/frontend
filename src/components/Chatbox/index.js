@@ -98,20 +98,26 @@ function EmojiPicker({ onSelect }) {
     '😜',
     '🥰',
     '🤩',
-    '👏'
+    '👏',
+    '👋',
+    '🙌',
+    '✨',
+    '💯',
+    '🤣',
+    '😊'
   ];
 
   return (
     <Box
       sx={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '12px', // Increased from 8px
+        gridTemplateColumns: 'repeat(6, 1fr)', // Changed from 4 to 6 columns
+        gap: '6px', // Reduced from 12px
         backgroundColor: backgroundColor,
         boxShadow: '0px 0px 10px rgba(0,0,0,0.3)',
-        borderRadius: '12px', // Increased from 10px
-        padding: '16px', // Increased from 10px
-        maxWidth: '280px', // Increased from 240px
+        borderRadius: '8px', // Reduced from 12px
+        padding: '10px', // Reduced from 16px
+        maxWidth: '240px', // Reduced from 280px
         zIndex: 1000,
         border: '1px solid #333333'
       }}
@@ -120,15 +126,15 @@ function EmojiPicker({ onSelect }) {
         <Box
           key={index}
           sx={{
-            fontSize: '28px', // Increased from 24px
-            padding: '8px', // Increased from 5px
+            fontSize: '22px', // Reduced from 28px
+            padding: '4px', // Reduced from 8px
             cursor: 'pointer',
             userSelect: 'none',
             textAlign: 'center',
             color: emojiColor,
             '&:hover': {
               backgroundColor: hoverColor,
-              borderRadius: '8px' // Increased from 5px
+              borderRadius: '4px' // Reduced from 8px
             }
           }}
           onClick={() => onSelect(emoji)}

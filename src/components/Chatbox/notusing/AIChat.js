@@ -7,7 +7,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { styled } from '@mui/material/styles';
 import axios from 'axios';
-import DefaultPrompts from '../DefaultPrompts'; // We'll create this component
+import DefaultPrompts from './DefaultPrompts'; // We'll create this component
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
