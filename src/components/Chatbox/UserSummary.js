@@ -69,7 +69,7 @@ const UserSummary = ({ user, rankName = 'Member', rank, handleTrade }) => {
     const fetchUserImage = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/set-user-image?account=${user.username}`
+          `http://37.27.134.126:5000/api/set-user-image?account=${user.username}`
         );
         if (response.data.user) {
           setUserImage(

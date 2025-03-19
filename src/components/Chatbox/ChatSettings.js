@@ -86,7 +86,7 @@ function ChatSettings() {
 
     // Send update to server
     try {
-      const response = await fetch('http://localhost:5000/api/set-user-image', {
+      const response = await fetch('http://37.27.134.126:5000/api/set-user-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -185,7 +185,7 @@ function ChatSettings() {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/set-user-image', {
+      const response = await fetch('http://37.27.134.126:5000/api/set-user-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -237,7 +237,7 @@ function ChatSettings() {
     const fetchUserProfile = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/set-user-image?account=${accountProfile.account}`
+          `http://37.27.134.126:5000/api/set-user-image?account=${accountProfile.account}`
         );
         if (!response.ok) {
           throw new Error('Failed to fetch user profile');

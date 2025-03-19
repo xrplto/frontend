@@ -10,12 +10,12 @@ import {
   tooltipClasses,
   IconButton,
   Link,
-  alpha,
+  alpha
 } from '@mui/material';
 import { parseISO } from 'date-fns';
 import {
   ChatBubbleOutline as ChatBubbleOutlineIcon,
-  Verified as VerifiedIcon,
+  Verified as VerifiedIcon
 } from '@mui/icons-material';
 import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
@@ -30,7 +30,7 @@ const CustomWidthTooltip = styled(({ className, ...props }) => (
 ))({
   [`& .${tooltipClasses.tooltip}`]: {
     maxWidth: 500,
-    padding: '0 !important',
+    padding: '0 !important'
   }
 });
 
@@ -125,7 +125,6 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   const [tradeModalOpen, setTradeModalOpen] = useState(false);
   const [trader, setTrader] = useState({});
 
-
   // Inject lightningEffect into the document's head
   const styleElement = document.createElement('style');
   styleElement.textContent = lightningEffect;
@@ -148,7 +147,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
       const imagePromises = uniqueUsers.map(async (account) => {
         try {
           const response = await axios.get(
-            `http://37.27.134.126:5000/api/set-user-image?account=${account}`  //http://37.27.134.126:5000
+            `http://37.27.134.126:5000/api/set-user-image?account=${account}` //http://37.27.134.126:5000
           );
           if (response.data.user) {
             const user = response.data.user;
@@ -156,8 +155,8 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
               [account]: user.imageUrl
                 ? `https://s2.xrpnft.com/d1/${user.imageUrl}`
                 : user.nftTokenId
-                  ? `https://s2.xrpnft.com/d1/${user.nftTokenId}`
-                  : null
+                ? `https://s2.xrpnft.com/d1/${user.nftTokenId}`
+                : null
             };
           } else {
             console.log(`No user data found for ${account}`);
@@ -179,15 +178,13 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   }, [chats]);
 
   useEffect(() => {
-
     async function fetchActiveRanks() {
       const res = await axios.get('http://37.27.134.126:5000/api/fetch-active-ranks'); //http://37.27.134.126:5000
       setActiveRanks(res.data);
     }
 
     fetchActiveRanks();
-
-  }, [])
+  }, []);
 
   return (
     <CustomScrollBox
@@ -199,7 +196,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
         display: 'flex',
         flexDirection: 'column-reverse',
         padding: 1, // Reduced padding from 2 to 1
-        backgroundColor: alpha(theme.palette.background.default, 0.8), // Semi-transparent background
+        backgroundColor: alpha(theme.palette.background.default, 0.8) // Semi-transparent background
       }}
     >
       {Array.isArray(chats) && chats.length > 0 ? (
@@ -225,7 +222,8 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
             const displayRecipient = truncateString(privateMessageRecipient);
 
             const isCurrentUser = chat.username === accountProfile?.account;
-            const recipientRankColor = activeRankColors[activeRanks[privateMessageRecipient]] || '#808080';
+            const recipientRankColor =
+              activeRankColors[activeRanks[privateMessageRecipient]] || '#808080';
 
             // Parse NewsBot message
             let newsData = null;
@@ -252,7 +250,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-1px)', // Reduced transform from -2px to -1px
-                    boxShadow: theme.shadows[2], // Reduced shadow from 4 to 2
+                    boxShadow: theme.shadows[2] // Reduced shadow from 4 to 2
                   }
                 }}
               >
@@ -263,8 +261,12 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                     sx={{
                       width: 32, // Reduced size from 40 to 32
                       height: 32, // Reduced size from 40 to 32
-                      border: `3px solid ${activeRankColors[activeRanks[chat.username]] || '#808080'}`, // Circle border according to rank, default to gray
-                      boxShadow: `0 0 15px ${activeRankColors[activeRanks[chat.username]] || '#808080'}`, // Glow effect similar to UserSummary, default to gray
+                      border: `3px solid ${
+                        activeRankColors[activeRanks[chat.username]] || '#808080'
+                      }`, // Circle border according to rank, default to gray
+                      boxShadow: `0 0 15px ${
+                        activeRankColors[activeRanks[chat.username]] || '#808080'
+                      }` // Glow effect similar to UserSummary, default to gray
                     }}
                   />
                   <Box sx={{ flexGrow: 1 }}>
@@ -273,14 +275,21 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                         title={
                           <UserSummary
                             user={chat}
-                            activeColor={activeRankColors[activeRanks[chat.username]] || theme.palette.text.primary}
+                            activeColor={
+                              activeRankColors[activeRanks[chat.username]] ||
+                              theme.palette.text.primary
+                            }
                             rankName={ranks[activeRanks[chat.username]]?.name}
                             rank={activeRanks[chat.username]}
-                            handleTrade = {() => {
+                            handleTrade={() => {
                               setTrader(chat);
                               setTradeModalOpen(true);
                             }}
-                          />} arrow placement="right">
+                          />
+                        }
+                        arrow
+                        placement="right"
+                      >
                         <Typography
                           variant="subtitle2"
                           sx={{
@@ -289,7 +298,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                             textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
                             cursor: 'pointer',
                             display: 'flex',
-                            alignItems: 'center',
+                            alignItems: 'center'
                           }}
                         >
                           {displayUsername}
@@ -298,16 +307,14 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                               sx={{
                                 fontSize: '1rem',
                                 ml: 0.5,
-                                color: '#1DA1F2', // Twitter blue color for verified icon
+                                color: '#1DA1F2' // Twitter blue color for verified icon
                               }}
                             />
                           )}
                           {chat.isPrivate && (
                             <>
                               {' → '}
-                              <span style={{ color: recipientRankColor }}>
-                                {displayRecipient}
-                              </span>
+                              <span style={{ color: recipientRankColor }}>{displayRecipient}</span>
                             </>
                           )}
                         </Typography>
@@ -354,8 +361,8 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                                 newsData.sentiment === 'Bullish'
                                   ? 'green'
                                   : newsData.sentiment === 'Bearish'
-                                    ? 'red'
-                                    : 'inherit'
+                                  ? 'red'
+                                  : 'inherit'
                             }}
                           >
                             • {newsData.sentiment}
@@ -370,7 +377,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                           color: chat.isPrivate
                             ? theme.palette.secondary.main
                             : theme.palette.text.primary,
-                          lineHeight: 1.4, // Reduced line height from 1.6 to 1.4
+                          lineHeight: 1.4 // Reduced line height from 1.6 to 1.4
                         }}
                       >
                         {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
@@ -387,7 +394,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                     sx={{
                       color: theme.palette.text.secondary,
                       opacity: 0.8,
-                      fontStyle: 'italic',
+                      fontStyle: 'italic'
                     }}
                   >
                     {timeAgo}
