@@ -55,18 +55,18 @@ const formatTimeAgo = (date) => {
 
 const CustomScrollBox = styled(Stack)(({ theme }) => ({
   '&::-webkit-scrollbar': {
-    width: '8px'
+    width: '6px'
   },
   '&::-webkit-scrollbar-track': {
-    background: '#a9a9a94d',
+    background: alpha(theme.palette.divider, 0.1),
     borderRadius: '10px'
   },
   '&::-webkit-scrollbar-thumb': {
-    background: 'darkgrey',
+    background: alpha(theme.palette.divider, 0.5),
     borderRadius: '10px'
   },
   '&::-webkit-scrollbar-thumb:hover': {
-    background: '#a9a9a9d4',
+    background: alpha(theme.palette.divider, 0.8),
     cursor: 'pointer'
   }
 }));
@@ -189,14 +189,14 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   return (
     <CustomScrollBox
       ref={chatContainerRef}
-      gap={1} // Reduced gap from 2 to 1
+      gap={0.75}
       sx={{
         height: '100%',
         overflowY: 'auto',
         display: 'flex',
         flexDirection: 'column-reverse',
-        padding: 1, // Reduced padding from 2 to 1
-        backgroundColor: alpha(theme.palette.background.default, 0.8) // Semi-transparent background
+        padding: '0.75rem',
+        backgroundColor: alpha(theme.palette.background.default, 0.8)
       }}
     >
       {Array.isArray(chats) && chats.length > 0 ? (
@@ -240,37 +240,46 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
             return (
               <Paper
                 key={index}
-                elevation={1} // Reduced elevation from 2 to 1
+                elevation={0}
                 sx={{
                   backgroundColor: isCurrentUser
-                    ? alpha(theme.palette.primary.main, 0.1)
-                    : theme.palette.background.paper,
-                  borderRadius: 1, // Reduced border radius from 2 to 1
-                  p: 1, // Reduced padding from 2 to 1
-                  transition: 'all 0.3s ease',
+                    ? alpha(theme.palette.primary.main, 0.08)
+                    : alpha(theme.palette.background.paper, 0.9),
+                  borderRadius: '0.75rem',
+                  p: 0.75,
+                  transition: 'all 0.2s ease',
+                  border: `1px solid ${alpha(
+                    isCurrentUser ? theme.palette.primary.main : theme.palette.divider,
+                    0.1
+                  )}`,
                   '&:hover': {
-                    transform: 'translateY(-1px)', // Reduced transform from -2px to -1px
-                    boxShadow: theme.shadows[2] // Reduced shadow from 4 to 2
+                    transform: 'translateY(-1px)',
+                    boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.05)}`,
+                    backgroundColor: isCurrentUser
+                      ? alpha(theme.palette.primary.main, 0.12)
+                      : alpha(theme.palette.background.paper, 1)
                   }
                 }}
               >
-                <Stack direction="row" spacing={1} alignItems="flex-start">
+                <Stack direction="row" spacing={0.75} alignItems="flex-start">
                   <Avatar
                     alt={chat.username}
                     src={userImages[chat.username] || '/static/crossmark.webp'}
                     sx={{
-                      width: 32, // Reduced size from 40 to 32
-                      height: 32, // Reduced size from 40 to 32
-                      border: `3px solid ${
+                      width: 28,
+                      height: 28,
+                      border: `2px solid ${
                         activeRankColors[activeRanks[chat.username]] || '#808080'
-                      }`, // Circle border according to rank, default to gray
-                      boxShadow: `0 0 15px ${
-                        activeRankColors[activeRanks[chat.username]] || '#808080'
-                      }` // Glow effect similar to UserSummary, default to gray
+                      }`,
+                      boxShadow: `0 0 10px ${alpha(
+                        activeRankColors[activeRanks[chat.username]] || '#808080',
+                        0.5
+                      )}`,
+                      mr: 0.25
                     }}
                   />
                   <Box sx={{ flexGrow: 1 }}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
+                    <Stack direction="row" alignItems="center" spacing={0.5}>
                       <CustomWidthTooltip
                         title={
                           <UserSummary
@@ -293,8 +302,9 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                         <Typography
                           variant="subtitle2"
                           sx={{
-                            fontWeight: 'bold',
-                            color: activeRankColors[activeRanks[chat.username]] || '#808080', // Default to gray if no rank
+                            fontWeight: 600,
+                            fontSize: '0.8rem',
+                            color: activeRankColors[activeRanks[chat.username]] || '#808080',
                             textShadow: rankGlowEffect(theme)[chat.rank] || 'none',
                             cursor: 'pointer',
                             display: 'flex',
@@ -305,15 +315,15 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                           {isVerified && (
                             <VerifiedIcon
                               sx={{
-                                fontSize: '1rem',
-                                ml: 0.5,
-                                color: '#1DA1F2' // Twitter blue color for verified icon
+                                fontSize: '0.8rem',
+                                ml: 0.25,
+                                color: '#1DA1F2'
                               }}
                             />
                           )}
                           {chat.isPrivate && (
                             <>
-                              {' → '}
+                              <span style={{ margin: '0 0.25rem', opacity: 0.7 }}>→</span>
                               <span style={{ color: recipientRankColor }}>{displayRecipient}</span>
                             </>
                           )}
@@ -327,22 +337,26 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                             sx={{
                               padding: 0,
                               color: theme.palette.text.secondary,
+                              fontSize: '0.75rem',
                               '&:hover': {
                                 color: theme.palette.primary.main
                               }
                             }}
                           >
-                            <ChatBubbleOutlineIcon fontSize="small" />
+                            <ChatBubbleOutlineIcon fontSize="inherit" />
                           </IconButton>
                         </Tooltip>
                       )}
                     </Stack>
                     {newsData ? (
-                      <Box sx={{ mt: 1 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                      <Box sx={{ mt: 0.5 }}>
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 600, fontSize: '0.8rem' }}
+                        >
                           {newsData.title}
                         </Typography>
-                        <Typography variant="body2" sx={{ mt: 0.5 }}>
+                        <Typography variant="body2" sx={{ mt: 0.25, fontSize: '0.75rem' }}>
                           {newsData.summary !== 'No summary available'
                             ? newsData.summary
                             : 'No summary available.'}
@@ -356,7 +370,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                           <Typography
                             variant="caption"
                             sx={{
-                              ml: 1,
+                              ml: 0.5,
                               color:
                                 newsData.sentiment === 'Bullish'
                                   ? 'green'
@@ -371,13 +385,15 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                       </Box>
                     ) : (
                       <Typography
-                        variant="body2" // Changed from body1 to body2
+                        variant="body2"
                         sx={{
-                          mt: 0.5, // Reduced margin top from 1 to 0.5
+                          mt: 0.25,
                           color: chat.isPrivate
                             ? theme.palette.secondary.main
                             : theme.palette.text.primary,
-                          lineHeight: 1.4 // Reduced line height from 1.6 to 1.4
+                          lineHeight: 1.3,
+                          fontSize: '0.8rem',
+                          wordBreak: 'break-word'
                         }}
                       >
                         {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
@@ -393,8 +409,10 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                     variant="caption"
                     sx={{
                       color: theme.palette.text.secondary,
-                      opacity: 0.8,
-                      fontStyle: 'italic'
+                      opacity: 0.6,
+                      fontStyle: 'italic',
+                      fontSize: '0.65rem',
+                      ml: 0.5
                     }}
                   >
                     {timeAgo}
@@ -404,15 +422,14 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
             );
           })
       ) : (
-        <Typography variant="body2" sx={{ textAlign: 'center', py: 2, fontStyle: 'italic' }}>
+        <Typography
+          variant="body2"
+          sx={{ textAlign: 'center', py: 1.5, fontStyle: 'italic', opacity: 0.7 }}
+        >
           No messages to display.
         </Typography>
       )}
-      <Trade
-        open={tradeModalOpen}
-        onClose={() => setTradeModalOpen(false)}
-        tradePartner={trader} // This is the user profile being viewed
-      />
+      <Trade open={tradeModalOpen} onClose={() => setTradeModalOpen(false)} tradePartner={trader} />
     </CustomScrollBox>
   );
 };
