@@ -64,54 +64,58 @@ const NFTs = ({ account, collection, type = 'collected', limit, onSelect, smallS
       elevation={3}
       ref={scrollRef}
       sx={{
-        padding: '12px',
-        pt: 1.5,
-        height: '320px',
-        width: '300px',
+        padding: '6px',
+        pt: 0.75,
+        height: '300px',
+        width: '290px',
         overflow: 'auto',
-        borderRadius: '10px',
+        borderRadius: '8px',
         backgroundColor: (theme) => theme.palette.background.paper,
         '&::-webkit-scrollbar': {
-          width: '6px'
+          width: '4px'
         },
         '&::-webkit-scrollbar-thumb': {
-          borderRadius: '6px',
+          borderRadius: '4px',
           backgroundColor: (theme) => theme.palette.primary.main
         }
       }}
     >
       {selectedCollection && (
-        <Box display="flex" justifyContent="start" mb={1}>
+        <Box display="flex" justifyContent="start" mb={0.25}>
           <Button
             size="small"
             onClick={handleBack}
-            startIcon={<ArrowBackIcon fontSize="small" />}
+            startIcon={<ArrowBackIcon fontSize="small" sx={{ fontSize: '0.9rem', ml: -0.5 }} />}
             variant="outlined"
             sx={{
-              borderRadius: '16px',
-              py: 0.5,
-              minWidth: '80px'
+              borderRadius: '12px',
+              py: 0,
+              px: 1,
+              minWidth: '60px',
+              height: '20px'
             }}
           >
-            <Typography variant="caption">Back</Typography>
+            <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+              Back
+            </Typography>
           </Button>
         </Box>
       )}
       {loading ? (
         <Stack alignItems="center" justifyContent="center" height="100%">
-          <PulseLoader color={(theme) => theme.palette.primary.main} size={8} />
+          <PulseLoader color={(theme) => theme.palette.primary.main} size={6} />
         </Stack>
       ) : nfts.length === 0 ? (
         <Stack alignItems="center" justifyContent="center" height="100%">
-          <ErrorOutlineIcon sx={{ mb: 1, color: 'text.secondary', fontSize: '1.5rem' }} />
-          <Typography variant="caption" color="text.secondary">
+          <ErrorOutlineIcon sx={{ mb: 0.5, color: 'text.secondary', fontSize: '1.25rem' }} />
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
             No NFTs found
           </Typography>
         </Stack>
       ) : (
-        <Grid container spacing={1}>
+        <Grid container spacing={0.5}>
           {nfts.map((nft, index) => (
-            <Grid item key={index} xs={6}>
+            <Grid item key={index} xs={3}>
               {selectedCollection ? (
                 <ChatNFTCard nft={nft} onSelect={onSelect} />
               ) : (
