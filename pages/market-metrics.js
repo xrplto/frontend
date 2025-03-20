@@ -847,6 +847,23 @@ const MarketMetricsContent = () => {
     }
   };
 
+  // Add this function to fetch token images
+  const fetchTokenImage = async (tokenId) => {
+    try {
+      // Only attempt to fetch if we have a valid tokenId (not 'Unknown')
+      if (tokenId && tokenId !== 'Unknown') {
+        const response = await axios.get(`https://s1.xrpl.to/token/${tokenId}`);
+        if (response.data && response.data.image) {
+          return response.data.image;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching token image:', error);
+      return null;
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -1200,10 +1217,10 @@ const MarketMetricsContent = () => {
                       const percentage = (marketCap / selectedDataPoint.totalMarketcap) * 100;
 
                       // Get tokenId if available in the dailyTokenMarketcaps array
-                      const tokenId =
-                        selectedDataPoint.dailyTokenMarketcaps?.find(
-                          (token) => token.name === tokenName
-                        )?.tokenId || 'Unknown';
+                      const tokenData = selectedDataPoint.dailyTokenMarketcaps?.find(
+                        (token) => token.name === tokenName
+                      );
+                      const tokenId = tokenData?.tokenId || 'Unknown';
 
                       return (
                         <Box
@@ -1227,6 +1244,27 @@ const MarketMetricsContent = () => {
                           }}
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {/* Add token image display */}
+                            {tokenId !== 'Unknown' && (
+                              <Box
+                                component="img"
+                                src={`https://s1.xrpl.to/token/${tokenId}`}
+                                alt={tokenName}
+                                sx={{
+                                  width: 24,
+                                  height: 24,
+                                  borderRadius: '50%',
+                                  mr: 1,
+                                  objectFit: 'cover',
+                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                                }}
+                                onError={(e) => {
+                                  // If image fails to load, show color circle instead
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            )}
                             <Box
                               sx={{
                                 width: 12,
@@ -1236,7 +1274,8 @@ const MarketMetricsContent = () => {
                                   tokenName,
                                   availableTokens.indexOf(tokenName)
                                 ),
-                                mr: 1.5
+                                mr: 1.5,
+                                display: tokenId !== 'Unknown' ? 'none' : 'block'
                               }}
                             />
                             <Typography
@@ -1598,9 +1637,10 @@ const MarketMetricsContent = () => {
                       const trades = selectedDataPoint[tradesKey] || 0;
 
                       // Get tokenId if available in the dailyTokenMarketcaps array
-                      const tokenId =
-                        selectedDataPoint.dailyTokenMarketcaps?.find((t) => t.name === token)
-                          ?.tokenId || 'Unknown';
+                      const tokenData = selectedDataPoint.dailyTokenMarketcaps?.find(
+                        (t) => t.name === token
+                      );
+                      const tokenId = tokenData?.tokenId || 'Unknown';
 
                       return (
                         <Box
@@ -1624,6 +1664,27 @@ const MarketMetricsContent = () => {
                           }}
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                            {/* Add token image display */}
+                            {tokenId !== 'Unknown' && (
+                              <Box
+                                component="img"
+                                src={`https://s1.xrpl.to/token/${tokenId}`}
+                                alt={token}
+                                sx={{
+                                  width: 24,
+                                  height: 24,
+                                  borderRadius: '50%',
+                                  mr: 1,
+                                  objectFit: 'cover',
+                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                                }}
+                                onError={(e) => {
+                                  // If image fails to load, show color circle instead
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            )}
                             <Box
                               sx={{
                                 width: 12,
@@ -1633,7 +1694,8 @@ const MarketMetricsContent = () => {
                                   token,
                                   availableTokens.indexOf(token)
                                 ),
-                                mr: 1.5
+                                mr: 1.5,
+                                display: tokenId !== 'Unknown' ? 'none' : 'block'
                               }}
                             />
                             <Typography
