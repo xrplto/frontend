@@ -266,14 +266,14 @@ function ChatSettings() {
   return (
     <Paper
       elevation={3}
-      sx={{ p: 2, borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}
+      sx={{ p: 1.5, borderRadius: 2, height: '100%', display: 'flex', flexDirection: 'column' }}
     >
       <Box
         sx={{
           display: 'flex',
           justifyContent: 'flex-end',
           alignItems: 'center',
-          mb: 1
+          mb: 0.5
         }}
       >
         <Button
@@ -283,6 +283,7 @@ function ChatSettings() {
           color={editMode ? 'primary' : 'secondary'}
           disabled={isLoading}
           size="small"
+          sx={{ py: 0.5 }}
         >
           {editMode ? (isLoading ? 'Saving...' : 'Save Changes') : 'Edit Profile'}
         </Button>
@@ -290,7 +291,7 @@ function ChatSettings() {
 
       <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
         {/* User info section with profile image and NFT picker */}
-        <Grid container spacing={2} sx={{ mb: 2 }}>
+        <Grid container spacing={1} sx={{ mb: 1 }}>
           <Grid item xs={12} md={4}>
             <Box
               sx={{
@@ -306,9 +307,9 @@ function ChatSettings() {
                 alt={localProfile?.username || 'User'}
                 onClick={editMode ? handleOpenNFTPicker : undefined}
                 sx={{
-                  width: 80,
-                  height: 80,
-                  mb: 2,
+                  width: 100,
+                  height: 100,
+                  mb: 1,
                   borderRadius: 2,
                   '& img': {
                     objectFit: 'cover'
@@ -322,11 +323,7 @@ function ChatSettings() {
                     : {}
                 }}
               />
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mb: 2, textAlign: 'center' }}
-              >
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
                 {localProfile?.username || 'User'}
               </Typography>
             </Box>
@@ -340,8 +337,8 @@ function ChatSettings() {
                 justifyContent: 'center'
               }}
             >
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle1" gutterBottom fontWeight="medium">
+              <Box sx={{ mb: 1 }}>
+                <Typography variant="subtitle2" gutterBottom fontWeight="medium" sx={{ mb: 0.5 }}>
                   Username
                 </Typography>
                 <EditableField
@@ -359,10 +356,11 @@ function ChatSettings() {
                       </Typography>
                     )
                   }}
+                  sx={{ '& .MuiOutlinedInput-root': { py: 0.5 } }}
                 />
               </Box>
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle1" gutterBottom fontWeight="medium">
+              <Box>
+                <Typography variant="subtitle2" gutterBottom fontWeight="medium" sx={{ mb: 0.5 }}>
                   Account
                 </Typography>
                 <TextField
@@ -373,7 +371,7 @@ function ChatSettings() {
                   disabled
                   InputProps={{
                     readOnly: true,
-                    sx: { bgcolor: 'action.disabledBackground' }
+                    sx: { bgcolor: 'action.disabledBackground', py: 0.5 }
                   }}
                 />
               </Box>
@@ -382,19 +380,19 @@ function ChatSettings() {
         </Grid>
 
         {showNFTPicker && nftsAvailable && (
-          <Box sx={{ width: '100%', mb: 3 }}>
+          <Box sx={{ width: '100%', mb: 2 }}>
             <ProfileNFTPicker onSelect={handleNFTSelect} setNftsAvailable={setNftsAvailable} />
           </Box>
         )}
 
-        <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: 2 }} />
 
         {/* Social Media Section */}
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
+        <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
           Social Media Accounts
         </Typography>
 
-        <Grid container direction="column" spacing={2}>
+        <Grid container direction="column" spacing={1}>
           {['telegram', 'discord', 'x'].map((platform) => (
             <Grid item xs={12} key={platform}>
               <EditableField
@@ -411,28 +409,30 @@ function ChatSettings() {
                     telegram: <TelegramIcon sx={{ mr: 1, color: 'action.active' }} />,
                     discord: <ChatIcon sx={{ mr: 1, color: 'action.active' }} />,
                     x: <TwitterIcon sx={{ mr: 1, color: 'action.active' }} />
-                  }[platform]
+                  }[platform],
+                  sx: { py: 0.5 }
                 }}
               />
             </Grid>
           ))}
         </Grid>
 
-        <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: 2 }} />
 
         {editMode && (
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
             <Button
               onClick={handleCancel}
               startIcon={<CancelIcon />}
               variant="outlined"
               color="error"
-              size="medium"
+              size="small"
               sx={{
-                minWidth: 120,
+                minWidth: 100,
                 borderRadius: 1,
                 textTransform: 'none',
-                fontWeight: 500
+                fontWeight: 500,
+                py: 0.5
               }}
             >
               Cancel
