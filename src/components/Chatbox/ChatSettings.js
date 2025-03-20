@@ -247,6 +247,12 @@ function ChatSettings() {
           safeUpdateAccountProfile(data.user);
           setLocalProfile(data.user);
           setTempUsername(data.user.username || '');
+          // Update social media state with values from API response
+          setSocialMedia({
+            telegram: data.user.socialMedia?.telegram || '',
+            discord: data.user.socialMedia?.discord || '',
+            x: data.user.socialMedia?.x || ''
+          });
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
