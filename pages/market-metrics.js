@@ -472,16 +472,6 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
 
         {showFilter && (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography
-              variant="body2"
-              sx={{
-                mr: 1,
-                color: themeColors.textSecondary,
-                fontSize: { xs: '0.7rem', sm: '0.8rem' }
-              }}
-            >
-              Hide PLR, XRPS, mula, XAH, TON
-            </Typography>
             <Box
               onClick={onFilterChange}
               sx={{
@@ -694,21 +684,6 @@ const MarketMetricsContent = () => {
 
   // Move the useMediaQuery hook to the top level, not inside a conditional
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  // Add this after the visibleLines state declaration
-  const [hideSpecificTokens, setHideSpecificTokens] = useState(false);
-  const tokensToFilter = [
-    'PLR',
-    'XRPS',
-    'mula',
-    'XAH',
-    'TON',
-    'OIL',
-    'PITCH',
-    'PAWS',
-    'MITCH',
-    'HMR'
-  ]; // Added HMR to the tokens to potentially hide
 
   useEffect(() => {
     const fetchData = async () => {
@@ -964,9 +939,9 @@ const MarketMetricsContent = () => {
         {activeTab === 0 && (
           <ChartContainer
             title="Market Cap by DEX (XRP)"
-            showFilter={true}
-            onFilterChange={() => setHideSpecificTokens(!hideSpecificTokens)}
-            filterActive={hideSpecificTokens}
+            showFilter={false}
+            onFilterChange={() => {}}
+            filterActive={false}
           >
             {/* Add time range selector */}
             <Box
@@ -1030,94 +1005,7 @@ const MarketMetricsContent = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   ref={chartRef}
-                  data={progressiveData.map((dataPoint) => {
-                    if (hideSpecificTokens) {
-                      // Create a filtered copy of the data point
-                      const filteredDataPoint = { ...dataPoint };
-
-                      // Calculate the total marketcap excluding filtered tokens
-                      let filteredTotalMarketcap = dataPoint.totalMarketcap;
-                      // Also track FirstLedger marketcap adjustment
-                      let filteredFirstLedgerMarketcap = dataPoint.firstLedgerMarketcap || 0;
-                      // Also track MagneticX marketcap adjustment
-                      let filteredMagneticXMarketcap = dataPoint.magneticXMarketcap || 0;
-                      // Also track XPMarket marketcap adjustment
-                      let filteredXPMarketMarketcap = dataPoint.xpMarketMarketcap || 0;
-
-                      // Subtract the marketcap of filtered tokens
-                      tokensToFilter.forEach((token) => {
-                        // Try both exact match and case-insensitive match
-                        const tokenMarketcapKey = `${token}_marketcap`;
-                        const tokenLowerCase = token.toLowerCase();
-
-                        // Check for the token with exact case
-                        if (filteredDataPoint[tokenMarketcapKey]) {
-                          const tokenMarketcap = filteredDataPoint[tokenMarketcapKey];
-                          filteredTotalMarketcap -= tokenMarketcap;
-
-                          // If this token is part of FirstLedger, subtract from FirstLedger marketcap
-                          // Note: This is an approximation as we don't have exact per-DEX token data
-                          // We're assuming tokens are distributed proportionally across DEXes
-                          if (
-                            filteredFirstLedgerMarketcap > 0 &&
-                            dataPoint.firstLedgerMarketcap > 0
-                          ) {
-                            const firstLedgerRatio =
-                              dataPoint.firstLedgerMarketcap / dataPoint.totalMarketcap;
-                            filteredFirstLedgerMarketcap -= tokenMarketcap * firstLedgerRatio;
-                          }
-
-                          // Similarly for MagneticX
-                          if (filteredMagneticXMarketcap > 0 && dataPoint.magneticXMarketcap > 0) {
-                            const magneticXRatio =
-                              dataPoint.magneticXMarketcap / dataPoint.totalMarketcap;
-                            filteredMagneticXMarketcap -= tokenMarketcap * magneticXRatio;
-                          }
-
-                          // Similarly for XPMarket
-                          if (filteredXPMarketMarketcap > 0 && dataPoint.xpMarketMarketcap > 0) {
-                            const xpMarketRatio =
-                              dataPoint.xpMarketMarketcap / dataPoint.totalMarketcap;
-                            filteredXPMarketMarketcap -= tokenMarketcap * xpMarketRatio;
-                          }
-
-                          // Remove the token's marketcap from the data point
-                          delete filteredDataPoint[tokenMarketcapKey];
-                        }
-                        // Also check for case variations (e.g., "mitch" vs "MITCH" vs "Mitch")
-                        else {
-                          // Find any key that matches the token name case-insensitively
-                          Object.keys(filteredDataPoint).forEach((key) => {
-                            if (key.toLowerCase().endsWith(`${tokenLowerCase}_marketcap`)) {
-                              const tokenMarketcap = filteredDataPoint[key];
-                              filteredTotalMarketcap -= tokenMarketcap;
-
-                              // Same DEX-specific adjustments as above
-                              // ...
-
-                              // Remove the token's marketcap from the data point
-                              delete filteredDataPoint[key];
-                            }
-                          });
-                        }
-                      });
-
-                      // Update the marketcap values
-                      filteredDataPoint.totalMarketcap = filteredTotalMarketcap;
-                      filteredDataPoint.firstLedgerMarketcap = Math.max(
-                        0,
-                        filteredFirstLedgerMarketcap
-                      );
-                      filteredDataPoint.magneticXMarketcap = Math.max(
-                        0,
-                        filteredMagneticXMarketcap
-                      );
-                      filteredDataPoint.xpMarketMarketcap = Math.max(0, filteredXPMarketMarketcap);
-
-                      return filteredDataPoint;
-                    }
-                    return dataPoint;
-                  })}
+                  data={progressiveData}
                   margin={isMobile ? chartConfig.mobileMargin : chartConfig.margin}
                   isAnimationActive={false}
                   onClick={(data) => {
@@ -1300,33 +1188,11 @@ const MarketMetricsContent = () => {
                     maximumFractionDigits: 2
                   })}{' '}
                   XRP
-                  {hideSpecificTokens && (
-                    <Typography
-                      component="span"
-                      variant="caption"
-                      sx={{
-                        ml: 1,
-                        color:
-                          theme.palette.mode === 'dark'
-                            ? 'rgba(255, 255, 255, 0.6)'
-                            : 'rgba(0, 0, 0, 0.6)',
-                        fontStyle: 'italic'
-                      }}
-                    >
-                      (excluding PLR, XRPS, mula, XAH, TON)
-                    </Typography>
-                  )}
                 </Typography>
 
                 <Box>
                   {Object.keys(selectedDataPoint)
-                    .filter(
-                      (key) =>
-                        key.endsWith('_marketcap') &&
-                        selectedDataPoint[key] > 0 &&
-                        (!hideSpecificTokens ||
-                          !tokensToFilter.includes(key.replace('_marketcap', '')))
-                    )
+                    .filter((key) => key.endsWith('_marketcap') && selectedDataPoint[key] > 0)
                     .sort((a, b) => selectedDataPoint[b] - selectedDataPoint[a])
                     .map((key) => {
                       const tokenName = key.replace('_marketcap', '');
