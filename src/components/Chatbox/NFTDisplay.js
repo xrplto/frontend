@@ -987,7 +987,7 @@ const NFTDisplay = ({ nftLink }) => {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
-              maxWidth: '80px',
+              maxWidth: '200px',
               overflow: 'hidden'
             }}
           >

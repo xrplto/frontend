@@ -132,7 +132,10 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   styleElement.textContent = lightningEffect;
   document.head.appendChild(styleElement);
 
-  const truncateString = (str) => str.slice(0, 12) + (str.length > 12 ? '...' : '');
+  const truncateString = (str, isNFTLink = false) => {
+    if (isNFTLink) return str;
+    return str.slice(0, 12) + (str.length > 12 ? '...' : '');
+  };
 
   // Improved scroll behavior
   useEffect(() => {
@@ -411,7 +414,12 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                       >
                         {chat.message.split(/(\[NFT:.*?\])/).map((part, i) => {
                           if (part.startsWith('[NFT:')) {
-                            return <NFTDisplay key={i} nftLink={part} />;
+                            // Extract the name from the NFT link format [NFT: name (tokenId)]
+                            const match = part.match(/\[NFT: (.*?) \((.*?)\)\]/);
+                            if (match) {
+                              const [_, name, tokenId] = match;
+                              return <NFTDisplay key={i} nftLink={part} />;
+                            }
                           }
                           return part;
                         })}
