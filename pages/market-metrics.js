@@ -685,6 +685,10 @@ const MarketMetricsContent = () => {
   // Move the useMediaQuery hook to the top level, not inside a conditional
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  // Add state for tokens to filter
+  const [tokensToFilter, setTokensToFilter] = useState(['fdd462474370466edf2c879fa33cd4a8']);
+  const [hideSpecificTokens, setHideSpecificTokens] = useState(true);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -722,8 +726,28 @@ const MarketMetricsContent = () => {
             const tokenVolumes = {}; // Add object to store token volumes
             const tokenTrades = {}; // Add object to store token trades
 
+            // Filter out the token before calculating totalMarketcap
+            let filteredTotalMarketcap = item.totalMarketcap;
+
             if (item.dailyTokenMarketcaps && Array.isArray(item.dailyTokenMarketcaps)) {
-              item.dailyTokenMarketcaps.forEach((token) => {
+              // Find the token to filter out
+              const tokenToFilter = hideSpecificTokens
+                ? item.dailyTokenMarketcaps.find((token) => token.tokenId === tokensToFilter[0])
+                : null;
+
+              // Subtract its marketcap from total if found
+              if (tokenToFilter && tokenToFilter.marketcap) {
+                filteredTotalMarketcap -= tokenToFilter.marketcap;
+              }
+
+              // Filter tokens for individual display
+              const filteredTokens = hideSpecificTokens
+                ? item.dailyTokenMarketcaps.filter(
+                    (token) => !tokensToFilter.includes(token.tokenId)
+                  )
+                : item.dailyTokenMarketcaps;
+
+              filteredTokens.forEach((token) => {
                 if (token.name && token.marketcap) {
                   const tokenKey = `${token.name}_marketcap`;
                   const priceKey = `${token.name}_avgPrice`; // Create key for average price
@@ -747,7 +771,7 @@ const MarketMetricsContent = () => {
               ...tokenTrades, // Add token-specific trades to the data object
               // Fix the date format to match the API response format
               date: moment.utc(item.date).format('MMM DD YYYY'), // Use UTC to avoid timezone issues
-              totalMarketcap: Number(item.totalMarketcap.toFixed(2)), // Remove the division by 1000000
+              totalMarketcap: Number(filteredTotalMarketcap.toFixed(2)), // Remove the division by 1000000
               firstLedgerMarketcap: Number(item.firstLedgerMarketcap?.toFixed(2) || 0),
               magneticXMarketcap: Number(item.magneticXMarketcap?.toFixed(2) || 0),
               xpMarketMarketcap: Number(item.xpMarketMarketcap?.toFixed(2) || 0),
@@ -810,7 +834,7 @@ const MarketMetricsContent = () => {
     };
 
     fetchData();
-  }, [timeRange, sampleDataByTimeRange]);
+  }, [timeRange, sampleDataByTimeRange, hideSpecificTokens, tokensToFilter]);
 
   if (loading) {
     return <Container></Container>;
@@ -956,9 +980,9 @@ const MarketMetricsContent = () => {
         {activeTab === 0 && (
           <ChartContainer
             title="Market Cap by DEX (XRP)"
-            showFilter={false}
-            onFilterChange={() => {}}
-            filterActive={false}
+            showFilter={true}
+            onFilterChange={() => setHideSpecificTokens(!hideSpecificTokens)}
+            filterActive={hideSpecificTokens}
           >
             {/* Add time range selector */}
             <Box
@@ -1200,7 +1224,7 @@ const MarketMetricsContent = () => {
 
                 <Typography variant="body2" sx={{ color: themeColors.textSecondary, mb: 2 }}>
                   Total Market Cap:{' '}
-                  {selectedDataPoint.totalMarketcap.toLocaleString(undefined, {
+                  {(selectedDataPoint.totalMarketcap || 0).toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
                   })}{' '}
@@ -1208,14 +1232,18 @@ const MarketMetricsContent = () => {
                 </Typography>
 
                 <Box>
-                  {/* Fix: Use dailyTokenMarketcaps array directly instead of relying on flattened keys */}
+                  {/* Filter out the token from the breakdown display */}
                   {selectedDataPoint.dailyTokenMarketcaps &&
                     selectedDataPoint.dailyTokenMarketcaps
+                      .filter((token) =>
+                        hideSpecificTokens ? token.tokenId !== tokensToFilter[0] : true
+                      )
                       .filter((token) => token.marketcap > 0)
                       .sort((a, b) => b.marketcap - a.marketcap)
                       .map((token) => {
                         const tokenName = token.name;
                         const marketCap = token.marketcap;
+                        // Calculate percentage based on the filtered total market cap
                         const percentage = (marketCap / selectedDataPoint.totalMarketcap) * 100;
                         const tokenId = token.tokenId || 'Unknown';
 
