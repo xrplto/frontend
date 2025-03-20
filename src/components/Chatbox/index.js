@@ -60,7 +60,7 @@ const CustomScrollBox = styled(Box)(({ theme }) => ({
   }
 }));
 
-const drawerWidth = 400;
+const drawerWidth = 600;
 const chatURL = 'http://37.27.134.126:5000'; //http://37.27.134.126:5000
 
 // Initialize socket outside the component to avoid multiple connections
