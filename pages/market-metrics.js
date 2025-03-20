@@ -685,10 +685,13 @@ const MarketMetricsContent = () => {
   // Move the useMediaQuery hook to the top level, not inside a conditional
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Add state for tokens to filter - include both token IDs
+  // Add state for tokens to filter - include all five token IDs
   const [tokensToFilter, setTokensToFilter] = useState([
     'fdd462474370466edf2c879fa33cd4a8',
-    'd5dd9c3ee8fb34acb88a6d0f0982c755'
+    'd5dd9c3ee8fb34acb88a6d0f0982c755',
+    '47727f3ad701921a0feb30a9db1b031d',
+    '87cbb38f7ec6e7e95982f68360b08e87',
+    '8a1caeb4a52abcd3772585401412c87d'
   ]);
   // Specify which token should be deducted from FirstLedger
   const [firstLedgerTokenToFilter] = useState('d5dd9c3ee8fb34acb88a6d0f0982c755');
