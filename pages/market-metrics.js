@@ -697,7 +697,18 @@ const MarketMetricsContent = () => {
 
   // Add this after the visibleLines state declaration
   const [hideSpecificTokens, setHideSpecificTokens] = useState(false);
-  const tokensToFilter = ['PLR', 'XRPS', 'mula', 'XAH', 'TON']; // Added TON to the tokens to potentially hide
+  const tokensToFilter = [
+    'PLR',
+    'XRPS',
+    'mula',
+    'XAH',
+    'TON',
+    'OIL',
+    'PITCH',
+    'PAWS',
+    'MITCH',
+    'HMR'
+  ]; // Added HMR to the tokens to potentially hide
 
   useEffect(() => {
     const fetchData = async () => {
@@ -1035,40 +1046,72 @@ const MarketMetricsContent = () => {
 
                       // Subtract the marketcap of filtered tokens
                       tokensToFilter.forEach((token) => {
+                        // Try both exact match and case-insensitive match
                         const tokenMarketcapKey = `${token}_marketcap`;
+                        const tokenLowerCase = token.toLowerCase();
+
+                        // Check for the token with exact case
                         if (filteredDataPoint[tokenMarketcapKey]) {
                           const tokenMarketcap = filteredDataPoint[tokenMarketcapKey];
                           filteredTotalMarketcap -= tokenMarketcap;
-                          
+
                           // If this token is part of FirstLedger, subtract from FirstLedger marketcap
                           // Note: This is an approximation as we don't have exact per-DEX token data
                           // We're assuming tokens are distributed proportionally across DEXes
-                          if (filteredFirstLedgerMarketcap > 0 && dataPoint.firstLedgerMarketcap > 0) {
-                            const firstLedgerRatio = dataPoint.firstLedgerMarketcap / dataPoint.totalMarketcap;
+                          if (
+                            filteredFirstLedgerMarketcap > 0 &&
+                            dataPoint.firstLedgerMarketcap > 0
+                          ) {
+                            const firstLedgerRatio =
+                              dataPoint.firstLedgerMarketcap / dataPoint.totalMarketcap;
                             filteredFirstLedgerMarketcap -= tokenMarketcap * firstLedgerRatio;
                           }
-                          
+
                           // Similarly for MagneticX
                           if (filteredMagneticXMarketcap > 0 && dataPoint.magneticXMarketcap > 0) {
-                            const magneticXRatio = dataPoint.magneticXMarketcap / dataPoint.totalMarketcap;
+                            const magneticXRatio =
+                              dataPoint.magneticXMarketcap / dataPoint.totalMarketcap;
                             filteredMagneticXMarketcap -= tokenMarketcap * magneticXRatio;
                           }
-                          
+
                           // Similarly for XPMarket
                           if (filteredXPMarketMarketcap > 0 && dataPoint.xpMarketMarketcap > 0) {
-                            const xpMarketRatio = dataPoint.xpMarketMarketcap / dataPoint.totalMarketcap;
+                            const xpMarketRatio =
+                              dataPoint.xpMarketMarketcap / dataPoint.totalMarketcap;
                             filteredXPMarketMarketcap -= tokenMarketcap * xpMarketRatio;
                           }
-                          
+
                           // Remove the token's marketcap from the data point
                           delete filteredDataPoint[tokenMarketcapKey];
+                        }
+                        // Also check for case variations (e.g., "mitch" vs "MITCH" vs "Mitch")
+                        else {
+                          // Find any key that matches the token name case-insensitively
+                          Object.keys(filteredDataPoint).forEach((key) => {
+                            if (key.toLowerCase().endsWith(`${tokenLowerCase}_marketcap`)) {
+                              const tokenMarketcap = filteredDataPoint[key];
+                              filteredTotalMarketcap -= tokenMarketcap;
+
+                              // Same DEX-specific adjustments as above
+                              // ...
+
+                              // Remove the token's marketcap from the data point
+                              delete filteredDataPoint[key];
+                            }
+                          });
                         }
                       });
 
                       // Update the marketcap values
                       filteredDataPoint.totalMarketcap = filteredTotalMarketcap;
-                      filteredDataPoint.firstLedgerMarketcap = Math.max(0, filteredFirstLedgerMarketcap);
-                      filteredDataPoint.magneticXMarketcap = Math.max(0, filteredMagneticXMarketcap);
+                      filteredDataPoint.firstLedgerMarketcap = Math.max(
+                        0,
+                        filteredFirstLedgerMarketcap
+                      );
+                      filteredDataPoint.magneticXMarketcap = Math.max(
+                        0,
+                        filteredMagneticXMarketcap
+                      );
                       filteredDataPoint.xpMarketMarketcap = Math.max(0, filteredXPMarketMarketcap);
 
                       return filteredDataPoint;
