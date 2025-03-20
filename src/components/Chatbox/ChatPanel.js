@@ -15,7 +15,8 @@ import {
 import { parseISO } from 'date-fns';
 import {
   ChatBubbleOutline as ChatBubbleOutlineIcon,
-  Verified as VerifiedIcon
+  Verified as VerifiedIcon,
+  ArrowDownward as ArrowDownwardIcon
 } from '@mui/icons-material';
 import { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
@@ -124,6 +125,7 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
   const [activeRanks, setActiveRanks] = useState({});
   const [tradeModalOpen, setTradeModalOpen] = useState(false);
   const [trader, setTrader] = useState({});
+  const [autoScroll, setAutoScroll] = useState(true);
 
   // Inject lightningEffect into the document's head
   const styleElement = document.createElement('style');
@@ -132,11 +134,21 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
 
   const truncateString = (str) => str.slice(0, 12) + (str.length > 12 ? '...' : '');
 
+  // Improved scroll behavior
   useEffect(() => {
-    if (chatContainerRef.current) {
+    if (chatContainerRef.current && autoScroll) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-  }, [chats]);
+  }, [chats, autoScroll]);
+
+  // Handle scroll events to detect when user manually scrolls up
+  const handleScroll = () => {
+    if (chatContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+      // If user is near bottom, enable auto-scroll, otherwise disable it
+      setAutoScroll(scrollHeight - scrollTop - clientHeight < 50);
+    }
+  };
 
   // Add this console.log to check if chats are being received
   console.log('Chats received in ChatPanel:', chats);
@@ -190,11 +202,12 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
     <CustomScrollBox
       ref={chatContainerRef}
       gap={0.75}
+      onScroll={handleScroll}
       sx={{
         height: '100%',
         overflowY: 'auto',
         display: 'flex',
-        flexDirection: 'column-reverse',
+        flexDirection: 'column',
         padding: '0.75rem',
         backgroundColor: alpha(theme.palette.background.default, 0.8)
       }}
@@ -207,7 +220,6 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
               chat.username === accountProfile?.account ||
               chat.recipient === accountProfile?.account
           )
-          .reverse()
           .map((chat, index) => {
             const parsedTime = parseISO(chat.timestamp);
             const timeAgo = formatTimeAgo(parsedTime);
@@ -258,7 +270,8 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
                     backgroundColor: isCurrentUser
                       ? alpha(theme.palette.primary.main, 0.12)
                       : alpha(theme.palette.background.paper, 1)
-                  }
+                  },
+                  marginBottom: '8px' // Add spacing between messages
                 }}
               >
                 <Stack direction="row" spacing={0.75} alignItems="flex-start">
@@ -428,6 +441,36 @@ const ChatPanel = ({ chats, onStartPrivateMessage }) => {
         >
           No messages to display.
         </Typography>
+      )}
+      {!autoScroll && (
+        <Box
+          sx={{
+            position: 'sticky',
+            bottom: 16,
+            alignSelf: 'center',
+            zIndex: 10
+          }}
+        >
+          <Tooltip title="Scroll to latest messages">
+            <IconButton
+              onClick={() => {
+                setAutoScroll(true);
+                if (chatContainerRef.current) {
+                  chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+                }
+              }}
+              sx={{
+                backgroundColor: theme.palette.background.paper,
+                boxShadow: theme.shadows[3],
+                '&:hover': {
+                  backgroundColor: theme.palette.background.default
+                }
+              }}
+            >
+              <ArrowDownwardIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       )}
       <Trade open={tradeModalOpen} onClose={() => setTradeModalOpen(false)} tradePartner={trader} />
     </CustomScrollBox>
