@@ -685,8 +685,13 @@ const MarketMetricsContent = () => {
   // Move the useMediaQuery hook to the top level, not inside a conditional
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Add state for tokens to filter
-  const [tokensToFilter, setTokensToFilter] = useState(['fdd462474370466edf2c879fa33cd4a8']);
+  // Add state for tokens to filter - include both token IDs
+  const [tokensToFilter, setTokensToFilter] = useState([
+    'fdd462474370466edf2c879fa33cd4a8',
+    'd5dd9c3ee8fb34acb88a6d0f0982c755'
+  ]);
+  // Specify which token should be deducted from FirstLedger
+  const [firstLedgerTokenToFilter] = useState('d5dd9c3ee8fb34acb88a6d0f0982c755');
   const [hideSpecificTokens, setHideSpecificTokens] = useState(true);
 
   useEffect(() => {
@@ -726,19 +731,30 @@ const MarketMetricsContent = () => {
             const tokenVolumes = {}; // Add object to store token volumes
             const tokenTrades = {}; // Add object to store token trades
 
-            // Filter out the token before calculating totalMarketcap
+            // Filter out the tokens before calculating totalMarketcap
             let filteredTotalMarketcap = item.totalMarketcap;
+            // Also filter FirstLedger marketcap
+            let filteredFirstLedgerMarketcap = item.firstLedgerMarketcap || 0;
 
             if (item.dailyTokenMarketcaps && Array.isArray(item.dailyTokenMarketcaps)) {
-              // Find the token to filter out
-              const tokenToFilter = hideSpecificTokens
-                ? item.dailyTokenMarketcaps.find((token) => token.tokenId === tokensToFilter[0])
-                : null;
+              // Find all tokens to filter out
+              const tokensToFilterOut = hideSpecificTokens
+                ? item.dailyTokenMarketcaps.filter((token) =>
+                    tokensToFilter.includes(token.tokenId)
+                  )
+                : [];
 
-              // Subtract its marketcap from total if found
-              if (tokenToFilter && tokenToFilter.marketcap) {
-                filteredTotalMarketcap -= tokenToFilter.marketcap;
-              }
+              // Subtract their marketcaps from total if found
+              tokensToFilterOut.forEach((token) => {
+                if (token && token.marketcap) {
+                  filteredTotalMarketcap -= token.marketcap;
+
+                  // If this is the specific token to filter from FirstLedger
+                  if (token.tokenId === firstLedgerTokenToFilter) {
+                    filteredFirstLedgerMarketcap -= token.marketcap;
+                  }
+                }
+              });
 
               // Filter tokens for individual display
               const filteredTokens = hideSpecificTokens
@@ -771,14 +787,14 @@ const MarketMetricsContent = () => {
               ...tokenTrades, // Add token-specific trades to the data object
               // Fix the date format to match the API response format
               date: moment.utc(item.date).format('MMM DD YYYY'), // Use UTC to avoid timezone issues
-              totalMarketcap: Number(filteredTotalMarketcap.toFixed(2)), // Remove the division by 1000000
-              firstLedgerMarketcap: Number(item.firstLedgerMarketcap?.toFixed(2) || 0),
+              totalMarketcap: Number(filteredTotalMarketcap.toFixed(2)), // Use filtered marketcap
+              firstLedgerMarketcap: Number(filteredFirstLedgerMarketcap.toFixed(2)), // Use filtered FirstLedger marketcap
               magneticXMarketcap: Number(item.magneticXMarketcap?.toFixed(2) || 0),
               xpMarketMarketcap: Number(item.xpMarketMarketcap?.toFixed(2) || 0),
-              volumeNonAMM: Number(item.volumeNonAMM.toFixed(2)), // Remove division by 1000
-              volumeAMM: Number(item.volumeAMM.toFixed(2)), // Remove division by 1000
-              totalVolume: Number((item.volumeAMM + item.volumeNonAMM).toFixed(2)), // Remove division by 1000
-              tokenCount: Number(item.tokenCount), // Add tokenCount to formatted data
+              volumeNonAMM: Number(item.volumeNonAMM.toFixed(2)),
+              volumeAMM: Number(item.volumeAMM.toFixed(2)),
+              totalVolume: Number((item.volumeAMM + item.volumeNonAMM).toFixed(2)),
+              tokenCount: Number(item.tokenCount),
               firstLedgerTokens: Number(item.firstLedgerTokenCount || 0),
               magneticXTokens: Number(item.magneticXTokenCount || 0),
               xpMarketTokens: Number(item.xpMarketTokenCount || 0),
@@ -834,7 +850,13 @@ const MarketMetricsContent = () => {
     };
 
     fetchData();
-  }, [timeRange, sampleDataByTimeRange, hideSpecificTokens, tokensToFilter]);
+  }, [
+    timeRange,
+    sampleDataByTimeRange,
+    hideSpecificTokens,
+    tokensToFilter,
+    firstLedgerTokenToFilter
+  ]);
 
   if (loading) {
     return <Container></Container>;
