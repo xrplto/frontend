@@ -1208,127 +1208,123 @@ const MarketMetricsContent = () => {
                 </Typography>
 
                 <Box>
-                  {Object.keys(selectedDataPoint)
-                    .filter((key) => key.endsWith('_marketcap') && selectedDataPoint[key] > 0)
-                    .sort((a, b) => selectedDataPoint[b] - selectedDataPoint[a])
-                    .map((key) => {
-                      const tokenName = key.replace('_marketcap', '');
-                      const marketCap = selectedDataPoint[key];
-                      const percentage = (marketCap / selectedDataPoint.totalMarketcap) * 100;
+                  {/* Fix: Use dailyTokenMarketcaps array directly instead of relying on flattened keys */}
+                  {selectedDataPoint.dailyTokenMarketcaps &&
+                    selectedDataPoint.dailyTokenMarketcaps
+                      .filter((token) => token.marketcap > 0)
+                      .sort((a, b) => b.marketcap - a.marketcap)
+                      .map((token) => {
+                        const tokenName = token.name;
+                        const marketCap = token.marketcap;
+                        const percentage = (marketCap / selectedDataPoint.totalMarketcap) * 100;
+                        const tokenId = token.tokenId || 'Unknown';
 
-                      // Get tokenId if available in the dailyTokenMarketcaps array
-                      const tokenData = selectedDataPoint.dailyTokenMarketcaps?.find(
-                        (token) => token.name === tokenName
-                      );
-                      const tokenId = tokenData?.tokenId || 'Unknown';
-
-                      return (
-                        <Box
-                          key={key}
-                          sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            mb: 1,
-                            p: 1,
-                            borderRadius: 1,
-                            backgroundColor:
-                              theme.palette.mode === 'dark'
-                                ? 'rgba(255, 255, 255, 0.05)'
-                                : 'rgba(0, 0, 0, 0.05)',
-                            '&:hover': {
+                        return (
+                          <Box
+                            key={tokenName}
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              mb: 1,
+                              p: 1,
+                              borderRadius: 1,
                               backgroundColor:
                                 theme.palette.mode === 'dark'
-                                  ? 'rgba(255, 255, 255, 0.1)'
-                                  : 'rgba(0, 0, 0, 0.1)'
-                            }
-                          }}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            {/* Add token image display */}
-                            {tokenId !== 'Unknown' && (
-                              <Box
-                                component="img"
-                                src={`https://s1.xrpl.to/token/${tokenId}`}
-                                alt={tokenName}
-                                sx={{
-                                  width: 24,
-                                  height: 24,
-                                  borderRadius: '50%',
-                                  mr: 1,
-                                  objectFit: 'cover',
-                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                  border: '1px solid rgba(255, 255, 255, 0.2)'
-                                }}
-                                onError={(e) => {
-                                  // If image fails to load, show color circle instead
-                                  e.target.style.display = 'none';
-                                }}
-                              />
-                            )}
-                            <Box
-                              sx={{
-                                width: 12,
-                                height: 12,
-                                borderRadius: '50%',
-                                backgroundColor: getTokenColor(
-                                  tokenName,
-                                  availableTokens.indexOf(tokenName)
-                                ),
-                                mr: 1.5,
-                                display: tokenId !== 'Unknown' ? 'none' : 'block'
-                              }}
-                            />
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: themeColors.text,
-                                fontWeight: 500,
-                                flex: 1
-                              }}
-                            >
-                              {tokenName}
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: themeColors.text,
-                                mr: 2,
-                                textAlign: 'right'
-                              }}
-                            >
-                              {marketCap.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                              })}{' '}
-                              XRP
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: themeColors.textSecondary,
-                                width: '60px',
-                                textAlign: 'right'
-                              }}
-                            >
-                              {percentage.toFixed(2)}%
-                            </Typography>
-                          </Box>
-
-                          {/* Add Token ID display */}
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: themeColors.textSecondary,
-                              ml: 3.5,
-                              mt: 0.5,
-                              fontSize: '0.7rem'
+                                  ? 'rgba(255, 255, 255, 0.05)'
+                                  : 'rgba(0, 0, 0, 0.05)',
+                              '&:hover': {
+                                backgroundColor:
+                                  theme.palette.mode === 'dark'
+                                    ? 'rgba(255, 255, 255, 0.1)'
+                                    : 'rgba(0, 0, 0, 0.1)'
+                              }
                             }}
                           >
-                            Token ID: {tokenId}
-                          </Typography>
-                        </Box>
-                      );
-                    })}
+                            {/* Rest of the token display code remains the same */}
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              {tokenId !== 'Unknown' && (
+                                <Box
+                                  component="img"
+                                  src={`https://s1.xrpl.to/token/${tokenId}`}
+                                  alt={tokenName}
+                                  sx={{
+                                    width: 24,
+                                    height: 24,
+                                    borderRadius: '50%',
+                                    mr: 1,
+                                    objectFit: 'cover',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                                  }}
+                                  onError={(e) => {
+                                    // If image fails to load, show color circle instead
+                                    e.target.style.display = 'none';
+                                  }}
+                                />
+                              )}
+                              <Box
+                                sx={{
+                                  width: 12,
+                                  height: 12,
+                                  borderRadius: '50%',
+                                  backgroundColor: getTokenColor(
+                                    tokenName,
+                                    availableTokens.indexOf(tokenName)
+                                  ),
+                                  mr: 1.5,
+                                  display: tokenId !== 'Unknown' ? 'none' : 'block'
+                                }}
+                              />
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: themeColors.text,
+                                  fontWeight: 500,
+                                  flex: 1
+                                }}
+                              >
+                                {tokenName}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: themeColors.text,
+                                  mr: 2,
+                                  textAlign: 'right'
+                                }}
+                              >
+                                {marketCap.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })}{' '}
+                                XRP
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: themeColors.textSecondary,
+                                  width: '60px',
+                                  textAlign: 'right'
+                                }}
+                              >
+                                {percentage.toFixed(2)}%
+                              </Typography>
+                            </Box>
+
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: themeColors.textSecondary,
+                                ml: 3.5,
+                                mt: 0.5,
+                                fontSize: '0.7rem'
+                              }}
+                            >
+                              Token ID: {tokenId}
+                            </Typography>
+                          </Box>
+                        );
+                      })}
                 </Box>
               </Box>
             )}
