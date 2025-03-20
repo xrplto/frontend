@@ -1199,12 +1199,18 @@ const MarketMetricsContent = () => {
                       const marketCap = selectedDataPoint[key];
                       const percentage = (marketCap / selectedDataPoint.totalMarketcap) * 100;
 
+                      // Get tokenId if available in the dailyTokenMarketcaps array
+                      const tokenId =
+                        selectedDataPoint.dailyTokenMarketcaps?.find(
+                          (token) => token.name === tokenName
+                        )?.tokenId || 'Unknown';
+
                       return (
                         <Box
                           key={key}
                           sx={{
                             display: 'flex',
-                            alignItems: 'center',
+                            flexDirection: 'column',
                             mb: 1,
                             p: 1,
                             borderRadius: 1,
@@ -1220,51 +1226,66 @@ const MarketMetricsContent = () => {
                             }
                           }}
                         >
-                          <Box
-                            sx={{
-                              width: 12,
-                              height: 12,
-                              borderRadius: '50%',
-                              backgroundColor: getTokenColor(
-                                tokenName,
-                                availableTokens.indexOf(tokenName)
-                              ),
-                              mr: 1.5
-                            }}
-                          />
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Box
+                              sx={{
+                                width: 12,
+                                height: 12,
+                                borderRadius: '50%',
+                                backgroundColor: getTokenColor(
+                                  tokenName,
+                                  availableTokens.indexOf(tokenName)
+                                ),
+                                mr: 1.5
+                              }}
+                            />
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: themeColors.text,
+                                fontWeight: 500,
+                                flex: 1
+                              }}
+                            >
+                              {tokenName}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: themeColors.text,
+                                mr: 2,
+                                textAlign: 'right'
+                              }}
+                            >
+                              {marketCap.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                              })}{' '}
+                              XRP
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                color: themeColors.textSecondary,
+                                width: '60px',
+                                textAlign: 'right'
+                              }}
+                            >
+                              {percentage.toFixed(2)}%
+                            </Typography>
+                          </Box>
+
+                          {/* Add Token ID display */}
                           <Typography
-                            variant="body2"
-                            sx={{
-                              color: themeColors.text,
-                              fontWeight: 500,
-                              flex: 1
-                            }}
-                          >
-                            {tokenName}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: themeColors.text,
-                              mr: 2,
-                              textAlign: 'right'
-                            }}
-                          >
-                            {marketCap.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2
-                            })}{' '}
-                            XRP
-                          </Typography>
-                          <Typography
-                            variant="body2"
+                            variant="caption"
                             sx={{
                               color: themeColors.textSecondary,
-                              width: '60px',
-                              textAlign: 'right'
+                              ml: 3.5,
+                              mt: 0.5,
+                              fontSize: '0.7rem'
                             }}
                           >
-                            {percentage.toFixed(2)}%
+                            Token ID: {tokenId}
                           </Typography>
                         </Box>
                       );
@@ -1576,6 +1597,11 @@ const MarketMetricsContent = () => {
                       const volume = selectedDataPoint[volumeKey] || 0;
                       const trades = selectedDataPoint[tradesKey] || 0;
 
+                      // Get tokenId if available in the dailyTokenMarketcaps array
+                      const tokenId =
+                        selectedDataPoint.dailyTokenMarketcaps?.find((t) => t.name === token)
+                          ?.tokenId || 'Unknown';
+
                       return (
                         <Box
                           key={token}
@@ -1634,6 +1660,19 @@ const MarketMetricsContent = () => {
                               XRP
                             </Typography>
                           </Box>
+
+                          {/* Add Token ID display */}
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: themeColors.textSecondary,
+                              ml: 3.5,
+                              mb: 0.5,
+                              fontSize: '0.7rem'
+                            }}
+                          >
+                            Token ID: {tokenId}
+                          </Typography>
 
                           <Box
                             sx={{
