@@ -1264,11 +1264,11 @@ const MarketMetricsContent = () => {
                 </Typography>
 
                 <Box>
-                  {/* Filter out the token from the breakdown display */}
+                  {/* Filter out the tokens from the breakdown display */}
                   {selectedDataPoint.dailyTokenMarketcaps &&
                     selectedDataPoint.dailyTokenMarketcaps
                       .filter((token) =>
-                        hideSpecificTokens ? token.tokenId !== tokensToFilter[0] : true
+                        hideSpecificTokens ? !tokensToFilter.includes(token.tokenId) : true
                       )
                       .filter((token) => token.marketcap > 0)
                       .sort((a, b) => b.marketcap - a.marketcap)
