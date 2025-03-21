@@ -205,6 +205,10 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [selectedInterval, setSelectedInterval] = useState('24h');
   const [pageSize, setPageSize] = useState(10);
 
+  // Add state for chart data filtering
+  const [chartDateRange, setChartDateRange] = useState('all');
+  const [chartDataLimit, setChartDataLimit] = useState(30);
+
   useEffect(() => {
     const fetchTraderStats = async () => {
       try {
@@ -265,6 +269,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   const processChartData = () => {
     if (!traderStats?.roiHistory) return null;
 
+    // Sort history by date to ensure chronological order
     const sortedHistory = [...traderStats.roiHistory].sort(
       (a, b) => new Date(a.date) - new Date(b.date)
     );
@@ -272,7 +277,6 @@ export default function Portfolio({ account, limit, collection, type }) {
     return {
       labels: sortedHistory.map((item) =>
         new Date(item.date).toLocaleDateString('en-US', {
-          year: 'numeric',
           month: 'short',
           day: 'numeric'
         })
@@ -311,6 +315,19 @@ export default function Portfolio({ account, limit, collection, type }) {
           tension: 0.4,
           yAxisID: 'y2',
           type: 'bar'
+        },
+        {
+          label: 'Profit',
+          data: sortedHistory.map((item) => item.profit),
+          fill: false,
+          backgroundColor: theme.palette.warning.light,
+          borderColor: theme.palette.warning.main,
+          tension: 0.4,
+          yAxisID: 'y3',
+          type: 'line',
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          borderDash: [5, 5]
         }
       ]
     };
@@ -320,6 +337,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   const processTradeHistoryData = () => {
     if (!traderStats?.tradeHistory) return null;
 
+    // Sort history by date to ensure chronological order
     const sortedHistory = [...traderStats.tradeHistory].sort(
       (a, b) => new Date(a.date) - new Date(b.date)
     );
@@ -353,20 +371,66 @@ export default function Portfolio({ account, limit, collection, type }) {
           type: 'line',
           pointRadius: 2,
           pointHoverRadius: 4
+        },
+        {
+          label: 'Profitable Trades',
+          data: sortedHistory.map((item) => item.profitableTrades),
+          fill: false,
+          backgroundColor: theme.palette.success.main,
+          borderColor: theme.palette.success.main,
+          tension: 0,
+          yAxisID: 'y',
+          type: 'bar',
+          stack: 'trades'
+        },
+        {
+          label: 'Losing Trades',
+          data: sortedHistory.map((item) => item.losingTrades),
+          fill: false,
+          backgroundColor: theme.palette.error.main,
+          borderColor: theme.palette.error.main,
+          tension: 0,
+          yAxisID: 'y',
+          type: 'bar',
+          stack: 'trades'
         }
       ]
     };
   };
 
+  // Process volume history data for the chart
   const processVolumeHistoryData = () => {
     if (!traderStats?.volumeHistory) return null;
 
+    // Sort history by date to ensure chronological order
     const sortedHistory = [...traderStats.volumeHistory].sort(
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
+    // Calculate true cumulative volume
+    let runningTotal = 0;
+    let runningBuyTotal = 0;
+    let runningSellTotal = 0;
+
+    const volumeData = sortedHistory.map((item) => {
+      // Add daily volume to running totals
+      runningTotal += item.h24Volume;
+      runningBuyTotal += item.h24BuyVolume;
+      runningSellTotal += item.h24SellVolume;
+
+      return {
+        date: item.date,
+        h24Volume: item.h24Volume,
+        h24BuyVolume: item.h24BuyVolume,
+        h24SellVolume: item.h24SellVolume,
+        trueCumulativeVolume: runningTotal,
+        trueCumulativeBuyVolume: runningBuyTotal,
+        trueCumulativeSellVolume: runningSellTotal
+      };
+    });
+
     return {
-      labels: sortedHistory.map((item) =>
+      labels: volumeData.map((item) =>
         new Date(item.date).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric'
@@ -375,28 +439,51 @@ export default function Portfolio({ account, limit, collection, type }) {
       datasets: [
         {
           label: 'Daily Volume',
-          data: sortedHistory.map((item) => item.volume),
-          backgroundColor: alpha(theme.palette.primary.main, 0.2),
+          data: volumeData.map((item) => item.h24Volume),
+          backgroundColor: theme.palette.primary.light,
           borderColor: theme.palette.primary.main,
+          borderWidth: 1,
+          yAxisID: 'y',
+          type: 'bar'
+        },
+        {
+          label: 'Buy Volume',
+          data: volumeData.map((item) => item.h24BuyVolume),
+          backgroundColor: theme.palette.success.light,
+          borderColor: theme.palette.success.main,
+          borderWidth: 1,
+          yAxisID: 'y',
           type: 'bar',
-          yAxisID: 'y'
+          stack: 'volume'
+        },
+        {
+          label: 'Sell Volume',
+          data: volumeData.map((item) => item.h24SellVolume),
+          backgroundColor: theme.palette.error.light,
+          borderColor: theme.palette.error.main,
+          borderWidth: 1,
+          yAxisID: 'y',
+          type: 'bar',
+          stack: 'volume'
         },
         {
           label: 'Cumulative Volume',
-          data: sortedHistory.map((item) => item.cumulativeVolume),
+          data: volumeData.map((item) => item.trueCumulativeVolume),
           fill: false,
-          backgroundColor: theme.palette.success.light,
-          borderColor: theme.palette.success.main,
+          backgroundColor: theme.palette.info.main,
+          borderColor: theme.palette.info.main,
+          borderWidth: 2,
           tension: 0.4,
-          type: 'line',
           yAxisID: 'y1',
-          pointRadius: 2,
+          type: 'line',
+          pointRadius: 0,
           pointHoverRadius: 4
         }
       ]
     };
   };
 
+  // Update chart options for ROI chart
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -421,7 +508,12 @@ export default function Portfolio({ account, limit, collection, type }) {
           color: theme.palette.text.primary,
           padding: 20,
           usePointStyle: true,
-          pointStyle: 'circle'
+          pointStyle: 'circle',
+          boxWidth: 8,
+          boxHeight: 8,
+          font: {
+            size: 11
+          }
         }
       },
       tooltip: {
@@ -440,9 +532,11 @@ export default function Portfolio({ account, limit, collection, type }) {
               label += ': ';
             }
             const value = context.parsed?.y;
-            if (!value) return label + '0%';
+            if (value === undefined || value === null) return label + '0';
 
             if (context.dataset.yAxisID === 'y2') {
+              return label + value.toLocaleString() + ' XRP';
+            } else if (context.dataset.yAxisID === 'y3') {
               return label + value.toLocaleString() + ' XRP';
             } else {
               return label + value.toFixed(2) + '%';
@@ -460,7 +554,12 @@ export default function Portfolio({ account, limit, collection, type }) {
         ticks: {
           color: theme.palette.text.secondary,
           maxRotation: 45,
-          minRotation: 45
+          minRotation: 45,
+          font: {
+            size: 10
+          },
+          autoSkip: true,
+          maxTicksLimit: 15
         }
       },
       y: {
@@ -474,11 +573,15 @@ export default function Portfolio({ account, limit, collection, type }) {
         },
         ticks: {
           color: theme.palette.text.secondary,
-          callback: (value) => `${value.toFixed(2)}%`
+          callback: (value) => `${value.toFixed(0)}%`
         },
         grid: {
           color: alpha(theme.palette.divider, 0.1)
-        }
+        },
+        min: -100,
+        max: 100,
+        suggestedMin: -100,
+        suggestedMax: 100
       },
       y1: {
         type: 'linear',
@@ -491,8 +594,23 @@ export default function Portfolio({ account, limit, collection, type }) {
         },
         ticks: {
           color: theme.palette.text.secondary,
-          callback: (value) => `${value.toFixed(2)}%`
+          callback: (value) => `${value.toFixed(0)}%`
         },
+        grid: {
+          display: false
+        }
+      },
+      y2: {
+        type: 'linear',
+        display: false,
+        min: 0,
+        grid: {
+          display: false
+        }
+      },
+      y3: {
+        type: 'linear',
+        display: false,
         grid: {
           display: false
         }
@@ -500,6 +618,7 @@ export default function Portfolio({ account, limit, collection, type }) {
     }
   };
 
+  // Update trade history options
   const tradeHistoryOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -524,7 +643,12 @@ export default function Portfolio({ account, limit, collection, type }) {
           color: theme.palette.text.primary,
           padding: 20,
           usePointStyle: true,
-          pointStyle: 'circle'
+          pointStyle: 'circle',
+          boxWidth: 8,
+          boxHeight: 8,
+          font: {
+            size: 11
+          }
         }
       },
       tooltip: {
@@ -543,7 +667,7 @@ export default function Portfolio({ account, limit, collection, type }) {
               label += ': ';
             }
             const value = context.parsed?.y;
-            return label + (value ? value.toLocaleString() : '0');
+            return label + (value !== undefined && value !== null ? value.toLocaleString() : '0');
           }
         }
       }
@@ -554,7 +678,12 @@ export default function Portfolio({ account, limit, collection, type }) {
           display: false
         },
         ticks: {
-          color: theme.palette.text.secondary
+          color: theme.palette.text.secondary,
+          font: {
+            size: 10
+          },
+          autoSkip: true,
+          maxTicksLimit: 15
         }
       },
       y: {
@@ -568,11 +697,12 @@ export default function Portfolio({ account, limit, collection, type }) {
         },
         ticks: {
           color: theme.palette.text.secondary,
-          stepSize: 1
+          stepSize: 5
         },
         grid: {
           color: alpha(theme.palette.divider, 0.1)
-        }
+        },
+        stacked: true
       },
       y1: {
         type: 'linear',
@@ -593,50 +723,34 @@ export default function Portfolio({ account, limit, collection, type }) {
     }
   };
 
+  // Define chart options for volume history
   const volumeHistoryOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    interaction: {
-      mode: 'index',
-      intersect: false
-    },
     plugins: {
-      title: {
-        display: true,
-        text: 'Volume History',
-        color: theme.palette.text.primary,
-        font: {
-          size: 16,
-          weight: 'bold'
-        },
-        padding: 20
-      },
       legend: {
-        position: 'bottom',
+        position: 'top',
         labels: {
-          color: theme.palette.text.primary,
-          padding: 20,
-          usePointStyle: true,
-          pointStyle: 'circle'
+          color: theme.palette.text.primary
         }
       },
       tooltip: {
         mode: 'index',
         intersect: false,
-        backgroundColor: alpha(theme.palette.background.paper, 0.9),
-        titleColor: theme.palette.text.primary,
-        bodyColor: theme.palette.text.secondary,
-        borderColor: theme.palette.divider,
-        borderWidth: 1,
-        padding: 12,
         callbacks: {
           label: function (context) {
             let label = context.dataset.label || '';
             if (label) {
               label += ': ';
             }
-            const value = context.parsed?.y;
-            return label + (value ? value.toLocaleString() : '0') + ' XRP';
+            if (context.parsed.y !== null) {
+              label += new Intl.NumberFormat('en-US', {
+                style: 'decimal',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+              }).format(context.parsed.y);
+            }
+            return label;
           }
         }
       }
@@ -644,7 +758,7 @@ export default function Portfolio({ account, limit, collection, type }) {
     scales: {
       x: {
         grid: {
-          display: false
+          color: theme.palette.divider
         },
         ticks: {
           color: theme.palette.text.secondary
@@ -664,7 +778,7 @@ export default function Portfolio({ account, limit, collection, type }) {
           callback: (value) => value.toLocaleString()
         },
         grid: {
-          color: alpha(theme.palette.divider, 0.1)
+          color: theme.palette.divider
         }
       },
       y1: {
@@ -761,12 +875,28 @@ export default function Portfolio({ account, limit, collection, type }) {
     setSelectedChart(null);
   };
 
-  const renderChart = (chartData) => {
-    if (!chartData || !chartData.labels) {
-      return <Box>Loading chart data...</Box>;
+  // Update the renderChart function to handle different chart types
+  const renderChart = (chartData, chartType) => {
+    if (!chartData || !chartData.labels || chartData.labels.length === 0) {
+      return (
+        <Box
+          sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            No data available
+          </Typography>
+        </Box>
+      );
     }
 
-    return <Line data={chartData} options={{ ...chartOptions, maintainAspectRatio: false }} />;
+    const options =
+      chartType === 'activity'
+        ? tradeHistoryOptions
+        : chartType === 'volume'
+        ? volumeHistoryOptions
+        : chartOptions;
+
+    return <Line data={chartData} options={{ ...options, maintainAspectRatio: false }} />;
   };
 
   useEffect(() => {
@@ -878,6 +1008,82 @@ export default function Portfolio({ account, limit, collection, type }) {
   const handleTrustlinesData = (trustlines) => {
     const pieData = processAssetDistribution(trustlines);
     setAssetDistribution(pieData);
+  };
+
+  // Add filtering function for chart data
+  const filterChartData = (data, dateRange, limit) => {
+    if (!data || !data.labels) return data;
+
+    let filteredData = { ...data };
+    let filteredIndices = [];
+
+    // Apply date range filter
+    if (dateRange !== 'all') {
+      const now = new Date();
+      const cutoffDate = new Date();
+
+      switch (dateRange) {
+        case '1m':
+          cutoffDate.setMonth(now.getMonth() - 1);
+          break;
+        case '3m':
+          cutoffDate.setMonth(now.getMonth() - 3);
+          break;
+        case '6m':
+          cutoffDate.setMonth(now.getMonth() - 6);
+          break;
+        case '1y':
+          cutoffDate.setFullYear(now.getFullYear() - 1);
+          break;
+        default:
+          break;
+      }
+
+      // Get original dates from the data
+      const dates = data.labels.map((label) => {
+        // Parse the date from the label (assuming format like "Mar 19")
+        const parts = label.split(' ');
+        const month = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec'
+        ].indexOf(parts[0]);
+        const day = parseInt(parts[1]);
+        const year = now.getFullYear(); // Assume current year if not provided
+        return new Date(year, month, day);
+      });
+
+      // Filter indices based on date range
+      filteredIndices = dates
+        .map((date, index) => (date >= cutoffDate ? index : -1))
+        .filter((idx) => idx !== -1);
+    } else {
+      // If no date filter, include all indices
+      filteredIndices = Array.from({ length: data.labels.length }, (_, i) => i);
+    }
+
+    // Apply limit filter (take the most recent N entries)
+    if (limit > 0 && filteredIndices.length > limit) {
+      filteredIndices = filteredIndices.slice(-limit);
+    }
+
+    // Create filtered datasets
+    filteredData.labels = filteredIndices.map((i) => data.labels[i]);
+    filteredData.datasets = data.datasets.map((dataset) => ({
+      ...dataset,
+      data: filteredIndices.map((i) => dataset.data[i])
+    }));
+
+    return filteredData;
   };
 
   // Render loading state or error state
@@ -1385,7 +1591,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                     {loading ? (
                       <Skeleton variant="rectangular" height={350} />
                     ) : (
-                      renderChart(processChartData())
+                      renderChart(
+                        filterChartData(processChartData(), chartDateRange, chartDataLimit),
+                        'roi'
+                      )
                     )}
                   </Box>
                 </Card>
@@ -1421,7 +1630,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                     {loading ? (
                       <Skeleton variant="rectangular" height={350} />
                     ) : (
-                      renderChart(processTradeHistoryData())
+                      renderChart(
+                        filterChartData(processTradeHistoryData(), chartDateRange, chartDataLimit),
+                        'activity'
+                      )
                     )}
                   </Box>
                 </Card>
@@ -1457,7 +1669,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                     {loading ? (
                       <Skeleton variant="rectangular" height={350} />
                     ) : (
-                      renderChart(processVolumeHistoryData())
+                      renderChart(
+                        filterChartData(processVolumeHistoryData(), chartDateRange, chartDataLimit),
+                        'volume'
+                      )
                     )}
                   </Box>
                 </Card>
@@ -1488,9 +1703,21 @@ export default function Portfolio({ account, limit, collection, type }) {
                   </IconButton>
                 </Box>
                 <Box sx={{ height: 600, width: '100%' }}>
-                  {selectedChart === 'roi' && renderChart(processChartData())}
-                  {selectedChart === 'activity' && renderChart(processTradeHistoryData())}
-                  {selectedChart === 'volume' && renderChart(processVolumeHistoryData())}
+                  {selectedChart === 'roi' &&
+                    renderChart(
+                      filterChartData(processChartData(), chartDateRange, chartDataLimit),
+                      'roi'
+                    )}
+                  {selectedChart === 'activity' &&
+                    renderChart(
+                      filterChartData(processTradeHistoryData(), chartDateRange, chartDataLimit),
+                      'activity'
+                    )}
+                  {selectedChart === 'volume' &&
+                    renderChart(
+                      filterChartData(processVolumeHistoryData(), chartDateRange, chartDataLimit),
+                      'volume'
+                    )}
                 </Box>
               </ModalContent>
             </StyledModal>
