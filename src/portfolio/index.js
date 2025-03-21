@@ -342,8 +342,21 @@ export default function Portfolio({ account, limit, collection, type }) {
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
+    // Find the minimum cumulative trades value to use as a baseline
+    const minCumulativeTrades = Math.min(...sortedHistory.map((item) => item.cumulativeTrades));
+
+    // Calculate running total of trades to create a true cumulative count
+    let runningTotal = 0;
+    const normalizedData = sortedHistory.map((item) => {
+      runningTotal += item.trades;
+      return {
+        ...item,
+        normalizedCumulativeTrades: runningTotal
+      };
+    });
+
     return {
-      labels: sortedHistory.map((item) =>
+      labels: normalizedData.map((item) =>
         new Date(item.date).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric'
@@ -352,7 +365,7 @@ export default function Portfolio({ account, limit, collection, type }) {
       datasets: [
         {
           label: 'Daily Trades',
-          data: sortedHistory.map((item) => item.trades),
+          data: normalizedData.map((item) => item.trades),
           fill: false,
           backgroundColor: theme.palette.primary.light,
           borderColor: theme.palette.primary.main,
@@ -362,7 +375,8 @@ export default function Portfolio({ account, limit, collection, type }) {
         },
         {
           label: 'Cumulative Trades',
-          data: sortedHistory.map((item) => item.cumulativeTrades),
+          // Use the normalized running total instead of the API's cumulative value
+          data: normalizedData.map((item) => item.normalizedCumulativeTrades),
           fill: false,
           backgroundColor: theme.palette.success.light,
           borderColor: theme.palette.success.main,
@@ -374,7 +388,7 @@ export default function Portfolio({ account, limit, collection, type }) {
         },
         {
           label: 'Profitable Trades',
-          data: sortedHistory.map((item) => item.profitableTrades),
+          data: normalizedData.map((item) => item.profitableTrades),
           fill: false,
           backgroundColor: theme.palette.success.main,
           borderColor: theme.palette.success.main,
@@ -385,7 +399,7 @@ export default function Portfolio({ account, limit, collection, type }) {
         },
         {
           label: 'Losing Trades',
-          data: sortedHistory.map((item) => item.losingTrades),
+          data: normalizedData.map((item) => item.losingTrades),
           fill: false,
           backgroundColor: theme.palette.error.main,
           borderColor: theme.palette.error.main,
