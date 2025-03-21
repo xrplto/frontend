@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import React from 'react';
 
 // Material
 import {
@@ -172,10 +173,14 @@ export default function TopTraders({ token }) {
         );
         console.log('API Response:', response.data);
         if (response.status === 200) {
-          // Extract the traders array from response.data.data
-          const tradersData = Array.isArray(response.data.data) ? response.data.data : [];
-          console.log('Setting traders state:', tradersData);
-          setTraders(tradersData);
+          // Check if response.data is an object with a data property, or if it's the array directly
+          const tradersData = response.data.data || response.data;
+
+          // Ensure we're working with an array
+          const tradersArray = Array.isArray(tradersData) ? tradersData : [];
+
+          console.log('Processed traders data:', tradersArray);
+          setTraders(tradersArray);
         }
       } catch (error) {
         console.error('Error fetching top traders:', error);
@@ -198,11 +203,20 @@ export default function TopTraders({ token }) {
     console.log('Current traders state:', traders);
   }, [traders]);
 
-  // Debug sorted traders
-  const sortedTraders = Array.isArray(traders)
-    ? traders.slice().sort(getComparator(order, orderBy))
-    : [];
-  console.log('Sorted traders:', sortedTraders);
+  // Update the sortedTraders calculation to handle potential issues
+  const sortedTraders = React.useMemo(() => {
+    if (!Array.isArray(traders) || traders.length === 0) {
+      console.log('No traders data to sort');
+      return [];
+    }
+
+    try {
+      return [...traders].sort(getComparator(order, orderBy));
+    } catch (error) {
+      console.error('Error sorting traders:', error);
+      return traders;
+    }
+  }, [traders, order, orderBy]);
 
   const handleRequestSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -265,250 +279,291 @@ export default function TopTraders({ token }) {
   return (
     <>
       <Box sx={{ overflow: 'auto', width: '100%' }}>
-        <Table
-          stickyHeader
-          size="small"
-          sx={{
-            '& .MuiTableCell-root': {
-              py: 0.75,
-              px: 1,
-              fontSize: '0.75rem',
-              whiteSpace: 'nowrap'
-            },
-            '& .MuiTableCell-head': {
-              fontWeight: 600,
-              bgcolor: (theme) => theme.palette.background.paper
-            }
-          }}
-        >
-          <TableHead>
-            <TableRow>
-              {headCells.map((headCell) => (
-                <TableCell
-                  key={headCell.id}
-                  align={headCell.numeric ? 'right' : 'left'}
-                  sortDirection={orderBy === headCell.id ? order : false}
-                >
-                  {headCell.sortable ? (
-                    <TableSortLabel
-                      active={orderBy === headCell.id}
-                      direction={orderBy === headCell.id ? order : 'asc'}
-                      onClick={() => handleRequestSort(headCell.id)}
-                      sx={{ fontSize: '0.75rem' }}
+        {sortedTraders.length === 0 ? (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Typography variant="body1" color="text.secondary">
+              No trader data available for this token.
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            <Table
+              stickyHeader
+              size="small"
+              sx={{
+                '& .MuiTableCell-root': {
+                  py: 0.75,
+                  px: 1,
+                  fontSize: '0.75rem',
+                  whiteSpace: 'nowrap'
+                },
+                '& .MuiTableCell-head': {
+                  fontWeight: 600,
+                  bgcolor: (theme) => theme.palette.background.paper
+                }
+              }}
+            >
+              <TableHead>
+                <TableRow>
+                  {headCells.map((headCell) => (
+                    <TableCell
+                      key={headCell.id}
+                      align={headCell.numeric ? 'right' : 'left'}
+                      sortDirection={orderBy === headCell.id ? order : false}
                     >
-                      {headCell.label}
-                      {headCell.id === 'tradePercentage' && (
-                        <Tooltip title="Trader's share of total market volume" placement="top">
-                          <span style={{ marginLeft: '2px', fontSize: '12px' }}>ⓘ</span>
-                        </Tooltip>
+                      {headCell.sortable ? (
+                        <TableSortLabel
+                          active={orderBy === headCell.id}
+                          direction={orderBy === headCell.id ? order : 'asc'}
+                          onClick={() => handleRequestSort(headCell.id)}
+                          sx={{ fontSize: '0.75rem' }}
+                        >
+                          {headCell.label}
+                          {headCell.id === 'tradePercentage' && (
+                            <Tooltip title="Trader's share of total market volume" placement="top">
+                              <span style={{ marginLeft: '2px', fontSize: '12px' }}>ⓘ</span>
+                            </Tooltip>
+                          )}
+                          {headCell.id === 'profit24h' && (
+                            <Tooltip title="Trader's profit in the last 24 hours" placement="top">
+                              <span style={{ marginLeft: '2px', fontSize: '12px' }}>ⓘ</span>
+                            </Tooltip>
+                          )}
+                        </TableSortLabel>
+                      ) : (
+                        headCell.label
                       )}
-                      {headCell.id === 'profit24h' && (
-                        <Tooltip title="Trader's profit in the last 24 hours" placement="top">
-                          <span style={{ marginLeft: '2px', fontSize: '12px' }}>ⓘ</span>
-                        </Tooltip>
-                      )}
-                    </TableSortLabel>
-                  ) : (
-                    headCell.label
-                  )}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedTraders.map((trader, index) => (
-              <TableRow
-                key={trader.address}
-                sx={{
-                  '&:hover': {
-                    bgcolor: 'action.hover'
-                  }
-                }}
-              >
-                <TableCell align="right">{page * rowsPerPage + index + 1}</TableCell>
-                <TableCell align="left">
-                  <Stack direction="row" alignItems="center" spacing={0.5}>
-                    <Link
-                      underline="none"
-                      color="inherit"
-                      href={`/profile/${trader.address}`}
-                      rel="noreferrer"
-                    >
-                      <Typography variant="body2" color="primary">
-                        {truncate(trader.address, 20)}
-                      </Typography>
-                    </Link>
-                    {trader.AMM && (
-                      <Chip
-                        label="AMM"
-                        size="small"
-                        color="secondary"
-                        sx={{
-                          height: 20,
-                          fontSize: '0.65rem',
-                          '& .MuiChip-label': {
-                            px: 0.75
-                          }
-                        }}
-                      />
-                    )}
-                  </Stack>
-                </TableCell>
-                <TableCell align="right">
-                  <ProfitCell value={trader.profit24h} />
-                </TableCell>
-                <TableCell align="right">
-                  <ProfitCell value={trader.profit7d} />
-                </TableCell>
-                <TableCell align="right">
-                  <ProfitCell value={trader.profit2m} />
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2">{fNumber(trader.volume24h)}</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2">{fNumber(trader.volume7d)}</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2">{fNumber(trader.totalVolume)}</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <MarketShareCell value={trader.tradePercentage} />
-                  </Box>
-                </TableCell>
-                <TableCell align="right">
-                  <Stack
-                    direction="row"
-                    spacing={0.5}
-                    alignItems="center"
-                    justifyContent="flex-end"
-                  >
-                    {trader.roi >= 0 ? (
-                      <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 14 }} />
-                    ) : (
-                      <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 14 }} />
-                    )}
-                    <Typography
-                      variant="body2"
-                      sx={{ color: trader.roi >= 0 ? '#54D62C' : '#FF6C40' }}
-                    >
-                      {fPercent(trader.roi)}
-                    </Typography>
-                  </Stack>
-                </TableCell>
-                <TableCell align="right">
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Chip
-                      label={fPercent(
-                        (trader.profitableTrades /
-                          (trader.profitableTrades + trader.losingTrades)) *
-                          100
-                      )}
-                      size="small"
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedTraders.map((trader, index) => {
+                  // Add default values for potentially missing properties
+                  const safeTrader = {
+                    address: trader.address || 'Unknown',
+                    profit24h: trader.profit24h || 0,
+                    profit7d: trader.profit7d || 0,
+                    profit2m: trader.profit2m || 0,
+                    volume24h: trader.volume24h || 0,
+                    volume7d: trader.volume7d || 0,
+                    totalVolume: trader.totalVolume || 0,
+                    tradePercentage: trader.tradePercentage || 0,
+                    roi: trader.roi || 0,
+                    profitableTrades: trader.profitableTrades || 0,
+                    losingTrades: trader.losingTrades || 0,
+                    trades24h: trader.trades24h || 0,
+                    totalTrades: trader.totalTrades || 0,
+                    avgHoldingTime: trader.avgHoldingTime || 0,
+                    maxProfitTrade: trader.maxProfitTrade || 0,
+                    maxLossTrade: trader.maxLossTrade || 0,
+                    AMM: trader.AMM || false,
+                    ...trader // Keep any other properties
+                  };
+
+                  return (
+                    <TableRow
+                      key={safeTrader.address}
                       sx={{
-                        bgcolor: 'rgba(84, 214, 44, 0.16)',
-                        color: '#54D62C',
-                        height: '20px',
-                        '& .MuiChip-label': {
-                          px: 0.75,
-                          fontSize: '0.7rem'
+                        '&:hover': {
+                          bgcolor: 'action.hover'
                         }
                       }}
-                    />
-                  </Box>
-                </TableCell>
-                <TableCell align="right">
-                  <Stack direction="column" spacing={0} alignItems="flex-end">
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ fontSize: '0.65rem' }}
                     >
-                      24h: {fNumber(trader.trades24h)}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ fontSize: '0.65rem' }}
-                    >
-                      Total: {fNumber(trader.totalTrades)}
-                    </Typography>
-                  </Stack>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2">{formatDuration(trader.avgHoldingTime)}</Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2" sx={{ color: '#54D62C' }}>
-                    {fNumber(trader.maxProfitTrade)}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Typography variant="body2" sx={{ color: '#FF6C40' }}>
-                    {fNumber(Math.abs(trader.maxLossTrade))}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">
-                  <Stack direction="row" alignItems="center" spacing={1} justifyContent="flex-end">
-                    <Link
-                      underline="none"
-                      color="inherit"
-                      target="_blank"
-                      href={`https://bithomp.com/explorer/${trader.address}`}
-                      rel="noreferrer noopener nofollow"
-                    >
-                      <IconButton edge="end" aria-label="bithomp" size="small">
-                        <LinkIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Link>
-                    <Tooltip title="View Trader Statistics">
-                      <IconButton
-                        edge="end"
-                        aria-label="stats"
-                        onClick={() => handleOpenStats(trader)}
-                        size="small"
-                      >
-                        <BarChartIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Copy JSON Data">
-                      <IconButton
-                        edge="end"
-                        aria-label="copy-json"
-                        onClick={() => handleCopyJson(trader)}
-                        size="small"
-                      >
-                        {copiedTrader === trader.address ? (
-                          <CheckIcon sx={{ fontSize: 16, color: '#54D62C' }} />
-                        ) : (
-                          <ContentCopyIcon sx={{ fontSize: 16 }} />
-                        )}
-                      </IconButton>
-                    </Tooltip>
-                  </Stack>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 20, 25, 50, 100]}
-          component="div"
-          count={sortedTraders.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          sx={{
-            '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-              fontSize: '0.75rem'
-            },
-            '.MuiTablePagination-select': {
-              fontSize: '0.75rem'
-            }
-          }}
-        />
+                      <TableCell align="right">{page * rowsPerPage + index + 1}</TableCell>
+                      <TableCell align="left">
+                        <Stack direction="row" alignItems="center" spacing={0.5}>
+                          <Link
+                            underline="none"
+                            color="inherit"
+                            href={`/profile/${safeTrader.address}`}
+                            rel="noreferrer"
+                          >
+                            <Typography variant="body2" color="primary">
+                              {truncate(safeTrader.address, 20)}
+                            </Typography>
+                          </Link>
+                          {safeTrader.AMM && (
+                            <Chip
+                              label="AMM"
+                              size="small"
+                              color="secondary"
+                              sx={{
+                                height: 20,
+                                fontSize: '0.65rem',
+                                '& .MuiChip-label': {
+                                  px: 0.75
+                                }
+                              }}
+                            />
+                          )}
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="right">
+                        <ProfitCell value={safeTrader.profit24h} />
+                      </TableCell>
+                      <TableCell align="right">
+                        <ProfitCell value={safeTrader.profit7d} />
+                      </TableCell>
+                      <TableCell align="right">
+                        <ProfitCell value={safeTrader.profit2m} />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{fNumber(safeTrader.volume24h)}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{fNumber(safeTrader.volume7d)}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{fNumber(safeTrader.totalVolume)}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <MarketShareCell value={safeTrader.tradePercentage} />
+                        </Box>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Stack
+                          direction="row"
+                          spacing={0.5}
+                          alignItems="center"
+                          justifyContent="flex-end"
+                        >
+                          {safeTrader.roi >= 0 ? (
+                            <TrendingUpIcon sx={{ color: '#54D62C', fontSize: 14 }} />
+                          ) : (
+                            <TrendingDownIcon sx={{ color: '#FF6C40', fontSize: 14 }} />
+                          )}
+                          <Typography
+                            variant="body2"
+                            sx={{ color: safeTrader.roi >= 0 ? '#54D62C' : '#FF6C40' }}
+                          >
+                            {fPercent(safeTrader.roi)}
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <Chip
+                            label={fPercent(
+                              (safeTrader.profitableTrades /
+                                (safeTrader.profitableTrades + safeTrader.losingTrades)) *
+                                100
+                            )}
+                            size="small"
+                            sx={{
+                              bgcolor: 'rgba(84, 214, 44, 0.16)',
+                              color: '#54D62C',
+                              height: '20px',
+                              '& .MuiChip-label': {
+                                px: 0.75,
+                                fontSize: '0.7rem'
+                              }
+                            }}
+                          />
+                        </Box>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Stack direction="column" spacing={0} alignItems="flex-end">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.65rem' }}
+                          >
+                            24h: {fNumber(safeTrader.trades24h)}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.65rem' }}
+                          >
+                            Total: {fNumber(safeTrader.totalTrades)}
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">
+                          {formatDuration(safeTrader.avgHoldingTime)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" sx={{ color: '#54D62C' }}>
+                          {fNumber(safeTrader.maxProfitTrade)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2" sx={{ color: '#FF6C40' }}>
+                          {fNumber(Math.abs(safeTrader.maxLossTrade))}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={1}
+                          justifyContent="flex-end"
+                        >
+                          <Link
+                            underline="none"
+                            color="inherit"
+                            target="_blank"
+                            href={`https://bithomp.com/explorer/${safeTrader.address}`}
+                            rel="noreferrer noopener nofollow"
+                          >
+                            <IconButton edge="end" aria-label="bithomp" size="small">
+                              <LinkIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </Link>
+                          <Tooltip title="View Trader Statistics">
+                            <IconButton
+                              edge="end"
+                              aria-label="stats"
+                              onClick={() => handleOpenStats(safeTrader)}
+                              size="small"
+                            >
+                              <BarChartIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Copy JSON Data">
+                            <IconButton
+                              edge="end"
+                              aria-label="copy-json"
+                              onClick={() => handleCopyJson(safeTrader)}
+                              size="small"
+                            >
+                              {copiedTrader === safeTrader.address ? (
+                                <CheckIcon sx={{ fontSize: 16, color: '#54D62C' }} />
+                              ) : (
+                                <ContentCopyIcon sx={{ fontSize: 16 }} />
+                              )}
+                            </IconButton>
+                          </Tooltip>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 20, 25, 50, 100]}
+              component="div"
+              count={sortedTraders.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              sx={{
+                '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+                  fontSize: '0.75rem'
+                },
+                '.MuiTablePagination-select': {
+                  fontSize: '0.75rem'
+                }
+              }}
+            />
+          </>
+        )}
       </Box>
 
       <StatsModal
