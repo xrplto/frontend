@@ -211,9 +211,8 @@ export default function Portfolio({ account, limit, collection, type }) {
         const response = await axios.get(
           `https://api.xrpl.to/api/analytics/trader-stats/${account}`
         );
-        setTraderStats(response.data.data);
-        // Set AMM status based on response
-        setIsAmm(!!response.data.data?.AMM);
+        setTraderStats(response.data);
+        setIsAmm(!!response.data?.AMM);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching trader stats:', error);
