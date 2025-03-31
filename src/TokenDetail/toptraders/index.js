@@ -175,10 +175,10 @@ export default function TopTraders({ token }) {
         if (response.status === 200) {
           // Check if response.data is an object with a data property, or if it's the array directly
           const tradersData = response.data.data || response.data;
-          
+
           // Ensure we're working with an array
           const tradersArray = Array.isArray(tradersData) ? tradersData : [];
-          
+
           console.log('Processed traders data:', tradersArray);
           setTraders(tradersArray);
         }
@@ -209,7 +209,7 @@ export default function TopTraders({ token }) {
       console.log('No traders data to sort');
       return [];
     }
-    
+
     try {
       return [...traders].sort(getComparator(order, orderBy));
     } catch (error) {
@@ -360,7 +360,7 @@ export default function TopTraders({ token }) {
                     AMM: trader.AMM || false,
                     ...trader // Keep any other properties
                   };
-                  
+
                   return (
                     <TableRow
                       key={safeTrader.address}
@@ -482,7 +482,9 @@ export default function TopTraders({ token }) {
                         </Stack>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2">{formatDuration(safeTrader.avgHoldingTime)}</Typography>
+                        <Typography variant="body2">
+                          {formatDuration(safeTrader.avgHoldingTime)}
+                        </Typography>
                       </TableCell>
                       <TableCell align="right">
                         <Typography variant="body2" sx={{ color: '#54D62C' }}>
@@ -495,7 +497,12 @@ export default function TopTraders({ token }) {
                         </Typography>
                       </TableCell>
                       <TableCell align="right">
-                        <Stack direction="row" alignItems="center" spacing={1} justifyContent="flex-end">
+                        <Stack
+                          direction="row"
+                          alignItems="center"
+                          spacing={1}
+                          justifyContent="flex-end"
+                        >
                           <Link
                             underline="none"
                             color="inherit"
