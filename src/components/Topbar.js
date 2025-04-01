@@ -439,6 +439,9 @@ const Topbar = () => {
     setTradeDrawerOpen(false);
   };
 
+  // Add state for visible trades
+  const [visibleTrades, setVisibleTrades] = useState(50);
+
   // Update the useSWR hook to not depend on filter
   const { data: trades, error } = useSWR(
     tradeDrawerOpen
@@ -457,6 +460,21 @@ const Topbar = () => {
     if (!trades?.hists) return [];
     return trades.hists.sort((a, b) => b.time - a.time);
   };
+
+  // Add a function to handle scroll events
+  const handleTradeListScroll = (e) => {
+    const bottom = e.target.scrollHeight - e.target.scrollTop <= e.target.clientHeight + 300;
+    if (bottom && visibleTrades < (trades?.hists?.length || 0)) {
+      setVisibleTrades((prev) => Math.min(prev + 50, trades?.hists?.length || 0));
+    }
+  };
+
+  // Reset visible trades when drawer opens
+  useEffect(() => {
+    if (tradeDrawerOpen) {
+      setVisibleTrades(50);
+    }
+  }, [tradeDrawerOpen]);
 
   // Add this constant before the Topbar component
   const BOT_ADDRESSES = [
@@ -655,97 +673,107 @@ const Topbar = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <List sx={{ width: '100%', padding: 0 }}>
-            {filterTrades(trades).map((trade) => (
-              <ListItem
-                key={`${trade.time}-${trade.maker}-${trade.taker}`}
-                sx={{
-                  borderBottom: `1px solid ${theme.palette.divider}`,
-                  position: 'relative',
-                  overflow: 'hidden',
-                  padding: '8px 12px',
-                  width: '100%'
-                }}
-              >
-                <ProgressBarContainer>
-                  <ProgressBar
-                    width={(() => {
-                      const xrpValue = getXRPAmount(trade);
+          <List
+            sx={{ width: '100%', padding: 0, maxHeight: 'calc(100vh - 64px)', overflow: 'auto' }}
+            onScroll={handleTradeListScroll}
+          >
+            {filterTrades(trades)
+              .slice(0, visibleTrades)
+              .map((trade) => (
+                <ListItem
+                  key={`${trade.time}-${trade.maker}-${trade.taker}`}
+                  sx={{
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    padding: '8px 12px',
+                    width: '100%'
+                  }}
+                >
+                  <ProgressBarContainer>
+                    <ProgressBar
+                      width={(() => {
+                        const xrpValue = getXRPAmount(trade);
 
-                      // Calculate relative width based on XRP amount
-                      if (xrpValue < 500) return Math.max(5, (xrpValue / 500) * 25);
-                      if (xrpValue < 5000) return Math.max(25, (xrpValue / 5000) * 50);
-                      if (xrpValue < 10000) return Math.max(50, (xrpValue / 10000) * 75);
-                      return Math.min(100, 75 + (xrpValue / 50000) * 25);
-                    })()}
-                    color={trade.paid.currency === 'XRP' ? '#4CAF50' : '#F44336'}
-                  />
-                </ProgressBarContainer>
-                <Box sx={{ width: '100%', position: 'relative', zIndex: 1 }}>
-                  <ListItemText
-                    primary={
-                      <>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
-                            <Typography variant="caption" color="text.secondary">
-                              {formatRelativeTime(trade.time)}
-                            </Typography>
-                            {trade.paid.currency === 'XRP' ? (
-                              <Typography component="span" variant="caption" color="success.main">
-                                BUY{' '}
-                              </Typography>
-                            ) : (
-                              <Typography component="span" variant="caption" color="error.main">
-                                SELL{' '}
-                              </Typography>
-                            )}
-                          </Box>
+                        // Calculate relative width based on XRP amount
+                        if (xrpValue < 500) return Math.max(5, (xrpValue / 500) * 25);
+                        if (xrpValue < 5000) return Math.max(25, (xrpValue / 5000) * 50);
+                        if (xrpValue < 10000) return Math.max(50, (xrpValue / 10000) * 75);
+                        return Math.min(100, 75 + (xrpValue / 50000) * 25);
+                      })()}
+                      color={trade.paid.currency === 'XRP' ? '#4CAF50' : '#F44336'}
+                    />
+                  </ProgressBarContainer>
+                  <Box sx={{ width: '100%', position: 'relative', zIndex: 1 }}>
+                    <ListItemText
+                      primary={
+                        <>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            <img
-                              src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
-                              alt={decodeCurrency(trade.paid.currency)}
-                              style={{ width: 14, height: 14, borderRadius: '50%' }}
-                            />
-                            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
-                              {formatTradeValue(trade.paid.value)}{' '}
-                              {decodeCurrency(trade.paid.currency)}
-                            </Typography>
-                          </Box>
-                          <Typography variant="body2" sx={{ mx: 0.5 }}>
-                            ↔
-                          </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            <img
-                              src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
-                              alt={decodeCurrency(trade.got.currency)}
-                              style={{ width: 14, height: 14, borderRadius: '50%' }}
-                            />
-                            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
-                              {formatTradeValue(trade.got.value)}{' '}
-                              {decodeCurrency(trade.got.currency)}
-                            </Typography>
-                          </Box>
-                          <Typography component="span" sx={{ ml: 0.5 }}>
-                            {getTradeSizeEmoji(getXRPAmount(trade))}
-                            {(BOT_ADDRESSES.includes(trade.maker) ||
-                              BOT_ADDRESSES.includes(trade.taker)) && (
-                              <SmartToy
-                                style={{
-                                  color: theme.palette.warning.main,
-                                  fontSize: '0.9rem',
-                                  marginLeft: '2px',
-                                  verticalAlign: 'middle'
-                                }}
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
+                              <Typography variant="caption" color="text.secondary">
+                                {formatRelativeTime(trade.time)}
+                              </Typography>
+                              {trade.paid.currency === 'XRP' ? (
+                                <Typography component="span" variant="caption" color="success.main">
+                                  BUY{' '}
+                                </Typography>
+                              ) : (
+                                <Typography component="span" variant="caption" color="error.main">
+                                  SELL{' '}
+                                </Typography>
+                              )}
+                            </Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <img
+                                src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
+                                alt={decodeCurrency(trade.paid.currency)}
+                                style={{ width: 14, height: 14, borderRadius: '50%' }}
                               />
-                            )}
-                          </Typography>
-                        </Box>
-                      </>
-                    }
-                  />
-                </Box>
-              </ListItem>
-            ))}
+                              <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                                {formatTradeValue(trade.paid.value)}{' '}
+                                {decodeCurrency(trade.paid.currency)}
+                              </Typography>
+                            </Box>
+                            <Typography variant="body2" sx={{ mx: 0.5 }}>
+                              ↔
+                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                              <img
+                                src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
+                                alt={decodeCurrency(trade.got.currency)}
+                                style={{ width: 14, height: 14, borderRadius: '50%' }}
+                              />
+                              <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                                {formatTradeValue(trade.got.value)}{' '}
+                                {decodeCurrency(trade.got.currency)}
+                              </Typography>
+                            </Box>
+                            <Typography component="span" sx={{ ml: 0.5 }}>
+                              {getTradeSizeEmoji(getXRPAmount(trade))}
+                              {(BOT_ADDRESSES.includes(trade.maker) ||
+                                BOT_ADDRESSES.includes(trade.taker)) && (
+                                <SmartToy
+                                  style={{
+                                    color: theme.palette.warning.main,
+                                    fontSize: '0.9rem',
+                                    marginLeft: '2px',
+                                    verticalAlign: 'middle'
+                                  }}
+                                />
+                              )}
+                            </Typography>
+                          </Box>
+                        </>
+                      }
+                    />
+                  </Box>
+                </ListItem>
+              ))}
+            {visibleTrades < (trades?.hists?.length || 0) && (
+              <Box display="flex" justifyContent="center" p={2}>
+                <CircularProgress size={24} />
+              </Box>
+            )}
           </List>
         )}
       </Drawer>
