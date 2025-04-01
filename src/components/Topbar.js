@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useMemo } from 'react';
 import Decimal from 'decimal.js';
 import Wallet from 'src/components/Wallet';
 import 'src/utils/i18n';
@@ -442,6 +442,17 @@ const Topbar = () => {
   // Add state for visible trades
   const [visibleTrades, setVisibleTrades] = useState(50);
 
+  // Add filter state and filter options
+  const [tradeFilter, setTradeFilter] = useState('All');
+  const filterOptions = [
+    { value: 'All', label: 'All Trades' },
+    { value: '500+', label: '🐟 500+ XRP' },
+    { value: '1000+', label: '🐬 1000+ XRP' },
+    { value: '2500+', label: '🦈 2500+ XRP' },
+    { value: '5000+', label: '🐋 5000+ XRP' },
+    { value: '10000+', label: '🐳 10000+ XRP' }
+  ];
+
   // Update the useSWR hook to not depend on filter
   const { data: trades, error } = useSWR(
     tradeDrawerOpen
@@ -455,26 +466,50 @@ const Topbar = () => {
     }
   );
 
-  // Simplify this function to just sort by time
-  const filterTrades = (trades) => {
+  // Fix the filtering logic in the useMemo
+  const filteredTrades = useMemo(() => {
     if (!trades?.hists) return [];
-    return trades.hists.sort((a, b) => b.time - a.time);
-  };
 
-  // Add a function to handle scroll events
+    // First sort by time
+    const sortedTrades = [...trades.hists].sort((a, b) => b.time - a.time);
+
+    // Then filter by XRP amount if needed
+    if (tradeFilter === 'All') {
+      return sortedTrades;
+    }
+
+    // Extract the minimum XRP value from the filter
+    const minXrp = parseInt(tradeFilter.replace('+', ''));
+
+    return sortedTrades.filter((trade) => {
+      // Get the XRP amount and ensure it's a number
+      const xrpAmount = parseFloat(getXRPAmount(trade));
+
+      // Debug log to check values
+      // console.log(`Trade: ${xrpAmount}, Min: ${minXrp}, Pass: ${xrpAmount >= minXrp}`);
+
+      // Compare numeric values
+      return xrpAmount >= minXrp;
+    });
+  }, [trades, tradeFilter]);
+
+  // Calculate if there are more trades to show
+  const hasMoreTrades = visibleTrades < filteredTrades.length;
+
+  // Update the handleTradeListScroll function
   const handleTradeListScroll = (e) => {
     const bottom = e.target.scrollHeight - e.target.scrollTop <= e.target.clientHeight + 300;
-    if (bottom && visibleTrades < (trades?.hists?.length || 0)) {
-      setVisibleTrades((prev) => Math.min(prev + 50, trades?.hists?.length || 0));
+    if (bottom && visibleTrades < filteredTrades.length) {
+      setVisibleTrades((prev) => Math.min(prev + 50, filteredTrades.length));
     }
   };
 
-  // Reset visible trades when drawer opens
+  // Reset visible trades when drawer opens or filter changes
   useEffect(() => {
     if (tradeDrawerOpen) {
       setVisibleTrades(50);
     }
-  }, [tradeDrawerOpen]);
+  }, [tradeDrawerOpen, tradeFilter]);
 
   // Add this constant before the Topbar component
   const BOT_ADDRESSES = [
@@ -659,7 +694,26 @@ const Topbar = () => {
                 LIVE
               </Typography>
             </LiveIndicator>
+            {tradeFilter !== 'All' && (
+              <Typography variant="body2" color="text.secondary">
+                ({filteredTrades.length} matches)
+              </Typography>
+            )}
           </Box>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <Select
+              value={tradeFilter}
+              onChange={(e) => setTradeFilter(e.target.value)}
+              displayEmpty
+              inputProps={{ 'aria-label': 'Filter trades' }}
+            >
+              {filterOptions.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
         {error ? (
           <Box p={2}>
@@ -677,99 +731,97 @@ const Topbar = () => {
             sx={{ width: '100%', padding: 0, maxHeight: 'calc(100vh - 64px)', overflow: 'auto' }}
             onScroll={handleTradeListScroll}
           >
-            {filterTrades(trades)
-              .slice(0, visibleTrades)
-              .map((trade) => (
-                <ListItem
-                  key={`${trade.time}-${trade.maker}-${trade.taker}`}
-                  sx={{
-                    borderBottom: `1px solid ${theme.palette.divider}`,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    padding: '8px 12px',
-                    width: '100%'
-                  }}
-                >
-                  <ProgressBarContainer>
-                    <ProgressBar
-                      width={(() => {
-                        const xrpValue = getXRPAmount(trade);
+            {filteredTrades.slice(0, visibleTrades).map((trade) => (
+              <ListItem
+                key={`${trade.time}-${trade.maker}-${trade.taker}`}
+                sx={{
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  padding: '8px 12px',
+                  width: '100%'
+                }}
+              >
+                <ProgressBarContainer>
+                  <ProgressBar
+                    width={(() => {
+                      const xrpValue = getXRPAmount(trade);
 
-                        // Calculate relative width based on XRP amount
-                        if (xrpValue < 500) return Math.max(5, (xrpValue / 500) * 25);
-                        if (xrpValue < 5000) return Math.max(25, (xrpValue / 5000) * 50);
-                        if (xrpValue < 10000) return Math.max(50, (xrpValue / 10000) * 75);
-                        return Math.min(100, 75 + (xrpValue / 50000) * 25);
-                      })()}
-                      color={trade.paid.currency === 'XRP' ? '#4CAF50' : '#F44336'}
-                    />
-                  </ProgressBarContainer>
-                  <Box sx={{ width: '100%', position: 'relative', zIndex: 1 }}>
-                    <ListItemText
-                      primary={
-                        <>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
-                              <Typography variant="caption" color="text.secondary">
-                                {formatRelativeTime(trade.time)}
-                              </Typography>
-                              {trade.paid.currency === 'XRP' ? (
-                                <Typography component="span" variant="caption" color="success.main">
-                                  BUY{' '}
-                                </Typography>
-                              ) : (
-                                <Typography component="span" variant="caption" color="error.main">
-                                  SELL{' '}
-                                </Typography>
-                              )}
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <img
-                                src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
-                                alt={decodeCurrency(trade.paid.currency)}
-                                style={{ width: 14, height: 14, borderRadius: '50%' }}
-                              />
-                              <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
-                                {formatTradeValue(trade.paid.value)}{' '}
-                                {decodeCurrency(trade.paid.currency)}
-                              </Typography>
-                            </Box>
-                            <Typography variant="body2" sx={{ mx: 0.5 }}>
-                              ↔
+                      // Calculate relative width based on XRP amount
+                      if (xrpValue < 500) return Math.max(5, (xrpValue / 500) * 25);
+                      if (xrpValue < 5000) return Math.max(25, (xrpValue / 5000) * 50);
+                      if (xrpValue < 10000) return Math.max(50, (xrpValue / 10000) * 75);
+                      return Math.min(100, 75 + (xrpValue / 50000) * 25);
+                    })()}
+                    color={trade.paid.currency === 'XRP' ? '#4CAF50' : '#F44336'}
+                  />
+                </ProgressBarContainer>
+                <Box sx={{ width: '100%', position: 'relative', zIndex: 1 }}>
+                  <ListItemText
+                    primary={
+                      <>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flex: 1 }}>
+                            <Typography variant="caption" color="text.secondary">
+                              {formatRelativeTime(trade.time)}
                             </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                              <img
-                                src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
-                                alt={decodeCurrency(trade.got.currency)}
-                                style={{ width: 14, height: 14, borderRadius: '50%' }}
-                              />
-                              <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
-                                {formatTradeValue(trade.got.value)}{' '}
-                                {decodeCurrency(trade.got.currency)}
+                            {trade.paid.currency === 'XRP' ? (
+                              <Typography component="span" variant="caption" color="success.main">
+                                BUY{' '}
                               </Typography>
-                            </Box>
-                            <Typography component="span" sx={{ ml: 0.5 }}>
-                              {getTradeSizeEmoji(getXRPAmount(trade))}
-                              {(BOT_ADDRESSES.includes(trade.maker) ||
-                                BOT_ADDRESSES.includes(trade.taker)) && (
-                                <SmartToy
-                                  style={{
-                                    color: theme.palette.warning.main,
-                                    fontSize: '0.9rem',
-                                    marginLeft: '2px',
-                                    verticalAlign: 'middle'
-                                  }}
-                                />
-                              )}
+                            ) : (
+                              <Typography component="span" variant="caption" color="error.main">
+                                SELL{' '}
+                              </Typography>
+                            )}
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <img
+                              src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
+                              alt={decodeCurrency(trade.paid.currency)}
+                              style={{ width: 14, height: 14, borderRadius: '50%' }}
+                            />
+                            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                              {formatTradeValue(trade.paid.value)}{' '}
+                              {decodeCurrency(trade.paid.currency)}
                             </Typography>
                           </Box>
-                        </>
-                      }
-                    />
-                  </Box>
-                </ListItem>
-              ))}
-            {visibleTrades < (trades?.hists?.length || 0) && (
+                          <Typography variant="body2" sx={{ mx: 0.5 }}>
+                            ↔
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <img
+                              src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
+                              alt={decodeCurrency(trade.got.currency)}
+                              style={{ width: 14, height: 14, borderRadius: '50%' }}
+                            />
+                            <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                              {formatTradeValue(trade.got.value)}{' '}
+                              {decodeCurrency(trade.got.currency)}
+                            </Typography>
+                          </Box>
+                          <Typography component="span" sx={{ ml: 0.5 }}>
+                            {getTradeSizeEmoji(getXRPAmount(trade))}
+                            {(BOT_ADDRESSES.includes(trade.maker) ||
+                              BOT_ADDRESSES.includes(trade.taker)) && (
+                              <SmartToy
+                                style={{
+                                  color: theme.palette.warning.main,
+                                  fontSize: '0.9rem',
+                                  marginLeft: '2px',
+                                  verticalAlign: 'middle'
+                                }}
+                              />
+                            )}
+                          </Typography>
+                        </Box>
+                      </>
+                    }
+                  />
+                </Box>
+              </ListItem>
+            ))}
+            {hasMoreTrades && (
               <Box display="flex" justifyContent="center" p={2}>
                 <CircularProgress size={24} />
               </Box>
