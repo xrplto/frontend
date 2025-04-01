@@ -439,9 +439,6 @@ const Topbar = () => {
     setTradeDrawerOpen(false);
   };
 
-  // Add state for visible trades
-  const [visibleTrades, setVisibleTrades] = useState(50);
-
   // Add filter state and filter options
   const [tradeFilter, setTradeFilter] = useState('All');
   const filterOptions = [
@@ -485,31 +482,10 @@ const Topbar = () => {
       // Get the XRP amount and ensure it's a number
       const xrpAmount = parseFloat(getXRPAmount(trade));
 
-      // Debug log to check values
-      // console.log(`Trade: ${xrpAmount}, Min: ${minXrp}, Pass: ${xrpAmount >= minXrp}`);
-
       // Compare numeric values
       return xrpAmount >= minXrp;
     });
   }, [trades, tradeFilter]);
-
-  // Calculate if there are more trades to show
-  const hasMoreTrades = visibleTrades < filteredTrades.length;
-
-  // Update the handleTradeListScroll function
-  const handleTradeListScroll = (e) => {
-    const bottom = e.target.scrollHeight - e.target.scrollTop <= e.target.clientHeight + 300;
-    if (bottom && visibleTrades < filteredTrades.length) {
-      setVisibleTrades((prev) => Math.min(prev + 50, filteredTrades.length));
-    }
-  };
-
-  // Reset visible trades when drawer opens or filter changes
-  useEffect(() => {
-    if (tradeDrawerOpen) {
-      setVisibleTrades(50);
-    }
-  }, [tradeDrawerOpen, tradeFilter]);
 
   // Add this constant before the Topbar component
   const BOT_ADDRESSES = [
@@ -729,9 +705,8 @@ const Topbar = () => {
         ) : (
           <List
             sx={{ width: '100%', padding: 0, maxHeight: 'calc(100vh - 64px)', overflow: 'auto' }}
-            onScroll={handleTradeListScroll}
           >
-            {filteredTrades.slice(0, visibleTrades).map((trade) => (
+            {filteredTrades.map((trade) => (
               <ListItem
                 key={`${trade.time}-${trade.maker}-${trade.taker}`}
                 sx={{
@@ -821,11 +796,6 @@ const Topbar = () => {
                 </Box>
               </ListItem>
             ))}
-            {hasMoreTrades && (
-              <Box display="flex" justifyContent="center" p={2}>
-                <CircularProgress size={24} />
-              </Box>
-            )}
           </List>
         )}
       </Drawer>
