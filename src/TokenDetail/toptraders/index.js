@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import React from 'react';
+import { format } from 'date-fns';
 
 // Material
 import {
@@ -28,6 +29,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckIcon from '@mui/icons-material/Check';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -44,6 +46,7 @@ function truncate(str, n) {
 }
 
 function formatDuration(seconds) {
+  if (seconds === 0 || seconds === null || seconds === undefined) return '-';
   const hours = Math.floor(seconds / 3600);
   const days = Math.floor(hours / 24);
   const months = Math.floor(days / 30);
@@ -52,8 +55,25 @@ function formatDuration(seconds) {
     return `${months}m`;
   } else if (days > 0) {
     return `${days}d`;
-  } else {
+  } else if (hours > 0) {
     return `${hours}h`;
+  } else {
+    const minutes = Math.floor((seconds % 3600) / 60);
+    if (minutes > 0) {
+      return `${minutes}min`;
+    } else {
+      return `<1min`;
+    }
+  }
+}
+
+function formatDate(dateString) {
+  if (!dateString) return '-';
+  try {
+    return format(new Date(dateString), 'MMM d, yyyy');
+  } catch (error) {
+    console.error('Error formatting date:', dateString, error);
+    return 'Invalid Date';
   }
 }
 
@@ -61,22 +81,25 @@ function descendingComparator(a, b, orderBy) {
   let aValue = a[orderBy];
   let bValue = b[orderBy];
 
-  // Special handling for calculated fields
   if (orderBy === 'winRate') {
-    aValue = (a.profitableTrades / (a.profitableTrades + a.losingTrades)) * 100;
-    bValue = (b.profitableTrades / (b.profitableTrades + b.losingTrades)) * 100;
+    const aTotal = a.profitableTrades + a.losingTrades;
+    const bTotal = b.profitableTrades + b.losingTrades;
+    aValue = aTotal > 0 ? (a.profitableTrades / aTotal) * 100 : 0;
+    bValue = bTotal > 0 ? (b.profitableTrades / bTotal) * 100 : 0;
   }
 
-  // For profit fields, we want to sort by actual value, not absolute value
-  // This ensures that higher profits are ranked higher, even when comparing negative values
-  if (orderBy === 'profit24h' || orderBy === 'profit7d' || orderBy === 'profit2m') {
-    if (bValue < aValue) {
-      return -1;
-    }
-    if (bValue > aValue) {
-      return 1;
-    }
-    return 0;
+  if (orderBy === 'firstTradeDate' || orderBy === 'lastTradeDate') {
+    aValue = aValue ? new Date(aValue).getTime() : 0;
+    bValue = bValue ? new Date(bValue).getTime() : 0;
+  }
+
+  if (
+    orderBy === 'profit24h' ||
+    orderBy === 'profit7d' ||
+    orderBy === 'profit1m' ||
+    orderBy === 'profit2m' ||
+    orderBy === 'profit3m'
+  ) {
   }
 
   if (bValue < aValue) {
@@ -97,19 +120,175 @@ function getComparator(order, orderBy) {
 const headCells = [
   { id: 'rank', label: 'Rank', numeric: true, sortable: false },
   { id: 'address', label: 'Address', numeric: false, sortable: false },
-  { id: 'profit24h', label: 'Profit (24h)', numeric: true, sortable: true },
-  { id: 'profit7d', label: 'Profit (7d)', numeric: true, sortable: true },
-  { id: 'profit2m', label: 'Profit (2m)', numeric: true, sortable: true },
-  { id: 'volume24h', label: 'Volume (24h)', numeric: true, sortable: true },
-  { id: 'volume7d', label: 'Volume (7d)', numeric: true, sortable: true },
-  { id: 'totalVolume', label: 'Total Volume', numeric: true, sortable: true },
-  { id: 'tradePercentage', label: 'Market Share', numeric: true, sortable: true },
-  { id: 'roi', label: 'ROI', numeric: true, sortable: true },
-  { id: 'winRate', label: 'Win Rate', numeric: true, sortable: true },
-  { id: 'trades', label: 'Trades', numeric: true, sortable: false },
-  { id: 'avgHoldingTime', label: 'Avg Hold', numeric: true, sortable: true },
-  { id: 'maxProfitTrade', label: 'Best Trade', numeric: true, sortable: true },
-  { id: 'maxLossTrade', label: 'Worst Trade', numeric: true, sortable: true },
+  {
+    id: 'firstTradeDate',
+    label: 'First Trade',
+    numeric: false,
+    sortable: true,
+    tooltip: 'Date of the first recorded trade for this token'
+  },
+  {
+    id: 'lastTradeDate',
+    label: 'Last Trade',
+    numeric: false,
+    sortable: true,
+    tooltip: 'Date of the last recorded trade for this token'
+  },
+  {
+    id: 'profit24h',
+    label: 'Profit (24h)',
+    numeric: true,
+    sortable: true,
+    tooltip: "Trader's profit in the last 24 hours"
+  },
+  {
+    id: 'profit7d',
+    label: 'Profit (7d)',
+    numeric: true,
+    sortable: true,
+    tooltip: "Trader's profit in the last 7 days"
+  },
+  {
+    id: 'profit1m',
+    label: 'Profit (1m)',
+    numeric: true,
+    sortable: true,
+    tooltip: "Trader's profit in the last 1 month"
+  },
+  {
+    id: 'profit2m',
+    label: 'Profit (2m)',
+    numeric: true,
+    sortable: true,
+    tooltip: "Trader's profit in the last 2 months"
+  },
+  {
+    id: 'profit3m',
+    label: 'Profit (3m)',
+    numeric: true,
+    sortable: true,
+    tooltip: "Trader's profit in the last 3 months"
+  },
+  {
+    id: 'volume24h',
+    label: 'Volume (24h)',
+    numeric: true,
+    sortable: true,
+    tooltip: "Trader's trade volume in the last 24 hours"
+  },
+  {
+    id: 'volume7d',
+    label: 'Volume (7d)',
+    numeric: true,
+    sortable: true,
+    tooltip: "Trader's trade volume in the last 7 days"
+  },
+  {
+    id: 'volume1m',
+    label: 'Volume (1m)',
+    numeric: true,
+    sortable: true,
+    tooltip: "Trader's trade volume in the last 1 month"
+  },
+  {
+    id: 'volume2m',
+    label: 'Volume (2m)',
+    numeric: true,
+    sortable: true,
+    tooltip: "Trader's trade volume in the last 2 months"
+  },
+  {
+    id: 'volume3m',
+    label: 'Volume (3m)',
+    numeric: true,
+    sortable: true,
+    tooltip: "Trader's trade volume in the last 3 months"
+  },
+  {
+    id: 'totalVolume',
+    label: 'Total Volume',
+    numeric: true,
+    sortable: true,
+    tooltip: "Trader's total trade volume for this token"
+  },
+  {
+    id: 'trades24h',
+    label: 'Trades (24h)',
+    numeric: true,
+    sortable: true,
+    tooltip: 'Number of trades in the last 24 hours'
+  },
+  {
+    id: 'trades7d',
+    label: 'Trades (7d)',
+    numeric: true,
+    sortable: true,
+    tooltip: 'Number of trades in the last 7 days'
+  },
+  {
+    id: 'trades1m',
+    label: 'Trades (1m)',
+    numeric: true,
+    sortable: true,
+    tooltip: 'Number of trades in the last 1 month'
+  },
+  {
+    id: 'trades2m',
+    label: 'Trades (2m)',
+    numeric: true,
+    sortable: true,
+    tooltip: 'Number of trades in the last 2 months'
+  },
+  {
+    id: 'trades3m',
+    label: 'Trades (3m)',
+    numeric: true,
+    sortable: true,
+    tooltip: 'Number of trades in the last 3 months'
+  },
+  {
+    id: 'totalTrades',
+    label: 'Total Trades',
+    numeric: true,
+    sortable: true,
+    tooltip: 'Total number of trades for this token'
+  },
+  {
+    id: 'tradePercentage',
+    label: 'Market Share',
+    numeric: true,
+    sortable: true,
+    tooltip: "Trader's share of total market volume"
+  },
+  { id: 'roi', label: 'ROI', numeric: true, sortable: true, tooltip: 'Return on Investment' },
+  {
+    id: 'winRate',
+    label: 'Win Rate',
+    numeric: true,
+    sortable: true,
+    tooltip: 'Percentage of profitable trades'
+  },
+  {
+    id: 'avgHoldingTime',
+    label: 'Avg Hold',
+    numeric: true,
+    sortable: true,
+    tooltip: 'Average time tokens are held before selling'
+  },
+  {
+    id: 'maxProfitTrade',
+    label: 'Best Trade',
+    numeric: true,
+    sortable: true,
+    tooltip: 'Largest profit from a single trade'
+  },
+  {
+    id: 'maxLossTrade',
+    label: 'Worst Trade',
+    numeric: true,
+    sortable: true,
+    tooltip: 'Largest loss from a single trade'
+  },
   { id: 'actions', label: 'Actions', numeric: false, sortable: false }
 ];
 
@@ -151,8 +330,8 @@ export default function TopTraders({ token }) {
   const BASE_URL = process.env.API_URL;
   const { darkMode } = useContext(AppContext);
 
-  console.log('Token prop:', token); // Debug token prop
-  console.log('BASE_URL:', BASE_URL); // Debug API URL
+  console.log('Token prop:', token);
+  console.log('BASE_URL:', BASE_URL);
 
   const [traders, setTraders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -173,10 +352,8 @@ export default function TopTraders({ token }) {
         );
         console.log('API Response:', response.data);
         if (response.status === 200) {
-          // Check if response.data is an object with a data property, or if it's the array directly
           const tradersData = response.data.data || response.data;
 
-          // Ensure we're working with an array
           const tradersArray = Array.isArray(tradersData) ? tradersData : [];
 
           console.log('Processed traders data:', tradersArray);
@@ -198,12 +375,10 @@ export default function TopTraders({ token }) {
     }
   }, [token?.md5, BASE_URL]);
 
-  // Add debug log for traders state changes
   useEffect(() => {
     console.log('Current traders state:', traders);
   }, [traders]);
 
-  // Update the sortedTraders calculation to handle potential issues
   const sortedTraders = React.useMemo(() => {
     if (!Array.isArray(traders) || traders.length === 0) {
       console.log('No traders data to sort');
@@ -211,10 +386,71 @@ export default function TopTraders({ token }) {
     }
 
     try {
-      return [...traders].sort(getComparator(order, orderBy));
+      const tradersWithDefaults = traders.map((trader) => ({
+        address: trader.address || 'Unknown',
+        profit24h: trader.profit24h || 0,
+        profit7d: trader.profit7d || 0,
+        profit1m: trader.profit1m || 0,
+        profit2m: trader.profit2m || 0,
+        profit3m: trader.profit3m || 0,
+        volume24h: trader.volume24h || 0,
+        volume7d: trader.volume7d || 0,
+        volume1m: trader.volume1m || 0,
+        volume2m: trader.volume2m || 0,
+        volume3m: trader.volume3m || 0,
+        totalVolume: trader.totalVolume || 0,
+        tradePercentage: trader.tradePercentage || 0,
+        roi: trader.roi || 0,
+        profitableTrades: trader.profitableTrades || 0,
+        losingTrades: trader.losingTrades || 0,
+        trades24h: trader.trades24h || 0,
+        trades7d: trader.trades7d || 0,
+        trades1m: trader.trades1m || 0,
+        trades2m: trader.trades2m || 0,
+        trades3m: trader.trades3m || 0,
+        totalTrades: trader.totalTrades || 0,
+        avgHoldingTime: trader.avgHoldingTime || 0,
+        maxProfitTrade: trader.maxProfitTrade || 0,
+        maxLossTrade: trader.maxLossTrade || 0,
+        firstTradeDate: trader.firstTradeDate || null,
+        lastTradeDate: trader.lastTradeDate || null,
+        AMM: trader.AMM || false,
+        ...trader
+      }));
+      return [...tradersWithDefaults].sort(getComparator(order, orderBy));
     } catch (error) {
       console.error('Error sorting traders:', error);
-      return traders;
+      return traders.map((trader) => ({
+        address: trader.address || 'Unknown',
+        profit24h: trader.profit24h || 0,
+        profit7d: trader.profit7d || 0,
+        profit1m: trader.profit1m || 0,
+        profit2m: trader.profit2m || 0,
+        profit3m: trader.profit3m || 0,
+        volume24h: trader.volume24h || 0,
+        volume7d: trader.volume7d || 0,
+        volume1m: trader.volume1m || 0,
+        volume2m: trader.volume2m || 0,
+        volume3m: trader.volume3m || 0,
+        totalVolume: trader.totalVolume || 0,
+        tradePercentage: trader.tradePercentage || 0,
+        roi: trader.roi || 0,
+        profitableTrades: trader.profitableTrades || 0,
+        losingTrades: trader.losingTrades || 0,
+        trades24h: trader.trades24h || 0,
+        trades7d: trader.trades7d || 0,
+        trades1m: trader.trades1m || 0,
+        trades2m: trader.trades2m || 0,
+        trades3m: trader.trades3m || 0,
+        totalTrades: trader.totalTrades || 0,
+        avgHoldingTime: trader.avgHoldingTime || 0,
+        maxProfitTrade: trader.maxProfitTrade || 0,
+        maxLossTrade: trader.maxLossTrade || 0,
+        firstTradeDate: trader.firstTradeDate || null,
+        lastTradeDate: trader.lastTradeDate || null,
+        AMM: trader.AMM || false,
+        ...trader
+      }));
     }
   }, [traders, order, orderBy]);
 
@@ -270,7 +506,6 @@ export default function TopTraders({ token }) {
     );
   }
 
-  // Apply pagination
   const paginatedTraders = sortedTraders.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
@@ -317,16 +552,19 @@ export default function TopTraders({ token }) {
                           direction={orderBy === headCell.id ? order : 'asc'}
                           onClick={() => handleRequestSort(headCell.id)}
                           sx={{ fontSize: '0.75rem' }}
+                          IconComponent={orderBy === headCell.id ? undefined : () => null}
                         >
                           {headCell.label}
-                          {headCell.id === 'tradePercentage' && (
-                            <Tooltip title="Trader's share of total market volume" placement="top">
-                              <span style={{ marginLeft: '2px', fontSize: '12px' }}>ⓘ</span>
-                            </Tooltip>
-                          )}
-                          {headCell.id === 'profit24h' && (
-                            <Tooltip title="Trader's profit in the last 24 hours" placement="top">
-                              <span style={{ marginLeft: '2px', fontSize: '12px' }}>ⓘ</span>
+                          {headCell.tooltip && (
+                            <Tooltip title={headCell.tooltip} placement="top">
+                              <InfoOutlinedIcon
+                                sx={{
+                                  fontSize: 12,
+                                  ml: 0.5,
+                                  verticalAlign: 'middle',
+                                  color: 'text.disabled'
+                                }}
+                              />
                             </Tooltip>
                           )}
                         </TableSortLabel>
@@ -338,32 +576,17 @@ export default function TopTraders({ token }) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedTraders.map((trader, index) => {
-                  // Add default values for potentially missing properties
-                  const safeTrader = {
-                    address: trader.address || 'Unknown',
-                    profit24h: trader.profit24h || 0,
-                    profit7d: trader.profit7d || 0,
-                    profit2m: trader.profit2m || 0,
-                    volume24h: trader.volume24h || 0,
-                    volume7d: trader.volume7d || 0,
-                    totalVolume: trader.totalVolume || 0,
-                    tradePercentage: trader.tradePercentage || 0,
-                    roi: trader.roi || 0,
-                    profitableTrades: trader.profitableTrades || 0,
-                    losingTrades: trader.losingTrades || 0,
-                    trades24h: trader.trades24h || 0,
-                    totalTrades: trader.totalTrades || 0,
-                    avgHoldingTime: trader.avgHoldingTime || 0,
-                    maxProfitTrade: trader.maxProfitTrade || 0,
-                    maxLossTrade: trader.maxLossTrade || 0,
-                    AMM: trader.AMM || false,
-                    ...trader // Keep any other properties
-                  };
+                {paginatedTraders.map((safeTrader, index) => {
+                  const totalTradesForWinRate =
+                    safeTrader.profitableTrades + safeTrader.losingTrades;
+                  const winRateValue =
+                    totalTradesForWinRate > 0
+                      ? (safeTrader.profitableTrades / totalTradesForWinRate) * 100
+                      : 0;
 
                   return (
                     <TableRow
-                      key={safeTrader.address}
+                      key={safeTrader.address + '-' + index}
                       sx={{
                         '&:hover': {
                           bgcolor: 'action.hover'
@@ -399,6 +622,16 @@ export default function TopTraders({ token }) {
                           )}
                         </Stack>
                       </TableCell>
+                      <TableCell align="left">
+                        <Typography variant="body2">
+                          {formatDate(safeTrader.firstTradeDate)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="left">
+                        <Typography variant="body2">
+                          {formatDate(safeTrader.lastTradeDate)}
+                        </Typography>
+                      </TableCell>
                       <TableCell align="right">
                         <ProfitCell value={safeTrader.profit24h} />
                       </TableCell>
@@ -406,7 +639,13 @@ export default function TopTraders({ token }) {
                         <ProfitCell value={safeTrader.profit7d} />
                       </TableCell>
                       <TableCell align="right">
+                        <ProfitCell value={safeTrader.profit1m} />
+                      </TableCell>
+                      <TableCell align="right">
                         <ProfitCell value={safeTrader.profit2m} />
+                      </TableCell>
+                      <TableCell align="right">
+                        <ProfitCell value={safeTrader.profit3m} />
                       </TableCell>
                       <TableCell align="right">
                         <Typography variant="body2">{fNumber(safeTrader.volume24h)}</Typography>
@@ -415,7 +654,34 @@ export default function TopTraders({ token }) {
                         <Typography variant="body2">{fNumber(safeTrader.volume7d)}</Typography>
                       </TableCell>
                       <TableCell align="right">
+                        <Typography variant="body2">{fNumber(safeTrader.volume1m)}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{fNumber(safeTrader.volume2m)}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{fNumber(safeTrader.volume3m)}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
                         <Typography variant="body2">{fNumber(safeTrader.totalVolume)}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{fNumber(safeTrader.trades24h)}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{fNumber(safeTrader.trades7d)}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{fNumber(safeTrader.trades1m)}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{fNumber(safeTrader.trades2m)}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{fNumber(safeTrader.trades3m)}</Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Typography variant="body2">{fNumber(safeTrader.totalTrades)}</Typography>
                       </TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -444,42 +710,24 @@ export default function TopTraders({ token }) {
                       </TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <Chip
-                            label={fPercent(
-                              (safeTrader.profitableTrades /
-                                (safeTrader.profitableTrades + safeTrader.losingTrades)) *
-                                100
-                            )}
-                            size="small"
-                            sx={{
-                              bgcolor: 'rgba(84, 214, 44, 0.16)',
-                              color: '#54D62C',
-                              height: '20px',
-                              '& .MuiChip-label': {
-                                px: 0.75,
-                                fontSize: '0.7rem'
-                              }
-                            }}
-                          />
+                          {totalTradesForWinRate > 0 ? (
+                            <Chip
+                              label={fPercent(winRateValue)}
+                              size="small"
+                              sx={{
+                                bgcolor: 'rgba(84, 214, 44, 0.16)',
+                                color: '#54D62C',
+                                height: '20px',
+                                '& .MuiChip-label': {
+                                  px: 0.75,
+                                  fontSize: '0.7rem'
+                                }
+                              }}
+                            />
+                          ) : (
+                            <Typography variant="body2">-</Typography>
+                          )}
                         </Box>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Stack direction="column" spacing={0} alignItems="flex-end">
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ fontSize: '0.65rem' }}
-                          >
-                            24h: {fNumber(safeTrader.trades24h)}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ fontSize: '0.65rem' }}
-                          >
-                            Total: {fNumber(safeTrader.totalTrades)}
-                          </Typography>
-                        </Stack>
                       </TableCell>
                       <TableCell align="right">
                         <Typography variant="body2">
@@ -500,20 +748,22 @@ export default function TopTraders({ token }) {
                         <Stack
                           direction="row"
                           alignItems="center"
-                          spacing={1}
+                          spacing={0.5}
                           justifyContent="flex-end"
                         >
-                          <Link
-                            underline="none"
-                            color="inherit"
-                            target="_blank"
-                            href={`https://bithomp.com/explorer/${safeTrader.address}`}
-                            rel="noreferrer noopener nofollow"
-                          >
-                            <IconButton edge="end" aria-label="bithomp" size="small">
-                              <LinkIcon sx={{ fontSize: 16 }} />
-                            </IconButton>
-                          </Link>
+                          <Tooltip title="View on Bithomp">
+                            <Link
+                              underline="none"
+                              color="inherit"
+                              target="_blank"
+                              href={`https://bithomp.com/explorer/${safeTrader.address}`}
+                              rel="noreferrer noopener nofollow"
+                            >
+                              <IconButton edge="end" aria-label="bithomp" size="small">
+                                <LinkIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Link>
+                          </Tooltip>
                           <Tooltip title="View Trader Statistics">
                             <IconButton
                               edge="end"
