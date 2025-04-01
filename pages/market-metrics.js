@@ -21,7 +21,8 @@ import {
   Portal,
   TextField,
   Autocomplete,
-  Chip
+  Chip,
+  Button // Import Button
 } from '@mui/material';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -681,8 +682,6 @@ const MarketMetricsContent = () => {
   const theme = useTheme();
   const themeColors = getThemeColors(theme);
   const chartColors = getChartColors(theme);
-
-  // Move the useMediaQuery hook to the top level, not inside a conditional
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Add state for tokens to filter - include all token IDs
@@ -706,6 +705,7 @@ const MarketMetricsContent = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true); // Ensure loading is true at the start
       try {
         // Get current date
         const endDate = moment().format('YYYY-MM-DD');
@@ -833,6 +833,8 @@ const MarketMetricsContent = () => {
           ...tokenVisibility
         }));
 
+        let topTokensForDescription = []; // Initialize here
+
         // Initialize with top tokens by market cap (if available)
         if (tokenArray.length > 0) {
           // Get the most recent data point
@@ -843,15 +845,21 @@ const MarketMetricsContent = () => {
             .filter((token) => latestData[`${token}_marketcap`])
             .sort(
               (a, b) => (latestData[`${b}_marketcap`] || 0) - (latestData[`${a}_marketcap`] || 0)
-            )
-            .slice(0, maxTokensToDisplay);
+            );
 
-          setSelectedTokens(sortedTokens);
+          // Select top N tokens for display and description
+          const topTokensToDisplay = sortedTokens.slice(0, maxTokensToDisplay);
+          topTokensForDescription = sortedTokens.slice(0, 5); // Get top 5 for description
+
+          setSelectedTokens(topTokensToDisplay);
         }
 
         setData(formattedData);
         // Initialize sampled data with the full dataset
         setSampledData(sampleDataByTimeRange(formattedData, timeRange));
+
+        // Set the dynamic description *after* top tokens are determined
+        // (This part is moved outside useEffect for clarity, see below)
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -865,11 +873,50 @@ const MarketMetricsContent = () => {
     sampleDataByTimeRange,
     hideSpecificTokens,
     tokensToFilter,
-    firstLedgerTokenToFilter
+    firstLedgerTokenToFilter,
+    maxTokensToDisplay // Add dependency if maxTokensToDisplay changes
   ]);
 
+  // Generate dynamic description text
+  const generateDescription = () => {
+    if (loading || selectedTokens.length === 0) {
+      // Default text while loading or if no tokens
+      return 'Stay updated on the latest XRPL token market trends, including top performers, overall market activity, and DEX-specific insights, all conveniently accessible here.';
+    }
+
+    // Get the top N tokens (up to 5) from the initially selected/sorted list
+    // Note: selectedTokens might change later due to user interaction,
+    // so we rely on the initial sort order from useEffect or re-sort if needed.
+    // For simplicity, we'll use the current selectedTokens, assuming the top ones are still there.
+    const topTokens = selectedTokens.slice(0, 5); // Take the first 5 from the current selection
+
+    let tokenListString = '';
+    if (topTokens.length > 0) {
+      tokenListString = topTokens.join(', ');
+      if (selectedTokens.length > topTokens.length) {
+        tokenListString += ', and more';
+      }
+    } else {
+      tokenListString = 'various tokens';
+    }
+
+    return `Stay updated on the latest XRPL token market trends, including top performers like ${tokenListString}, overall market activity, and DEX-specific insights, all conveniently accessible here.`;
+  };
+
   if (loading) {
-    return <Container></Container>;
+    // Optional: Show a loading indicator or minimal layout
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Topbar />
+        <Header />
+        <Container
+          sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+        >
+          <Typography>Loading Market Data...</Typography> {/* Or a Spinner */}
+        </Container>
+        <Footer />
+      </Box>
+    );
   }
 
   const chartConfig = {
@@ -924,28 +971,70 @@ const MarketMetricsContent = () => {
     <Box
       sx={{
         flex: 1,
-        py: { xs: 1, sm: 2, md: 3 }, // Reduced padding on mobile
+        py: { xs: 1, sm: 2, md: 3 },
         backgroundColor: themeColors.background,
         backgroundImage: themeColors.backgroundGradient,
         minHeight: '100vh'
       }}
     >
       <Container maxWidth="xl" sx={{ mt: { xs: 2, sm: 3, md: 4 }, mb: { xs: 2, sm: 3, md: 4 } }}>
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{
-            color: themeColors.text,
-            fontWeight: 700,
-            mb: { xs: 2, sm: 3, md: 4 }, // Reduced margin on mobile
-            fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }, // Smaller font on mobile
-            textAlign: 'center',
-            letterSpacing: '0.025em',
-            textShadow: theme.palette.mode === 'dark' ? '0 2px 8px rgba(0, 0, 0, 0.3)' : 'none'
-          }}
-        >
-          XRPL Market Analytics
-        </Typography>
+        {/* Add the new overview section */}
+        <Box sx={{ mb: { xs: 3, sm: 4, md: 5 } }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 1,
+              mb: 1.5
+            }}
+          >
+            <Typography
+              variant="h4"
+              sx={{
+                color: themeColors.text,
+                fontWeight: 700,
+                fontSize: { xs: '1.6rem', sm: '1.8rem', md: '2.1rem' },
+                letterSpacing: '0.02em',
+                textShadow: theme.palette.mode === 'dark' ? '0 1px 4px rgba(0, 0, 0, 0.25)' : 'none'
+              }}
+            >
+              Token Market Overview
+            </Typography>
+            <Button
+              variant="contained"
+              size="medium"
+              sx={{
+                backgroundColor:
+                  theme.palette.mode === 'dark' ? 'rgba(71, 85, 105, 0.8)' : '#475569',
+                color: theme.palette.mode === 'dark' ? '#E2E8F0' : '#F8FAFC',
+                '&:hover': {
+                  backgroundColor:
+                    theme.palette.mode === 'dark' ? 'rgba(100, 116, 139, 0.9)' : '#64748B'
+                },
+                borderRadius: '8px',
+                textTransform: 'none',
+                fontWeight: 500,
+                fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                padding: { xs: '4px 10px', sm: '6px 16px' }
+              }}
+            >
+              See All Details
+            </Button>
+          </Box>
+          <Typography
+            variant="body1"
+            sx={{
+              color: themeColors.textSecondary,
+              fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+              maxWidth: '800px'
+            }}
+          >
+            {/* Use the dynamic description */}
+            {generateDescription()}
+          </Typography>
+        </Box>
 
         {/* Add tabs for chart categories */}
         <Paper
