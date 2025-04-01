@@ -29,6 +29,7 @@ import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import Link from 'next/link'; // Import Link
 
 // Chart theme colors
 const chartColors = {
@@ -906,15 +907,8 @@ const MarketMetricsContent = () => {
   if (loading) {
     // Optional: Show a loading indicator or minimal layout
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <Topbar />
-        <Header />
-        <Container
-          sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-        >
-          <Typography>Loading Market Data...</Typography> {/* Or a Spinner */}
-        </Container>
-        <Footer />
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <Typography>Loading Market Data...</Typography> {/* Or a Spinner */}
       </Box>
     );
   }
@@ -1002,26 +996,31 @@ const MarketMetricsContent = () => {
             >
               Token Market Overview
             </Typography>
-            <Button
-              variant="contained"
-              size="medium"
-              sx={{
-                backgroundColor:
-                  theme.palette.mode === 'dark' ? 'rgba(71, 85, 105, 0.8)' : '#475569',
-                color: theme.palette.mode === 'dark' ? '#E2E8F0' : '#F8FAFC',
-                '&:hover': {
+            {/* Wrap Button with Link */}
+            <Link href="/api-docs" passHref legacyBehavior>
+              <Button
+                component="a" // Add component="a" for proper link behavior with MUI Button
+                variant="contained"
+                size="medium"
+                sx={{
                   backgroundColor:
-                    theme.palette.mode === 'dark' ? 'rgba(100, 116, 139, 0.9)' : '#64748B'
-                },
-                borderRadius: '8px',
-                textTransform: 'none',
-                fontWeight: 500,
-                fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                padding: { xs: '4px 10px', sm: '6px 16px' }
-              }}
-            >
-              See All Details
-            </Button>
+                    theme.palette.mode === 'dark' ? 'rgba(71, 85, 105, 0.8)' : '#475569',
+                  color: theme.palette.mode === 'dark' ? '#E2E8F0' : '#F8FAFC',
+                  '&:hover': {
+                    backgroundColor:
+                      theme.palette.mode === 'dark' ? 'rgba(100, 116, 139, 0.9)' : '#64748B'
+                  },
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                  padding: { xs: '4px 10px', sm: '6px 16px' }
+                }}
+              >
+                {/* Change button text */}
+                See API Details
+              </Button>
+            </Link>
           </Box>
           <Typography
             variant="body1"
