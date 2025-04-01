@@ -322,26 +322,9 @@ const parseValue = (value) => {
   return parseFloat(value);
 };
 
-// First, let's create a helper function to get the API URL with the correct minXrpValue
-const getTradeApiUrl = (filter) => {
-  const baseUrl =
-    'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=50';
-
-  // Add minXrpValue based on filter
-  switch (filter) {
-    case '500+ XRP':
-      return `${baseUrl}&minXrpValue=500`;
-    case '1000+ XRP':
-      return `${baseUrl}&minXrpValue=1000`;
-    case '2500+ XRP':
-      return `${baseUrl}&minXrpValue=2500`;
-    case '5000+ XRP':
-      return `${baseUrl}&minXrpValue=5000`;
-    case '10000+ XRP':
-      return `${baseUrl}&minXrpValue=10000`;
-    default:
-      return baseUrl;
-  }
+// Remove this function since we're not using different URLs based on filters
+const getTradeApiUrl = () => {
+  return 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=5000';
 };
 
 // Add this styled component with the other styled components
@@ -386,7 +369,6 @@ const Topbar = () => {
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const [currentMetricIndex, setCurrentMetricIndex] = useState(0);
   const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
-  const [filter, setFilter] = useState('All');
   const router = useRouter();
 
   const mobileMetrics = [
@@ -457,15 +439,21 @@ const Topbar = () => {
     setTradeDrawerOpen(false);
   };
 
-  // Move the useSWR hook inside the component
-  const { data: trades, error } = useSWR(tradeDrawerOpen ? getTradeApiUrl(filter) : null, fetcher, {
-    refreshInterval: tradeDrawerOpen ? 5000 : 0,
-    dedupingInterval: 2000,
-    revalidateOnFocus: false
-  });
+  // Update the useSWR hook to not depend on filter
+  const { data: trades, error } = useSWR(
+    tradeDrawerOpen
+      ? 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=5000'
+      : null,
+    fetcher,
+    {
+      refreshInterval: tradeDrawerOpen ? 5000 : 0,
+      dedupingInterval: 2000,
+      revalidateOnFocus: false
+    }
+  );
 
-  // Simplify the filterTrades function since filtering will now be done on the API side
-  const filterTrades = (trades, selectedFilter) => {
+  // Simplify this function to just sort by time
+  const filterTrades = (trades) => {
     if (!trades?.hists) return [];
     return trades.hists.sort((a, b) => b.time - a.time);
   };
@@ -640,7 +628,7 @@ const Topbar = () => {
         sx={{
           '& .MuiDrawer-paper': {
             width: isMobile ? '100%' : '400px',
-            padding: 0 // Remove padding from drawer paper
+            padding: 0
           }
         }}
       >
@@ -654,21 +642,6 @@ const Topbar = () => {
               </Typography>
             </LiveIndicator>
           </Box>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <Select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              displayEmpty
-              inputProps={{ 'aria-label': 'Filter trades' }}
-            >
-              <MenuItem value="All">All Trades</MenuItem>
-              <MenuItem value="500+ XRP">🐟 500+ XRP</MenuItem>
-              <MenuItem value="1000+ XRP">🐬 1000+ XRP</MenuItem>
-              <MenuItem value="2500+ XRP">🦈 2500+ XRP</MenuItem>
-              <MenuItem value="5000+ XRP">🐋 5000+ XRP</MenuItem>
-              <MenuItem value="10000+ XRP">🐳 10000+ XRP</MenuItem>
-            </Select>
-          </FormControl>
         </Box>
         {error ? (
           <Box p={2}>
@@ -683,7 +656,7 @@ const Topbar = () => {
           </Box>
         ) : (
           <List sx={{ width: '100%', padding: 0 }}>
-            {filterTrades(trades, filter).map((trade) => (
+            {filterTrades(trades).map((trade) => (
               <ListItem
                 key={`${trade.time}-${trade.maker}-${trade.taker}`}
                 sx={{
