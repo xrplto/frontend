@@ -454,14 +454,6 @@ export const getNftFilesUrls = (nft, type = 'image') => {
   }
 };
 
-export function convertHexToString(hex, encoding = 'utf8') {
-  let ret = '';
-  try {
-    ret = Buffer.from(hex, 'hex').toString(encoding);
-  } catch (err) {}
-  return ret;
-}
-
 export function cipheredTaxon(tokenSeq, taxon) {
   // An issuer may issue several NFTs with the same taxon; to ensure that NFTs
   // are spread across multiple pages we lightly mix the taxon up by using the
@@ -505,6 +497,14 @@ export function parseNFTokenID(NFTokenID) {
   return { flag, royalty, issuer, taxon, transferFee };
 }
 
+export function convertHexToString(hex, encoding = 'utf8') {
+  let ret = '';
+  try {
+    ret = Buffer.from(hex, 'hex').toString(encoding);
+  } catch (err) {}
+  return ret;
+}
+
 export {
   parseQuality,
   hexToString,
@@ -523,9 +523,5 @@ export {
   normalizeNodes,
   normalizeCurrencyCode,
   parseFlags,
-  BLACKHOLE_ACCOUNTS,
-  getNftCoverUrl,
-  getNftFilesUrls,
-  convertHexToString,
-  parseNFTokenID
+  BLACKHOLE_ACCOUNTS
 };

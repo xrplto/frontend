@@ -358,10 +358,10 @@ function FTokenRow({
 
   const convertedValues = useMemo(
     () => ({
-      marketCap: marketcap && exchRate ? Decimal.div(marketcap, exchRate).toNumber() : 0,
-      volume: vol24hxrp && exchRate ? Decimal.div(vol24hxrp, exchRate).toNumber() : 0,
-      tvl: tvl && exchRate ? Decimal.div(tvl, exchRate).toNumber() : 0,
-      supplyRate: amount && supply ? Decimal.div(supply, amount).toNumber() * 100 : 0
+      marketCap: marketcap && exchRate ? Decimal.div(marketcap || 0, exchRate).toNumber() : 0,
+      volume: vol24hxrp && exchRate ? Decimal.div(vol24hxrp || 0, exchRate).toNumber() : 0,
+      tvl: tvl && exchRate ? Decimal.div(tvl || 0, exchRate).toNumber() : 0,
+      supplyRate: amount && supply ? Decimal.div(supply || 0, amount || 1).toNumber() * 100 : 0
     }),
     [marketcap, vol24hxrp, tvl, amount, supply, exchRate]
   );
@@ -552,16 +552,16 @@ function FTokenRow({
         </TransitionTypo>
       </TableCell>
       <TableCell align="right" sx={percentageCellStyle}>
-        <BearBullLabel value={pro5m} variant="h4" />
+        <BearBullLabel value={pro5m || 0} variant="h4" />
       </TableCell>
       <TableCell align="right" sx={percentageCellStyle}>
-        <BearBullLabel value={pro1h} variant="h4" />
+        <BearBullLabel value={pro1h || 0} variant="h4" />
       </TableCell>
       <TableCell align="right" sx={percentageCellStyle}>
-        <BearBullLabel value={pro24h} variant="h4" />
+        <BearBullLabel value={pro24h || 0} variant="h4" />
       </TableCell>
       <TableCell align="right" sx={percentageCellStyle}>
-        <BearBullLabel value={pro7d} variant="h4" />
+        <BearBullLabel value={pro7d || 0} variant="h4" />
       </TableCell>
       <TableCell align="right">
         <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">

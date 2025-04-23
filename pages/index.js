@@ -145,14 +145,57 @@ export async function getStaticProps() {
       `${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=&tags=yes&showNew=false&showSlug=false`
     );
 
-    data = res.data;
-    //console.log('Response from API:', data);
+    // Filter the API response to only keep necessary fields
+    const essentialTokenFields = [
+      'md5',
+      'currency',
+      'issuer',
+      'name',
+      'domain',
+      'kyc',
+      'verified',
+      'marketcap',
+      'p24h',
+      'pro24h',
+      'pro1h',
+      'pro5m',
+      'pro7d',
+      'vol24hxrp',
+      'vol24htx',
+      'vol24hx',
+      'usd',
+      'exch',
+      'tags',
+      'holders',
+      'trustlines',
+      'supply',
+      'amount',
+      'id',
+      'user',
+      'slug',
+      'dateon',
+      'tvl',
+      'origin',
+      'isOMCF'
+    ];
 
-    const time = Date.now();
-    for (var token of data.tokens) {
-      token.bearbull = token.pro24h < 0 ? -1 : 1;
-      token.time = time;
-    }
+    data = {
+      ...res.data,
+      tokens: res.data.tokens.map((token) => {
+        const filteredToken = {};
+        essentialTokenFields.forEach((field) => {
+          if (token[field] !== undefined) {
+            filteredToken[field] = token[field];
+          }
+        });
+
+        // Add calculated fields
+        filteredToken.bearbull = token.pro24h < 0 ? -1 : 1;
+        filteredToken.time = Date.now();
+
+        return filteredToken;
+      })
+    };
 
     var t2 = performance.now();
     var dt = (t2 - t1).toFixed(2);
