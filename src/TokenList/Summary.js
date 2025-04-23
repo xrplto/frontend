@@ -136,39 +136,36 @@ export default function Summary() {
     );
   }
 
-  const gMarketcap = new Decimal(metrics.global.gMarketcap)
-    .div(metrics[activeFiatCurrency])
+  // Add default value of 1 for the divisor to prevent DecimalError
+  const fiatRate = metrics[activeFiatCurrency] || 1;
+
+  const gMarketcap = new Decimal(metrics.global?.gMarketcap || 0)
+    .div(fiatRate)
     .toFixed(2, Decimal.ROUND_DOWN);
-  const gMarketcapPro = new Decimal(metrics.global.gMarketcapPro || 0).toNumber();
-  const gDexVolume = new Decimal(metrics.global.gDexVolume)
-    .div(metrics[activeFiatCurrency])
-    .toNumber();
-  const gDexVolumePro = new Decimal(metrics.global.gDexVolumePro || 0).toNumber();
-  const gNFTIOUVolume = new Decimal(metrics.global.gNFTIOUVolume || 0)
-    .div(metrics[activeFiatCurrency])
-    .toNumber();
-  const gNFTIOUVolumePro = new Decimal(metrics.global.gNFTIOUVolumePro || 0).toFixed(
+  const gMarketcapPro = new Decimal(metrics.global?.gMarketcapPro || 0).toNumber();
+  const gDexVolume = new Decimal(metrics.global?.gDexVolume || 0).div(fiatRate).toNumber();
+  const gDexVolumePro = new Decimal(metrics.global?.gDexVolumePro || 0).toNumber();
+  const gNFTIOUVolume = new Decimal(metrics.global?.gNFTIOUVolume || 0).div(fiatRate).toNumber();
+  const gNFTIOUVolumePro = new Decimal(metrics.global?.gNFTIOUVolumePro || 0).toFixed(
     2,
     Decimal.ROUND_DOWN
   );
-  const gStableVolume = new Decimal(metrics.global.gStableVolume)
-    .div(metrics[activeFiatCurrency])
-    .toNumber();
-  const gStableVolumePro = new Decimal(metrics.global.gStableVolumePro || 0).toFixed(
+  const gStableVolume = new Decimal(metrics.global?.gStableVolume || 0).div(fiatRate).toNumber();
+  const gStableVolumePro = new Decimal(metrics.global?.gStableVolumePro || 0).toFixed(
     2,
     Decimal.ROUND_DOWN
   );
-  const gMemeVolume = new Decimal(metrics.global.gMemeVolume || 0)
-    .div(metrics[activeFiatCurrency])
-    .toNumber();
-  const gMemeVolumePro = new Decimal(metrics.global.gMemeVolumePro || 0).toFixed(
+  const gMemeVolume = new Decimal(metrics.global?.gMemeVolume || 0).div(fiatRate).toNumber();
+  const gMemeVolumePro = new Decimal(metrics.global?.gMemeVolumePro || 0).toFixed(
     2,
     Decimal.ROUND_DOWN
   );
 
   // Show XRP price in USD when currency is XRP, otherwise show in active currency
   const xrpPrice =
-    activeFiatCurrency === 'XRP' ? Rate(1, metrics.USD) : Rate(1, metrics[activeFiatCurrency]);
+    activeFiatCurrency === 'XRP'
+      ? Rate(1, metrics.USD || 1)
+      : Rate(1, metrics[activeFiatCurrency] || 1);
 
   // Get the currency symbol for XRP price display
   const xrpPriceSymbol =
