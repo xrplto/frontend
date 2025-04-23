@@ -240,7 +240,7 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                 <SportsScoreIcon color="primary" sx={{ fontSize: '1rem' }} />
               </Tooltip>
             ) : (
-              <Box /> // Empty box to maintain layout
+              (<Box />) // Empty box to maintain layout
             )}
             {rarity_rank > 0 && (
               <Chip

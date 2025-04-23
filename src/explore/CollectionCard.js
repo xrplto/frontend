@@ -312,11 +312,10 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                         }
                         {destination && getMinterName(account) ? (
                             // <Typography variant='s2'>TRANSFER</Typography>
-                            <Stack direction="row" alignItems='center' justifyContent='space-between' sx={{mt:0, pl:0, pr:0}}>
+                            (<Stack direction="row" alignItems='center' justifyContent='space-between' sx={{mt:0, pl:0, pr:0}}>
                                 <Tooltip title={`Sold & Transfer`}>
                                     <SportsScoreIcon />
                                 </Tooltip>
-
                                 {rarity_rank > 0 &&
                                     <Chip
                                         variant="outlined"
@@ -329,9 +328,9 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                                         }}
                                     />
                                 }
-                            </Stack>
+                            </Stack>)
                         ) : (
-                            <Grid container alignItems='center' spacing={0.1}>
+                            (<Grid container alignItems='center' spacing={0.1}>
                                 <Grid item xs={12}>
                                     <Stack direction="row" alignItems='center' justifyContent='space-between' sx={{mt:0, pl:0, pr:0}}>
                                         <Typography variant='s7'>{collectionData.nftCount} item(s)</Typography>
@@ -353,7 +352,7 @@ export default function CollectionCard({ collectionData, type, account, handleRe
                                 <Grid item xs={12}>
                                        <Typography variant='s7'>{collectionData.nftsForSale} listed</Typography>
                                 </Grid>
-                            </Grid>
+                            </Grid>)
                             // <Stack alignItems="left">
                             //     {cost ? (
                             //         cost.currency === "XRP" ?

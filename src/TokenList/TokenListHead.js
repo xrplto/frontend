@@ -15,7 +15,7 @@ import { AppContext } from 'src/AppContext';
 import InfoIcon from '@mui/icons-material/Info'; // Import InfoIcon from Material-UI Icons
 
 const SmallInfoIcon = (props) => (
-  <InfoIcon {...props} fontSize="smaller" /> // Make the icon smaller by setting fontSize="small"
+  (<InfoIcon {...props} fontSize="smaller" />) // Make the icon smaller by setting fontSize="small"
 );
 
 const StickyTableCell = withStyles((theme) => ({
@@ -345,7 +345,7 @@ export default function TokenListHead({
                 </TableSortLabel>
               ) : (
                 // Render the label directly without TableSortLabel for unsortable columns
-                headCell.label
+                (headCell.label)
               )}
             </StickyTableCell>
           );

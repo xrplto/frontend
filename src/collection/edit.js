@@ -658,7 +658,6 @@ export default function EditCollection({collection}) {
                     // disabled
                 />
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant='p4'>Category</Typography>
                 <Typography variant='p3'>
@@ -685,7 +684,6 @@ export default function EditCollection({collection}) {
                     ))}
                 </CustomSelect>
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant='p4'>URL</Typography>
                 <Typography variant='p3'>
@@ -706,7 +704,6 @@ export default function EditCollection({collection}) {
                     }}
                 />
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant='p4'>Type <Typography variant='s2'>*</Typography></Typography>
                 <Typography variant='p3'>
@@ -883,7 +880,6 @@ export default function EditCollection({collection}) {
                     </>
                 }
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant='p4'>Description</Typography>
                 <Typography variant='p3'>
@@ -910,7 +906,6 @@ export default function EditCollection({collection}) {
                     }}
                 />
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant='p4'>Taxon</Typography>
                 <Typography variant='p3'>
@@ -925,7 +920,6 @@ export default function EditCollection({collection}) {
                     value={taxon}
                 />
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant='p4'>Rarity <Typography variant='s2'>*</Typography></Typography>
                 <Typography variant='p3'>
@@ -973,7 +967,6 @@ export default function EditCollection({collection}) {
                     </RadioGroup>
                 </FormControl>
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant='p4'>Private <Typography variant='s2'>*</Typography></Typography>
                 <Typography variant='p3'>
@@ -992,7 +985,6 @@ export default function EditCollection({collection}) {
                     <ToggleButton value="yes" sx={{pl:2, pr:2, pt: 0.3, pb: 0.3}}>Yes</ToggleButton>
                 </ToggleButtonGroup>
             </Stack>
-
             <Stack alignItems='right'>
                 <LoadingButton
                     disabled={!canSaveChanges}

@@ -345,37 +345,37 @@ export default function NFTDetails({nft}) {
                                 }
 
                                 return (
-                                <Stack key={file.type} spacing={1} alignItems="flex-start">
-                                    <Typography variant='caption'>{`${file.type}:`}</Typography>
-                                    <Typography variant='body2' sx={{ display: 'inline-flex', overflowWrap: 'anywhere' }}>
-                                    {/^https?:\/\//.test(file.parsedUrl) ? (
-                                        <Link
-                                        href={file.parsedUrl}
-                                        sx={{ display: 'inline-flex', overflowWrap: 'anywhere' }}
-                                        underline='hover'
-                                        target="_blank"
-                                        variant='body2'
-                                        rel="noreferrer noopener nofollow"
-                                        >
-                                        {file.parsedUrl}
-                                        </Link>
-                                    ) : (
-                                        file.parsedUrl
-                                    )}
-                                    {cachedHref && (
-                                        <Link
-                                        href={cachedHref}
-                                        sx={{ display: 'inline-flex', whiteSpace: 'nowrap', ml: 1 }}
-                                        underline='hover'
-                                        target="_blank"
-                                        variant='body2'
-                                        rel="noreferrer noopener nofollow"
-                                        >
-                                        Cached
-                                        </Link>
-                                    )}
-                                    </Typography>
-                                </Stack>
+                                    <Stack key={file.type} spacing={1} alignItems="flex-start">
+                                        <Typography variant='caption'>{`${file.type}:`}</Typography>
+                                        <Typography variant='body2' sx={{ display: 'inline-flex', overflowWrap: 'anywhere' }}>
+                                        {/^https?:\/\//.test(file.parsedUrl) ? (
+                                            <Link
+                                            href={file.parsedUrl}
+                                            sx={{ display: 'inline-flex', overflowWrap: 'anywhere' }}
+                                            underline='hover'
+                                            target="_blank"
+                                            variant='body2'
+                                            rel="noreferrer noopener nofollow"
+                                            >
+                                            {file.parsedUrl}
+                                            </Link>
+                                        ) : (
+                                            file.parsedUrl
+                                        )}
+                                        {cachedHref && (
+                                            <Link
+                                            href={cachedHref}
+                                            sx={{ display: 'inline-flex', whiteSpace: 'nowrap', ml: 1 }}
+                                            underline='hover'
+                                            target="_blank"
+                                            variant='body2'
+                                            rel="noreferrer noopener nofollow"
+                                            >
+                                            Cached
+                                            </Link>
+                                        )}
+                                        </Typography>
+                                    </Stack>
                                 );
                             })}
                             </Stack>

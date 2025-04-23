@@ -300,30 +300,6 @@ function FTokenRow({
     [darkMode, isMobile]
   );
 
-  const handleWatchlistClick = useCallback(
-    (e) => {
-      e.stopPropagation();
-      onChangeWatchList(md5);
-    },
-    [md5, onChangeWatchList]
-  );
-
-  const handleRowClick = useCallback(() => {
-    router.replace(`/token/${slug}`);
-  }, [router, slug]);
-
-  const handleEditToken = useCallback(() => {
-    setEditToken(memoizedToken);
-  }, [setEditToken, memoizedToken]);
-
-  const handleSetTrustline = useCallback(
-    (e) => {
-      e.stopPropagation();
-      setTrustToken(memoizedToken);
-    },
-    [setTrustToken, memoizedToken]
-  );
-
   const {
     id,
     name,
@@ -351,6 +327,30 @@ function FTokenRow({
     origin,
     holders
   } = memoizedToken;
+
+  const handleWatchlistClick = useCallback(
+    (e) => {
+      e.stopPropagation();
+      onChangeWatchList(md5);
+    },
+    [md5, onChangeWatchList]
+  );
+
+  const handleRowClick = useCallback(() => {
+    router.replace(`/token/${slug}`);
+  }, [router, slug]);
+
+  const handleEditToken = useCallback(() => {
+    setEditToken(memoizedToken);
+  }, [setEditToken, memoizedToken]);
+
+  const handleSetTrustline = useCallback(
+    (e) => {
+      e.stopPropagation();
+      setTrustToken(memoizedToken);
+    },
+    [setTrustToken, memoizedToken]
+  );
 
   const convertedValues = useMemo(
     () => ({

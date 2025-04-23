@@ -1,10 +1,7 @@
 import { useContext, useState } from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { Box, Skeleton } from '@mui/material';
-import NextLink from 'next/link';
+import { Box } from '@mui/material';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import React from 'react';
 import Link from 'next/link';
 
 import { AppContext } from 'src/AppContext';
@@ -31,20 +28,13 @@ function Logo({ style }) {
     ...style
   };
 
-  const handleClick = (e) => {
-    if (router.pathname === '/') {
-      e.preventDefault();
-      return;
-    }
-  };
-
   const handleImageError = () => {
     setImageError(true);
   };
 
   return (
     <Link href="/" passHref legacyBehavior>
-      <a>
+      <a style={logoStyle}>
         {imageError ? (
           <Box
             sx={{
@@ -65,12 +55,12 @@ function Logo({ style }) {
             height={46}
             alt="XRPL.to Logo"
             priority
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain'
-            }}
             onError={handleImageError}
+            style={{
+              objectFit: 'contain',
+              maxWidth: '100%',
+              height: 'auto'
+            }}
           />
         )}
       </a>

@@ -847,7 +847,7 @@ const Swap = ({ token }) => {
   };
 
   const handleChangeAmount2 = (e) => {
-    const value = e.target.value;
+    let value = e.target.value;
 
     if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;

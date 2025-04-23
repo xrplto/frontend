@@ -151,15 +151,6 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
     }
   });
 
-  useEffect(() => {
-    if (lastJsonMessage) {
-      dispatch(update_metrics(lastJsonMessage));
-      if (lastJsonMessage.tokens && lastJsonMessage.tokens.length > 0) {
-        applyTokenChanges(lastJsonMessage.tokens);
-      }
-    }
-  }, [lastJsonMessage, dispatch, applyTokenChanges]);
-
   const tokenMap = useMemo(() => new Map(tokens.map((token) => [token.md5, token])), [tokens]);
 
   const applyTokenChanges = useCallback(
@@ -186,8 +177,17 @@ export default function TokenList({ showWatchList, tag, tagName, tags, tokens, s
         setTokens(Array.from(tokenMap.values()));
       }
     },
-    [tokenMap]
+    [tokenMap, setTokens]
   );
+
+  useEffect(() => {
+    if (lastJsonMessage) {
+      dispatch(update_metrics(lastJsonMessage));
+      if (lastJsonMessage.tokens && lastJsonMessage.tokens.length > 0) {
+        applyTokenChanges(lastJsonMessage.tokens);
+      }
+    }
+  }, [lastJsonMessage, dispatch, applyTokenChanges]);
 
   const debouncedLoadTokens = useCallback(
     debounce(() => {

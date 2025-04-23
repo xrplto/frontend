@@ -755,7 +755,6 @@ export default function ImportCollection() {
           }}
         />
       </Stack>
-
       <Stack spacing={2} mb={3}>
         <Typography variant="p4">Category</Typography>
         <Typography variant="p3">
@@ -778,7 +777,6 @@ export default function ImportCollection() {
           ))}
         </CustomSelect>
       </Stack>
-
       <Stack spacing={2} mb={3}>
         <Typography variant="p4">
           URL <Typography variant="s2">*</Typography>
@@ -802,7 +800,6 @@ export default function ImportCollection() {
           }}
         />
       </Stack>
-
       <Stack spacing={2} mb={3}>
         <Typography variant="p4">
           Type <Typography variant="s2">*</Typography>
@@ -837,7 +834,6 @@ export default function ImportCollection() {
           </ToggleButton>
         </ToggleButtonGroup>
       </Stack>
-
       <Stack spacing={2} mb={3}>
         <Typography variant="p4">Description</Typography>
         <Typography variant="p3">
@@ -867,7 +863,6 @@ export default function ImportCollection() {
           }}
         />
       </Stack>
-
       <Stack spacing={2} mb={3}>
         <Typography variant="p4">
           Rarity <Typography variant="s2">*</Typography>
@@ -934,7 +929,6 @@ export default function ImportCollection() {
           </RadioGroup>
         </FormControl>
       </Stack>
-
       {/* <Stack spacing={2} mb={3}>
                 <Typography variant='p4'>Private <Typography variant='s2'>*</Typography></Typography>
                 <Typography variant='p3'>
@@ -982,7 +976,6 @@ export default function ImportCollection() {
                     }}
                 />
             </Stack> */}
-
       <Stack alignItems="right">
         <LoadingButton
           disabled={!canImport}

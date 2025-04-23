@@ -687,7 +687,6 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                     }}
                 />
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant="p4">Category</Typography>
                 <Typography variant="p3">
@@ -721,7 +720,6 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                     ))}
                 </CustomSelect>
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant="p4">
                     URL <Typography variant="s2">*</Typography>
@@ -747,7 +745,6 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                     }}
                 />
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant="p4">
                     Type <Typography variant="s2">*</Typography>
@@ -1054,7 +1051,6 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                     </>
                 )}
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant="p4">Description</Typography>
                 <Typography variant="p3">
@@ -1084,7 +1080,6 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                     }}
                 />
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant="p4">Taxon</Typography>
                 <Typography variant="p3">
@@ -1101,7 +1096,6 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                     value={taxon}
                 />
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant="p4">
                     Rarity <Typography variant="s2">*</Typography>
@@ -1177,7 +1171,6 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                     </RadioGroup>
                 </FormControl>
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant="p4">
                     Private <Typography variant="s2">*</Typography>
@@ -1209,7 +1202,6 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                     </ToggleButton>
                 </ToggleButtonGroup>
             </Stack>
-
             <Stack spacing={2} mb={3}>
                 <Typography variant="p4">
                     Passphrase <Typography variant="s2">*</Typography>
@@ -1245,7 +1237,6 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
                     }}
                 />
             </Stack>
-
             <Stack alignItems="right">
                 <LoadingButton
                     disabled={!canCreate}
