@@ -304,22 +304,42 @@ const getTradeColor = (xrpValue) => {
 };
 
 const getXRPAmount = (trade) => {
-  const xrpValue =
-    trade.paid.currency === 'XRP'
-      ? parseValue(trade.paid.value)
-      : trade.got.currency === 'XRP'
-      ? parseValue(trade.got.value)
-      : 0;
+  if (!trade || (!trade.paid && !trade.got)) {
+    return 0;
+  }
+
+  let xrpValue = 0;
+  try {
+    if (trade.paid && trade.paid.currency === 'XRP') {
+      xrpValue = parseValue(trade.paid.value);
+    } else if (trade.got && trade.got.currency === 'XRP') {
+      xrpValue = parseValue(trade.got.value);
+    }
+  } catch (error) {
+    console.error('Error parsing XRP amount:', error);
+    return 0;
+  }
+
   return xrpValue;
 };
 
 const parseValue = (value) => {
-  if (typeof value === 'string' && value.includes('e')) {
-    const converted = parseFloat(Number(value).toFixed(8));
-    console.log(`Converted ${value} to ${converted}`);
-    return converted;
+  if (!value && value !== 0) {
+    return 0;
   }
-  return parseFloat(value);
+
+  try {
+    if (typeof value === 'string' && value.includes('e')) {
+      // Handle scientific notation
+      return parseFloat(Number(value).toFixed(8));
+    }
+
+    const parsed = parseFloat(value);
+    return isNaN(parsed) ? 0 : parsed;
+  } catch (error) {
+    console.error('Error parsing value:', error);
+    return 0;
+  }
 };
 
 // Remove this function since we're not using different URLs based on filters
@@ -432,11 +452,15 @@ const Topbar = () => {
   }, [isMobile, mobileMetrics.length]);
 
   const handleTradeDrawerOpen = () => {
-    setTradeDrawerOpen(true);
+    if (!tradeDrawerOpen) {
+      setTradeDrawerOpen(true);
+    }
   };
 
   const handleTradeDrawerClose = () => {
-    setTradeDrawerOpen(false);
+    if (tradeDrawerOpen) {
+      setTradeDrawerOpen(false);
+    }
   };
 
   // Add filter state and filter options
@@ -450,7 +474,7 @@ const Topbar = () => {
     { value: '10000+', label: '🐳 10000+ XRP' }
   ];
 
-  // Update the useSWR hook to not depend on filter
+  // Update the useSWR hook to prevent revalidation issues
   const { data: trades, error } = useSWR(
     tradeDrawerOpen
       ? 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=5000'
@@ -459,7 +483,10 @@ const Topbar = () => {
     {
       refreshInterval: tradeDrawerOpen ? 5000 : 0,
       dedupingInterval: 2000,
-      revalidateOnFocus: false
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      shouldRetryOnError: true,
+      errorRetryCount: 3
     }
   );
 
@@ -483,7 +510,7 @@ const Topbar = () => {
       const xrpAmount = parseFloat(getXRPAmount(trade));
 
       // Compare numeric values
-      return xrpAmount >= minXrp;
+      return !isNaN(xrpAmount) && xrpAmount >= minXrp;
     });
   }, [trades, tradeFilter]);
 
@@ -629,7 +656,12 @@ const Topbar = () => {
               <CurrencySwithcer />
               <ThemeSwitcher />
               <Separator>|</Separator>
-              <APILabel onClick={handleTradeDrawerOpen}>
+              <APILabel
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleTradeDrawerOpen();
+                }}
+              >
                 <PulsatingCircle />
                 Global Trades
               </APILabel>
@@ -652,8 +684,9 @@ const Topbar = () => {
       </StyledContainer>
       <Drawer
         anchor="right"
-        open={tradeDrawerOpen}
+        open={Boolean(tradeDrawerOpen)}
         onClose={handleTradeDrawerClose}
+        keepMounted={false}
         sx={{
           '& .MuiDrawer-paper': {
             width: isMobile ? '100%' : '400px',
@@ -720,15 +753,22 @@ const Topbar = () => {
                 <ProgressBarContainer>
                   <ProgressBar
                     width={(() => {
-                      const xrpValue = getXRPAmount(trade);
+                      try {
+                        const xrpValue = parseFloat(getXRPAmount(trade));
 
-                      // Calculate relative width based on XRP amount
-                      if (xrpValue < 500) return Math.max(5, (xrpValue / 500) * 25);
-                      if (xrpValue < 5000) return Math.max(25, (xrpValue / 5000) * 50);
-                      if (xrpValue < 10000) return Math.max(50, (xrpValue / 10000) * 75);
-                      return Math.min(100, 75 + (xrpValue / 50000) * 25);
+                        if (isNaN(xrpValue)) return 5; // Default minimum width
+
+                        // Calculate relative width based on XRP amount
+                        if (xrpValue < 500) return Math.max(5, (xrpValue / 500) * 25);
+                        if (xrpValue < 5000) return Math.max(25, (xrpValue / 5000) * 50);
+                        if (xrpValue < 10000) return Math.max(50, (xrpValue / 10000) * 75);
+                        return Math.min(100, 75 + (xrpValue / 50000) * 25);
+                      } catch (error) {
+                        console.error('Error calculating progress width:', error);
+                        return 5; // Default width on error
+                      }
                     })()}
-                    color={trade.paid.currency === 'XRP' ? '#4CAF50' : '#F44336'}
+                    color={trade.paid && trade.paid.currency === 'XRP' ? '#4CAF50' : '#F44336'}
                   />
                 </ProgressBarContainer>
                 <Box sx={{ width: '100%', position: 'relative', zIndex: 1 }}>
