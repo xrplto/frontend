@@ -1,7 +1,8 @@
 import Decimal from 'decimal.js';
 import { useState, useEffect, useContext, memo, useMemo, useCallback } from 'react';
 import React from 'react';
-import { LazyLoadImage, LazyLoadComponent } from 'react-lazy-load-image-component';
+import { LazyLoadComponent } from 'react-lazy-load-image-component';
+import Image from 'next/image';
 import {
   styled,
   useMediaQuery,
@@ -52,24 +53,27 @@ const TransitionTypo = styled(Typography)(
     `
 );
 
-const AdminImage = styled(LazyLoadImage)(({ theme }) => ({
+// Replace LazyLoadImage with styled component using Next.js Image
+const AdminImageWrapper = styled(Box)(({ theme }) => ({
   borderRadius: '8px',
   overflow: 'hidden',
   width: '32px',
   height: '32px',
-  objectFit: 'cover',
+  position: 'relative',
   '&:hover': {
     cursor: 'pointer',
-    opacity: 0.6
+    '& > img': {
+      opacity: 0.6
+    }
   }
 }));
 
-const TokenImage = styled(LazyLoadImage)(({ theme }) => ({
+const TokenImageWrapper = styled(Box)(({ theme }) => ({
   borderRadius: '8px',
   overflow: 'hidden',
   width: '32px',
   height: '32px',
-  objectFit: 'cover'
+  position: 'relative'
 }));
 
 const badge24hStyle = {
@@ -372,7 +376,13 @@ function FTokenRow({
   }, [time, memoizedToken.bearbull]);
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
+  const fallbackImgUrl = '/static/alt.webp';
   const supplyRate = amount && supply ? Decimal.div(supply, amount).toNumber() * 100 : 0;
+  const [imgSrc, setImgSrc] = useState(imgUrl);
+
+  const handleImgError = () => {
+    setImgSrc(fallbackImgUrl);
+  };
 
   return (
     <TableRow key={id} sx={tableRowStyle} onClick={handleRowClick}>
@@ -410,22 +420,29 @@ function FTokenRow({
             }}
           >
             {isAdmin ? (
-              <AdminImage
-                src={imgUrl}
-                onClick={handleEditToken}
-                onError={(event) => (event.target.src = '/static/alt.webp')}
-                alt={`${user} ${name} Logo`}
-                width={32}
-                height={32}
-              />
+              <AdminImageWrapper onClick={handleEditToken}>
+                <Image
+                  src={imgSrc}
+                  alt={`${user} ${name} Logo`}
+                  width={32}
+                  height={32}
+                  priority
+                  style={{ objectFit: 'cover' }}
+                  onError={handleImgError}
+                />
+              </AdminImageWrapper>
             ) : (
-              <TokenImage
-                src={imgUrl}
-                onError={(event) => (event.target.src = '/static/alt.webp')}
-                alt={`${user} ${name} Logo`}
-                width={32}
-                height={32}
-              />
+              <TokenImageWrapper>
+                <Image
+                  src={imgSrc}
+                  alt={`${user} ${name} Logo`}
+                  width={32}
+                  height={32}
+                  priority
+                  style={{ objectFit: 'cover' }}
+                  onError={handleImgError}
+                />
+              </TokenImageWrapper>
             )}
           </Box>
           <Link

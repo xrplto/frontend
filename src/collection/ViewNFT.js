@@ -2,6 +2,7 @@ import React from 'react';
 import { useRef, useState } from 'react';
 import { FacebookShareButton, TwitterShareButton } from 'react-share';
 import { FacebookIcon, TwitterIcon } from 'react-share';
+import Image from 'next/image';
 
 // Material
 import { useTheme } from '@mui/material/styles';
@@ -88,23 +89,6 @@ const IconWrapper = styled('div')(({ theme }) => ({
     }
   }
 }));
-
-const IconImage = styled('img')({
-  position: 'absolute',
-  inset: 0,
-  boxSizing: 'border-box',
-  padding: 0,
-  border: 'none',
-  margin: 'auto',
-  display: 'block',
-  width: 0,
-  height: 0,
-  minWidth: '100%',
-  maxWidth: '100%',
-  minHeight: '100%',
-  maxHeight: '100%',
-  objectFit: 'cover'
-});
 
 const ImageBackdrop = styled('span')(({ theme }) => ({
   position: 'absolute',
@@ -226,7 +210,22 @@ export default function ViewNFT({ collection }) {
         <Box>
           <IconCover sx={{ mt: { xs: 7, md: 0 } }}>
             <IconWrapper>
-              <IconImage src={`https://s1.xrpnft.com/collection/${logoImage}`} />
+              <Box
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  position: 'relative'
+                }}
+              >
+                <Image
+                  src={`https://s1.xrpnft.com/collection/${logoImage}`}
+                  alt={`${name} collection logo`}
+                  fill
+                  priority
+                  sizes="(max-width: 600px) 90px, (max-width: 900px) 120px, 180px"
+                  style={{ objectFit: 'cover' }}
+                />
+              </Box>
               {accountLogin === collection.account && (
                 <Link href={`/collection/${slug}/edit`} underline="none">
                   <CardOverlay>
