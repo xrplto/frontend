@@ -261,12 +261,46 @@ const XPMarketIcon = (props) => (
   </SvgIcon>
 );
 
+const LedgerMemeIcon = (props) => (
+  <SvgIcon {...props} viewBox="0 0 407.1 407.1">
+    <g>
+      <rect fill="#cfff04" width="407.1" height="407.1" rx="62.91" ry="62.91"></rect>
+      <g>
+        <g>
+          <path
+            fill="#262626"
+            d="M291.54,109.68c7.23,0,14.03-2.89,19.15-8.13l30.46-31.23h-18.53l-21.19,21.7c-2.66,2.71-6.18,4.21-9.91,4.21s-7.25-1.49-9.91-4.2l-21.17-21.7h-18.54l30.48,31.23c5.12,5.24,11.92,8.13,19.15,8.13Z"
+          ></path>
+          <path
+            fill="#262626"
+            d="M310.69,120.24c-5.12-5.24-11.92-8.13-19.15-8.13s-14.03,2.89-19.15,8.13l-30.64,31.4h18.54l21.35-21.87c2.66-2.71,6.18-4.21,9.91-4.21s7.25,1.49,9.91,4.2l21.35,21.87h18.53l-30.64-31.4Z"
+          ></path>
+          <path
+            fill="#262626"
+            d="M115.55,109.68c7.23,0,14.03-2.89,19.15-8.13l30.46-31.23h-18.53l-21.19,21.7c-2.66,2.71-6.18,4.21-9.91,4.21s-7.25-1.49-9.91-4.2l-21.17-21.7h-18.54l30.48,31.23c5.12,5.24,11.92,8.13,19.15,8.13Z"
+          ></path>
+          <path
+            fill="#262626"
+            d="M115.55,112.12c-7.23,0-14.03,2.89-19.15,8.13l-30.64,31.4h18.53l21.35-21.87c2.66-2.71,6.18,4.21-9.91,4.21s7.25,1.49,9.91,4.2l21.35,21.87h18.53l-30.64-31.4c-5.12-5.24-11.92-8.13-19.15-8.13Z"
+          ></path>
+        </g>
+        <path
+          fill="#262626"
+          d="M65.76,197c0,76.1,61.69,137.79,137.79,137.79s137.79-61.69,137.79-137.79H65.76Z"
+        ></path>
+      </g>
+    </g>
+  </SvgIcon>
+);
+
 const getOriginIcon = (origin) => {
   switch (origin) {
     case 'FirstLedger':
       return <OpenInNewIcon sx={{ fontSize: 'inherit', color: '#013CFE' }} />;
     case 'XPMarket':
       return <XPMarketIcon sx={{ fontSize: 'inherit', color: '#6D1FEE' }} />;
+    case 'LedgerMeme':
+      return <LedgerMemeIcon sx={{ fontSize: 'inherit', width: '14px', height: '14px' }} />;
     case 'Magnetic X':
       return (
         <Box
