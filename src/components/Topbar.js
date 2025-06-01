@@ -622,18 +622,16 @@ const Topbar = () => {
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
                 <MetricLabel>{t('Vol')}</MetricLabel>
-                <Stack direction="row" spacing={0.5} alignItems="center">
-                  <Typography variant="body2">{currencySymbols[activeFiatCurrency]}</Typography>
-                  <MetricValue sx={{ color: theme.palette.error.main }}>
-                    {abbreviateNumber(
-                      metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
-                        ? new Decimal(metrics.H24.tradedXRP24H || 0)
-                            .div(new Decimal(metrics[activeFiatCurrency] || 1))
-                            .toNumber()
-                        : 0
-                    )}
-                  </MetricValue>
-                </Stack>
+                <MetricValue sx={{ color: theme.palette.error.main }}>
+                  {currencySymbols[activeFiatCurrency]}
+                  {abbreviateNumber(
+                    metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
+                      ? new Decimal(metrics.H24.tradedXRP24H || 0)
+                          .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                          .toNumber()
+                      : 0
+                  )}
+                </MetricValue>
               </MetricContainer>
 
               <MetricContainer direction="row" spacing={1} alignItems="center">
