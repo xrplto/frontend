@@ -273,8 +273,8 @@ function PriceChart({ token }) {
       },
       lineColor: theme.palette.divider,
       tickColor: theme.palette.divider,
-      minPadding: 0.05,
-      maxPadding: 0.05
+      minPadding: 0,
+      maxPadding: 0
     },
     yAxis: [
       {
@@ -435,77 +435,28 @@ function PriceChart({ token }) {
       }
     ],
     tooltip: {
-      backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.9)',
-      borderRadius: 12,
-      borderWidth: 0,
-      shadow: true,
-      animation: true,
+      enabled: true,
+      backgroundColor: darkMode
+        ? alpha(theme.palette.grey[900], 0.8)
+        : alpha(theme.palette.grey[100], 0.8),
+      borderColor: theme.palette.divider,
+      borderRadius: theme.shape.borderRadius,
+      borderWidth: 1,
+      shadow: false,
       style: {
-        color: darkMode ? '#FFF' : '#333',
-        fontSize: '12px',
-        fontFamily: theme.typography.fontFamily,
-        filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.2))'
+        color: theme.palette.text.primary,
+        fontSize: '12px'
       },
       formatter: function () {
-        const points = this.points;
-        const pricePoint = points.find((p) => p.series.name === 'Price');
-        const volumePoint = points.find((p) => p.series.name === 'Volume');
-
-        if (!pricePoint) {
-          return false;
-        }
-
-        const prevPoint = pricePoint.series.data[pricePoint.point.index - 1];
-        const change = prevPoint ? pricePoint.y - prevPoint.y : 0;
-        const changePercent = prevPoint ? (change / prevPoint.y) * 100 : 0;
-        const changeColor = change >= 0 ? theme.palette.primary.main : theme.palette.error.main;
-
-        return `<div style="padding: 12px; backdrop-filter: blur(8px);">
-          <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; 
-               background: ${
-                 darkMode
-                   ? 'linear-gradient(45deg, #fff, rgba(255,255,255,0.8))'
-                   : 'linear-gradient(45deg, #000, rgba(0,0,0,0.8))'
-               };
-               -webkit-background-clip: text;
-               -webkit-text-fill-color: ${darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'};">
-            ${moment(pricePoint.x).format('MMM DD, YYYY HH:mm')}
-          </div>
-          <table style="border-spacing: 4px;">
-            <tr>
-              <td style="opacity: 0.8;">Price:</td>
-              <td style="text-align: right; padding-left: 16px; font-weight: 600;">
-                ${currencySymbols[activeFiatCurrency]}${fCurrency5(pricePoint.y)}
-              </td>
-            </tr>
-            ${
-              volumePoint
-                ? `
-            <tr>
-              <td style="opacity: 0.8;">Volume:</td>
-              <td style="text-align: right; padding-left: 16px; font-weight: 600;">
-                ${fCurrency5(volumePoint.y)}
-              </td>
-            </tr>
-            `
-                : ''
-            }
-            <tr>
-              <td colspan="2" style="padding-top: 8px;">
-                <span style="color: ${changeColor}; font-weight: 600; 
-                      text-shadow: 0 0 8px ${changeColor}40;">
-                  ${change >= 0 ? '▲' : '▼'} ${fCurrency5(
-          Math.abs(change)
-        )} (${changePercent.toFixed(2)}%)
-                </span>
-              </td>
-            </tr>
-          </table>
-        </div>`;
+        return (
+          '<b>' +
+          moment(this.x).format('MMM DD, YYYY HH:mm') +
+          '</b><br/>Price: ' +
+          fCurrency5(this.y)
+        );
       },
       shared: true,
-      split: false,
-      useHTML: true
+      crosshairs: true
     },
     responsive: {
       rules: [
@@ -609,8 +560,8 @@ function PriceChart({ token }) {
       },
       lineColor: theme.palette.divider,
       tickColor: theme.palette.divider,
-      minPadding: 0.05,
-      maxPadding: 0.05
+      minPadding: 0,
+      maxPadding: 0
     },
     yAxis: {
       crosshair: {
@@ -653,57 +604,7 @@ function PriceChart({ token }) {
       }
     ],
     tooltip: {
-      backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-      borderRadius: 12,
-      borderWidth: 0,
-      shadow: true,
-      style: {
-        color: darkMode ? '#FFF' : '#333',
-        fontSize: '12px',
-        fontFamily: theme.typography.fontFamily
-      },
-      formatter: function () {
-        const point = this.point;
-        const change = point.close - point.open;
-        const changePercent = (change / point.open) * 100;
-        const changeColor = change >= 0 ? theme.palette.primary.main : theme.palette.error.main;
-
-        return `<div style="padding: 12px; backdrop-filter: blur(8px);">
-          <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; 
-               background: ${
-                 darkMode
-                   ? 'linear-gradient(45deg, #fff, rgba(255,255,255,0.8))'
-                   : 'linear-gradient(45deg, #000, rgba(0,0,0,0.8))'
-               };
-               -webkit-background-clip: text;
-               -webkit-text-fill-color: ${darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'};">
-            ${moment(point.x).format('MMM DD, YYYY HH:mm')}
-          </div>
-          <table style="border-spacing: 4px;">
-            <tr><td style="opacity: 0.8;">Open:</td><td style="text-align: right; padding-left: 16px; font-weight: 600;">${
-              currencySymbols[activeFiatCurrency]
-            }${fCurrency5(point.open)}</td></tr>
-            <tr><td style="opacity: 0.8;">High:</td><td style="text-align: right; padding-left: 16px; font-weight: 600;">${
-              currencySymbols[activeFiatCurrency]
-            }${fCurrency5(point.high)}</td></tr>
-            <tr><td style="opacity: 0.8;">Low:</td><td style="text-align: right; padding-left: 16px; font-weight: 600;">${
-              currencySymbols[activeFiatCurrency]
-            }${fCurrency5(point.low)}</td></tr>
-            <tr><td style="opacity: 0.8;">Close:</td><td style="text-align: right; padding-left: 16px; font-weight: 600;">${
-              currencySymbols[activeFiatCurrency]
-            }${fCurrency5(point.close)}</td></tr>
-            <tr><td colspan="2" style="padding-top: 8px;">
-              <span style="color: ${changeColor}; font-weight: 600; 
-                    text-shadow: 0 0 8px ${changeColor}40;">
-                ${change >= 0 ? '▲' : '▼'} ${fCurrency5(Math.abs(change))} (${changePercent.toFixed(
-          2
-        )}%)
-              </span>
-            </td></tr>
-          </table>
-        </div>`;
-      },
-      useHTML: true
+      enabled: false
     },
     responsive: {
       rules: [
