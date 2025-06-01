@@ -582,25 +582,60 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
       const OfferCreate = {
         tfPassive: 0x00010000,
-        tfImmediateOrCancel: 0x00020000,
-        tfFillOrKill: 0x00040000,
-        tfSell: 0x00080000
+        tfPartialPayment: 0x00020000,
+        tfLimitQuality: 0x00040000,
+        tfNoDirectRipple: 0x00080000
       };
 
-      //const Flags = OfferCreate.tfSell | OfferCreate.tfImmediateOrCancel;
-      const Flags = OfferCreate.tfImmediateOrCancel;
+      const PaymentFlags = {
+        tfPartialPayment: 131072,
+        tfLimitQuality: 65536,
+        tfNoDirectRipple: 1048576
+      };
 
-      const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
+      const Flags = PaymentFlags.tfPartialPayment;
 
-      let memoData = `Create offer via https://xrpl.to`;
-      if (Flags & OfferCreate.tfImmediateOrCancel) {
-        memoData = `Token Exchange via https://xrpl.to`;
+      let Amount, SendMax;
+
+      SendMax = {
+        currency: curr1.currency,
+        issuer: curr1.issuer,
+        value: amount.toString()
+      };
+      Amount = {
+        currency: curr2.currency,
+        issuer: curr2.issuer,
+        value: value.toString()
+      };
+
+      if (SendMax.currency === 'XRP') {
+        SendMax = new Decimal(SendMax.value).mul(1000000).toString();
       }
+      if (Amount.currency === 'XRP') {
+        Amount = new Decimal(Amount.value).mul(1000000).toString();
+      }
+
+      const body = {
+        TransactionType: 'Payment',
+        Account,
+        Destination: Account,
+        Amount,
+        SendMax,
+        Flags,
+        user_token,
+        Fee: '12',
+        SourceTag: 20221212
+      };
+
+      let memoData = `Swap via https://xrpl.to`;
 
       switch (wallet_type) {
         case 'xaman':
           setLoading(true);
-          const res = await axios.post(`${BASE_URL}/offer/create`, body);
+          const res = await axios.post(`${BASE_URL}/offer/payment`, {
+            ...body,
+            Memos: configureMemos('', '', memoData)
+          });
 
           if (res.status === 200) {
             const uuid = res.data.data.uuid;
@@ -624,19 +659,22 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               if (TakerPays.currency === 'XRP') {
                 TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
               }
-              let offerTxData = {
-                TransactionType: 'OfferCreate',
+              let paymentTxData = {
+                TransactionType: 'Payment',
                 Account,
+                Destination: Account,
+                Amount,
+                SendMax,
                 Flags,
-                TakerGets,
-                TakerPays,
+                Fee: '12',
+                SourceTag: 20221212,
                 Memos: configureMemos('', '', memoData)
               };
 
               dispatch(updateProcess(1));
 
               await submitTransaction({
-                transaction: offerTxData
+                transaction: paymentTxData
               }).then(({ type, result }) => {
                 if (type == 'response') {
                   dispatch(updateProcess(2));
@@ -661,17 +699,20 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           if (TakerPays.currency === 'XRP') {
             TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
           }
-          let offerTxData = {
-            TransactionType: 'OfferCreate',
+          let paymentTxData = {
+            TransactionType: 'Payment',
             Account,
+            Destination: Account,
+            Amount,
+            SendMax,
             Flags,
-            TakerGets,
-            TakerPays,
+            Fee: '12',
+            SourceTag: 20221212,
             Memos: configureMemos('', '', memoData)
           };
 
           dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(offerTxData).then(({ response }) => {
+          await sdk.methods.signAndSubmitAndWait(paymentTxData).then(({ response }) => {
             if (response.data.meta.isSuccess) {
               dispatch(updateProcess(2));
               dispatch(updateTxHash(response.data.resp.result?.hash));
