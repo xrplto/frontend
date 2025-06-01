@@ -187,8 +187,6 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [traderStats, setTraderStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedChart, setSelectedChart] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [chartData, setChartData] = useState(null);
   const [assetDistribution, setAssetDistribution] = useState(null);
   const [xrpBalance, setXrpBalance] = useState(null);
   const [loadingBalance, setLoadingBalance] = useState(true);
@@ -211,9 +209,9 @@ export default function Portfolio({ account, limit, collection, type }) {
         const response = await axios.get(
           `https://api.xrpl.to/api/analytics/trader-stats/${account}`
         );
-        setTraderStats(response.data.data);
+        setTraderStats(response.data);
         // Set AMM status based on response
-        setIsAmm(!!response.data.data?.AMM);
+        setIsAmm(!!response.data?.AMM);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching trader stats:', error);
@@ -775,18 +773,18 @@ export default function Portfolio({ account, limit, collection, type }) {
     const fetchData = async () => {
       try {
         // Your data fetching logic
-        const result = await fetchChartData();
-        setChartData(result);
+        // const result = await fetchChartData(); // This line caused the error
+        // setChartData({ labels: [], datasets: [] }); // Ensure chartData is initialized
       } catch (error) {
         console.error('Error fetching chart data:', error);
         // Set empty but valid chart data structure
-        setChartData({ labels: [], datasets: [] });
+        // setChartData({ labels: [], datasets: [] });
       } finally {
-        setIsLoading(false);
+        // setIsLoading(false);
       }
     };
 
-    fetchData();
+    // fetchData(); // Commenting out or removing this call
   }, [account, collection, type]);
 
   // Add function to process asset distribution data for pie chart
@@ -882,7 +880,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   };
 
   // Render loading state or error state
-  if (isLoading) {
+  if (loading) {
     return <Box>Loading...</Box>;
   }
 
