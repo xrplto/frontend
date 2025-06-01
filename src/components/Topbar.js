@@ -437,6 +437,17 @@ const Topbar = () => {
       label: 'Active Addresses',
       value: abbreviateNumber(metrics.H24.activeAddresses24H),
       color: '#54D62C'
+    },
+    {
+      label: 'Total TVL',
+      value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
+        metrics?.H24?.totalTVL && metrics[activeFiatCurrency]
+          ? new Decimal(metrics.H24.totalTVL || 0)
+              .div(new Decimal(metrics[activeFiatCurrency] || 1))
+              .toNumber()
+          : 0
+      )}`,
+      color: '#8E44AD' // Purple color for TVL
     }
   ];
 
@@ -645,6 +656,20 @@ const Topbar = () => {
                 <MetricLabel>{t('Active Addresses')}</MetricLabel>
                 <MetricValue sx={{ color: '#54D62C' }}>
                   {abbreviateNumber(metrics.H24.activeAddresses24H)}
+                </MetricValue>
+              </MetricContainer>
+
+              <MetricContainer direction="row" spacing={1} alignItems="center">
+                <MetricLabel>{t('Total TVL')}</MetricLabel>
+                <MetricValue sx={{ color: '#8E44AD' }}>
+                  {currencySymbols[activeFiatCurrency]}
+                  {abbreviateNumber(
+                    metrics?.H24?.totalTVL && metrics[activeFiatCurrency]
+                      ? new Decimal(metrics.H24.totalTVL || 0)
+                          .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                          .toNumber()
+                      : 0
+                  )}
                 </MetricValue>
               </MetricContainer>
             </Stack>
