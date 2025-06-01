@@ -30,208 +30,192 @@ export default function HowWeWork({ data }) {
         }}
       >
         <Typography variant="wallet_h2">
-          XRPL Token Prices Today: Latest Charts and Data Analysis
+          XRPL Token Prices Today: Real-Time Charts & Market Data
         </Typography>
-        <Typography variant="p1">Welcome to XRPL.to - Your XRPL Token Resource</Typography>
         <Typography variant="p1">
-          Established in November 2021 by{' '}
-          <Link href="https://nftlabs.to" color="primary">
-            NFT Labs
-          </Link>
-          , XRPL.to is dedicated to offering the latest XRPL token prices, charts, and data for the
-          emerging XRPL DEX markets. We pride ourselves on delivering accurate, timely, and unbiased
-          information, sourced directly from the XRP Ledger.
+          Welcome to XRPL.to – Your Trusted XRPL Token Analytics Platform
+        </Typography>
+        <Typography variant="p1">
+          Launched in November 2021, XRPL.to is the premier destination for real-time XRPL token
+          prices, interactive charts, and comprehensive market data sourced directly from the XRP
+          Ledger's decentralized exchange (DEX). Our platform is committed to delivering accurate,
+          timely, and unbiased information to empower your investment decisions.
         </Typography>
 
-        <Typography variant="wallet_h2">
-          Comprehensive XRP Ledger Market Data - All in One Destination
-        </Typography>
+        <Typography variant="wallet_h2">Comprehensive XRPL Market Insights</Typography>
         <Typography variant="p1">
-          At XRPL.to, our mission is to provide all the relevant and{' '}
-          <Link href="/status/coming-soon" color="primary">
-            current information
+          At XRPL.to, we aggregate and present up-to-date information on all tokens, currencies, and
+          assets within the XRP Ledger ecosystem. Our goal is to serve as your all-in-one resource
+          for XRPL market data, providing the tools and insights needed to navigate the
+          decentralized finance landscape effectively.
+        </Typography>
+
+        <Typography variant="wallet_h2">Interactive Live & Historical Token Charts</Typography>
+        <Typography variant="p1">
+          Each token's dedicated page features dynamic charts showcasing both live and historical
+          price movements. Customize your view by selecting specific date ranges to analyze trends
+          from an asset's inception to the present. These charts are freely accessible to all users,
+          offering valuable insights at no cost.
+        </Typography>
+
+        <Typography variant="wallet_h2">Transparent Token Price Calculations</Typography>
+        <Typography variant="p1">
+          Our token prices reflect real-time data from the XRP Ledger DEX, ensuring transparency and
+          accuracy. This means that as the XRP Ledger produces new ledgers, our platform updates to
+          provide the latest information. For developers and analysts seeking programmatic access,
+          our comprehensive{' '}
+          <Link href="/api-docs" color="primary">
+            XRPL API documentation
           </Link>{' '}
-          on XRPL tokens, currencies, and assets in a single, easy-to-find location. Our goal from
-          day one has been to become the premier online source for XRP Ledger market data. We strive
-          to empower our users with unbiased, accurate information to make informed decisions.
+          provides detailed guidance on integrating and utilizing our data feeds.
+        </Typography>
+        <Typography variant="wallet_h2">XRPL Token Valuation Methodology</Typography>
+        <Typography variant="p1">
+          We calculate the market capitalization of XRPL tokens by multiplying the total circulating
+          supply by the current reference price. This approach offers a clear and consistent metric
+          for assessing the value of individual assets within the XRP Ledger.
         </Typography>
 
-        <Typography variant="wallet_h2">
-          Access Free Live and Historical XRPL Token Charts
-        </Typography>
+        <Typography variant="wallet_h2">Global XRPL Token Market Overview</Typography>
         <Typography variant="p1">
-          Every token data page on our site features a chart displaying both live and historical
-          price information for the respective currency or asset. Generally, the chart begins at the
-          asset's launch, but you can customize it by selecting specific start and end dates. These
-          informative charts are available free of charge for all visitors to our website.
+          As of June 1, 2025, the XRP Ledger hosts approximately 9,752 tokens, encompassing a
+          diverse array of currencies and projects. XRPL.to automatically lists all tokens available
+          on the ledger, providing a comprehensive view of the ecosystem. While we strive to present
+          accurate information, we encourage users to conduct their own research to assess the
+          legitimacy and potential of each project.
         </Typography>
 
-        <Typography variant="wallet_h2">
-          Understanding Our XRPL Token Price Calculation Method
-        </Typography>
+        <Typography variant="wallet_h2">Understanding XRPL Tokens</Typography>
         <Typography variant="p1">
-          Our XRPL token prices are sourced directly from the XRPL DEX, based on respective trading
-          pairs, and displayed in real time without delay. For a detailed explanation of our price
-          calculation method, please visit{' '}
-          <Link href="/status/coming-soon" color="primary">
-            here
-          </Link>
-          .
-        </Typography>
-        <Typography variant="p1">Related XRPL Resources and Links</Typography>
-        <Typography variant="p1">
-          New to XRP?{' '}
-          <Link href="https://uphold.com/en-us/assets/crypto/buy-xrp" color="primary">
-            Discover how to purchase XRP today
-          </Link>
-          .
-        </Typography>
-        <Typography variant="p1">
-          Eager to learn more? Explore our{' '}
-          <Link href="/status/coming-soon" color="primary">
-            XRPL Glossary
-          </Link>{' '}
-          and{' '}
-          <Link href="/status/coming-soon" color="primary">
-            Educational Hub
-          </Link>
-          .
-        </Typography>
-        <Typography variant="p1">
-          Looking to track a transaction? Check out the{' '}
-          <Link href="https://xrpscan.com/" color="primary">
-            XRPScan
-          </Link>{' '}
-          Ledger Explorer.
-        </Typography>
-
-        <Typography variant="wallet_h2">Understanding Our XRPL Token Valuation Method</Typography>
-        <Typography variant="p1">
-          Our XRPL token valuations are determined by multiplying the total circulating supply of an
-          asset by its reference price. For a more in-depth explanation of our valuation method,
-          visit <Link href="/status/coming-soon">here</Link>.
-        </Typography>
-
-        <Typography variant="wallet_h2">
-          Understanding Our Total XRPL Token Market Cap Calculation
-        </Typography>
-        <Typography variant="p1">
-          Our total XRPL token market capitalization is calculated by summing the market cap of all
-          listed tokens on the site.
-        </Typography>
-
-        <Typography variant="wallet_h2">Does XRPL.to Include All XRPL Tokens?</Typography>
-        <Typography variant="p1">
-          Yes, XRPL.to automatically lists all XRP Ledger tokens. As a company and team, we
-          recognize that not all tokens and projects have good intentions. Although we can't
-          guarantee the legitimacy of any project, we strive to provide valuable information to help
-          users conduct their own research and make informed decisions.
-        </Typography>
-
-        <Typography variant="wallet_h2">
-          Understanding the Size of the Global XRPL Token Market
-        </Typography>
-        <Typography variant="p1">
-          As of the time of writing, there are approximately 9,752 tokens, currencies, and projects
-          in the global XRPL token market. As previously stated, XRPL.to operates as a fully
-          decentralized system that lists all XRPL tokens, leaving it up to users to conduct their
-          own due diligence.
-        </Typography>
-
-        <Typography variant="wallet_h2">Understanding XRPL Tokens: What Are They?</Typography>
-        <Typography variant="p1">
-          In the XRP Ledger, all assets other than XRP can be represented as <strong>tokens</strong>
-          . Standard tokens are tracked in relationships called{' '}
+          Within the XRP Ledger, assets other than XRP are represented as tokens, which can be
+          either fungible or non-fungible. These tokens facilitate a wide range of applications,
+          including stablecoins backed by external assets, community credits, and unique digital
+          collectibles. The ledger's design ensures that tokens are issued and held through{' '}
           <Link href="https://xrpl.org/trust-lines-and-issuing.html" color="primary">
             trust lines
-          </Link>{' '}
-          between accounts. Any account can issue tokens to other recipients who are willing to hold
-          them, but you cannot unilaterally give tokens away to users who don't want them. Tokens
-          can represent various types of value, including "stablecoins" backed by external assets,
-          digital tokens created specifically on the XRP Ledger, community credit, and more.
-        </Typography>
-
-        <Typography variant="wallet_h2">Understanding IDOs: What Are They?</Typography>
-        <Typography variant="p1">
-          IDO, or Initial Dex Offering, is a method for smaller XRPL projects, as well as a few
-          larger ones, to raise funds from retail investors worldwide in a crypto-based crowdfunding
-          campaign. Investors typically visit the XRPL DEX to purchase XRPL tokens from the issuer
-          in exchange for XRP, receiving tokens in return.
-        </Typography>
-
-        <Typography variant="wallet_h2">Understanding Stablecoins: What Are They?</Typography>
-        <Typography variant="p1">
-          In the XRP Ledger, a common model for tokens involves an issuer holding assets of
-          equivalent value outside the ledger and issuing tokens representing that value on the
-          ledger. Such issuers are often called gateways, as currency can move into and out of the
-          XRP Ledger through their service. When the off-ledger assets backing a token have the same
-          amounts and denomination as the on-ledger tokens, these tokens can be considered
-          "stablecoins." In theory, the exchange rate between a stablecoin and its off-ledger
-          representation should be stable at a 1:1 ratio.
-        </Typography>
-        <Typography variant="p1">
-          A stablecoin issuer is expected to provide deposit and withdrawal services, enabling users
-          to exchange tokens for the corresponding currency or asset outside the XRP Ledger.
-        </Typography>
-        <Typography variant="p1">
-          In practice, the XRP Ledger is a computer system that cannot enforce any rules outside of
-          itself, so stablecoins on the XRP Ledger depend on their issuer's integrity. If you can't
-          count on the stablecoins issuer to redeem your tokens for the real thing on demand, then
-          you shouldn't expect the stablecoin to retain its value. As a user, you should be mindful
-          of who's issuing the tokens: are they reliable, lawful, and solvent? If not, it's probably
-          best not to hold those tokens.
-        </Typography>
-
-        <Typography variant="wallet_h2">Understanding In-Game Tokens: What Are They?</Typography>
-        <Typography variant="p1">
-          <Link href="/status/coming-soon" color="primary">
-            Play-to-earn
-          </Link>{' '}
-          (P2E) games, also known as{' '}
-          <Link href="/status/coming-soon" color="primary">
-            GameFi
           </Link>
-          , have become an increasingly popular category within the XRP Ledger ecosystem. These
-          games combine{' '}
-          <Link href="/status/coming-soon" color="primary">
-            non-fungible tokens
-          </Link>{' '}
-          (NFTs), in-game crypto tokens,{' '}
-          <Link href="/status/coming-soon" color="primary">
-            decentralized finance
-          </Link>{' '}
-          (DeFi) elements, and sometimes even metaverse applications. By investing time and
-          occasionally capital, players can generate revenue through participation in these games.
+          , maintaining the integrity of transactions.
         </Typography>
+
+        <Typography variant="wallet_h2">Where to Buy XRP?</Typography>
         <Typography variant="p1">
-          Among the most prominent game tokenization projects on the XRPL is{' '}
-          <Link href="https://xrpjunkies.club" color="primary">
-            Junkieverse
+          XRP can be acquired through various cryptocurrency exchanges. These platforms allow users
+          to buy, sell, and trade XRP. Some well-known exchanges include Uphold, Kraken, Binance,
+          and others. Additionally, services like{' '}
+          <Link
+            href="https://changelly.com/"
+            color="primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Changelly
+          </Link>{' '}
+          and{' '}
+          <Link
+            href="https://changenow.io/"
+            color="primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ChangeNOW
+          </Link>{' '}
+          offer ways to exchange other cryptocurrencies for XRP or purchase XRP directly. It's
+          recommended to research and choose a reputable exchange or service that operates in your
+          jurisdiction and meets your security and feature requirements. You can often find links to
+          these exchanges on official XRP-related websites or cryptocurrency market aggregators.
+        </Typography>
+
+        <Typography variant="wallet_h2">Initial DEX Offerings (IDOs) on XRPL</Typography>
+        <Typography variant="p1">
+          Initial DEX Offerings (IDOs) provide a decentralized fundraising mechanism for XRPL-based
+          projects. Through the XRP Ledger DEX, investors can participate in early-stage token
+          sales, exchanging XRP for newly issued tokens. This model promotes inclusivity and
+          broadens access to investment opportunities within the XRPL ecosystem.
+        </Typography>
+
+        <Typography variant="wallet_h2">XRPL Token Launchpads</Typography>
+        <Typography variant="p1">
+          The XRP Ledger ecosystem also offers platforms known as launchpads, which facilitate the
+          creation and launch of new tokens for projects and individuals. These platforms provide
+          tools and services to streamline the token issuance process. Some examples of XRPL
+          launchpads include{' '}
+          <Link
+            href="https://firstledger.net"
+            color="primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            firstledger.net
           </Link>
-          . Junkieverse offers a unique gaming experience by blending classic hardcore MMO gameplay
-          with social interaction and blockchain technology. Players can shape their own destinies,
-          explore vast worlds spanning the multiverse, confront unprecedented dangers, gather
-          resources, and craft an arsenal to support their adventures.
+          ,{' '}
+          <Link
+            href="https://ledger.meme"
+            color="primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            ledger.meme
+          </Link>
+          , and{' '}
+          <Link
+            href="https://xpmarket.com"
+            color="primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            xpmarket.com
+          </Link>
+          . Users interested in launching their own tokens can explore these and other similar
+          platforms.
         </Typography>
 
-        <Typography variant="wallet_h2">Determining the Best Token for Investment</Typography>
+        <Typography variant="wallet_h2">Stablecoins on the XRP Ledger</Typography>
         <Typography variant="p1">
-          XRPL.to does not provide financial or investment advice regarding the suitability of
-          specific tokens, currencies, or assets as investments, nor do we offer guidance on the
-          timing of purchases or sales. Our focus is strictly on data.
-        </Typography>
-        <Typography variant="p1">
-          Keep in mind that the prices, yields, and values of financial assets fluctuate, putting
-          your invested capital at risk. We recommend consulting a professional investment advisor
-          for guidance tailored to your specific circumstances.
+          Stablecoins on XRPL are typically issued by gateways that hold equivalent off-ledger
+          assets, ensuring a 1:1 backing. These tokens offer price stability and can be redeemed
+          through the issuing gateway. However, the XRP Ledger itself cannot enforce off-ledger
+          obligations, so the reliability of stablecoins depends on the trustworthiness of their
+          issuers. Users should perform due diligence before engaging with stablecoin offerings. An
+          example of such a stablecoin is{' '}
+          <Link href="https://xrpl.to/token/ripple-rlusd" color="primary">
+            RLUSD
+          </Link>
+          .
         </Typography>
 
-        <Typography variant="wallet_h2">
-          Investing in XRPL Tokens? XRPL.to Has You Covered
-        </Typography>
+        <Typography variant="wallet_h2">In-Game Tokens and the XRPL Gaming Ecosystem</Typography>
         <Typography variant="p1">
-          With live updates on XRPL.to, you can monitor the value of your investments and assets
-          anytime and from anywhere globally. We look forward to serving you regularly!
+          The XRP Ledger supports a growing gaming ecosystem, where in-game tokens and NFTs enhance
+          player engagement and enable play-to-earn models. Projects like{' '}
+          <Link href="https://xspectar.com" color="primary">
+            xSPECTAR
+          </Link>{' '}
+          exemplify the integration of XRPL tokens within virtual environments, offering users
+          immersive experiences and economic opportunities through tokenized assets.
+        </Typography>
+
+        <Typography variant="wallet_h2">Investment Considerations</Typography>
+        <Typography variant="p1">
+          While XRPL.to provides comprehensive data and analytics, we do not offer investment
+          advice. The cryptocurrency market is volatile, and asset values can fluctuate
+          significantly. We recommend consulting with a financial advisor to make informed
+          investment decisions tailored to your individual risk tolerance and financial goals.
+        </Typography>
+
+        <Typography variant="wallet_h2">Stay Informed with XRPL.to</Typography>
+        <Typography variant="p1">
+          Monitor your XRPL investments and explore the latest market trends with XRPL.to. Our
+          platform offers real-time updates and in-depth analytics to support your engagement with
+          the XRP Ledger ecosystem. Join our community, follow us on{' '}
+          <Link
+            href="https://x.com/xrplto"
+            color="primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            X
+          </Link>
+          , and stay ahead in the dynamic world of decentralized finance.
         </Typography>
 
         <Typography variant="p1"></Typography>
