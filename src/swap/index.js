@@ -320,7 +320,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const [isSwitching, setIsSwitching] = useState(false);
 
   const amount = revert ? amount2 : amount1;
-  const value = revert ? amount1 : amount2;
+  let value = revert ? amount1 : amount2;
   const setAmount = revert ? setAmount2 : setAmount1;
   const setValue = revert ? setAmount1 : setAmount2;
   const tokenPrice1 = new Decimal(tokenExch1 || 0)
@@ -788,7 +788,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   };
 
   const handleChangeAmount2 = (e) => {
-    const value = e.target.value;
+    let value = e.target.value;
 
     if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
