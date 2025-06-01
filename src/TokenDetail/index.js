@@ -17,7 +17,6 @@ const Overview = dynamic(() => import('./overview'));
 const Market = dynamic(() => import('./market'));
 const Trade = dynamic(() => import('./trade'));
 const RichList = dynamic(() => import('./richlist'));
-const Wallet = dynamic(() => import('./wallet'));
 const TopTraders = dynamic(() => import('./toptraders'));
 
 // ---------------------------------------------------
@@ -60,8 +59,8 @@ function a11yProps(index) {
   };
 }
 
-const tabValues = ['', 'markets', 'orderbook', 'holders', 'traders', 'wallets'];
-const tabLabels = ['Overview', 'Markets', 'Orderbook', 'Holders', 'Top Traders', 'Wallets'];
+const tabValues = ['', 'markets', 'orderbook', 'holders', 'traders'];
+const tabLabels = ['Overview', 'Markets', 'Orderbook', 'Holders', 'Top Traders'];
 
 function getTabID(tab) {
   if (!tab) return 0;
@@ -211,9 +210,6 @@ export default function TokenDetail({ token, tab }) {
       </TabPanel>
       <TabPanel value={tabID} id={4}>
         <TopTraders token={token} />
-      </TabPanel>
-      <TabPanel value={tabID} id={5}>
-        <Wallet />
       </TabPanel>
     </Box>
   );
