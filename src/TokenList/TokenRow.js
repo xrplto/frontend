@@ -345,7 +345,6 @@ function FTokenRow({
     name,
     dateon,
     amount,
-    supply,
     trustlines,
     vol24hxrp,
     vol24hx,
@@ -397,9 +396,9 @@ function FTokenRow({
       marketCap: marketcap && exchRate ? Decimal.div(marketcap || 0, exchRate).toNumber() : 0,
       volume: vol24hxrp && exchRate ? Decimal.div(vol24hxrp || 0, exchRate).toNumber() : 0,
       tvl: tvl && exchRate ? Decimal.div(tvl || 0, exchRate).toNumber() : 0,
-      supplyRate: amount && supply ? Decimal.div(supply || 0, amount || 1).toNumber() * 100 : 0
+      supplyRate: amount ? 100 : 0
     }),
-    [marketcap, vol24hxrp, tvl, amount, supply, exchRate]
+    [marketcap, vol24hxrp, tvl, amount, exchRate]
   );
 
   useEffect(() => {
@@ -413,7 +412,7 @@ function FTokenRow({
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
   const fallbackImgUrl = '/static/alt.webp';
-  const supplyRate = amount && supply ? Decimal.div(supply, amount).toNumber() * 100 : 0;
+  const supplyRate = amount ? 100 : 0;
   const [imgSrc, setImgSrc] = useState(imgUrl);
 
   const handleImgError = () => {
@@ -692,7 +691,7 @@ function FTokenRow({
                   </TableCell>
                   <TableCell sx={{ pt: 0, pb: 0 }}>
                     <Typography variant="caption" noWrap sx={{ color: '#fff' }}>
-                      {fNumber(supply)} {name}
+                      {fNumber(amount)} {name}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -727,17 +726,17 @@ function FTokenRow({
           }}
         >
           <Typography variant="h4" noWrap={!isMobile}>
-            {supply >= 1000000000000
-              ? `${(supply / 1000000000000).toFixed(2)}T`
-              : supply >= 1000000000
-              ? `${(supply / 1000000000).toFixed(2)}B`
-              : supply >= 1000000
-              ? supply >= 999500000
-                ? `${(supply / 1000000000).toFixed(2)}B`
-                : `${(supply / 1000000).toFixed(2)}M`
-              : supply >= 1000
-              ? `${(supply / 1000).toFixed(1)}K`
-              : fNumber(supply)}{' '}
+            {amount >= 1000000000000
+              ? `${(amount / 1000000000000).toFixed(2)}T`
+              : amount >= 1000000000
+              ? `${(amount / 1000000000).toFixed(2)}B`
+              : amount >= 1000000
+              ? amount >= 999500000
+                ? `${(amount / 1000000000).toFixed(2)}B`
+                : `${(amount / 1000000).toFixed(2)}M`
+              : amount >= 1000
+              ? `${(amount / 1000).toFixed(1)}K`
+              : fNumber(amount)}{' '}
             {name}
           </Typography>
         </Tooltip>

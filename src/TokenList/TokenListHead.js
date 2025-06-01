@@ -15,7 +15,7 @@ import { AppContext } from 'src/AppContext';
 import InfoIcon from '@mui/icons-material/Info'; // Import InfoIcon from Material-UI Icons
 
 const SmallInfoIcon = (props) => (
-  (<InfoIcon {...props} fontSize="smaller" />) // Make the icon smaller by setting fontSize="small"
+  <InfoIcon {...props} fontSize="smaller" /> // Make the icon smaller by setting fontSize="small"
 );
 
 const StickyTableCell = withStyles((theme) => ({
@@ -204,12 +204,9 @@ const TABLE_HEAD = [
     no: 14,
     id: 'supply',
     label: (
-      <Tooltip
-        title="The quantity of tokens in circulation within the market and held by the public is comparable to the shares in motion within the stock market."
-        placement="top"
-      >
+      <Tooltip title="Supply is token held by everyone" placement="top">
         <span>
-          Circulating Supply <SmallInfoIcon />
+          Supply <SmallInfoIcon />
         </span>
       </Tooltip>
     ),
@@ -345,7 +342,7 @@ export default function TokenListHead({
                 </TableSortLabel>
               ) : (
                 // Render the label directly without TableSortLabel for unsortable columns
-                (headCell.label)
+                headCell.label
               )}
             </StickyTableCell>
           );
