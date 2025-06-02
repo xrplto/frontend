@@ -760,12 +760,12 @@ export default function Portfolio({ account, limit, collection, type }) {
     setSelectedChart(null);
   };
 
-  const renderChart = (chartData) => {
+  const renderChart = (chartData, options = chartOptions) => {
     if (!chartData || !chartData.labels) {
       return <Box>Loading chart data...</Box>;
     }
 
-    return <Line data={chartData} options={{ ...chartOptions, maintainAspectRatio: false }} />;
+    return <Line data={chartData} options={{ ...options, maintainAspectRatio: false }} />;
   };
 
   useEffect(() => {
@@ -1384,7 +1384,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     {loading ? (
                       <Skeleton variant="rectangular" height={350} />
                     ) : (
-                      renderChart(processChartData())
+                      renderChart(processChartData(), chartOptions)
                     )}
                   </Box>
                 </Card>
@@ -1420,7 +1420,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     {loading ? (
                       <Skeleton variant="rectangular" height={350} />
                     ) : (
-                      renderChart(processTradeHistoryData())
+                      renderChart(processTradeHistoryData(), tradeHistoryOptions)
                     )}
                   </Box>
                 </Card>
@@ -1456,7 +1456,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     {loading ? (
                       <Skeleton variant="rectangular" height={350} />
                     ) : (
-                      renderChart(processVolumeHistoryData())
+                      renderChart(processVolumeHistoryData(), volumeHistoryOptions)
                     )}
                   </Box>
                 </Card>
@@ -1487,9 +1487,11 @@ export default function Portfolio({ account, limit, collection, type }) {
                   </IconButton>
                 </Box>
                 <Box sx={{ height: 600, width: '100%' }}>
-                  {selectedChart === 'roi' && renderChart(processChartData())}
-                  {selectedChart === 'activity' && renderChart(processTradeHistoryData())}
-                  {selectedChart === 'volume' && renderChart(processVolumeHistoryData())}
+                  {selectedChart === 'roi' && renderChart(processChartData(), chartOptions)}
+                  {selectedChart === 'activity' &&
+                    renderChart(processTradeHistoryData(), tradeHistoryOptions)}
+                  {selectedChart === 'volume' &&
+                    renderChart(processVolumeHistoryData(), volumeHistoryOptions)}
                 </Box>
               </ModalContent>
             </StyledModal>
