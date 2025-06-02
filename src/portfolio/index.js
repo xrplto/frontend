@@ -1141,7 +1141,7 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                   <Card
                     sx={{
-                      p: 3,
+                      p: 1.5, // Reduced from 2
                       borderRadius: '16px',
                       background: `linear-gradient(135deg, ${alpha(
                         theme.palette.success.main,
@@ -1182,14 +1182,16 @@ export default function Portfolio({ account, limit, collection, type }) {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
-                        mb: 2
+                        mb: 0.5 // Reduced from 1
                       }}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                        {' '}
+                        {/* Reduced gap from 1 */}
                         <Box
                           sx={{
-                            p: 1.5,
-                            borderRadius: '12px',
+                            p: 0.7, // Reduced from 1
+                            borderRadius: '8px', // Reduced from 10px
                             background: `linear-gradient(135deg, ${alpha(
                               theme.palette.success.main,
                               0.15
@@ -1203,7 +1205,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                         >
                           <TrendingUpIcon
                             sx={{
-                              fontSize: '1.4rem',
+                              fontSize: '1rem', // Reduced from 1.1rem
                               color: theme.palette.success.main,
                               filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
                             }}
@@ -1214,7 +1216,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                           color="text.primary"
                           sx={{
                             fontWeight: 600,
-                            fontSize: '1.1rem',
+                            fontSize: '0.8rem', // Reduced from 0.9rem
                             letterSpacing: '-0.02em'
                           }}
                         >
@@ -1223,11 +1225,13 @@ export default function Portfolio({ account, limit, collection, type }) {
                       </Box>
                     </Box>
 
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
+                    <Box sx={{ textAlign: 'center', py: 0.5 }}>
+                      {' '}
+                      {/* Reduced from py: 1 */}
                       {loading ? (
                         <Skeleton
-                          width={250}
-                          height={50}
+                          width={160} // Reduced from 200
+                          height={24} // Reduced from 32
                           sx={{ mx: 'auto', borderRadius: '8px' }}
                         />
                       ) : (
@@ -1236,10 +1240,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                           sx={{
                             color: theme.palette.success.main,
                             fontWeight: 700,
-                            fontSize: '2.5rem',
+                            fontSize: '1.5rem', // Reduced from 1.8rem
                             letterSpacing: '-0.02em',
                             textShadow: `0 4px 8px ${alpha(theme.palette.success.main, 0.25)}`,
-                            mb: 0.5,
+                            mb: 0.1, // Reduced from 0.3
                             background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.primary.main} 100%)`,
                             backgroundClip: 'text',
                             WebkitBackgroundClip: 'text',
@@ -1255,7 +1259,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                         sx={{
                           fontWeight: 500,
                           letterSpacing: '0.1em',
-                          fontSize: '0.9rem',
+                          fontSize: '0.65rem', // Reduced from 0.75rem
                           textTransform: 'uppercase'
                         }}
                       >
