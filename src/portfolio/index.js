@@ -1830,7 +1830,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                       right: 0,
                       height: '3px',
                       background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-                      borderRadius: '20px 20px 0 0'
+                      opacity: 0.8
                     }
                   }}
                 >
@@ -2087,69 +2087,189 @@ export default function Portfolio({ account, limit, collection, type }) {
               </ModalContent>
             </StyledModal>
 
-            <Card sx={{ flex: 1, mb: 2, color: theme.palette.text.primary }}>
+            <Card
+              sx={{
+                flex: 1,
+                mb: 2,
+                color: theme.palette.text.primary,
+                borderRadius: '24px',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.background.paper,
+                  0.95
+                )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                boxShadow: `0 8px 32px ${alpha(
+                  theme.palette.common.black,
+                  0.06
+                )}, 0 2px 8px ${alpha(theme.palette.primary.main, 0.04)}`,
+                overflow: 'hidden',
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '2px',
+                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                  opacity: 0.8
+                }
+              }}
+            >
               <CardContent sx={{ p: 0 }}>
                 <TabContext value={activeTab}>
                   <Box
                     sx={{
-                      px: 2.5,
-                      py: 2,
-                      borderBottom: `1px solid ${theme.palette.divider}`,
-                      bgcolor: theme.palette.background.paper
+                      px: 4,
+                      py: 3,
+                      borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.background.paper,
+                        0.8
+                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                      backdropFilter: 'blur(10px)'
                     }}
                   >
-                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                      <AccountBalanceWalletIcon
-                        sx={{ color: theme.palette.primary.main, fontSize: '1.3rem' }}
-                      />
-                      <Typography
+                    <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
+                      <Box
                         sx={{
-                          color: theme.palette.text.primary,
-                          fontSize: '1.1rem',
-                          fontWeight: 500,
-                          lineHeight: 1
+                          p: 1.5,
+                          borderRadius: '16px',
+                          background: `linear-gradient(135deg, ${alpha(
+                            theme.palette.primary.main,
+                            0.15
+                          )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
                         }}
-                        variant="h6"
                       >
-                        Portfolio Assets
-                      </Typography>
+                        <AccountBalanceWalletIcon
+                          sx={{
+                            color: theme.palette.primary.main,
+                            fontSize: '1.5rem',
+                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                          }}
+                        />
+                      </Box>
+                      <Box>
+                        <Typography
+                          sx={{
+                            color: theme.palette.text.primary,
+                            fontSize: '1.4rem',
+                            fontWeight: 700,
+                            lineHeight: 1.2,
+                            letterSpacing: '-0.02em',
+                            background: `linear-gradient(135deg, ${
+                              theme.palette.text.primary
+                            } 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
+                            backgroundClip: 'text',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                          }}
+                          variant="h5"
+                        >
+                          Portfolio Assets
+                        </Typography>
+                      </Box>
                     </Stack>
 
                     <ToggleButtonGroup
                       value={activeTab}
                       exclusive
                       onChange={(e, newValue) => newValue && handleChange(e, newValue)}
-                      size="small"
+                      size="medium"
                       sx={{
-                        bgcolor: theme.palette.action.hover,
-                        borderRadius: '8px',
-                        padding: '2px',
+                        bgcolor: alpha(theme.palette.background.paper, 0.6),
+                        borderRadius: '16px',
+                        padding: '4px',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                        boxShadow: `inset 0 2px 4px ${alpha(theme.palette.common.black, 0.06)}`,
                         '& .MuiToggleButton-root': {
                           border: 'none',
-                          borderRadius: '6px !important',
-                          color: theme.palette.text.secondary,
-                          fontSize: '0.875rem',
-                          fontWeight: 'normal',
+                          borderRadius: '12px !important',
+                          color: alpha(theme.palette.text.secondary, 0.8),
+                          fontSize: '0.95rem',
+                          fontWeight: 500,
                           textTransform: 'none',
-                          px: 2,
-                          py: 0.5,
-                          minWidth: '80px',
+                          px: 3,
+                          py: 1.5,
+                          minWidth: '100px',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          position: 'relative',
                           '&.Mui-selected': {
                             bgcolor: theme.palette.background.paper,
                             color: theme.palette.primary.main,
-                            fontWeight: 500,
-                            boxShadow: theme.shadows[1]
+                            fontWeight: 600,
+                            boxShadow: `0 4px 12px ${alpha(
+                              theme.palette.primary.main,
+                              0.15
+                            )}, 0 2px 4px ${alpha(theme.palette.common.black, 0.1)}`,
+                            transform: 'translateY(-1px)',
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              height: '2px',
+                              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
+                              borderRadius: '12px 12px 0 0'
+                            }
                           },
                           '&:hover': {
-                            bgcolor: theme.palette.background.paper,
-                            color: theme.palette.primary.main
+                            bgcolor: alpha(theme.palette.background.paper, 0.8),
+                            color: theme.palette.primary.main,
+                            transform: 'translateY(-1px)'
                           }
                         }
                       }}
                     >
-                      <ToggleButton value="0">Tokens</ToggleButton>
-                      <ToggleButton value="1">NFTs</ToggleButton>
-                      <ToggleButton value="2">Ranks</ToggleButton>
+                      <ToggleButton value="0">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box
+                            sx={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              bgcolor: theme.palette.primary.main,
+                              opacity: activeTab === '0' ? 1 : 0.4
+                            }}
+                          />
+                          Tokens
+                        </Box>
+                      </ToggleButton>
+                      <ToggleButton value="1">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box
+                            sx={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              bgcolor: theme.palette.success.main,
+                              opacity: activeTab === '1' ? 1 : 0.4
+                            }}
+                          />
+                          NFTs
+                        </Box>
+                      </ToggleButton>
+                      <ToggleButton value="2">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box
+                            sx={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              bgcolor: theme.palette.warning.main,
+                              opacity: activeTab === '2' ? 1 : 0.4
+                            }}
+                          />
+                          Ranks
+                        </Box>
+                      </ToggleButton>
                     </ToggleButtonGroup>
                   </Box>
 
@@ -2160,38 +2280,66 @@ export default function Portfolio({ account, limit, collection, type }) {
                         <Box
                           sx={{
                             height: '100%',
-                            p: { xs: 1.5, md: 1.5 },
-                            background: alpha(theme.palette.primary.main, 0.02),
-                            borderRadius: '10px 0 0 10px',
-                            borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                            p: 3,
+                            background: `linear-gradient(135deg, ${alpha(
+                              theme.palette.primary.main,
+                              0.04
+                            )} 0%, ${alpha(theme.palette.primary.main, 0.01)} 100%)`,
+                            borderRadius: '0 0 0 24px',
+                            borderRight: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
                             display: 'flex',
-                            flexDirection: 'column'
+                            flexDirection: 'column',
+                            position: 'relative',
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              right: 0,
+                              width: '2px',
+                              height: '100%',
+                              background: `linear-gradient(180deg, ${alpha(
+                                theme.palette.primary.main,
+                                0.2
+                              )} 0%, transparent 50%, ${alpha(
+                                theme.palette.primary.main,
+                                0.2
+                              )} 100%)`
+                            }
                           }}
                         >
-                          <Typography
-                            variant="subtitle2"
+                          <Box
                             sx={{
-                              mb: 1,
-                              color: theme.palette.primary.main,
-                              fontWeight: 500,
                               display: 'flex',
                               alignItems: 'center',
-                              gap: 0.75,
-                              fontSize: '0.8rem'
+                              gap: 1.5,
+                              mb: 3,
+                              p: 2,
+                              borderRadius: '12px',
+                              background: alpha(theme.palette.background.paper, 0.6),
+                              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
                             }}
                           >
                             <Box
-                              component="span"
                               sx={{
-                                width: 6,
-                                height: 6,
+                                width: 10,
+                                height: 10,
                                 borderRadius: '50%',
                                 bgcolor: theme.palette.primary.main,
-                                display: 'inline-block'
+                                boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.4)}`
                               }}
                             />
-                            Asset Distribution
-                          </Typography>
+                            <Typography
+                              variant="subtitle1"
+                              sx={{
+                                color: theme.palette.primary.main,
+                                fontWeight: 600,
+                                fontSize: '1rem',
+                                letterSpacing: '-0.01em'
+                              }}
+                            >
+                              Asset Distribution
+                            </Typography>
+                          </Box>
 
                           <Box
                             sx={{
@@ -2224,37 +2372,64 @@ export default function Portfolio({ account, limit, collection, type }) {
                                     transform: 'translate(-50%, -50%)',
                                     textAlign: 'center',
                                     pointerEvents: 'none',
-                                    zIndex: 0 // Lower z-index than the chart
+                                    zIndex: 0,
+                                    p: 2,
+                                    borderRadius: '50%',
+                                    background: `radial-gradient(circle, ${alpha(
+                                      theme.palette.background.paper,
+                                      0.9
+                                    )} 0%, transparent 70%)`
                                   }}
                                 >
                                   <Typography
-                                    variant="subtitle1"
+                                    variant="h6"
                                     color="text.primary"
-                                    sx={{ fontWeight: 500 }}
+                                    sx={{
+                                      fontWeight: 700,
+                                      fontSize: '1.1rem',
+                                      letterSpacing: '-0.02em'
+                                    }}
                                   >
                                     {(totalValue || 0).toLocaleString()}
                                   </Typography>
                                   <Typography
                                     variant="caption"
                                     color="text.secondary"
-                                    sx={{ fontSize: '0.7rem' }}
+                                    sx={{
+                                      fontSize: '0.75rem',
+                                      fontWeight: 500,
+                                      textTransform: 'uppercase',
+                                      letterSpacing: '0.05em'
+                                    }}
                                   >
                                     XRP Value
                                   </Typography>
                                 </Box>
                               </>
                             ) : (
-                              <Box sx={{ textAlign: 'center' }}>
-                                <Typography variant="body2" color="text.secondary">
-                                  No asset data
+                              <Box
+                                sx={{
+                                  textAlign: 'center',
+                                  p: 3,
+                                  borderRadius: '12px',
+                                  background: alpha(theme.palette.background.paper, 0.4),
+                                  border: `1px dashed ${alpha(theme.palette.divider, 0.3)}`
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                  sx={{ fontWeight: 500 }}
+                                >
+                                  No asset data available
                                 </Typography>
                               </Box>
                             )}
                           </Box>
 
                           {assetDistribution && assetDistribution.labels && (
-                            <Box sx={{ mt: 1 }}>
-                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                            <Box sx={{ mt: 2 }}>
+                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                 {assetDistribution.labels.slice(0, 3).map((label, index) => (
                                   <Box
                                     key={index}
@@ -2262,27 +2437,57 @@ export default function Portfolio({ account, limit, collection, type }) {
                                       display: 'flex',
                                       alignItems: 'center',
                                       justifyContent: 'space-between',
-                                      p: 0.5,
-                                      borderRadius: 1,
-                                      bgcolor: alpha(theme.palette.background.paper, 0.5),
-                                      fontSize: '0.75rem'
+                                      p: 1.5,
+                                      borderRadius: '10px',
+                                      background: `linear-gradient(135deg, ${alpha(
+                                        theme.palette.background.paper,
+                                        0.8
+                                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                                      border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                                      transition: 'all 0.2s ease',
+                                      '&:hover': {
+                                        transform: 'translateX(4px)',
+                                        boxShadow: `0 4px 12px ${alpha(
+                                          theme.palette.common.black,
+                                          0.08
+                                        )}`
+                                      }
                                     }}
                                   >
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                                       <Box
                                         sx={{
-                                          width: 8,
-                                          height: 8,
+                                          width: 12,
+                                          height: 12,
                                           borderRadius: '50%',
                                           bgcolor:
-                                            assetDistribution.datasets[0].backgroundColor[index]
+                                            assetDistribution.datasets[0].backgroundColor[index],
+                                          boxShadow: `0 0 8px ${alpha(
+                                            assetDistribution.datasets[0].backgroundColor[index],
+                                            0.4
+                                          )}`
                                         }}
                                       />
-                                      <Typography variant="caption" noWrap sx={{ maxWidth: 100 }}>
+                                      <Typography
+                                        variant="body2"
+                                        noWrap
+                                        sx={{
+                                          maxWidth: 100,
+                                          fontWeight: 500,
+                                          fontSize: '0.85rem'
+                                        }}
+                                      >
                                         {label}
                                       </Typography>
                                     </Box>
-                                    <Typography variant="caption" color="text.secondary">
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                      sx={{
+                                        fontWeight: 600,
+                                        fontSize: '0.8rem'
+                                      }}
+                                    >
                                       {assetDistribution.datasets[0].data[index].toLocaleString()}{' '}
                                       XRP
                                     </Typography>
@@ -2301,13 +2506,15 @@ export default function Portfolio({ account, limit, collection, type }) {
                             width: '100%',
                             overflow: 'hidden',
                             color: theme.palette.text.primary,
-                            borderRadius: { md: '0 10px 10px 0' },
+                            borderRadius: '0 0 24px 0',
                             boxShadow: 'none',
-                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                            background: 'transparent',
+                            border: 'none'
                           }}
                         >
                           <TrustLines
                             account={account}
+                            xrpBalance={xrpBalance}
                             onUpdateTotalValue={(value) => setTotalValue(value)}
                             onTrustlinesData={handleTrustlinesData}
                           />
@@ -2317,7 +2524,14 @@ export default function Portfolio({ account, limit, collection, type }) {
                   </TabPanel>
                   <TabPanel sx={{ p: 0 }} value="1">
                     <Paper
-                      sx={{ width: '100%', overflow: 'hidden', color: theme.palette.text.primary }}
+                      sx={{
+                        width: '100%',
+                        overflow: 'hidden',
+                        color: theme.palette.text.primary,
+                        background: 'transparent',
+                        boxShadow: 'none',
+                        borderRadius: '0 0 24px 24px'
+                      }}
                     >
                       <Table>
                         <TableHead>
@@ -2325,7 +2539,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                         </TableHead>
                         <TableBody>
                           <TableRow>
-                            <TableCell sx={{ width: '100%' }} colSpan={4}>
+                            <TableCell sx={{ width: '100%', border: 'none', p: 0 }} colSpan={4}>
                               <NFTs
                                 account={account}
                                 limit={limit}
@@ -2339,7 +2553,14 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </Paper>
                   </TabPanel>
                   <TabPanel sx={{ p: 0 }} value="2">
-                    <Ranks profileAccount={account} />
+                    <Box
+                      sx={{
+                        borderRadius: '0 0 24px 24px',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <Ranks profileAccount={account} />
+                    </Box>
                   </TabPanel>
                 </TabContext>
               </CardContent>

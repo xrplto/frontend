@@ -17,6 +17,7 @@ import {
   IconButton,
   Select,
   MenuItem,
+  Avatar,
   alpha
 } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
@@ -56,7 +57,7 @@ const trustlineFlags = {
   lsfHighFreeze: 0x00800000
 };
 
-export default function TrustLines({ account, onUpdateTotalValue, onTrustlinesData }) {
+export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, onTrustlinesData }) {
   const BASE_URL = process.env.API_URL;
 
   const theme = useTheme();
@@ -127,25 +128,36 @@ export default function TrustLines({ account, onUpdateTotalValue, onTrustlinesDa
   }, [account, sync, page, rowsPerPage]);
 
   useEffect(() => {
-    if (lines.length > 0) {
-      const sum = lines.reduce((acc, line) => {
-        const value = parseFloat(line.value) || 0;
-        return acc + value;
-      }, 0);
-      setTotalValue(sum);
-      if (typeof onUpdateTotalValue === 'function') {
-        onUpdateTotalValue(sum);
-      }
-      if (typeof onTrustlinesData === 'function') {
-        onTrustlinesData(lines);
-      }
-    } else {
-      setTotalValue(0);
-      if (typeof onUpdateTotalValue === 'function') {
-        onUpdateTotalValue(0);
-      }
+    const trustlinesSum = lines.reduce((acc, line) => {
+      const value = parseFloat(line.value) || 0;
+      return acc + value;
+    }, 0);
+
+    const xrpValue = (xrpBalance || 0) * (exchRate || 1);
+    const totalSum = trustlinesSum + xrpValue;
+
+    setTotalValue(totalSum);
+
+    if (typeof onUpdateTotalValue === 'function') {
+      onUpdateTotalValue(totalSum);
     }
-  }, [lines, onUpdateTotalValue, onTrustlinesData]);
+
+    if (typeof onTrustlinesData === 'function') {
+      // Include XRP as the first item in trustlines data
+      const allAssets = xrpBalance
+        ? [
+            {
+              currency: 'XRP',
+              balance: xrpBalance,
+              value: xrpValue,
+              issuer: null
+            },
+            ...lines
+          ]
+        : lines;
+      onTrustlinesData(allAssets);
+    }
+  }, [lines, xrpBalance, exchRate, onUpdateTotalValue, onTrustlinesData]);
 
   const tableRef = useRef(null);
 
@@ -185,7 +197,7 @@ export default function TrustLines({ account, onUpdateTotalValue, onTrustlinesDa
         )
       )}
 
-      {total > 0 && (
+      {(total > 0 || (xrpBalance !== null && xrpBalance !== undefined)) && (
         <Box
           sx={{
             background: darkMode
@@ -286,6 +298,161 @@ export default function TrustLines({ account, onUpdateTotalValue, onTrustlinesDa
               </TableRow>
             </TableHead>
             <TableBody>
+              {/* XRP Balance Row */}
+              {xrpBalance !== null && xrpBalance !== undefined && (
+                <TableRow
+                  sx={{
+                    position: 'relative',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'translateY(-1px)',
+                      boxShadow: (theme) =>
+                        `0 0 8px 0 ${
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255, 255, 255, 0.08)'
+                            : 'rgba(0, 0, 0, 0.05)'
+                        }`,
+                      '& .MuiTableCell-root': {
+                        backgroundColor: (theme) =>
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255, 255, 255, 0.04)'
+                            : 'rgba(0, 0, 0, 0.02)'
+                      }
+                    },
+                    '& .MuiTableCell-root': {
+                      padding: '8px 16px',
+                      height: '60px',
+                      borderBottom: (theme) =>
+                        `1px solid ${
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255, 255, 255, 0.08)'
+                            : 'rgba(0, 0, 0, 0.08)'
+                        }`,
+                      transition: 'all 0.2s ease-in-out'
+                    }
+                  }}
+                >
+                  <TableCell>
+                    <Stack direction="row" spacing={1.5} alignItems="center">
+                      <Avatar
+                        src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: '8px',
+                          boxShadow: '0 2px 8px 0 rgba(0,0,0,0.1)',
+                          backgroundColor: (theme) =>
+                            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : '#fff',
+                          transition: 'transform 0.2s ease-in-out',
+                          '&:hover': {
+                            transform: 'scale(1.1)'
+                          },
+                          '& img': {
+                            objectFit: 'contain',
+                            width: '100%',
+                            height: '100%',
+                            borderRadius: '8px',
+                            padding: '2px'
+                          }
+                        }}
+                      />
+                      <Box>
+                        <Stack direction="row" spacing={0.75} alignItems="center">
+                          <Typography
+                            variant="subtitle2"
+                            noWrap
+                            sx={{
+                              fontWeight: 600,
+                              fontSize: '0.9rem',
+                              letterSpacing: '0.015em'
+                            }}
+                          >
+                            XRP
+                          </Typography>
+                        </Stack>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          noWrap
+                          sx={{
+                            lineHeight: 1.2,
+                            fontSize: '0.75rem',
+                            opacity: 0.9,
+                            mt: 0.5
+                          }}
+                        >
+                          Native Currency
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    sx={{
+                      display: { xs: 'none', sm: 'table-cell' }
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      noWrap
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        fontFamily: 'monospace'
+                      }}
+                    >
+                      {xrpBalance.toFixed(8)}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Typography
+                      variant="subtitle2"
+                      noWrap
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        color: (theme) => theme.palette.primary.main
+                      }}
+                    >
+                      {(xrpBalance * (exchRate || 1)).toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                      })}{' '}
+                      XRP
+                    </Typography>
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    sx={{
+                      display: { xs: 'none', md: 'table-cell' }
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      noWrap
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      -
+                    </Typography>
+                  </TableCell>
+                  {isLoggedIn && accountProfile?.account === account && (
+                    <TableCell align="center">
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          fontSize: '0.9rem',
+                          color: 'text.secondary'
+                        }}
+                      >
+                        -
+                      </Typography>
+                    </TableCell>
+                  )}
+                </TableRow>
+              )}
               {lines.map((row, idx) => {
                 const {
                   currency,
