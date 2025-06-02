@@ -86,10 +86,11 @@ const HistoryRow = (props) => {
     SendMax,
     hash,
     date,
-    source
+    source,
+    offerType
   } = props;
 
-  console.log('HistoryRow Props:', { TransactionType, source }); // Debug log
+  console.log('HistoryRow Props:', { TransactionType, source, offerType }); // Debug log
   const theme = useTheme();
 
   const monthNames = [
@@ -398,21 +399,76 @@ const HistoryRow = (props) => {
             />
           )}
           {TransactionType === 'OfferCreate' && (
-            <Chip
-              color="info"
-              label="Offer"
-              size="small"
-              sx={{
-                height: '18px',
-                backgroundColor: alpha('#8B5CF6', 0.1),
-                color: '#8B5CF6',
-                '& .MuiChip-label': {
-                  px: 0.75,
-                  fontSize: '0.7rem',
-                  lineHeight: 1
-                }
-              }}
-            />
+            <>
+              {offerType === 'buy' && (
+                <Chip
+                  color="success"
+                  label="Buy"
+                  size="small"
+                  sx={{
+                    height: '18px',
+                    backgroundColor: alpha('#00AB55', 0.1),
+                    color: '#00AB55',
+                    '& .MuiChip-label': {
+                      px: 0.75,
+                      fontSize: '0.7rem',
+                      lineHeight: 1
+                    }
+                  }}
+                />
+              )}
+              {offerType === 'sell' && (
+                <Chip
+                  color="error"
+                  label="Sell"
+                  size="small"
+                  sx={{
+                    height: '18px',
+                    backgroundColor: alpha('#B72136', 0.1),
+                    color: '#B72136',
+                    '& .MuiChip-label': {
+                      px: 0.75,
+                      fontSize: '0.7rem',
+                      lineHeight: 1
+                    }
+                  }}
+                />
+              )}
+              {offerType === 'trade' && (
+                <Chip
+                  color="info"
+                  label="Trade"
+                  size="small"
+                  sx={{
+                    height: '18px',
+                    backgroundColor: alpha('#8B5CF6', 0.1),
+                    color: '#8B5CF6',
+                    '& .MuiChip-label': {
+                      px: 0.75,
+                      fontSize: '0.7rem',
+                      lineHeight: 1
+                    }
+                  }}
+                />
+              )}
+              {!offerType && (
+                <Chip
+                  color="info"
+                  label="Offer"
+                  size="small"
+                  sx={{
+                    height: '18px',
+                    backgroundColor: alpha('#8B5CF6', 0.1),
+                    color: '#8B5CF6',
+                    '& .MuiChip-label': {
+                      px: 0.75,
+                      fontSize: '0.7rem',
+                      lineHeight: 1
+                    }
+                  }}
+                />
+              )}
+            </>
           )}
           {TransactionType === 'OfferCancel' && (
             <Chip

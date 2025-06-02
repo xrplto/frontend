@@ -109,6 +109,29 @@ const DeFiHistory = ({ account }) => {
         const sendMax =
           item.tx.TransactionType === 'OfferCreate' ? item.tx.TakerGets : item.tx.SendMax;
 
+        // Determine if OfferCreate is buy or sell
+        let offerType = null;
+        if (item.tx.TransactionType === 'OfferCreate') {
+          const takerGets = item.tx.TakerGets; // What the offer creator gives
+          const takerPays = item.tx.TakerPays; // What the offer creator wants to receive
+
+          // Check if TakerGets is XRP (string) or token (object)
+          const givingXRP = typeof takerGets === 'string';
+          // Check if TakerPays is XRP (string) or token (object)
+          const receivingXRP = typeof takerPays === 'string';
+
+          if (givingXRP && !receivingXRP) {
+            // Giving XRP, receiving token = Buy offer
+            offerType = 'buy';
+          } else if (!givingXRP && receivingXRP) {
+            // Giving token, receiving XRP = Sell offer
+            offerType = 'sell';
+          } else {
+            // Token to token or XRP to XRP (edge cases)
+            offerType = 'trade';
+          }
+        }
+
         return {
           Account: item.tx.Account,
           Destination: item.tx.Destination,
@@ -125,7 +148,8 @@ const DeFiHistory = ({ account }) => {
           source: sourceLabel,
           sourceTooltip: tooltipInfo,
           LimitAmount: item.tx.LimitAmount,
-          OfferSequence: item.tx.OfferSequence // For OfferCancel
+          OfferSequence: item.tx.OfferSequence, // For OfferCancel
+          offerType: offerType // Add offer type for OfferCreate transactions
         };
       });
 
