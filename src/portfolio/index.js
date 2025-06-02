@@ -1154,27 +1154,25 @@ export default function Portfolio({ account, limit, collection, type }) {
                     )}
                   </Box>
 
-                  <Accordion
-                    defaultExpanded={true}
+                  <Card
                     sx={{
                       borderRadius: '10px',
-                      '&.Mui-expanded': {
-                        mt: 3
-                      },
-                      flex: '0 0 auto',
+                      mt: 3,
                       color: theme.palette.text.primary,
                       border: `1px solid ${dividerColor}`
                     }}
                   >
-                    <AccordionSummary
-                      expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.text.primary }} />}
-                      aria-controls="panel1d-content"
-                      id="panel1d-header"
-                      sx={{ fontWeight: 'bold', color: theme.palette.text.primary }}
-                    >
-                      Trading Statistics
-                    </AccordionSummary>
-                    <AccordionDetails>
+                    <CardContent>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 'bold',
+                          color: theme.palette.text.primary,
+                          mb: 2
+                        }}
+                      >
+                        Trading Statistics
+                      </Typography>
                       <Stack spacing={1}>
                         <Box display="flex" justifyContent="space-between">
                           <Typography>Total Trades</Typography>
@@ -1205,8 +1203,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                           </Typography>
                         </Box>
                       </Stack>
-                    </AccordionDetails>
-                  </Accordion>
+                    </CardContent>
+                  </Card>
 
                   <Offer account={account} defaultExpanded={false} />
                 </Stack>

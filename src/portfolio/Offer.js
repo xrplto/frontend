@@ -17,17 +17,13 @@ import {
   Typography,
   Chip,
   useTheme,
-  alpha,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails
+  alpha
 } from '@mui/material';
 import { AppContext } from 'src/AppContext';
 import { PulseLoader } from 'react-spinners';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CancelIcon from '@mui/icons-material/Cancel';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import axios from 'axios';
 import QRDialog from 'src/components/QRDialog';
 import { useDispatch } from 'react-redux';
@@ -81,32 +77,6 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   }
 }));
 
-const StyledAccordion = styled(Accordion)(({ theme }) => ({
-  borderRadius: '10px !important',
-  '&.Mui-expanded': {
-    margin: '8px 0'
-  },
-  flex: '0 0 auto',
-  color: theme.palette.text.primary,
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  background: alpha(theme.palette.background.paper, 0.8),
-  backdropFilter: 'blur(8px)',
-  '&:before': {
-    display: 'none'
-  }
-}));
-
-const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
-  minHeight: '48px !important',
-  padding: theme.spacing(0, 2),
-  '& .MuiAccordionSummary-content': {
-    margin: '8px 0',
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1)
-  }
-}));
-
 function truncate(str, n) {
   if (!str) return '';
   return str.length > n ? str.substr(0, n - 1) + '...' : str;
@@ -119,9 +89,9 @@ const formatNumber = (value) => {
   });
 };
 
-const Offer = ({ account }) => {
+const Offer = ({ account, defaultExpanded = false }) => {
   const theme = useTheme();
-  const BASE_URL = process.env.API_URL;
+  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
   const dispatch = useDispatch();
   const { accountProfile, openSnackbar, sync, setSync, darkMode } = useContext(AppContext);
   const isLoggedIn = accountProfile && accountProfile.account;
@@ -144,7 +114,9 @@ const Offer = ({ account }) => {
     const controller = new AbortController();
 
     function getOffers() {
-      if (!account) return;
+      if (!account) {
+        return;
+      }
 
       setLoading(true);
       axios
@@ -332,17 +304,42 @@ const Offer = ({ account }) => {
   };
 
   return (
-    <StyledAccordion>
-      <StyledAccordionSummary
-        expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.text.primary }} />}
-        aria-controls="offer-content"
-        id="offer-header"
-      >
-        <SwapHorizIcon sx={{ color: theme.palette.primary.main }} />
-        <Typography sx={{ fontWeight: 'bold' }}>Active Offers</Typography>
-      </StyledAccordionSummary>
-      <AccordionDetails sx={{ p: 0 }}>
-        {loading ? (
+    <StyledCard>
+      <StyledCardHeader
+        title={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <SwapHorizIcon sx={{ color: theme.palette.primary.main }} />
+            <Typography sx={{ fontWeight: 'bold' }}>
+              Active Offers {account && `(${account.slice(0, 8)}...)`}
+            </Typography>
+            {/* Temporary debug info */}
+            {process.env.NODE_ENV === 'development' && (
+              <Typography variant="caption" sx={{ ml: 1, opacity: 0.7 }}>
+                {account ? `Account: ${account.slice(0, 8)}...` : 'No account'} |
+                {loading ? 'Loading...' : `${offers?.length || 0} offers`}
+              </Typography>
+            )}
+          </Box>
+        }
+      />
+      <CardContent sx={{ p: 0 }}>
+        {!account ? (
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            spacing={1}
+            sx={{
+              py: 2,
+              opacity: 0.8
+            }}
+          >
+            <ErrorOutlineIcon fontSize="small" />
+            <Typography variant="body2" color="text.secondary">
+              No account provided
+            </Typography>
+          </Stack>
+        ) : loading ? (
           <Stack alignItems="center" spacing={1} sx={{ py: 2 }}>
             <PulseLoader color={theme.palette.primary.main} size={8} />
             <Typography variant="body2" color="text.secondary">
@@ -489,8 +486,8 @@ const Offer = ({ account }) => {
           qrUrl={qrUrl}
           nextUrl={nextUrl}
         />
-      </AccordionDetails>
-    </StyledAccordion>
+      </CardContent>
+    </StyledCard>
   );
 };
 
