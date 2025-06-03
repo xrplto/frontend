@@ -139,6 +139,31 @@ const CompactAccordion = styled(Accordion)(({ theme }) => ({
   }
 }));
 
+// Add helper function to render XRP address as a link
+const renderAddressLink = (address, displayText = null) => {
+  if (!address) return null;
+
+  const text = displayText || `${address.slice(0, 6)}...`;
+
+  return (
+    <Link
+      href={`/profile/${address}`}
+      color="primary"
+      underline="hover"
+      sx={{
+        fontSize: 'inherit',
+        fontWeight: 600,
+        transition: 'all 0.2s ease',
+        '&:hover': {
+          color: 'primary.dark'
+        }
+      }}
+    >
+      {text}
+    </Link>
+  );
+};
+
 export default function AccountTransactions({ creatorAccount }) {
   const theme = useTheme();
   const { openSnackbar } = useContext(AppContext);
@@ -620,7 +645,12 @@ export default function AccountTransactions({ creatorAccount }) {
               text: `ID: ${nftInfo.nftokenId.slice(0, 12)}...`
             },
             nftInfo.amount && `${formatAmount(nftInfo.amount)}`,
-            seller && buyer && `${seller.slice(0, 6)}... → ${buyer.slice(0, 6)}...`,
+            seller &&
+              buyer && {
+                type: 'address-transfer',
+                seller: seller,
+                buyer: buyer
+              },
             marketplace && `via ${marketplace}`
           ].filter(Boolean)
         };
@@ -631,7 +661,10 @@ export default function AccountTransactions({ creatorAccount }) {
           details: [
             tx.NFTokenID && `ID: ${tx.NFTokenID.slice(0, 12)}...`,
             tx.Amount && `${formatAmount(tx.Amount)}`,
-            tx.Destination && `→ ${tx.Destination.slice(0, 6)}...`
+            tx.Destination && {
+              type: 'address-destination',
+              address: tx.Destination
+            }
           ].filter(Boolean)
         };
 
@@ -640,7 +673,10 @@ export default function AccountTransactions({ creatorAccount }) {
           description: 'NFT Mint',
           details: [
             tx.NFTokenTaxon && `Taxon: ${tx.NFTokenTaxon}`,
-            tx.Account && `by ${tx.Account.slice(0, 6)}...`
+            tx.Account && {
+              type: 'address-minter',
+              address: tx.Account
+            }
           ].filter(Boolean)
         };
 
@@ -650,8 +686,11 @@ export default function AccountTransactions({ creatorAccount }) {
           details: [
             tx.Amount && `${formatAmount(tx.Amount)}`,
             tx.Account &&
-              tx.Destination &&
-              `${tx.Account.slice(0, 6)}... → ${tx.Destination.slice(0, 6)}...`
+              tx.Destination && {
+                type: 'address-payment',
+                from: tx.Account,
+                to: tx.Destination
+              }
           ].filter(Boolean)
         };
 
@@ -965,6 +1004,24 @@ export default function AccountTransactions({ creatorAccount }) {
                                               >
                                                 {detail.text}
                                               </Link>
+                                            ) : typeof detail === 'object' &&
+                                              detail.type === 'address-transfer' ? (
+                                              <span>
+                                                {renderAddressLink(detail.seller)} →{' '}
+                                                {renderAddressLink(detail.buyer)}
+                                              </span>
+                                            ) : typeof detail === 'object' &&
+                                              detail.type === 'address-destination' ? (
+                                              <span>→ {renderAddressLink(detail.address)}</span>
+                                            ) : typeof detail === 'object' &&
+                                              detail.type === 'address-minter' ? (
+                                              <span>by {renderAddressLink(detail.address)}</span>
+                                            ) : typeof detail === 'object' &&
+                                              detail.type === 'address-payment' ? (
+                                              <span>
+                                                {renderAddressLink(detail.from)} →{' '}
+                                                {renderAddressLink(detail.to)}
+                                              </span>
                                             ) : (
                                               <span
                                                 style={{
