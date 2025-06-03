@@ -311,10 +311,6 @@ export default function SearchToolbar({
 
   const handleDelete = () => {};
 
-  const toggleCategoriesDrawer = (isOpen = true) => {
-    setOpenCategoriesDrawer(isOpen);
-  };
-
   const handleGainersClick = (event) => {
     setGainersAnchorEl(event.currentTarget);
   };
@@ -415,6 +411,10 @@ export default function SearchToolbar({
       setIsLoading((prev) => ({ ...prev, trendingCategories: false }));
       handleTrendingCategoriesClose();
     }
+  }, []);
+
+  const toggleCategoriesDrawer = useCallback((isOpen = true) => {
+    setOpenCategoriesDrawer(isOpen);
   }, []);
 
   const ShadowContent = styled('div')(
