@@ -8,21 +8,37 @@ import {
   TableCell,
   TableHead,
   TableSortLabel,
-  Tooltip // Import Tooltip component
+  Tooltip,
+  Typography
 } from '@mui/material';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import InfoIcon from '@mui/icons-material/Info'; // Import InfoIcon from Material-UI Icons
+import InfoIcon from '@mui/icons-material/Info';
 
 const SmallInfoIcon = (props) => (
-  <InfoIcon {...props} fontSize="smaller" /> // Make the icon smaller by setting fontSize="small"
+  <InfoIcon
+    {...props}
+    sx={{
+      fontSize: '14px',
+      ml: 0.5,
+      opacity: 0.7,
+      transition: 'opacity 0.2s ease',
+      '&:hover': {
+        opacity: 1
+      }
+    }}
+  />
 );
 
 const StickyTableCell = withStyles((theme) => ({
   head: {
     position: 'sticky',
     zIndex: 1000,
-    top: 0
+    top: 0,
+    fontWeight: '600',
+    fontSize: '13px',
+    letterSpacing: '0.02em',
+    textTransform: 'uppercase'
   }
 }))(TableCell);
 
@@ -33,10 +49,25 @@ const TABLE_HEAD = [
     no: 2,
     id: 'name',
     label: (
-      <Tooltip title="Token name, issuer and launch type" placement="top">
-        <span>
-          Name <SmallInfoIcon />
-        </span>
+      <Tooltip
+        title="Token name, issuer and launch type"
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            Name
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
       </Tooltip>
     ),
     align: 'left',
@@ -47,10 +78,25 @@ const TABLE_HEAD = [
     no: 3,
     id: 'dateon',
     label: (
-      <Tooltip title="Time since token creation" placement="top">
-        <span>
-          Created <SmallInfoIcon />
-        </span>
+      <Tooltip
+        title="Time since token creation"
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            Created
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
       </Tooltip>
     ),
     align: 'right',
@@ -60,7 +106,11 @@ const TABLE_HEAD = [
   {
     no: 4,
     id: 'exch',
-    label: 'Price',
+    label: (
+      <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+        Price
+      </Typography>
+    ),
     align: 'right',
     width: '8%',
     order: true
@@ -69,10 +119,25 @@ const TABLE_HEAD = [
     no: 5,
     id: 'pro5m',
     label: (
-      <Tooltip title="Price change in the last 5 minutes" placement="top">
-        <span>
-          5m % <SmallInfoIcon />
-        </span>
+      <Tooltip
+        title="Price change in the last 5 minutes"
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            5m %
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
       </Tooltip>
     ),
     align: 'right',
@@ -83,10 +148,25 @@ const TABLE_HEAD = [
     no: 6,
     id: 'pro1h',
     label: (
-      <Tooltip title="Price change in the last hour" placement="top">
-        <span>
-          1h % <SmallInfoIcon />
-        </span>
+      <Tooltip
+        title="Price change in the last hour"
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            1h %
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
       </Tooltip>
     ),
     align: 'right',
@@ -97,10 +177,25 @@ const TABLE_HEAD = [
     no: 7,
     id: 'pro24h',
     label: (
-      <Tooltip title="Price change in the last 24 hours" placement="top">
-        <span>
-          24h % <SmallInfoIcon />
-        </span>
+      <Tooltip
+        title="Price change in the last 24 hours"
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            24h %
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
       </Tooltip>
     ),
     align: 'right',
@@ -111,10 +206,25 @@ const TABLE_HEAD = [
     no: 8,
     id: 'pro7d',
     label: (
-      <Tooltip title="Price change in the last 7 days" placement="top">
-        <span>
-          7d % <SmallInfoIcon />
-        </span>
+      <Tooltip
+        title="Price change in the last 7 days"
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            7d %
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
       </Tooltip>
     ),
     align: 'right',
@@ -128,10 +238,22 @@ const TABLE_HEAD = [
       <Tooltip
         title="Amount of XRP that has been traded with this token in the last 24 hours"
         placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
       >
-        <span>
-          Volume <SmallInfoIcon />
-        </span>
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            Volume
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
       </Tooltip>
     ),
     align: 'right',
@@ -145,10 +267,22 @@ const TABLE_HEAD = [
       <Tooltip
         title="Trades represents the total number of trade transactions for an asset on the XRPL DEX within the last 24 hours, indicating market activity and liquidity."
         placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
       >
-        <span>
-          Trades <SmallInfoIcon />
-        </span>
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            Trades
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
       </Tooltip>
     ),
     align: 'right',
@@ -162,10 +296,22 @@ const TABLE_HEAD = [
       <Tooltip
         title="Total Value Locked (TVL) represents the total value of assets deposited in the protocol"
         placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
       >
-        <span>
-          TVL <SmallInfoIcon />
-        </span>
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            TVL
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
       </Tooltip>
     ),
     align: 'right',
@@ -176,10 +322,25 @@ const TABLE_HEAD = [
     no: 12,
     id: 'marketcap',
     label: (
-      <Tooltip title="Circulating supply * price" placement="top">
-        <span>
-          Market Cap <SmallInfoIcon />
-        </span>
+      <Tooltip
+        title="Circulating supply * price"
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            Market Cap
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
       </Tooltip>
     ),
     align: 'right',
@@ -190,10 +351,25 @@ const TABLE_HEAD = [
     no: 13,
     id: 'holders',
     label: (
-      <Tooltip title="Number of unique addresses holding this token on the XRPL" placement="top">
-        <span>
-          Holders <SmallInfoIcon />
-        </span>
+      <Tooltip
+        title="Number of unique addresses holding this token on the XRPL"
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            Holders
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
       </Tooltip>
     ),
     align: 'right',
@@ -204,10 +380,25 @@ const TABLE_HEAD = [
     no: 14,
     id: 'supply',
     label: (
-      <Tooltip title="Supply is token held by everyone" placement="top">
-        <span>
-          Supply <SmallInfoIcon />
-        </span>
+      <Tooltip
+        title="Supply is token held by everyone"
+        placement="top"
+        componentsProps={{
+          tooltip: {
+            sx: {
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              fontSize: '12px',
+              fontWeight: '500'
+            }
+          }
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'help' }}>
+          <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+            Supply
+          </Typography>
+          <SmallInfoIcon />
+        </Box>
       </Tooltip>
     ),
     align: 'right',
@@ -217,7 +408,11 @@ const TABLE_HEAD = [
   {
     no: 15,
     id: 'historyGraph',
-    label: 'Last 24h',
+    label: (
+      <Typography variant="inherit" sx={{ fontWeight: '600' }}>
+        Last 24h
+      </Typography>
+    ),
     align: 'right',
     width: '5%',
     order: false
@@ -230,7 +425,7 @@ export default function TokenListHead({
   orderBy,
   onRequestSort,
   scrollLeft,
-  tokens = [], // Provide a default empty array
+  tokens = [],
   scrollTopLength
 }) {
   const theme = useTheme();
@@ -247,37 +442,58 @@ export default function TokenListHead({
         position: 'sticky',
         zIndex: 1002,
         transform: `translateY(${scrollTopLength}px)`,
-        background: darkMode ? '#000000' : '#FFFFFF'
+        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: `1px solid ${
+          darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
+        }`,
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${
+            darkMode ? 'rgba(145, 158, 171, 0.12)' : 'rgba(145, 158, 171, 0.24)'
+          }, transparent)`
+        }
       }}
     >
       <TableRow
         sx={{
           '& .MuiTableCell-root': {
-            fontSize: isMobile ? 11 : 12,
+            fontSize: isMobile ? '12px' : '13px',
             fontWeight: '600',
-            padding: '4px 8px',
-            height: '36px',
+            padding: isMobile ? '16px 8px' : '20px 12px',
+            height: 'auto',
             whiteSpace: 'nowrap',
+            color: darkMode ? '#919EAB' : '#637381',
+            textTransform: 'uppercase',
+            letterSpacing: '0.02em',
+            borderBottom: 'none',
             '&:not(:first-child)': {
-              paddingLeft: '4px'
+              paddingLeft: '8px'
             }
           },
           '& .MuiTableCell-root:nth-of-type(1)': {
             position: 'sticky',
             zIndex: 1001,
             left: 0,
-            background: darkMode ? '#000000' : '#FFFFFF'
+            background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)'
           },
           '& .MuiTableCell-root:nth-of-type(2)': {
             position: 'sticky',
             zIndex: 1001,
-            left: (tokens?.length ?? 0) > 0 ? (isMobile ? 28 : 48) : isMobile ? 8 : 28,
-            background: darkMode ? '#000000' : '#FFFFFF',
+            left: (tokens?.length ?? 0) > 0 ? (isMobile ? 32 : 56) : isMobile ? 12 : 32,
+            background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
             '&:before':
               isMobile && scrollLeft
                 ? {
                     content: "''",
-                    boxShadow: 'inset 10px 0 8px -8px #00000026',
+                    boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
                     position: 'absolute',
                     top: '0',
                     right: '0',
@@ -292,11 +508,12 @@ export default function TokenListHead({
           '& .MuiTableCell-root:nth-of-type(3)': !isMobile && {
             position: 'sticky',
             zIndex: 1001,
-            background: darkMode ? '#000000' : '#FFFFFF',
+            background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
             '&:before': scrollLeft
               ? {
                   content: "''",
-                  boxShadow: 'inset 10px 0 8px -8px #00000026',
+                  boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
                   position: 'absolute',
                   top: '0',
                   right: '0',
@@ -309,7 +526,18 @@ export default function TokenListHead({
               : {}
           },
           '& .MuiTableSortLabel-root': {
-            fontSize: isMobile ? 11 : 12,
+            fontSize: isMobile ? '12px' : '13px',
+            fontWeight: '600',
+            color: 'inherit',
+            '&:hover': {
+              color: darkMode ? '#fff' : '#212B36'
+            },
+            '&.Mui-active': {
+              color: darkMode ? '#fff' : '#212B36',
+              '& .MuiTableSortLabel-icon': {
+                color: 'inherit'
+              }
+            },
             '& .MuiTableSortLabel-icon': {
               fontSize: '16px'
             }
@@ -324,7 +552,6 @@ export default function TokenListHead({
               align={headCell.align}
               sortDirection={orderBy === headCell.id ? order : false}
               width={headCell.width}
-              // ... [Rest of your StickyTableCell styles]
             >
               {headCell.order ? (
                 <TableSortLabel
@@ -341,7 +568,6 @@ export default function TokenListHead({
                   )}
                 </TableSortLabel>
               ) : (
-                // Render the label directly without TableSortLabel for unsortable columns
                 headCell.label
               )}
             </StickyTableCell>

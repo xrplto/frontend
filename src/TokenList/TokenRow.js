@@ -53,39 +53,18 @@ const TransitionTypo = styled(Typography)(
     `
 );
 
-// Replace LazyLoadImage with styled component using Next.js Image
-const AdminImageWrapper = styled(Box)(({ theme }) => ({
-  borderRadius: '8px',
-  overflow: 'hidden',
-  width: '32px',
-  height: '32px',
-  position: 'relative',
-  '&:hover': {
-    cursor: 'pointer',
-    '& > img': {
-      opacity: 0.6
-    }
-  }
-}));
-
-const TokenImageWrapper = styled(Box)(({ theme }) => ({
-  borderRadius: '8px',
-  overflow: 'hidden',
-  width: '32px',
-  height: '32px',
-  position: 'relative'
-}));
-
 const badge24hStyle = {
   display: 'inline-block',
   marginRight: '4px',
-  color: '#C4CDD5',
-  fontSize: '11px',
-  fontWeight: '500',
-  lineHeight: '18px',
-  backgroundColor: '#323546',
-  borderRadius: '5px',
-  padding: '0.5px 4px'
+  color: '#fff',
+  fontSize: '10px',
+  fontWeight: '600',
+  lineHeight: '16px',
+  backgroundColor: 'rgba(99, 115, 129, 0.12)',
+  backdropFilter: 'blur(6px)',
+  borderRadius: '6px',
+  padding: '2px 6px',
+  border: '1px solid rgba(145, 158, 171, 0.08)'
 };
 
 const truncate = (str, n) => {
@@ -225,6 +204,35 @@ const getOriginIcon = (origin) => {
   }
 };
 
+// Replace LazyLoadImage with styled component using Next.js Image
+const AdminImageWrapper = styled(Box)(({ theme }) => ({
+  borderRadius: '12px',
+  overflow: 'hidden',
+  width: '40px',
+  height: '40px',
+  position: 'relative',
+  border: '2px solid rgba(145, 158, 171, 0.08)',
+  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    cursor: 'pointer',
+    transform: 'scale(1.05)',
+    borderColor: 'rgba(99, 115, 129, 0.24)',
+    '& > img': {
+      opacity: 0.8
+    }
+  }
+}));
+
+const TokenImageWrapper = styled(Box)(({ theme }) => ({
+  borderRadius: '12px',
+  overflow: 'hidden',
+  width: '40px',
+  height: '40px',
+  position: 'relative',
+  border: '2px solid rgba(145, 158, 171, 0.08)',
+  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+}));
+
 function FTokenRow({
   time,
   token,
@@ -262,20 +270,29 @@ function FTokenRow({
 
   const tableRowStyle = useMemo(
     () => ({
+      borderBottom: '1px solid rgba(145, 158, 171, 0.08)',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
       '&:hover': {
         '& .MuiTableCell-root': {
-          backgroundColor: darkMode ? '#232326 !important' : '#D9DCE0 !important'
+          backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(145, 158, 171, 0.04)',
+          backdropFilter: 'blur(6px)'
         },
-        cursor: 'pointer'
+        cursor: 'pointer',
+        transform: 'translateY(-1px)',
+        boxShadow: darkMode
+          ? '0 4px 16px rgba(0, 0, 0, 0.24)'
+          : '0 4px 16px rgba(145, 158, 171, 0.16)'
       },
       '& .MuiTypography-root': {
-        fontSize: isMobile ? '11px' : '12px'
+        fontSize: isMobile ? '12px' : '14px',
+        fontWeight: '500'
       },
       '& .MuiTableCell-root': {
-        padding: isMobile ? '1px 1px' : '1px 2px',
+        padding: isMobile ? '12px 8px' : '16px 12px',
         whiteSpace: 'nowrap',
+        borderBottom: 'none',
         '&:not(:first-of-type)': {
-          paddingLeft: '4px'
+          paddingLeft: '8px'
         }
       }
     }),
@@ -288,30 +305,33 @@ function FTokenRow({
         position: 'sticky',
         zIndex: 1001,
         left: 0,
-        background: darkMode ? '#000000' : '#FFFFFF',
-        width: '20px',
-        minWidth: '20px',
-        padding: '1px'
+        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px)',
+        width: '24px',
+        minWidth: '24px',
+        padding: '16px 8px'
       },
       second: {
         position: 'sticky',
         zIndex: 1001,
-        left: '20px',
-        background: darkMode ? '#000000' : '#FFFFFF',
-        width: '25px',
-        minWidth: '25px',
-        padding: '1px 2px'
+        left: '24px',
+        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px)',
+        width: '32px',
+        minWidth: '32px',
+        padding: '16px 8px'
       },
       third: {
-        p: isMobile ? '1px' : '1px 2px',
+        p: isMobile ? '12px 8px' : '16px 12px',
         position: 'sticky',
         zIndex: 1001,
-        left: isMobile ? '20px' : '45px',
-        background: darkMode ? '#000000' : '#FFFFFF',
+        left: isMobile ? '24px' : '56px',
+        background: darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(20px)',
         '&:before': scrollLeft
           ? {
               content: "''",
-              boxShadow: 'inset 10px 0 8px -8px #00000026',
+              boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
               position: 'absolute',
               top: '0',
               right: '0',
@@ -447,8 +467,8 @@ function FTokenRow({
         <Stack direction="row" alignItems="center" spacing={0.5}>
           <Box
             sx={{
-              width: 32,
-              height: 32,
+              width: 40,
+              height: 40,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -459,8 +479,8 @@ function FTokenRow({
                 <Image
                   src={imgSrc}
                   alt={`${user} ${name} Logo`}
-                  width={32}
-                  height={32}
+                  width={40}
+                  height={40}
                   priority
                   style={{ objectFit: 'cover' }}
                   onError={handleImgError}
@@ -471,8 +491,8 @@ function FTokenRow({
                 <Image
                   src={imgSrc}
                   alt={`${user} ${name} Logo`}
-                  width={32}
-                  height={32}
+                  width={40}
+                  height={40}
                   priority
                   style={{ objectFit: 'cover' }}
                   onError={handleImgError}
@@ -491,25 +511,26 @@ function FTokenRow({
                 variant="token"
                 sx={{
                   fontWeight: '700',
-                  fontSize: isMobile ? '0.7rem' : '0.8rem',
-                  lineHeight: 1,
-                  width: isMobile ? '80px' : '104px',
-                  minWidth: isMobile ? '80px' : '104px'
+                  fontSize: isMobile ? '14px' : '16px',
+                  lineHeight: 1.2,
+                  width: isMobile ? '100px' : '140px',
+                  minWidth: isMobile ? '100px' : '140px',
+                  letterSpacing: '-0.02em'
                 }}
                 color={
                   isOMCF !== 'yes'
                     ? darkMode
                       ? '#fff'
-                      : '#222531'
+                      : '#212B36'
                     : darkMode
-                    ? '#007B55'
+                    ? '#00AB55'
                     : slug === md5
                     ? '#B72136'
                     : ''
                 }
                 noWrap={!isMobile}
               >
-                {truncate(name, isMobile ? 10 : 13)}
+                {truncate(name, isMobile ? 12 : 16)}
               </Typography>
               <Stack
                 direction={isMobile ? 'column' : 'row'}
@@ -519,41 +540,41 @@ function FTokenRow({
                 <Typography
                   variant="p2"
                   sx={{
-                    fontWeight: '600',
-                    fontSize: isMobile ? '0.6rem' : '0.75rem',
-                    lineHeight: 1.1,
-                    color: darkMode ? '#848E9C' : '#616E85',
+                    fontWeight: '500',
+                    fontSize: isMobile ? '12px' : '13px',
+                    lineHeight: 1.2,
+                    color: darkMode ? '#919EAB' : '#637381',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px'
+                    gap: '6px'
                   }}
-                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#222531') : ''}
+                  color={isOMCF !== 'yes' ? (darkMode ? '#fff' : '#212B36') : ''}
                   noWrap={!isMobile}
                 >
                   {isMobile && (
-                    <span style={{ ...badge24hStyle, fontSize: '10px', padding: '0 2px' }}>
+                    <span style={{ ...badge24hStyle, fontSize: '10px', padding: '2px 6px' }}>
                       {id}
                     </span>
                   )}
-                  {truncate(user, isMobile ? 12 : 15)}
+                  {truncate(user, isMobile ? 14 : 18)}
                 </Typography>
                 <Stack direction="row" spacing={0.5} alignItems="center">
                   <Tooltip title={origin || 'Standard Launch'}>{getOriginIcon(origin)}</Tooltip>
                   {origin && (
                     <>
                       <Tooltip title="Blackholed Issuer">
-                        <LockIcon sx={{ fontSize: isMobile ? '12px' : '14px', color: '#007B55' }} />
+                        <LockIcon sx={{ fontSize: isMobile ? '14px' : '16px', color: '#00AB55' }} />
                       </Tooltip>
                       {origin === 'xrp.fun' ? (
                         <Tooltip title="Liquidity Pool Not Burned">
                           <ElectricBoltIcon
-                            sx={{ fontSize: isMobile ? '12px' : '14px', color: '#B72136' }}
+                            sx={{ fontSize: isMobile ? '14px' : '16px', color: '#FF5630' }}
                           />
                         </Tooltip>
                       ) : (
                         <Tooltip title="Burned Liquidity Pool">
                           <LocalFireDepartmentIcon
-                            sx={{ fontSize: isMobile ? '12px' : '14px', color: '#2065D1' }}
+                            sx={{ fontSize: isMobile ? '14px' : '16px', color: '#1890FF' }}
                           />
                         </Tooltip>
                       )}
@@ -568,18 +589,36 @@ function FTokenRow({
       <TableCell
         align="right"
         sx={{
-          padding: isMobile ? '1px 2px' : '2px 3px'
+          padding: isMobile ? '12px 8px' : '16px 12px'
         }}
       >
-        <Typography variant="caption" sx={dateTypographyStyle}>
+        <Typography
+          variant="caption"
+          sx={{
+            ...dateTypographyStyle,
+            fontSize: isMobile ? '11px' : '12px',
+            fontWeight: '500',
+            color: darkMode ? '#919EAB' : '#637381'
+          }}
+        >
           {formatDate(dateon)}
         </Typography>
       </TableCell>
       <TableCell
         align="right"
-        sx={{ color: priceColor, padding: isMobile ? '1px 2px' : '2px 3px' }}
+        sx={{
+          color: priceColor,
+          padding: isMobile ? '12px 8px' : '16px 12px'
+        }}
       >
-        <TransitionTypo variant="h4" noWrap={!isMobile}>
+        <TransitionTypo
+          variant="h4"
+          noWrap={!isMobile}
+          sx={{
+            fontWeight: '600',
+            fontSize: isMobile ? '14px' : '16px'
+          }}
+        >
           <NumberTooltip
             prepend={currencySymbols[activeFiatCurrency]}
             number={fNumberWithCurreny(exch, exchRate)}
@@ -777,32 +816,62 @@ function FTokenRow({
       >
         <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end">
           <Tooltip title="Set Trustline">
-            <AddCircleOutlineIcon
-              onClick={handleSetTrustline}
+            <Box
               sx={{
-                cursor: 'pointer',
-                fontSize: '20px',
+                p: 1,
+                borderRadius: '8px',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
-                  color: theme.palette.primary.main
+                  backgroundColor: darkMode
+                    ? 'rgba(255, 255, 255, 0.08)'
+                    : 'rgba(145, 158, 171, 0.08)',
+                  transform: 'scale(1.1)'
                 }
               }}
-            />
-          </Tooltip>
-          {isAdmin && (
-            <Tooltip title="Edit Token">
-              <EditIcon
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEditToken();
-                }}
+            >
+              <AddCircleOutlineIcon
+                onClick={handleSetTrustline}
                 sx={{
                   cursor: 'pointer',
                   fontSize: '20px',
+                  color: darkMode ? '#919EAB' : '#637381',
                   '&:hover': {
-                    color: theme.palette.warning.main
+                    color: theme.palette.primary.main
                   }
                 }}
               />
+            </Box>
+          </Tooltip>
+          {isAdmin && (
+            <Tooltip title="Edit Token">
+              <Box
+                sx={{
+                  p: 1,
+                  borderRadius: '8px',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    backgroundColor: darkMode
+                      ? 'rgba(255, 255, 255, 0.08)'
+                      : 'rgba(145, 158, 171, 0.08)',
+                    transform: 'scale(1.1)'
+                  }
+                }}
+              >
+                <EditIcon
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditToken();
+                  }}
+                  sx={{
+                    cursor: 'pointer',
+                    fontSize: '20px',
+                    color: darkMode ? '#919EAB' : '#637381',
+                    '&:hover': {
+                      color: theme.palette.warning.main
+                    }
+                  }}
+                />
+              </Box>
             </Tooltip>
           )}
         </Stack>
