@@ -13,10 +13,13 @@ import {
   Grid,
   IconButton,
   InputAdornment,
-  TextField
+  TextField,
+  Paper,
+  Fade
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import ClearIcon from '@mui/icons-material/Clear';
 
 // Loader
 import { ClipLoader } from 'react-spinners';
@@ -127,71 +130,166 @@ export default function NFTs({ collection }) {
     [collection]
   );
 
-  // useMemo to avoid unnecessary re-renders
-  const inputProps = useMemo(
-    () => ({
-      startAdornment: (
-        <InputAdornment position="start" sx={{ mr: 0.7 }}>
-          <SearchIcon color="primary" />
-        </InputAdornment>
-      ),
-      endAdornment: (
-        <InputAdornment position="end">
-          {loading && <ClipLoader color={theme.palette.primary.main} size={15} />}
-        </InputAdornment>
-      )
-    }),
-    [loading, theme.palette.primary.main]
-  );
-
   const loadMore = useCallback(() => {
     setPage((prevPage) => prevPage + 1);
     setSync((prevSync) => prevSync + 1);
   }, []);
 
+  const handleClearSearch = useCallback(() => {
+    setSearch('');
+    debouncedSearch('');
+  }, [debouncedSearch]);
+
   return (
     <Box sx={{ p: 3, backgroundColor: alpha(theme.palette.background.paper, 0.8) }}>
-      <Box display="flex" alignItems="center" mb={3}>
+      <Box display="flex" alignItems="center" mb={3} gap={2}>
         <IconButton
           aria-label="filter"
           onClick={handleShowFilter}
           sx={{
-            mr: 2,
-            backgroundColor: theme.palette.primary.main,
-            color: theme.palette.primary.contrastText,
+            backgroundColor: showFilter
+              ? theme.palette.primary.main
+              : alpha(theme.palette.primary.main, 0.1),
+            color: showFilter ? theme.palette.primary.contrastText : theme.palette.primary.main,
+            border: `2px solid ${
+              showFilter ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.3)
+            }`,
+            borderRadius: 2,
+            width: 48,
+            height: 48,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
-              backgroundColor: theme.palette.primary.dark
+              backgroundColor: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText,
+              transform: 'translateY(-2px)',
+              boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.3)}`
             }
           }}
         >
           <FilterListIcon />
         </IconButton>
-        <TextField
-          id="textFilter"
-          fullWidth
-          variant="outlined"
-          placeholder="Search by name or attribute"
-          onChange={handleChangeSearch}
-          autoComplete="off"
-          value={search}
-          onFocus={(event) => event.target.select()}
-          onKeyDown={(e) => e.stopPropagation()}
-          InputProps={inputProps}
-          size="small"
+
+        <Paper
+          elevation={0}
           sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              backgroundColor: theme.palette.background.paper,
-              transition: theme.transitions.create(['box-shadow']),
-              '&:hover': {
-                boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`
-              },
-              '&.Mui-focused': {
-                boxShadow: `0 0 0 2px ${theme.palette.primary.main}`
-              }
+            flex: 1,
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: 2,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              borderColor: alpha(theme.palette.primary.main, 0.3),
+              transform: 'translateY(-1px)',
+              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.1)}`
+            },
+            '&:focus-within': {
+              borderColor: theme.palette.primary.main,
+              transform: 'translateY(-1px)',
+              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
             }
           }}
-        />
+        >
+          <TextField
+            id="textFilter"
+            fullWidth
+            variant="outlined"
+            placeholder="Search by name or attribute..."
+            onChange={handleChangeSearch}
+            autoComplete="off"
+            value={search}
+            onFocus={(event) => event.target.select()}
+            onKeyDown={(e) => e.stopPropagation()}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start" sx={{ ml: 0.5, mr: 0.5 }}>
+                  <SearchIcon
+                    sx={{
+                      color: theme.palette.primary.main,
+                      fontSize: 20,
+                      transition: 'transform 0.2s ease-in-out',
+                      '&:hover': {
+                        transform: 'scale(1.1)'
+                      }
+                    }}
+                  />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end" sx={{ mr: 0.5 }}>
+                  <Box display="flex" alignItems="center" gap={0.5}>
+                    {search && (
+                      <Fade in={!!search}>
+                        <IconButton
+                          size="small"
+                          onClick={handleClearSearch}
+                          sx={{
+                            color: alpha(theme.palette.text.primary, 0.6),
+                            width: 24,
+                            height: 24,
+                            '&:hover': {
+                              color: theme.palette.text.primary,
+                              backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                            }
+                          }}
+                        >
+                          <ClearIcon fontSize="small" />
+                        </IconButton>
+                      </Fade>
+                    )}
+                    <Fade in={loading}>
+                      <Box display="flex" alignItems="center">
+                        <ClipLoader color={theme.palette.primary.main} size={16} />
+                      </Box>
+                    </Fade>
+                  </Box>
+                </InputAdornment>
+              )
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                border: 'none',
+                borderRadius: 0,
+                backgroundColor: 'transparent',
+                fontSize: '0.95rem',
+                fontWeight: 400,
+                minHeight: 'auto',
+                '& fieldset': {
+                  border: 'none'
+                },
+                '&:hover fieldset': {
+                  border: 'none'
+                },
+                '&.Mui-focused fieldset': {
+                  border: 'none'
+                }
+              },
+              '& .MuiOutlinedInput-input': {
+                padding: '10px 0',
+                '&::placeholder': {
+                  color: alpha(theme.palette.text.primary, 0.6),
+                  opacity: 1,
+                  fontStyle: 'italic'
+                }
+              }
+            }}
+          />
+
+          {/* Search highlight bar */}
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 1.5,
+              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              transform: search ? 'scaleX(1)' : 'scaleX(0)',
+              transformOrigin: 'left',
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+          />
+        </Paper>
       </Box>
       <Grid container spacing={0} justifyContent="space-between">
         {showFilter && (
