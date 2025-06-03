@@ -616,7 +616,7 @@ export default function ViewNFT({ collection }) {
                   <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
                     Created by
                   </Typography>
-                  <Link color="inherit" href={`/account/${account}`} underline="none">
+                  <Link color="inherit" href={`/profile/${account}`} underline="none">
                     <Typography
                       variant="body2"
                       color="primary"
