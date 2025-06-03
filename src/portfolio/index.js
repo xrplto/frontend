@@ -42,7 +42,7 @@ import { getHashIcon } from 'src/utils/extra';
 import TrustLines from './TrustLines';
 import Offer from './Offer';
 import { TabContext, TabPanel } from '@mui/lab';
-import NFTs from './NFTs';
+import NFTPortfolio from './NFTPortfolio';
 import History from './History';
 import { alpha } from '@mui/material/styles';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
@@ -2458,7 +2458,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                         <TableBody>
                           <TableRow>
                             <TableCell sx={{ width: '100%', border: 'none', p: 0 }} colSpan={4}>
-                              <NFTs
+                              <NFTPortfolio
                                 account={account}
                                 limit={limit}
                                 collection={collection}
