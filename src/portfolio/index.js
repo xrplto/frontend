@@ -374,7 +374,7 @@ export default function Portfolio({ account, limit, collection, type }) {
       datasets: [
         {
           label: 'Daily Volume',
-          data: sortedHistory.map((item) => item.volume),
+          data: sortedHistory.map((item) => item.h24Volume),
           backgroundColor: alpha(theme.palette.primary.main, 0.2),
           borderColor: theme.palette.primary.main,
           type: 'bar',
