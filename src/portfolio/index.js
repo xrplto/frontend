@@ -7,15 +7,9 @@ import {
   Grid,
   Card,
   CardContent,
-  Tabs,
-  Tab,
   Chip,
   Avatar,
   Typography,
-  Button,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Table,
   TableBody,
   TableCell,
@@ -23,7 +17,6 @@ import {
   TableRow,
   Paper,
   Skeleton,
-  Tooltip,
   ToggleButton,
   ToggleButtonGroup,
   IconButton,
@@ -54,12 +47,10 @@ import History from './History';
 import { alpha } from '@mui/material/styles';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import Ranks from './Ranks';
 import { activeRankColors, rankGlowEffect } from 'src/components/Chatbox/RankStyles';
 import axios from 'axios';
-import { useRouter } from 'next/router';
 import {
   extractDominantColor,
   rgbToHex,
@@ -85,8 +76,6 @@ const OverviewWrapper = styled(Box)(
 `
 );
 
-
-
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -109,7 +98,6 @@ const ModalContent = styled(Paper)(({ theme }) => ({
 export default function Portfolio({ account, limit, collection, type }) {
   const theme = useTheme();
   const [activeRanks, setActiveRanks] = useState({});
-  const router = useRouter();
   const [traderStats, setTraderStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedChart, setSelectedChart] = useState(null);
@@ -122,8 +110,6 @@ export default function Portfolio({ account, limit, collection, type }) {
   const dividerColor = theme?.palette?.divider || '#ccc';
 
   const [activeTab, setActiveTab] = useState(collection ? '1' : '0');
-  const [filter, setFilter] = useState('All');
-  const [collections, setCollections] = useState([]);
   const [loadingCollections, setLoadingCollections] = useState(false);
   const [totalValue, setTotalValue] = useState(0);
   const [selectedInterval, setSelectedInterval] = useState('24h');
@@ -793,8 +779,6 @@ export default function Portfolio({ account, limit, collection, type }) {
     border: `1px solid ${dividerColor}`,
     marginBottom: '16px'
   }));
-
-
 
   useEffect(() => {
     async function fetchActiveRanks() {
