@@ -22,7 +22,7 @@ import BearBull from 'src/components/BearBull';
 import { currencySymbols } from 'src/utils/constants';
 import { AppContext } from 'src/AppContext';
 
-// Updated styled components with much higher contrast for dark theme
+// Updated styled components with enhanced theme matching portfolio design
 const ContentTypography = styled(Typography)(({ theme }) => ({
   color: theme.palette.mode === 'dark' ? '#FFFFFF' : alpha('#919EAB', 0.99),
   display: 'block',
@@ -32,66 +32,104 @@ const ContentTypography = styled(Typography)(({ theme }) => ({
   fontSize: '0.9rem'
 }));
 
-// Updated MetricBox with hover effects and transitions
+// Enhanced MetricBox with portfolio-style design
 const MetricBox = styled(Paper)(({ theme }) => ({
-  padding: '12px 14px', // Slightly more padding
-  borderRadius: '12px', // Increased border radius
-  backgroundColor: theme.palette.mode === 'dark' ? alpha('#121212', 0.95) : alpha('#F4F6F8', 0.8),
+  padding: '16px 18px',
+  borderRadius: '20px',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.8
+  )} 100%)`,
+  backdropFilter: 'blur(20px)',
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',
   minWidth: '140px',
   border:
-    theme.palette.mode === 'dark' ? `1px solid ${alpha(theme.palette.common.white, 0.2)}` : 'none',
-  boxShadow: theme.palette.mode === 'dark' ? '0 4px 8px rgba(0,0,0,0.3)' : 'none',
-  transition: 'all 0.2s ease-in-out', // Smooth transition for hover effects
+    theme.palette.mode === 'dark'
+      ? `1px solid ${alpha(theme.palette.divider, 0.08)}`
+      : `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
+    theme.palette.primary.main,
+    0.04
+  )}`,
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow:
-      theme.palette.mode === 'dark' ? '0 6px 12px rgba(0,0,0,0.4)' : '0 6px 12px rgba(0,0,0,0.1)',
-    backgroundColor: theme.palette.mode === 'dark' ? alpha('#1A1A1A', 0.95) : alpha('#FFFFFF', 0.95)
+    transform: 'translateY(-4px)',
+    boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
+      theme.palette.primary.main,
+      0.1
+    )}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.9
+    )} 100%)`
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+    opacity: 0.8,
+    borderRadius: '20px 20px 0 0'
   }
 }));
 
-// Title for each metric box
+// Enhanced MetricTitle with portfolio styling
 const MetricTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '0.75rem',
+  fontSize: '0.8rem',
   fontWeight: 600,
-  color:
-    theme.palette.mode === 'dark'
-      ? '#FFFFFF' // Pure white for maximum visibility
-      : alpha('#637381', 0.9),
-  marginBottom: '4px',
-  whiteSpace: 'nowrap'
+  color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.9) : alpha('#637381', 0.9),
+  marginBottom: '6px',
+  whiteSpace: 'nowrap',
+  letterSpacing: '-0.01em'
 }));
 
-// Value for each metric
+// Enhanced MetricValue with portfolio styling
 const MetricValue = styled(Typography)(({ theme }) => ({
-  fontSize: '0.95rem',
+  fontSize: '1rem',
   fontWeight: 700,
-  color:
-    theme.palette.mode === 'dark'
-      ? '#FFFFFF' // Pure white for maximum visibility
-      : '#212B36',
-  marginBottom: '2px'
+  color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#212B36',
+  marginBottom: '4px',
+  letterSpacing: '-0.02em'
 }));
 
-// Add this new styled component for percentage changes
+// Enhanced PercentageChange with portfolio styling
 const PercentageChange = styled(Typography)(({ theme, isPositive }) => ({
   fontSize: '0.75rem',
   color: isPositive ? theme.palette.success.main : theme.palette.error.main,
   display: 'flex',
   alignItems: 'center',
-  gap: '4px'
+  gap: '4px',
+  fontWeight: 600,
+  padding: '2px 6px',
+  borderRadius: '6px',
+  background: isPositive
+    ? alpha(theme.palette.success.main, 0.08)
+    : alpha(theme.palette.error.main, 0.08),
+  border: `1px solid ${
+    isPositive ? alpha(theme.palette.success.main, 0.15) : alpha(theme.palette.error.main, 0.15)
+  }`
 }));
 
-// Add a new styled component for volume percentage
+// Enhanced VolumePercentage with portfolio styling
 const VolumePercentage = styled(Typography)(({ theme }) => ({
   fontSize: '0.75rem',
   color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.7) : alpha('#637381', 0.9),
   display: 'flex',
-  alignItems: 'center'
+  alignItems: 'center',
+  fontWeight: 500,
+  padding: '2px 6px',
+  borderRadius: '6px',
+  background: alpha(theme.palette.info.main, 0.06),
+  border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`
 }));
 
 function Rate(num, exch) {
@@ -178,15 +216,23 @@ export default function Summary() {
         mb: 2,
         width: '100%',
         maxWidth: '100%',
-        px: 0 // Remove any horizontal padding
+        px: 0
       }}
     >
       <Typography
         variant="h1"
         sx={{
-          mb: 1,
-          fontSize: '1.3rem',
-          width: '100%' // Ensure title takes full width
+          mb: 2,
+          fontSize: '1.4rem',
+          fontWeight: 700,
+          width: '100%',
+          letterSpacing: '-0.02em',
+          background: `linear-gradient(135deg, ${(theme) => theme.palette.text.primary} 0%, ${(
+            theme
+          ) => alpha(theme.palette.primary.main, 0.8)} 100%)`,
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent'
         }}
       >
         {t("Today's Top XRPL Token Prices by Volume")}
@@ -197,12 +243,13 @@ export default function Summary() {
           sx={{
             overflowX: 'auto',
             width: '100%',
-            maxWidth: '100vw' // Allow full viewport width
+            maxWidth: '100vw',
+            pb: 1
           }}
         >
           <Grid
             container
-            spacing={1}
+            spacing={2}
             sx={{
               flexWrap: 'nowrap',
               minWidth: '900px',
@@ -213,8 +260,16 @@ export default function Summary() {
               <Grid item key={index} sx={{ flex: '1 0 auto' }}>
                 <Skeleton
                   variant="rectangular"
-                  height={80}
-                  sx={{ borderRadius: '8px', minWidth: '140px' }}
+                  height={100}
+                  sx={{
+                    borderRadius: '20px',
+                    minWidth: '140px',
+                    background: (theme) =>
+                      `linear-gradient(135deg, ${alpha(
+                        theme.palette.background.paper,
+                        0.8
+                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`
+                  }}
                 />
               </Grid>
             ))}
@@ -226,7 +281,7 @@ export default function Summary() {
             overflowX: 'auto',
             width: '100%',
             maxWidth: '100vw',
-            pb: 1, // Add padding bottom to account for hover shadow
+            pb: 2,
             '&::-webkit-scrollbar': {
               height: '8px'
             },
@@ -248,7 +303,7 @@ export default function Summary() {
         >
           <Grid
             container
-            spacing={1}
+            spacing={2}
             sx={{
               flexWrap: 'nowrap',
               minWidth: '900px',
@@ -296,7 +351,16 @@ export default function Summary() {
                     {xrpPriceSymbol}
                     {xrpPrice}
                   </MetricValue>
-                  <ContentTypography sx={{ fontSize: '0.75rem' }}>
+                  <ContentTypography
+                    sx={{
+                      fontSize: '0.75rem',
+                      padding: '2px 6px',
+                      borderRadius: '6px',
+                      background: (theme) => alpha(theme.palette.primary.main, 0.06),
+                      border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                      display: 'inline-block'
+                    }}
+                  >
                     {activeFiatCurrency === 'XRP' ? 'USD Value' : 'Native XRPL'}
                   </ContentTypography>
                 </div>
