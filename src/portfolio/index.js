@@ -85,87 +85,7 @@ const OverviewWrapper = styled(Box)(
 `
 );
 
-const Balance = styled('div')(({ theme, sx }) => ({
-  fontSize: '20px',
-  color: '#fff',
-  ...sx
-}));
 
-const tradesData = [
-  {
-    id: 1,
-    type: 'Swap',
-    asset: 'XRP/ETH',
-    amount: '100 XRP',
-    date: '2024-06-01',
-    hash: 'abcdef1234567890'
-  },
-  {
-    id: 2,
-    type: 'Buy NFT',
-    asset: 'Dragon NFT',
-    amount: '200 XRP',
-    date: '2024-06-02',
-    hash: '1234567890abcdef'
-  },
-  {
-    id: 3,
-    type: 'Swap',
-    asset: 'XRP/BTC',
-    amount: '50 XRP',
-    date: '2024-06-03',
-    hash: '0987654321fedcba'
-  },
-  {
-    id: 4,
-    type: 'Buy NFT',
-    asset: 'Space NFT',
-    amount: '150 XRP',
-    date: '2024-06-04',
-    hash: 'fedcba0987654321'
-  },
-  {
-    id: 5,
-    type: 'Swap',
-    asset: 'XRP/USDT',
-    amount: '300 XRP',
-    date: '2024-06-05',
-    hash: '0abcdef123456789'
-  }
-];
-
-const volumeData = {
-  labels: ['Jun 1', 'Jun 8', 'Jun 15', 'Jun 22', 'Jun 29', 'Jul 6', 'Jul 13'],
-  datasets: [
-    {
-      label: 'Portfolio Worth',
-      data: [5000, 5200, 5300, 15400, 15500, 15600, 15700],
-      fill: false,
-      backgroundColor: 'rgba(75,192,192,0.2)',
-      borderColor: 'rgba(75,192,192,1)',
-      tension: 0.4,
-      yAxisID: 'y'
-    },
-    {
-      label: 'Token Volume',
-      data: [100, 150, 200, 250, 300, 350, 400],
-      fill: false,
-      backgroundColor: 'rgba(255,99,132,0.2)',
-      borderColor: 'rgba(255,99,132,1)',
-      tension: 0.4,
-      yAxisID: 'y1'
-    },
-    {
-      label: 'NFT Volume',
-      data: [50, 400, 1500, 20, 2500, 300, 350],
-      fill: false,
-      backgroundColor: 'rgba(153,102,255,0.2)',
-      borderColor: 'rgba(153,102,255,1)',
-      tension: 0.4,
-      yAxisID: 'y1'
-    }
-  ]
-};
 
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: 'flex',
@@ -874,25 +794,7 @@ export default function Portfolio({ account, limit, collection, type }) {
     marginBottom: '16px'
   }));
 
-  const nftIcons = [
-    // Add your icon URLs or paths here
-    '/icons/nft1.png',
-    '/icons/nft2.png',
-    '/icons/nft3.png',
-    '/icons/nft4.png',
-    '/icons/nft5.png',
-    '/icons/nft6.png',
-    '/icons/nft7.png',
-    '/icons/nft8.png',
-    '/icons/nft9.png',
-    '/icons/nft10.png',
-    '/icons/nft11.png',
-    '/icons/nft12.png',
-    '/icons/nft13.png',
-    '/icons/nft14.png',
-    '/icons/nft15.png',
-    '/icons/nft16.png'
-  ];
+
 
   useEffect(() => {
     async function fetchActiveRanks() {
