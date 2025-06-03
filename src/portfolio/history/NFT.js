@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 
 // Material
@@ -13,27 +13,38 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableHead,
   TableRow,
-  Typography
+  Typography,
+  alpha,
+  useMediaQuery,
+  IconButton,
+  Select,
+  MenuItem
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 
 // Utils
 import { Activity } from 'src/utils/constants';
 import { normalizeAmount } from 'src/utils/normalizers';
+
+// Context
+import { AppContext } from 'src/AppContext';
 
 // Loader
 import { PulseLoader } from 'react-spinners';
 
 // Components
 import FlagsContainer from 'src/components/Flags';
-import ListToolbar from 'src/components/ListToolbar';
 
 // ----------------------------------------------------------------------
 export default function NFTHistory({ account }) {
   const theme = useTheme();
+  const { darkMode } = useContext(AppContext);
   const BASE_URL = 'https://api.xrpnft.com/api';
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(10);
@@ -83,6 +94,17 @@ export default function NFTHistory({ account }) {
       console.error('Error fetching NFT details:', error);
     }
   };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRows(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const paginatedActs = acts.slice(page * rows, page * rows + rows);
 
   const renderNFTPreview = (nft) => {
     if (!nft) return null;
@@ -372,10 +394,27 @@ export default function NFTHistory({ account }) {
   }, [nftDetails]);
 
   return (
-    <Container maxWidth="lg" sx={{ pl: 0, pr: 0 }}>
+    <Box
+      sx={{
+        background: darkMode
+          ? `linear-gradient(${alpha(theme.palette.primary.main, 0.05)}, ${alpha(
+              theme.palette.primary.main,
+              0.02
+            )})`
+          : `linear-gradient(${alpha(theme.palette.primary.main, 0.02)}, ${alpha(
+              theme.palette.primary.main,
+              0.01
+            )})`,
+        borderRadius: 2,
+        p: isSmallScreen ? 0.5 : 1,
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+    >
       {loading ? (
-        <Stack alignItems="center" sx={{ mt: 1 }}>
-          <PulseLoader color="#00AB55" size={8} />
+        <Stack alignItems="center" sx={{ py: 1 }}>
+          <PulseLoader color={theme.palette.primary.main} size={10} margin={3} />
         </Stack>
       ) : acts.length === 0 ? (
         <Stack
@@ -384,30 +423,73 @@ export default function NFTHistory({ account }) {
           justifyContent="center"
           spacing={1}
           sx={{
-            py: 4,
-            opacity: 0.8
+            py: 1,
+            opacity: 0.8,
+            background: alpha(theme.palette.primary.main, 0.03),
+            borderRadius: 1
           }}
         >
-          <ErrorOutlineIcon fontSize="small" />
-          <Typography variant="body2" color="text.secondary">
+          <ErrorOutlineIcon fontSize="small" color="primary" />
+          <Typography variant="body2" color="primary.main">
             No History
           </Typography>
         </Stack>
       ) : (
-        <Box sx={{ mt: 0.5, mb: 0.5 }}>
+        <>
           <Table
-            stickyHeader
             size="small"
             sx={{
-              [`& .${tableCellClasses.root}`]: {
-                borderBottom: '1px solid',
-                borderColor: theme.palette.divider,
-                padding: '4px 12px'
+              '& .MuiTableCell-root': {
+                py: 0.75,
+                px: isSmallScreen ? 0.5 : 1,
+                fontSize: '0.875rem',
+                lineHeight: 1.2
               }
             }}
           >
+            <TableHead>
+              <TableRow>
+                <TableCell
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.03),
+                    '&:first-of-type': {
+                      borderTopLeftRadius: 8
+                    },
+                    '&:last-child': {
+                      borderTopRightRadius: 8
+                    }
+                  }}
+                >
+                  Activity
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.03),
+                    display: isSmallScreen ? 'none' : 'table-cell'
+                  }}
+                >
+                  Date
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 'bold',
+                    borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.03)
+                  }}
+                >
+                  Details
+                </TableCell>
+              </TableRow>
+            </TableHead>
             <TableBody>
-              {acts.map(({ account, activity, data, time }) => {
+              {paginatedActs.map(({ account, activity, data, time }) => {
                 const activityName = getActivityName(activity);
                 const activityDetails = renderActivityDetails(activity, data);
 
@@ -419,46 +501,83 @@ export default function NFTHistory({ account }) {
                     key={time}
                     hover
                     sx={{
-                      '&:hover': { backgroundColor: 'action.hover' },
-                      '& td': { borderBottom: 'none' }
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.04)
+                      },
+                      '& td': {
+                        borderBottom: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                      }
                     }}
                   >
-                    <TableCell align="left" sx={{ py: 0, px: '6px' }}>
-                      <Stack spacing={0.1}>
-                        <Stack
-                          direction="row"
-                          spacing={0.5}
-                          justifyContent="space-between"
-                          alignItems="center"
-                          sx={{ minHeight: '20px' }}
-                        >
-                          <Typography
-                            variant="caption"
-                            sx={{ fontWeight: 500, fontSize: '0.75rem', lineHeight: 1 }}
-                          >
-                            {activityName}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ fontSize: '0.65rem', lineHeight: 1 }}
-                          >
-                            {strDateTime}
-                          </Typography>
-                        </Stack>
+                    <TableCell align="left" sx={{ py: 1, px: isSmallScreen ? 0.5 : 1 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontWeight: 500,
+                          fontSize: '0.875rem',
+                          color: theme.palette.primary.main
+                        }}
+                      >
+                        {activityName}
+                      </Typography>
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        py: 1,
+                        px: isSmallScreen ? 0.5 : 1,
+                        display: isSmallScreen ? 'none' : 'table-cell'
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ fontSize: '0.75rem' }}
+                      >
+                        {strDateTime}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ py: 1, px: isSmallScreen ? 0.5 : 1 }}>
+                      <Stack spacing={0.5}>
                         <Box>{activityDetails}</Box>
                         {data.NFTokenID && (
-                          <Stack alignItems="flex-end" sx={{ mt: 0.1 }}>
-                            <Link
-                              color="inherit"
-                              target="_blank"
-                              href={`/nft/${data.NFTokenID}`}
-                              rel="noreferrer noopener nofollow"
-                              sx={{ fontSize: '0.65rem', color: 'text.secondary', lineHeight: 1 }}
+                          <Link
+                            color="primary"
+                            target="_blank"
+                            href={`/nft/${data.NFTokenID}`}
+                            rel="noreferrer noopener nofollow"
+                            sx={{
+                              fontSize: '0.7rem',
+                              fontWeight: 500,
+                              textDecoration: 'none',
+                              '&:hover': {
+                                textDecoration: 'underline',
+                                color: 'primary.dark'
+                              },
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.5
+                            }}
+                          >
+                            <Typography
+                              component="span"
+                              sx={{
+                                fontSize: '0.7rem',
+                                color: 'text.secondary'
+                              }}
                             >
-                              ID: {data.NFTokenID.slice(0, 12)}...
-                            </Link>
-                          </Stack>
+                              ID:
+                            </Typography>
+                            <Typography
+                              component="span"
+                              sx={{
+                                fontSize: '0.7rem',
+                                fontFamily: 'monospace',
+                                color: 'primary.main'
+                              }}
+                            >
+                              {data.NFTokenID.slice(0, 16)}...
+                            </Typography>
+                          </Link>
                         )}
                       </Stack>
                     </TableCell>
@@ -467,11 +586,210 @@ export default function NFTHistory({ account }) {
               })}
             </TableBody>
           </Table>
-        </Box>
+          {total > 0 && (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                px: 2,
+                minHeight: '52px',
+                gap: 4,
+                background: alpha(theme.palette.primary.main, 0.02)
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  background: alpha(theme.palette.background.paper, 0.8),
+                  backdropFilter: 'blur(8px)',
+                  borderRadius: 1.5,
+                  px: 1.5,
+                  py: 0.5,
+                  minHeight: '40px',
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                  boxShadow: theme.shadows[1]
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 500
+                  }}
+                >
+                  {`${page + 1} / ${Math.ceil(total / rows)} pages`}
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: 0.5,
+                    borderLeft: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                    pl: 1
+                  }}
+                >
+                  <IconButton
+                    onClick={() => handleChangePage(null, page - 1)}
+                    disabled={page === 0}
+                    size="small"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '6px',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      background: alpha(theme.palette.primary.main, 0.05),
+                      '&:hover': {
+                        background: alpha(theme.palette.primary.main, 0.15),
+                        borderColor: theme.palette.primary.main
+                      },
+                      '&.Mui-disabled': {
+                        color: alpha(theme.palette.primary.main, 0.3),
+                        borderColor: alpha(theme.palette.primary.main, 0.1),
+                        background: 'none'
+                      },
+                      '& .MuiSvgIcon-root': {
+                        fontSize: '20px'
+                      }
+                    }}
+                  >
+                    <KeyboardArrowLeft />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => handleChangePage(null, page + 1)}
+                    disabled={page >= Math.ceil(total / rows) - 1}
+                    size="small"
+                    sx={{
+                      color: theme.palette.primary.main,
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '6px',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      background: alpha(theme.palette.primary.main, 0.05),
+                      '&:hover': {
+                        background: alpha(theme.palette.primary.main, 0.15),
+                        borderColor: theme.palette.primary.main
+                      },
+                      '&.Mui-disabled': {
+                        color: alpha(theme.palette.primary.main, 0.3),
+                        borderColor: alpha(theme.palette.primary.main, 0.1),
+                        background: 'none'
+                      },
+                      '& .MuiSvgIcon-root': {
+                        fontSize: '20px'
+                      }
+                    }}
+                  >
+                    <KeyboardArrowRight />
+                  </IconButton>
+                </Box>
+              </Box>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  background: alpha(theme.palette.background.paper, 0.8),
+                  backdropFilter: 'blur(8px)',
+                  borderRadius: 1.5,
+                  px: 1.5,
+                  py: 0.5,
+                  minHeight: '40px',
+                  boxShadow: theme.shadows[1],
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                }}
+              >
+                <Select
+                  value={rows}
+                  onChange={handleChangeRowsPerPage}
+                  size="small"
+                  sx={{
+                    height: '32px',
+                    width: '44px',
+                    minWidth: '44px',
+                    color: theme.palette.primary.main,
+                    '.MuiSelect-select': {
+                      py: 0,
+                      px: 0,
+                      fontWeight: 500,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.875rem',
+                      letterSpacing: '0.5px',
+                      marginRight: '-8px',
+                      paddingLeft: '4px'
+                    },
+                    '.MuiOutlinedInput-notchedOutline': {
+                      borderColor: alpha(theme.palette.primary.main, 0.2),
+                      borderWidth: '1px',
+                      borderRadius: '6px'
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: alpha(theme.palette.primary.main, 0.4)
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: alpha(theme.palette.primary.main, 0.4),
+                      borderWidth: '1px'
+                    },
+                    background: alpha(theme.palette.primary.main, 0.05),
+                    '&:hover': {
+                      background: alpha(theme.palette.primary.main, 0.1)
+                    }
+                  }}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        mt: 1,
+                        borderRadius: '6px',
+                        boxShadow: theme.shadows[2],
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                        '.MuiMenuItem-root': {
+                          color: theme.palette.primary.main,
+                          justifyContent: 'center',
+                          fontSize: '0.875rem',
+                          letterSpacing: '0.5px',
+                          py: 1,
+                          '&:hover': {
+                            background: alpha(theme.palette.primary.main, 0.1)
+                          },
+                          '&.Mui-selected': {
+                            background: alpha(theme.palette.primary.main, 0.08),
+                            '&:hover': {
+                              background: alpha(theme.palette.primary.main, 0.12)
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }}
+                >
+                  {[10, 25, 50].map((option) => (
+                    <MenuItem key={option} value={option}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </Select>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontWeight: 500,
+                    fontSize: '0.875rem',
+                    whiteSpace: 'nowrap',
+                    pr: 0.5
+                  }}
+                >
+                  items / page
+                </Typography>
+              </Box>
+            </Box>
+          )}
+        </>
       )}
-      {total > 0 && (
-        <ListToolbar count={total} rows={rows} setRows={setRows} page={page} setPage={setPage} />
-      )}
-    </Container>
+    </Box>
   );
 }
