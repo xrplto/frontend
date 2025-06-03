@@ -150,7 +150,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
               currency: 'XRP',
               balance: xrpBalance,
               value: xrpValue,
-              issuer: null
+              issuer: null,
+              md5: '84e5efeb89c4eae8f68188982dc290d8' // XRP's md5 hash
             },
             ...lines
           ]

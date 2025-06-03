@@ -60,6 +60,12 @@ import Ranks from './Ranks';
 import { activeRankColors, rankGlowEffect } from 'src/components/Chatbox/RankStyles';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import {
+  extractDominantColor,
+  rgbToHex,
+  getTokenImageUrl,
+  getTokenFallbackColor
+} from 'src/utils/colorExtractor';
 
 ChartJS.register(
   CategoryScale,
@@ -963,7 +969,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   }, [account, collection, type]);
 
   // Add function to process asset distribution data for pie chart
-  const processAssetDistribution = (trustlines) => {
+  const processAssetDistribution = async (trustlines) => {
     if (!trustlines || trustlines.length === 0) return null;
 
     // Sort trustlines by value (descending)
@@ -991,15 +997,37 @@ export default function Portfolio({ account, limit, collection, type }) {
     const totalValue = data.reduce((sum, value) => sum + value, 0);
     console.log('Pie chart data:', { labels, data, totalValue });
 
-    // Generate colors for each segment
-    const backgroundColors = [
-      alpha(theme.palette.primary.main, 0.8),
-      alpha(theme.palette.success.main, 0.8),
-      alpha(theme.palette.warning.main, 0.8),
-      alpha(theme.palette.error.main, 0.8),
-      alpha(theme.palette.info.main, 0.8),
-      alpha(theme.palette.grey[500], 0.8)
-    ];
+    // Extract colors from token icons
+    const backgroundColors = [];
+
+    for (let i = 0; i < topAssets.length; i++) {
+      const asset = topAssets[i];
+      let color = getTokenFallbackColor(asset.currency, i);
+
+      try {
+        // Try to extract color from token icon if md5 exists
+        if (asset.md5) {
+          const imageUrl = getTokenImageUrl(asset.md5);
+          const extractedColor = await extractDominantColor(imageUrl);
+          color = rgbToHex(extractedColor);
+        } else if (asset.currency === 'XRP') {
+          // Special case for XRP
+          const imageUrl = 'https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8';
+          const extractedColor = await extractDominantColor(imageUrl);
+          color = rgbToHex(extractedColor);
+        }
+      } catch (error) {
+        console.warn(`Failed to extract color for ${asset.currency}:`, error);
+        // Keep the fallback color
+      }
+
+      backgroundColors.push(alpha(color, 0.8));
+    }
+
+    // Add color for "Others" category
+    if (otherAssets.length > 0) {
+      backgroundColors.push(alpha(theme.palette.grey[500], 0.8));
+    }
 
     return {
       labels,
@@ -1049,8 +1077,8 @@ export default function Portfolio({ account, limit, collection, type }) {
   };
 
   // Update the TrustLines component to pass data to parent
-  const handleTrustlinesData = (trustlines) => {
-    const pieData = processAssetDistribution(trustlines);
+  const handleTrustlinesData = async (trustlines) => {
+    const pieData = await processAssetDistribution(trustlines);
     setAssetDistribution(pieData);
   };
 
