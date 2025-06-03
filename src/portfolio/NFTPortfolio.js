@@ -67,6 +67,7 @@ const CollectionCardWrapper = styled(Card)(({ theme }) => ({
   height: '100%',
   display: 'flex',
   flexDirection: 'column',
+  marginTop: '8px',
   '&:hover': {
     transform: 'translateY(-2px)',
     boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`,
@@ -102,7 +103,7 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
       underline="none"
       sx={{ display: 'block', width: '100%', height: '100%' }}
     >
-      <NFTCardWrapper sx={{ height: smallSize ? '120px' : '150px' }}>
+      <NFTCardWrapper sx={{ height: smallSize ? '140px' : '170px' }}>
         {isAdmin && (
           <IconButton
             size="small"
@@ -127,14 +128,20 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
           sx={{
             position: 'relative',
             overflow: 'hidden',
-            height: smallSize ? '80px' : '100px',
+            height: smallSize ? '90px' : '115px',
+            minHeight: smallSize ? '90px' : '115px',
+            maxHeight: smallSize ? '90px' : '115px',
             bgcolor: alpha(theme.palette.grey[500], 0.1)
           }}
         >
           {loadingImg && (
             <Skeleton
               variant="rectangular"
-              sx={{ width: '100%', height: '100%', position: 'absolute' }}
+              sx={{
+                width: '100%',
+                height: smallSize ? '90px' : '115px',
+                position: 'absolute'
+              }}
             />
           )}
           <CardMedia
@@ -145,10 +152,13 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
             onLoad={onImageLoaded}
             sx={{
               width: '100%',
-              height: '100%',
+              height: smallSize ? '90px' : '115px',
+              minHeight: smallSize ? '90px' : '115px',
+              maxHeight: smallSize ? '90px' : '115px',
               objectFit: 'cover',
               transition: 'transform 0.2s ease',
-              opacity: loadingImg ? 0 : 1
+              opacity: loadingImg ? 0 : 1,
+              display: 'block'
             }}
           />
         </Box>
@@ -282,33 +292,13 @@ function CollectionCard({ collectionData, type, account, handleRemove, smallSize
           </Box>
         )}
 
-        {forSale > 0 && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 4,
-              left: 4,
-              zIndex: 1500,
-              px: 0.8,
-              py: 0.3,
-              borderRadius: '6px',
-              background: theme.palette.success.main
-            }}
-          >
-            <Typography
-              variant="caption"
-              sx={{ color: 'white', fontWeight: 700, fontSize: '0.55rem' }}
-            >
-              {Math.round((forSale / totalItems) * 100)}% FOR SALE
-            </Typography>
-          </Box>
-        )}
-
         <Box
           sx={{
             position: 'relative',
             overflow: 'hidden',
-            height: smallSize ? '70px' : '90px',
+            height: smallSize ? '90px' : '115px',
+            minHeight: smallSize ? '90px' : '115px',
+            maxHeight: smallSize ? '90px' : '115px',
             bgcolor: alpha(theme.palette.grey[500], 0.1)
           }}
         >
