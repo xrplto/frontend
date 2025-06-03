@@ -13,15 +13,13 @@ import {
   Typography,
   Skeleton,
   Card,
-  Grid,
   CardContent
 } from '@mui/material';
 import SportsScoreIcon from '@mui/icons-material/SportsScore';
 import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
 import CloseIcon from '@mui/icons-material/Close';
-
-// Iconify
-import { Icon } from '@iconify/react';
+import CollectionsIcon from '@mui/icons-material/Collections';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 
 // Utils
 import { getMinterName } from 'src/utils/constants';
@@ -34,24 +32,29 @@ import { useRouter } from 'next/router';
 
 import { alpha } from '@mui/material/styles';
 
-const CardWrapper = styled(Card)(
-  ({ theme }) => `
-        border-radius: 16px;
-        backdrop-filter: blur(20px);
-        background-color: ${alpha(theme.palette.background.paper, 0.8)};
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        padding: 0;
-        cursor: pointer;
-        transition: all 0.3s ease-in-out;
-        overflow: hidden;
-        
-        &:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
-        }
-  `
-);
+const CardWrapper = styled(Card)(({ theme }) => ({
+  borderRadius: 16,
+  backdropFilter: 'blur(10px)',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.8
+  )} 100%)`,
+  boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  padding: 0,
+  cursor: 'pointer',
+  transition: 'all 0.3s ease',
+  overflow: 'hidden',
+  position: 'relative',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: `0 8px 30px ${alpha(theme.palette.common.black, 0.12)}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+    '& .card-media': {
+      transform: 'scale(1.05)'
+    }
+  }
+}));
 
 export default function CollectionCard({ collectionData, type, account, handleRemove }) {
   const theme = useTheme();
@@ -60,47 +63,16 @@ export default function CollectionCard({ collectionData, type, account, handleRe
   const isAdmin = accountProfile?.admin;
 
   const [loadingImg, setLoadingImg] = useState(true);
-  const [colors, setColors] = useState([]);
-
-  console.log('CollectionCard - collectionData:', collectionData);
-  console.log('CollectionCard - collection:', collectionData.collection);
 
   const collection = collectionData.collection;
   if (!collection) return null;
 
-  const {
-    id: uuid,
-    cost,
-    costb,
-    meta,
-    dfile,
-    NFTokenID,
-    destination,
-    rarity,
-    rarity_rank
-  } = collection;
+  const { id: uuid, NFTokenID, destination, rarity_rank } = collection;
 
-  console.log('CollectionCard - Destructured collection properties:', {
-    uuid,
-    cost,
-    costb,
-    meta,
-    dfile,
-    NFTokenID,
-    destination,
-    rarity,
-    rarity_rank
-  });
-
-  const isSold = false;
   const imgUrl = `https://s1.xrpnft.com/collection/${collection.logoImage}`;
-  const isVideo = false;
-
   const name = collection.name || 'No Name';
-
-  const getColors = (colors) => {
-    setColors((c) => [...c, ...colors]);
-  };
+  const totalItems = collectionData.nftCount || 0;
+  const forSale = collectionData.nftsForSale || 0;
 
   const onImageLoaded = () => {
     setLoadingImg(false);
@@ -108,13 +80,8 @@ export default function CollectionCard({ collectionData, type, account, handleRe
 
   const handleRemoveNft = (e) => {
     e.preventDefault();
-
     if (!isAdmin) return;
-
-    if (!confirm(`Are you sure you want to remove "${name}"?`)) {
-      return;
-    }
-
+    if (!confirm(`Are you sure you want to remove "${name}"?`)) return;
     handleRemove(NFTokenID);
   };
 
@@ -125,140 +92,277 @@ export default function CollectionCard({ collectionData, type, account, handleRe
   };
 
   return (
-    <Stack onClick={redirectToDetail}>
+    <Stack onClick={redirectToDetail} sx={{ mt: 1 }}>
       <CardWrapper
         sx={{
           marginLeft: 'auto',
           marginRight: 'auto',
           width: '100%',
           maxWidth: 240,
-          aspectRatio: '9 / 13'
+          aspectRatio: '3 / 4'
         }}
       >
         {isAdmin && (
-          <CloseIcon
+          <Box
             sx={{
               position: 'absolute',
-              top: 0,
-              right: 0,
-              zIndex: 1500
+              top: 8,
+              right: 8,
+              zIndex: 1500,
+              p: 0.3,
+              borderRadius: '6px',
+              background: alpha(theme.palette.error.main, 0.9),
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                transform: 'scale(1.1)'
+              }
             }}
             onClick={(e) => handleRemoveNft(e)}
-          />
+          >
+            <CloseIcon
+              sx={{
+                color: theme.palette.common.white,
+                fontSize: '0.8rem'
+              }}
+            />
+          </Box>
         )}
-        {isSold && (
-          <Label
-            variant="filled"
-            color={(isSold && 'error') || 'info'}
+
+        {/* Simple Sale Badge */}
+        {forSale > 0 && (
+          <Box
             sx={{
-              zIndex: 9,
-              top: 24,
-              right: 24,
               position: 'absolute',
-              textTransform: 'uppercase'
+              top: 8,
+              left: 8,
+              zIndex: 1500,
+              px: 0.8,
+              py: 0.3,
+              borderRadius: '6px',
+              background: alpha(theme.palette.success.main, 0.9),
+              boxShadow: `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`
             }}
           >
-            SOLD
-          </Label>
-        )}
-        <CardMedia
-          component={
-            loadingImg
-              ? () => (
-                  <Skeleton
-                    variant="rectangular"
-                    sx={{
-                      width: '100%',
-                      height: '75%', // Increased back to 75% as we're reducing overall card height
-                      borderRadius: '16px 16px 0 0'
-                    }}
-                  />
-                )
-              : isVideo
-              ? 'video'
-              : 'img'
-          }
-          image={imgUrl}
-          loading={loadingImg.toString()}
-          alt={'NFT' + uuid}
-          sx={{
-            width: '100%',
-            height: '75%', // Increased back to 75%
-            maxWidth: 280,
-            objectFit: 'cover',
-            borderRadius: '16px 16px 0 0'
-          }}
-        />
-        <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
-        {isVideo && <video src={imgUrl} style={{ display: 'none' }} onCanPlay={onImageLoaded} />}
-        <CardContent
-          sx={{
-            padding: 1,
-            background: theme.palette.background.default,
-            height: '25%',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            '& > *': { mb: 0.5 }
-          }}
-        >
-          <Box>
-            <Typography
-              variant="body2"
-              sx={{
-                fontWeight: 'bold',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                display: '-webkit-box',
-                WebkitLineClamp: 1,
-                WebkitBoxOrient: 'vertical',
-                fontSize: '0.8rem',
-                lineHeight: 1.2
-              }}
-            >
-              {name}
-            </Typography>
             <Typography
               variant="caption"
-              color="text.secondary"
               sx={{
-                fontSize: '0.7rem',
-                lineHeight: 1.1
+                color: theme.palette.common.white,
+                fontWeight: 600,
+                fontSize: '0.6rem'
               }}
             >
-              {collectionData.nftCount} item(s)
+              {Math.round((forSale / totalItems) * 100)}% FOR SALE
             </Typography>
           </Box>
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{ mt: 0.5 }}
+        )}
+
+        {/* Minimalist Image Container */}
+        <Box
+          sx={{
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: '16px 16px 0 0'
+          }}
+        >
+          <CardMedia
+            component={
+              loadingImg
+                ? () => (
+                    <Skeleton
+                      variant="rectangular"
+                      sx={{
+                        width: '100%',
+                        height: '180px',
+                        borderRadius: '16px 16px 0 0'
+                      }}
+                    />
+                  )
+                : 'img'
+            }
+            image={imgUrl}
+            loading={loadingImg.toString()}
+            alt={'Collection' + uuid}
+            className="card-media"
+            sx={{
+              width: '100%',
+              height: '180px',
+              objectFit: 'cover',
+              transition: 'transform 0.3s ease'
+            }}
+          />
+          <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
+
+          {/* Simple Collection Badge */}
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 8,
+              right: 8,
+              px: 0.8,
+              py: 0.3,
+              borderRadius: '6px',
+              background: alpha(theme.palette.background.paper, 0.9),
+              backdropFilter: 'blur(10px)'
+            }}
           >
+            <Typography
+              variant="caption"
+              sx={{
+                color: theme.palette.text.primary,
+                fontWeight: 600,
+                fontSize: '0.6rem',
+                textTransform: 'uppercase'
+              }}
+            >
+              Collection
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Compact Content Section */}
+        <CardContent
+          sx={{
+            padding: 1.5,
+            background: theme.palette.background.paper,
+            height: 'auto'
+          }}
+        >
+          <Typography
+            variant="subtitle2"
+            sx={{
+              fontWeight: 700,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              display: '-webkit-box',
+              WebkitLineClamp: 1,
+              WebkitBoxOrient: 'vertical',
+              fontSize: '0.85rem',
+              lineHeight: 1.2,
+              color: theme.palette.text.primary,
+              mb: 1
+            }}
+          >
+            {name}
+          </Typography>
+
+          {/* Compact Stats Row */}
+          <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+            <Stack direction="row" spacing={0.8}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.3,
+                  px: 0.6,
+                  py: 0.2,
+                  borderRadius: '4px',
+                  background: alpha(theme.palette.info.main, 0.1),
+                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                }}
+              >
+                <CollectionsIcon
+                  sx={{
+                    fontSize: '0.7rem',
+                    color: theme.palette.info.main
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: '0.65rem',
+                    fontWeight: 600,
+                    color: theme.palette.info.main
+                  }}
+                >
+                  {totalItems}
+                </Typography>
+              </Box>
+
+              {forSale > 0 && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.3,
+                    px: 0.6,
+                    py: 0.2,
+                    borderRadius: '4px',
+                    background: alpha(theme.palette.success.main, 0.1),
+                    border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                  }}
+                >
+                  <LocalOfferIcon
+                    sx={{
+                      fontSize: '0.7rem',
+                      color: theme.palette.success.main
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '0.65rem',
+                      fontWeight: 600,
+                      color: theme.palette.success.main
+                    }}
+                  >
+                    {forSale}
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
+
+            {/* Action/Rank Section */}
             {destination && getMinterName(account) ? (
-              <Tooltip title={`Sold & Transfer`}>
-                <SportsScoreIcon color="primary" sx={{ fontSize: '1rem' }} />
+              <Tooltip title="Sold & Transfer" placement="top">
+                <Box
+                  sx={{
+                    p: 0.4,
+                    borderRadius: '6px',
+                    background: alpha(theme.palette.primary.main, 0.1),
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                  }}
+                >
+                  <SportsScoreIcon
+                    sx={{
+                      color: theme.palette.primary.main,
+                      fontSize: '0.8rem'
+                    }}
+                  />
+                </Box>
               </Tooltip>
-            ) : (
-              (<Box />) // Empty box to maintain layout
-            )}
-            {rarity_rank > 0 && (
+            ) : rarity_rank > 0 ? (
               <Chip
                 variant="filled"
                 color="secondary"
-                icon={<LeaderboardOutlinedIcon sx={{ width: '12px', height: '12px' }} />}
+                icon={
+                  <LeaderboardOutlinedIcon
+                    sx={{
+                      width: '10px',
+                      height: '10px'
+                    }}
+                  />
+                }
                 label={
-                  <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
-                    {fIntNumber(rarity_rank)}
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '0.6rem',
+                      fontWeight: 600
+                    }}
+                  >
+                    #{fIntNumber(rarity_rank)}
                   </Typography>
                 }
                 size="small"
                 sx={{
-                  height: '16px',
-                  '& .MuiChip-label': { px: 0.5 }
+                  height: '20px',
+                  '& .MuiChip-label': {
+                    px: 0.5
+                  }
                 }}
               />
-            )}
+            ) : null}
           </Stack>
         </CardContent>
       </CardWrapper>

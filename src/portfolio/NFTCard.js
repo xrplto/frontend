@@ -26,18 +26,52 @@ import { AppContext } from 'src/AppContext';
 import { alpha } from '@mui/material/styles';
 
 const CardWrapper = styled(Card)(({ theme }) => ({
-  borderRadius: 16,
+  borderRadius: 20,
   backdropFilter: 'blur(20px)',
-  backgroundColor: alpha(theme.palette.background.paper, 0.8),
-  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-  border: '1px solid rgba(255, 255, 255, 0.18)',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.7
+  )} 100%)`,
+  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 2px 8px ${alpha(
+    theme.palette.primary.main,
+    0.04
+  )}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   padding: 0,
   cursor: 'pointer',
-  transition: 'all 0.3s ease-in-out',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   overflow: 'hidden',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '2px',
+    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+    opacity: 0,
+    transition: 'opacity 0.3s ease'
+  },
   '&:hover': {
-    transform: 'translateY(-5px)',
-    boxShadow: '0 12px 40px 0 rgba(31, 38, 135, 0.5)'
+    transform: 'translateY(-8px) scale(1.02)',
+    boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
+      theme.palette.primary.main,
+      0.1
+    )}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+    '&::before': {
+      opacity: 0.8
+    },
+    '& .card-media': {
+      transform: 'scale(1.05)'
+    },
+    '& .card-content': {
+      background: `linear-gradient(135deg, ${alpha(
+        theme.palette.background.paper,
+        0.95
+      )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`
+    }
   }
 }));
 
@@ -70,76 +104,204 @@ export default function NFTCard({ nft, handleRemove }) {
     <Link href={`/nft/${NFTokenID}`} underline="none" sx={{ position: 'relative' }}>
       <CardWrapper sx={{ margin: 'auto', maxWidth: 280, aspectRatio: '9 / 13' }}>
         {isAdmin && (
-          <CloseIcon
+          <Box
             sx={{
               position: 'absolute',
-              top: 8,
-              right: 8,
+              top: 12,
+              right: 12,
               zIndex: 1500,
-              color: theme.palette.grey[300]
+              p: 0.5,
+              borderRadius: '8px',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.error.main,
+                0.9
+              )} 0%, ${alpha(theme.palette.error.main, 0.7)} 100%)`,
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${alpha(theme.palette.error.main, 0.3)}`,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                transform: 'scale(1.1)',
+                boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.3)}`
+              }
             }}
             onClick={(e) => handleRemoveNft(e)}
-          />
+          >
+            <CloseIcon
+              sx={{
+                color: theme.palette.common.white,
+                fontSize: '1rem'
+              }}
+            />
+          </Box>
         )}
         {isSold && (
           <Label
             variant="filled"
             color="error"
-            sx={{ zIndex: 9, top: 24, right: 24, position: 'absolute', textTransform: 'uppercase' }}
+            sx={{
+              zIndex: 9,
+              top: 24,
+              right: 24,
+              position: 'absolute',
+              textTransform: 'uppercase',
+              borderRadius: '8px',
+              backdropFilter: 'blur(10px)',
+              boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.3)}`
+            }}
           >
             SOLD
           </Label>
         )}
-        <CardMedia
-          component={loadingImg ? Skeleton : 'img'}
-          image={imgUrl}
-          loading={loadingImg.toString()}
-          alt={'NFT' + uuid}
-          sx={{ width: '100%', height: '75%', objectFit: 'cover', borderRadius: '16px 16px 0 0' }}
-        />
-        <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
+        <Box
+          sx={{
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: '20px 20px 0 0',
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '40%',
+              background: `linear-gradient(to top, ${alpha(
+                theme.palette.common.black,
+                0.3
+              )} 0%, transparent 100%)`,
+              pointerEvents: 'none'
+            }
+          }}
+        >
+          <CardMedia
+            component={loadingImg ? Skeleton : 'img'}
+            image={imgUrl}
+            loading={loadingImg.toString()}
+            alt={'NFT' + uuid}
+            className="card-media"
+            sx={{
+              width: '100%',
+              height: '75%',
+              objectFit: 'cover',
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              filter: loadingImg ? 'none' : 'brightness(1.05) contrast(1.1)'
+            }}
+          />
+          <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} />
+        </Box>
 
         <CardContent
+          className="card-content"
           sx={{
-            padding: 1.5,
-            background: theme.palette.background.default,
+            padding: 2,
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.9
+            )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+            backdropFilter: 'blur(20px)',
             height: '25%',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            position: 'relative',
+            transition: 'all 0.3s ease',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '1px',
+              background: `linear-gradient(90deg, transparent 0%, ${alpha(
+                theme.palette.primary.main,
+                0.3
+              )} 50%, transparent 100%)`
+            }
           }}
         >
           <Box>
             <Typography
               variant="caption"
               sx={{
-                fontWeight: 600,
+                fontWeight: 700,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
                 WebkitLineClamp: 1,
                 WebkitBoxOrient: 'vertical',
-                fontSize: '0.75rem',
-                lineHeight: 1.2
+                fontSize: '0.8rem',
+                lineHeight: 1.3,
+                color: theme.palette.text.primary,
+                mb: 0.5,
+                letterSpacing: '-0.01em'
               }}
             >
               {name}
             </Typography>
             {cost && (
-              <Typography variant="caption" color="text.secondary" noWrap>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: theme.palette.success.main,
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.1
+                  )} 0%, ${alpha(theme.palette.success.main, 0.05)} 100%)`,
+                  px: 1,
+                  py: 0.3,
+                  borderRadius: '6px',
+                  border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                  display: 'inline-block'
+                }}
+                noWrap
+              >
                 {cost.currency === 'XRP'
                   ? `✕ ${fNumber(cost.amount)}`
                   : `${fNumber(cost.amount)} ${normalizeCurrencyCodeXummImpl(cost.currency)}`}
               </Typography>
             )}
           </Box>
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 1 }}>
             {destination && getMinterName(account) ? (
               <Tooltip title={`Sold & Transfer`}>
-                <SportsScoreIcon color="primary" fontSize="small" />
+                <Box
+                  sx={{
+                    p: 0.5,
+                    borderRadius: '6px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.primary.main,
+                      0.15
+                    )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                  }}
+                >
+                  <SportsScoreIcon
+                    sx={{
+                      color: theme.palette.primary.main,
+                      fontSize: '1rem'
+                    }}
+                  />
+                </Box>
               </Tooltip>
             ) : (
-              <Typography variant="caption" color="text.secondary">
+              <Typography
+                variant="caption"
+                sx={{
+                  color: theme.palette.text.secondary,
+                  fontWeight: 500,
+                  fontSize: '0.7rem',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.background.paper,
+                    0.6
+                  )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                  px: 1,
+                  py: 0.3,
+                  borderRadius: '6px',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                }}
+              >
                 {costb ? `Offer ✕ ${fNumber(costb.amount)}` : 'No Offer'}
               </Typography>
             )}
@@ -147,12 +309,40 @@ export default function NFTCard({ nft, handleRemove }) {
               <Chip
                 variant="filled"
                 color="secondary"
-                icon={<LeaderboardOutlinedIcon sx={{ width: '14px' }} />}
-                label={<Typography variant="caption">{fIntNumber(rarity_rank)}</Typography>}
+                icon={
+                  <LeaderboardOutlinedIcon
+                    sx={{
+                      width: '14px',
+                      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))'
+                    }}
+                  />
+                }
+                label={
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: '0.7rem'
+                    }}
+                  >
+                    {fIntNumber(rarity_rank)}
+                  </Typography>
+                }
                 size="small"
                 sx={{
-                  height: '20px',
-                  '& .MuiChip-label': { px: 0.5 }
+                  height: '24px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.secondary.main,
+                    0.9
+                  )} 0%, ${alpha(theme.palette.secondary.main, 0.7)} 100%)`,
+                  backdropFilter: 'blur(10px)',
+                  border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                  boxShadow: `0 2px 8px ${alpha(theme.palette.secondary.main, 0.2)}`,
+                  '& .MuiChip-label': {
+                    px: 0.8,
+                    color: theme.palette.common.white,
+                    fontWeight: 600
+                  }
                 }}
               />
             )}
