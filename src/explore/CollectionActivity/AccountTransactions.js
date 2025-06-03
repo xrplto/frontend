@@ -23,10 +23,14 @@ import {
   Divider,
   CardMedia,
   Button,
-  CircularProgress
+  CircularProgress,
+  Card,
+  CardContent,
+  useTheme
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { tableCellClasses } from '@mui/material/TableCell';
+import { alpha } from '@mui/material/styles';
 import PaymentIcon from '@mui/icons-material/Payment';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
@@ -36,68 +40,107 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import SellIcon from '@mui/icons-material/Sell';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { formatDateTime } from 'src/utils/formatTime';
 import { AppContext } from 'src/AppContext';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: alpha(theme.palette.background.paper, 0.8),
     color: theme.palette.text.primary,
     fontWeight: 600,
-    fontSize: '0.8rem',
-    padding: '8px 12px'
+    fontSize: '0.85rem',
+    padding: '16px 20px',
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+    backdropFilter: 'blur(10px)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: '0.75rem',
-    padding: '6px 12px',
-    lineHeight: 1.2
+    fontSize: '0.8rem',
+    padding: '12px 20px',
+    lineHeight: 1.4,
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.04)}`,
+    transition: 'all 0.2s ease'
   }
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  position: 'relative',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:nth-of-type(odd)': {
-    backgroundColor: theme.palette.action.hover
+    backgroundColor: alpha(theme.palette.action.hover, 0.3)
+  },
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.primary.main, 0.04),
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
+    '& .MuiTableCell-root': {
+      borderColor: alpha(theme.palette.primary.main, 0.1)
+    }
   },
   '&:last-child td, &:last-child th': {
     border: 0
-  },
-  height: '48px'
+  }
 }));
 
 const CompactChip = styled(Chip)(({ theme }) => ({
-  height: '20px',
-  fontSize: '0.65rem',
+  height: '28px',
+  fontSize: '0.75rem',
+  fontWeight: 500,
+  borderRadius: '14px',
+  transition: 'all 0.2s ease',
   '& .MuiChip-icon': {
-    fontSize: '0.9rem'
+    fontSize: '1rem'
+  },
+  '&:hover': {
+    transform: 'scale(1.05)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`
   }
 }));
 
 const CompactAccordion = styled(Accordion)(({ theme }) => ({
   '&.MuiAccordion-root': {
-    marginBottom: '4px',
+    marginBottom: '8px',
+    borderRadius: '12px',
+    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.4
+    )} 100%)`,
+    backdropFilter: 'blur(20px)',
+    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.06)}`,
     '&:before': {
       display: 'none'
+    },
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.12)}`
     }
   },
   '& .MuiAccordionSummary-root': {
-    minHeight: '36px',
-    padding: '0 12px',
+    minHeight: '48px',
+    padding: '0 20px',
+    borderRadius: '12px',
     '&.Mui-expanded': {
-      minHeight: '36px'
+      minHeight: '48px'
     }
   },
   '& .MuiAccordionSummary-content': {
-    margin: '6px 0',
+    margin: '12px 0',
     '&.Mui-expanded': {
-      margin: '6px 0'
+      margin: '12px 0'
     }
   },
   '& .MuiAccordionDetails-root': {
-    padding: '8px 12px 12px'
+    padding: '16px 20px 20px',
+    borderTop: `1px solid ${alpha(theme.palette.divider, 0.06)}`
   }
 }));
 
 export default function AccountTransactions({ creatorAccount }) {
+  const theme = useTheme();
   const { openSnackbar } = useContext(AppContext);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -629,213 +672,459 @@ export default function AccountTransactions({ creatorAccount }) {
   if (!creatorAccount) {
     return (
       <Container maxWidth={false} sx={{ pl: 0, pr: 0, maxWidth: '2000px' }}>
-        <Paper elevation={3} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
-          <Typography variant="h6" color="text.secondary">
+        <Card
+          sx={{
+            p: 4,
+            mb: 3,
+            borderRadius: '24px',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.9
+            )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+            backdropFilter: 'blur(20px)',
+            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
+            textAlign: 'center'
+          }}
+        >
+          <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>
             No creator account available
           </Typography>
-        </Paper>
+        </Card>
       </Container>
     );
   }
 
   return (
     <Container maxWidth={false} sx={{ pl: 0, pr: 0, maxWidth: '2000px' }}>
-      <Paper elevation={3} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
-        <Typography variant="h5" gutterBottom sx={{ mb: 1 }}>
-          Collection Activity
-        </Typography>
-
-        {loading ? (
-          <Stack spacing={1}>
-            {[...Array(8)].map((_, index) => (
-              <Skeleton key={index} variant="rectangular" height={40} />
-            ))}
-          </Stack>
-        ) : error ? (
-          <Stack alignItems="center" sx={{ mt: 3 }}>
-            <Typography variant="h6" color="error">
-              {error}
-            </Typography>
-          </Stack>
-        ) : transactions.length === 0 ? (
-          <Stack alignItems="center" sx={{ mt: 3 }}>
-            <Typography variant="h6">No Transactions Found</Typography>
-          </Stack>
-        ) : (
-          <>
-            <Table stickyHeader size="small">
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell>Type</StyledTableCell>
-                  <StyledTableCell>Details</StyledTableCell>
-                  <StyledTableCell>Date</StyledTableCell>
-                  <StyledTableCell>Actions</StyledTableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {transactions.map((txData, idx) => {
-                  const tx = txData.tx;
-                  const meta = txData.meta;
-                  const txDetails = getTransactionDetails(tx, meta);
-
-                  return (
-                    <StyledTableRow key={tx.hash || idx}>
-                      <StyledTableCell>
-                        <CompactChip
-                          icon={getTransactionIcon(tx.TransactionType)}
-                          label={tx.TransactionType}
-                          color={getTransactionColor(tx.TransactionType)}
-                          variant="outlined"
-                          size="small"
-                        />
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        <Box>
-                          {txDetails.details.length > 0 && (
-                            <Stack direction="row" spacing={1} alignItems="center">
-                              {/* NFT Thumbnail */}
-                              {(() => {
-                                const tx = txData.tx;
-                                const meta = txData.meta;
-                                const nftInfo = extractNFTInfo(meta);
-                                const nftTokenId = nftInfo.nftokenId || tx.NFTokenID;
-                                const nft = nftTokenId ? nftData[nftTokenId] : null;
-
-                                console.log(
-                                  'Rendering thumbnail for:',
-                                  nftTokenId,
-                                  'NFT data:',
-                                  nft
-                                );
-                                console.log('Has thumbnail?', !!nft?.thumbnail);
-                                console.log('Thumbnail URL:', nft?.thumbnail);
-
-                                if (nft?.thumbnail) {
-                                  console.log('Displaying thumbnail:', nft.thumbnail);
-                                  return (
-                                    <CardMedia
-                                      component="img"
-                                      image={nft.thumbnail}
-                                      alt={nft.name}
-                                      onError={(e) => {
-                                        console.error('Thumbnail failed to load:', nft.thumbnail);
-                                        console.error('Error event:', e);
-                                        e.target.style.display = 'none';
-                                      }}
-                                      onLoad={() => {
-                                        console.log(
-                                          'Thumbnail loaded successfully:',
-                                          nft.thumbnail
-                                        );
-                                      }}
-                                      sx={{
-                                        width: 24,
-                                        height: 24,
-                                        borderRadius: '4px',
-                                        flexShrink: 0,
-                                        border: '1px solid red' // Debug border
-                                      }}
-                                    />
-                                  );
-                                } else {
-                                  console.log('No thumbnail available for:', nftTokenId);
-                                  // Test with a placeholder image to see if CardMedia works
-                                  return (
-                                    <CardMedia
-                                      component="img"
-                                      image="https://via.placeholder.com/24x24/ff0000/ffffff?text=NFT"
-                                      alt="Test"
-                                      sx={{
-                                        width: 24,
-                                        height: 24,
-                                        borderRadius: '4px',
-                                        flexShrink: 0,
-                                        border: '1px solid blue' // Debug border
-                                      }}
-                                    />
-                                  );
-                                }
-                              })()}
-
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{
-                                  fontSize: '0.65rem',
-                                  lineHeight: 1.1,
-                                  display: 'block'
-                                }}
-                              >
-                                {txDetails.details.map((detail, index) => (
-                                  <span key={index}>
-                                    {typeof detail === 'object' && detail.type === 'nft-link' ? (
-                                      <Link
-                                        href={`/nft/${detail.id}`}
-                                        color="primary"
-                                        underline="hover"
-                                        sx={{ fontSize: '0.65rem' }}
-                                      >
-                                        {detail.text}
-                                      </Link>
-                                    ) : (
-                                      detail
-                                    )}
-                                    {index < txDetails.details.length - 1 && ' • '}
-                                  </span>
-                                ))}
-                              </Typography>
-                            </Stack>
-                          )}
-                        </Box>
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        <Typography variant="body2" sx={{ fontSize: '0.7rem' }}>
-                          {tx.date ? formatDate(tx.date) : 'N/A'}
-                        </Typography>
-                      </StyledTableCell>
-                      <StyledTableCell>
-                        <Tooltip title="View on Bithomp">
-                          <IconButton
-                            size="small"
-                            sx={{ padding: '2px' }}
-                            onClick={() =>
-                              window.open(`https://bithomp.com/explorer/${tx.hash}`, '_blank')
-                            }
-                          >
-                            <OpenInNewIcon sx={{ fontSize: '0.9rem' }} />
-                          </IconButton>
-                        </Tooltip>
-                      </StyledTableCell>
-                    </StyledTableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-
-            {/* Load More Button */}
-            {hasMore && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                <Button
-                  variant="outlined"
-                  onClick={handleLoadMore}
-                  disabled={loadingMore}
-                  startIcon={loadingMore ? <CircularProgress size={16} /> : null}
-                >
-                  {loadingMore ? 'Loading...' : 'Load More Transactions'}
-                </Button>
+      <Card
+        sx={{
+          mb: 3,
+          borderRadius: '24px',
+          background: `linear-gradient(135deg, ${alpha(
+            theme.palette.background.paper,
+            0.95
+          )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+          backdropFilter: 'blur(20px)',
+          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+          boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
+            theme.palette.primary.main,
+            0.04
+          )}`,
+          overflow: 'hidden',
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '3px',
+            background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+            opacity: 0.8
+          }
+        }}
+      >
+        <CardContent sx={{ p: 0 }}>
+          {/* Header Section */}
+          <Box
+            sx={{
+              px: 4,
+              py: 3,
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.8
+              )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+              backdropFilter: 'blur(10px)'
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Box
+                sx={{
+                  p: 1.5,
+                  borderRadius: '16px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.15
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+                }}
+              >
+                <TrendingUpIcon
+                  sx={{
+                    color: theme.palette.primary.main,
+                    fontSize: '1.5rem',
+                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                  }}
+                />
               </Box>
-            )}
-
-            {!hasMore && transactions.length > 0 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  No more transactions to load
+              <Box>
+                <Typography
+                  sx={{
+                    color: theme.palette.text.primary,
+                    fontSize: '1.4rem',
+                    fontWeight: 700,
+                    lineHeight: 1.2,
+                    letterSpacing: '-0.02em',
+                    background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
+                      theme.palette.primary.main,
+                      0.8
+                    )} 100%)`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}
+                  variant="h5"
+                >
+                  Collection Activity
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontWeight: 500, mt: 0.5 }}
+                >
+                  Real-time transaction monitoring and NFT activity tracking
                 </Typography>
               </Box>
+            </Stack>
+          </Box>
+
+          {/* Content Section */}
+          <Box sx={{ p: 0 }}>
+            {loading ? (
+              <Box sx={{ p: 4 }}>
+                <Stack spacing={2}>
+                  {[...Array(8)].map((_, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        p: 2,
+                        borderRadius: '12px',
+                        background: alpha(theme.palette.background.paper, 0.4),
+                        border: `1px solid ${alpha(theme.palette.divider, 0.06)}`
+                      }}
+                    >
+                      <Skeleton variant="rectangular" height={40} sx={{ borderRadius: '8px' }} />
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+            ) : error ? (
+              <Box
+                sx={{
+                  p: 6,
+                  textAlign: 'center',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.error.main,
+                    0.04
+                  )} 0%, ${alpha(theme.palette.error.main, 0.01)} 100%)`
+                }}
+              >
+                <Typography variant="h6" color="error.main" sx={{ fontWeight: 600, mb: 1 }}>
+                  {error}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Please try refreshing the page or check back later
+                </Typography>
+              </Box>
+            ) : transactions.length === 0 ? (
+              <Box
+                sx={{
+                  p: 6,
+                  textAlign: 'center',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.04
+                  )} 0%, ${alpha(theme.palette.info.main, 0.01)} 100%)`
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                  No Transactions Found
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  This collection hasn't had any recent activity
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <Box sx={{ overflow: 'hidden' }}>
+                  <Table stickyHeader size="medium">
+                    <TableHead>
+                      <TableRow>
+                        <StyledTableCell>Type</StyledTableCell>
+                        <StyledTableCell>Details</StyledTableCell>
+                        <StyledTableCell>Date</StyledTableCell>
+                        <StyledTableCell align="center">Actions</StyledTableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {transactions.map((txData, idx) => {
+                        const tx = txData.tx;
+                        const meta = txData.meta;
+                        const txDetails = getTransactionDetails(tx, meta);
+
+                        return (
+                          <StyledTableRow key={tx.hash || idx}>
+                            <StyledTableCell>
+                              <CompactChip
+                                icon={getTransactionIcon(tx.TransactionType)}
+                                label={tx.TransactionType}
+                                color={getTransactionColor(tx.TransactionType)}
+                                variant="outlined"
+                                size="small"
+                              />
+                            </StyledTableCell>
+                            <StyledTableCell>
+                              <Box>
+                                {txDetails.details.length > 0 && (
+                                  <Stack direction="row" spacing={1.5} alignItems="center">
+                                    {/* NFT Thumbnail */}
+                                    {(() => {
+                                      const tx = txData.tx;
+                                      const meta = txData.meta;
+                                      const nftInfo = extractNFTInfo(meta);
+                                      const nftTokenId = nftInfo.nftokenId || tx.NFTokenID;
+                                      const nft = nftTokenId ? nftData[nftTokenId] : null;
+
+                                      if (nft?.thumbnail) {
+                                        return (
+                                          <Box
+                                            sx={{
+                                              position: 'relative',
+                                              borderRadius: '8px',
+                                              overflow: 'hidden',
+                                              boxShadow: `0 4px 12px ${alpha(
+                                                theme.palette.common.black,
+                                                0.15
+                                              )}`,
+                                              border: `2px solid ${alpha(
+                                                theme.palette.primary.main,
+                                                0.2
+                                              )}`,
+                                              transition: 'all 0.2s ease',
+                                              '&:hover': {
+                                                transform: 'scale(1.1)',
+                                                boxShadow: `0 6px 20px ${alpha(
+                                                  theme.palette.common.black,
+                                                  0.25
+                                                )}`
+                                              }
+                                            }}
+                                          >
+                                            <CardMedia
+                                              component="img"
+                                              image={nft.thumbnail}
+                                              alt={nft.name}
+                                              onError={(e) => {
+                                                e.target.style.display = 'none';
+                                              }}
+                                              sx={{
+                                                width: 32,
+                                                height: 32,
+                                                objectFit: 'cover'
+                                              }}
+                                            />
+                                          </Box>
+                                        );
+                                      }
+                                      return null;
+                                    })()}
+
+                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.primary"
+                                        sx={{
+                                          fontSize: '0.85rem',
+                                          lineHeight: 1.4,
+                                          fontWeight: 500,
+                                          display: 'block'
+                                        }}
+                                      >
+                                        {txDetails.details.map((detail, index) => (
+                                          <span key={index}>
+                                            {typeof detail === 'object' &&
+                                            detail.type === 'nft-link' ? (
+                                              <Link
+                                                href={`/nft/${detail.id}`}
+                                                color="primary"
+                                                underline="hover"
+                                                sx={{
+                                                  fontSize: '0.85rem',
+                                                  fontWeight: 600,
+                                                  transition: 'all 0.2s ease',
+                                                  '&:hover': {
+                                                    color: theme.palette.primary.dark
+                                                  }
+                                                }}
+                                              >
+                                                {detail.text}
+                                              </Link>
+                                            ) : (
+                                              <span
+                                                style={{
+                                                  color:
+                                                    typeof detail === 'string' &&
+                                                    detail.includes('XRP')
+                                                      ? theme.palette.success.main
+                                                      : 'inherit'
+                                                }}
+                                              >
+                                                {detail}
+                                              </span>
+                                            )}
+                                            {index < txDetails.details.length - 1 && (
+                                              <span
+                                                style={{
+                                                  margin: '0 8px',
+                                                  color: alpha(theme.palette.text.secondary, 0.6)
+                                                }}
+                                              >
+                                                •
+                                              </span>
+                                            )}
+                                          </span>
+                                        ))}
+                                      </Typography>
+                                    </Box>
+                                  </Stack>
+                                )}
+                              </Box>
+                            </StyledTableCell>
+                            <StyledTableCell>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  fontSize: '0.8rem',
+                                  color: theme.palette.text.secondary,
+                                  fontWeight: 500
+                                }}
+                              >
+                                {tx.date ? formatDate(tx.date) : 'N/A'}
+                              </Typography>
+                            </StyledTableCell>
+                            <StyledTableCell align="center">
+                              <Tooltip title="View on Bithomp" placement="top">
+                                <IconButton
+                                  size="small"
+                                  sx={{
+                                    padding: '8px',
+                                    borderRadius: '10px',
+                                    color: theme.palette.primary.main,
+                                    bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                                    transition: 'all 0.2s ease',
+                                    '&:hover': {
+                                      bgcolor: alpha(theme.palette.primary.main, 0.15),
+                                      transform: 'scale(1.05)',
+                                      boxShadow: `0 4px 12px ${alpha(
+                                        theme.palette.primary.main,
+                                        0.25
+                                      )}`
+                                    }
+                                  }}
+                                  onClick={() =>
+                                    window.open(`https://bithomp.com/explorer/${tx.hash}`, '_blank')
+                                  }
+                                >
+                                  <OpenInNewIcon sx={{ fontSize: '1rem' }} />
+                                </IconButton>
+                              </Tooltip>
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </Box>
+
+                {/* Load More Button */}
+                {hasMore && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      p: 4,
+                      borderTop: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.background.paper,
+                        0.6
+                      )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                      backdropFilter: 'blur(10px)'
+                    }}
+                  >
+                    <Button
+                      variant="outlined"
+                      onClick={handleLoadMore}
+                      disabled={loadingMore}
+                      startIcon={loadingMore ? <CircularProgress size={16} /> : null}
+                      sx={{
+                        borderRadius: '16px',
+                        px: 4,
+                        py: 1.5,
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        textTransform: 'none',
+                        border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                        color: theme.palette.primary.main,
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.primary.main,
+                          0.05
+                        )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        '&:hover': {
+                          border: `2px solid ${alpha(theme.palette.primary.main, 0.4)}`,
+                          background: `linear-gradient(135deg, ${alpha(
+                            theme.palette.primary.main,
+                            0.1
+                          )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+                          transform: 'translateY(-2px)',
+                          boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.2)}`
+                        },
+                        '&:disabled': {
+                          opacity: 0.6,
+                          transform: 'none'
+                        }
+                      }}
+                    >
+                      {loadingMore ? 'Loading...' : 'Load More Transactions'}
+                    </Button>
+                  </Box>
+                )}
+
+                {!hasMore && transactions.length > 0 && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      p: 3,
+                      borderTop: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                      background: alpha(theme.palette.background.paper, 0.3)
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{
+                        fontWeight: 500,
+                        fontSize: '0.85rem',
+                        textAlign: 'center'
+                      }}
+                    >
+                      🎉 You've reached the end! No more transactions to load
+                    </Typography>
+                  </Box>
+                )}
+              </>
             )}
-          </>
-        )}
-      </Paper>
+          </Box>
+        </CardContent>
+      </Card>
     </Container>
   );
 }
