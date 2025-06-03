@@ -30,25 +30,47 @@ import { AppContext } from 'src/AppContext';
 import { alpha } from '@mui/material/styles';
 
 const CardWrapper = styled(Card)(({ theme }) => ({
-  borderRadius: 16,
+  borderRadius: 20,
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.8
+  )} 100%)`,
   backdropFilter: 'blur(20px)',
-  backgroundColor: alpha(theme.palette.background.paper, 0.8),
-  boxShadow: '0 4px 20px 0 rgba(31, 38, 135, 0.15)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
+    theme.palette.primary.main,
+    0.04
+  )}`,
   padding: 0,
   cursor: 'pointer',
-  transition: 'all 0.3s ease-in-out',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
+  position: 'relative',
   '&:hover': {
-    border: `2px solid ${theme.palette.primary.main}`,
-    boxShadow: `0 4px 20px 0 ${alpha(theme.palette.primary.main, 0.15)}`,
+    transform: 'translateY(-4px)',
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+    boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
+      theme.palette.primary.main,
+      0.1
+    )}`,
     '& .card-media': {
       transform: 'scale(1.05)'
     }
   },
-  height: 300
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '2px',
+    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+    opacity: 0.8,
+    zIndex: 1
+  },
+  height: 220
 }));
 
 export default function NFTCard({ nft, handleRemove }) {
@@ -110,14 +132,26 @@ export default function NFTCard({ nft, handleRemove }) {
               top: 8,
               right: 8,
               zIndex: 1500,
-              color: theme.palette.grey[300],
-              backgroundColor: alpha(theme.palette.background.paper, 0.9),
+              color: theme.palette.text.secondary,
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.9
+              )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
               borderRadius: '50%',
               padding: '4px',
-              transition: 'all 0.2s ease-in-out',
+              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
                 color: theme.palette.error.main,
-                transform: 'rotate(90deg)'
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.error.main,
+                  0.1
+                )} 0%, ${alpha(theme.palette.error.main, 0.05)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+                transform: 'rotate(90deg) scale(1.1)',
+                boxShadow: `0 6px 16px ${alpha(theme.palette.error.main, 0.2)}`
               }
             }}
             onClick={(e) => handleRemoveNft(e)}
@@ -184,22 +218,38 @@ export default function NFTCard({ nft, handleRemove }) {
             {costb && costb.amount && (
               <Box
                 sx={{
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                  borderRadius: '10px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.15
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                  backdropFilter: 'blur(10px)',
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  borderRadius: '12px',
                   padding: '4px 8px',
                   marginBottom: '4px',
-                  boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.15)',
-                  backdropFilter: 'blur(4px)'
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '1px',
+                    background: `linear-gradient(90deg, transparent 0%, ${theme.palette.primary.main} 50%, transparent 100%)`,
+                    opacity: 0.6
+                  }
                 }}
               >
                 <Typography
                   variant="caption"
                   sx={{
                     fontWeight: 700,
-                    color: '#fff',
-                    textShadow: '1px 1px 2px rgba(0, 0, 0, 0.3)',
+                    color: theme.palette.primary.main,
                     letterSpacing: '0.5px',
-                    fontSize: '0.7rem'
+                    fontSize: '0.7rem',
+                    textShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.1)}`
                   }}
                   noWrap
                 >
@@ -210,11 +260,15 @@ export default function NFTCard({ nft, handleRemove }) {
             {updateEvent && (
               <Box
                 sx={{
-                  backgroundColor: alpha(theme.palette.background.paper, 0.9),
-                  borderRadius: '8px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.background.paper,
+                    0.9
+                  )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                  backdropFilter: 'blur(10px)',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                  borderRadius: '10px',
                   padding: '3px 6px',
-                  boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.15)',
-                  backdropFilter: 'blur(4px)'
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
                 }}
               >
                 <Typography
@@ -237,13 +291,29 @@ export default function NFTCard({ nft, handleRemove }) {
         <CardContent
           sx={{
             padding: '8px 8px 6px',
-            background: alpha(theme.palette.background.default, 0.95),
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.9
+            )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
             height: '35%',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
             backdropFilter: 'blur(10px)',
-            borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+            borderTop: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+            position: 'relative',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '1px',
+              background: `linear-gradient(90deg, transparent 0%, ${alpha(
+                theme.palette.primary.main,
+                0.3
+              )} 50%, transparent 100%)`
+            }
           }}
         >
           <Box sx={{ minHeight: '32px', display: 'flex', flexDirection: 'column' }}>
@@ -324,13 +394,18 @@ export default function NFTCard({ nft, handleRemove }) {
                     sx={{
                       height: '20px',
                       '& .MuiChip-label': { px: 0.5 },
-                      background: (theme) =>
-                        `linear-gradient(135deg, ${theme.palette.info.main}, ${theme.palette.info.dark})`,
-                      boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.1)',
-                      transition: 'all 0.2s ease-in-out',
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.info.main,
+                        0.15
+                      )} 0%, ${alpha(theme.palette.info.main, 0.08)} 100%)`,
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                      color: theme.palette.info.main,
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.info.main, 0.15)}`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        transform: 'scale(1.05)',
-                        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)'
+                        transform: 'translateY(-2px)',
+                        boxShadow: `0 8px 20px ${alpha(theme.palette.info.main, 0.25)}`
                       }
                     }}
                   />
@@ -351,13 +426,18 @@ export default function NFTCard({ nft, handleRemove }) {
                     sx={{
                       height: '20px',
                       '& .MuiChip-label': { px: 0.5 },
-                      background: (theme) =>
-                        `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.dark})`,
-                      boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.1)',
-                      transition: 'all 0.2s ease-in-out',
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.secondary.main,
+                        0.15
+                      )} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+                      color: theme.palette.secondary.main,
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.15)}`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       '&:hover': {
-                        transform: 'scale(1.05)',
-                        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)'
+                        transform: 'translateY(-2px)',
+                        boxShadow: `0 8px 20px ${alpha(theme.palette.secondary.main, 0.25)}`
                       }
                     }}
                   />
