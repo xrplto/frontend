@@ -96,11 +96,29 @@ function normalizeTag(tag) {
 }
 
 // ----------------------------------------------------------------------
+// Enhanced RootStyle with portfolio design
 const RootStyle = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  borderBottom: `1px solid ${alpha('#CBCCD2', 0.1)}`
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.4
+  )} 100%)`,
+  backdropFilter: 'blur(20px)',
+  padding: theme.spacing(1, 0),
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '2px',
+    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+    opacity: 0.6
+  }
 }));
 
 const SearchBox = styled(OutlinedInput)(({ theme }) => ({
@@ -128,14 +146,29 @@ const HeaderWrapper = styled(Box)(
 `
 );
 
+// Enhanced StyledToggleButtonGroup with portfolio styling
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
   [`& .${toggleButtonGroupClasses.grouped}`]: {
     margin: theme.spacing(0.3),
     border: 0,
-    borderRadius: '4px',
-    height: '24px',
+    borderRadius: '8px',
+    height: '28px',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     [`&.${toggleButtonGroupClasses.disabled}`]: {
       border: 0
+    },
+    '&:hover': {
+      transform: 'translateY(-1px)',
+      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+    },
+    '&.Mui-selected': {
+      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(
+        theme.palette.primary.main,
+        0.08
+      )} 100%)`,
+      color: theme.palette.primary.main,
+      boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.2)}`,
+      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)} !important`
     }
   },
   [`& .${toggleButtonGroupClasses.middleButton},& .${toggleButtonGroupClasses.lastButton}`]: {
@@ -150,6 +183,77 @@ function getTagValue(tags, tagName) {
   if (idx < 0) return 0;
   return idx + 1;
 }
+
+// Enhanced Chip styling function
+const getEnhancedChipStyles = (theme, isActive, color, isLoading) => ({
+  borderRadius: '12px',
+  height: '32px',
+  fontWeight: 600,
+  fontSize: '0.875rem',
+  letterSpacing: '-0.01em',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  background: isActive
+    ? `linear-gradient(135deg, ${alpha(color || theme.palette.primary.main, 0.15)} 0%, ${alpha(
+        color || theme.palette.primary.main,
+        0.08
+      )} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+        theme.palette.background.paper,
+        0.4
+      )} 100%)`,
+  backdropFilter: 'blur(10px)',
+  border: `1px solid ${
+    isActive ? alpha(color || theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.08)
+  }`,
+  color: isActive ? color || theme.palette.primary.main : theme.palette.text.primary,
+  boxShadow: isActive
+    ? `0 4px 12px ${alpha(color || theme.palette.primary.main, 0.15)}`
+    : `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: `0 8px 24px ${alpha(color || theme.palette.primary.main, 0.2)}, 0 4px 12px ${alpha(
+      theme.palette.common.black,
+      0.08
+    )}`,
+    background: `linear-gradient(135deg, ${alpha(
+      color || theme.palette.primary.main,
+      0.2
+    )} 0%, ${alpha(color || theme.palette.primary.main, 0.12)} 100%)`,
+    border: `1px solid ${alpha(color || theme.palette.primary.main, 0.3)}`
+  },
+  '& .MuiChip-label': {
+    px: 2,
+    fontWeight: 600
+  },
+  '& .MuiChip-icon': {
+    fontSize: '18px',
+    marginLeft: '8px'
+  },
+  '@keyframes spin': {
+    '0%': { transform: 'rotate(0deg)' },
+    '100%': { transform: 'rotate(360deg)' }
+  },
+  opacity: isLoading ? 0.7 : 1
+});
+
+// Enhanced mobile chip styles
+const getMobileChipStyles = (theme) => ({
+  borderRadius: '12px',
+  height: '36px',
+  fontWeight: 600,
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.7
+  )} 100%)`,
+  backdropFilter: 'blur(20px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`
+  }
+});
 
 // ----------------------------------------------------------------------
 export default function SearchToolbar({
@@ -339,25 +443,23 @@ export default function SearchToolbar({
   // These would typically be determined by popularity metrics
   const getTrendingCategories = useCallback(() => {
     if (!tags || tags.length === 0) return [];
-    
+
     // Map colors to categories
     const categoryColors = {
-      'defi': '#FF5630',
-      'meme': '#FFAB00',
-      'ai': '#36B37E',
-      'gaming': '#9155FD',
-      'nft': '#2499EF',
-      'metaverse': '#7635DC',
-      'exchange': '#00AB55',
-      'privacy': '#B71D18'
+      defi: '#FF5630',
+      meme: '#FFAB00',
+      ai: '#36B37E',
+      gaming: '#9155FD',
+      nft: '#2499EF',
+      metaverse: '#7635DC',
+      exchange: '#00AB55',
+      privacy: '#B71D18'
     };
-    
+
     // Select 4 popular categories from tags
     // In a real app, these would be determined by analytics
-    const popularCategories = ['defi', 'meme', 'ai', 'gaming'].filter(cat => 
-      tags.includes(cat)
-    );
-    
+    const popularCategories = ['defi', 'meme', 'ai', 'gaming'].filter((cat) => tags.includes(cat));
+
     // If we don't have enough categories from our predefined list, add more from tags
     let result = [...popularCategories];
     let i = 0;
@@ -368,9 +470,9 @@ export default function SearchToolbar({
       }
       i++;
     }
-    
+
     // Map to the format we need
-    return result.slice(0, 4).map(cat => ({
+    return result.slice(0, 4).map((cat) => ({
       name: cat.charAt(0).toUpperCase() + cat.slice(1), // Capitalize first letter
       tag: cat,
       color: categoryColors[cat] || '#637381' // Use predefined color or default
@@ -384,27 +486,21 @@ export default function SearchToolbar({
       <Stack
         direction="row"
         alignItems="center"
-        spacing={0.5}
+        spacing={1}
         sx={{ display: { xs: 'block', md: 'none' }, mb: 2 }}
       >
         <Link
           underline="none"
           color="inherit"
-          // target="_blank"
           href={`/watchlist`}
           rel="noreferrer noopener nofollow"
         >
-          {/* <Button variant="outlined" startIcon={<StarRateIcon />} size="small" color="disabled">
-                        Watchlist
-                    </Button> */}
           <Chip
             variant={'outlined'}
             icon={<StarOutlineIcon fontSize="small" />}
             label={'Watchlist'}
             onClick={() => {}}
-            sx={{
-              borderRadius: '8px'
-            }}
+            sx={getMobileChipStyles(theme)}
           />
         </Link>
 
@@ -415,33 +511,26 @@ export default function SearchToolbar({
           onClick={() => {
             openSnackbar('Coming soon!', 'success');
           }}
-          sx={{
-            borderRadius: '8px'
-          }}
+          sx={getMobileChipStyles(theme)}
         />
       </Stack>
 
       <RootStyle>
-        {/* <SearchBox
-                    value={filterName}
-                    onChange={onFilterName}
-                    placeholder="Search ..."
-                    size="small"
-                    startAdornment={
-                        <InputAdornment position="start">
-                            <Box component={Icon} icon={searchFill} sx={{ color: 'text.disabled' }} />
-                        </InputAdornment>
-                    }
-                    sx={{pb:0.3}}
-                /> */}
+        {/* Enhanced Toggle Button Group */}
         <Paper
           elevation={0}
           sx={{
             display: 'flex',
-            border: (theme) => `1px solid ${theme.palette.divider}`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
             flexWrap: 'wrap',
-            borderRadius: '6px',
-            padding: '1px 4px'
+            borderRadius: '16px',
+            padding: '4px',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.9
+            )} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+            backdropFilter: 'blur(20px)',
+            boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.06)}`
           }}
         >
           <StyledToggleButtonGroup
@@ -451,18 +540,19 @@ export default function SearchToolbar({
             onChange={(_, newType) => setViewType(newType)}
           >
             <ToggleButton size="small" value="row">
-              <DehazeIcon fontSize="16px" />
+              <DehazeIcon fontSize="18px" />
             </ToggleButton>
             <ToggleButton
               size="small"
               value="heatmap"
               onClick={() => router.push('/tokens-heatmap')}
             >
-              <WindowIcon fontSize="16px" />
+              <WindowIcon fontSize="18px" />
             </ToggleButton>
           </StyledToggleButtonGroup>
         </Paper>
 
+        {/* Enhanced Tabs */}
         <Tabs
           value={tagValue}
           variant="scrollable"
@@ -474,12 +564,17 @@ export default function SearchToolbar({
             },
             '& .MuiTabs-flexContainer': {
               justifyContent: 'flex-start',
-              gap: '4px'
+              gap: '8px'
             },
             '& .MuiTab-root': {
-              minHeight: '32px',
-              padding: '0 4px',
+              minHeight: '36px',
+              padding: '0 6px',
               minWidth: 'unset'
+            },
+            '& .MuiTabs-scrollButtons': {
+              '&.Mui-disabled': {
+                opacity: 0.3
+              }
             }
           }}
         >
@@ -489,17 +584,15 @@ export default function SearchToolbar({
             label={
               <Chip
                 size="small"
-                icon={<AppsIcon sx={{ fontSize: '16px' }} />}
+                icon={<AppsIcon sx={{ fontSize: '18px' }} />}
                 label={'Tokens'}
                 onClick={handleTokensClick}
-                color={tagValue === 0 && !currentPeriod ? 'primary' : undefined}
-                sx={{
-                  borderRadius: '4px',
-                  height: '24px',
-                  '& .MuiChip-label': {
-                    px: 1
-                  }
-                }}
+                sx={getEnhancedChipStyles(
+                  theme,
+                  tagValue === 0 && !currentPeriod,
+                  theme.palette.primary.main,
+                  false
+                )}
               />
             }
             style={{
@@ -520,17 +613,15 @@ export default function SearchToolbar({
               >
                 <Chip
                   size="small"
-                  icon={<CollectionsIcon sx={{ fontSize: '16px' }} />}
+                  icon={<CollectionsIcon sx={{ fontSize: '18px' }} />}
                   label={'NFTs'}
                   onClick={handleDelete}
-                  color={tagValue === 1 ? 'primary' : undefined}
-                  sx={{
-                    borderRadius: '4px',
-                    height: '24px',
-                    '& .MuiChip-label': {
-                      px: 1
-                    }
-                  }}
+                  sx={getEnhancedChipStyles(
+                    theme,
+                    tagValue === 1,
+                    theme.palette.success.main,
+                    false
+                  )}
                 />
               </Link>
             }
@@ -549,7 +640,7 @@ export default function SearchToolbar({
                 icon={
                   <LocalFireDepartmentIcon
                     sx={{
-                      fontSize: '16px',
+                      fontSize: '18px',
                       animation: isLoading.trending ? 'spin 1s linear infinite' : 'none'
                     }}
                   />
@@ -557,38 +648,12 @@ export default function SearchToolbar({
                 label={'Trending'}
                 onClick={handleTrendingClick}
                 disabled={isLoading.trending}
-                sx={{
-                  borderRadius: '4px',
-                  height: '24px',
-                  backgroundColor:
-                    currentPeriod === 'trendingScore'
-                      ? darkMode
-                        ? 'rgba(255, 86, 48, 0.16)'
-                        : 'rgba(255, 86, 48, 0.08)'
-                      : 'transparent',
-                  color:
-                    currentPeriod === 'trendingScore'
-                      ? darkMode
-                        ? '#FF5630'
-                        : '#B71D18'
-                      : 'inherit',
-                  '&:hover': {
-                    backgroundColor:
-                      currentPeriod === 'trendingScore'
-                        ? darkMode
-                          ? 'rgba(255, 86, 48, 0.24)'
-                          : 'rgba(255, 86, 48, 0.16)'
-                        : ''
-                  },
-                  '& .MuiChip-label': {
-                    px: 1
-                  },
-                  '@keyframes spin': {
-                    '0%': { transform: 'rotate(0deg)' },
-                    '100%': { transform: 'rotate(360deg)' }
-                  },
-                  opacity: isLoading.trending ? 0.7 : 1
-                }}
+                sx={getEnhancedChipStyles(
+                  theme,
+                  currentPeriod === 'trendingScore',
+                  '#FF5630',
+                  isLoading.trending
+                )}
               />
             }
             style={{
@@ -606,7 +671,7 @@ export default function SearchToolbar({
                 icon={
                   <SearchIcon
                     sx={{
-                      fontSize: '16px',
+                      fontSize: '18px',
                       animation: isLoading.spotlight ? 'spin 1s linear infinite' : 'none'
                     }}
                   />
@@ -614,38 +679,12 @@ export default function SearchToolbar({
                 label={'Spotlight'}
                 onClick={handleSpotlightClick}
                 disabled={isLoading.spotlight}
-                sx={{
-                  borderRadius: '4px',
-                  height: '24px',
-                  backgroundColor:
-                    currentPeriod === 'assessmentScore'
-                      ? darkMode
-                        ? 'rgba(36, 153, 239, 0.16)'
-                        : 'rgba(36, 153, 239, 0.08)'
-                      : 'transparent',
-                  color:
-                    currentPeriod === 'assessmentScore'
-                      ? darkMode
-                        ? '#2499EF'
-                        : '#0C53B7'
-                      : 'inherit',
-                  '&:hover': {
-                    backgroundColor:
-                      currentPeriod === 'assessmentScore'
-                        ? darkMode
-                          ? 'rgba(36, 153, 239, 0.24)'
-                          : 'rgba(36, 153, 239, 0.16)'
-                        : ''
-                  },
-                  '& .MuiChip-label': {
-                    px: 1
-                  },
-                  '@keyframes spin': {
-                    '0%': { transform: 'rotate(0deg)' },
-                    '100%': { transform: 'rotate(360deg)' }
-                  },
-                  opacity: isLoading.spotlight ? 0.7 : 1
-                }}
+                sx={getEnhancedChipStyles(
+                  theme,
+                  currentPeriod === 'assessmentScore',
+                  '#2499EF',
+                  isLoading.spotlight
+                )}
               />
             }
             style={{
@@ -663,7 +702,7 @@ export default function SearchToolbar({
                 icon={
                   <VisibilityIcon
                     sx={{
-                      fontSize: '16px',
+                      fontSize: '18px',
                       animation: isLoading.mostViewed ? 'spin 1s linear infinite' : 'none'
                     }}
                   />
@@ -671,33 +710,12 @@ export default function SearchToolbar({
                 label={'Most Viewed'}
                 onClick={handleMostViewedClick}
                 disabled={isLoading.mostViewed}
-                sx={{
-                  borderRadius: '4px',
-                  height: '24px',
-                  backgroundColor:
-                    currentPeriod === 'views'
-                      ? darkMode
-                        ? 'rgba(145, 85, 253, 0.16)'
-                        : 'rgba(145, 85, 253, 0.08)'
-                      : 'transparent',
-                  color: currentPeriod === 'views' ? (darkMode ? '#9155FD' : '#7635DC') : 'inherit',
-                  '&:hover': {
-                    backgroundColor:
-                      currentPeriod === 'views'
-                        ? darkMode
-                          ? 'rgba(145, 85, 253, 0.24)'
-                          : 'rgba(145, 85, 253, 0.16)'
-                        : ''
-                  },
-                  '& .MuiChip-label': {
-                    px: 1
-                  },
-                  '@keyframes spin': {
-                    '0%': { transform: 'rotate(0deg)' },
-                    '100%': { transform: 'rotate(360deg)' }
-                  },
-                  opacity: isLoading.mostViewed ? 0.7 : 1
-                }}
+                sx={getEnhancedChipStyles(
+                  theme,
+                  currentPeriod === 'views',
+                  '#9155FD',
+                  isLoading.mostViewed
+                )}
               />
             }
             style={{
@@ -715,7 +733,7 @@ export default function SearchToolbar({
                 icon={
                   <TrendingUpIcon
                     sx={{
-                      fontSize: '16px',
+                      fontSize: '18px',
                       animation: isLoading.gainers ? 'spin 1s linear infinite' : 'none'
                     }}
                   />
@@ -727,38 +745,12 @@ export default function SearchToolbar({
                 }
                 onClick={handleGainersClick}
                 disabled={isLoading.gainers}
-                sx={{
-                  borderRadius: '4px',
-                  height: '24px',
-                  backgroundColor:
-                    currentPeriod && ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentPeriod)
-                      ? darkMode
-                        ? 'rgba(0, 171, 85, 0.16)'
-                        : 'rgba(0, 123, 85, 0.08)'
-                      : 'transparent',
-                  color:
-                    currentPeriod && ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentPeriod)
-                      ? darkMode
-                        ? '#00AB55'
-                        : '#007B55'
-                      : 'inherit',
-                  '&:hover': {
-                    backgroundColor:
-                      currentPeriod && ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentPeriod)
-                        ? darkMode
-                          ? 'rgba(0, 171, 85, 0.24)'
-                          : 'rgba(0, 123, 85, 0.16)'
-                        : ''
-                  },
-                  '& .MuiChip-label': {
-                    px: 1
-                  },
-                  '@keyframes spin': {
-                    '0%': { transform: 'rotate(0deg)' },
-                    '100%': { transform: 'rotate(360deg)' }
-                  },
-                  opacity: isLoading.gainers ? 0.7 : 1
-                }}
+                sx={getEnhancedChipStyles(
+                  theme,
+                  currentPeriod && ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentPeriod),
+                  '#00AB55',
+                  isLoading.gainers
+                )}
               />
             }
             style={{
@@ -776,7 +768,7 @@ export default function SearchToolbar({
                 icon={
                   <FiberNewIcon
                     sx={{
-                      fontSize: '16px',
+                      fontSize: '18px',
                       animation: isLoading.new ? 'spin 1s linear infinite' : 'none'
                     }}
                   />
@@ -784,34 +776,12 @@ export default function SearchToolbar({
                 label={'New'}
                 onClick={handleNewClick}
                 disabled={isLoading.new}
-                sx={{
-                  borderRadius: '4px',
-                  height: '24px',
-                  backgroundColor:
-                    currentPeriod === 'dateon'
-                      ? darkMode
-                        ? 'rgba(255, 171, 0, 0.16)'
-                        : 'rgba(255, 171, 0, 0.08)'
-                      : 'transparent',
-                  color:
-                    currentPeriod === 'dateon' ? (darkMode ? '#FFA000' : '#B76E00') : 'inherit',
-                  '&:hover': {
-                    backgroundColor:
-                      currentPeriod === 'dateon'
-                        ? darkMode
-                          ? 'rgba(255, 171, 0, 0.24)'
-                          : 'rgba(255, 171, 0, 0.16)'
-                        : ''
-                  },
-                  '& .MuiChip-label': {
-                    px: 1
-                  },
-                  '@keyframes spin': {
-                    '0%': { transform: 'rotate(0deg)' },
-                    '100%': { transform: 'rotate(360deg)' }
-                  },
-                  opacity: isLoading.new ? 0.7 : 1
-                }}
+                sx={getEnhancedChipStyles(
+                  theme,
+                  currentPeriod === 'dateon',
+                  '#FFAB00',
+                  isLoading.new
+                )}
               />
             }
             style={{
@@ -828,21 +798,10 @@ export default function SearchToolbar({
               label={
                 <Chip
                   size="small"
-                  icon={<WhatshotIcon sx={{ fontSize: '16px', color: category.color }} />}
+                  icon={<WhatshotIcon sx={{ fontSize: '18px' }} />}
                   label={category.name}
                   onClick={() => handleCategorySelect(category.tag)}
-                  sx={{
-                    borderRadius: '4px',
-                    height: '24px',
-                    backgroundColor: alpha(category.color, darkMode ? 0.16 : 0.08),
-                    color: darkMode ? category.color : alpha(category.color, 0.8),
-                    '&:hover': {
-                      backgroundColor: alpha(category.color, darkMode ? 0.24 : 0.16)
-                    },
-                    '& .MuiChip-label': {
-                      px: 1
-                    }
-                  }}
+                  sx={getEnhancedChipStyles(theme, false, category.color, false)}
                 />
               }
               style={{
@@ -860,17 +819,10 @@ export default function SearchToolbar({
             label={
               <Chip
                 size="small"
-                icon={<CategoryIcon sx={{ fontSize: '16px' }} />}
+                icon={<CategoryIcon sx={{ fontSize: '18px' }} />}
                 label={'Categories'}
                 onClick={() => setOpenCategoriesDrawer(true)}
-                sx={{
-                  color: darkMode ? '#007B55 !important' : '#5569ff !important',
-                  borderRadius: '4px',
-                  height: '24px',
-                  '& .MuiChip-label': {
-                    px: 1
-                  }
-                }}
+                sx={getEnhancedChipStyles(theme, false, '#5569ff', false)}
               />
             }
             style={{
@@ -880,10 +832,23 @@ export default function SearchToolbar({
           />
         </Tabs>
 
+        {/* Enhanced Rows Selector */}
         <Stack
           direction="row"
           alignItems="center"
-          sx={{ display: { xs: 'none', md: 'flex' }, ml: 'auto' }}
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            ml: 'auto',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.8
+            )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            padding: '8px 12px',
+            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+            boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.06)}`
+          }}
         >
           Rows
           <Select
@@ -891,7 +856,12 @@ export default function SearchToolbar({
             onChange={handleChangeRows}
             sx={{
               mt: 0.4,
-              '& .MuiOutlinedInput-notchedOutline': { border: 'none' }
+              ml: 1,
+              '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+              '& .MuiSelect-select': {
+                fontWeight: 600,
+                color: theme.palette.primary.main
+              }
             }}
           >
             <MenuItem value={100}>100</MenuItem>
@@ -906,6 +876,7 @@ export default function SearchToolbar({
           tags={tags}
         />
 
+        {/* Enhanced Menu */}
         <Menu
           anchorEl={gainersAnchorEl}
           open={Boolean(gainersAnchorEl)}
@@ -922,12 +893,30 @@ export default function SearchToolbar({
             sx: {
               mt: 1,
               minWidth: '160px',
+              borderRadius: '16px',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.95
+              )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+              backdropFilter: 'blur(20px)',
+              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
               '& .MuiMenuItem-root': {
                 fontSize: '0.875rem',
-                minHeight: '32px',
+                minHeight: '40px',
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center'
+                alignItems: 'center',
+                borderRadius: '8px',
+                margin: '4px 8px',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.1
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+                  transform: 'translateX(4px)'
+                }
               }
             }
           }}
@@ -939,19 +928,13 @@ export default function SearchToolbar({
               sx={{
                 backgroundColor:
                   currentPeriod === period
-                    ? darkMode
-                      ? 'rgba(0, 171, 85, 0.16)'
-                      : 'rgba(0, 123, 85, 0.08)'
+                    ? `linear-gradient(135deg, ${alpha('#00AB55', 0.15)} 0%, ${alpha(
+                        '#00AB55',
+                        0.08
+                      )} 100%)`
                     : 'transparent',
-                color: currentPeriod === period ? (darkMode ? '#00AB55' : '#007B55') : 'inherit',
-                '&:hover': {
-                  backgroundColor:
-                    currentPeriod === period
-                      ? darkMode
-                        ? 'rgba(0, 171, 85, 0.24)'
-                        : 'rgba(0, 123, 85, 0.16)'
-                      : ''
-                }
+                color: currentPeriod === period ? '#00AB55' : 'inherit',
+                fontWeight: currentPeriod === period ? 600 : 400
               }}
             >
               {`${label} Gainers`}
@@ -960,7 +943,7 @@ export default function SearchToolbar({
           ))}
         </Menu>
 
-        {/* Tokens Menu */}
+        {/* Enhanced Tokens Menu */}
         <Menu
           anchorEl={tokensAnchorEl}
           open={Boolean(tokensAnchorEl)}
@@ -976,14 +959,32 @@ export default function SearchToolbar({
           PaperProps={{
             sx: {
               mt: 1,
-              minWidth: '160px',
+              minWidth: '180px',
+              borderRadius: '16px',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.95
+              )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+              backdropFilter: 'blur(20px)',
+              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
               '& .MuiMenuItem-root': {
                 fontSize: '0.875rem',
-                minHeight: '32px',
+                minHeight: '40px',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                gap: 1
+                gap: 1,
+                borderRadius: '8px',
+                margin: '4px 8px',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.1
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+                  transform: 'translateX(4px)'
+                }
               }
             }
           }}
@@ -992,11 +993,13 @@ export default function SearchToolbar({
             onClick={() => handleTokenOptionSelect('/')}
             sx={{
               backgroundColor: !router.query.view
-                ? darkMode
-                  ? 'rgba(0, 171, 85, 0.16)'
-                  : 'rgba(0, 123, 85, 0.08)'
+                ? `linear-gradient(135deg, ${alpha('#00AB55', 0.15)} 0%, ${alpha(
+                    '#00AB55',
+                    0.08
+                  )} 100%)`
                 : 'transparent',
-              color: !router.query.view ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
+              color: !router.query.view ? '#00AB55' : 'inherit',
+              fontWeight: !router.query.view ? 600 : 400
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
@@ -1009,12 +1012,13 @@ export default function SearchToolbar({
             sx={{
               backgroundColor:
                 router.query.view === 'firstledger'
-                  ? darkMode
-                    ? 'rgba(0, 171, 85, 0.16)'
-                    : 'rgba(0, 123, 85, 0.08)'
+                  ? `linear-gradient(135deg, ${alpha('#00AB55', 0.15)} 0%, ${alpha(
+                      '#00AB55',
+                      0.08
+                    )} 100%)`
                   : 'transparent',
-              color:
-                router.query.view === 'firstledger' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
+              color: router.query.view === 'firstledger' ? '#00AB55' : 'inherit',
+              fontWeight: router.query.view === 'firstledger' ? 600 : 400
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
@@ -1027,12 +1031,13 @@ export default function SearchToolbar({
             sx={{
               backgroundColor:
                 router.query.view === 'magnetic-x'
-                  ? darkMode
-                    ? 'rgba(0, 171, 85, 0.16)'
-                    : 'rgba(0, 123, 85, 0.08)'
+                  ? `linear-gradient(135deg, ${alpha('#00AB55', 0.15)} 0%, ${alpha(
+                      '#00AB55',
+                      0.08
+                    )} 100%)`
                   : 'transparent',
-              color:
-                router.query.view === 'magnetic-x' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
+              color: router.query.view === 'magnetic-x' ? '#00AB55' : 'inherit',
+              fontWeight: router.query.view === 'magnetic-x' ? 600 : 400
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
@@ -1054,12 +1059,13 @@ export default function SearchToolbar({
             sx={{
               backgroundColor:
                 router.query.view === 'xpmarket'
-                  ? darkMode
-                    ? 'rgba(0, 171, 85, 0.16)'
-                    : 'rgba(0, 123, 85, 0.08)'
+                  ? `linear-gradient(135deg, ${alpha('#00AB55', 0.15)} 0%, ${alpha(
+                      '#00AB55',
+                      0.08
+                    )} 100%)`
                   : 'transparent',
-              color:
-                router.query.view === 'xpmarket' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
+              color: router.query.view === 'xpmarket' ? '#00AB55' : 'inherit',
+              fontWeight: router.query.view === 'xpmarket' ? 600 : 400
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
@@ -1072,11 +1078,13 @@ export default function SearchToolbar({
             sx={{
               backgroundColor:
                 router.query.view === 'xrpfun'
-                  ? darkMode
-                    ? 'rgba(0, 171, 85, 0.16)'
-                    : 'rgba(0, 123, 85, 0.08)'
+                  ? `linear-gradient(135deg, ${alpha('#00AB55', 0.15)} 0%, ${alpha(
+                      '#00AB55',
+                      0.08
+                    )} 100%)`
                   : 'transparent',
-              color: router.query.view === 'xrpfun' ? (darkMode ? '#00AB55' : '#007B55') : 'inherit'
+              color: router.query.view === 'xrpfun' ? '#00AB55' : 'inherit',
+              fontWeight: router.query.view === 'xrpfun' ? 600 : 400
             }}
           >
             <Stack direction="row" spacing={1} alignItems="center">
