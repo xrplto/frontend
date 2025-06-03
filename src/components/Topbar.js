@@ -45,7 +45,28 @@ const TopWrapper = styled(Box)(
     align-items: center;
     height: ${theme.spacing(5)};
     border-radius: 0px;
-    border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
+    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.8
+  )} 100%);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.08)};
+    box-shadow: 0 2px 8px ${alpha(theme.palette.common.black, 0.04)};
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, ${theme.palette.primary.main}, ${
+    theme.palette.success.main
+  }, ${theme.palette.info.main});
+      opacity: 0.8;
+    }
 `
 );
 
@@ -74,20 +95,27 @@ const APILabel = styled('a')(({ theme }) => ({
   color: theme.palette.text.primary,
   textDecoration: 'none',
   marginLeft: theme.spacing(1),
-  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+    theme.palette.primary.main,
+    0.03
+  )} 100%)`,
+  backdropFilter: 'blur(10px)',
   padding: '6px 14px',
   borderRadius: '12px',
   display: 'flex',
   alignItems: 'center',
   gap: '6px',
   minHeight: '32px',
-  backdropFilter: 'blur(8px)',
   border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.08)}`,
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.12),
-    transform: 'translateY(-1px)',
-    boxShadow: `0 4px 8px ${alpha(theme.palette.primary.main, 0.1)}`
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(
+      theme.palette.primary.main,
+      0.08
+    )} 100%)`,
+    transform: 'translateY(-2px)',
+    boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.15)}`
   },
   '&:active': {
     transform: 'translateY(0)'
@@ -109,11 +137,16 @@ const H24Style = styled('div')(({ theme }) => ({
   paddingRight: theme.spacing(0.5),
   paddingTop: theme.spacing(0.07),
   paddingBottom: theme.spacing(0.07),
-  backgroundColor: '#5569ff !important',
+  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
   borderRadius: 8,
-  transition: theme.transitions.create('opacity'),
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   opacity: 1,
-  '&:hover': { opacity: 1 }
+  boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}`,
+  '&:hover': {
+    opacity: 1,
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.35)}`
+  }
 }));
 
 const SWITCH_INTERVAL = 3000; // 3 seconds between switches
@@ -128,10 +161,21 @@ const StyledContainer = styled(Container)(({ theme }) => ({
 const TradeButton = styled(IconButton)(({ theme }) => ({
   marginLeft: theme.spacing(1),
   padding: theme.spacing(1),
-  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(
+    theme.palette.primary.main,
+    0.05
+  )} 100%)`,
+  backdropFilter: 'blur(10px)',
   borderRadius: '8px',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.2)
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(
+      theme.palette.primary.main,
+      0.1
+    )} 100%)`,
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
   }
 }));
 
@@ -173,13 +217,21 @@ const LiveIndicator = styled('div')(({ theme }) => ({
   gap: theme.spacing(0.75),
   padding: theme.spacing(0.25, 1),
   borderRadius: '20px',
-  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+    theme.palette.primary.main,
+    0.03
+  )} 100%)`,
   border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
   backdropFilter: 'blur(8px)',
-  transition: 'all 0.2s ease-in-out',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.08)}`,
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.12),
-    transform: 'translateY(-1px)'
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(
+      theme.palette.primary.main,
+      0.06
+    )} 100%)`,
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
   }
 }));
 
@@ -351,10 +403,21 @@ const getTradeApiUrl = () => {
 const ChatButton = styled(IconButton)(({ theme }) => ({
   marginLeft: theme.spacing(1),
   padding: theme.spacing(1),
-  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(
+    theme.palette.primary.main,
+    0.05
+  )} 100%)`,
+  backdropFilter: 'blur(10px)',
   borderRadius: '8px',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.2)
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(
+      theme.palette.primary.main,
+      0.1
+    )} 100%)`,
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
   },
   position: 'relative'
 }));
@@ -369,6 +432,53 @@ const NotificationBadge = styled('span')(({ theme }) => ({
   backgroundColor: theme.palette.error.main,
   borderRadius: '50%',
   animation: 'pulse 2s infinite'
+}));
+
+// Add this constant before the Topbar component
+const BOT_ADDRESSES = [
+  'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6',
+  'rfmdBKhtJw2J22rw1JxQcchQTM68qzE4N2',
+  'rpiFwLYi6Gb1ESHYorn2QG1WU5vw2u4exQ',
+  'rpP3jobib3bCGbK1EHUsyeFJF1LXcUBymq',
+  'rhubarbMVC2nzASf3qSGQcUKtLnAzqcBjp',
+  'rBYuQZgRnsSNTuGsxz7wmGt53GYDEg1qzf',
+  'rippLE4uy7r898MzuHTeTe7sPfuUDafLB',
+  'raKT8yExRhuK9xAqYeWezH8RAp6vNoU3Jo',
+  'rhB5snxAxsZ2cKf8iDJYiBpX8nrTxJfHoH',
+  'rN7SthSu7RZXo2LNmsh4QPgXcBzhTgmDDg',
+  'raKTPwoUnGbdSquoiZLX5bLZwY2JAvS5o9'
+];
+
+// Add these styled components after the existing styled components
+const MetricContainer = styled(Stack)(({ theme }) => ({
+  padding: theme.spacing(0.5, 1),
+  borderRadius: theme.spacing(1),
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.6
+  )} 100%)`,
+  backdropFilter: 'blur(10px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.7
+    )} 100%)`,
+    transform: 'translateY(-1px)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
+  }
+}));
+
+const MetricLabel = styled(Typography)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  fontWeight: 500,
+  fontSize: '0.85rem'
+}));
+
+const MetricValue = styled(Typography)(({ theme }) => ({
+  fontWeight: 600,
+  fontSize: '0.9rem'
 }));
 
 const Topbar = () => {
@@ -524,42 +634,6 @@ const Topbar = () => {
       return !isNaN(xrpAmount) && xrpAmount >= minXrp;
     });
   }, [trades, tradeFilter]);
-
-  // Add this constant before the Topbar component
-  const BOT_ADDRESSES = [
-    'rogue5HnPRSszD9CWGSUz8UGHMVwSSKF6',
-    'rfmdBKhtJw2J22rw1JxQcchQTM68qzE4N2',
-    'rpiFwLYi6Gb1ESHYorn2QG1WU5vw2u4exQ',
-    'rpP3jobib3bCGbK1EHUsyeFJF1LXcUBymq',
-    'rhubarbMVC2nzASf3qSGQcUKtLnAzqcBjp',
-    'rBYuQZgRnsSNTuGsxz7wmGt53GYDEg1qzf',
-    'rippLE4uy7r898MzuHTeTe7sPfuUDafLB',
-    'raKT8yExRhuK9xAqYeWezH8RAp6vNoU3Jo',
-    'rhB5snxAxsZ2cKf8iDJYiBpX8nrTxJfHoH',
-    'rN7SthSu7RZXo2LNmsh4QPgXcBzhTgmDDg',
-    'raKTPwoUnGbdSquoiZLX5bLZwY2JAvS5o9'
-  ];
-
-  // Add these new styled components after the existing styled components
-  const MetricContainer = styled(Stack)(({ theme }) => ({
-    padding: theme.spacing(0.5, 1),
-    borderRadius: theme.spacing(1),
-    backgroundColor: alpha(theme.palette.background.default, 0.6),
-    '&:hover': {
-      backgroundColor: alpha(theme.palette.background.default, 0.8)
-    }
-  }));
-
-  const MetricLabel = styled(Typography)(({ theme }) => ({
-    color: theme.palette.text.secondary,
-    fontWeight: 500,
-    fontSize: '0.85rem'
-  }));
-
-  const MetricValue = styled(Typography)(({ theme }) => ({
-    fontWeight: 600,
-    fontSize: '0.9rem'
-  }));
 
   const handleChatClick = (e) => {
     e.preventDefault(); // Prevent default navigation
