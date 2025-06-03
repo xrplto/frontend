@@ -193,7 +193,7 @@ export default function NFTs({ collection }) {
           }}
         />
       </Box>
-      <Grid container spacing={3} justifyContent="space-between">
+      <Grid container spacing={0} justifyContent="space-between">
         {showFilter && (
           <Grid item xs={12} md={3} xl={2}>
             <FilterDetail
@@ -219,9 +219,16 @@ export default function NFTs({ collection }) {
               </Box>
             }
           >
-            <Grid container spacing={3}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '8px',
+                justifyContent: 'flex-start'
+              }}
+            >
               {nfts.map((nft, index) => (
-                <Grid item xs={6} sm={4} md={3} lg={2.4} xl={2} key={nft.id || index}>
+                <Box key={nft.id || index} sx={{ flex: '0 0 auto' }}>
                   <MemoizedNFTCard
                     nft={nft}
                     handleRemove={handleRemove}
@@ -235,9 +242,9 @@ export default function NFTs({ collection }) {
                       />
                     }
                   />
-                </Grid>
+                </Box>
               ))}
-            </Grid>
+            </Box>
           </InfiniteScroll>
         </Grid>
       </Grid>

@@ -87,16 +87,13 @@ export default function NFTCard({ nft, handleRemove }) {
     handleRemove(NFTokenID);
   };
 
-  const showBuyNowButton =
-    (cost && cost.issuer === 'XRPL' && cost.currency === 'XRP' && cost.amount) || amount;
-
   return (
     <Link href={`/nft/${NFTokenID}`} underline="none" sx={{ position: 'relative' }}>
       <CardWrapper
         sx={{
-          margin: 'auto',
-          maxWidth: 240,
-          height: 300,
+          maxWidth: 160,
+          width: 160,
+          height: 220,
           '&:hover': {
             transform: 'translateY(-4px)',
             '& .card-media': {
@@ -239,7 +236,7 @@ export default function NFTCard({ nft, handleRemove }) {
 
         <CardContent
           sx={{
-            padding: '12px 12px 8px',
+            padding: '8px 8px 6px',
             background: alpha(theme.palette.background.default, 0.95),
             height: '35%',
             display: 'flex',
@@ -249,7 +246,7 @@ export default function NFTCard({ nft, handleRemove }) {
             borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
           }}
         >
-          <Box>
+          <Box sx={{ minHeight: '32px', display: 'flex', flexDirection: 'column' }}>
             <Typography
               variant="subtitle2"
               sx={{
@@ -259,8 +256,8 @@ export default function NFTCard({ nft, handleRemove }) {
                 display: '-webkit-box',
                 WebkitLineClamp: 1,
                 WebkitBoxOrient: 'vertical',
-                fontSize: '0.85rem',
-                mb: 0.5,
+                fontSize: '0.75rem',
+                mb: 0.3,
                 letterSpacing: '0.2px',
                 color: theme.palette.text.primary,
                 lineHeight: 1.2
@@ -268,27 +265,28 @@ export default function NFTCard({ nft, handleRemove }) {
             >
               {name}
             </Typography>
-            {(cost || amount) && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                noWrap
-                sx={{
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.5,
-                  mb: 0.5
-                }}
-              >
-                {cost
-                  ? cost.currency === 'XRP'
-                    ? `✕ ${fNumber(cost.amount)}`
-                    : `${fNumber(cost.amount)} ${normalizeCurrencyCodeXummImpl(cost.currency)}`
-                  : `✕ ${fNumber(amount)}`}
-              </Typography>
-            )}
+            <Box sx={{ minHeight: '14px' }}>
+              {(cost || amount) && (
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  noWrap
+                  sx={{
+                    fontSize: '0.65rem',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5
+                  }}
+                >
+                  {cost
+                    ? cost.currency === 'XRP'
+                      ? `✕ ${fNumber(cost.amount)}`
+                      : `${fNumber(cost.amount)} ${normalizeCurrencyCodeXummImpl(cost.currency)}`
+                    : `✕ ${fNumber(amount)}`}
+                </Typography>
+              )}
+            </Box>
             {destination && getMinterName(account) && (
               <Tooltip title={`Sold & Transfer`}>
                 <SportsScoreIcon
@@ -306,52 +304,26 @@ export default function NFTCard({ nft, handleRemove }) {
           <Stack
             direction="row"
             alignItems="center"
-            justifyContent="space-between"
+            justifyContent="flex-end"
             width="100%"
-            mt={1.5}
             spacing={1}
           >
-            {showBuyNowButton && (
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{
-                  boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
-                  borderRadius: '6px',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'scale(1.05)',
-                    boxShadow: '0px 6px 15px rgba(0, 0, 0, 0.2)'
-                  },
-                  padding: '2px 8px',
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  minHeight: '24px',
-                  maxWidth: '70px',
-                  minWidth: 'unset',
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                  letterSpacing: '0.3px'
-                }}
-              >
-                Buy Now
-              </Button>
-            )}
-            <Stack direction="row" spacing={0.8} alignItems="center">
+            <Stack direction="row" spacing={0.5} alignItems="center">
               {MasterSequence > 0 && (
                 <Tooltip title="On-Chain Rank">
                   <Chip
                     variant="filled"
                     color="info"
-                    icon={<NumbersIcon sx={{ width: '14px' }} />}
+                    icon={<NumbersIcon sx={{ width: '12px' }} />}
                     label={
-                      <Typography variant="caption" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                      <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 600 }}>
                         {fIntNumber(MasterSequence)}
                       </Typography>
                     }
                     size="small"
                     sx={{
-                      height: '24px',
-                      '& .MuiChip-label': { px: 0.8 },
+                      height: '20px',
+                      '& .MuiChip-label': { px: 0.5 },
                       background: (theme) =>
                         `linear-gradient(135deg, ${theme.palette.info.main}, ${theme.palette.info.dark})`,
                       boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.1)',
@@ -369,16 +341,16 @@ export default function NFTCard({ nft, handleRemove }) {
                   <Chip
                     variant="filled"
                     color="secondary"
-                    icon={<LeaderboardOutlinedIcon sx={{ width: '14px' }} />}
+                    icon={<LeaderboardOutlinedIcon sx={{ width: '12px' }} />}
                     label={
-                      <Typography variant="caption" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                      <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 600 }}>
                         {fIntNumber(rarity_rank)}
                       </Typography>
                     }
                     size="small"
                     sx={{
-                      height: '24px',
-                      '& .MuiChip-label': { px: 0.8 },
+                      height: '20px',
+                      '& .MuiChip-label': { px: 0.5 },
                       background: (theme) =>
                         `linear-gradient(135deg, ${theme.palette.secondary.main}, ${theme.palette.secondary.dark})`,
                       boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.1)',
