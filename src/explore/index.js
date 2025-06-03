@@ -9,6 +9,7 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 // Components
 import NFTs from './NFTs';
 import CollectionActivity from './CollectionActivity';
+import AccountTransactions from './CollectionActivity/AccountTransactions';
 import { AppContext } from 'src/AppContext';
 
 export default function ExploreNFT({ collection }) {
@@ -66,6 +67,7 @@ export default function ExploreNFT({ collection }) {
             <TabList onChange={handleChange} aria-label="lab API tabs example">
               <Tab label="NFTs" value="tab-nfts" />
               <Tab label="Activities" value="tab-activities" />
+              <Tab label="Creator Transactions" value="tab-creator-transactions" />
             </TabList>
 
             {isAdmin && (
@@ -86,6 +88,9 @@ export default function ExploreNFT({ collection }) {
           <TabPanel value="tab-activities" sx={{ pl: 0, pr: 0 }}>
             {/* <Typography color='red'>Coming soon.</Typography> */}
             <CollectionActivity collection={collection} />
+          </TabPanel>
+          <TabPanel value="tab-creator-transactions" sx={{ pl: 0, pr: 0 }}>
+            <AccountTransactions creatorAccount={collection?.account} />
           </TabPanel>
         </TabContext>
       </Box>
