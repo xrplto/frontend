@@ -642,19 +642,8 @@ export default function AccountTransactions({ creatorAccount }) {
     <Container maxWidth={false} sx={{ pl: 0, pr: 0, maxWidth: '2000px' }}>
       <Paper elevation={3} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
         <Typography variant="h5" gutterBottom sx={{ mb: 1 }}>
-          Creator Account Transactions
+          Collection Activity
         </Typography>
-
-        <Box sx={{ mb: 1.5 }}>
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-            Account: {creatorAccount}
-          </Typography>
-          {transactions.length > 0 && (
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-              Showing {transactions.length} transactions
-            </Typography>
-          )}
-        </Box>
 
         {loading ? (
           <Stack spacing={1}>
