@@ -997,9 +997,8 @@ const MarketMetricsContent = () => {
               Token Market Overview
             </Typography>
             {/* Wrap Button with Link */}
-            <Link href="/api-docs" passHref legacyBehavior>
+            <Link href="/api-docs">
               <Button
-                component="a" // Add component="a" for proper link behavior with MUI Button
                 variant="contained"
                 size="medium"
                 sx={{

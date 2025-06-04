@@ -33,37 +33,35 @@ function Logo({ style }) {
   };
 
   return (
-    <Link href="/" passHref legacyBehavior>
-      <a style={logoStyle}>
-        {imageError ? (
-          <Box
-            sx={{
-              width: '125px',
-              height: '46px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: darkMode ? 'white' : 'black'
-            }}
-          >
-            XRPL.to
-          </Box>
-        ) : (
-          <Image
-            src={img}
-            width={125}
-            height={46}
-            alt="XRPL.to Logo"
-            priority
-            onError={handleImageError}
-            style={{
-              objectFit: 'contain',
-              maxWidth: '100%',
-              height: 'auto'
-            }}
-          />
-        )}
-      </a>
+    <Link href="/" style={logoStyle}>
+      {imageError ? (
+        <Box
+          sx={{
+            width: '125px',
+            height: '46px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: darkMode ? 'white' : 'black'
+          }}
+        >
+          XRPL.to
+        </Box>
+      ) : (
+        <Image
+          src={img}
+          width={125}
+          height={46}
+          alt="XRPL.to Logo"
+          priority
+          onError={handleImageError}
+          style={{
+            objectFit: 'contain',
+            maxWidth: '100%',
+            height: 'auto'
+          }}
+        />
+      )}
     </Link>
   );
 }
