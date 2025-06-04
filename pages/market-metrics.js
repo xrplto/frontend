@@ -32,29 +32,6 @@ import { alpha } from '@mui/material/styles'; // Add alpha import
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Link from 'next/link'; // Import Link
 
-// Chart theme colors
-const chartColors = {
-  primary: {
-    main: '#3B82F6',
-    light: 'rgba(59, 130, 246, 0.1)',
-    dark: '#2563EB'
-  },
-  secondary: {
-    main: '#10B981',
-    light: 'rgba(16, 185, 129, 0.1)',
-    dark: '#059669'
-  },
-  tertiary: {
-    main: '#F59E0B',
-    light: 'rgba(245, 158, 11, 0.1)',
-    dark: '#D97706'
-  },
-  background: 'rgba(0, 0, 0, 0.3)',
-  cardBg: 'rgba(0, 0, 0, 0.5)',
-  text: '#E5E7EB',
-  grid: 'rgba(255, 255, 255, 0.03)'
-};
-
 // Updated theme-aware colors with portfolio styling
 const getThemeColors = (theme) => {
   const isDarkMode = theme.palette.mode === 'dark';
@@ -731,9 +708,6 @@ const MarketMetricsContent = () => {
   const handleAnimationEnd = () => {
     setAnimationComplete(true);
   };
-
-  // Add this state to preprocess data and prepare chart rendering
-  const [chartReady, setChartReady] = useState(false);
 
   // Add this state for progressive data loading
   const [progressiveData, setProgressiveData] = useState([]);
