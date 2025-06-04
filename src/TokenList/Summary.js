@@ -102,7 +102,9 @@ const MetricValue = styled(Typography)(({ theme }) => ({
 }));
 
 // Enhanced PercentageChange with portfolio styling
-const PercentageChange = styled(Typography)(({ theme, isPositive }) => ({
+const PercentageChange = styled(Typography, {
+  shouldForwardProp: (prop) => prop !== 'isPositive'
+})(({ theme, isPositive }) => ({
   fontSize: '0.75rem',
   color: isPositive ? theme.palette.success.main : theme.palette.error.main,
   display: 'flex',
