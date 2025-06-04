@@ -31,6 +31,9 @@ import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles'; // Add alpha import
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Link from 'next/link'; // Import Link
+import useWebSocket from 'react-use-websocket'; // Add WebSocket import
+import { useDispatch } from 'react-redux'; // Add Redux dispatch import
+import { update_metrics } from 'src/redux/statusSlice'; // Add Redux action import
 
 // Updated theme-aware colors with portfolio styling
 const getThemeColors = (theme) => {
@@ -3595,6 +3598,22 @@ const MarketMetricsContent = () => {
 };
 
 const MarketMetricsPage = () => {
+  const dispatch = useDispatch();
+
+  // Add WebSocket connection
+  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
+  useWebSocket(WSS_FEED_URL, {
+    shouldReconnect: () => true,
+    onMessage: (event) => {
+      try {
+        const json = JSON.parse(event.data);
+        dispatch(update_metrics(json));
+      } catch (err) {
+        console.error('Error processing WebSocket message:', err);
+      }
+    }
+  });
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Topbar />
