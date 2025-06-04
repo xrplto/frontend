@@ -28,6 +28,7 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Topbar from 'src/components/Topbar';
 import { useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles'; // Add alpha import
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Link from 'next/link'; // Import Link
 
@@ -54,21 +55,39 @@ const chartColors = {
   grid: 'rgba(255, 255, 255, 0.03)'
 };
 
-// Add theme-aware colors
+// Updated theme-aware colors with portfolio styling
 const getThemeColors = (theme) => {
   const isDarkMode = theme.palette.mode === 'dark';
 
   return {
-    background: isDarkMode ? 'transparent' : '#ffffff',
+    background: isDarkMode ? 'transparent' : 'transparent',
     backgroundGradient: isDarkMode
-      ? 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3))'
-      : 'linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(245, 245, 250, 1))',
-    cardBg: isDarkMode ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 1)',
-    cardBorder: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
-    cardHoverBorder: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-    text: isDarkMode ? 'rgba(255, 255, 255, 0.95)' : 'rgba(0, 0, 0, 0.87)',
-    textSecondary: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
-    grid: isDarkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'
+      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+          theme.palette.background.paper,
+          0.8
+        )} 100%)`
+      : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 1)} 0%, ${alpha(
+          theme.palette.background.paper,
+          0.95
+        )} 100%)`,
+    cardBg: isDarkMode
+      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+          theme.palette.background.paper,
+          0.7
+        )} 100%)`
+      : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+          theme.palette.background.paper,
+          0.8
+        )} 100%)`,
+    cardBorder: isDarkMode
+      ? alpha(theme.palette.divider, 0.08)
+      : alpha(theme.palette.divider, 0.06),
+    cardHoverBorder: isDarkMode
+      ? alpha(theme.palette.primary.main, 0.2)
+      : alpha(theme.palette.primary.main, 0.15),
+    text: theme.palette.text.primary,
+    textSecondary: theme.palette.text.secondary,
+    grid: isDarkMode ? alpha(theme.palette.divider, 0.08) : alpha(theme.palette.divider, 0.06)
   };
 };
 
@@ -77,26 +96,30 @@ const getChartColors = (theme) => {
   const isDarkMode = theme.palette.mode === 'dark';
 
   return {
-    totalLine: isDarkMode ? '#FFFFFF' : '#000000',
-    totalLineFill: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.8)',
-    cursorColor: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
-    legendBg: isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.05)',
-    scrollThumb: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+    totalLine: theme.palette.text.primary,
+    totalLineFill: isDarkMode
+      ? alpha(theme.palette.background.paper, 0.3)
+      : alpha(theme.palette.background.paper, 0.8),
+    cursorColor: isDarkMode
+      ? alpha(theme.palette.text.primary, 0.2)
+      : alpha(theme.palette.text.primary, 0.1),
+    legendBg: alpha(theme.palette.background.paper, 0.6),
+    scrollThumb: alpha(theme.palette.text.secondary, 0.2),
     // Add these color sets
     primary: {
-      main: '#3B82F6',
-      light: 'rgba(59, 130, 246, 0.1)',
-      dark: '#2563EB'
+      main: theme.palette.primary.main,
+      light: alpha(theme.palette.primary.main, 0.1),
+      dark: theme.palette.primary.dark
     },
     secondary: {
-      main: '#10B981',
-      light: 'rgba(16, 185, 129, 0.1)',
-      dark: '#059669'
+      main: theme.palette.success.main,
+      light: alpha(theme.palette.success.main, 0.1),
+      dark: theme.palette.success.dark
     },
     tertiary: {
-      main: '#F59E0B',
-      light: 'rgba(245, 158, 11, 0.1)',
-      dark: '#D97706'
+      main: theme.palette.warning.main,
+      light: alpha(theme.palette.warning.main, 0.1),
+      dark: theme.palette.warning.dark
     }
   };
 };
@@ -162,30 +185,44 @@ const CustomTooltip = ({ active, payload, label }) => {
         <Paper
           elevation={6}
           sx={{
-            backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
-            border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'}`,
-            p: { xs: 1, sm: 2 }, // Reduced padding on mobile
-            borderRadius: 2,
-            boxShadow: isDarkMode
-              ? '0 8px 32px 0 rgba(0, 0, 0, 0.5)'
-              : '0 4px 20px 0 rgba(0, 0, 0, 0.15)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            maxWidth: { xs: 250, sm: 300 }, // Smaller width on mobile
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.95
+            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+            p: { xs: 1, sm: 2 },
+            borderRadius: '16px',
+            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.15)}, 0 4px 16px ${alpha(
+              theme.palette.primary.main,
+              0.1
+            )}`,
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            maxWidth: { xs: 250, sm: 300 },
             maxHeight: '80vh',
-            overflow: 'auto'
+            overflow: 'auto',
+            position: 'relative',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '2px',
+              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
+              borderRadius: '16px 16px 0 0',
+              opacity: 0.6
+            }
           }}
         >
           <Typography
             variant="subtitle2"
             sx={{
-              color: isDarkMode ? '#E5E7EB' : 'rgba(0, 0, 0, 0.87)',
+              color: theme.palette.text.primary,
               mb: 1,
               fontWeight: 600,
-              fontSize: { xs: '0.7rem', sm: '0.8rem' }, // Smaller font on mobile
-              borderBottom: `1px solid ${
-                isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-              }`,
+              fontSize: { xs: '0.7rem', sm: '0.8rem' },
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
               pb: 1
             }}
           >
@@ -225,7 +262,22 @@ const CustomTooltip = ({ active, payload, label }) => {
                   display: 'flex',
                   alignItems: 'flex-start',
                   mb: 0.5,
-                  justifyContent: 'space-between'
+                  justifyContent: 'space-between',
+                  p: 1,
+                  borderRadius: '8px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.background.paper,
+                    0.6
+                  )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.primary.main,
+                      0.08
+                    )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                  }
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
@@ -236,13 +288,13 @@ const CustomTooltip = ({ active, payload, label }) => {
                       borderRadius: '50%',
                       backgroundColor: entry.color || entry.stroke,
                       mr: 1,
-                      boxShadow: '0 0 10px rgba(255, 255, 255, 0.1)'
+                      boxShadow: `0 0 8px ${alpha(entry.color || entry.stroke, 0.4)}`
                     }}
                   />
                   <Typography
                     variant="body2"
                     sx={{
-                      color: isDarkMode ? '#E5E7EB' : 'rgba(0, 0, 0, 0.87)',
+                      color: theme.palette.text.primary,
                       fontWeight: 500,
                       mr: 1
                     }}
@@ -254,7 +306,7 @@ const CustomTooltip = ({ active, payload, label }) => {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: isDarkMode ? '#E5E7EB' : 'rgba(0, 0, 0, 0.87)',
+                      color: theme.palette.text.primary,
                       fontWeight: 600,
                       textAlign: 'right'
                     }}
@@ -269,7 +321,7 @@ const CustomTooltip = ({ active, payload, label }) => {
                     <Typography
                       variant="caption"
                       sx={{
-                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                        color: theme.palette.text.secondary,
                         textAlign: 'right'
                       }}
                     >
@@ -284,7 +336,7 @@ const CustomTooltip = ({ active, payload, label }) => {
                     <Typography
                       variant="caption"
                       sx={{
-                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                        color: theme.palette.text.secondary,
                         textAlign: 'right'
                       }}
                     >
@@ -300,7 +352,7 @@ const CustomTooltip = ({ active, payload, label }) => {
                     <Typography
                       variant="caption"
                       sx={{
-                        color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                        color: theme.palette.text.secondary,
                         textAlign: 'right'
                       }}
                     >
@@ -421,7 +473,7 @@ const CustomLegend = ({ payload, visibleLines, handleLegendClick }) => {
   );
 };
 
-// Chart Container Component
+// Chart Container Component with updated styling
 const ChartContainer = ({ title, children, showFilter, onFilterChange, filterActive }) => {
   const theme = useTheme();
   const themeColors = getThemeColors(theme);
@@ -430,24 +482,40 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
     <Paper
       elevation={0}
       sx={{
-        p: { xs: 2, sm: 3, md: 4 }, // Reduced padding on mobile
-        mb: { xs: 2, sm: 3, md: 4 }, // Reduced margin on mobile
-        backgroundColor: themeColors.cardBg,
-        border: `1px solid ${themeColors.cardBorder}`,
-        borderRadius: 2,
-        backdropFilter: theme.palette.mode === 'dark' ? 'blur(16px)' : 'none',
-        WebkitBackdropFilter: theme.palette.mode === 'dark' ? 'blur(16px)' : 'none',
-        boxShadow:
-          theme.palette.mode === 'dark'
-            ? '0 8px 32px 0 rgba(0, 0, 0, 0.3)'
-            : '0 4px 12px 0 rgba(0, 0, 0, 0.05)',
+        p: { xs: 2, sm: 3, md: 4 },
+        mb: { xs: 2, sm: 3, md: 4 },
+        borderRadius: '24px',
+        background: `linear-gradient(135deg, ${alpha(
+          theme.palette.background.paper,
+          0.95
+        )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+        boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
+          theme.palette.primary.main,
+          0.04
+        )}`,
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&:hover': {
-          boxShadow:
-            theme.palette.mode === 'dark'
-              ? '0 8px 32px 0 rgba(0, 0, 0, 0.4)'
-              : '0 6px 16px 0 rgba(0, 0, 0, 0.08)',
-          border: `1px solid ${themeColors.cardHoverBorder}`,
-          transition: 'all 0.3s ease-in-out'
+          transform: 'translateY(-2px)',
+          boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
+            theme.palette.primary.main,
+            0.1
+          )}`,
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+        },
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '2px',
+          background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+          opacity: 0.8
         }
       }}
     >
@@ -464,9 +532,15 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
           sx={{
             color: themeColors.text,
             fontWeight: 600,
-            fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' }, // Smaller font on mobile
-            letterSpacing: '0.025em',
-            textShadow: theme.palette.mode === 'dark' ? '0 2px 4px rgba(0, 0, 0, 0.2)' : 'none'
+            fontSize: { xs: '1rem', sm: '1.15rem', md: '1.25rem' },
+            letterSpacing: '-0.02em',
+            background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
+              theme.palette.primary.main,
+              0.8
+            )} 100%)`,
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
           }}
         >
           {title}
@@ -480,31 +554,31 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
                 width: { xs: 36, sm: 42 },
                 height: { xs: 20, sm: 24 },
                 backgroundColor: filterActive
-                  ? theme.palette.mode === 'dark'
-                    ? 'rgba(59, 130, 246, 0.8)'
-                    : '#3B82F6'
-                  : theme.palette.mode === 'dark'
-                  ? 'rgba(255, 255, 255, 0.2)'
-                  : 'rgba(0, 0, 0, 0.2)',
+                  ? alpha(theme.palette.primary.main, 0.8)
+                  : alpha(theme.palette.text.secondary, 0.2),
                 borderRadius: 12,
                 position: 'relative',
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 display: 'flex',
                 alignItems: 'center',
-                padding: '0 2px'
+                padding: '0 2px',
+                border: `1px solid ${alpha(theme.palette.primary.main, filterActive ? 0.3 : 0.1)}`,
+                boxShadow: filterActive
+                  ? `0 0 12px ${alpha(theme.palette.primary.main, 0.3)}`
+                  : 'none'
               }}
             >
               <Box
                 sx={{
                   width: { xs: 16, sm: 20 },
                   height: { xs: 16, sm: 20 },
-                  backgroundColor: theme.palette.mode === 'dark' ? '#FFFFFF' : '#FFFFFF',
+                  backgroundColor: theme.palette.background.paper,
                   borderRadius: '50%',
                   position: 'absolute',
                   left: filterActive ? 'calc(100% - 22px)' : '2px',
                   transition: 'all 0.3s ease',
-                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)'
+                  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.15)}`
                 }}
               />
             </Box>
@@ -966,12 +1040,40 @@ const MarketMetricsContent = () => {
       sx={{
         flex: 1,
         py: { xs: 1, sm: 2, md: 3 },
-        backgroundColor: themeColors.background,
-        backgroundImage: themeColors.backgroundGradient,
-        minHeight: '100vh'
+        backgroundColor: 'transparent',
+        backgroundImage: `linear-gradient(135deg, ${alpha(
+          theme.palette.background.default,
+          0.95
+        )} 0%, ${alpha(theme.palette.background.default, 0.8)} 100%)`,
+        minHeight: '100vh',
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(circle at 20% 50%, ${alpha(
+            theme.palette.primary.main,
+            0.03
+          )} 0%, transparent 50%), radial-gradient(circle at 80% 20%, ${alpha(
+            theme.palette.success.main,
+            0.03
+          )} 0%, transparent 50%)`,
+          pointerEvents: 'none'
+        }
       }}
     >
-      <Container maxWidth="xl" sx={{ mt: { xs: 2, sm: 3, md: 4 }, mb: { xs: 2, sm: 3, md: 4 } }}>
+      <Container
+        maxWidth="xl"
+        sx={{
+          mt: { xs: 2, sm: 3, md: 4 },
+          mb: { xs: 2, sm: 3, md: 4 },
+          position: 'relative',
+          zIndex: 1
+        }}
+      >
         {/* Add the new overview section */}
         <Box sx={{ mb: { xs: 3, sm: 4, md: 5 } }}>
           <Box
@@ -981,39 +1083,91 @@ const MarketMetricsContent = () => {
               justifyContent: 'space-between',
               flexWrap: 'wrap',
               gap: 1,
-              mb: 1.5
+              mb: 1.5,
+              p: 3,
+              borderRadius: '20px',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.9
+              )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
+                theme.palette.primary.main,
+                0.04
+              )}`,
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '2px',
+                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                opacity: 0.8
+              }
             }}
           >
-            <Typography
-              variant="h4"
-              sx={{
-                color: themeColors.text,
-                fontWeight: 700,
-                fontSize: { xs: '1.6rem', sm: '1.8rem', md: '2.1rem' },
-                letterSpacing: '0.02em',
-                textShadow: theme.palette.mode === 'dark' ? '0 1px 4px rgba(0, 0, 0, 0.25)' : 'none'
-              }}
-            >
-              Token Market Overview
-            </Typography>
+            <Box sx={{ flex: 1 }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  color: themeColors.text,
+                  fontWeight: 700,
+                  fontSize: { xs: '1.6rem', sm: '1.8rem', md: '2.1rem' },
+                  letterSpacing: '-0.02em',
+                  background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
+                    theme.palette.primary.main,
+                    0.8
+                  )} 100%)`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  mb: 1
+                }}
+              >
+                Token Market Overview
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: themeColors.textSecondary,
+                  fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+                  maxWidth: '600px',
+                  lineHeight: 1.6
+                }}
+              >
+                {/* Use the dynamic description */}
+                {generateDescription()}
+              </Typography>
+            </Box>
             {/* Wrap Button with Link */}
             <Link href="/api-docs">
               <Button
                 variant="contained"
                 size="medium"
                 sx={{
-                  backgroundColor:
-                    theme.palette.mode === 'dark' ? 'rgba(71, 85, 105, 0.8)' : '#475569',
-                  color: theme.palette.mode === 'dark' ? '#E2E8F0' : '#F8FAFC',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.9
+                  )} 0%, ${alpha(theme.palette.primary.dark, 0.8)} 100%)`,
+                  color: theme.palette.primary.contrastText,
                   '&:hover': {
-                    backgroundColor:
-                      theme.palette.mode === 'dark' ? 'rgba(100, 116, 139, 0.9)' : '#64748B'
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`
                   },
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   textTransform: 'none',
-                  fontWeight: 500,
+                  fontWeight: 600,
                   fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                  padding: { xs: '4px 10px', sm: '6px 16px' }
+                  padding: { xs: '8px 16px', sm: '10px 20px' },
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
               >
                 {/* Change button text */}
@@ -1021,33 +1175,37 @@ const MarketMetricsContent = () => {
               </Button>
             </Link>
           </Box>
-          <Typography
-            variant="body1"
-            sx={{
-              color: themeColors.textSecondary,
-              fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
-              maxWidth: '800px'
-            }}
-          >
-            {/* Use the dynamic description */}
-            {generateDescription()}
-          </Typography>
         </Box>
 
         {/* Add tabs for chart categories */}
         <Paper
           elevation={0}
           sx={{
-            mb: { xs: 2, sm: 3, md: 4 }, // Reduced margin on mobile
-            backgroundColor: themeColors.cardBg,
-            border: `1px solid ${themeColors.cardBorder}`,
-            borderRadius: 2,
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            boxShadow:
-              theme.palette.mode === 'dark'
-                ? '0 8px 32px 0 rgba(0, 0, 0, 0.3)'
-                : '0 4px 12px 0 rgba(0, 0, 0, 0.05)'
+            mb: { xs: 2, sm: 3, md: 4 },
+            borderRadius: '20px',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.9
+            )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
+              theme.palette.primary.main,
+              0.04
+            )}`,
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '2px',
+              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+              opacity: 0.6
+            }
           }}
         >
           <Tabs
@@ -1056,33 +1214,36 @@ const MarketMetricsContent = () => {
             variant="scrollable"
             scrollButtons="auto"
             sx={{
-              minHeight: { xs: '40px', sm: '48px' }, // Smaller height on mobile
+              minHeight: { xs: '40px', sm: '48px' },
               '& .MuiTabs-indicator': {
-                backgroundColor:
-                  theme.palette.mode === 'dark'
-                    ? 'rgba(255, 255, 255, 0.8)'
-                    : theme.palette.primary.main,
-                height: '2px'
+                backgroundColor: theme.palette.primary.main,
+                height: '3px',
+                borderRadius: '2px'
               },
               '& .MuiTab-root': {
-                color:
-                  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-                minHeight: { xs: '40px', sm: '48px' }, // Smaller height on mobile
-                padding: { xs: '8px 12px', sm: '12px 16px' }, // Reduced padding on mobile
-                fontSize: { xs: '0.7rem', sm: '0.8rem' }, // Smaller font on mobile
+                color: alpha(theme.palette.text.secondary, 0.8),
+                minHeight: { xs: '40px', sm: '48px' },
+                padding: { xs: '8px 12px', sm: '12px 16px' },
+                fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                fontWeight: 500,
+                textTransform: 'none',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&.Mui-selected': {
-                  color:
-                    theme.palette.mode === 'dark'
-                      ? 'rgba(255, 255, 255, 0.95)'
-                      : theme.palette.primary.main,
-                  fontWeight: 600
+                  color: theme.palette.primary.main,
+                  fontWeight: 600,
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  borderRadius: '12px 12px 0 0'
                 },
                 '&:hover': {
-                  color:
-                    theme.palette.mode === 'dark'
-                      ? 'rgba(255, 255, 255, 0.8)'
-                      : theme.palette.primary.dark,
-                  opacity: 0.8
+                  color: theme.palette.primary.main,
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.05
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                  borderRadius: '12px 12px 0 0'
                 }
               }
             }}
@@ -1118,37 +1279,59 @@ const MarketMetricsContent = () => {
                 value={timeRange}
                 onChange={(e, newValue) => handleTimeRangeChange(newValue)}
                 variant="scrollable"
-                scrollButtons={isMobile ? false : 'auto'} // Hide scroll buttons on mobile
+                scrollButtons={isMobile ? false : 'auto'}
                 sx={{
-                  minHeight: { xs: '28px', sm: '36px' }, // Even smaller height on mobile
+                  minHeight: { xs: '32px', sm: '40px' },
+                  bgcolor: alpha(theme.palette.background.paper, 0.6),
+                  borderRadius: '12px',
+                  padding: '4px',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  boxShadow: `inset 0 2px 4px ${alpha(theme.palette.common.black, 0.06)}`,
                   '& .MuiTabs-indicator': {
-                    backgroundColor:
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(255, 255, 255, 0.8)'
-                        : theme.palette.primary.main,
-                    height: '2px'
+                    display: 'none'
                   },
                   '& .MuiTabs-root': {
-                    maxWidth: { xs: '100%', sm: 'auto' } // Constrain width on mobile
+                    maxWidth: { xs: '100%', sm: 'auto' }
                   },
                   '& .MuiTabs-flexContainer': {
-                    justifyContent: isMobile ? 'space-between' : 'flex-start' // Space evenly on mobile
+                    justifyContent: isMobile ? 'space-between' : 'flex-start',
+                    gap: '4px'
                   },
                   '& .MuiTab-root': {
-                    color:
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(255, 255, 255, 0.6)'
-                        : 'rgba(0, 0, 0, 0.6)',
-                    minHeight: { xs: '28px', sm: '36px' }, // Smaller height on mobile
-                    padding: { xs: '2px 6px', sm: '6px 12px' }, // Further reduced padding on mobile
-                    minWidth: { xs: '40px', sm: '60px' }, // Smaller width on mobile
-                    fontSize: { xs: '0.6rem', sm: '0.75rem' }, // Smaller font on mobile
+                    color: alpha(theme.palette.text.secondary, 0.8),
+                    minHeight: { xs: '24px', sm: '32px' },
+                    padding: { xs: '4px 8px', sm: '6px 12px' },
+                    minWidth: { xs: '36px', sm: '50px' },
+                    fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    borderRadius: '8px',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
                     '&.Mui-selected': {
-                      color:
-                        theme.palette.mode === 'dark'
-                          ? 'rgba(255, 255, 255, 0.95)'
-                          : theme.palette.primary.main,
-                      fontWeight: 600
+                      color: theme.palette.primary.main,
+                      fontWeight: 600,
+                      bgcolor: theme.palette.background.paper,
+                      boxShadow: `0 2px 8px ${alpha(
+                        theme.palette.primary.main,
+                        0.15
+                      )}, 0 1px 3px ${alpha(theme.palette.common.black, 0.1)}`,
+                      transform: 'translateY(-1px)',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '2px',
+                        background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
+                        borderRadius: '8px 8px 0 0'
+                      }
+                    },
+                    '&:hover': {
+                      color: theme.palette.primary.main,
+                      bgcolor: alpha(theme.palette.background.paper, 0.8),
+                      transform: 'translateY(-1px)'
                     }
                   }
                 }}
@@ -1566,31 +1749,59 @@ const MarketMetricsContent = () => {
                 value={timeRange}
                 onChange={(e, newValue) => handleTimeRangeChange(newValue)}
                 variant="scrollable"
-                scrollButtons={isMobile ? false : 'auto'} // Hide scroll buttons on mobile
+                scrollButtons={isMobile ? false : 'auto'}
                 sx={{
-                  minHeight: { xs: '28px', sm: '36px' }, // Smaller height on mobile
+                  minHeight: { xs: '32px', sm: '40px' },
+                  bgcolor: alpha(theme.palette.background.paper, 0.6),
+                  borderRadius: '12px',
+                  padding: '4px',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  boxShadow: `inset 0 2px 4px ${alpha(theme.palette.common.black, 0.06)}`,
                   '& .MuiTabs-indicator': {
-                    backgroundColor:
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(255, 255, 255, 0.8)'
-                        : theme.palette.primary.main,
-                    height: '2px'
+                    display: 'none'
+                  },
+                  '& .MuiTabs-root': {
+                    maxWidth: { xs: '100%', sm: 'auto' }
+                  },
+                  '& .MuiTabs-flexContainer': {
+                    justifyContent: isMobile ? 'space-between' : 'flex-start',
+                    gap: '4px'
                   },
                   '& .MuiTab-root': {
-                    color:
-                      theme.palette.mode === 'dark'
-                        ? 'rgba(255, 255, 255, 0.6)'
-                        : 'rgba(0, 0, 0, 0.6)',
-                    minHeight: { xs: '28px', sm: '36px' }, // Smaller height on mobile
-                    padding: { xs: '2px 6px', sm: '6px 12px' }, // Reduced padding on mobile
-                    minWidth: { xs: '40px', sm: '60px' }, // Smaller width on mobile
-                    fontSize: { xs: '0.6rem', sm: '0.75rem' }, // Smaller font on mobile
+                    color: alpha(theme.palette.text.secondary, 0.8),
+                    minHeight: { xs: '24px', sm: '32px' },
+                    padding: { xs: '4px 8px', sm: '6px 12px' },
+                    minWidth: { xs: '36px', sm: '50px' },
+                    fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    borderRadius: '8px',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
                     '&.Mui-selected': {
-                      color:
-                        theme.palette.mode === 'dark'
-                          ? 'rgba(255, 255, 255, 0.95)'
-                          : theme.palette.primary.main,
-                      fontWeight: 600
+                      color: theme.palette.primary.main,
+                      fontWeight: 600,
+                      bgcolor: theme.palette.background.paper,
+                      boxShadow: `0 2px 8px ${alpha(
+                        theme.palette.primary.main,
+                        0.15
+                      )}, 0 1px 3px ${alpha(theme.palette.common.black, 0.1)}`,
+                      transform: 'translateY(-1px)',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '2px',
+                        background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
+                        borderRadius: '8px 8px 0 0'
+                      }
+                    },
+                    '&:hover': {
+                      color: theme.palette.primary.main,
+                      bgcolor: alpha(theme.palette.background.paper, 0.8),
+                      transform: 'translateY(-1px)'
                     }
                   }
                 }}
