@@ -472,7 +472,7 @@ export default function TokenListHead({
             textTransform: 'uppercase',
             letterSpacing: '0.02em',
             borderBottom: 'none',
-            '&:not(:first-child)': {
+            '&:not(:first-of-type)': {
               paddingLeft: '8px'
             }
           },

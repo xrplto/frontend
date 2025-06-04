@@ -702,7 +702,7 @@ function FTokenRow({
                     pr: 2
                   }
                 },
-                '& .MuiTableRow-root:not(:first-child)': {
+                '& .MuiTableRow-root:not(:first-of-type)': {
                   '& .MuiTableCell-root': {
                     paddingTop: '1px'
                   }
