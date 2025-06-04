@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useMemo } from 'react';
+import React, { useState, useContext, useEffect, useMemo, useCallback } from 'react';
 import Decimal from 'decimal.js';
 import Wallet from 'src/components/Wallet';
 import 'src/utils/i18n';
@@ -396,7 +396,7 @@ const parseValue = (value) => {
 
 // Remove this function since we're not using different URLs based on filters
 const getTradeApiUrl = () => {
-  return 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=5000';
+  return 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=500';
 };
 
 // Add this styled component with the other styled components
@@ -481,6 +481,16 @@ const MetricValue = styled(Typography)(({ theme }) => ({
   fontSize: '0.9rem'
 }));
 
+// Add filter state and filter options - move this outside the component to prevent recreation
+const FILTER_OPTIONS = [
+  { value: 'All', label: 'All Trades' },
+  { value: '500+', label: '🐟 500+ XRP' },
+  { value: '1000+', label: '🐬 1000+ XRP' },
+  { value: '2500+', label: '🦈 2500+ XRP' },
+  { value: '5000+', label: '🐋 5000+ XRP' },
+  { value: '10000+', label: '🐳 10000+ XRP' }
+];
+
 const Topbar = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -501,65 +511,69 @@ const Topbar = () => {
   const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
   const router = useRouter();
 
-  const mobileMetrics = [
-    {
-      label: 'Tokens',
-      value: abbreviateNumber(metrics.total),
-      color: 'inherit'
-    },
-    {
-      label: 'Addresses',
-      value: abbreviateNumber(metrics.H24.totalAddresses),
-      color: '#54D62C'
-    },
-    {
-      label: 'Offers',
-      value: abbreviateNumber(metrics.H24.totalOffers),
-      color: '#FFC107'
-    },
-    {
-      label: 'Trustlines',
-      value: abbreviateNumber(metrics.H24.totalTrustLines),
-      color: '#FFA48D'
-    },
-    {
-      label: 'Trades',
-      value: abbreviateNumber(metrics.H24.transactions24H),
-      color: '#74CAFF'
-    },
-    {
-      label: 'Vol',
-      value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
-        metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
-          ? new Decimal(metrics.H24.tradedXRP24H || 0)
-              .div(new Decimal(metrics[activeFiatCurrency] || 1))
-              .toNumber()
-          : 0
-      )}`,
-      color: theme.palette.error.main
-    },
-    {
-      label: 'Tokens Traded',
-      value: abbreviateNumber(metrics.H24.tradedTokens24H),
-      color: '#3366FF'
-    },
-    {
-      label: 'Active Addresses',
-      value: abbreviateNumber(metrics.H24.activeAddresses24H),
-      color: '#54D62C'
-    },
-    {
-      label: 'Total TVL',
-      value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
-        metrics?.H24?.totalTVL && metrics[activeFiatCurrency]
-          ? new Decimal(metrics.H24.totalTVL || 0)
-              .div(new Decimal(metrics[activeFiatCurrency] || 1))
-              .toNumber()
-          : 0
-      )}`,
-      color: '#8E44AD' // Purple color for TVL
-    }
-  ];
+  // Memoize the mobile metrics to prevent recreation on every render
+  const mobileMetrics = useMemo(
+    () => [
+      {
+        label: 'Tokens',
+        value: abbreviateNumber(metrics.total),
+        color: 'inherit'
+      },
+      {
+        label: 'Addresses',
+        value: abbreviateNumber(metrics.H24.totalAddresses),
+        color: '#54D62C'
+      },
+      {
+        label: 'Offers',
+        value: abbreviateNumber(metrics.H24.totalOffers),
+        color: '#FFC107'
+      },
+      {
+        label: 'Trustlines',
+        value: abbreviateNumber(metrics.H24.totalTrustLines),
+        color: '#FFA48D'
+      },
+      {
+        label: 'Trades',
+        value: abbreviateNumber(metrics.H24.transactions24H),
+        color: '#74CAFF'
+      },
+      {
+        label: 'Vol',
+        value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
+          metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
+            ? new Decimal(metrics.H24.tradedXRP24H || 0)
+                .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                .toNumber()
+            : 0
+        )}`,
+        color: theme.palette.error.main
+      },
+      {
+        label: 'Tokens Traded',
+        value: abbreviateNumber(metrics.H24.tradedTokens24H),
+        color: '#3366FF'
+      },
+      {
+        label: 'Active Addresses',
+        value: abbreviateNumber(metrics.H24.activeAddresses24H),
+        color: '#54D62C'
+      },
+      {
+        label: 'Total TVL',
+        value: `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
+          metrics?.H24?.totalTVL && metrics[activeFiatCurrency]
+            ? new Decimal(metrics.H24.totalTVL || 0)
+                .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                .toNumber()
+            : 0
+        )}`,
+        color: '#8E44AD' // Purple color for TVL
+      }
+    ],
+    [metrics, activeFiatCurrency, theme.palette.error.main]
+  );
 
   // Add useEffect for auto-switching
   useEffect(() => {
@@ -584,16 +598,12 @@ const Topbar = () => {
     }
   };
 
-  // Add filter state and filter options
+  // Add filter state - use useCallback to prevent recreation
   const [tradeFilter, setTradeFilter] = useState('All');
-  const filterOptions = [
-    { value: 'All', label: 'All Trades' },
-    { value: '500+', label: '🐟 500+ XRP' },
-    { value: '1000+', label: '🐬 1000+ XRP' },
-    { value: '2500+', label: '🦈 2500+ XRP' },
-    { value: '5000+', label: '🐋 5000+ XRP' },
-    { value: '10000+', label: '🐳 10000+ XRP' }
-  ];
+
+  const handleFilterChange = useCallback((event) => {
+    setTradeFilter(event.target.value);
+  }, []);
 
   // Update the useSWR hook to prevent revalidation issues
   const { data: trades, error } = useSWR(
@@ -634,6 +644,27 @@ const Topbar = () => {
       return !isNaN(xrpAmount) && xrpAmount >= minXrp;
     });
   }, [trades, tradeFilter]);
+
+  // Memoize the filter select component to prevent re-renders
+  const FilterSelect = useMemo(
+    () => (
+      <FormControl size="small" sx={{ minWidth: 120 }}>
+        <Select
+          value={tradeFilter}
+          onChange={handleFilterChange}
+          displayEmpty
+          inputProps={{ 'aria-label': 'Filter trades' }}
+        >
+          {FILTER_OPTIONS.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    ),
+    [tradeFilter, handleFilterChange]
+  );
 
   const handleChatClick = (e) => {
     e.preventDefault(); // Prevent default navigation
@@ -806,20 +837,7 @@ const Topbar = () => {
               </Typography>
             )}
           </Box>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <Select
-              value={tradeFilter}
-              onChange={(e) => setTradeFilter(e.target.value)}
-              displayEmpty
-              inputProps={{ 'aria-label': 'Filter trades' }}
-            >
-              {filterOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          {FilterSelect}
         </Box>
         {error ? (
           <Box p={2}>
@@ -836,9 +854,9 @@ const Topbar = () => {
           <List
             sx={{ width: '100%', padding: 0, maxHeight: 'calc(100vh - 64px)', overflow: 'auto' }}
           >
-            {filteredTrades.map((trade) => (
+            {filteredTrades.map((trade, index) => (
               <ListItem
-                key={`${trade.time}-${trade.maker}-${trade.taker}`}
+                key={`${trade.time}-${trade.maker}-${trade.taker}-${trade.paid?.value}-${trade.got?.value}-${index}`}
                 sx={{
                   borderBottom: `1px solid ${theme.palette.divider}`,
                   position: 'relative',
