@@ -25,7 +25,9 @@ import {
   Tab,
   Chip,
   FormControlLabel,
-  Switch
+  Switch,
+  useTheme,
+  Button
 } from '@mui/material';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import SearchIcon from '@mui/icons-material/Search';
@@ -37,12 +39,18 @@ import Topbar from '../src/components/Topbar';
 import useWebSocket from 'react-use-websocket';
 import { useDispatch, useSelector } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
+import { alpha } from '@mui/material/styles';
+import Link from 'next/link';
 
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: theme.spacing(2)
+  padding: theme.spacing(2),
+  backdropFilter: 'blur(8px)',
+  '& .MuiBackdrop-root': {
+    backgroundColor: alpha(theme.palette.common.black, 0.7)
+  }
 }));
 
 const ModalContent = styled(Paper)(({ theme }) => ({
@@ -53,26 +61,47 @@ const ModalContent = styled(Paper)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   backgroundColor: theme.palette.background.paper,
-  borderRadius: theme.shape.borderRadius,
-  boxShadow: theme.shadows[24],
-  padding: theme.spacing(2),
+  borderRadius: '24px',
+  boxShadow: `0 24px 48px ${alpha(theme.palette.common.black, 0.15)}`,
+  padding: theme.spacing(3),
+  overflow: 'hidden',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+    borderRadius: '24px 24px 0 0'
+  },
   '& .MuiTabs-root': {
     marginBottom: theme.spacing(2),
-    borderBottom: `1px solid ${theme.palette.divider}`
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`
   },
   '& .tab-panel': {
     height: 'calc(90vh - 120px)',
     overflow: 'hidden'
   },
   '& .chart-section': {
-    height: '55vh'
+    height: '55vh',
+    borderRadius: '16px',
+    overflow: 'hidden',
+    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.6
+    )} 100%)`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
   },
   '& .metrics-section': {
     height: '35vh',
     overflowY: 'auto',
     padding: theme.spacing(2),
-    backgroundColor: theme.palette.background.default,
-    borderRadius: theme.shape.borderRadius
+    backgroundColor: alpha(theme.palette.background.default, 0.5),
+    borderRadius: '16px',
+    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+    backdropFilter: 'blur(10px)'
   }
 }));
 
@@ -101,6 +130,7 @@ export default function Analytics() {
   const [debouncedSearchAddress, setDebouncedSearchAddress] = useState('');
   const [activeTab, setActiveTab] = useState(0);
   const [hideAmm, setHideAmm] = useState(false);
+  const theme = useTheme();
 
   // Add debounce effect for search
   useEffect(() => {
@@ -656,7 +686,36 @@ export default function Analytics() {
         <Topbar />
         <Header />
         <Container maxWidth="xl" sx={{ py: 4, textAlign: 'center' }}>
-          <CircularProgress />
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 3,
+              p: 6,
+              borderRadius: '24px',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.9
+              )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+              backdropFilter: 'blur(20px)',
+              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+            }}
+          >
+            <CircularProgress
+              size={60}
+              thickness={4}
+              sx={{
+                color: theme.palette.primary.main,
+                '& .MuiCircularProgress-circle': {
+                  strokeLinecap: 'round'
+                }
+              }}
+            />
+            <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>
+              Loading trader analytics...
+            </Typography>
+          </Box>
         </Container>
         <Footer />
       </>
@@ -669,7 +728,22 @@ export default function Analytics() {
         <Topbar />
         <Header />
         <Container maxWidth="xl" sx={{ py: 4 }}>
-          <Typography color="error">Error: {error}</Typography>
+          <Box
+            sx={{
+              p: 4,
+              borderRadius: '24px',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.error.main,
+                0.1
+              )} 0%, ${alpha(theme.palette.error.main, 0.05)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+              textAlign: 'center'
+            }}
+          >
+            <Typography color="error.main" variant="h6" sx={{ fontWeight: 600 }}>
+              Error: {error}
+            </Typography>
+          </Box>
         </Container>
         <Footer />
       </>
@@ -681,27 +755,287 @@ export default function Analytics() {
       <Topbar />
       <Header />
       <Container maxWidth="xl">
-        <Box sx={{ py: 5 }}>
-          <Typography variant="h3" component="h1" gutterBottom>
-            Trader Analytics
-          </Typography>
+        <Box
+          sx={{
+            flex: 1,
+            py: { xs: 1, sm: 2, md: 3 },
+            backgroundColor: 'transparent',
+            backgroundImage: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.default,
+              0.95
+            )} 0%, ${alpha(theme.palette.background.default, 0.8)} 100%)`,
+            minHeight: '100vh',
+            position: 'relative',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `radial-gradient(circle at 20% 50%, ${alpha(
+                theme.palette.primary.main,
+                0.03
+              )} 0%, transparent 50%), radial-gradient(circle at 80% 20%, ${alpha(
+                theme.palette.success.main,
+                0.03
+              )} 0%, transparent 50%)`,
+              pointerEvents: 'none'
+            }
+          }}
+        >
+          <Container
+            maxWidth="xl"
+            sx={{
+              mt: { xs: 2, sm: 3, md: 4 },
+              mb: { xs: 2, sm: 3, md: 4 },
+              position: 'relative',
+              zIndex: 1
+            }}
+          >
+            <Box sx={{ mb: { xs: 3, sm: 4, md: 5 } }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 1,
+                  mb: 1.5,
+                  p: 3,
+                  borderRadius: '20px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.background.paper,
+                    0.9
+                  )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                  backdropFilter: 'blur(20px)',
+                  WebkitBackdropFilter: 'blur(20px)',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                  boxShadow: `0 8px 32px ${alpha(
+                    theme.palette.common.black,
+                    0.06
+                  )}, 0 2px 8px ${alpha(theme.palette.primary.main, 0.04)}`,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '2px',
+                    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                    opacity: 0.8
+                  }
+                }}
+              >
+                <Box sx={{ flex: 1 }}>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      color: theme.palette.text.primary,
+                      fontWeight: 700,
+                      fontSize: { xs: '1.6rem', sm: '1.8rem', md: '2.1rem' },
+                      letterSpacing: '-0.02em',
+                      background: `linear-gradient(135deg, ${
+                        theme.palette.text.primary
+                      } 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      mb: 1
+                    }}
+                  >
+                    Top Traders Analytics
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontSize: { xs: '0.85rem', sm: '0.9rem', md: '1rem' },
+                      maxWidth: '600px',
+                      lineHeight: 1.6
+                    }}
+                  >
+                    Discover the most successful traders on the XRPL ecosystem. Track performance
+                    metrics, ROI trends, and trading patterns of top performers across different
+                    timeframes and strategies.
+                  </Typography>
+                </Box>
+                <Link href="/api-docs">
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    sx={{
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.primary.main,
+                        0.9
+                      )} 0%, ${alpha(theme.palette.primary.dark, 0.8)} 100%)`,
+                      color: theme.palette.primary.contrastText,
+                      '&:hover': {
+                        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                        transform: 'translateY(-2px)',
+                        boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.3)}`
+                      },
+                      borderRadius: '12px',
+                      textTransform: 'none',
+                      fontWeight: 600,
+                      fontSize: { xs: '0.8rem', sm: '0.875rem' },
+                      padding: { xs: '8px 16px', sm: '10px 20px' },
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      backdropFilter: 'blur(10px)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                  >
+                    See API Details
+                  </Button>
+                </Link>
+              </Box>
+            </Box>
 
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Box sx={{ mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+            <Card
+              sx={{
+                borderRadius: '24px',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.background.paper,
+                  0.95
+                )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: `3px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                boxShadow: `0 16px 48px ${alpha(
+                  theme.palette.common.black,
+                  0.12
+                )}, 0 4px 16px ${alpha(theme.palette.primary.main, 0.1)}`,
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 24px 64px ${alpha(
+                    theme.palette.common.black,
+                    0.18
+                  )}, 0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`,
+                  border: `3px solid ${alpha(theme.palette.primary.main, 0.25)}`
+                },
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '3px',
+                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                  opacity: 0.9
+                }
+              }}
+            >
+              <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+                {loading && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      py: 8,
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.background.paper,
+                        0.8
+                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                      borderRadius: '16px',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                      backdropFilter: 'blur(10px)'
+                    }}
+                  >
+                    <CircularProgress
+                      size={48}
+                      sx={{
+                        color: theme.palette.primary.main,
+                        mb: 2,
+                        '& .MuiCircularProgress-circle': {
+                          strokeLinecap: 'round'
+                        }
+                      }}
+                    />
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: theme.palette.text.primary,
+                        fontWeight: 600,
+                        mb: 1
+                      }}
+                    >
+                      Loading Top Traders
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        textAlign: 'center'
+                      }}
+                    >
+                      Analyzing trading performance and metrics...
+                    </Typography>
+                  </Box>
+                )}
+
+                {error && (
+                  <Box
+                    sx={{
+                      p: 4,
+                      textAlign: 'center',
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.error.main,
+                        0.1
+                      )} 0%, ${alpha(theme.palette.error.main, 0.05)} 100%)`,
+                      borderRadius: '16px',
+                      border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+                      backdropFilter: 'blur(10px)'
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: theme.palette.error.main,
+                        fontWeight: 600,
+                        mb: 1
+                      }}
+                    >
+                      Error Loading Data
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: theme.palette.text.secondary
+                      }}
+                    >
+                      {error}
+                    </Typography>
+                  </Box>
+                )}
+
+                {!loading && !error && (
+                  <>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        gap: 2,
+                        mb: 3,
+                        alignItems: { xs: 'stretch', sm: 'center' }
+                      }}
+                    >
                       <TextField
                         fullWidth
                         variant="outlined"
-                        placeholder="Search by address..."
+                        placeholder="Search by trader address..."
                         value={searchAddress}
                         onChange={(e) => setSearchAddress(e.target.value)}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
-                              <SearchIcon />
+                              <SearchIcon sx={{ color: theme.palette.primary.main }} />
                             </InputAdornment>
                           ),
                           endAdornment: searchAddress && (
@@ -710,6 +1044,15 @@ export default function Analytics() {
                                 size="small"
                                 onClick={() => setSearchAddress('')}
                                 edge="end"
+                                sx={{
+                                  color: theme.palette.text.secondary,
+                                  borderRadius: '8px',
+                                  '&:hover': {
+                                    color: theme.palette.error.main,
+                                    bgcolor: alpha(theme.palette.error.main, 0.08),
+                                    transform: 'scale(1.1)'
+                                  }
+                                }}
                               >
                                 <ClearIcon />
                               </IconButton>
@@ -717,395 +1060,513 @@ export default function Analytics() {
                           )
                         }}
                         sx={{
-                          maxWidth: 400,
+                          maxWidth: 450,
                           '& .MuiOutlinedInput-root': {
-                            borderRadius: 2
+                            borderRadius: '16px',
+                            background: `linear-gradient(135deg, ${alpha(
+                              theme.palette.background.paper,
+                              0.8
+                            )} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                            backdropFilter: 'blur(10px)',
+                            border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            '&:hover': {
+                              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+                              transform: 'translateY(-1px)'
+                            },
+                            '&.Mui-focused': {
+                              border: `1px solid ${theme.palette.primary.main}`,
+                              boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.1)}`
+                            }
                           }
                         }}
                       />
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={hideAmm}
-                            onChange={(e) => setHideAmm(e.target.checked)}
-                          />
-                        }
-                        label="Hide AMM"
-                      />
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2,
+                          p: 2,
+                          borderRadius: '16px',
+                          background: `linear-gradient(135deg, ${alpha(
+                            theme.palette.background.paper,
+                            0.8
+                          )} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                          backdropFilter: 'blur(10px)'
+                        }}
+                      >
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={hideAmm}
+                              onChange={(e) => setHideAmm(e.target.checked)}
+                              sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  color: theme.palette.primary.main,
+                                  '& + .MuiSwitch-track': {
+                                    backgroundColor: alpha(theme.palette.primary.main, 0.5)
+                                  }
+                                }
+                              }}
+                            />
+                          }
+                          label={
+                            <Typography sx={{ fontWeight: 500, color: theme.palette.text.primary }}>
+                              Hide AMM
+                            </Typography>
+                          }
+                        />
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            px: 2,
+                            py: 1,
+                            borderRadius: '12px',
+                            background: alpha(theme.palette.info.main, 0.1),
+                            border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                          }}
+                        >
+                          <Typography variant="caption" color="info.main" sx={{ fontWeight: 600 }}>
+                            {totalItems} Traders
+                          </Typography>
+                        </Box>
+                      </Box>
                     </Box>
-                  </Box>
-                  <Typography variant="h5" gutterBottom>
-                    Top Traders
-                  </Typography>
-                  <TableContainer>
-                    <Table
+
+                    <TableContainer
                       sx={{
-                        minWidth: 650,
-                        '& .MuiTableCell-root': {
-                          whiteSpace: 'nowrap',
-                          padding: '1px 6px',
-                          fontSize: '0.75rem',
-                          lineHeight: 1.2
-                        },
-                        '& .MuiTableHead-root .MuiTableCell-root': {
-                          fontWeight: 600,
-                          backgroundColor: 'background.default',
-                          fontSize: '0.7rem',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.3px',
-                          padding: '3px 6px'
-                        },
-                        '& .MuiTableRow-root': {
-                          height: '32px'
-                        },
-                        '& .MuiIconButton-root': {
-                          padding: '1px',
-                          width: '16px',
-                          height: '16px',
-                          marginLeft: '2px',
-                          '& .MuiSvgIcon-root': {
-                            fontSize: '0.75rem'
-                          }
-                        },
-                        '& .MuiTableSortLabel-root': {
-                          height: '16px',
-                          '& .MuiTableSortLabel-icon': {
-                            fontSize: '0.75rem'
-                          }
-                        }
+                        borderRadius: '20px',
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.background.paper,
+                          0.7
+                        )} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`,
+                        backdropFilter: 'blur(10px)',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                        overflow: 'hidden',
+                        boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`
                       }}
-                      size="small"
-                      aria-label="trader analytics table"
                     >
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>
-                            <TableSortLabel
-                              active={orderBy === 'address'}
-                              direction={orderBy === 'address' ? order : 'asc'}
-                              onClick={() => handleRequestSort('address')}
+                      <Table
+                        sx={{
+                          minWidth: 650,
+                          '& .MuiTableCell-root': {
+                            whiteSpace: 'nowrap',
+                            padding: '12px 16px',
+                            fontSize: '0.875rem',
+                            lineHeight: 1.4,
+                            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`
+                          },
+                          '& .MuiTableHead-root .MuiTableCell-root': {
+                            fontWeight: 700,
+                            background: `linear-gradient(135deg, ${alpha(
+                              theme.palette.background.paper,
+                              0.9
+                            )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                            backdropFilter: 'blur(10px)',
+                            fontSize: '0.8rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            padding: '16px',
+                            color: theme.palette.text.primary,
+                            borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                          },
+                          '& .MuiTableRow-root': {
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              background: `linear-gradient(135deg, ${alpha(
+                                theme.palette.primary.main,
+                                0.04
+                              )} 0%, ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
+                              transform: 'translateY(-1px)',
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
+                            }
+                          },
+                          '& .MuiIconButton-root': {
+                            padding: '6px',
+                            borderRadius: '10px',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              background: alpha(theme.palette.primary.main, 0.1),
+                              transform: 'scale(1.1)'
+                            }
+                          }
+                        }}
+                        size="medium"
+                        aria-label="trader analytics table"
+                      >
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>
+                              <TableSortLabel
+                                active={orderBy === 'address'}
+                                direction={orderBy === 'address' ? order : 'asc'}
+                                onClick={() => handleRequestSort('address')}
+                              >
+                                Address
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'activeTokens24h'}
+                                direction={orderBy === 'activeTokens24h' ? order : 'asc'}
+                                onClick={() => handleRequestSort('activeTokens24h')}
+                              >
+                                Active Tokens (24h)
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'volume24h'}
+                                direction={orderBy === 'volume24h' ? order : 'asc'}
+                                onClick={() => handleRequestSort('volume24h')}
+                              >
+                                Volume (24h)
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'profit24h'}
+                                direction={orderBy === 'profit24h' ? order : 'asc'}
+                                onClick={() => handleRequestSort('profit24h')}
+                              >
+                                Profit/Loss (24h)
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'totalTrades'}
+                                direction={orderBy === 'totalTrades' ? order : 'asc'}
+                                onClick={() => handleRequestSort('totalTrades')}
+                              >
+                                Total Trades
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'winRate'}
+                                direction={orderBy === 'winRate' ? order : 'asc'}
+                                onClick={() => handleRequestSort('winRate')}
+                              >
+                                Win Rate
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'totalProfit'}
+                                direction={orderBy === 'totalProfit' ? order : 'asc'}
+                                onClick={() => handleRequestSort('totalProfit')}
+                              >
+                                Total Profit
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'avgROI'}
+                                direction={orderBy === 'avgROI' ? order : 'asc'}
+                                onClick={() => handleRequestSort('avgROI')}
+                              >
+                                ROI
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'firstTradeDate'}
+                                direction={orderBy === 'firstTradeDate' ? order : 'asc'}
+                                onClick={() => handleRequestSort('firstTradeDate')}
+                              >
+                                First Trade
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'lastTradeDate'}
+                                direction={orderBy === 'lastTradeDate' ? order : 'asc'}
+                                onClick={() => handleRequestSort('lastTradeDate')}
+                              >
+                                Last Trade
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'avgHoldingTime'}
+                                direction={orderBy === 'avgHoldingTime' ? order : 'asc'}
+                                onClick={() => handleRequestSort('avgHoldingTime')}
+                              >
+                                Avg Hold Time (h)
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'maxProfitTrade'}
+                                direction={orderBy === 'maxProfitTrade' ? order : 'asc'}
+                                onClick={() => handleRequestSort('maxProfitTrade')}
+                              >
+                                Max Profit
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'maxLossTrade'}
+                                direction={orderBy === 'maxLossTrade' ? order : 'asc'}
+                                onClick={() => handleRequestSort('maxLossTrade')}
+                              >
+                                Max Loss
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'buyVolume'}
+                                direction={orderBy === 'buyVolume' ? order : 'asc'}
+                                onClick={() => handleRequestSort('buyVolume')}
+                              >
+                                Buy Volume
+                              </TableSortLabel>
+                            </TableCell>
+                            <TableCell align="right">
+                              <TableSortLabel
+                                active={orderBy === 'sellVolume'}
+                                direction={orderBy === 'sellVolume' ? order : 'asc'}
+                                onClick={() => handleRequestSort('sellVolume')}
+                              >
+                                Sell Volume
+                              </TableSortLabel>
+                            </TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {sortData(traders ? [...traders] : []).map((trader) => (
+                            <TableRow
+                              key={trader._id}
+                              sx={{
+                                '&:last-child td, &:last-child th': { border: 0 },
+                                cursor: 'pointer',
+                                backgroundColor:
+                                  roiModalTrader?._id === trader._id
+                                    ? 'action.selected'
+                                    : 'inherit',
+                                '&:hover': {
+                                  backgroundColor: 'action.hover'
+                                }
+                              }}
+                              onClick={() => handleRoiClick(trader)}
                             >
-                              Address
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'activeTokens24h'}
-                              direction={orderBy === 'activeTokens24h' ? order : 'asc'}
-                              onClick={() => handleRequestSort('activeTokens24h')}
-                            >
-                              Active Tokens (24h)
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'volume24h'}
-                              direction={orderBy === 'volume24h' ? order : 'asc'}
-                              onClick={() => handleRequestSort('volume24h')}
-                            >
-                              Volume (24h)
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'profit24h'}
-                              direction={orderBy === 'profit24h' ? order : 'asc'}
-                              onClick={() => handleRequestSort('profit24h')}
-                            >
-                              Profit/Loss (24h)
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'totalTrades'}
-                              direction={orderBy === 'totalTrades' ? order : 'asc'}
-                              onClick={() => handleRequestSort('totalTrades')}
-                            >
-                              Total Trades
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'winRate'}
-                              direction={orderBy === 'winRate' ? order : 'asc'}
-                              onClick={() => handleRequestSort('winRate')}
-                            >
-                              Win Rate
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'totalProfit'}
-                              direction={orderBy === 'totalProfit' ? order : 'asc'}
-                              onClick={() => handleRequestSort('totalProfit')}
-                            >
-                              Total Profit
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'avgROI'}
-                              direction={orderBy === 'avgROI' ? order : 'asc'}
-                              onClick={() => handleRequestSort('avgROI')}
-                            >
-                              ROI
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'firstTradeDate'}
-                              direction={orderBy === 'firstTradeDate' ? order : 'asc'}
-                              onClick={() => handleRequestSort('firstTradeDate')}
-                            >
-                              First Trade
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'lastTradeDate'}
-                              direction={orderBy === 'lastTradeDate' ? order : 'asc'}
-                              onClick={() => handleRequestSort('lastTradeDate')}
-                            >
-                              Last Trade
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'avgHoldingTime'}
-                              direction={orderBy === 'avgHoldingTime' ? order : 'asc'}
-                              onClick={() => handleRequestSort('avgHoldingTime')}
-                            >
-                              Avg Hold Time (h)
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'maxProfitTrade'}
-                              direction={orderBy === 'maxProfitTrade' ? order : 'asc'}
-                              onClick={() => handleRequestSort('maxProfitTrade')}
-                            >
-                              Max Profit
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'maxLossTrade'}
-                              direction={orderBy === 'maxLossTrade' ? order : 'asc'}
-                              onClick={() => handleRequestSort('maxLossTrade')}
-                            >
-                              Max Loss
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'buyVolume'}
-                              direction={orderBy === 'buyVolume' ? order : 'asc'}
-                              onClick={() => handleRequestSort('buyVolume')}
-                            >
-                              Buy Volume
-                            </TableSortLabel>
-                          </TableCell>
-                          <TableCell align="right">
-                            <TableSortLabel
-                              active={orderBy === 'sellVolume'}
-                              direction={orderBy === 'sellVolume' ? order : 'asc'}
-                              onClick={() => handleRequestSort('sellVolume')}
-                            >
-                              Sell Volume
-                            </TableSortLabel>
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {sortData(traders ? [...traders] : []).map((trader) => (
-                          <TableRow
-                            key={trader._id}
-                            sx={{
-                              '&:last-child td, &:last-child th': { border: 0 },
-                              cursor: 'pointer',
-                              backgroundColor:
-                                roiModalTrader?._id === trader._id ? 'action.selected' : 'inherit',
-                              '&:hover': {
-                                backgroundColor: 'action.hover'
-                              }
-                            }}
-                            onClick={() => handleRoiClick(trader)}
-                          >
-                            <TableCell component="th" scope="row">
-                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Typography
-                                  component="a"
-                                  href={`/profile/${trader.address}`}
-                                  sx={{
-                                    textDecoration: 'none',
-                                    color: 'primary.main',
-                                    '&:hover': {
-                                      textDecoration: 'underline'
-                                    }
-                                  }}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {abbreviateAddress(trader.address)}
-                                </Typography>
-                                {trader.AMM && (
-                                  <Chip
-                                    label="AMM"
-                                    size="small"
-                                    color="secondary"
+                              <TableCell component="th" scope="row">
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography
+                                    component="a"
+                                    href={`/profile/${trader.address}`}
                                     sx={{
-                                      height: 20,
-                                      fontSize: '0.65rem',
-                                      '& .MuiChip-label': {
-                                        px: 1
+                                      textDecoration: 'none',
+                                      color: 'primary.main',
+                                      '&:hover': {
+                                        textDecoration: 'underline'
                                       }
                                     }}
-                                  />
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {abbreviateAddress(trader.address)}
+                                  </Typography>
+                                  {trader.AMM && (
+                                    <Chip
+                                      label="AMM"
+                                      size="small"
+                                      color="secondary"
+                                      sx={{
+                                        height: 20,
+                                        fontSize: '0.65rem',
+                                        '& .MuiChip-label': {
+                                          px: 1
+                                        }
+                                      }}
+                                    />
+                                  )}
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => handleRoiClick(trader, e)}
+                                    title={trader.address}
+                                    sx={{
+                                      color: 'primary.main',
+                                      '&:hover': {
+                                        color: 'primary.dark'
+                                      }
+                                    }}
+                                  >
+                                    <ShowChartIcon fontSize="small" />
+                                  </IconButton>
+                                </Box>
+                              </TableCell>
+                              <TableCell align="right">{trader.activeTokens24h}</TableCell>
+                              <TableCell align="right">
+                                {formatCurrency(trader.volume24h)}
+                              </TableCell>
+                              <TableCell
+                                align="right"
+                                sx={{
+                                  color: trader.profit24h >= 0 ? 'success.main' : 'error.main'
+                                }}
+                              >
+                                {formatCurrency(trader.profit24h)}
+                              </TableCell>
+                              <TableCell align="right">{trader.totalTrades}</TableCell>
+                              <TableCell align="right">
+                                {formatPercentage(
+                                  (trader.profitableTrades /
+                                    (trader.profitableTrades + trader.losingTrades)) *
+                                    100
                                 )}
-                                <IconButton
-                                  size="small"
-                                  onClick={(e) => handleRoiClick(trader, e)}
-                                  title={trader.address}
-                                  sx={{
-                                    color: 'primary.main',
-                                    '&:hover': {
-                                      color: 'primary.dark'
-                                    }
-                                  }}
-                                >
-                                  <ShowChartIcon fontSize="small" />
-                                </IconButton>
-                              </Box>
-                            </TableCell>
-                            <TableCell align="right">{trader.activeTokens24h}</TableCell>
-                            <TableCell align="right">{formatCurrency(trader.volume24h)}</TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{
-                                color: trader.profit24h >= 0 ? 'success.main' : 'error.main'
-                              }}
-                            >
-                              {formatCurrency(trader.profit24h)}
-                            </TableCell>
-                            <TableCell align="right">{trader.totalTrades}</TableCell>
-                            <TableCell align="right">
-                              {formatPercentage(
-                                (trader.profitableTrades /
-                                  (trader.profitableTrades + trader.losingTrades)) *
-                                  100
-                              )}
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{
-                                color: trader.totalProfit >= 0 ? 'success.main' : 'error.main'
-                              }}
-                            >
-                              {formatCurrency(trader.totalProfit)}
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{
-                                color: trader.avgROI >= 0 ? 'success.main' : 'error.main'
-                              }}
-                            >
-                              {formatPercentage(trader.avgROI)}
-                            </TableCell>
-                            <TableCell align="right">
-                              {new Date(trader.firstTradeDate).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell align="right">
-                              {new Date(trader.lastTradeDate).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell align="right">
-                              {(trader.avgHoldingTime / 3600).toFixed(2)}
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{
-                                color: 'success.main'
-                              }}
-                            >
-                              {formatCurrency(trader.maxProfitTrade)}
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              sx={{
-                                color: 'error.main'
-                              }}
-                            >
-                              {formatCurrency(trader.maxLossTrade)}
-                            </TableCell>
-                            <TableCell align="right">{formatCurrency(trader.buyVolume)}</TableCell>
-                            <TableCell align="right">{formatCurrency(trader.sellVolume)}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                  <Box
-                    sx={{
-                      py: 2,
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      alignItems: 'center',
-                      gap: 2
-                    }}
-                  >
-                    <Typography variant="body2" color="text.secondary">
-                      {`${(page - 1) * itemsPerPage + 1}-${Math.min(
-                        page * itemsPerPage,
-                        totalItems
-                      )} of ${totalItems}`}
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <IconButton
-                        onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                        disabled={page === 1}
-                        size="small"
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
+                              </TableCell>
+                              <TableCell
+                                align="right"
+                                sx={{
+                                  color: trader.totalProfit >= 0 ? 'success.main' : 'error.main'
+                                }}
+                              >
+                                {formatCurrency(trader.totalProfit)}
+                              </TableCell>
+                              <TableCell
+                                align="right"
+                                sx={{
+                                  color: trader.avgROI >= 0 ? 'success.main' : 'error.main'
+                                }}
+                              >
+                                {formatPercentage(trader.avgROI)}
+                              </TableCell>
+                              <TableCell align="right">
+                                {new Date(trader.firstTradeDate).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell align="right">
+                                {new Date(trader.lastTradeDate).toLocaleDateString()}
+                              </TableCell>
+                              <TableCell align="right">
+                                {(trader.avgHoldingTime / 3600).toFixed(2)}
+                              </TableCell>
+                              <TableCell
+                                align="right"
+                                sx={{
+                                  color: 'success.main'
+                                }}
+                              >
+                                {formatCurrency(trader.maxProfitTrade)}
+                              </TableCell>
+                              <TableCell
+                                align="right"
+                                sx={{
+                                  color: 'error.main'
+                                }}
+                              >
+                                {formatCurrency(trader.maxLossTrade)}
+                              </TableCell>
+                              <TableCell align="right">
+                                {formatCurrency(trader.buyVolume)}
+                              </TableCell>
+                              <TableCell align="right">
+                                {formatCurrency(trader.sellVolume)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+
+                    <Box
+                      sx={{
+                        py: 3,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        mt: 3,
+                        p: 3,
+                        borderRadius: '16px',
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.background.paper,
+                          0.6
+                        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                        backdropFilter: 'blur(10px)',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                      }}
+                    >
+                      <Typography variant="body1" color="text.secondary" sx={{ fontWeight: 600 }}>
+                        Showing{' '}
+                        {`${(page - 1) * itemsPerPage + 1}-${Math.min(
+                          page * itemsPerPage,
+                          totalItems
+                        )}`}{' '}
+                        of {totalItems} traders
+                      </Typography>
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        <IconButton
+                          onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                          disabled={page === 1}
+                          sx={{
+                            borderRadius: '12px',
+                            background: alpha(theme.palette.background.paper, 0.8),
+                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                            transition: 'all 0.2s ease',
+                            width: 44,
+                            height: 44,
+                            '&:hover': {
+                              background: alpha(theme.palette.primary.main, 0.1),
+                              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                              transform: 'translateY(-2px)',
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+                            },
+                            '&:disabled': {
+                              opacity: 0.4
+                            }
+                          }}
                         >
-                          <path
-                            d="M15 18L9 12L15 6"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </IconButton>
-                      <IconButton
-                        onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                        disabled={page >= totalPages}
-                        size="small"
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path
+                              d="M15 18L9 12L15 6"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </IconButton>
+                        <IconButton
+                          onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                          disabled={page >= totalPages}
+                          sx={{
+                            borderRadius: '12px',
+                            background: alpha(theme.palette.background.paper, 0.8),
+                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                            transition: 'all 0.2s ease',
+                            width: 44,
+                            height: 44,
+                            '&:hover': {
+                              background: alpha(theme.palette.primary.main, 0.1),
+                              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                              transform: 'translateY(-2px)',
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+                            },
+                            '&:disabled': {
+                              opacity: 0.4
+                            }
+                          }}
                         >
-                          <path
-                            d="M9 6L15 12L9 18"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </IconButton>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <path
+                              d="M9 6L15 12L9 18"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </IconButton>
+                      </Box>
                     </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </Container>
         </Box>
 
         <StyledModal
@@ -1116,42 +1577,110 @@ export default function Analytics() {
           <ModalContent>
             {roiModalTrader && (
               <>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
-                  <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    Trader Analytics -{' '}
-                    <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
-                      <Typography
-                        component="a"
-                        href={`/profile/${roiModalTrader.address}`}
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, gap: 2 }}>
+                  <Typography
+                    variant="h5"
+                    component="div"
+                    sx={{
+                      flexGrow: 1,
+                      fontWeight: 700,
+                      color: theme.palette.text.primary
+                    }}
+                  >
+                    Trader Analytics
+                  </Typography>
+                  <IconButton
+                    onClick={handleCloseRoiModal}
+                    sx={{
+                      borderRadius: '12px',
+                      background: alpha(theme.palette.background.paper, 0.8),
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      '&:hover': {
+                        background: alpha(theme.palette.error.main, 0.1),
+                        border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+                      }
+                    }}
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </Box>
+
+                <Box
+                  sx={{
+                    mb: 3,
+                    p: 3,
+                    borderRadius: '16px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.8
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Typography
+                      component="a"
+                      href={`/profile/${roiModalTrader.address}`}
+                      sx={{
+                        textDecoration: 'none',
+                        color: theme.palette.primary.main,
+                        fontWeight: 700,
+                        fontSize: '1.1rem',
+                        '&:hover': {
+                          textDecoration: 'underline'
+                        }
+                      }}
+                    >
+                      {roiModalTrader.address}
+                    </Typography>
+                    {roiModalTrader.AMM && (
+                      <Chip
+                        label="AMM"
+                        size="small"
                         sx={{
-                          textDecoration: 'none',
-                          color: 'primary.main',
-                          '&:hover': {
-                            textDecoration: 'underline'
-                          }
+                          height: 24,
+                          fontSize: '0.75rem',
+                          background: `linear-gradient(135deg, ${alpha(
+                            theme.palette.secondary.main,
+                            0.15
+                          )} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
+                          color: theme.palette.secondary.main,
+                          border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+                          fontWeight: 600
                         }}
-                      >
-                        {roiModalTrader.address}
-                      </Typography>
-                      {roiModalTrader.AMM && (
-                        <Chip
-                          label="AMM"
-                          size="small"
-                          color="secondary"
-                          sx={{
-                            height: 20,
-                            fontSize: '0.75rem'
-                          }}
-                        />
-                      )}
-                    </Box>
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    First Trade: {new Date(roiModalTrader.firstTradeDate).toLocaleDateString()}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Last Trade: {new Date(roiModalTrader.lastTradeDate).toLocaleDateString()}
-                  </Typography>
+                      />
+                    )}
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 3 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontWeight: 500,
+                        px: 2,
+                        py: 1,
+                        borderRadius: '8px',
+                        background: alpha(theme.palette.success.main, 0.1),
+                        border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                      }}
+                    >
+                      First Trade: {new Date(roiModalTrader.firstTradeDate).toLocaleDateString()}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontWeight: 500,
+                        px: 2,
+                        py: 1,
+                        borderRadius: '8px',
+                        background: alpha(theme.palette.info.main, 0.1),
+                        border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                      }}
+                    >
+                      Last Trade: {new Date(roiModalTrader.lastTradeDate).toLocaleDateString()}
+                    </Typography>
+                  </Box>
                 </Box>
 
                 <Tabs
@@ -1159,6 +1688,26 @@ export default function Analytics() {
                   onChange={handleTabChange}
                   variant="scrollable"
                   scrollButtons="auto"
+                  sx={{
+                    mb: 3,
+                    '& .MuiTab-root': {
+                      borderRadius: '12px 12px 0 0',
+                      transition: 'all 0.2s ease',
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      minHeight: 48,
+                      '&:hover': {
+                        background: alpha(theme.palette.primary.main, 0.04)
+                      },
+                      '&.Mui-selected': {
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.primary.main,
+                          0.1
+                        )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+                        color: theme.palette.primary.main
+                      }
+                    }
+                  }}
                 >
                   <Tab label="Overview & ROI" />
                   <Tab label="Token Performance" />
