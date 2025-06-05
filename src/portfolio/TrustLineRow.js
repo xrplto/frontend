@@ -283,11 +283,25 @@ const TrustLineRow = ({
     }
   };
 
-  const computedBalance = useMemo(() => Number(balance).toFixed(8), [balance]);
+  const computedBalance = useMemo(() => {
+    const num = Number(balance);
+    if (num === 0) return '0';
+    if (num < 0.000001) return num.toExponential(2);
+    if (num < 1) return num.toFixed(6).replace(/\.?0+$/, '');
+    return num.toLocaleString('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: num < 1000 ? 4 : 2
+    });
+  }, [balance]);
+
   const computedValue = useMemo(() => {
     if (!balance || !token.exch || !exchRate) return '0.00';
     const value = Number(balance) * Number(token.exch) * Number(exchRate);
-    return isNaN(value) ? '0.00' : value.toFixed(2);
+    if (isNaN(value) || value === 0) return '0.00';
+    return value.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
   }, [balance, token.exch, exchRate]);
 
   return (

@@ -26,6 +26,7 @@ import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material';
 import { PulseLoader } from 'react-spinners';
 // Utils
 import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
+import { currencySymbols } from 'src/utils/constants';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -402,7 +403,16 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                         fontFamily: 'monospace'
                       }}
                     >
-                      {xrpBalance.toFixed(8)}
+                      {(() => {
+                        const num = Number(xrpBalance);
+                        if (num === 0) return '0';
+                        if (num < 0.000001) return num.toExponential(2);
+                        if (num < 1) return num.toFixed(6).replace(/\.?0+$/, '');
+                        return num.toLocaleString('en-US', {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: num < 1000 ? 4 : 2
+                        });
+                      })()}
                     </Typography>
                   </TableCell>
                   <TableCell align="right">
@@ -415,11 +425,15 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                         color: (theme) => theme.palette.primary.main
                       }}
                     >
-                      {(xrpBalance * (exchRate || 1)).toLocaleString(undefined, {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                      })}{' '}
-                      XRP
+                      {currencySymbols[activeFiatCurrency]}
+                      {(() => {
+                        const value = xrpBalance * (exchRate || 1);
+                        if (isNaN(value) || value === 0) return '0.00';
+                        return value.toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        });
+                      })()}
                     </Typography>
                   </TableCell>
                   <TableCell
