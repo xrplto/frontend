@@ -135,7 +135,7 @@ export default function NFTActions({ nft }) {
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
 
-  // const theme = useTheme();
+  const theme = useTheme();
   // const largescreen = useMediaQuery(theme => theme.breakpoints.up('md'));
 
   const dispatch = useDispatch();
@@ -563,9 +563,26 @@ export default function NFTActions({ nft }) {
   };
 
   return (
-    <Stack spacing={2}>
+    <Stack
+      spacing={3}
+      sx={{
+        p: { xs: 2, md: 3 },
+        background: `linear-gradient(135deg, ${alpha(
+          theme.palette.background.default,
+          0.4
+        )} 0%, ${alpha(theme.palette.background.default, 0.1)} 100%)`,
+        borderRadius: '24px',
+        position: 'relative'
+      }}
+    >
       <Backdrop
-        sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{
+          color: theme.palette.text.primary,
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          backgroundColor: alpha(theme.palette.common.black, 0.7),
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)'
+        }}
         open={pageLoading}
       >
         <ProgressBar
@@ -610,146 +627,300 @@ export default function NFTActions({ nft }) {
       />
 
       {self && (
-        <Stack direction="row" spacing={2} justifyContent="space-between" sx={{ mt: 2, mb: 2 }}>
-          <Stack spacing={1}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Link href={`/collection/${cslug}`} underline="none">
-                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                  {collectionName}
+        <Box
+          sx={{
+            p: 3,
+            borderRadius: '16px',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.8
+            )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+            boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
+            mb: 2
+          }}
+        >
+          <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center">
+            <Stack spacing={2}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Link href={`/collection/${cslug}`} underline="none">
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                    {collectionName}
+                  </Typography>
+                </Link>
+                {cverified === 'yes' && (
+                  <Tooltip title="Verified">
+                    <VerifiedIcon fontSize="small" sx={{ color: 'primary.main' }} />
+                  </Tooltip>
+                )}
+              </Stack>
+
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: '12px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5
+                }}
+              >
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                  Global Floor
                 </Typography>
-              </Link>
-              {cverified === 'yes' && (
-                <Tooltip title="Verified">
-                  <VerifiedIcon fontSize="small" sx={{ color: 'primary.main' }} />
-                </Tooltip>
-              )}
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontWeight: 700,
+                    color: theme.palette.info.main,
+                    fontSize: '1.1rem'
+                  }}
+                >
+                  {fNumber(floorPrice)} XRP
+                </Typography>
+              </Box>
             </Stack>
 
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                Global Floor
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {fNumber(floorPrice)} XRP
-              </Typography>
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Tooltip title="Share">
+                <IconButton
+                  size="large"
+                  sx={{
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.95
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                    backdropFilter: 'blur(12px)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    borderRadius: '12px',
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.primary.main,
+                        0.12
+                      )} 0%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.2)}`
+                    }
+                  }}
+                  ref={anchorRef}
+                  onClick={handleOpenShare}
+                >
+                  <ShareIcon sx={{ color: 'primary.main' }} />
+                </IconButton>
+              </Tooltip>
+
+              <Popover
+                open={openShare}
+                onClose={handleCloseShare}
+                anchorEl={anchorRef.current}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                PaperProps={{
+                  elevation: 3,
+                  sx: {
+                    borderRadius: 2,
+                    p: 1,
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.98
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
+                    backdropFilter: 'blur(24px)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.15)}`
+                  }
+                }}
+              >
+                <Stack direction="row" spacing={2}>
+                  <FacebookShareButton
+                    url={shareUrl}
+                    quote={shareTitle}
+                    hashtag={'#'}
+                    description={shareDesc}
+                    onClick={handleCloseShare}
+                  >
+                    <FacebookIcon size={32} round />
+                  </FacebookShareButton>
+                  <TwitterShareButton
+                    title={shareTitle}
+                    url={shareUrl}
+                    hashtag={'#'}
+                    onClick={handleCloseShare}
+                  >
+                    <TwitterIcon size={32} round />
+                  </TwitterShareButton>
+                </Stack>
+              </Popover>
             </Stack>
           </Stack>
+        </Box>
+      )}
 
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Tooltip title="Share">
-              <IconButton
-                size="large"
-                sx={{
-                  bgcolor: 'background.paper',
-                  boxShadow: 1,
-                  '&:hover': { bgcolor: 'primary.lighter' }
-                }}
-                ref={anchorRef}
-                onClick={handleOpenShare}
-              >
-                <ShareIcon sx={{ color: 'primary.main' }} />
-              </IconButton>
-            </Tooltip>
+      <Box
+        sx={{
+          p: 3,
+          borderRadius: '16px',
+          background: `linear-gradient(135deg, ${alpha(
+            theme.palette.background.paper,
+            0.6
+          )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+          backdropFilter: 'blur(10px)',
+          border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+          boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
+          mb: 2
+        }}
+      >
+        <Stack spacing={3}>
+          <Typography
+            variant="h2a"
+            sx={{
+              fontWeight: 700,
+              fontSize: '1.8rem',
+              background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
+                theme.palette.primary.main,
+                0.8
+              )} 100%)`,
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
+            }}
+          >
+            {nftName}
+          </Typography>
 
-            <Popover
-              open={openShare}
-              onClose={handleCloseShare}
-              anchorEl={anchorRef.current}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-              PaperProps={{
-                elevation: 3,
-                sx: { borderRadius: 2, p: 1 }
+          {self && rarity_rank > 0 && (
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: '12px',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.warning.main,
+                  0.08
+                )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.warning.main, 0.12)}`,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 1.5,
+                width: 'fit-content'
               }}
             >
-              <Stack direction="row" spacing={2}>
-                <FacebookShareButton
-                  url={shareUrl}
-                  quote={shareTitle}
-                  hashtag={'#'}
-                  description={shareDesc}
-                  onClick={handleCloseShare}
-                >
-                  <FacebookIcon size={32} round />
-                </FacebookShareButton>
-                <TwitterShareButton
-                  title={shareTitle}
-                  url={shareUrl}
-                  hashtag={'#'}
-                  onClick={handleCloseShare}
-                >
-                  <TwitterIcon size={32} round />
-                </TwitterShareButton>
-              </Stack>
-            </Popover>
-          </Stack>
-        </Stack>
-      )}
+              <Tooltip title={`Rarity Rank #${fIntNumber(rarity_rank)} / ${fIntNumber(citems)}`}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <LeaderboardOutlinedIcon
+                    sx={{
+                      width: '18px',
+                      height: '18px',
+                      color: theme.palette.warning.main
+                    }}
+                  />
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 600,
+                      color: theme.palette.warning.main
+                    }}
+                  >
+                    Rank #{fIntNumber(rarity_rank)} / {fIntNumber(citems)}
+                  </Typography>
+                </Stack>
+              </Tooltip>
+            </Box>
+          )}
 
-      <Stack spacing={2} sx={{ mt: 2 }}>
-        {/* <Link underline='none' color={'text.primary'}>
-                    Name
-                </Link> */}
-        <Typography variant="h2a">{nftName}</Typography>
-      </Stack>
-
-      {/* {meta?.description &&
-                <Typography variant="s7">{meta.description}</Typography>
-            } */}
-
-      {self && rarity_rank > 0 && (
-        <Stack direction="row">
-          <Tooltip title={`Rarity Rank #${fIntNumber(rarity_rank)} / ${fIntNumber(citems)}`}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <LeaderboardOutlinedIcon
-                sx={{ width: '14px' }}
-                width="auto"
-                style={{ color: '#B2B2B2' }}
-              />
-              <Typography variant="s7">
-                <Typography variant="s14">{fIntNumber(rarity_rank)}</Typography> /{' '}
-                {fIntNumber(citems)}
-              </Typography>
-            </Stack>
-          </Tooltip>
-        </Stack>
-      )}
-
-      <Stack direction="row" spacing={1} alignItems="center">
-        <Avatar
-          alt="C"
-          src={accountLogo}
-          variant="square"
-          style={{ width: '32px', height: '32px' }}
-        />
-        <Stack spacing={0}>
-          <Typography variant="s7">Owner</Typography>
-          <Link
-            // color="inherit"
-            // target="_blank"
-            href={`/account/${account}`}
-            // rel="noreferrer noopener nofollow"
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: '12px',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.secondary.main,
+                0.08
+              )} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.secondary.main, 0.12)}`,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2
+            }}
           >
-            <Typography variant="s15" noWrap>
-              {' '}
-              {truncate(account, 16)}
-            </Typography>
-          </Link>
+            <Avatar
+              alt="Owner"
+              src={accountLogo}
+              variant="square"
+              sx={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '8px',
+                border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`
+              }}
+            />
+            <Stack spacing={0.5}>
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                  fontWeight: 500,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                Owner
+              </Typography>
+              <Link
+                href={`/account/${account}`}
+                sx={{
+                  textDecoration: 'none',
+                  '&:hover': {
+                    textDecoration: 'underline'
+                  }
+                }}
+              >
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.secondary.main,
+                    fontSize: '0.95rem'
+                  }}
+                  noWrap
+                >
+                  {truncate(account, 16)}
+                </Typography>
+              </Link>
+            </Stack>
+          </Box>
         </Stack>
-        {/*   <Tooltip title="Contact owner via XRPNFT chat"> 
-                    <IconButton size='small' sx={{ padding: 1 }}
-                        onClick={() => {
-                        }}
-                    >
-                        <MessageOutlinedIcon fontSize="small" />
-                    </IconButton>
-                </Tooltip> */}
-      </Stack>
+      </Box>
 
       {/* Make offer start */}
       <Paper
         sx={{
-          padding: 2
+          p: 3,
+          borderRadius: '20px',
+          background: `linear-gradient(135deg, ${alpha(
+            theme.palette.background.paper,
+            0.95
+          )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+          backdropFilter: 'blur(20px)',
+          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+          boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '2px',
+            background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+            opacity: 0.8
+          }
         }}
       >
         {burnt ? (
@@ -762,9 +933,15 @@ export default function NFTActions({ nft }) {
                   <Paper
                     elevation={3}
                     sx={{
-                      backgroundColor: 'transparent',
-                      borderRadius: '8px',
-                      padding: '16px'
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.success.main,
+                        0.08
+                      )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: '16px',
+                      border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                      padding: '20px',
+                      boxShadow: `0 8px 32px ${alpha(theme.palette.success.main, 0.12)}`
                     }}
                   >
                     <Typography variant="h6" sx={{ fontWeight: 600, marginBottom: '8px' }}>
@@ -777,7 +954,12 @@ export default function NFTActions({ nft }) {
                         color="success"
                         size="small"
                         startIcon={<CheckCircleOutlineIcon />}
-                        sx={{ marginLeft: '8px', textTransform: 'none' }}
+                        sx={{
+                          marginLeft: '8px',
+                          textTransform: 'none',
+                          borderRadius: '12px',
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.3)}`
+                        }}
                       >
                         Accept Transfer
                       </Button>
@@ -787,9 +969,15 @@ export default function NFTActions({ nft }) {
                   <Paper
                     elevation={3}
                     sx={{
-                      backgroundColor: 'transparent',
-                      borderRadius: '8px',
-                      padding: '16px'
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.info.main,
+                        0.08
+                      )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                      backdropFilter: 'blur(10px)',
+                      borderRadius: '16px',
+                      border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
+                      padding: '20px',
+                      boxShadow: `0 8px 32px ${alpha(theme.palette.info.main, 0.12)}`
                     }}
                   >
                     <Typography variant="h6" sx={{ fontWeight: 600, marginBottom: '8px' }}>
@@ -808,7 +996,7 @@ export default function NFTActions({ nft }) {
                       <Typography
                         variant="body1"
                         sx={{
-                          color: '#1976d2',
+                          color: theme.palette.primary.main,
                           fontWeight: 500,
                           wordBreak: 'break-all'
                         }}
@@ -825,10 +1013,13 @@ export default function NFTActions({ nft }) {
                   display: 'flex',
                   justifyContent: 'space-around',
                   gap: 2,
-                  padding: '20px',
-                  backgroundColor: '#f8f9fa',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                  padding: '24px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.04
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.01)} 100%)`,
+                  borderRadius: '16px',
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`
                 }}
               >
                 <Button
@@ -839,12 +1030,17 @@ export default function NFTActions({ nft }) {
                   color="primary"
                   disabled={!accountLogin || burnt}
                   sx={{
-                    height: '48px',
-                    fontWeight: 'bold',
+                    height: '52px',
+                    fontWeight: 600,
                     textTransform: 'none',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      backgroundColor: '#0056b3'
+                      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`
                     }
                   }}
                 >
@@ -858,13 +1054,27 @@ export default function NFTActions({ nft }) {
                   color="secondary"
                   disabled={!accountLogin || burnt}
                   sx={{
-                    height: '48px',
-                    fontWeight: 'bold',
+                    height: '52px',
+                    fontWeight: 600,
                     textTransform: 'none',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     borderWidth: '2px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.8
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                    backdropFilter: 'blur(10px)',
+                    border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&:hover': {
-                      borderWidth: '2px'
+                      borderWidth: '2px',
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.secondary.main,
+                        0.12
+                      )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                      border: `2px solid ${alpha(theme.palette.secondary.main, 0.5)}`,
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 6px 20px ${alpha(theme.palette.secondary.main, 0.2)}`
                     }
                   }}
                 >
@@ -874,10 +1084,10 @@ export default function NFTActions({ nft }) {
                   nft={nft}
                   onHandleBurn={onHandleBurn}
                   sx={{
-                    height: '48px',
-                    fontWeight: 'bold',
+                    height: '52px',
+                    fontWeight: 600,
                     textTransform: 'none',
-                    borderRadius: '8px'
+                    borderRadius: '12px'
                   }}
                 />
               </Box>
@@ -913,6 +1123,24 @@ export default function NFTActions({ nft }) {
                       disabled={!cost || burnt}
                       variant="contained"
                       onClick={handleBuyNow}
+                      sx={{
+                        height: '48px',
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        borderRadius: '12px',
+                        background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.3)}`,
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        '&:hover': {
+                          background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`,
+                          transform: 'translateY(-2px)',
+                          boxShadow: `0 6px 20px ${alpha(theme.palette.success.main, 0.4)}`
+                        },
+                        '&:disabled': {
+                          background: alpha(theme.palette.action.disabled, 0.12),
+                          color: theme.palette.action.disabled
+                        }
+                      }}
                     >
                       Buy Now
                     </Button>
@@ -922,115 +1150,49 @@ export default function NFTActions({ nft }) {
                       variant="outlined"
                       onClick={handleCreateBuyOffer}
                       sx={{
+                        height: '48px',
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        borderRadius: '12px',
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.background.paper,
+                          0.95
+                        )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                        backdropFilter: 'blur(20px)',
+                        border: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                        color: theme.palette.primary.main,
+                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         position: 'relative',
                         overflow: 'hidden',
-                        borderRadius: '12px',
-                        transition: 'all 0.3s ease',
-                        background: (theme) =>
-                          theme.palette.mode === 'dark'
-                            ? `linear-gradient(45deg, 
-                                                            #000000 0%, 
-                                                            ${alpha('#000000', 0.9)} 25%,
-                                                            ${alpha('#1a1a1a', 0.95)} 50%,
-                                                            ${alpha('#000000', 0.9)} 75%,
-                                                            #000000 100%)`
-                            : `linear-gradient(45deg, 
-                                                            #ffffff 0%, 
-                                                            ${alpha('#ffffff', 0.9)} 25%,
-                                                            ${alpha('#f5f5f5', 0.95)} 50%,
-                                                            ${alpha('#ffffff', 0.9)} 75%,
-                                                            #ffffff 100%)`,
-                        backgroundSize: '200% 200%',
-                        animation: 'gradient 5s ease infinite',
-                        color: (theme) =>
-                          theme.palette.mode === 'dark' ? '#fff' : theme.palette.primary.main,
-                        border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.5)}`,
-                        boxShadow: (theme) => `
-                                                        0 0 5px ${alpha(
-                                                          theme.palette.primary.main,
-                                                          0.2
-                                                        )},
-                                                        0 0 10px ${alpha(
-                                                          theme.palette.primary.main,
-                                                          0.1
-                                                        )}
-                                                    `,
-                        '@keyframes gradient': {
-                          '0%': {
-                            backgroundPosition: '0% 50%'
-                          },
-                          '50%': {
-                            backgroundPosition: '100% 50%'
-                          },
-                          '100%': {
-                            backgroundPosition: '0% 50%'
-                          }
-                        },
                         '&::before': {
                           content: '""',
                           position: 'absolute',
-                          top: '-50%',
-                          left: '-50%',
-                          width: '200%',
-                          height: '200%',
-                          background: (theme) =>
-                            `radial-gradient(circle, ${alpha(
-                              theme.palette.primary.light,
-                              0.1
-                            )} 0%, transparent 70%)`,
-                          animation: 'rotate 4s linear infinite',
-                          opacity: 0,
-                          transition: 'opacity 0.3s ease'
-                        },
-                        '@keyframes rotate': {
-                          '0%': {
-                            transform: 'rotate(0deg)'
-                          },
-                          '100%': {
-                            transform: 'rotate(360deg)'
-                          }
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: '2px',
+                          background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.info.main})`,
+                          opacity: 0.6
                         },
                         '&:hover': {
-                          transform: 'translateY(-2px) scale(1.02)',
-                          background: (theme) =>
-                            theme.palette.mode === 'dark'
-                              ? `linear-gradient(45deg, 
-                                                                #000000 0%, 
-                                                                ${alpha('#000000', 0.95)} 25%,
-                                                                ${alpha('#1a1a1a', 1)} 50%,
-                                                                ${alpha('#000000', 0.95)} 75%,
-                                                                #000000 100%)`
-                              : `linear-gradient(45deg, 
-                                                                #ffffff 0%, 
-                                                                ${alpha('#ffffff', 0.95)} 25%,
-                                                                ${alpha('#f5f5f5', 1)} 50%,
-                                                                ${alpha('#ffffff', 0.95)} 75%,
-                                                                #ffffff 100%)`,
-                          border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.7)}`,
-                          boxShadow: (theme) => `
-                                                            0 0 8px ${alpha(
-                                                              theme.palette.primary.main,
-                                                              0.3
-                                                            )},
-                                                            0 0 15px ${alpha(
-                                                              theme.palette.primary.main,
-                                                              0.15
-                                                            )}
-                                                        `,
+                          background: `linear-gradient(135deg, ${alpha(
+                            theme.palette.primary.main,
+                            0.12
+                          )} 0%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
+                          border: `2px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+                          transform: 'translateY(-2px)',
+                          boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.2)}`,
                           '&::before': {
                             opacity: 1
                           }
                         },
-                        '&:active': {
-                          transform: 'translateY(0)'
-                        },
-                        '&.Mui-disabled': {
-                          background: (theme) =>
-                            theme.palette.mode === 'dark'
-                              ? alpha('#000000', 0.5)
-                              : alpha('#ffffff', 0.5),
-                          border: (theme) => `1px solid ${alpha(theme.palette.primary.light, 0.2)}`,
-                          boxShadow: 'none'
+                        '&:disabled': {
+                          background: alpha(theme.palette.action.disabled, 0.08),
+                          border: `2px solid ${alpha(theme.palette.action.disabled, 0.2)}`,
+                          color: theme.palette.action.disabled,
+                          '&::before': {
+                            display: 'none'
+                          }
                         }
                       }}
                     >
@@ -1043,19 +1205,80 @@ export default function NFTActions({ nft }) {
           </>
         )}
       </Paper>
-      {/* /* Make offer end */}
+      {/* Make offer end */}
 
       {isOwner && (
         <Stack>
-          <Accordion defaultExpanded>
+          <Accordion
+            defaultExpanded
+            sx={{
+              borderRadius: '16px !important',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.95
+              )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+              backdropFilter: 'blur(20px)',
+              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
+              mb: 2,
+              '&::before': {
+                display: 'none'
+              },
+              '& .MuiAccordionSummary-root': {
+                borderRadius: '16px 16px 0 0',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.08
+                )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                minHeight: '64px',
+                '&.Mui-expanded': {
+                  minHeight: '64px',
+                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                }
+              },
+              '& .MuiAccordionDetails-root': {
+                borderRadius: '0 0 16px 16px',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.background.paper,
+                  0.6
+                )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                backdropFilter: 'blur(10px)'
+              }
+            }}
+          >
             <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
+              expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.primary.main }} />}
               aria-controls="panel3a-content"
               id="panel3a-header"
             >
-              <Stack direction="row" spacing={2}>
-                <LocalOfferIcon />
-                <Typography variant="s16">Sell Offers</Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box
+                  sx={{
+                    p: 1,
+                    borderRadius: '10px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.primary.main,
+                      0.15
+                    )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <LocalOfferIcon sx={{ color: theme.palette.primary.main, fontSize: '1.2rem' }} />
+                </Box>
+                <Typography
+                  variant="s16"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.primary.main,
+                    fontSize: '1.1rem'
+                  }}
+                >
+                  Sell Offers
+                </Typography>
               </Stack>
             </AccordionSummary>
             <AccordionDetails sx={{ textAlign: 'center' }}>
@@ -1073,18 +1296,78 @@ export default function NFTActions({ nft }) {
 
       <Stack>
         {/* Buy Offers start */}
-        <Accordion defaultExpanded>
+        <Accordion
+          defaultExpanded
+          sx={{
+            borderRadius: '16px !important',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.95
+            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+            backdropFilter: 'blur(20px)',
+            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
+            mb: 2,
+            '&::before': {
+              display: 'none'
+            },
+            '& .MuiAccordionSummary-root': {
+              borderRadius: '16px 16px 0 0',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.success.main,
+                0.08
+              )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.success.main, 0.12)}`,
+              minHeight: '64px',
+              '&.Mui-expanded': {
+                minHeight: '64px',
+                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+              }
+            },
+            '& .MuiAccordionDetails-root': {
+              borderRadius: '0 0 16px 16px',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.6
+              )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+              backdropFilter: 'blur(10px)'
+            }
+          }}
+        >
           <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
+            expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.success.main }} />}
             aria-controls="panel3a-content"
             id="panel3a-header"
           >
-            <Stack direction="row" spacing={2}>
-              <PanToolIcon />
-              <Typography variant="s16">Offers</Typography>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Box
+                sx={{
+                  p: 1,
+                  borderRadius: '10px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.15
+                  )} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <PanToolIcon sx={{ color: theme.palette.success.main, fontSize: '1.2rem' }} />
+              </Box>
+              <Typography
+                variant="s16"
+                sx={{
+                  fontWeight: 600,
+                  color: theme.palette.success.main,
+                  fontSize: '1.1rem'
+                }}
+              >
+                Offers
+              </Typography>
             </Stack>
           </AccordionSummary>
-          {/* <Divider /> */}
           <AccordionDetails>
             <OffersList
               nft={nft}
@@ -1100,18 +1383,79 @@ export default function NFTActions({ nft }) {
 
       <Stack>
         {/* History Start */}
-        <Accordion defaultExpanded>
+        <Accordion
+          defaultExpanded
+          sx={{
+            borderRadius: '16px !important',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.95
+            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+            backdropFilter: 'blur(20px)',
+            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
+            mb: 2,
+            '&::before': {
+              display: 'none'
+            },
+            '& .MuiAccordionSummary-root': {
+              borderRadius: '16px 16px 0 0',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.info.main,
+                0.08
+              )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`,
+              minHeight: '64px',
+              '&.Mui-expanded': {
+                minHeight: '64px',
+                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+              }
+            },
+            '& .MuiAccordionDetails-root': {
+              borderRadius: '0 0 16px 16px',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.6
+              )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+              backdropFilter: 'blur(10px)',
+              borderTop: 'none'
+            }
+          }}
+        >
           <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
+            expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.info.main }} />}
             aria-controls="panel2a-content"
             id="panel2a-header"
           >
-            <Stack direction="row" spacing={2}>
-              <HistoryIcon />
-              <Typography variant="s16">History</Typography>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Box
+                sx={{
+                  p: 1,
+                  borderRadius: '10px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.15
+                  )} 0%, ${alpha(theme.palette.info.main, 0.08)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <HistoryIcon sx={{ color: theme.palette.info.main, fontSize: '1.2rem' }} />
+              </Box>
+              <Typography
+                variant="s16"
+                sx={{
+                  fontWeight: 600,
+                  color: theme.palette.info.main,
+                  fontSize: '1.1rem'
+                }}
+              >
+                History
+              </Typography>
             </Stack>
           </AccordionSummary>
-          <Divider />
           <AccordionDetails>
             <HistoryList nft={nft} />
           </AccordionDetails>

@@ -184,7 +184,7 @@ export default function NFTDetailsMobile({ nft }) {
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
 
-  // const theme = useTheme();
+  const theme = useTheme();
   // const largescreen = useMediaQuery(theme => theme.breakpoints.up('md'));
 
   const {
@@ -572,115 +572,223 @@ export default function NFTDetailsMobile({ nft }) {
         handleAccept={handleAcceptOffer}
       />
       {self && (
-        <Stack direction="row" spacing={2} justifyContent="space-between" sx={{ mt: 1, mb: 1 }}>
-          <Stack>
-            <Stack direction="row" spacing={1}>
-              <Link href={`/collection/${cslug}`} underline="none">
-                <Typography variant="s5" sx={{ pl: 0 }}>
-                  {collectionName}
-                </Typography>
-              </Link>
-              {cverified === 'yes' && (
-                <Tooltip title="Verified">
-                  <VerifiedIcon fontSize="small" style={{ color: '#4589ff' }} />
-                </Tooltip>
-              )}
-            </Stack>
-
-            <Stack direction="row" spacing={0.5} alignItems="center">
-              <Typography variant="s7" noWrap>
-                Global Floor
-              </Typography>
-              <Typography>✕</Typography>
-              <Typography variant="s7" noWrap>
-                {fNumber(floorPrice)}
-              </Typography>
-            </Stack>
-          </Stack>
-
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Tooltip title="Share">
-              <IconButton
-                size="medium"
-                sx={{ padding: 1 }}
-                ref={anchorRef}
-                onClick={handleOpenShare}
-              >
-                <ShareIcon />
-              </IconButton>
-            </Tooltip>
-
-            <Popover
-              open={openShare}
-              onClose={handleCloseShare}
-              anchorEl={anchorRef.current}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-              transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-              PaperProps={{
-                sx: {
-                  // mt: 1.5,
-                  // ml: 0.5,
-                  // overflow: 'inherit',
-                  // boxShadow: (theme) => theme.customShadows.z20,
-                  // border: (theme) => `solid 1px ${alpha('#919EAB', 0.08)}`,
-                  // width: 'auto',
-                }
-              }}
-            >
-              <Stack direction="row" spacing={2} sx={{ pt: 1.5, pl: 1, pr: 1, pb: 1 }}>
-                <FacebookShareButton
-                  url={shareUrl}
-                  quote={shareTitle}
-                  hashtag={'#'}
-                  description={shareDesc}
-                  onClick={handleCloseShare}
-                >
-                  <FacebookIcon size={24} round />
-                </FacebookShareButton>
-                <TwitterShareButton
-                  title={shareTitle}
-                  url={shareUrl}
-                  hashtag={'#'}
-                  onClick={handleCloseShare}
-                >
-                  <TwitterIcon size={24} round />
-                </TwitterShareButton>
+        <Box
+          sx={{
+            p: 3,
+            borderRadius: '16px',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.8
+            )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+            boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
+            mb: 2
+          }}
+        >
+          <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center">
+            <Stack spacing={2}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Link href={`/collection/${cslug}`} underline="none">
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                    {collectionName}
+                  </Typography>
+                </Link>
+                {cverified === 'yes' && (
+                  <Tooltip title="Verified">
+                    <VerifiedIcon fontSize="small" sx={{ color: 'primary.main' }} />
+                  </Tooltip>
+                )}
               </Stack>
-            </Popover>
+
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: '12px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.info.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.5
+                }}
+              >
+                <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                  Global Floor
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontWeight: 700,
+                    color: theme.palette.info.main,
+                    fontSize: '1.1rem'
+                  }}
+                >
+                  ✕ {fNumber(floorPrice)}
+                </Typography>
+              </Box>
+            </Stack>
+
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Tooltip title="Share">
+                <IconButton
+                  size="large"
+                  sx={{
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.95
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                    backdropFilter: 'blur(12px)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    borderRadius: '12px',
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.primary.main,
+                        0.12
+                      )} 0%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.2)}`
+                    }
+                  }}
+                  ref={anchorRef}
+                  onClick={handleOpenShare}
+                >
+                  <ShareIcon sx={{ color: 'primary.main' }} />
+                </IconButton>
+              </Tooltip>
+
+              <Popover
+                open={openShare}
+                onClose={handleCloseShare}
+                anchorEl={anchorRef.current}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                PaperProps={{
+                  elevation: 3,
+                  sx: {
+                    borderRadius: 2,
+                    p: 1,
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.98
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
+                    backdropFilter: 'blur(24px)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.15)}`
+                  }
+                }}
+              >
+                <Stack direction="row" spacing={2}>
+                  <FacebookShareButton
+                    url={shareUrl}
+                    quote={shareTitle}
+                    hashtag={'#'}
+                    description={shareDesc}
+                    onClick={handleCloseShare}
+                  >
+                    <FacebookIcon size={32} round />
+                  </FacebookShareButton>
+                  <TwitterShareButton
+                    title={shareTitle}
+                    url={shareUrl}
+                    hashtag={'#'}
+                    onClick={handleCloseShare}
+                  >
+                    <TwitterIcon size={32} round />
+                  </TwitterShareButton>
+                </Stack>
+              </Popover>
+            </Stack>
           </Stack>
-        </Stack>
+        </Box>
       )}
       <Stack spacing={2} sx={{ mt: 2 }}>
-        {/* <Link underline='none' color={'text.primary'}>
-                    Name
-                </Link> */}
-        <Typography variant="h2a">{nftName}</Typography>
+        <Typography
+          variant="h2a"
+          sx={{
+            fontWeight: 700,
+            fontSize: '1.8rem',
+            background: `linear-gradient(135deg, ${theme.palette.text.primary} 0%, ${alpha(
+              theme.palette.primary.main,
+              0.8
+            )} 100%)`,
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}
+        >
+          {nftName}
+        </Typography>
       </Stack>
-      {/* {meta?.description &&
-                <SeeMoreTypography variant="s7" text={meta.description} />
-            } */}
       {self && rarity_rank > 0 && (
-        <Stack direction="row">
+        <Box
+          sx={{
+            p: 2,
+            borderRadius: '12px',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.warning.main,
+              0.08
+            )} 0%, ${alpha(theme.palette.warning.main, 0.03)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.warning.main, 0.12)}`,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 1.5,
+            width: 'fit-content',
+            mb: 2
+          }}
+        >
           <Tooltip title={`Rarity Rank #${fIntNumber(rarity_rank)} / ${fIntNumber(citems)}`}>
             <Stack direction="row" spacing={1} alignItems="center">
               <LeaderboardOutlinedIcon
-                sx={{ width: '14px' }}
-                width="auto"
-                style={{ color: '#B2B2B2' }}
+                sx={{
+                  width: '18px',
+                  height: '18px',
+                  color: theme.palette.warning.main
+                }}
               />
-              <Typography variant="s7">
-                <Typography variant="s14">{fIntNumber(rarity_rank)}</Typography> /{' '}
-                {fIntNumber(citems)}
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: 600,
+                  color: theme.palette.warning.main
+                }}
+              >
+                Rank #{fIntNumber(rarity_rank)} / {fIntNumber(citems)}
               </Typography>
             </Stack>
           </Tooltip>
-        </Stack>
+        </Box>
       )}
       <NFTPreview nft={nft} /> {/* NFTokenID={NFTokenID} meta={meta} dfile={dfile} */}
       {/* Make offer start */}
       <Paper
         sx={{
-          padding: 2
+          p: 3,
+          borderRadius: '20px',
+          background: `linear-gradient(135deg, ${alpha(
+            theme.palette.background.paper,
+            0.95
+          )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+          backdropFilter: 'blur(20px)',
+          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+          boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '2px',
+            background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+            opacity: 0.8
+          }
         }}
       >
         {burnt ? (
@@ -907,48 +1015,139 @@ export default function NFTDetailsMobile({ nft }) {
       </Paper>
       {/* /* Make offer end */}
       <Stack direction="row" spacing={1} alignItems="center">
-        <Avatar
-          alt="C"
-          src={accountLogo}
-          variant="square"
-          style={{ width: '32px', height: '32px' }}
-        />
-        <Stack spacing={0}>
-          <Typography variant="s7">Owner</Typography>
-          <Link
-            // color="inherit"
-            // target="_blank"
-            href={`/account/${account}`}
-            // rel="noreferrer noopener nofollow"
-          >
-            <Typography variant="s15" noWrap>
-              {' '}
-              {truncate(account, 16)}
+        <Box
+          sx={{
+            p: 2,
+            borderRadius: '12px',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.secondary.main,
+              0.08
+            )} 0%, ${alpha(theme.palette.secondary.main, 0.03)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.secondary.main, 0.12)}`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2
+          }}
+        >
+          <Avatar
+            alt="Owner"
+            src={accountLogo}
+            variant="square"
+            sx={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '8px',
+              border: `2px solid ${alpha(theme.palette.secondary.main, 0.3)}`
+            }}
+          />
+          <Stack spacing={0.5}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.secondary',
+                fontWeight: 500,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}
+            >
+              Owner
             </Typography>
-          </Link>
-        </Stack>
-
-        {/*
-                <Tooltip title="Contact owner via XRPNFT chat">
-                    <IconButton size='small' sx={{ padding: 1 }}
-                        onClick={() => {
-                        }}
-                    >
-                        <MessageOutlinedIcon fontSize="small" />
-                    </IconButton>
-                    </Tooltip> */}
+            <Link
+              href={`/account/${account}`}
+              sx={{
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline'
+                }
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: 600,
+                  color: theme.palette.secondary.main,
+                  fontSize: '0.95rem'
+                }}
+                noWrap
+              >
+                {truncate(account, 16)}
+              </Typography>
+            </Link>
+          </Stack>
+        </Box>
       </Stack>
       {isOwner && (
         <Stack>
-          <Accordion defaultExpanded>
+          <Accordion
+            defaultExpanded
+            sx={{
+              borderRadius: '16px !important',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.95
+              )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+              backdropFilter: 'blur(20px)',
+              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+              boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`,
+              mb: 2,
+              '&::before': {
+                display: 'none'
+              },
+              '& .MuiAccordionSummary-root': {
+                borderRadius: '16px 16px 0 0',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.primary.main,
+                  0.08
+                )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                minHeight: '64px',
+                '&.Mui-expanded': {
+                  minHeight: '64px',
+                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                }
+              },
+              '& .MuiAccordionDetails-root': {
+                borderRadius: '0 0 16px 16px',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.background.paper,
+                  0.6
+                )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                backdropFilter: 'blur(10px)'
+              }
+            }}
+          >
             <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
+              expandIcon={<ExpandMoreIcon sx={{ color: theme.palette.primary.main }} />}
               aria-controls="panel3a-content"
               id="panel3a-header"
             >
-              <Stack direction="row" spacing={2}>
-                <LocalOfferIcon />
-                <Typography variant="s16">Sell Offers</Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box
+                  sx={{
+                    p: 1,
+                    borderRadius: '10px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.primary.main,
+                      0.15
+                    )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <LocalOfferIcon sx={{ color: theme.palette.primary.main, fontSize: '1.2rem' }} />
+                </Box>
+                <Typography
+                  variant="s16"
+                  sx={{
+                    fontWeight: 600,
+                    color: theme.palette.primary.main,
+                    fontSize: '1.1rem'
+                  }}
+                >
+                  Sell Offers
+                </Typography>
               </Stack>
             </AccordionSummary>
             <AccordionDetails sx={{ textAlign: 'center' }}>
