@@ -67,37 +67,142 @@ const HeaderWrapper = styled(Box)(
     height: ${theme.spacing(7)};
     margin-bottom: ${theme.spacing(0)};
     border-radius: 0px;
-    border-bottom: 1px solid ${alpha('#CBCCD2', 0.2)};
+    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.08)};
     position: relative;
     z-index: 1200;
-    background-color: ${theme.palette.background.paper};
+    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.8
+  )} 100%);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 
+                0 2px 8px ${alpha(theme.palette.primary.main, 0.04)};
+    
+    &::before {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, ${theme.palette.primary.main}, ${
+    theme.palette.success.main
+  }, ${theme.palette.info.main});
+      opacity: 0.8;
+    }
 `
 );
 
 const StyledLink = styled(Link)(
-  ({ darkMode }) => `
-    font-weight: 700;
+  ({ darkMode, theme }) => `
+    font-weight: 600;
     margin-right: 20px;
-    padding: 6px 10px;
-    border-radius: 10px;
-    transition: all 0.2s ease-in-out;
+    padding: 8px 16px;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-flex;
     align-items: center;
-    background: transparent;
+    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.3
+  )} 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid ${alpha(theme.palette.divider, 0.08)};
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, ${alpha(
+        theme.palette.primary.main,
+        0.1
+      )}, transparent);
+      transition: left 0.5s ease;
+    }
+    
     &:hover {
-      color: ${darkMode ? '#22B14C' : '#3366FF'};
-      background: ${darkMode ? 'rgba(34, 177, 76, 0.1)' : 'rgba(51, 102, 255, 0.1)'};
+      color: ${darkMode ? theme.palette.success.main : theme.palette.primary.main};
+      background: linear-gradient(135deg, ${alpha(
+        darkMode ? theme.palette.success.main : theme.palette.primary.main,
+        0.08
+      )} 0%, ${alpha(
+    darkMode ? theme.palette.success.main : theme.palette.primary.main,
+    0.03
+  )} 100%);
+      border: 1px solid ${alpha(
+        darkMode ? theme.palette.success.main : theme.palette.primary.main,
+        0.15
+      )};
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px ${alpha(
+        darkMode ? theme.palette.success.main : theme.palette.primary.main,
+        0.15
+      )};
       cursor: pointer;
+      
+      &::before {
+        left: 100%;
+      }
     }
 `
 );
 
 const StyledMenuItem = styled(MenuItem)(
-  ({ darkMode }) => `
-    color: ${darkMode ? 'white' : 'black'};
+  ({ darkMode, theme }) => `
+    color: ${darkMode ? 'white' : theme.palette.text.primary};
+    margin: 4px 8px;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.2
+  )} 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid ${alpha(theme.palette.divider, 0.06)};
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, ${alpha(
+        theme.palette.primary.main,
+        0.08
+      )}, transparent);
+      transition: left 0.4s ease;
+    }
+    
     &:hover {
-      color: ${darkMode ? '#22B14C' : '#3366FF'};
-      background: ${darkMode ? 'rgba(34, 177, 76, 0.1)' : 'rgba(51, 102, 255, 0.1)'};
+      color: ${darkMode ? theme.palette.success.main : theme.palette.primary.main};
+      background: linear-gradient(135deg, ${alpha(
+        darkMode ? theme.palette.success.main : theme.palette.primary.main,
+        0.08
+      )} 0%, ${alpha(
+    darkMode ? theme.palette.success.main : theme.palette.primary.main,
+    0.03
+  )} 100%);
+      border: 1px solid ${alpha(
+        darkMode ? theme.palette.success.main : theme.palette.primary.main,
+        0.12
+      )};
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px ${alpha(
+        darkMode ? theme.palette.success.main : theme.palette.primary.main,
+        0.12
+      )};
+      
+      &::before {
+        left: 100%;
+      }
     }
 `
 );
@@ -239,14 +344,8 @@ export default function Header(props) {
               <StyledLink
                 underline="none"
                 color={darkMode ? 'white' : 'black'}
-                sx={{
-                  '&:hover': {
-                    color: darkMode ? '#22B14C !important' : '#3366FF !important'
-                  },
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
+                darkMode={darkMode}
+                theme={theme}
                 onClick={handleTokensClick}
                 style={{ cursor: 'pointer' }}
               >
@@ -264,15 +363,35 @@ export default function Header(props) {
                 PaperProps={{
                   sx: {
                     mt: 1,
-                    backgroundColor: darkMode ? 'rgba(0, 0, 0, 0.9)' : 'white',
-                    borderRadius: '10px',
-                    border: '1px solid',
-                    borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.95
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: '16px',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                    boxShadow: `0 8px 32px ${alpha(
+                      theme.palette.common.black,
+                      0.08
+                    )}, 0 2px 8px ${alpha(theme.palette.primary.main, 0.04)}`,
+                    overflow: 'hidden',
+                    position: 'relative',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '2px',
+                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                      opacity: 0.8
+                    }
                   }
                 }}
               >
                 <StyledMenuItem
                   darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/')}
                   sx={{
                     display: 'flex',
@@ -288,6 +407,7 @@ export default function Header(props) {
 
                 <StyledMenuItem
                   darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/view/firstledger')}
                   sx={{
                     display: 'flex',
@@ -303,6 +423,7 @@ export default function Header(props) {
 
                 <StyledMenuItem
                   darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/view/magnetic-x')}
                   sx={{
                     display: 'flex',
@@ -327,6 +448,7 @@ export default function Header(props) {
 
                 <StyledMenuItem
                   darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/view/xpmarket')}
                   sx={{
                     display: 'flex',
@@ -342,6 +464,7 @@ export default function Header(props) {
 
                 <StyledMenuItem
                   darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/view/xrpfun')}
                   sx={{
                     display: 'flex',
@@ -367,6 +490,7 @@ export default function Header(props) {
 
                 <StyledMenuItem
                   darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/?sort=trendingScore&order=desc')}
                   sx={{
                     display: 'flex',
@@ -384,6 +508,7 @@ export default function Header(props) {
 
                 <StyledMenuItem
                   darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/?sort=assessmentScore&order=desc')}
                   sx={{
                     display: 'flex',
@@ -401,6 +526,7 @@ export default function Header(props) {
 
                 <StyledMenuItem
                   darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/?sort=views&order=desc')}
                   sx={{
                     display: 'flex',
@@ -418,6 +544,7 @@ export default function Header(props) {
 
                 <StyledMenuItem
                   darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/?sort=pro24h&order=desc')}
                   sx={{
                     display: 'flex',
@@ -435,6 +562,7 @@ export default function Header(props) {
 
                 <StyledMenuItem
                   darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/?sort=dateon&order=desc')}
                   sx={{
                     display: 'flex',
@@ -454,6 +582,7 @@ export default function Header(props) {
 
                 <StyledMenuItem
                   darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/market-metrics')}
                 >
                   {t('Market Metrics')}
@@ -461,6 +590,7 @@ export default function Header(props) {
 
                 <StyledMenuItem
                   darkMode={darkMode}
+                  theme={theme}
                   onClick={() => handleTokenOptionSelect('/top-traders')}
                 >
                   {t('Top Traders')}
@@ -470,14 +600,8 @@ export default function Header(props) {
               <StyledLink
                 underline="none"
                 color={darkMode ? 'white' : 'black'}
-                sx={{
-                  '&:hover': {
-                    color: darkMode ? '#22B14C !important' : '#3366FF !important'
-                  },
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
+                darkMode={darkMode}
+                theme={theme}
                 href="/collections"
               >
                 {t('NFTs')}
@@ -485,14 +609,8 @@ export default function Header(props) {
               <StyledLink
                 underline="none"
                 color={darkMode ? 'white' : 'black'}
-                sx={{
-                  '&:hover': {
-                    color: darkMode ? '#22B14C !important' : '#3366FF !important'
-                  },
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
+                darkMode={darkMode}
+                theme={theme}
                 href="/swap"
               >
                 {t('Swap')}
@@ -583,10 +701,52 @@ export default function Header(props) {
                     onClick={() => {}}
                     size="small"
                     sx={{
-                      borderRadius: '8px',
-                      height: '28px',
+                      borderRadius: '12px',
+                      height: '32px',
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.background.paper,
+                        0.8
+                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                      color: theme.palette.text.primary,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: '-100%',
+                        width: '100%',
+                        height: '100%',
+                        background: `linear-gradient(90deg, transparent, ${alpha(
+                          theme.palette.primary.main,
+                          0.1
+                        )}, transparent)`,
+                        transition: 'left 0.5s ease'
+                      },
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.primary.main,
+                          0.08
+                        )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                        boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.15)}`,
+                        color: theme.palette.primary.main,
+                        '&::before': {
+                          left: '100%'
+                        }
+                      },
                       '& .MuiChip-label': {
-                        px: 1
+                        px: 1.5,
+                        fontWeight: 500,
+                        fontSize: '0.875rem'
+                      },
+                      '& .MuiChip-icon': {
+                        color: 'inherit',
+                        fontSize: '1rem'
                       }
                     }}
                   />

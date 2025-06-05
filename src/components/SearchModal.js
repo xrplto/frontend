@@ -14,7 +14,9 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   toggleButtonGroupClasses,
-  Typography
+  Typography,
+  alpha,
+  useTheme
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
@@ -144,6 +146,7 @@ const NFTRender = ({
 
 export default function SearchModal({ onClose, open }) {
   const { darkMode, activeFiatCurrency } = useContext(AppContext);
+  const theme = useTheme();
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency];
 
@@ -296,10 +299,14 @@ export default function SearchModal({ onClose, open }) {
           left: 0,
           right: 0,
           bottom: 0,
-          bgcolor: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 9998,
+          background: `linear-gradient(135deg, ${alpha(
+            theme.palette.common.black,
+            0.6
+          )} 0%, ${alpha(theme.palette.common.black, 0.4)} 100%)`,
+          backdropFilter: 'blur(8px)',
+          zIndex: 12000,
           opacity: open ? 1 : 0,
-          transition: 'opacity 0.2s'
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
         }}
         onClick={handleClose}
       />
@@ -310,48 +317,112 @@ export default function SearchModal({ onClose, open }) {
           maxWidth: '800px',
           position: 'fixed',
           left: '50%',
-          top: '50%',
-          transform: open ? 'translate(-50%, -50%)' : 'translate(-50%, -150%)',
-          p: 3,
-          zIndex: 9999,
+          top: open ? '20%' : '10%',
+          transform: 'translateX(-50%)',
+          p: 4,
+          zIndex: 12001,
           opacity: open ? 1 : 0,
-          transition: 'all 0.3s ease-in-out',
-          borderRadius: '16px',
-          backdropFilter: 'blur(8px)',
-          maxHeight: '90vh',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          borderRadius: '24px',
+          background: `linear-gradient(135deg, ${alpha(
+            theme.palette.background.paper,
+            0.95
+          )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+          backdropFilter: 'blur(20px)',
+          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+          boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 2px 8px ${alpha(
+            theme.palette.primary.main,
+            0.04
+          )}`,
+          maxHeight: '70vh',
           overflowY: 'auto',
-          boxShadow: (theme) =>
-            darkMode ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(0,0,0,0.1)'
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '2px',
+            background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+            opacity: 0.8
+          },
+          '@media (max-width: 600px)': {
+            width: '95vw',
+            maxWidth: '95vw',
+            left: '50%',
+            top: open ? '15%' : '5%',
+            transform: 'translateX(-50%)',
+            p: 3
+          }
         }}
         ref={modalRef}
       >
         <Paper
           component="form"
           sx={{
-            p: '8px 16px',
+            p: '12px 20px',
             display: 'flex',
             alignItems: 'center',
-            border: '2px solid',
-            borderColor: (theme) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'),
-            borderRadius: '12px',
-            backgroundColor: 'transparent',
-            transition: 'border-color 0.2s',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.8
+            )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+            borderRadius: '16px',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '100%',
+              height: '100%',
+              background: `linear-gradient(90deg, transparent, ${alpha(
+                theme.palette.primary.main,
+                0.1
+              )}, transparent)`,
+              transition: 'left 0.5s ease'
+            },
             '&:hover': {
-              borderColor: (theme) => (darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+              boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.08)}`,
+              '&::before': {
+                left: '100%'
+              }
+            },
+            '&:focus-within': {
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+              boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.12)}`
             }
           }}
         >
           <SearchIcon
-            sx={{ color: (theme) => (darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)') }}
+            sx={{
+              color: theme.palette.primary.main,
+              fontSize: '1.3rem',
+              transition: 'color 0.2s ease'
+            }}
           />
           <InputBase
             placeholder="Search token, nft, issuer address"
             fullWidth
             sx={{
-              ml: 1,
+              ml: 1.5,
               flex: 1,
               '& input': {
-                py: 1
+                py: 1.5,
+                fontSize: '1rem',
+                fontWeight: 500,
+                color: theme.palette.text.primary,
+                '&::placeholder': {
+                  color: theme.palette.text.secondary,
+                  opacity: 0.8
+                }
               }
             }}
             value={search}
@@ -363,8 +434,24 @@ export default function SearchModal({ onClose, open }) {
             size="small"
             onClick={handleClose}
             sx={{
+              color: theme.palette.text.secondary,
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.6
+              )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+              borderRadius: '10px',
+              p: 1,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                backgroundColor: (theme) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.error.main,
+                  0.08
+                )} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
+                color: theme.palette.error.main,
+                transform: 'scale(1.05)'
               }
             }}
           >
@@ -384,24 +471,57 @@ export default function SearchModal({ onClose, open }) {
             }}
             aria-label="search filters"
             sx={{
-              mt: 2,
-              mb: 1,
+              mt: 3,
+              mb: 2,
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.background.paper,
+                0.6
+              )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+              backdropFilter: 'blur(10px)',
+              borderRadius: '16px',
+              padding: '4px',
+              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+              boxShadow: `inset 0 2px 4px ${alpha(theme.palette.common.black, 0.06)}`,
               '& .MuiToggleButton-root': {
                 border: 'none',
-                borderRadius: '8px !important',
+                borderRadius: '12px !important',
                 px: 3,
-                py: 0.75,
+                py: 1,
                 typography: 'body2',
                 fontWeight: 500,
-                color: (theme) => (darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'),
+                color: alpha(theme.palette.text.secondary, 0.8),
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                position: 'relative',
                 '&.Mui-selected': {
-                  backgroundColor: (theme) =>
-                    darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
-                  color: (theme) => (darkMode ? '#fff' : '#000')
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.15
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                  color: theme.palette.primary.main,
+                  fontWeight: 600,
+                  boxShadow: `0 4px 12px ${alpha(
+                    theme.palette.primary.main,
+                    0.15
+                  )}, 0 2px 4px ${alpha(theme.palette.common.black, 0.1)}`,
+                  transform: 'translateY(-1px)',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '2px',
+                    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
+                    borderRadius: '12px 12px 0 0'
+                  }
                 },
                 '&:hover': {
-                  backgroundColor: (theme) =>
-                    darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  color: theme.palette.primary.main,
+                  transform: 'translateY(-1px)'
                 }
               }
             }}
@@ -435,23 +555,27 @@ export default function SearchModal({ onClose, open }) {
             </Stack>
             <MenuList
               sx={{
-                p: 1,
+                p: 1.5,
                 maxHeight: search.length > 0 ? '465px' : 'auto',
                 overflowY: 'auto',
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '12px',
+                gap: '16px',
                 '&::-webkit-scrollbar': {
-                  width: '6px',
-                  borderRadius: '3px'
+                  width: '8px',
+                  borderRadius: '4px'
                 },
                 '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: (theme) =>
-                    darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
-                  borderRadius: '3px'
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.3
+                  )} 0%, ${alpha(theme.palette.success.main, 0.1)} 100%)`,
+                  borderRadius: '4px',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
                 },
                 '&::-webkit-scrollbar-track': {
-                  backgroundColor: 'transparent'
+                  background: alpha(theme.palette.background.paper, 0.3),
+                  borderRadius: '4px'
                 }
               }}
             >
@@ -471,16 +595,43 @@ export default function SearchModal({ onClose, open }) {
                     >
                       <MenuItem
                         sx={{
-                          py: 1.5,
-                          px: 2,
-                          height: '64px',
-                          borderRadius: 2,
-                          backgroundColor: (theme) =>
-                            darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-                          transition: 'all 0.2s',
+                          py: 2,
+                          px: 2.5,
+                          height: '72px',
+                          borderRadius: '16px',
+                          background: `linear-gradient(135deg, ${alpha(
+                            theme.palette.background.paper,
+                            0.8
+                          )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                          backdropFilter: 'blur(10px)',
+                          border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          position: 'relative',
+                          overflow: 'hidden',
+                          '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: '-100%',
+                            width: '100%',
+                            height: '100%',
+                            background: `linear-gradient(90deg, transparent, ${alpha(
+                              theme.palette.success.main,
+                              0.08
+                            )}, transparent)`,
+                            transition: 'left 0.4s ease'
+                          },
                           '&:hover': {
-                            backgroundColor: (theme) =>
-                              darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'
+                            background: `linear-gradient(135deg, ${alpha(
+                              theme.palette.success.main,
+                              0.08
+                            )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                            border: `1px solid ${alpha(theme.palette.success.main, 0.12)}`,
+                            transform: 'translateY(-2px)',
+                            boxShadow: `0 4px 16px ${alpha(theme.palette.success.main, 0.12)}`,
+                            '&::before': {
+                              left: '100%'
+                            }
                           }
                         }}
                       >
@@ -551,11 +702,26 @@ export default function SearchModal({ onClose, open }) {
                 onClick={() => setActiveTab('token')}
                 variant="text"
                 sx={{
-                  mt: 1,
-                  color: (theme) => (darkMode ? 'primary.light' : 'primary.main'),
+                  mt: 2,
+                  py: 1.5,
+                  px: 3,
+                  borderRadius: '12px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                  color: theme.palette.primary.main,
+                  fontWeight: 600,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    backgroundColor: (theme) =>
-                      darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.primary.main,
+                      0.12
+                    )} 0%, ${alpha(theme.palette.primary.main, 0.06)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.15)}`
                   }
                 }}
               >
@@ -589,23 +755,27 @@ export default function SearchModal({ onClose, open }) {
 
             <MenuList
               sx={{
-                p: 1,
+                p: 1.5,
                 maxHeight: search.length > 0 ? '465px' : 'auto',
                 overflowY: 'auto',
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '12px',
+                gap: '16px',
                 '&::-webkit-scrollbar': {
-                  width: '6px',
-                  borderRadius: '3px'
+                  width: '8px',
+                  borderRadius: '4px'
                 },
                 '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: (theme) =>
-                    darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
-                  borderRadius: '3px'
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.3
+                  )} 0%, ${alpha(theme.palette.success.main, 0.1)} 100%)`,
+                  borderRadius: '4px',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
                 },
                 '&::-webkit-scrollbar-track': {
-                  backgroundColor: 'transparent'
+                  background: alpha(theme.palette.background.paper, 0.3),
+                  borderRadius: '4px'
                 }
               }}
             >
@@ -626,16 +796,43 @@ export default function SearchModal({ onClose, open }) {
                 >
                   <MenuItem
                     sx={{
-                      py: 1.5,
-                      px: 2,
-                      height: '80px',
-                      borderRadius: 2,
-                      backgroundColor: (theme) =>
-                        darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-                      transition: 'all 0.2s',
+                      py: 2,
+                      px: 2.5,
+                      height: '88px',
+                      borderRadius: '16px',
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.background.paper,
+                        0.8
+                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: '-100%',
+                        width: '100%',
+                        height: '100%',
+                        background: `linear-gradient(90deg, transparent, ${alpha(
+                          theme.palette.success.main,
+                          0.08
+                        )}, transparent)`,
+                        transition: 'left 0.4s ease'
+                      },
                       '&:hover': {
-                        backgroundColor: (theme) =>
-                          darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.success.main,
+                          0.08
+                        )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.success.main, 0.12)}`,
+                        transform: 'translateY(-2px)',
+                        boxShadow: `0 4px 16px ${alpha(theme.palette.success.main, 0.12)}`,
+                        '&::before': {
+                          left: '100%'
+                        }
                       }
                     }}
                   >
@@ -709,11 +906,26 @@ export default function SearchModal({ onClose, open }) {
                 onClick={() => setActiveTab('nft')}
                 variant="text"
                 sx={{
-                  mt: 1,
-                  color: (theme) => (darkMode ? 'primary.light' : 'primary.main'),
+                  mt: 2,
+                  py: 1.5,
+                  px: 3,
+                  borderRadius: '12px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.success.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.success.main, 0.12)}`,
+                  color: theme.palette.success.main,
+                  fontWeight: 600,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    backgroundColor: (theme) =>
-                      darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.success.main,
+                      0.12
+                    )} 0%, ${alpha(theme.palette.success.main, 0.06)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.success.main, 0.15)}`
                   }
                 }}
               >
@@ -755,15 +967,41 @@ export default function SearchModal({ onClose, open }) {
                   sx={{
                     width: '80px',
                     height: '80px',
-                    padding: '6px',
-                    borderRadius: '12px',
-                    backgroundColor: (theme) =>
-                      darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-                    transition: 'all 0.2s',
+                    padding: '8px',
+                    borderRadius: '16px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.8
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                    backdropFilter: 'blur(10px)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: '-100%',
+                      width: '100%',
+                      height: '100%',
+                      background: `linear-gradient(90deg, transparent, ${alpha(
+                        theme.palette.info.main,
+                        0.08
+                      )}, transparent)`,
+                      transition: 'left 0.4s ease'
+                    },
                     '&:hover': {
-                      backgroundColor: (theme) =>
-                        darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
-                      transform: 'translateY(-2px)'
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.info.main,
+                        0.08
+                      )} 0%, ${alpha(theme.palette.info.main, 0.03)} 100%)`,
+                      border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`,
+                      transform: 'translateY(-4px)',
+                      boxShadow: `0 6px 20px ${alpha(theme.palette.info.main, 0.15)}`,
+                      '&::before': {
+                        left: '100%'
+                      }
                     }
                   }}
                 >
