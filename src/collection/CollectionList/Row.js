@@ -8,60 +8,34 @@ import {
   Tooltip,
   Typography,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Box
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { formatMonthYearDate } from 'src/utils/formatTime';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatNumber';
 import { Icon } from '@iconify/react';
+import { useContext, useMemo } from 'react';
+import { AppContext } from 'src/AppContext';
 
-const IconCover = styled('div')(
-  ({ theme }) => `
-        width: 42px;  // Increased for better visibility
-        height: 42px; // Increased for better visibility
-        border: 2px solid ${theme.colors.alpha.black[10]};
-        border-radius: 12px;
-        background: ${theme.colors.alpha.white[100]};
-        position: relative;
-        overflow: hidden;
-        transition: all 0.2s ease-in-out;
-        -webkit-tap-highlight-color: transparent;
-        
-        &:hover, &.Mui-focusVisible {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.12);
-            border-color: ${theme.colors.primary.main}40;
-            
-            & .MuiImageBackdrop-root {
-                opacity: 0.1;
-            }
-            & .MuiIconEditButton-root {
-                opacity: 1;
-            }
-        }
-
-        ${theme.breakpoints.down('sm')} {
-            width: 32px;
-            height: 32px;
-        }
-    `
-);
-
-const IconWrapper = styled('div')(
-  ({ theme }) => `
-        box-sizing: border-box;
-        display: inline-block;
-        position: relative;
-        width: 38px;
-        height: 38px;
-
-        ${theme.breakpoints.down('sm')} {
-            width: 28px;
-            height: 28px;
-        }
-  `
-);
+const CollectionImageWrapper = styled(Box)(({ theme }) => ({
+  borderRadius: '12px',
+  overflow: 'hidden',
+  width: '40px',
+  height: '40px',
+  position: 'relative',
+  border: '2px solid rgba(145, 158, 171, 0.08)',
+  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    cursor: 'pointer',
+    transform: 'scale(1.05)',
+    borderColor: 'rgba(99, 115, 129, 0.24)',
+    '& > img': {
+      opacity: 0.8
+    }
+  }
+}));
 
 const IconImage = styled('img')(
   ({ theme }) => `
@@ -119,6 +93,10 @@ export default function Row({ id, item, isMine }) {
     owners
   } = item;
 
+  const { darkMode } = useContext(AppContext);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const floorPrice = floor?.amount || 0;
   const volume24h = fVolume(totalVol24h || 0);
   const totalVolumeDisplay = fVolume(totalVolume || 0);
@@ -126,78 +104,119 @@ export default function Row({ id, item, isMine }) {
   const strDateTime = formatMonthYearDate(created);
   const logoImageUrl = `https://s1.xrpnft.com/collection/${logoImage}`;
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const tableRowStyle = useMemo(
+    () => ({
+      borderBottom: '1px solid rgba(145, 158, 171, 0.08)',
+      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      '&:hover': {
+        '& .MuiTableCell-root': {
+          backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(145, 158, 171, 0.04)',
+          backdropFilter: 'blur(6px)'
+        },
+        cursor: 'pointer',
+        transform: 'translateY(-1px)',
+        boxShadow: darkMode
+          ? '0 4px 16px rgba(0, 0, 0, 0.24)'
+          : '0 4px 16px rgba(145, 158, 171, 0.16)'
+      },
+      '& .MuiTypography-root': {
+        fontSize: isMobile ? '12px' : '14px',
+        fontWeight: '500'
+      },
+      '& .MuiTableCell-root': {
+        padding: isMobile ? '12px 8px' : '16px 12px',
+        whiteSpace: 'nowrap',
+        borderBottom: 'none',
+        '&:not(:first-of-type)': {
+          paddingLeft: '8px'
+        }
+      }
+    }),
+    [darkMode, isMobile]
+  );
 
   const handleRowClick = () => {
     document.location = `/collection/${slug}`;
   };
 
+  const handleEditCollection = (e) => {
+    e.stopPropagation();
+    document.location = `/collection/${slug}/edit`;
+  };
+
   return (
-    <TableRow
-      hover
-      key={uuid}
-      onClick={handleRowClick}
-      sx={{
-        cursor: 'pointer',
-        transition: 'all 0.2s',
-        '&:hover': {
-          backgroundColor: (theme) => theme.colors.alpha.black[5]
-        }
-      }}
-    >
-      <TableCell align="left" sx={{ p: 0, border: 'none' }}>
-        <Stack direction="row" alignItems="center" spacing={2} sx={{ pt: 1.5, pb: 1.5 }}>
+    <TableRow key={uuid} sx={tableRowStyle} onClick={handleRowClick}>
+      <TableCell align="left" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
+        <Stack direction="row" alignItems="center" spacing={1}>
           <Typography
             variant={isMobile ? 'caption' : 'body2'}
             sx={{
               minWidth: '24px',
-              color: (theme) => theme.colors.alpha.black[70]
+              color: darkMode ? '#919EAB' : '#637381',
+              fontWeight: '500'
             }}
           >
             {id}
           </Typography>
 
-          <Link href={isMine ? `/collection/${slug}/edit` : `/collection/${slug}`} underline="none">
-            <IconCover>
-              <IconWrapper>
-                <IconImage src={logoImageUrl} />
-              </IconWrapper>
-
-              {isMine ? (
-                <IconButton
-                  className="MuiIconEditButton-root"
-                  aria-label="edit"
-                  sx={{
-                    position: 'absolute',
-                    left: '0vw',
-                    top: '0vh',
-                    opacity: 0,
-                    zIndex: 1,
-                    width: { xs: '18px', sm: '28px' }, // reduced sizes
-                    height: { xs: '18px', sm: '28px' } // reduced sizes
-                  }}
-                >
-                  <EditIcon />
-                </IconButton>
-              ) : (
-                <ImageBackdrop className="MuiImageBackdrop-root" />
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <CollectionImageWrapper>
+              <IconImage src={logoImageUrl} alt={`${name} Logo`} />
+              {isMine && (
+                <Tooltip title="Edit Collection">
+                  <IconButton
+                    onClick={handleEditCollection}
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                      color: 'white',
+                      opacity: 0,
+                      transition: 'opacity 0.2s',
+                      '&:hover': {
+                        opacity: 1,
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)'
+                      }
+                    }}
+                  >
+                    <EditIcon sx={{ fontSize: '16px' }} />
+                  </IconButton>
+                </Tooltip>
               )}
-            </IconCover>
-          </Link>
+            </CollectionImageWrapper>
+          </Box>
 
-          <Link underline="none" href={`/collection/${slug}`}>
-            <Stack spacing={0.8}>
+          <Link
+            underline="none"
+            color="inherit"
+            href={`/collection/${slug}`}
+            rel="noreferrer noopener nofollow"
+          >
+            <Stack direction="column" spacing={0.5}>
               <Stack direction="row" spacing={1} alignItems="center">
                 <Typography
                   variant={isMobile ? 'subtitle2' : 'h6'}
-                  noWrap
-                  color="primary"
                   sx={{
-                    width: isMobile ? '120px' : 'auto',
-                    textOverflow: 'ellipsis',
-                    fontWeight: 600
+                    fontWeight: '700',
+                    fontSize: isMobile ? '14px' : '16px',
+                    lineHeight: 1.2,
+                    width: isMobile ? '120px' : '180px',
+                    minWidth: isMobile ? '120px' : '180px',
+                    letterSpacing: '-0.02em',
+                    color: darkMode ? '#fff' : '#212B36'
                   }}
+                  noWrap
                 >
                   {name}
                 </Typography>
@@ -205,7 +224,7 @@ export default function Row({ id, item, isMine }) {
                   <VerifiedIcon
                     sx={{
                       fontSize: isMobile ? 14 : 18,
-                      color: (theme) => theme.colors.primary.main
+                      color: theme.palette.primary.main
                     }}
                   />
                 )}
@@ -213,8 +232,10 @@ export default function Row({ id, item, isMine }) {
               <Typography
                 variant={isMobile ? 'caption' : 'body2'}
                 sx={{
-                  color: (theme) => theme.colors.alpha.black[50],
-                  fontWeight: 500
+                  fontWeight: '500',
+                  fontSize: isMobile ? '12px' : '13px',
+                  lineHeight: 1.2,
+                  color: darkMode ? '#919EAB' : '#637381'
                 }}
               >
                 {strDateTime}
@@ -224,32 +245,42 @@ export default function Row({ id, item, isMine }) {
         </Stack>
       </TableCell>
 
-      <TableCell align="right" sx={{ pl: 0, pr: 2, border: 'none' }}>
-        <Typography variant={isMobile ? 'subtitle2' : 'h6'} noWrap sx={{ fontWeight: 600 }}>
-          ✕ {fNumber(floorPrice)}
-        </Typography>
-      </TableCell>
-
-      <TableCell align="right" sx={{ pl: 0, pr: 2, border: 'none' }}>
+      <TableCell align="right" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
         <Typography
           variant={isMobile ? 'subtitle2' : 'h6'}
           noWrap
           sx={{
-            color: (theme) => theme.colors.success.main,
-            fontWeight: 600
+            fontWeight: '600',
+            fontSize: isMobile ? '14px' : '16px',
+            color: darkMode ? '#fff' : '#212B36'
+          }}
+        >
+          ✕ {fNumber(floorPrice)}
+        </Typography>
+      </TableCell>
+
+      <TableCell align="right" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
+        <Typography
+          variant={isMobile ? 'subtitle2' : 'h6'}
+          noWrap
+          sx={{
+            color: '#00AB55',
+            fontWeight: '600',
+            fontSize: isMobile ? '14px' : '16px'
           }}
         >
           ✕ {volume24h}
         </Typography>
       </TableCell>
 
-      <TableCell align="right" sx={{ pl: 0, pr: 2, border: 'none' }}>
+      <TableCell align="right" sx={{ padding: isMobile ? '12px 8px' : '16px 12px' }}>
         <Typography
           variant={isMobile ? 'subtitle2' : 'h6'}
           noWrap
           sx={{
-            color: (theme) => theme.colors.success.main,
-            fontWeight: 600
+            color: '#00AB55',
+            fontWeight: '600',
+            fontSize: isMobile ? '14px' : '16px'
           }}
         >
           ✕ {totalVolumeDisplay}
@@ -259,13 +290,19 @@ export default function Row({ id, item, isMine }) {
       <TableCell
         align="right"
         sx={{
-          pl: 0,
-          pr: 2,
-          border: 'none',
+          padding: isMobile ? '12px 8px' : '16px 12px',
           display: { xs: 'none', sm: 'table-cell' }
         }}
       >
-        <Typography variant="h6" noWrap sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="h6"
+          noWrap
+          sx={{
+            fontWeight: '600',
+            fontSize: isMobile ? '14px' : '16px',
+            color: darkMode ? '#fff' : '#212B36'
+          }}
+        >
           {fIntNumber(owners || 0)}
         </Typography>
       </TableCell>
@@ -273,13 +310,19 @@ export default function Row({ id, item, isMine }) {
       <TableCell
         align="right"
         sx={{
-          pl: 0,
-          pr: 3,
-          border: 'none',
+          padding: isMobile ? '12px 8px' : '16px 12px',
           display: { xs: 'none', sm: 'table-cell' }
         }}
       >
-        <Typography variant="h6" noWrap sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="h6"
+          noWrap
+          sx={{
+            fontWeight: '600',
+            fontSize: isMobile ? '14px' : '16px',
+            color: darkMode ? '#fff' : '#212B36'
+          }}
+        >
           {fIntNumber(items)}
         </Typography>
       </TableCell>
