@@ -295,7 +295,7 @@ export default function SearchModal({ onClose, open }) {
       <Box
         sx={{
           position: 'fixed',
-          top: 0,
+          top: '64px',
           left: 0,
           right: 0,
           bottom: 0,
@@ -336,8 +336,11 @@ export default function SearchModal({ onClose, open }) {
           )}`,
           maxHeight: '70vh',
           overflowY: 'auto',
-          position: 'relative',
-          overflow: 'hidden',
+          '&::-webkit-scrollbar': {
+            display: 'none'
+          },
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -562,21 +565,10 @@ export default function SearchModal({ onClose, open }) {
                 gridTemplateColumns: 'repeat(2, 1fr)',
                 gap: '16px',
                 '&::-webkit-scrollbar': {
-                  width: '8px',
-                  borderRadius: '4px'
+                  display: 'none'
                 },
-                '&::-webkit-scrollbar-thumb': {
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.success.main,
-                    0.3
-                  )} 0%, ${alpha(theme.palette.success.main, 0.1)} 100%)`,
-                  borderRadius: '4px',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: alpha(theme.palette.background.paper, 0.3),
-                  borderRadius: '4px'
-                }
+                '-ms-overflow-style': 'none',
+                'scrollbar-width': 'none'
               }}
             >
               {tokens
@@ -762,21 +754,10 @@ export default function SearchModal({ onClose, open }) {
                 gridTemplateColumns: 'repeat(2, 1fr)',
                 gap: '16px',
                 '&::-webkit-scrollbar': {
-                  width: '8px',
-                  borderRadius: '4px'
+                  display: 'none'
                 },
-                '&::-webkit-scrollbar-thumb': {
-                  background: `linear-gradient(135deg, ${alpha(
-                    theme.palette.success.main,
-                    0.3
-                  )} 0%, ${alpha(theme.palette.success.main, 0.1)} 100%)`,
-                  borderRadius: '4px',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: alpha(theme.palette.background.paper, 0.3),
-                  borderRadius: '4px'
-                }
+                '-ms-overflow-style': 'none',
+                'scrollbar-width': 'none'
               }}
             >
               {collections.slice(0, activeTab == 'nft' ? collections.length : 3).map((nft, idx) => (

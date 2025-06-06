@@ -69,7 +69,7 @@ const HeaderWrapper = styled(Box)(
     border-radius: 0px;
     border-bottom: 1px solid ${alpha(theme.palette.divider, 0.08)};
     position: relative;
-    z-index: 1200;
+    z-index: 1100;
     background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
     theme.palette.background.paper,
     0.8
