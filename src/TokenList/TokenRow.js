@@ -112,19 +112,34 @@ const XPMarketIcon = React.forwardRef((props, ref) => {
   const { width, ...otherProps } = props;
 
   return (
-    <SvgIcon {...otherProps} ref={ref} viewBox="0 0 32 32">
-      <path
-        d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
-        fill="inherit"
+    <SvgIcon
+      {...otherProps}
+      ref={ref}
+      viewBox="0 0 56 56"
+      sx={{ borderRadius: '50%', ...otherProps.sx }}
+    >
+      <circle
+        cx="26"
+        cy="26"
+        r="26"
+        fill="rgba(109, 31, 238, 0.15)"
+        stroke="rgba(109, 31, 238, 0.3)"
+        strokeWidth="1"
       />
-      <path
-        d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
-        fill="inherit"
-      />
-      <path
-        d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
-        fill="inherit"
-      />
+      <g transform="translate(10, 10) scale(0.6)">
+        <path
+          d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
+          fill="#6D1FEE"
+        />
+        <path
+          d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
+          fill="#6D1FEE"
+        />
+        <path
+          d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
+          fill="#6D1FEE"
+        />
+      </g>
     </SvgIcon>
   );
 });
@@ -133,31 +148,39 @@ const XPMarketIcon = React.forwardRef((props, ref) => {
 XPMarketIcon.displayName = 'XPMarketIcon';
 
 const LedgerMemeIcon = React.forwardRef((props, ref) => (
-  <SvgIcon {...props} ref={ref} viewBox="0 0 407.1 407.1">
-    <g>
-      <rect fill="#cfff04" width="407.1" height="407.1" rx="62.91" ry="62.91"></rect>
+  <SvgIcon {...props} ref={ref} viewBox="0 0 56 56" sx={{ borderRadius: '50%', ...props.sx }}>
+    <circle
+      cx="26"
+      cy="26"
+      r="26"
+      fill="rgba(207, 255, 4, 0.2)"
+      stroke="rgba(207, 255, 4, 0.4)"
+      strokeWidth="1"
+    />
+    <g transform="translate(8, 8) scale(0.75)">
+      <rect fill="#cfff04" width="36" height="36" rx="8" ry="8" x="0" y="0"></rect>
       <g>
         <g>
           <path
             fill="#262626"
-            d="M291.54,109.68c7.23,0,14.03-2.89,19.15-8.13l30.46-31.23h-18.53l-21.19,21.7c-2.66,2.71-6.18,4.21-9.91,4.21s-7.25-1.49-9.91-4.2l-21.17-21.7h-18.54l30.48,31.23c5.12,5.24,11.92,8.13,19.15,8.13Z"
+            d="M25.74,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
           ></path>
           <path
             fill="#262626"
-            d="M310.69,120.24c-5.12-5.24-11.92-8.13-19.15-8.13s-14.03,2.89-19.15,8.13l-30.64,31.4h18.54l21.35-21.87c2.66-2.71,6.18-4.21,9.91-4.21s7.25,1.49,9.91,4.2l21.35,21.87h18.53l-30.64-31.4Z"
+            d="M27.43,10.62c-0.45-0.46-1.05-0.72-1.69-0.72s-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78Z"
           ></path>
           <path
             fill="#262626"
-            d="M115.55,109.68c7.23,0,14.03-2.89,19.15-8.13l30.46-31.23h-18.53l-21.19,21.7c-2.66,2.71-6.18,4.21-9.91,4.21s-7.25-1.49-9.91-4.2l-21.17-21.7h-18.54l30.48,31.23c5.12,5.24,11.92,8.13,19.15,8.13Z"
+            d="M10.22,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
           ></path>
           <path
             fill="#262626"
-            d="M115.55,112.12c-7.23,0-14.03,2.89-19.15,8.13l-30.64,31.4h18.53l21.35-21.87c2.66-2.71,6.18-4.21,9.91-4.21s7.25,1.49,9.91,4.2l21.35,21.87h18.53l-30.64-31.4c-5.12-5.24-11.92-8.13-19.15-8.13Z"
+            d="M10.22,9.90c-0.64,0-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78c-0.45-0.46-1.05-0.72-1.69-0.72Z"
           ></path>
         </g>
         <path
           fill="#262626"
-          d="M65.76,197c0,76.1,61.69,137.79,137.79,137.79s137.79-61.69,137.79-137.79H65.76Z"
+          d="M5.81,17.4c0,6.73,5.45,12.18,12.18,12.18s12.18-5.45,12.18-12.18H5.81Z"
         ></path>
       </g>
     </g>
@@ -169,38 +192,109 @@ LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 const getOriginIcon = (origin) => {
   switch (origin) {
     case 'FirstLedger':
-      return <OpenInNewIcon sx={{ fontSize: 'inherit', color: '#013CFE' }} />;
+      return (
+        <Box
+          sx={{
+            width: '18px',
+            height: '18px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(1, 60, 254, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid rgba(1, 60, 254, 0.2)',
+            marginRight: '2px',
+            marginBottom: '2px'
+          }}
+        >
+          <OpenInNewIcon sx={{ fontSize: '11px', color: '#013CFE' }} />
+        </Box>
+      );
     case 'XPMarket':
-      return <XPMarketIcon sx={{ fontSize: 'inherit', color: '#6D1FEE' }} />;
+      return (
+        <XPMarketIcon
+          sx={{ fontSize: '18px', color: '#6D1FEE', marginRight: '2px', marginBottom: '2px' }}
+        />
+      );
     case 'LedgerMeme':
-      return <LedgerMemeIcon sx={{ fontSize: 'inherit', width: '14px', height: '14px' }} />;
+      return (
+        <LedgerMemeIcon
+          sx={{ fontSize: '18px', color: '#cfff04', marginRight: '2px', marginBottom: '2px' }}
+        />
+      );
     case 'Magnetic X':
       return (
         <Box
-          component="img"
-          src="/magneticx-logo.webp"
-          alt="Magnetic X"
           sx={{
-            width: '12px',
-            height: '12px',
-            objectFit: 'contain'
+            width: '18px',
+            height: '18px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            overflow: 'hidden',
+            marginRight: '2px',
+            marginBottom: '2px'
           }}
-        />
+        >
+          <Box
+            component="img"
+            src="/magneticx-logo.webp"
+            alt="Magnetic X"
+            sx={{
+              width: '13px',
+              height: '13px',
+              objectFit: 'contain'
+            }}
+          />
+        </Box>
       );
     case 'xrp.fun':
       return (
-        <Icon
-          icon={chartLineUp}
-          style={{
-            fontSize: 'inherit',
-            color: '#B72136',
-            backgroundColor: '#fff',
-            borderRadius: '2px'
+        <Box
+          sx={{
+            width: '18px',
+            height: '18px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(183, 33, 54, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid rgba(183, 33, 54, 0.2)',
+            marginRight: '2px',
+            marginBottom: '2px'
           }}
-        />
+        >
+          <Icon
+            icon={chartLineUp}
+            style={{
+              fontSize: '11px',
+              color: '#B72136'
+            }}
+          />
+        </Box>
       );
     default:
-      return <AutoAwesomeIcon sx={{ fontSize: 'inherit', color: '#637381' }} />;
+      return (
+        <Box
+          sx={{
+            width: '18px',
+            height: '18px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(99, 115, 129, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid rgba(99, 115, 129, 0.2)',
+            marginRight: '2px',
+            marginBottom: '2px'
+          }}
+        >
+          <AutoAwesomeIcon sx={{ fontSize: '11px', color: '#637381' }} />
+        </Box>
+      );
   }
 };
 
@@ -208,15 +302,19 @@ const getOriginIcon = (origin) => {
 const AdminImageWrapper = styled(Box)(({ theme }) => ({
   borderRadius: '12px',
   overflow: 'hidden',
-  width: '40px',
-  height: '40px',
+  width: '48px',
+  height: '48px',
   position: 'relative',
   border: '2px solid rgba(145, 158, 171, 0.08)',
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  padding: '3px',
+  margin: '4px',
+  backgroundColor: 'rgba(255, 255, 255, 0.02)',
   '&:hover': {
     cursor: 'pointer',
     transform: 'scale(1.05)',
     borderColor: 'rgba(99, 115, 129, 0.24)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     '& > img': {
       opacity: 0.8
     }
@@ -226,11 +324,14 @@ const AdminImageWrapper = styled(Box)(({ theme }) => ({
 const TokenImageWrapper = styled(Box)(({ theme }) => ({
   borderRadius: '12px',
   overflow: 'hidden',
-  width: '40px',
-  height: '40px',
+  width: '48px',
+  height: '48px',
   position: 'relative',
   border: '2px solid rgba(145, 158, 171, 0.08)',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+  padding: '3px',
+  margin: '4px',
+  backgroundColor: 'rgba(255, 255, 255, 0.02)'
 }));
 
 function FTokenRow({
@@ -467,8 +568,8 @@ function FTokenRow({
         <Stack direction="row" alignItems="center" spacing={0.5}>
           <Box
             sx={{
-              width: 40,
-              height: 40,
+              width: 56,
+              height: 56,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -479,10 +580,10 @@ function FTokenRow({
                 <Image
                   src={imgSrc}
                   alt={`${user} ${name} Logo`}
-                  width={40}
-                  height={40}
+                  width={38}
+                  height={38}
                   priority
-                  style={{ objectFit: 'cover' }}
+                  style={{ objectFit: 'cover', borderRadius: '8px' }}
                   onError={handleImgError}
                 />
               </AdminImageWrapper>
@@ -491,10 +592,10 @@ function FTokenRow({
                 <Image
                   src={imgSrc}
                   alt={`${user} ${name} Logo`}
-                  width={40}
-                  height={40}
+                  width={38}
+                  height={38}
                   priority
-                  style={{ objectFit: 'cover' }}
+                  style={{ objectFit: 'cover', borderRadius: '8px' }}
                   onError={handleImgError}
                 />
               </TokenImageWrapper>
