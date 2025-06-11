@@ -1139,8 +1139,14 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
         if (curr1IsXRP && !curr2IsXRP) {
           // curr1 = XRP (top), curr2 = USD (bottom)
-          // rate2 is USD exchange rate, so XRP price in USD = 1 / rate2
-          xrpPriceInUSD = rate2.toNumber() > 0 ? 1 / rate2.toNumber() : 0;
+          // When revert=true, the rates are swapped, so we need to adjust
+          if (revert) {
+            // When reverted, rate1 is actually the USD rate
+            xrpPriceInUSD = rate1.toNumber() > 0 ? 1 / rate1.toNumber() : 0;
+          } else {
+            // Normal case: rate2 is USD exchange rate, so XRP price in USD = 1 / rate2
+            xrpPriceInUSD = rate2.toNumber() > 0 ? 1 / rate2.toNumber() : 0;
+          }
 
           if (active === 'AMOUNT') {
             // User typed in top field (XRP), calculate bottom field (USD)
@@ -1153,8 +1159,14 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           }
         } else if (!curr1IsXRP && curr2IsXRP) {
           // curr1 = USD (top), curr2 = XRP (bottom)
-          // rate1 is USD exchange rate, so XRP price in USD = 1 / rate1
-          xrpPriceInUSD = rate1.toNumber() > 0 ? 1 / rate1.toNumber() : 0;
+          // When revert=true, the rates are swapped, so we need to adjust
+          if (revert) {
+            // When reverted, rate2 is actually the USD rate
+            xrpPriceInUSD = rate2.toNumber() > 0 ? 1 / rate2.toNumber() : 0;
+          } else {
+            // Normal case: rate1 is USD exchange rate, so XRP price in USD = 1 / rate1
+            xrpPriceInUSD = rate1.toNumber() > 0 ? 1 / rate1.toNumber() : 0;
+          }
 
           if (active === 'AMOUNT') {
             // User typed in top field (USD), calculate bottom field (XRP)
