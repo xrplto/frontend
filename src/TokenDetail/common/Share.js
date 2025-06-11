@@ -65,9 +65,9 @@ import { currencySymbols } from 'src/utils/constants';
 const ShareButton = styled(IconButton)(({ theme, darkMode }) => ({
   position: 'relative',
   borderRadius: '12px',
-  border: `2px solid ${darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'}`,
+  border: `2px solid ${darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)'}`,
   background: darkMode
-    ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)'
+    ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(20, 20, 20, 0.95) 100%)'
     : 'linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 100%)',
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
@@ -81,7 +81,7 @@ const ShareButton = styled(IconButton)(({ theme, darkMode }) => ({
     right: 0,
     bottom: 0,
     background: darkMode
-      ? 'linear-gradient(135deg, rgba(0, 123, 85, 0.1) 0%, rgba(85, 105, 255, 0.1) 100%)'
+      ? 'linear-gradient(135deg, rgba(0, 123, 85, 0.2) 0%, rgba(85, 105, 255, 0.2) 100%)'
       : 'linear-gradient(135deg, rgba(85, 105, 255, 0.1) 0%, rgba(0, 123, 85, 0.1) 100%)',
     opacity: 0,
     transition: 'opacity 0.3s ease',
@@ -89,8 +89,10 @@ const ShareButton = styled(IconButton)(({ theme, darkMode }) => ({
   },
   '&:hover': {
     transform: 'translateY(-2px) scale(1.02)',
-    border: `2px solid ${darkMode ? 'rgba(0, 123, 85, 0.3)' : 'rgba(85, 105, 255, 0.3)'}`,
-    boxShadow: darkMode ? '0 8px 32px rgba(0, 123, 85, 0.2)' : '0 8px 32px rgba(85, 105, 255, 0.2)',
+    border: `2px solid ${darkMode ? 'rgba(0, 123, 85, 0.5)' : 'rgba(85, 105, 255, 0.3)'}`,
+    boxShadow: darkMode
+      ? '0 8px 32px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 123, 85, 0.3)'
+      : '0 8px 32px rgba(85, 105, 255, 0.2)',
     '&::before': {
       opacity: 1
     },
@@ -103,38 +105,39 @@ const ShareButton = styled(IconButton)(({ theme, darkMode }) => ({
   },
   '& .MuiSvgIcon-root': {
     fontSize: '1.25rem',
-    color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+    color: darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.6)',
     transition: 'color 0.3s ease'
   }
 }));
 
 const ShareDialog = styled(Dialog)(({ theme }) => ({
-  backdropFilter: 'blur(8px)',
-  WebkitBackdropFilter: 'blur(8px)',
+  backdropFilter: 'blur(12px)',
+  WebkitBackdropFilter: 'blur(12px)',
   '& .MuiBackdrop-root': {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)'
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.4)'
   },
   '& .MuiDialog-paper': {
     borderRadius: '20px',
     background:
       theme.palette.mode === 'dark'
-        ? 'linear-gradient(145deg, rgba(18, 18, 18, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%)'
+        ? 'linear-gradient(145deg, rgba(0, 0, 0, 0.98) 0%, rgba(10, 10, 10, 0.98) 50%, rgba(0, 0, 0, 0.98) 100%)'
         : 'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
     border:
       theme.palette.mode === 'dark'
-        ? '1px solid rgba(255, 255, 255, 0.1)'
+        ? '1px solid rgba(255, 255, 255, 0.08)'
         : '1px solid rgba(255, 255, 255, 0.8)',
     boxShadow:
       theme.palette.mode === 'dark'
-        ? '0 24px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+        ? '0 32px 64px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
         : '0 24px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.8)',
     overflow: 'hidden'
   },
   '& .MuiDialogContent-root': {
     padding: theme.spacing(3),
     position: 'relative',
+    background: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.3)' : 'transparent',
     '&::before': {
       content: '""',
       position: 'absolute',
@@ -148,7 +151,7 @@ const ShareDialog = styled(Dialog)(({ theme }) => ({
           ? 'linear-gradient(90deg, #00C853 0%, #5569ff 100%)'
           : 'linear-gradient(90deg, #5569ff 0%, #00C853 100%)',
       borderRadius: '2px',
-      opacity: 0.6
+      opacity: theme.palette.mode === 'dark' ? 0.8 : 0.6
     }
   },
   '& .MuiDialogActions-root': {
@@ -170,9 +173,11 @@ const ShareDialogTitle = styled(DialogTitle)(({ theme }) => ({
   padding: theme.spacing(2.5, 3),
   background:
     theme.palette.mode === 'dark'
-      ? 'linear-gradient(135deg, rgba(0, 123, 85, 0.1) 0%, rgba(85, 105, 255, 0.1) 100%)'
+      ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(20, 20, 20, 0.9) 50%, rgba(0, 0, 0, 0.8) 100%)'
       : 'linear-gradient(135deg, rgba(85, 105, 255, 0.05) 0%, rgba(0, 123, 85, 0.05) 100%)',
-  borderBottom: `1px solid ${theme.palette.divider}`,
+  borderBottom: `1px solid ${
+    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : theme.palette.divider
+  }`,
   position: 'relative',
   '& .MuiTypography-root': {
     fontWeight: 600,
@@ -191,14 +196,17 @@ const CloseButton = styled(IconButton)(({ theme }) => ({
   position: 'absolute',
   right: theme.spacing(1),
   top: theme.spacing(1),
-  backgroundColor:
-    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.04)',
   borderRadius: '10px',
+  border: theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
   transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor:
-      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
-    transform: 'scale(1.05)'
+    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.08)',
+    transform: 'scale(1.05)',
+    boxShadow: theme.palette.mode === 'dark' ? '0 4px 12px rgba(0, 0, 0, 0.5)' : 'none'
+  },
+  '& .MuiSvgIcon-root': {
+    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'inherit'
   }
 }));
 
@@ -206,18 +214,18 @@ const TokenAvatar = styled(Avatar)(({ theme }) => ({
   width: 88,
   height: 88,
   border: `3px solid ${
-    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)'
+    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)'
   }`,
   boxShadow:
     theme.palette.mode === 'dark'
-      ? '0 12px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)'
+      ? '0 12px 24px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05), 0 0 20px rgba(0, 123, 85, 0.2)'
       : '0 12px 24px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.8)',
   transition: 'all 0.3s ease',
   '&:hover': {
     transform: 'scale(1.05)',
     boxShadow:
       theme.palette.mode === 'dark'
-        ? '0 16px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+        ? '0 16px 32px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 30px rgba(0, 123, 85, 0.3)'
         : '0 16px 32px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.9)'
   }
 }));
@@ -227,16 +235,20 @@ const PriceCard = styled(Box)(({ theme }) => ({
   padding: theme.spacing(2.5),
   background:
     theme.palette.mode === 'dark'
-      ? 'linear-gradient(135deg, rgba(0, 123, 85, 0.08) 0%, rgba(85, 105, 255, 0.08) 100%)'
+      ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(20, 20, 20, 0.8) 50%, rgba(0, 0, 0, 0.6) 100%)'
       : 'linear-gradient(135deg, rgba(85, 105, 255, 0.05) 0%, rgba(0, 123, 85, 0.05) 100%)',
   borderRadius: '16px',
   border: `1px solid ${
-    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'
+    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'
   }`,
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
   position: 'relative',
   overflow: 'hidden',
+  boxShadow:
+    theme.palette.mode === 'dark'
+      ? 'inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 12px rgba(0, 0, 0, 0.3)'
+      : 'none',
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -248,7 +260,7 @@ const PriceCard = styled(Box)(({ theme }) => ({
       theme.palette.mode === 'dark'
         ? 'linear-gradient(90deg, #00C853 0%, #5569ff 100%)'
         : 'linear-gradient(90deg, #5569ff 0%, #00C853 100%)',
-    opacity: 0.6
+    opacity: theme.palette.mode === 'dark' ? 0.8 : 0.6
   }
 }));
 
@@ -275,32 +287,34 @@ const SocialIconWrapper = styled(Box)(({ theme }) => ({
 const UrlCopyBox = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: theme.spacing(2),
-  background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
+  background: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.02)',
   borderRadius: '12px',
   border: `1px solid ${
-    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'
+    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.06)'
   }`,
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(1),
   transition: 'all 0.2s ease',
+  boxShadow: theme.palette.mode === 'dark' ? 'inset 0 1px 0 rgba(255, 255, 255, 0.05)' : 'none',
   '&:hover': {
-    background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)',
+    background: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.04)',
     border: `1px solid ${
-      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.1)'
+      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)'
     }`
   }
 }));
 
 const CopyButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor:
-    theme.palette.mode === 'dark' ? 'rgba(0, 123, 85, 0.1)' : 'rgba(85, 105, 255, 0.1)',
+  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(85, 105, 255, 0.1)',
   borderRadius: '8px',
+  border: theme.palette.mode === 'dark' ? '1px solid rgba(0, 123, 85, 0.3)' : 'none',
   transition: 'all 0.2s ease',
   '&:hover': {
     backgroundColor:
-      theme.palette.mode === 'dark' ? 'rgba(0, 123, 85, 0.2)' : 'rgba(85, 105, 255, 0.2)',
-    transform: 'scale(1.05)'
+      theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(85, 105, 255, 0.2)',
+    transform: 'scale(1.05)',
+    boxShadow: theme.palette.mode === 'dark' ? '0 4px 12px rgba(0, 123, 85, 0.2)' : 'none'
   },
   '& .MuiSvgIcon-root': {
     fontSize: '1.1rem',
