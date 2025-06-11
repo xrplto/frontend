@@ -1133,34 +1133,35 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
         let result = 0;
 
-        // Simplified logic based on what we're converting
+        // Determine which rate represents XRP price in USD
+        // The API seems to return rate1 as "1" for XRP, so we should use rate2 as the actual price
+        let xrpPriceInUSD = 0;
+
         if (curr1IsXRP && !curr2IsXRP) {
-          // curr1 = XRP, curr2 = Token (e.g., USD)
-          // rate1 = XRP price in USD, rate2 = Token price (usually 1 for USD)
-          const xrpPriceInUSD = rate1.toNumber();
-          const tokenPrice = rate2.toNumber() || 1;
+          // curr1 = XRP (top), curr2 = USD (bottom)
+          // rate2 is USD exchange rate, so XRP price in USD = 1 / rate2
+          xrpPriceInUSD = rate2.toNumber() > 0 ? 1 / rate2.toNumber() : 0;
 
           if (active === 'AMOUNT') {
-            // Input: XRP amount, Output: Token amount
+            // User typed in top field (XRP), calculate bottom field (USD)
             // XRP_amount * XRP_price_in_USD = USD_amount
             result = new Decimal(amt).mul(xrpPriceInUSD).toNumber();
           } else {
-            // Input: Token amount (USD), Output: XRP amount
-            // USD_amount * XRP_price_as_rate = XRP_amount (direct rate conversion)
-            result = new Decimal(amt).mul(xrpPriceInUSD).toNumber();
+            // User typed in bottom field (USD), calculate top field (XRP)
+            // USD_amount / XRP_price_in_USD = XRP_amount
+            result = new Decimal(amt).div(xrpPriceInUSD).toNumber();
           }
         } else if (!curr1IsXRP && curr2IsXRP) {
-          // curr1 = Token (e.g., USD), curr2 = XRP
-          // rate1 = Token price, rate2 = XRP price in USD
-          const tokenPrice = rate1.toNumber() || 1;
-          const xrpPriceInUSD = rate2.toNumber();
+          // curr1 = USD (top), curr2 = XRP (bottom)
+          // rate1 is USD exchange rate, so XRP price in USD = 1 / rate1
+          xrpPriceInUSD = rate1.toNumber() > 0 ? 1 / rate1.toNumber() : 0;
 
           if (active === 'AMOUNT') {
-            // Input: Token amount (USD), Output: XRP amount
-            // USD_amount * XRP_price_as_rate = XRP_amount (direct rate conversion)
-            result = new Decimal(amt).mul(xrpPriceInUSD).toNumber();
+            // User typed in top field (USD), calculate bottom field (XRP)
+            // USD_amount / XRP_price_in_USD = XRP_amount
+            result = new Decimal(amt).div(xrpPriceInUSD).toNumber();
           } else {
-            // Input: XRP amount, Output: Token amount (USD)
+            // User typed in bottom field (XRP), calculate top field (USD)
             // XRP_amount * XRP_price_in_USD = USD_amount
             result = new Decimal(amt).mul(xrpPriceInUSD).toNumber();
           }
@@ -1171,19 +1172,22 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
         console.log('XRP calculation result:', {
           input: amt,
+          xrpPriceInUSD,
           rate1: rate1.toNumber(),
           rate2: rate2.toNumber(),
           result,
           curr1IsXRP,
           curr2IsXRP,
           active,
+          inputField: active === 'AMOUNT' ? 'top' : 'bottom',
+          outputField: active === 'AMOUNT' ? 'bottom' : 'top',
           calculation: curr1IsXRP
             ? active === 'AMOUNT'
-              ? `${amt} XRP * ${rate1.toNumber()} = ${result}`
-              : `${amt} USD * ${rate1.toNumber()} = ${result}`
+              ? `${amt} XRP (top) * ${xrpPriceInUSD} = ${result} USD (bottom)`
+              : `${amt} USD (bottom) / ${xrpPriceInUSD} = ${result} XRP (top)`
             : active === 'AMOUNT'
-            ? `${amt} USD * ${rate1.toNumber()} = ${result}`
-            : `${amt} XRP * ${rate1.toNumber()} = ${result}`
+            ? `${amt} USD (top) / ${xrpPriceInUSD} = ${result} XRP (bottom)`
+            : `${amt} XRP (bottom) * ${xrpPriceInUSD} = ${result} USD (top)`
         });
 
         return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
