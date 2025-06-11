@@ -1309,8 +1309,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <Stack direction="row" spacing={1} alignItems="center">
               <Box
                 component="img"
-                src={`https://s1.xrpl.to/token/${token1.md5}`}
-                alt={token1.name}
+                src={`https://s1.xrpl.to/token/${revert ? token2.md5 : token1.md5}`}
+                alt={revert ? token2.name : token1.name}
                 onError={(e) => (e.target.src = '/static/alt.webp')}
                 sx={{
                   width: 26,
@@ -1328,7 +1328,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                     lineHeight: 1.1
                   }}
                 >
-                  {token1.name}
+                  {revert ? token2.name : token1.name}
                 </Typography>
                 <Typography
                   variant="caption"
@@ -1341,7 +1341,11 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                     lineHeight: 1
                   }}
                 >
-                  {token1.issuer
+                  {revert
+                    ? token2.issuer
+                      ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
+                      : 'XRPL'
+                    : token1.issuer
                     ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
                     : 'XRPL'}
                 </Typography>
@@ -1358,11 +1362,18 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                   lineHeight: 1.1
                 }}
               >
-                {currencySymbols[activeFiatCurrency]} {fNumber(tokenExch1)}
+                {currencySymbols[activeFiatCurrency]}{' '}
+                {fNumber(
+                  new Decimal(revert ? tokenExch2 : tokenExch1)
+                    .div(metrics[activeFiatCurrency] || 1)
+                    .toNumber()
+                )}
               </Typography>
               <Box sx={{ height: '32px', width: '100%', mt: '-1px' }}>
                 <SparklineChart
-                  url={`${BASE_URL}/sparkline/${token1.md5}?period=24h&${token1.pro24h}`}
+                  url={`${BASE_URL}/sparkline/${revert ? token2.md5 : token1.md5}?period=24h&${
+                    revert ? token2.pro24h : token1.pro24h
+                  }`}
                 />
               </Box>
             </Stack>
@@ -1376,8 +1387,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             <Stack direction="row" spacing={1} alignItems="center">
               <Box
                 component="img"
-                src={`https://s1.xrpl.to/token/${token2.md5}`}
-                alt={token2.name}
+                src={`https://s1.xrpl.to/token/${revert ? token1.md5 : token2.md5}`}
+                alt={revert ? token1.name : token2.name}
                 onError={(e) => (e.target.src = '/static/alt.webp')}
                 sx={{
                   width: 26,
@@ -1395,7 +1406,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                     lineHeight: 1.1
                   }}
                 >
-                  {token2.name}
+                  {revert ? token1.name : token2.name}
                 </Typography>
                 <Typography
                   variant="caption"
@@ -1408,7 +1419,11 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                     lineHeight: 1
                   }}
                 >
-                  {token2.issuer
+                  {revert
+                    ? token1.issuer
+                      ? `${token1.issuer.slice(0, 4)}...${token1.issuer.slice(-4)}`
+                      : 'XRPL'
+                    : token2.issuer
                     ? `${token2.issuer.slice(0, 4)}...${token2.issuer.slice(-4)}`
                     : 'XRPL'}
                 </Typography>
@@ -1425,11 +1440,18 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                   lineHeight: 1.1
                 }}
               >
-                {currencySymbols[activeFiatCurrency]} {fNumber(tokenExch2)}
+                {currencySymbols[activeFiatCurrency]}{' '}
+                {fNumber(
+                  new Decimal(revert ? tokenExch1 : tokenExch2)
+                    .div(metrics[activeFiatCurrency] || 1)
+                    .toNumber()
+                )}
               </Typography>
               <Box sx={{ height: '32px', width: '100%', mt: '-1px' }}>
                 <SparklineChart
-                  url={`${BASE_URL}/sparkline/${token2.md5}?period=24h&${token2.pro24h}`}
+                  url={`${BASE_URL}/sparkline/${revert ? token1.md5 : token2.md5}?period=24h&${
+                    revert ? token1.pro24h : token2.pro24h
+                  }`}
                 />
               </Box>
             </Stack>
