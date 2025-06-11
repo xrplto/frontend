@@ -7,14 +7,19 @@ import {
   Box,
   Button,
   Card,
+  CardContent,
   Chip,
   Container,
+  Divider,
   Grid,
   IconButton,
   Link,
+  Paper,
   Stack,
   Tooltip,
-  Typography
+  Typography,
+  Fade,
+  Zoom
 } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -35,21 +40,253 @@ import Decimal from 'decimal.js';
 import PersonIcon from '@mui/icons-material/Person';
 import TokenIcon from '@mui/icons-material/Token';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
+import SecurityIcon from '@mui/icons-material/Security';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import PeopleIcon from '@mui/icons-material/People';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
 
-const OverviewWrapper = styled(Box)(({ theme }) => ({
-  alignItems: 'center',
-  justifyContent: 'center',
-  display: 'flex',
-  flex: 1,
-  overflowX: 'hidden',
-  color: theme.palette.text.primary, // Use theme text color
-  padding: theme.spacing(4),
-  backgroundColor: theme.palette.background.default // Use theme background color
+// Styled Components
+const MainWrapper = styled(Box)(({ theme }) => ({
+  minHeight: '100vh',
+  background: `linear-gradient(135deg, 
+    ${alpha(theme.palette.background.paper, 0.95)} 0%, 
+    ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+  backdropFilter: 'blur(20px)',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: `radial-gradient(circle at 20% 80%, ${alpha(
+      theme.palette.primary.main,
+      0.08
+    )} 0%, transparent 50%),
+                 radial-gradient(circle at 80% 20%, ${alpha(
+                   theme.palette.success.main,
+                   0.06
+                 )} 0%, transparent 50%)`,
+    pointerEvents: 'none'
+  }
+}));
+
+const HeroCard = styled(Card)(({ theme }) => ({
+  borderRadius: '24px',
+  background: `linear-gradient(135deg, 
+    ${alpha(theme.palette.background.paper, 0.95)} 0%, 
+    ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+  backdropFilter: 'blur(20px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
+    theme.palette.primary.main,
+    0.04
+  )}`,
+  overflow: 'hidden',
+  position: 'relative',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
+      theme.palette.primary.main,
+      0.1
+    )}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '2px',
+    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+    opacity: 0.8
+  }
+}));
+
+const StatsCard = styled(Card)(({ theme }) => ({
+  borderRadius: '20px',
+  background: `linear-gradient(135deg, 
+    ${alpha(theme.palette.background.paper, 0.9)} 0%, 
+    ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+  backdropFilter: 'blur(20px)',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 2px 8px ${alpha(
+    theme.palette.primary.main,
+    0.05
+  )}`,
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
+      theme.palette.primary.main,
+      0.1
+    )}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '3px',
+    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+    opacity: 0.8
+  }
+}));
+
+const MetricCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(2.5),
+  borderRadius: theme.spacing(2),
+  background: `linear-gradient(135deg, 
+    ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+    ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+  backdropFilter: 'blur(10px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '2px',
+    background: `linear-gradient(90deg, 
+      ${theme.palette.primary.main} 0%, 
+      ${theme.palette.success.main} 100%)`,
+    transform: 'scaleX(0)',
+    transformOrigin: 'left',
+    transition: 'transform 0.3s ease'
+  },
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.1)}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+    '&::before': {
+      transform: 'scaleX(1)'
+    }
+  }
+}));
+
+const QRSection = styled(Box)(({ theme }) => ({
+  background: `linear-gradient(135deg, 
+    ${alpha(theme.palette.primary.main, 0.04)} 0%, 
+    ${alpha(theme.palette.primary.main, 0.01)} 100%)`,
+  borderRadius: theme.spacing(3),
+  padding: theme.spacing(3),
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: -50,
+    right: -50,
+    width: 100,
+    height: 100,
+    background: `radial-gradient(circle, ${alpha(
+      theme.palette.primary.main,
+      0.1
+    )} 0%, transparent 70%)`,
+    borderRadius: '50%'
+  }
+}));
+
+const SocialButton = styled(IconButton)(({ theme }) => ({
+  width: 48,
+  height: 48,
+  borderRadius: theme.spacing(1.5),
+  background: `linear-gradient(135deg, 
+    ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+    ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+  backdropFilter: 'blur(10px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-2px) scale(1.05)',
+    background: `linear-gradient(135deg, 
+      ${alpha(theme.palette.primary.main, 0.15)} 0%, 
+      ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+    boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.2)}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+  }
+}));
+
+const AnimatedChip = styled(Chip)(({ theme }) => ({
+  borderRadius: theme.spacing(2),
+  fontWeight: 600,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  background: `linear-gradient(135deg, 
+    ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+    ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+  backdropFilter: 'blur(10px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  '&:hover': {
+    transform: 'scale(1.05) translateY(-1px)',
+    boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.2)}`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+  }
+}));
+
+const GlowingButton = styled(LoadingButton)(({ theme, glowcolor }) => ({
+  borderRadius: theme.spacing(2),
+  padding: theme.spacing(1.5, 4),
+  fontWeight: 600,
+  fontSize: '1rem',
+  textTransform: 'none',
+  position: 'relative',
+  overflow: 'hidden',
+  background: `linear-gradient(135deg, 
+    ${glowcolor || theme.palette.primary.main} 0%, 
+    ${alpha(glowcolor || theme.palette.primary.main, 0.8)} 100%)`,
+  boxShadow: `0 4px 15px ${alpha(glowcolor || theme.palette.primary.main, 0.4)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: `linear-gradient(90deg, transparent, ${alpha('#fff', 0.2)}, transparent)`,
+    transition: 'left 0.5s ease'
+  },
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: `0 8px 25px ${alpha(glowcolor || theme.palette.primary.main, 0.6)}`,
+    '&::before': {
+      left: '100%'
+    }
+  },
+  '&:active': {
+    transform: 'translateY(0)'
+  }
 }));
 
 const Label = styled(Typography)(({ theme }) => ({
-  color: alpha('#637381', 0.99),
-  marginBottom: theme.spacing(1)
+  color: alpha(theme.palette.text.secondary, 0.8),
+  fontWeight: 600,
+  fontSize: '0.75rem',
+  textTransform: 'uppercase',
+  letterSpacing: '0.5px',
+  marginBottom: theme.spacing(0.5)
+}));
+
+const ValueText = styled(Typography)(({ theme }) => ({
+  fontWeight: 600,
+  fontSize: '1rem',
+  color: theme.palette.text.primary
 }));
 
 const TruncatedTypography = styled(Typography)(({ theme }) => ({
@@ -81,13 +318,12 @@ const TrustLine = (props) => {
   const [loading, setLoading] = useState(false);
   const [counter, setCounter] = useState(150);
   const metrics = useSelector(selectMetrics);
-  // const activeFiatCurrency = useSelector(selectActiveFiatCurrency);
 
   const imgUrl = useMemo(() => `https://s1.xrpl.to/token/${token.md5}`, [token.md5]);
   const user = token.user || token.name;
   const marketcap = (token.amount * token.exch) / metrics.USD;
   const voldivmarket = marketcap > 0 ? Decimal.div(token.vol24hxrp, marketcap).toNumber() : 0;
-  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber(); // .toFixed(5, Decimal.ROUND_DOWN)
+  const convertedMarketCap = Decimal.div(marketcap, metrics[activeFiatCurrency]).toNumber();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -189,573 +425,865 @@ const TrustLine = (props) => {
   };
 
   return (
-    <OverviewWrapper>
-      <Container maxWidth="md">
-        <Stack alignItems="center" spacing={2} sx={{ mt: 2 }}>
-          <LogoTrustline />
-          <Typography variant="h4">Set {token.name} TrustLine</Typography>
-        </Stack>
-
-        <Card
-          sx={{
-            mt: 2,
-            mb: 4,
-            p: 2,
-            borderRadius: 2,
-            backgroundColor: (theme) => theme.palette.background.paper
-          }}
-        >
-          <Stack alignItems="center" spacing={2}>
-            <Stack direction="row" spacing={2} alignItems="center">
-              <Avatar
-                alt={`${user} ${token.name} Logo`}
-                src={imgUrl}
-                sx={{ width: 48, height: 48 }}
-              />
-              <Stack spacing={0.5}>
-                <Typography variant="h5" color="primary">
-                  {user}
-                </Typography>
-                <Stack direction="row" spacing={1}>
-                  <Chip variant="outlined" icon={<TokenIcon />} label={token.name} size="small" />
-                  {token.kyc && <Typography variant="subtitle2">KYC</Typography>}
-                </Stack>
-              </Stack>
+    <MainWrapper>
+      <Container maxWidth="lg" sx={{ py: 4, position: 'relative', zIndex: 1 }}>
+        {/* Header Section */}
+        <Fade in timeout={800}>
+          <Stack alignItems="center" spacing={3} sx={{ mb: 4 }}>
+            <LogoTrustline />
+            <Stack alignItems="center" spacing={1}>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 700,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textAlign: 'center'
+                }}
+              >
+                Establish TrustLine
+              </Typography>
+              <Typography variant="h6" color="text.secondary" textAlign="center">
+                Connect securely with {token.name} on the XRP Ledger
+              </Typography>
             </Stack>
+          </Stack>
+        </Fade>
 
-            <Stack direction="row" spacing={1}>
-              {token.domain && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://${token.domain}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Chip
-                    label={token.domain}
-                    size="small"
-                    deleteIcon={<Icon icon={linkExternal} width="14" height="14" />}
-                    onDelete={handleDelete}
-                    onClick={handleDelete}
-                    icon={<Icon icon={link45deg} width="14" height="14" />}
-                  />
-                </Link>
-              )}
-              {token.whitepaper && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={token.whitepaper}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Chip
-                    label="Whitepaper"
-                    size="small"
-                    deleteIcon={<Icon icon={linkExternal} width="14" height="14" />}
-                    onDelete={handleDelete}
-                    onClick={handleDelete}
-                    icon={<Icon icon={paperIcon} width="14" height="14" />}
-                  />
-                </Link>
-              )}
-            </Stack>
-
-            <Box
-              sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 1,
-                width: '100%',
-                justifyContent: 'center',
-                py: 1
-              }}
-            >
-              <Tooltip title="Rank by 24h Volume">
-                <Chip label={`Rank #${token.id}`} color="primary" variant="outlined" size="small" />
-              </Tooltip>
-              <Chip
-                label={`${fIntNumber(token.holders)} Holders`}
-                color="error"
-                variant="outlined"
-                size="small"
-              />
-              <Chip
-                label={`${fIntNumber(token.offers)} Offers`}
-                color="warning"
-                variant="outlined"
-                size="small"
-              />
-              <Chip
-                label={`${fNumber(token.vol24htx)} Trades`}
-                color="secondary"
-                variant="outlined"
-                size="small"
-              />
-              <Chip
-                label={`${fIntNumber(token.trustlines)} TrustLines`}
-                color="info"
-                variant="outlined"
-                size="small"
-              />
-            </Box>
-
-            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', justifyContent: 'center' }}>
-              {token.social && token.social.telegram && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://t.me/${token.social.telegram}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Avatar
-                    alt={`${user} ${token.name} Telegram Channel`}
-                    src="/static/telegram.webp"
-                    sx={{ width: 24, height: 24 }}
-                  />
-                </Link>
-              )}
-              {token.social && token.social.discord && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://discord.gg/${token.social.discord}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Avatar
-                    alt={`${user} ${token.name} Discord Server`}
-                    src="/static/discord.webp"
-                    sx={{ width: 24, height: 24 }}
-                  />
-                </Link>
-              )}
-              {token.social && token.social.twitter && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://twitter.com/${token.social.twitter}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Avatar
-                    alt={`${user} ${token.name} Twitter Profile`}
-                    src="/static/twitter.webp"
-                    sx={{ width: 24, height: 24 }}
-                  />
-                </Link>
-              )}
-              {token.social && token.social.facebook && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://facebook.com/${token.social.facebook}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Avatar
-                    alt={`${user} ${token.name} Facebook Page`}
-                    src="/static/facebook.webp"
-                    sx={{ width: 24, height: 24 }}
-                  />
-                </Link>
-              )}
-              {token.social && token.social.linkedin && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://linkedin.com/${token.social.linkedin}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Avatar
-                    alt={`${user} ${token.name} LinkedIn Profile`}
-                    src="/static/linkedin.webp"
-                    sx={{ width: 24, height: 24 }}
-                  />
-                </Link>
-              )}
-              {token.social && token.social.instagram && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://instagram.com/${token.social.instagram}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Avatar
-                    alt={`${user} ${token.name} Instagram Profile`}
-                    src="/static/instagram.webp"
-                    sx={{ width: 24, height: 24 }}
-                  />
-                </Link>
-              )}
-              {token.social && token.social.youtube && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://youtube.com/${token.social.youtube}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Avatar
-                    alt={`${user} ${token.name} Youtube Channel`}
-                    src="/static/youtube.webp"
-                    sx={{ width: 24, height: 24 }}
-                  />
-                </Link>
-              )}
-              {token.social && token.social.medium && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://medium.com/${token.social.medium}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Avatar
-                    alt={`${user} ${token.name} Medium Publication`}
-                    src="/static/medium.webp"
-                    sx={{ width: 24, height: 24 }}
-                  />
-                </Link>
-              )}
-              {token.social && token.social.twitch && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://twitch.tv/${token.social.twitch}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Avatar
-                    alt={`${user} ${token.name} Twitch Channel`}
-                    src="/static/twitch.webp"
-                    sx={{ width: 24, height: 24 }}
-                  />
-                </Link>
-              )}
-              {token.social && token.social.tiktok && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://tiktok.com/${token.social.tiktok}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Avatar
-                    alt={`${user} ${token.name} Tiktok Profile`}
-                    src="/static/tiktok.webp"
-                    sx={{ width: 24, height: 24 }}
-                  />
-                </Link>
-              )}
-              {token.social && token.social.reddit && (
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`https://www.reddit.com/${token.social.reddit}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Avatar
-                    alt={`${user} ${token.name} Reddit Community`}
-                    src="/static/reddit.svg"
-                    sx={{ width: 24, height: 24 }}
-                  />
-                </Link>
-              )}
-            </Stack>
-
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                {/* Token Details Section */}
-                <Stack spacing={1} sx={{ mb: 2 }}>
-                  <Stack direction="row" alignItems="center">
-                    <Link
-                      underline="none"
-                      color="inherit"
-                      target="_blank"
-                      href={`https://bithomp.com/explorer/${token.issuer}`}
-                      rel="noreferrer noopener nofollow"
-                      sx={{ flexGrow: 1 }}
-                    >
-                      <Stack direction="row" spacing={1.5} alignItems="center">
-                        <PersonIcon style={{ color: '#B72136', fontSize: 'medium' }} />
-                        <TruncatedTypography
-                          variant="subtitle2"
-                          sx={{ flexGrow: 1, maxWidth: isMobile ? '200px' : 'none' }}
-                        >
-                          {token.issuer}
-                        </TruncatedTypography>
-                        <IconButton edge="end" aria-label="bithomp">
-                          <Avatar
-                            alt={`${user} ${token.name} Bithomp Explorer`}
-                            src="/static/bithomp.ico"
-                            sx={{ width: 24, height: 24 }}
-                          />
-                        </IconButton>
-                      </Stack>
-                    </Link>
-                  </Stack>
-
-                  <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
-                    <LocalAtmIcon style={{ color: '#B72136', fontSize: 'medium' }} />
-                    <TruncatedTypography
-                      variant="subtitle2"
-                      sx={{ flexGrow: 1, maxWidth: isMobile ? '200px' : 'none' }}
-                    >
-                      {token.currency}
-                    </TruncatedTypography>
-                    <CopyToClipboard
-                      text={token.currency}
-                      onCopy={() => openSnackbar('Copied!', 'success')}
-                    >
-                      <Tooltip title="Click to copy">
-                        <IconButton>
-                          <Icon icon={copyIcon} sx={{ fontSize: 'medium' }} />
-                        </IconButton>
-                      </Tooltip>
-                    </CopyToClipboard>
-                  </Stack>
-                </Stack>
-
-                {/* Market Stats Section */}
-                <Stack spacing={1}>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
-                    {/* Market Stats */}
-                    <Label>MARKET CAP</Label>
-                    <Typography variant="body2" color="primary">
-                      {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
-                    </Typography>
-
-                    <Label>24H VOLUME</Label>
-                    <Stack>
-                      <Typography variant="body2" color="primary">
-                        {currencySymbols[activeFiatCurrency]}{' '}
-                        {fNumberWithCurreny(token.vol24hxrp, metrics[activeFiatCurrency])}
-                      </Typography>
-                      <Typography variant="body2" color="primary">
-                        {fNumber(token.vol24hx)} {token.name}
-                      </Typography>
-                    </Stack>
-
-                    <Label>VOLUME / MARKETCAP</Label>
-                    <Typography variant="body2" color="primary">
-                      {fNumber(voldivmarket)}
-                    </Typography>
-
-                    <Label>MARKET DOMINANCE</Label>
-                    <Typography variant="body2" color="primary">
-                      {fNumber(token.dom)} %
-                    </Typography>
-
-                    <Label>CIRCULATING SUPPLY</Label>
-                    <Typography variant="body2" color="primary">
-                      {fNumber(token.supply)}
-                    </Typography>
-
-                    <Label>TOTAL SUPPLY</Label>
-                    <Typography variant="body2" color="primary">
-                      {fNumber(token.amount)}
-                    </Typography>
-
-                    <Label>CREATED ON</Label>
-                    <Typography variant="body2" color="primary">
-                      {token.date}
-                    </Typography>
-
-                    <Label>BLACKHOLED</Label>
-                    <Typography variant="body2" color="primary">
-                      {info.blackholed ? 'YES' : 'NO'}
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Grid>
-
-              {/* QR Code Section */}
-              <Grid item xs={12} sm={6}>
-                <Stack alignItems="center" spacing={2}>
-                  <Box
-                    component="img"
-                    alt="XUMM QR"
-                    src={qrUrl}
-                    sx={{
-                      width: '100%',
-                      maxWidth: 280,
-                      height: 'auto',
-                      borderRadius: 2,
-                      border: '1px solid',
-                      borderColor: 'divider'
-                    }}
-                  />
-                  <Stack direction="row" spacing={1} justifyContent="center">
-                    <LoadingButton
-                      size="small"
-                      onClick={handleTrustSet}
-                      loading={loading}
-                      variant="contained"
-                      color={uuid ? 'error' : 'success'}
+        {/* Main Content */}
+        <Grid container spacing={4}>
+          {/* Token Information Card */}
+          <Grid item xs={12} lg={8}>
+            <Zoom in timeout={1000}>
+              <HeroCard>
+                <CardContent sx={{ p: 4 }}>
+                  {/* Token Header */}
+                  <Stack direction="row" spacing={3} alignItems="center" sx={{ mb: 4 }}>
+                    <Avatar
+                      alt={`${user} ${token.name} Logo`}
+                      src={imgUrl}
                       sx={{
-                        position: 'relative',
-                        overflow: 'hidden',
-                        padding: '8px 16px',
-                        borderRadius: '12px',
-                        backgroundColor: 'transparent',
-                        transition: 'all 0.3s ease',
-                        background: (theme) => `linear-gradient(45deg, 
-                          ${uuid ? theme.palette.error.main : theme.palette.primary.main} 0%, 
-                          ${alpha(
-                            uuid ? theme.palette.error.main : theme.palette.primary.main,
-                            0.8
-                          )} 25%,
-                          ${alpha(
-                            uuid ? theme.palette.error.light : theme.palette.primary.light,
-                            0.9
-                          )} 50%,
-                          ${alpha(
-                            uuid ? theme.palette.error.main : theme.palette.primary.main,
-                            0.8
-                          )} 75%,
-                          ${uuid ? theme.palette.error.main : theme.palette.primary.main} 100%)`,
-                        backgroundSize: '200% 200%',
-                        animation: 'gradient 5s ease infinite',
-                        boxShadow: (theme) => `
-                          0 0 10px ${alpha(
-                            uuid ? theme.palette.error.main : theme.palette.primary.main,
-                            0.5
-                          )},
-                          0 0 20px ${alpha(
-                            uuid ? theme.palette.error.main : theme.palette.primary.main,
-                            0.3
-                          )},
-                          0 0 30px ${alpha(
-                            uuid ? theme.palette.error.main : theme.palette.primary.main,
-                            0.2
-                          )}
-                        `,
-                        '@keyframes gradient': {
-                          '0%': {
-                            backgroundPosition: '0% 50%'
-                          },
-                          '50%': {
-                            backgroundPosition: '100% 50%'
-                          },
-                          '100%': {
-                            backgroundPosition: '0% 50%'
-                          }
-                        },
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          top: '-50%',
-                          left: '-50%',
-                          width: '200%',
-                          height: '200%',
-                          background: (theme) =>
-                            `radial-gradient(circle, ${alpha(
-                              uuid ? theme.palette.error.light : theme.palette.primary.light,
-                              0.15
-                            )} 0%, transparent 70%)`,
-                          animation: 'rotate 4s linear infinite',
-                          opacity: 0,
-                          transition: 'opacity 0.3s ease'
-                        },
-                        '@keyframes rotate': {
-                          '0%': {
-                            transform: 'rotate(0deg)'
-                          },
-                          '100%': {
-                            transform: 'rotate(360deg)'
-                          }
-                        },
-                        '&:hover': {
-                          transform: 'translateY(-2px) scale(1.02)',
-                          boxShadow: (theme) => `
-                            0 0 15px ${alpha(
-                              uuid ? theme.palette.error.main : theme.palette.primary.main,
-                              0.6
-                            )},
-                            0 0 30px ${alpha(
-                              uuid ? theme.palette.error.main : theme.palette.primary.main,
-                              0.4
-                            )},
-                            0 0 45px ${alpha(
-                              uuid ? theme.palette.error.main : theme.palette.primary.main,
-                              0.3
-                            )}
-                          `,
-                          '&::before': {
-                            opacity: 1
-                          }
-                        },
-                        '&:active': {
-                          transform: 'translateY(0)'
-                        },
-                        '&.Mui-disabled': {
-                          background: (theme) => alpha(theme.palette.action.disabled, 0.5),
-                          boxShadow: 'none'
-                        },
-                        '.MuiLoadingButton-loadingIndicator': {
-                          color: '#fff',
-                          animation: 'pulse 2s infinite',
-                          '@keyframes pulse': {
-                            '0%': {
-                              transform: 'scale(1)'
-                            },
-                            '50%': {
-                              transform: 'scale(1.1)'
-                            },
-                            '100%': {
-                              transform: 'scale(1)'
-                            }
-                          }
-                        }
+                        width: 80,
+                        height: 80,
+                        border: `3px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                        boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.3)}`
                       }}
-                    >
-                      {uuid ? `Cancel (${counter})` : 'Generate QR'}
-                    </LoadingButton>
-                    {nextUrl && (
+                    />
+                    <Stack spacing={1} sx={{ flex: 1 }}>
+                      <Stack direction="row" alignItems="center" spacing={2}>
+                        <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                          {user}
+                        </Typography>
+                        {token.kyc && (
+                          <Tooltip title="KYC Verified">
+                            <VerifiedIcon color="success" />
+                          </Tooltip>
+                        )}
+                      </Stack>
+                      <Stack direction="row" spacing={1} flexWrap="wrap">
+                        <AnimatedChip
+                          variant="filled"
+                          icon={<TokenIcon />}
+                          label={token.name}
+                          color="primary"
+                          size="small"
+                        />
+                        <AnimatedChip
+                          variant="outlined"
+                          label={`Rank #${token.id}`}
+                          color="secondary"
+                          size="small"
+                        />
+                      </Stack>
+                    </Stack>
+                  </Stack>
+
+                  {/* Links Section */}
+                  <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 4 }}>
+                    {token.domain && (
                       <Link
                         underline="none"
-                        color="inherit"
                         target="_blank"
-                        href={nextUrl}
+                        href={`https://${token.domain}`}
                         rel="noreferrer noopener nofollow"
                       >
-                        <Button size="small" variant="outlined">
-                          Open in XUMM
-                        </Button>
+                        <AnimatedChip
+                          label={token.domain}
+                          size="small"
+                          deleteIcon={<Icon icon={linkExternal} width="14" height="14" />}
+                          onDelete={handleDelete}
+                          onClick={handleDelete}
+                          icon={<Icon icon={link45deg} width="14" height="14" />}
+                          variant="outlined"
+                          clickable
+                        />
+                      </Link>
+                    )}
+                    {token.whitepaper && (
+                      <Link
+                        underline="none"
+                        target="_blank"
+                        href={token.whitepaper}
+                        rel="noreferrer noopener nofollow"
+                      >
+                        <AnimatedChip
+                          label="Whitepaper"
+                          size="small"
+                          deleteIcon={<Icon icon={linkExternal} width="14" height="14" />}
+                          onDelete={handleDelete}
+                          onClick={handleDelete}
+                          icon={<Icon icon={paperIcon} width="14" height="14" />}
+                          variant="outlined"
+                          clickable
+                        />
                       </Link>
                     )}
                   </Stack>
-                </Stack>
-              </Grid>
-            </Grid>
-          </Stack>
-        </Card>
 
-        <Box sx={{ mt: 2 }}>
-          <Label>TAGS</Label>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {token.tags &&
-              token.tags.map((tag) => (
-                <Link
-                  key={normalizeTag(tag)}
-                  href={`/view/${normalizeTag(tag)}`}
-                  underline="none"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  <Chip label={tag} variant="outlined" size="small" clickable />
-                </Link>
-              ))}
-          </Box>
-        </Box>
+                  {/* Quick Stats */}
+                  <Grid container spacing={2} sx={{ mb: 4 }}>
+                    <Grid item xs={6} sm={3}>
+                      <MetricCard elevation={0}>
+                        <Stack alignItems="center" spacing={1}>
+                          <PeopleIcon sx={{ color: theme.palette.primary.main, fontSize: 24 }} />
+                          <ValueText>{fIntNumber(token.holders)}</ValueText>
+                          <Label>Holders</Label>
+                        </Stack>
+                      </MetricCard>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                      <MetricCard elevation={0}>
+                        <Stack alignItems="center" spacing={1}>
+                          <BarChartIcon
+                            sx={{ color: theme.palette.secondary.main, fontSize: 24 }}
+                          />
+                          <ValueText>{fIntNumber(token.offers)}</ValueText>
+                          <Label>Offers</Label>
+                        </Stack>
+                      </MetricCard>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                      <MetricCard elevation={0}>
+                        <Stack alignItems="center" spacing={1}>
+                          <ShowChartIcon sx={{ color: theme.palette.success.main, fontSize: 24 }} />
+                          <ValueText>{fNumber(token.vol24htx)}</ValueText>
+                          <Label>Trades</Label>
+                        </Stack>
+                      </MetricCard>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                      <MetricCard elevation={0}>
+                        <Stack alignItems="center" spacing={1}>
+                          <TrendingUpIcon sx={{ color: theme.palette.info.main, fontSize: 24 }} />
+                          <ValueText>{fIntNumber(token.trustlines)}</ValueText>
+                          <Label>TrustLines</Label>
+                        </Stack>
+                      </MetricCard>
+                    </Grid>
+                  </Grid>
+
+                  <Divider sx={{ my: 3 }} />
+
+                  {/* Token Details */}
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={3}>
+                        {/* Issuer */}
+                        <Box>
+                          <Label>Token Issuer</Label>
+                          <Link
+                            underline="none"
+                            target="_blank"
+                            href={`https://bithomp.com/explorer/${token.issuer}`}
+                            rel="noreferrer noopener nofollow"
+                          >
+                            <Stack
+                              direction="row"
+                              spacing={2}
+                              alignItems="center"
+                              sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                background: `linear-gradient(135deg, 
+                                ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                                ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                                backdropFilter: 'blur(10px)',
+                                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                '&:hover': {
+                                  background: `linear-gradient(135deg, 
+                                  ${alpha(theme.palette.primary.main, 0.08)} 0%, 
+                                  ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                                  transform: 'translateX(4px)',
+                                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                                }
+                              }}
+                            >
+                              <PersonIcon color="primary" />
+                              <TruncatedTypography variant="body2" sx={{ flex: 1 }}>
+                                {token.issuer}
+                              </TruncatedTypography>
+                              <Avatar
+                                alt="Bithomp Explorer"
+                                src="/static/bithomp.ico"
+                                sx={{ width: 24, height: 24 }}
+                              />
+                            </Stack>
+                          </Link>
+                        </Box>
+
+                        {/* Currency */}
+                        <Box>
+                          <Label>Currency Code</Label>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            alignItems="center"
+                            sx={{
+                              p: 2,
+                              borderRadius: 2,
+                              background: `linear-gradient(135deg, 
+                              ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                              ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                              backdropFilter: 'blur(10px)',
+                              border: `1px solid ${alpha(theme.palette.secondary.main, 0.1)}`
+                            }}
+                          >
+                            <LocalAtmIcon color="secondary" />
+                            <ValueText sx={{ flex: 1 }}>{token.currency}</ValueText>
+                            <CopyToClipboard
+                              text={token.currency}
+                              onCopy={() => openSnackbar('Copied!', 'success')}
+                            >
+                              <Tooltip title="Copy Currency Code">
+                                <IconButton
+                                  size="small"
+                                  sx={{
+                                    bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                    '&:hover': {
+                                      bgcolor: alpha(theme.palette.primary.main, 0.15)
+                                    }
+                                  }}
+                                >
+                                  <Icon icon={copyIcon} />
+                                </IconButton>
+                              </Tooltip>
+                            </CopyToClipboard>
+                          </Stack>
+                        </Box>
+                      </Stack>
+                    </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <Stack spacing={3}>
+                        {/* Market Cap */}
+                        <Box>
+                          <Label>Market Cap</Label>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            alignItems="center"
+                            sx={{
+                              p: 2,
+                              borderRadius: 2,
+                              background: `linear-gradient(135deg, 
+                              ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                              ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                              backdropFilter: 'blur(10px)',
+                              border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`
+                            }}
+                          >
+                            <AccountBalanceIcon color="success" />
+                            <ValueText>
+                              {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
+                            </ValueText>
+                          </Stack>
+                        </Box>
+
+                        {/* Security Status */}
+                        <Box>
+                          <Label>Security Status</Label>
+                          <Stack
+                            direction="row"
+                            spacing={2}
+                            alignItems="center"
+                            sx={{
+                              p: 2,
+                              borderRadius: 2,
+                              background: `linear-gradient(135deg, 
+                              ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                              ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                              backdropFilter: 'blur(10px)',
+                              border: `1px solid ${alpha(
+                                info.blackholed
+                                  ? theme.palette.success.main
+                                  : theme.palette.warning.main,
+                                0.1
+                              )}`
+                            }}
+                          >
+                            <SecurityIcon color={info.blackholed ? 'success' : 'warning'} />
+                            <ValueText>
+                              {info.blackholed ? 'Blackholed (Secure)' : 'Not Blackholed'}
+                            </ValueText>
+                          </Stack>
+                        </Box>
+                      </Stack>
+                    </Grid>
+                  </Grid>
+
+                  {/* Detailed Stats */}
+                  <Box sx={{ mt: 4 }}>
+                    <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+                      Market Statistics
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6} sm={4}>
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            background: `linear-gradient(135deg, 
+                            ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                            ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                            backdropFilter: 'blur(10px)',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.1)}`
+                            }
+                          }}
+                        >
+                          <Label>24H Volume</Label>
+                          <ValueText color="primary">
+                            {currencySymbols[activeFiatCurrency]}{' '}
+                            {fNumberWithCurreny(token.vol24hxrp, metrics[activeFiatCurrency])}
+                          </ValueText>
+                          <Typography variant="body2" color="text.secondary">
+                            {fNumber(token.vol24hx)} {token.name}
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            background: `linear-gradient(135deg, 
+                            ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                            ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                            backdropFilter: 'blur(10px)',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.1)}`
+                            }
+                          }}
+                        >
+                          <Label>Volume/Market Cap</Label>
+                          <ValueText color="primary">{fNumber(voldivmarket)}</ValueText>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            background: `linear-gradient(135deg, 
+                            ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                            ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                            backdropFilter: 'blur(10px)',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.1)}`
+                            }
+                          }}
+                        >
+                          <Label>Market Dominance</Label>
+                          <ValueText color="primary">{fNumber(token.dom)}%</ValueText>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            background: `linear-gradient(135deg, 
+                            ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                            ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                            backdropFilter: 'blur(10px)',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.1)}`
+                            }
+                          }}
+                        >
+                          <Label>Circulating Supply</Label>
+                          <ValueText color="primary">{fNumber(token.supply)}</ValueText>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            background: `linear-gradient(135deg, 
+                            ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                            ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                            backdropFilter: 'blur(10px)',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.1)}`
+                            }
+                          }}
+                        >
+                          <Label>Total Supply</Label>
+                          <ValueText color="primary">{fNumber(token.amount)}</ValueText>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={6} sm={4}>
+                        <Box
+                          sx={{
+                            p: 2,
+                            borderRadius: 2,
+                            background: `linear-gradient(135deg, 
+                            ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                            ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                            backdropFilter: 'blur(10px)',
+                            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              transform: 'translateY(-2px)',
+                              boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.1)}`
+                            }
+                          }}
+                        >
+                          <Label>Created On</Label>
+                          <ValueText color="primary">{token.date}</ValueText>
+                        </Box>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                </CardContent>
+              </HeroCard>
+            </Zoom>
+          </Grid>
+
+          {/* QR Code Section */}
+          <Grid item xs={12} lg={4}>
+            <Zoom in timeout={1200}>
+              <StatsCard>
+                <CardContent sx={{ p: 3 }}>
+                  <QRSection>
+                    <Stack alignItems="center" spacing={3}>
+                      <Typography variant="h6" sx={{ fontWeight: 600, textAlign: 'center' }}>
+                        Scan QR Code
+                      </Typography>
+
+                      <Box
+                        component="img"
+                        alt="XUMM QR Code"
+                        src={qrUrl}
+                        sx={{
+                          width: '100%',
+                          maxWidth: 240,
+                          height: 'auto',
+                          borderRadius: 3,
+                          border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                          boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.2)}`
+                        }}
+                      />
+
+                      <Stack spacing={2} sx={{ width: '100%' }}>
+                        <GlowingButton
+                          fullWidth
+                          size="large"
+                          onClick={handleTrustSet}
+                          loading={loading}
+                          variant="contained"
+                          glowcolor={uuid ? theme.palette.error.main : theme.palette.primary.main}
+                        >
+                          {uuid ? `Cancel (${counter})` : 'Generate QR Code'}
+                        </GlowingButton>
+
+                        {nextUrl && (
+                          <Link
+                            underline="none"
+                            target="_blank"
+                            href={nextUrl}
+                            rel="noreferrer noopener nofollow"
+                          >
+                            <Button
+                              fullWidth
+                              size="large"
+                              variant="outlined"
+                              sx={{ borderRadius: 2 }}
+                            >
+                              Open in XUMM
+                            </Button>
+                          </Link>
+                        )}
+                      </Stack>
+                    </Stack>
+                  </QRSection>
+                </CardContent>
+              </StatsCard>
+            </Zoom>
+          </Grid>
+        </Grid>
+
+        {/* Social Links */}
+        {token.social && Object.keys(token.social).length > 0 && (
+          <Fade in timeout={1400}>
+            <Card
+              sx={{
+                mt: 4,
+                borderRadius: '24px',
+                background: `linear-gradient(135deg, 
+                ${alpha(theme.palette.background.paper, 0.95)} 0%, 
+                ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                boxShadow: `0 8px 32px ${alpha(
+                  theme.palette.common.black,
+                  0.06
+                )}, 0 2px 8px ${alpha(theme.palette.primary.main, 0.04)}`,
+                overflow: 'hidden',
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '2px',
+                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                  opacity: 0.8
+                }
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: '16px',
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.primary.main,
+                        0.15
+                      )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+                    }}
+                  >
+                    <PeopleIcon
+                      sx={{
+                        color: theme.palette.primary.main,
+                        fontSize: '1.5rem',
+                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                      }}
+                    />
+                  </Box>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      color: theme.palette.text.primary,
+                      fontSize: '1.1rem',
+                      letterSpacing: '-0.02em'
+                    }}
+                  >
+                    Social Links
+                  </Typography>
+                </Stack>
+                <Stack direction="row" spacing={2} flexWrap="wrap" justifyContent="center">
+                  {token.social?.telegram && (
+                    <Link
+                      underline="none"
+                      target="_blank"
+                      href={`https://t.me/${token.social.telegram}`}
+                      rel="noreferrer noopener nofollow"
+                    >
+                      <SocialButton>
+                        <Avatar
+                          alt="Telegram"
+                          src="/static/telegram.webp"
+                          sx={{ width: 28, height: 28 }}
+                        />
+                      </SocialButton>
+                    </Link>
+                  )}
+                  {token.social?.discord && (
+                    <Link
+                      underline="none"
+                      target="_blank"
+                      href={`https://discord.gg/${token.social.discord}`}
+                      rel="noreferrer noopener nofollow"
+                    >
+                      <SocialButton>
+                        <Avatar
+                          alt="Discord"
+                          src="/static/discord.webp"
+                          sx={{ width: 28, height: 28 }}
+                        />
+                      </SocialButton>
+                    </Link>
+                  )}
+                  {token.social?.twitter && (
+                    <Link
+                      underline="none"
+                      target="_blank"
+                      href={`https://twitter.com/${token.social.twitter}`}
+                      rel="noreferrer noopener nofollow"
+                    >
+                      <SocialButton>
+                        <Avatar
+                          alt="Twitter"
+                          src="/static/twitter.webp"
+                          sx={{ width: 28, height: 28 }}
+                        />
+                      </SocialButton>
+                    </Link>
+                  )}
+                  {token.social?.facebook && (
+                    <Link
+                      underline="none"
+                      target="_blank"
+                      href={`https://facebook.com/${token.social.facebook}`}
+                      rel="noreferrer noopener nofollow"
+                    >
+                      <SocialButton>
+                        <Avatar
+                          alt="Facebook"
+                          src="/static/facebook.webp"
+                          sx={{ width: 28, height: 28 }}
+                        />
+                      </SocialButton>
+                    </Link>
+                  )}
+                  {token.social?.linkedin && (
+                    <Link
+                      underline="none"
+                      target="_blank"
+                      href={`https://linkedin.com/${token.social.linkedin}`}
+                      rel="noreferrer noopener nofollow"
+                    >
+                      <SocialButton>
+                        <Avatar
+                          alt="LinkedIn"
+                          src="/static/linkedin.webp"
+                          sx={{ width: 28, height: 28 }}
+                        />
+                      </SocialButton>
+                    </Link>
+                  )}
+                  {token.social?.instagram && (
+                    <Link
+                      underline="none"
+                      target="_blank"
+                      href={`https://instagram.com/${token.social.instagram}`}
+                      rel="noreferrer noopener nofollow"
+                    >
+                      <SocialButton>
+                        <Avatar
+                          alt="Instagram"
+                          src="/static/instagram.webp"
+                          sx={{ width: 28, height: 28 }}
+                        />
+                      </SocialButton>
+                    </Link>
+                  )}
+                  {token.social?.youtube && (
+                    <Link
+                      underline="none"
+                      target="_blank"
+                      href={`https://youtube.com/${token.social.youtube}`}
+                      rel="noreferrer noopener nofollow"
+                    >
+                      <SocialButton>
+                        <Avatar
+                          alt="YouTube"
+                          src="/static/youtube.webp"
+                          sx={{ width: 28, height: 28 }}
+                        />
+                      </SocialButton>
+                    </Link>
+                  )}
+                  {token.social?.medium && (
+                    <Link
+                      underline="none"
+                      target="_blank"
+                      href={`https://medium.com/${token.social.medium}`}
+                      rel="noreferrer noopener nofollow"
+                    >
+                      <SocialButton>
+                        <Avatar
+                          alt="Medium"
+                          src="/static/medium.webp"
+                          sx={{ width: 28, height: 28 }}
+                        />
+                      </SocialButton>
+                    </Link>
+                  )}
+                  {token.social?.twitch && (
+                    <Link
+                      underline="none"
+                      target="_blank"
+                      href={`https://twitch.tv/${token.social.twitch}`}
+                      rel="noreferrer noopener nofollow"
+                    >
+                      <SocialButton>
+                        <Avatar
+                          alt="Twitch"
+                          src="/static/twitch.webp"
+                          sx={{ width: 28, height: 28 }}
+                        />
+                      </SocialButton>
+                    </Link>
+                  )}
+                  {token.social?.tiktok && (
+                    <Link
+                      underline="none"
+                      target="_blank"
+                      href={`https://tiktok.com/${token.social.tiktok}`}
+                      rel="noreferrer noopener nofollow"
+                    >
+                      <SocialButton>
+                        <Avatar
+                          alt="TikTok"
+                          src="/static/tiktok.webp"
+                          sx={{ width: 28, height: 28 }}
+                        />
+                      </SocialButton>
+                    </Link>
+                  )}
+                  {token.social?.reddit && (
+                    <Link
+                      underline="none"
+                      target="_blank"
+                      href={`https://www.reddit.com/${token.social.reddit}`}
+                      rel="noreferrer noopener nofollow"
+                    >
+                      <SocialButton>
+                        <Avatar
+                          alt="Reddit"
+                          src="/static/reddit.svg"
+                          sx={{ width: 28, height: 28 }}
+                        />
+                      </SocialButton>
+                    </Link>
+                  )}
+                </Stack>
+              </CardContent>
+            </Card>
+          </Fade>
+        )}
+
+        {/* Tags Section */}
+        {token.tags && token.tags.length > 0 && (
+          <Fade in timeout={1600}>
+            <Card
+              sx={{
+                mt: 4,
+                borderRadius: '24px',
+                background: `linear-gradient(135deg, 
+                ${alpha(theme.palette.background.paper, 0.95)} 0%, 
+                ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                backdropFilter: 'blur(20px)',
+                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                boxShadow: `0 8px 32px ${alpha(
+                  theme.palette.common.black,
+                  0.06
+                )}, 0 2px 8px ${alpha(theme.palette.primary.main, 0.04)}`,
+                overflow: 'hidden',
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '2px',
+                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+                  opacity: 0.8
+                }
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: '16px',
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.success.main,
+                        0.15
+                      )} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`,
+                      border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.15)}`
+                    }}
+                  >
+                    <TokenIcon
+                      sx={{
+                        color: theme.palette.success.main,
+                        fontSize: '1.5rem',
+                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                      }}
+                    />
+                  </Box>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      color: theme.palette.text.primary,
+                      fontSize: '1.1rem',
+                      letterSpacing: '-0.02em'
+                    }}
+                  >
+                    Tags
+                  </Typography>
+                </Stack>
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                  {token.tags.map((tag) => (
+                    <Link
+                      key={normalizeTag(tag)}
+                      href={`/view/${normalizeTag(tag)}`}
+                      underline="none"
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      <AnimatedChip
+                        label={tag}
+                        variant="outlined"
+                        size="small"
+                        clickable
+                        sx={{ mb: 1 }}
+                      />
+                    </Link>
+                  ))}
+                </Stack>
+              </CardContent>
+            </Card>
+          </Fade>
+        )}
       </Container>
-    </OverviewWrapper>
+    </MainWrapper>
   );
 };
 
