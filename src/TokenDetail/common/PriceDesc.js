@@ -182,10 +182,10 @@ export default function PriceDesc({ token }) {
       aria-label="Token price information"
     >
       <Stack spacing={0.75}>
-        {/* Price Header with integrated 24h Range */}
+        {/* Price Header with expanded 24h Range */}
         <Box>
-          <Stack direction="row" alignItems="flex-end" justifyContent="space-between" spacing={1}>
-            <Stack spacing={0.25} sx={{ flex: 1 }}>
+          <Stack direction="row" alignItems="flex-end" justifyContent="space-between" spacing={2}>
+            <Stack spacing={0.25} sx={{ flex: '0 0 auto', minWidth: '200px' }}>
               <Typography
                 component="h1"
                 sx={{
@@ -241,16 +241,16 @@ export default function PriceDesc({ token }) {
               </Typography>
             </Stack>
 
-            {/* Compact 24h Range */}
+            {/* Expanded 24h Range */}
             {range24h && (
-              <Box sx={{ minWidth: '200px' }}>
+              <Box sx={{ flex: 1, maxWidth: '400px', minWidth: '300px' }}>
                 <Typography
                   variant="caption"
                   sx={{
-                    fontSize: '0.625rem',
+                    fontSize: '0.75rem',
                     fontWeight: 600,
                     color: alpha(theme.palette.text.primary, 0.8),
-                    mb: 0.25,
+                    mb: 0.5,
                     display: 'block',
                     textAlign: 'center'
                   }}
@@ -261,11 +261,11 @@ export default function PriceDesc({ token }) {
                 <Stack
                   direction="row"
                   alignItems="center"
-                  spacing={0.75}
+                  spacing={1.5}
                   sx={{
-                    py: 0.375,
-                    px: 0.5,
-                    borderRadius: '4px',
+                    py: 0.75,
+                    px: 1,
+                    borderRadius: '6px',
                     background: `linear-gradient(135deg, ${alpha(
                       theme.palette.background.paper,
                       0.6
@@ -275,15 +275,16 @@ export default function PriceDesc({ token }) {
                     boxShadow: `0 1px 4px ${alpha(theme.palette.common.black, 0.04)}`
                   }}
                 >
-                  <Box sx={{ textAlign: 'center', minWidth: '40px' }}>
+                  <Box sx={{ textAlign: 'center', minWidth: '60px' }}>
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.5rem',
+                        fontSize: '0.625rem',
                         fontWeight: 500,
                         color: alpha(theme.palette.text.secondary, 0.8),
                         display: 'block',
-                        lineHeight: 1
+                        lineHeight: 1,
+                        mb: 0.25
                       }}
                     >
                       Low
@@ -291,7 +292,7 @@ export default function PriceDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.6rem',
+                        fontSize: '0.75rem',
                         fontWeight: 600,
                         color: theme.palette.success.main,
                         lineHeight: 1
@@ -309,36 +310,37 @@ export default function PriceDesc({ token }) {
                     </Typography>
                   </Box>
 
-                  <Box sx={{ flexGrow: 1, px: 0.5 }}>
+                  <Box sx={{ flexGrow: 1, px: 1 }}>
                     <LowhighBarSlider
                       aria-label="24h Price Range"
                       value={range24h.percent}
                       disabled
                       sx={{
-                        mt: 0.125,
+                        mt: 0.25,
                         '& .MuiSlider-track': {
-                          height: 4
+                          height: 6
                         },
                         '& .MuiSlider-rail': {
-                          height: 4
+                          height: 6
                         },
                         '& .MuiSlider-thumb': {
-                          height: 12,
-                          width: 12
+                          height: 16,
+                          width: 16
                         }
                       }}
                     />
                   </Box>
 
-                  <Box sx={{ textAlign: 'center', minWidth: '40px' }}>
+                  <Box sx={{ textAlign: 'center', minWidth: '60px' }}>
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.5rem',
+                        fontSize: '0.625rem',
                         fontWeight: 500,
                         color: alpha(theme.palette.text.secondary, 0.8),
                         display: 'block',
-                        lineHeight: 1
+                        lineHeight: 1,
+                        mb: 0.25
                       }}
                     >
                       High
@@ -346,7 +348,7 @@ export default function PriceDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.6rem',
+                        fontSize: '0.75rem',
                         fontWeight: 600,
                         color: theme.palette.info.main,
                         lineHeight: 1
