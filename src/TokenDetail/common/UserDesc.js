@@ -1455,62 +1455,292 @@ export default function UserDesc({ token }) {
         open={openScamWarning}
         onClose={() => setOpenScamWarning(false)}
         aria-labelledby="scam-warning-dialog"
+        maxWidth="sm"
+        fullWidth
         PaperProps={{
           sx: {
-            maxWidth: '500px',
-            border: '2px solid #ff3d00',
-            borderRadius: '16px',
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.95
-            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-            backdropFilter: 'blur(20px)',
-            boxShadow: `0 8px 32px ${alpha(theme.palette.error.main, 0.25)}`
+            maxWidth: '480px',
+            border: '3px solid #ff1744',
+            borderRadius: '20px',
+            background: `linear-gradient(135deg, 
+              ${alpha(theme.palette.background.paper, 0.98)} 0%, 
+              ${alpha(theme.palette.background.paper, 0.95)} 50%,
+              ${alpha('#ff1744', 0.02)} 100%)`,
+            backdropFilter: 'blur(24px)',
+            boxShadow: `
+              0 0 0 1px ${alpha('#ff1744', 0.1)},
+              0 8px 32px ${alpha('#ff1744', 0.3)},
+              0 16px 64px ${alpha('#ff1744', 0.2)},
+              inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
+            `,
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              background: 'linear-gradient(90deg, #ff1744, #ff5722, #ff9800, #ff5722, #ff1744)',
+              backgroundSize: '200% 100%',
+              animation: 'shimmer 2s ease-in-out infinite'
+            },
+            '@keyframes shimmer': {
+              '0%': { backgroundPosition: '-200% 0' },
+              '100%': { backgroundPosition: '200% 0' }
+            }
+          }
+        }}
+        BackdropProps={{
+          sx: {
+            backgroundColor: alpha('#000', 0.7),
+            backdropFilter: 'blur(8px)'
           }
         }}
       >
         <DialogTitle
           sx={{
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            gap: 1,
-            p: 2,
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.error.main,
-              0.08
-            )} 0%, ${alpha(theme.palette.error.main, 0.04)} 100%)`,
-            borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+            gap: 1.5,
+            p: 3,
+            pb: 2,
+            background: `linear-gradient(135deg, 
+              ${alpha('#ff1744', 0.08)} 0%, 
+              ${alpha('#ff1744', 0.04)} 50%,
+              transparent 100%)`,
+            borderBottom: `1px solid ${alpha('#ff1744', 0.15)}`,
+            position: 'relative'
           }}
         >
-          <WarningIcon sx={{ color: '#ff3d00', width: 24, height: 24 }} />
-          <Typography color="error" variant="h6" sx={{ fontWeight: 600 }}>
-            Scam Warning!
-          </Typography>
+          {/* Animated Warning Icon */}
+          <Box
+            sx={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              background: `linear-gradient(135deg, 
+                ${alpha('#ff1744', 0.15)} 0%, 
+                ${alpha('#ff1744', 0.08)} 100%)`,
+              border: `2px solid ${alpha('#ff1744', 0.3)}`,
+              animation: 'pulse 2s ease-in-out infinite',
+              '@keyframes pulse': {
+                '0%, 100%': {
+                  transform: 'scale(1)',
+                  boxShadow: `0 0 0 0 ${alpha('#ff1744', 0.4)}`
+                },
+                '50%': {
+                  transform: 'scale(1.05)',
+                  boxShadow: `0 0 0 8px ${alpha('#ff1744', 0)}`
+                }
+              }
+            }}
+          >
+            <WarningIcon
+              sx={{
+                color: '#ff1744',
+                width: 32,
+                height: 32,
+                filter: 'drop-shadow(0 2px 4px rgba(255, 23, 68, 0.3))'
+              }}
+            />
+          </Box>
+
+          {/* Title with gradient text */}
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 800,
+                fontSize: '1.75rem',
+                background: 'linear-gradient(135deg, #ff1744 0%, #ff5722 50%, #ff9800 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: `0 2px 8px ${alpha('#ff1744', 0.3)}`,
+                letterSpacing: '-0.02em',
+                mb: 0.5
+              }}
+            >
+              ⚠️ SCAM ALERT ⚠️
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                color: alpha(theme.palette.error.main, 0.8),
+                fontWeight: 600,
+                fontSize: '0.95rem'
+              }}
+            >
+              High Risk Token Detected
+            </Typography>
+          </Box>
         </DialogTitle>
-        <DialogContent sx={{ p: 2 }}>
-          <DialogContentText sx={{ color: theme.palette.text.primary }}>
-            This token has been tagged as a potential SCAM. Exercise extreme caution:
-            <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-              <li>Do NOT trust any investment promises</li>
-              <li>Do NOT connect your wallet to unknown sites</li>
-              <li>Do NOT share your private keys or seed phrase</li>
-              <li>DYOR (Do Your Own Research) before any interaction</li>
-            </ul>
-          </DialogContentText>
+
+        <DialogContent sx={{ p: 3, pt: 2 }}>
+          {/* Main warning message */}
+          <Box
+            sx={{
+              p: 2.5,
+              borderRadius: '12px',
+              background: `linear-gradient(135deg, 
+                ${alpha('#ff1744', 0.06)} 0%, 
+                ${alpha('#ff1744', 0.02)} 100%)`,
+              border: `1px solid ${alpha('#ff1744', 0.15)}`,
+              mb: 2.5
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                color: theme.palette.text.primary,
+                fontWeight: 600,
+                fontSize: '1rem',
+                lineHeight: 1.6,
+                textAlign: 'center',
+                mb: 1
+              }}
+            >
+              This token has been flagged as a potential{' '}
+              <strong style={{ color: '#ff1744' }}>SCAM</strong>.
+              <br />
+              Proceed with extreme caution!
+            </Typography>
+          </Box>
+
+          {/* Safety guidelines */}
+          <Box
+            sx={{
+              p: 2.5,
+              borderRadius: '12px',
+              background: `linear-gradient(135deg, 
+                ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+              backdropFilter: 'blur(8px)'
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                color: theme.palette.text.primary,
+                fontWeight: 700,
+                fontSize: '1rem',
+                mb: 1.5,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <Box
+                sx={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${theme.palette.info.main}, ${theme.palette.primary.main})`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Typography sx={{ color: 'white', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                  !
+                </Typography>
+              </Box>
+              Safety Guidelines
+            </Typography>
+
+            <Stack spacing={1.5}>
+              {[
+                { icon: '🚫', text: 'Never invest more than you can lose' },
+                { icon: '🔐', text: 'Never share private keys' },
+                { icon: '🌐', text: 'Avoid suspicious websites' },
+                { icon: '🔍', text: 'Always do your own research' },
+                { icon: '⚡', text: 'Beware of guaranteed returns' }
+              ].map((item, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 1.5,
+                    p: 1,
+                    borderRadius: '8px',
+                    background: alpha(theme.palette.background.paper, 0.5),
+                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      background: alpha(theme.palette.primary.main, 0.04),
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+                    }
+                  }}
+                >
+                  <Typography sx={{ fontSize: '1.1rem', lineHeight: 1 }}>{item.icon}</Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: theme.palette.text.primary,
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      lineHeight: 1.5
+                    }}
+                  >
+                    {item.text}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
+
+        <DialogActions
+          sx={{
+            p: 3,
+            pt: 1,
+            display: 'flex',
+            gap: 1.5,
+            justifyContent: 'center'
+          }}
+        >
           <Button
             onClick={() => setOpenScamWarning(false)}
             variant="contained"
-            color="error"
+            size="large"
             sx={{
-              borderRadius: '8px',
-              fontWeight: 600,
-              px: 3,
-              py: 1
+              borderRadius: '12px',
+              fontWeight: 700,
+              fontSize: '1rem',
+              px: 4,
+              py: 1.5,
+              minWidth: '200px',
+              background: 'linear-gradient(135deg, #ff1744 0%, #d32f2f 100%)',
+              boxShadow: `
+                0 4px 16px ${alpha('#ff1744', 0.3)},
+                0 2px 8px ${alpha('#ff1744', 0.2)},
+                inset 0 1px 0 ${alpha('#fff', 0.2)}
+              `,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
+                transform: 'translateY(-2px)',
+                boxShadow: `
+                  0 6px 20px ${alpha('#ff1744', 0.4)},
+                  0 4px 12px ${alpha('#ff1744', 0.3)},
+                  inset 0 1px 0 ${alpha('#fff', 0.2)}
+                `
+              },
+              '&:active': {
+                transform: 'translateY(0px)'
+              }
             }}
           >
-            I Understand
+            I Understand the Risks
           </Button>
         </DialogActions>
       </Dialog>
