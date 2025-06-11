@@ -33,7 +33,7 @@ import infoFill from '@iconify/icons-eva/info-fill';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { isInstalled, submitTransaction } from '@gemwallet/api';
+import { isInstalled, submitTransaction, setTrustline } from '@gemwallet/api';
 import sdk from '@crossmarkio/sdk';
 
 // Redux
@@ -441,6 +441,43 @@ const StatusIndicator = styled('div')(
 `
 );
 
+const TrustlineWarning = styled('div')(
+  ({ theme }) => `
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    margin: 0 16px 8px;
+    border-radius: 8px;
+    background: ${alpha(theme.palette.warning.main, 0.1)};
+    border: 1px solid ${alpha(theme.palette.warning.main, 0.3)};
+    color: ${theme.palette.warning.main};
+    font-size: 0.875rem;
+`
+);
+
+const TrustlineButton = styled(Button)(
+  ({ theme }) => `
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 80px;
+    height: 28px;
+    text-transform: none;
+    background: ${theme.palette.warning.main};
+    color: ${theme.palette.warning.contrastText};
+    
+    &:hover {
+      background: ${theme.palette.warning.dark};
+    }
+    
+    &:disabled {
+      background: ${alpha(theme.palette.warning.main, 0.5)};
+    }
+`
+);
+
 export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
@@ -480,6 +517,10 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const [focusBottom, setFocusBottom] = useState(false);
 
   const [isSwitching, setIsSwitching] = useState(false);
+  const [trustlines, setTrustlines] = useState([]);
+  const [hasTrustline1, setHasTrustline1] = useState(true);
+  const [hasTrustline2, setHasTrustline2] = useState(true);
+  const [transactionType, setTransactionType] = useState('OfferCreate');
 
   const amount = revert ? amount2 : amount1;
   let value = revert ? amount1 : amount2;
@@ -521,42 +562,36 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   let errMsg = '';
 
   if (isLoggedIn) {
-    /* accountPairBalance
-        {
-            "curr1": {
-                "currency": "534F4C4F00000000000000000000000000000000",
-                "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-                "value": "0.00000383697235788"
-            },
-            "curr2": {
-                "currency": "XRP",
-                "issuer": "XRPL",
-                "value": 26.733742000000007
-            }
-        }
-        */
-
     errMsg = '';
     isSufficientBalance = false;
-    try {
-      const fAmount = new Decimal(amount || 0).toNumber();
-      const fValue = new Decimal(value || 0).toNumber();
-      const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
-      const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
 
-      if (amount1 && amount2) {
-        if (fAmount > 0 && fValue > 0) {
-          if (accountAmount >= fAmount) {
-            isSufficientBalance = true;
+    // Check trustlines first
+    if (!hasTrustline1 && curr1.currency !== 'XRP') {
+      errMsg = `No trustline for ${curr1.currency}`;
+    } else if (!hasTrustline2 && curr2.currency !== 'XRP') {
+      errMsg = `No trustline for ${curr2.currency}`;
+    } else {
+      // Check balance if trustlines exist
+      try {
+        const fAmount = new Decimal(amount || 0).toNumber();
+        const fValue = new Decimal(value || 0).toNumber();
+        const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
+        const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
+
+        if (amount1 && amount2) {
+          if (fAmount > 0 && fValue > 0) {
+            if (accountAmount >= fAmount) {
+              isSufficientBalance = true;
+            } else {
+              errMsg = 'Insufficient wallet balance';
+            }
           } else {
             errMsg = 'Insufficient wallet balance';
           }
-        } else {
-          errMsg = 'Insufficient wallet balance';
         }
+      } catch (e) {
+        errMsg = 'Insufficient wallet balance';
       }
-    } catch (e) {
-      errMsg = 'Insufficient wallet balance';
     }
   } else {
     errMsg = 'Connect your wallet!';
@@ -571,7 +606,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       if (!curr1 || !curr2) return;
 
       const account = accountProfile.account;
-      // https://api.xrpl.to/api/account/info/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=XRPL
+
+      // Get account balance info
       axios
         .get(
           `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`
@@ -584,12 +620,37 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
         })
         .catch((err) => {
           console.log('Error on getting details!!!', err);
+        });
+
+      // Check trustlines
+      axios
+        .get(`${BASE_URL}/account/lines/${account}?page=0&limit=100`)
+        .then((res) => {
+          if (res.status === 200 && res.data.lines) {
+            setTrustlines(res.data.lines);
+
+            // Check if trustlines exist for curr1 and curr2
+            const hasCurr1Trustline =
+              curr1.currency === 'XRP' ||
+              res.data.lines.some(
+                (line) => line.Balance.currency === curr1.currency && line._token1 === curr1.issuer
+              );
+
+            const hasCurr2Trustline =
+              curr2.currency === 'XRP' ||
+              res.data.lines.some(
+                (line) => line.Balance.currency === curr2.currency && line._token1 === curr2.issuer
+              );
+
+            setHasTrustline1(hasCurr1Trustline);
+            setHasTrustline2(hasCurr2Trustline);
+          }
         })
-        .then(function () {
-          // always executed
+        .catch((err) => {
+          console.log('Error getting trustlines:', err);
         });
     }
-    // console.log('account_info')
+
     getAccountInfo();
   }, [accountProfile, curr1, curr2, sync, isSwapped]);
 
@@ -794,6 +855,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       switch (wallet_type) {
         case 'xaman':
           setLoading(true);
+          setTransactionType('Payment'); // Set correct transaction type for swaps
           const res = await axios.post(`${BASE_URL}/offer/payment`, {
             ...body,
             Memos: configureMemos('', '', memoData)
@@ -1102,6 +1164,104 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     }
   };
 
+  const onCreateTrustline = async (currency) => {
+    if (!accountProfile || !accountProfile.account) return;
+
+    try {
+      const Account = accountProfile.account;
+      const user_token = accountProfile.user_token;
+      const wallet_type = accountProfile.wallet_type;
+
+      const Flags = 0x00020000; // Standard trustline flag
+      let LimitAmount = {};
+      LimitAmount.issuer = currency.issuer;
+      LimitAmount.currency = currency.currency;
+      LimitAmount.value = '1000000000'; // Set a high trust limit
+
+      switch (wallet_type) {
+        case 'xaman':
+          setLoading(true);
+          setTransactionType('TrustSet'); // Set correct transaction type
+          const body = { LimitAmount, Flags, user_token };
+          const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
+
+          if (res.status === 200) {
+            const uuid = res.data.data.uuid;
+            const qrlink = res.data.data.qrUrl;
+            const nextlink = res.data.data.next;
+
+            setUuid(uuid);
+            setQrUrl(qrlink);
+            setNextUrl(nextlink);
+            setOpenScanQR(true);
+          }
+          break;
+
+        case 'gem':
+          isInstalled().then(async (response) => {
+            if (response.result.isInstalled) {
+              const trustSet = {
+                flags: Flags,
+                limitAmount: LimitAmount
+              };
+
+              dispatch(updateProcess(1));
+              await setTrustline(trustSet).then(({ type, result }) => {
+                if (type == 'response') {
+                  dispatch(updateProcess(2));
+                  dispatch(updateTxHash(result?.hash));
+                  setSync(sync + 1);
+                  enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
+                } else {
+                  dispatch(updateProcess(3));
+                  enqueueSnackbar('Failed to create trustline', { variant: 'error' });
+                }
+              });
+            } else {
+              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
+            }
+          });
+          break;
+
+        case 'crossmark':
+          const trustSet = {
+            Flags: Flags,
+            LimitAmount: LimitAmount
+          };
+
+          dispatch(updateProcess(1));
+          await sdk.methods
+            .signAndSubmitAndWait({
+              ...trustSet,
+              Account: accountProfile.account,
+              TransactionType: 'TrustSet'
+            })
+            .then(({ response }) => {
+              if (response.data.meta.isSuccess) {
+                dispatch(updateProcess(2));
+                dispatch(updateTxHash(response.data.resp.result?.hash));
+                setSync(sync + 1);
+                enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
+              } else {
+                dispatch(updateProcess(3));
+                enqueueSnackbar('Failed to create trustline', { variant: 'error' });
+              }
+            });
+          break;
+      }
+    } catch (err) {
+      console.log('Trustline creation error:', err);
+      dispatch(updateProcess(0));
+      enqueueSnackbar(
+        `Failed to create trustline: ${
+          err.response?.data?.message || err.message || 'Unknown error'
+        }`,
+        { variant: 'error' }
+      );
+    }
+    setLoading(false);
+  };
+
   return (
     <Stack alignItems="center" sx={{ width: '100%', maxWidth: '480px', margin: '0 auto' }}>
       <Stack sx={{ width: '100%' }}>
@@ -1282,6 +1442,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 </Typography>
               </InputContent>
             </CurrencyContent>
+
             <CurrencyContent
               style={{
                 order: 4,
@@ -1356,6 +1517,27 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 padding: '24px 24px'
               }}
             >
+              {(!hasTrustline1 && curr1.currency !== 'XRP') ||
+              (!hasTrustline2 && curr2.currency !== 'XRP') ? (
+                <TrustlineWarning>
+                  <Icon icon={infoFill} width={16} height={16} />
+                  <Typography variant="body2" sx={{ flex: 1 }}>
+                    Missing trustline for{' '}
+                    {!hasTrustline1 && curr1.currency !== 'XRP' ? curr1.currency : curr2.currency}
+                  </Typography>
+                  <TrustlineButton
+                    onClick={() => {
+                      const missingCurrency =
+                        !hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2;
+                      onCreateTrustline(missingCurrency);
+                    }}
+                    disabled={isProcessing === 1}
+                  >
+                    {isProcessing === 1 ? 'Setting...' : 'Set Trustline'}
+                  </TrustlineButton>
+                </TrustlineWarning>
+              ) : null}
+
               {accountProfile && accountProfile.account ? (
                 <ExchangeButton
                   variant="contained"
@@ -1588,7 +1770,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
         <QRDialog
           open={openScanQR}
-          type="OfferCreate"
+          type={transactionType}
           onClose={handleScanQRClose}
           qrUrl={qrUrl}
           nextUrl={nextUrl}

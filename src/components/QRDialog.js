@@ -99,6 +99,34 @@ export default function CustomQRDialog({ open, type, qrUrl, nextUrl, onClose }) 
     setIsLoading(false);
   };
 
+  // Get user-friendly transaction info
+  const getTransactionInfo = (transactionType) => {
+    switch (transactionType) {
+      case 'TrustSet':
+        return {
+          title: 'Set Trustline',
+          description: 'Approve the trustline setup on your Xaman App'
+        };
+      case 'Payment':
+        return {
+          title: 'Complete Swap',
+          description: 'Sign the swap transaction on your Xaman App'
+        };
+      case 'OfferCreate':
+        return {
+          title: 'Create Offer',
+          description: 'Sign the offer creation on your Xaman App'
+        };
+      default:
+        return {
+          title: transactionType,
+          description: 'Sign the transaction on your Xaman App'
+        };
+    }
+  };
+
+  const transactionInfo = getTransactionInfo(type);
+
   return (
     <CustomDialog
       fullScreen={fullScreen}
@@ -117,7 +145,7 @@ export default function CustomQRDialog({ open, type, qrUrl, nextUrl, onClose }) 
               color: theme.palette.primary.main
             }}
           >
-            {type}
+            {transactionInfo.title}
           </Typography>
           <Typography
             variant="subtitle1"
@@ -126,7 +154,7 @@ export default function CustomQRDialog({ open, type, qrUrl, nextUrl, onClose }) 
               maxWidth: '80%'
             }}
           >
-            Sign the transaction on your Xaman App
+            {transactionInfo.description}
           </Typography>
           {!notificationClicked && (
             <Link
