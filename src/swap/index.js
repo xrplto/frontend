@@ -556,6 +556,37 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
     /*const */ color2 = theme.currency.background2;
   }
 
+  // Helper function to convert hex currency code to readable name
+  const getCurrencyDisplayName = (currency, tokenName) => {
+    if (currency === 'XRP') return 'XRP';
+    if (currency === 'USD') return 'USD';
+    if (currency === 'EUR') return 'EUR';
+    if (currency === 'BTC') return 'BTC';
+    if (currency === 'ETH') return 'ETH';
+
+    // If we have a token name, use it
+    if (tokenName && tokenName !== currency) {
+      return tokenName;
+    }
+
+    // Try to convert hex to ASCII for display
+    try {
+      if (currency.length === 40 && /^[0-9A-Fa-f]+$/.test(currency)) {
+        const hex = currency.replace(/00+$/, ''); // Remove trailing zeros
+        let ascii = '';
+        for (let i = 0; i < hex.length; i += 2) {
+          const byte = parseInt(hex.substr(i, 2), 16);
+          if (byte > 0) ascii += String.fromCharCode(byte);
+        }
+        return ascii.toUpperCase() || currency;
+      }
+    } catch (e) {
+      // Fall back to original currency code
+    }
+
+    return currency;
+  };
+
   const isLoggedIn = accountProfile && accountProfile.account && accountPairBalance;
 
   let isSufficientBalance = false;
@@ -567,9 +598,11 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
     // Check trustlines first
     if (!hasTrustline1 && curr1.currency !== 'XRP') {
-      errMsg = `No trustline for ${curr1.currency}`;
+      const displayName = getCurrencyDisplayName(curr1.currency, token1?.name);
+      errMsg = `No trustline for ${displayName}`;
     } else if (!hasTrustline2 && curr2.currency !== 'XRP') {
-      errMsg = `No trustline for ${curr2.currency}`;
+      const displayName = getCurrencyDisplayName(curr2.currency, token2?.name);
+      errMsg = `No trustline for ${displayName}`;
     } else {
       // Check balance if trustlines exist
       try {
@@ -622,9 +655,9 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
           console.log('Error on getting details!!!', err);
         });
 
-      // Check trustlines
+      // Check trustlines - fetch more to ensure we don't miss any
       axios
-        .get(`${BASE_URL}/account/lines/${account}?page=0&limit=100`)
+        .get(`${BASE_URL}/account/lines/${account}?page=0&limit=50`)
         .then((res) => {
           if (res.status === 200 && res.data.lines) {
             setTrustlines(res.data.lines);
@@ -634,79 +667,156 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               console.log('Trustline structure:', res.data.lines[0]);
             }
 
+            // Debug: Log what we're looking for
+            console.log('Looking for trustlines:', {
+              curr1: {
+                currency: curr1.currency,
+                issuer: curr1.issuer,
+                tokenName: token1?.name
+              },
+              curr2: {
+                currency: curr2.currency,
+                issuer: curr2.issuer,
+                tokenName: token2?.name
+              }
+            });
+
+            // Helper function to normalize currency codes for comparison
+            const normalizeCurrency = (currency) => {
+              if (!currency) return '';
+              // Remove trailing zeros from hex currency codes
+              if (currency.length === 40 && /^[0-9A-Fa-f]+$/.test(currency)) {
+                return currency.replace(/00+$/, '').toUpperCase();
+              }
+              return currency.toUpperCase();
+            };
+
+            // Helper function to check if two currency codes match
+            const currenciesMatch = (curr1, curr2) => {
+              if (!curr1 || !curr2) return false;
+
+              // Direct match
+              if (curr1 === curr2) return true;
+
+              // Normalized match (for hex codes)
+              const norm1 = normalizeCurrency(curr1);
+              const norm2 = normalizeCurrency(curr2);
+              if (norm1 === norm2) return true;
+
+              // Try converting hex to ASCII and compare
+              try {
+                const convertHexToAscii = (hex) => {
+                  if (hex.length === 40 && /^[0-9A-Fa-f]+$/.test(hex)) {
+                    const cleanHex = hex.replace(/00+$/, '');
+                    let ascii = '';
+                    for (let i = 0; i < cleanHex.length; i += 2) {
+                      const byte = parseInt(cleanHex.substr(i, 2), 16);
+                      if (byte > 0) ascii += String.fromCharCode(byte);
+                    }
+                    return ascii.toLowerCase();
+                  }
+                  return hex.toLowerCase();
+                };
+
+                const ascii1 = convertHexToAscii(curr1);
+                const ascii2 = convertHexToAscii(curr2);
+                if (ascii1 === ascii2) return true;
+              } catch (e) {
+                // Ignore conversion errors
+              }
+
+              return false;
+            };
+
+            // Helper function to check if issuers match
+            const issuersMatch = (line, expectedIssuer) => {
+              const lineIssuers = [
+                line.account,
+                line.issuer,
+                line._token1,
+                line._token2,
+                line.Balance?.issuer,
+                line.HighLimit?.issuer,
+                line.LowLimit?.issuer
+              ].filter(Boolean);
+
+              return lineIssuers.some((issuer) => issuer === expectedIssuer);
+            };
+
             // Check if trustlines exist for curr1 and curr2
-            // Try multiple possible field names for the issuer
             const hasCurr1Trustline =
               curr1.currency === 'XRP' ||
               res.data.lines.some((line) => {
-                const currencyMatch =
-                  (line.Balance && line.Balance.currency === curr1.currency) ||
-                  line.currency === curr1.currency ||
-                  line._currency === curr1.currency;
+                // Check multiple currency fields
+                const lineCurrencies = [
+                  line.Balance?.currency,
+                  line.currency,
+                  line._currency,
+                  line.HighLimit?.currency,
+                  line.LowLimit?.currency
+                ].filter(Boolean);
+
+                const currencyMatch = lineCurrencies.some((lineCurrency) =>
+                  currenciesMatch(lineCurrency, curr1.currency)
+                );
 
                 if (!currencyMatch) return false;
 
                 // For currency matches, check if we have a valid trustline
-                // A valid trustline exists if any of the issuer fields match, OR
-                // if it's a standard currency like USD and we have any trustline for it
-                const issuerMatch =
-                  line.account === curr1.issuer ||
-                  line.issuer === curr1.issuer ||
-                  line._token1 === curr1.issuer ||
-                  line._token2 === curr1.issuer ||
-                  (line.Balance && line.Balance.issuer === curr1.issuer) ||
-                  (line.HighLimit && line.HighLimit.issuer === curr1.issuer) ||
-                  (line.LowLimit && line.LowLimit.issuer === curr1.issuer);
+                // For standard currencies like USD, accept any valid trustline
+                // For specific tokens, require exact issuer match
+                const issuerMatch = issuersMatch(line, curr1.issuer);
+                const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency);
 
                 // Debug specific currency matches
                 console.log(`Currency match for ${curr1.currency}:`, {
+                  expectedCurrency: curr1.currency,
                   expectedIssuer: curr1.issuer,
-                  actualIssuer: line._token1,
+                  lineCurrencies,
+                  lineIssuers: [line._token1, line._token2, line.Balance?.issuer],
                   issuerMatch,
-                  hasValidTrustline: currencyMatch
+                  currencyMatch,
+                  isStandardCurrency,
+                  hasValidTrustline: currencyMatch && (issuerMatch || isStandardCurrency)
                 });
 
-                // For standard currencies, accept any valid trustline
-                // For specific tokens, require exact issuer match
-                return (
-                  currencyMatch &&
-                  (issuerMatch || ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency))
-                );
+                return currencyMatch && (issuerMatch || isStandardCurrency);
               });
 
             const hasCurr2Trustline =
               curr2.currency === 'XRP' ||
               res.data.lines.some((line) => {
-                const currencyMatch =
-                  (line.Balance && line.Balance.currency === curr2.currency) ||
-                  line.currency === curr2.currency ||
-                  line._currency === curr2.currency;
+                // Check multiple currency fields
+                const lineCurrencies = [
+                  line.Balance?.currency,
+                  line.currency,
+                  line._currency,
+                  line.HighLimit?.currency,
+                  line.LowLimit?.currency
+                ].filter(Boolean);
+
+                const currencyMatch = lineCurrencies.some((lineCurrency) =>
+                  currenciesMatch(lineCurrency, curr2.currency)
+                );
 
                 if (!currencyMatch) return false;
 
-                const issuerMatch =
-                  line.account === curr2.issuer ||
-                  line.issuer === curr2.issuer ||
-                  line._token1 === curr2.issuer ||
-                  line._token2 === curr2.issuer ||
-                  (line.Balance && line.Balance.issuer === curr2.issuer) ||
-                  (line.HighLimit && line.HighLimit.issuer === curr2.issuer) ||
-                  (line.LowLimit && line.LowLimit.issuer === curr2.issuer);
+                const issuerMatch = issuersMatch(line, curr2.issuer);
+                const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr2.currency);
 
                 // Debug specific currency matches
                 console.log(`Currency match for ${curr2.currency}:`, {
+                  expectedCurrency: curr2.currency,
                   expectedIssuer: curr2.issuer,
-                  actualIssuer: line._token1,
+                  lineCurrencies,
+                  lineIssuers: [line._token1, line._token2, line.Balance?.issuer],
                   issuerMatch,
-                  hasValidTrustline: currencyMatch
+                  currencyMatch,
+                  isStandardCurrency,
+                  hasValidTrustline: currencyMatch && (issuerMatch || isStandardCurrency)
                 });
 
-                // For standard currencies, accept any valid trustline
-                // For specific tokens, require exact issuer match
-                return (
-                  currencyMatch &&
-                  (issuerMatch || ['USD', 'EUR', 'BTC', 'ETH'].includes(curr2.currency))
-                );
+                return currencyMatch && (issuerMatch || isStandardCurrency);
               });
 
             console.log('Trustline check results:', {
@@ -721,6 +831,53 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
             setHasTrustline1(hasCurr1Trustline);
             setHasTrustline2(hasCurr2Trustline);
+
+            // Debug: Log all available currencies in trustlines
+            const availableCurrencies = res.data.lines.map((line) => ({
+              balance: line.Balance?.currency,
+              currency: line.currency,
+              _currency: line._currency,
+              highLimit: line.HighLimit?.currency,
+              lowLimit: line.LowLimit?.currency,
+              issuer: line._token1 || line._token2
+            }));
+            console.log('Available currencies in trustlines:', availableCurrencies);
+
+            // Debug: Check if we can find any SCRAP-like currencies
+            const scrapLikeCurrencies = res.data.lines.filter((line) => {
+              const currencies = [
+                line.Balance?.currency,
+                line.currency,
+                line._currency,
+                line.HighLimit?.currency,
+                line.LowLimit?.currency
+              ].filter(Boolean);
+
+              return currencies.some((curr) => {
+                if (!curr) return false;
+                // Check if it contains "scrap" when converted from hex
+                try {
+                  if (curr.length === 40 && /^[0-9A-Fa-f]+$/.test(curr)) {
+                    const cleanHex = curr.replace(/00+$/, '');
+                    let ascii = '';
+                    for (let i = 0; i < cleanHex.length; i += 2) {
+                      const byte = parseInt(cleanHex.substr(i, 2), 16);
+                      if (byte > 0) ascii += String.fromCharCode(byte);
+                    }
+                    return ascii.toLowerCase().includes('scrap');
+                  }
+                  return curr.toLowerCase().includes('scrap');
+                } catch (e) {
+                  return false;
+                }
+              });
+            });
+
+            if (scrapLikeCurrencies.length > 0) {
+              console.log('Found SCRAP-like currencies:', scrapLikeCurrencies);
+            } else {
+              console.log('No SCRAP-like currencies found in trustlines');
+            }
           }
         })
         .catch((err) => {
@@ -1811,7 +1968,9 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   <Icon icon={infoFill} width={16} height={16} />
                   <Typography variant="body2" sx={{ flex: 1 }}>
                     Missing trustline for{' '}
-                    {!hasTrustline1 && curr1.currency !== 'XRP' ? curr1.currency : curr2.currency}
+                    {!hasTrustline1 && curr1.currency !== 'XRP'
+                      ? getCurrencyDisplayName(curr1.currency, token1?.name)
+                      : getCurrencyDisplayName(curr2.currency, token2?.name)}
                   </Typography>
                   <TrustlineButton
                     onClick={() => {
