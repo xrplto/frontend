@@ -80,6 +80,8 @@ export default function PriceDesc({ token }) {
   const BASE_URL = process.env.API_URL;
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isXsMobile = useMediaQuery(theme.breakpoints.down(400));
 
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency } = useContext(AppContext);
@@ -153,7 +155,7 @@ export default function PriceDesc({ token }) {
   return (
     <Box
       sx={{
-        p: 1,
+        p: { xs: 1, sm: 1.5 },
         borderRadius: '8px',
         background: `linear-gradient(135deg, ${alpha(
           theme.palette.background.paper,
@@ -181,15 +183,23 @@ export default function PriceDesc({ token }) {
       role="region"
       aria-label="Token price information"
     >
-      <Stack spacing={0.75}>
+      <Stack spacing={{ xs: 1, sm: 0.75 }}>
         {/* Price Header with expanded 24h Range */}
         <Box>
-          <Stack direction="row" alignItems="flex-end" justifyContent="space-between" spacing={2}>
-            <Stack spacing={0.25} sx={{ flex: '0 0 auto', minWidth: '200px' }}>
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            alignItems={{ xs: 'stretch', md: 'flex-end' }}
+            justifyContent="space-between"
+            spacing={{ xs: 1.5, md: 2 }}
+          >
+            <Stack
+              spacing={0.25}
+              sx={{ flex: { xs: 'none', md: '0 0 auto' }, minWidth: { xs: 'auto', md: '200px' } }}
+            >
               <Typography
                 component="h1"
                 sx={{
-                  fontSize: '0.75rem',
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' },
                   fontWeight: 600,
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
                   backgroundClip: 'text',
@@ -198,14 +208,15 @@ export default function PriceDesc({ token }) {
                   letterSpacing: '-0.01em',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 0.5
+                  gap: 0.5,
+                  flexWrap: 'wrap'
                 }}
               >
                 Price
                 <Typography
                   component="span"
                   sx={{
-                    fontSize: '0.65rem',
+                    fontSize: { xs: '0.6rem', sm: '0.65rem' },
                     fontWeight: 500,
                     color: alpha(theme.palette.text.secondary, 0.7),
                     background: 'none',
@@ -221,7 +232,7 @@ export default function PriceDesc({ token }) {
                 noWrap
                 component="h2"
                 sx={{
-                  fontSize: { xs: '1.5rem', md: '1.75rem' },
+                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
                   fontWeight: 800,
                   letterSpacing: '-0.02em',
                   background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${alpha(
@@ -243,16 +254,23 @@ export default function PriceDesc({ token }) {
 
             {/* Expanded 24h Range */}
             {range24h && (
-              <Box sx={{ flex: 1, maxWidth: '400px', minWidth: '300px' }}>
+              <Box
+                sx={{
+                  flex: { xs: 'none', md: 1 },
+                  maxWidth: { xs: 'none', md: '400px' },
+                  minWidth: { xs: 'auto', md: '300px' },
+                  width: '100%'
+                }}
+              >
                 <Typography
                   variant="caption"
                   sx={{
-                    fontSize: '0.75rem',
+                    fontSize: { xs: '0.7rem', sm: '0.75rem' },
                     fontWeight: 600,
                     color: alpha(theme.palette.text.primary, 0.8),
                     mb: 0.5,
                     display: 'block',
-                    textAlign: 'center'
+                    textAlign: { xs: 'left', md: 'center' }
                   }}
                 >
                   24h Range
@@ -261,10 +279,10 @@ export default function PriceDesc({ token }) {
                 <Stack
                   direction="row"
                   alignItems="center"
-                  spacing={1.5}
+                  spacing={{ xs: 1, sm: 1.5 }}
                   sx={{
-                    py: 0.75,
-                    px: 1,
+                    py: { xs: 0.5, sm: 0.75 },
+                    px: { xs: 0.75, sm: 1 },
                     borderRadius: '6px',
                     background: `linear-gradient(135deg, ${alpha(
                       theme.palette.background.paper,
@@ -275,11 +293,11 @@ export default function PriceDesc({ token }) {
                     boxShadow: `0 1px 4px ${alpha(theme.palette.common.black, 0.04)}`
                   }}
                 >
-                  <Box sx={{ textAlign: 'center', minWidth: '60px' }}>
+                  <Box sx={{ textAlign: 'center', minWidth: { xs: '45px', sm: '60px' } }}>
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.625rem',
+                        fontSize: { xs: '0.55rem', sm: '0.625rem' },
                         fontWeight: 500,
                         color: alpha(theme.palette.text.secondary, 0.8),
                         display: 'block',
@@ -292,7 +310,7 @@ export default function PriceDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.75rem',
+                        fontSize: { xs: '0.65rem', sm: '0.75rem' },
                         fontWeight: 600,
                         color: theme.palette.success.main,
                         lineHeight: 1
@@ -310,7 +328,7 @@ export default function PriceDesc({ token }) {
                     </Typography>
                   </Box>
 
-                  <Box sx={{ flexGrow: 1, px: 1 }}>
+                  <Box sx={{ flexGrow: 1, px: { xs: 0.5, sm: 1 } }}>
                     <LowhighBarSlider
                       aria-label="24h Price Range"
                       value={range24h.percent}
@@ -318,24 +336,24 @@ export default function PriceDesc({ token }) {
                       sx={{
                         mt: 0.25,
                         '& .MuiSlider-track': {
-                          height: 6
+                          height: { xs: 4, sm: 6 }
                         },
                         '& .MuiSlider-rail': {
-                          height: 6
+                          height: { xs: 4, sm: 6 }
                         },
                         '& .MuiSlider-thumb': {
-                          height: 16,
-                          width: 16
+                          height: { xs: 12, sm: 16 },
+                          width: { xs: 12, sm: 16 }
                         }
                       }}
                     />
                   </Box>
 
-                  <Box sx={{ textAlign: 'center', minWidth: '60px' }}>
+                  <Box sx={{ textAlign: 'center', minWidth: { xs: '45px', sm: '60px' } }}>
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.625rem',
+                        fontSize: { xs: '0.55rem', sm: '0.625rem' },
                         fontWeight: 500,
                         color: alpha(theme.palette.text.secondary, 0.8),
                         display: 'block',
@@ -348,7 +366,7 @@ export default function PriceDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.75rem',
+                        fontSize: { xs: '0.65rem', sm: '0.75rem' },
                         fontWeight: 600,
                         color: theme.palette.info.main,
                         lineHeight: 1
@@ -376,7 +394,7 @@ export default function PriceDesc({ token }) {
           <Typography
             variant="caption"
             sx={{
-              fontSize: '0.65rem',
+              fontSize: { xs: '0.6rem', sm: '0.65rem' },
               fontWeight: 600,
               color: alpha(theme.palette.text.primary, 0.8),
               mb: 0.5,
@@ -389,22 +407,25 @@ export default function PriceDesc({ token }) {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: 0.5
+              gridTemplateColumns: {
+                xs: isXsMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+                sm: 'repeat(4, 1fr)'
+              },
+              gap: { xs: 0.375, sm: 0.5 }
             }}
           >
             {priceChanges.map((item) => (
               <Tooltip
                 key={item.label}
                 title={
-                  <Box sx={{ minWidth: 160, textAlign: 'center' }}>
+                  <Box sx={{ minWidth: { xs: 140, sm: 160 }, textAlign: 'center' }}>
                     <Typography
                       variant="subtitle2"
                       sx={{
                         fontWeight: 700,
                         color: theme.palette.primary.main,
                         mb: 0.75,
-                        fontSize: '0.75rem'
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' }
                       }}
                     >
                       {item.period} Change
@@ -412,7 +433,7 @@ export default function PriceDesc({ token }) {
 
                     <Box
                       sx={{
-                        p: 0.75,
+                        p: { xs: 0.5, sm: 0.75 },
                         mb: 0.75,
                         borderRadius: '4px',
                         background: `linear-gradient(135deg, ${alpha(item.color, 0.08)} 0%, ${alpha(
@@ -427,7 +448,7 @@ export default function PriceDesc({ token }) {
                         sx={{
                           fontWeight: 800,
                           color: item.color,
-                          fontSize: '0.875rem',
+                          fontSize: { xs: '0.8rem', sm: '0.875rem' },
                           mb: 0.25
                         }}
                       >
@@ -438,7 +459,7 @@ export default function PriceDesc({ token }) {
                         variant="caption"
                         sx={{
                           color: alpha(theme.palette.text.secondary, 0.8),
-                          fontSize: '0.625rem'
+                          fontSize: { xs: '0.575rem', sm: '0.625rem' }
                         }}
                       >
                         vs {item.period} ago
@@ -461,7 +482,7 @@ export default function PriceDesc({ token }) {
                         url={`${BASE_URL}/sparkline/${md5}?${item.label.toLowerCase()}=${
                           item.value
                         }`}
-                        sx={{ width: '100%', height: 32 }}
+                        sx={{ width: '100%', height: { xs: 24, sm: 32 } }}
                       />
                     </Box>
                   </Box>
@@ -472,13 +493,13 @@ export default function PriceDesc({ token }) {
                       ...tooltipStyles,
                       maxWidth: 'none'
                     },
-                    placement: 'top'
+                    placement: isMobile ? 'top' : 'top'
                   }
                 }}
               >
                 <Box
                   sx={{
-                    p: 0.75,
+                    p: { xs: 0.5, sm: 0.75 },
                     borderRadius: '6px',
                     background: `linear-gradient(135deg, ${alpha(item.color, 0.08)} 0%, ${alpha(
                       item.color,
@@ -503,7 +524,7 @@ export default function PriceDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.625rem',
+                        fontSize: { xs: '0.55rem', sm: '0.625rem' },
                         fontWeight: 700,
                         color: alpha(theme.palette.text.secondary, 0.8),
                         lineHeight: 1
@@ -514,7 +535,7 @@ export default function PriceDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: '0.65rem',
+                        fontSize: { xs: '0.6rem', sm: '0.65rem' },
                         fontWeight: 700,
                         color: item.color,
                         lineHeight: 1
@@ -527,6 +548,22 @@ export default function PriceDesc({ token }) {
               </Tooltip>
             ))}
           </Box>
+
+          {/* Mobile: Show additional row for 2-column layout on very small screens */}
+          {isXsMobile && (
+            <Typography
+              variant="caption"
+              sx={{
+                fontSize: '0.55rem',
+                color: alpha(theme.palette.text.secondary, 0.6),
+                textAlign: 'center',
+                mt: 0.5,
+                display: 'block'
+              }}
+            >
+              Tap for detailed charts
+            </Typography>
+          )}
         </Box>
       </Stack>
     </Box>
