@@ -1,4 +1,5 @@
 import { useState, useContext, useEffect } from 'react';
+import React from 'react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 
@@ -84,8 +85,8 @@ import { alpha } from '@mui/material/styles';
 
 const IconCover = styled('div')(
   ({ theme }) => `
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
         border-radius: 8px;
         position: relative;
         overflow: hidden;
@@ -109,8 +110,8 @@ const IconWrapper = styled('div')(
         box-sizing: border-box;
         display: inline-block;
         position: relative;
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
   `
 );
 
@@ -244,90 +245,194 @@ const markWarningShownForToken = (tokenId) => {
 };
 
 // Add XPMarket icon component
-const XPMarketIcon = (props) => (
-  <SvgIcon {...props} viewBox="0 0 32 32">
-    <path
-      d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
-      fill="inherit"
-    />
-    <path
-      d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
-      fill="inherit"
-    />
-    <path
-      d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
-      fill="inherit"
-    />
-  </SvgIcon>
-);
+const XPMarketIcon = React.forwardRef((props, ref) => {
+  // Remove any width="auto" that might be in props
+  const { width, ...otherProps } = props;
 
-const LedgerMemeIcon = (props) => (
-  <SvgIcon {...props} viewBox="0 0 407.1 407.1">
-    <g>
-      <rect fill="#cfff04" width="407.1" height="407.1" rx="62.91" ry="62.91"></rect>
+  return (
+    <SvgIcon
+      {...otherProps}
+      ref={ref}
+      viewBox="0 0 56 56"
+      sx={{ borderRadius: '50%', ...otherProps.sx }}
+    >
+      <circle
+        cx="26"
+        cy="26"
+        r="26"
+        fill="rgba(109, 31, 238, 0.15)"
+        stroke="rgba(109, 31, 238, 0.3)"
+        strokeWidth="1"
+      />
+      <g transform="translate(10, 10) scale(0.6)">
+        <path
+          d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
+          fill="#6D1FEE"
+        />
+        <path
+          d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
+          fill="#6D1FEE"
+        />
+        <path
+          d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
+          fill="#6D1FEE"
+        />
+      </g>
+    </SvgIcon>
+  );
+});
+
+// Add display name for better debugging
+XPMarketIcon.displayName = 'XPMarketIcon';
+
+const LedgerMemeIcon = React.forwardRef((props, ref) => (
+  <SvgIcon {...props} ref={ref} viewBox="0 0 56 56" sx={{ borderRadius: '50%', ...props.sx }}>
+    <circle
+      cx="26"
+      cy="26"
+      r="26"
+      fill="rgba(207, 255, 4, 0.2)"
+      stroke="rgba(207, 255, 4, 0.4)"
+      strokeWidth="1"
+    />
+    <g transform="translate(8, 8) scale(0.75)">
+      <rect fill="#cfff04" width="36" height="36" rx="8" ry="8" x="0" y="0"></rect>
       <g>
         <g>
           <path
             fill="#262626"
-            d="M291.54,109.68c7.23,0,14.03-2.89,19.15-8.13l30.46-31.23h-18.53l-21.19,21.7c-2.66,2.71-6.18,4.21-9.91,4.21s-7.25-1.49-9.91-4.2l-21.17-21.7h-18.54l30.48,31.23c5.12,5.24,11.92,8.13,19.15,8.13Z"
+            d="M25.74,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
           ></path>
           <path
             fill="#262626"
-            d="M310.69,120.24c-5.12-5.24-11.92-8.13-19.15-8.13s-14.03,2.89-19.15,8.13l-30.64,31.4h18.54l21.35-21.87c2.66-2.71,6.18-4.21,9.91-4.21s7.25,1.49,9.91,4.2l21.35,21.87h18.53l-30.64-31.4Z"
+            d="M27.43,10.62c-0.45-0.46-1.05-0.72-1.69-0.72s-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78Z"
           ></path>
           <path
             fill="#262626"
-            d="M115.55,109.68c7.23,0,14.03-2.89,19.15-8.13l30.46-31.23h-18.53l-21.19,21.7c-2.66,2.71-6.18,4.21-9.91,4.21s-7.25-1.49-9.91-4.2l-21.17-21.7h-18.54l30.48,31.23c5.12,5.24,11.92,8.13,19.15,8.13Z"
+            d="M10.22,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
           ></path>
           <path
             fill="#262626"
-            d="M115.55,112.12c-7.23,0-14.03,2.89-19.15,8.13l-30.64,31.4h18.53l21.35-21.87c2.66-2.71,6.18,4.21-9.91,4.21s7.25,1.49,9.91,4.2l21.35,21.87h18.53l-30.64-31.4c-5.12-5.24-11.92-8.13-19.15-8.13Z"
+            d="M10.22,9.90c-0.64,0-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78c-0.45-0.46-1.05-0.72-1.69-0.72Z"
           ></path>
         </g>
         <path
           fill="#262626"
-          d="M65.76,197c0,76.1,61.69,137.79,137.79,137.79s137.79-61.69,137.79-137.79H65.76Z"
+          d="M5.81,17.4c0,6.73,5.45,12.18,12.18,12.18s12.18-5.45,12.18-12.18H5.81Z"
         ></path>
       </g>
     </g>
   </SvgIcon>
-);
+));
+
+LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 
 const getOriginIcon = (origin) => {
   switch (origin) {
     case 'FirstLedger':
-      return <OpenInNewIcon sx={{ fontSize: 'inherit', color: '#013CFE' }} />;
+      return (
+        <Box
+          sx={{
+            width: '18px',
+            height: '18px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(1, 60, 254, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid rgba(1, 60, 254, 0.2)',
+            marginRight: '2px',
+            marginBottom: '2px'
+          }}
+        >
+          <OpenInNewIcon sx={{ fontSize: '11px', color: '#013CFE' }} />
+        </Box>
+      );
     case 'XPMarket':
-      return <XPMarketIcon sx={{ fontSize: 'inherit', color: '#6D1FEE' }} />;
+      return (
+        <XPMarketIcon
+          sx={{ fontSize: '18px', color: '#6D1FEE', marginRight: '2px', marginBottom: '2px' }}
+        />
+      );
     case 'LedgerMeme':
-      return <LedgerMemeIcon sx={{ fontSize: 'inherit', width: '14px', height: '14px' }} />;
+      return (
+        <LedgerMemeIcon
+          sx={{ fontSize: '18px', color: '#cfff04', marginRight: '2px', marginBottom: '2px' }}
+        />
+      );
     case 'Magnetic X':
       return (
         <Box
-          component="img"
-          src="/magneticx-logo.webp"
-          alt="Magnetic X"
           sx={{
-            width: '12px',
-            height: '12px',
-            objectFit: 'contain'
+            width: '18px',
+            height: '18px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            overflow: 'hidden',
+            marginRight: '2px',
+            marginBottom: '2px'
           }}
-        />
+        >
+          <Box
+            component="img"
+            src="/magneticx-logo.webp"
+            alt="Magnetic X"
+            sx={{
+              width: '13px',
+              height: '13px',
+              objectFit: 'contain'
+            }}
+          />
+        </Box>
       );
     case 'xrp.fun':
       return (
-        <Icon
-          icon={chartLineUp}
-          style={{
-            fontSize: 'inherit',
-            color: '#B72136',
-            backgroundColor: '#fff',
-            borderRadius: '2px'
+        <Box
+          sx={{
+            width: '18px',
+            height: '18px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(183, 33, 54, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid rgba(183, 33, 54, 0.2)',
+            marginRight: '2px',
+            marginBottom: '2px'
           }}
-        />
+        >
+          <Icon
+            icon={chartLineUp}
+            style={{
+              fontSize: '11px',
+              color: '#B72136'
+            }}
+          />
+        </Box>
       );
     default:
-      return <AutoAwesomeIcon sx={{ fontSize: 'inherit', color: '#637381' }} />;
+      return (
+        <Box
+          sx={{
+            width: '18px',
+            height: '18px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(99, 115, 129, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid rgba(99, 115, 129, 0.2)',
+            marginRight: '2px',
+            marginBottom: '2px'
+          }}
+        >
+          <AutoAwesomeIcon sx={{ fontSize: '11px', color: '#637381' }} />
+        </Box>
+      );
   }
 };
 
@@ -666,18 +771,18 @@ export default function UserDesc({ token }) {
                     top: '0vh',
                     opacity: 0,
                     zIndex: 1,
-                    width: '40px',
-                    height: '40px'
+                    width: '48px',
+                    height: '48px'
                   }}
                   onClick={() => setEditToken(token)}
                 >
-                  <EditIcon sx={{ width: 20, height: 20 }} />
+                  <EditIcon sx={{ width: 24, height: 24 }} />
                 </IconButton>
                 <ImageBackdrop className="MuiImageBackdrop-root" />
                 {kyc && (
                   <KYCBadge>
                     <Tooltip title="KYC Verified">
-                      <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 14 }} />
+                      <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 18 }} />
                     </Tooltip>
                   </KYCBadge>
                 )}
@@ -689,9 +794,9 @@ export default function UserDesc({ token }) {
                 alt={`${user} ${name} Logo`}
                 src={imgUrl}
                 sx={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '6px',
+                  width: 48,
+                  height: 48,
+                  borderRadius: '8px',
                   border: `2px solid ${alpha(theme.palette.primary.main, 0.08)}`,
                   boxShadow: `0 1px 6px ${alpha(theme.palette.primary.main, 0.12)}`
                 }}
@@ -699,7 +804,7 @@ export default function UserDesc({ token }) {
               {kyc && (
                 <KYCBadge>
                   <Tooltip title="KYC Verified">
-                    <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 12 }} />
+                    <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 16 }} />
                   </Tooltip>
                 </KYCBadge>
               )}
@@ -732,16 +837,17 @@ export default function UserDesc({ token }) {
                   variant="outlined"
                   size="small"
                   sx={{
-                    borderRadius: '3px',
-                    height: '16px',
-                    fontSize: '0.55rem',
+                    borderRadius: '4px',
+                    height: '22px',
+                    fontSize: '0.7rem',
                     background: `linear-gradient(135deg, ${alpha(
                       theme.palette.primary.main,
                       0.08
                     )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
                     backdropFilter: 'blur(8px)',
                     border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                    fontWeight: 600
+                    fontWeight: 600,
+                    px: 1
                   }}
                 />
               </Tooltip>
@@ -764,11 +870,11 @@ export default function UserDesc({ token }) {
               </Typography>
 
               {/* Badges Row */}
-              <Stack direction="row" spacing={0.125} alignItems="center">
+              <Stack direction="row" spacing={0.25} alignItems="center">
                 <Box
                   sx={{
-                    p: 0.125,
-                    borderRadius: '2px',
+                    p: 0.25,
+                    borderRadius: '3px',
                     background: `linear-gradient(135deg, ${alpha(
                       theme.palette.primary.main,
                       0.08
@@ -779,7 +885,7 @@ export default function UserDesc({ token }) {
                   }}
                 >
                   <Tooltip title={token.origin || 'Standard Launch'}>
-                    <Box sx={{ fontSize: '8px', display: 'flex' }}>
+                    <Box sx={{ fontSize: '12px', display: 'flex' }}>
                       {getOriginIcon(token.origin)}
                     </Box>
                   </Tooltip>
@@ -788,8 +894,8 @@ export default function UserDesc({ token }) {
                   <>
                     <Box
                       sx={{
-                        p: 0.125,
-                        borderRadius: '2px',
+                        p: 0.25,
+                        borderRadius: '3px',
                         background: `linear-gradient(135deg, ${alpha(
                           theme.palette.success.main,
                           0.08
@@ -800,13 +906,13 @@ export default function UserDesc({ token }) {
                       }}
                     >
                       <Tooltip title="Blackholed Issuer">
-                        <LockIcon sx={{ fontSize: '8px', color: theme.palette.success.main }} />
+                        <LockIcon sx={{ fontSize: '12px', color: theme.palette.success.main }} />
                       </Tooltip>
                     </Box>
                     <Box
                       sx={{
-                        p: 0.125,
-                        borderRadius: '2px',
+                        p: 0.25,
+                        borderRadius: '3px',
                         background: `linear-gradient(135deg, ${alpha(
                           theme.palette.error.main,
                           0.08
@@ -817,9 +923,7 @@ export default function UserDesc({ token }) {
                       }}
                     >
                       <Tooltip title="Burned Liquidity Pool">
-                        <LocalFireDepartmentIcon
-                          sx={{ fontSize: '8px', color: theme.palette.error.main }}
-                        />
+                        <LocalFireDepartmentIcon sx={{ fontSize: '12px', color: '#1890FF' }} />
                       </Tooltip>
                     </Box>
                   </>
