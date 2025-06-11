@@ -616,7 +616,30 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
         if (amount1 && amount2) {
           if (fAmount > 0 && fValue > 0) {
-            if (accountAmount >= fAmount) {
+            // Check balance against the correct currency based on revert state
+            // When revert=false: user spends curr1 (amount1), so check against accountAmount (curr1.value)
+            // When revert=true: user spends curr2 (amount2), so check against accountValue (curr2.value)
+            const spendingAmount = revert
+              ? new Decimal(amount2 || 0).toNumber()
+              : new Decimal(amount1 || 0).toNumber();
+            const availableBalance = revert ? accountValue : accountAmount;
+
+            // Debug logging for balance check
+            console.log('Balance check debug:', {
+              revert,
+              amount1,
+              amount2,
+              spendingAmount,
+              availableBalance,
+              accountAmount: accountAmount,
+              accountValue: accountValue,
+              curr1Currency: curr1?.currency,
+              curr2Currency: curr2?.currency,
+              spendingCurrency: revert ? curr2?.currency : curr1?.currency,
+              sufficientBalance: availableBalance >= spendingAmount
+            });
+
+            if (availableBalance >= spendingAmount) {
               isSufficientBalance = true;
             } else {
               errMsg = 'Insufficient wallet balance';
