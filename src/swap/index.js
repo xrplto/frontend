@@ -260,11 +260,51 @@ const ExchangeButton = styled(Button)(
 );
 
 const AllowButton = styled(Button)(
-  () => `
-  padding: 2px;
-  border-radius: 24px;
-  font-size: 12px;
-  min-width: 48px;
+  ({ theme }) => `
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 60px;
+    height: 32px;
+    text-transform: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    background: ${alpha(theme.palette.primary.main, 0.08)};
+    color: ${theme.palette.primary.main};
+    border: 1px solid ${alpha(theme.palette.primary.main, 0.2)};
+    
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, ${alpha(
+        theme.palette.primary.main,
+        0.2
+      )}, transparent);
+      transition: left 0.5s;
+    }
+    
+    &:hover {
+      background: ${alpha(theme.palette.primary.main, 0.12)};
+      border-color: ${alpha(theme.palette.primary.main, 0.3)};
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px ${alpha(theme.palette.primary.main, 0.15)};
+      
+      &::before {
+        left: 100%;
+      }
+    }
+    
+    &:active {
+      transform: translateY(0);
+      transition: transform 0.1s;
+    }
 `
 );
 
@@ -957,10 +997,14 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             {isLoggedIn && (
               <Stack
                 direction="row"
-                justifyContent="end"
-                spacing={1.5}
-                siz="small"
-                sx={{ px: 2, mb: 2 }}
+                justifyContent="flex-end"
+                spacing={1}
+                sx={{
+                  px: 2,
+                  pt: 2,
+                  pb: 1,
+                  position: 'relative'
+                }}
               >
                 <AllowButton variant="outlined" onClick={onFillHalf}>
                   Half
