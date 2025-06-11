@@ -54,33 +54,47 @@ import CustomDialog from './Dialog';
 
 // ----------------------------------------------------------------------
 const TrustDialog = styled(Dialog)(({ theme }) => ({
-  backdropFilter: 'blur(12px)',
-  WebkitBackdropFilter: 'blur(12px)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
   '& .MuiBackdrop-root': {
     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.4)'
   },
   '& .MuiDialog-paper': {
-    borderRadius: '20px',
+    borderRadius: '24px',
     background:
       theme.palette.mode === 'dark'
-        ? 'linear-gradient(145deg, rgba(0, 0, 0, 0.98) 0%, rgba(10, 10, 10, 0.98) 50%, rgba(0, 0, 0, 0.98) 100%)'
-        : 'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+        ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+            theme.palette.background.paper,
+            0.8
+          )} 100%)`
+        : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+            theme.palette.background.paper,
+            0.8
+          )} 100%)`,
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
-    border:
-      theme.palette.mode === 'dark'
-        ? '1px solid rgba(255, 255, 255, 0.08)'
-        : '1px solid rgba(255, 255, 255, 0.8)',
-    boxShadow:
-      theme.palette.mode === 'dark'
-        ? '0 32px 64px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-        : '0 24px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.8)',
-    overflow: 'hidden'
+    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
+      theme.palette.primary.main,
+      0.04
+    )}`,
+    overflow: 'hidden',
+    position: 'relative',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '2px',
+      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+      opacity: 0.8
+    }
   },
   '& .MuiDialogContent-root': {
     padding: theme.spacing(3),
     minWidth: { xs: '100%', sm: 400 },
-    background: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.3)' : 'transparent',
+    background: 'transparent',
     position: 'relative',
     '&::before': {
       content: '""',
@@ -90,12 +104,9 @@ const TrustDialog = styled(Dialog)(({ theme }) => ({
       transform: 'translateX(-50%)',
       width: '60px',
       height: '4px',
-      background:
-        theme.palette.mode === 'dark'
-          ? 'linear-gradient(90deg, #00C853 0%, #5569ff 100%)'
-          : 'linear-gradient(90deg, #5569ff 0%, #00C853 100%)',
+      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
       borderRadius: '2px',
-      opacity: theme.palette.mode === 'dark' ? 0.8 : 0.6
+      opacity: 0.8
     }
   },
   '& .MuiDialogActions-root': {
@@ -115,13 +126,12 @@ const TrustDialog = styled(Dialog)(({ theme }) => ({
 const TrustDialogTitle = styled(DialogTitle)(({ theme }) => ({
   margin: 0,
   padding: theme.spacing(2.5, 3),
-  background:
-    theme.palette.mode === 'dark'
-      ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(20, 20, 20, 0.9) 50%, rgba(0, 0, 0, 0.8) 100%)'
-      : 'linear-gradient(135deg, rgba(85, 105, 255, 0.05) 0%, rgba(0, 123, 85, 0.05) 100%)',
-  borderBottom: `1px solid ${
-    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : theme.palette.divider
-  }`,
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.4
+  )} 100%)`,
+  backdropFilter: 'blur(10px)',
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
   position: 'relative'
 }));
 
@@ -129,17 +139,17 @@ const CloseButton = styled(IconButton)(({ theme }) => ({
   position: 'absolute',
   right: theme.spacing(1),
   top: theme.spacing(1),
-  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.04)',
-  borderRadius: '10px',
-  border: theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
-  transition: 'all 0.2s ease',
+  backgroundColor: alpha(theme.palette.background.paper, 0.6),
+  borderRadius: '12px',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.08)',
+    backgroundColor: alpha(theme.palette.background.paper, 0.8),
     transform: 'scale(1.05)',
-    boxShadow: theme.palette.mode === 'dark' ? '0 4px 12px rgba(0, 0, 0, 0.5)' : 'none'
+    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`
   },
   '& .MuiSvgIcon-root': {
-    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'inherit'
+    color: theme.palette.text.primary
   }
 }));
 
@@ -147,114 +157,94 @@ const TokenAvatar = styled(Avatar)(({ theme }) => ({
   width: 40,
   height: 40,
   borderRadius: theme.spacing(1),
-  border: `2px solid ${
-    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)'
-  }`,
-  boxShadow:
-    theme.palette.mode === 'dark'
-      ? '0 8px 16px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05), 0 0 12px rgba(0, 123, 85, 0.2)'
-      : '0 4px 8px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.8)',
+  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
+  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`,
   transition: 'all 0.3s ease',
   '&:hover': {
     transform: 'scale(1.05)',
-    boxShadow:
-      theme.palette.mode === 'dark'
-        ? '0 12px 24px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 20px rgba(0, 123, 85, 0.3)'
-        : '0 8px 16px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.9)'
+    boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.15)}`
   }
 }));
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: theme.spacing(1.5),
-    background: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.8)',
-    border:
-      theme.palette.mode === 'dark'
-        ? '1px solid rgba(255, 255, 255, 0.1)'
-        : '1px solid rgba(0, 0, 0, 0.08)',
+    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.7
+    )} 100%)`,
+    backdropFilter: 'blur(20px)',
+    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
     transition: 'all 0.3s ease',
     '&:hover': {
-      background: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.9)',
-      border:
-        theme.palette.mode === 'dark'
-          ? '1px solid rgba(255, 255, 255, 0.15)'
-          : '1px solid rgba(0, 0, 0, 0.12)'
+      background: `linear-gradient(135deg, ${alpha(
+        theme.palette.background.paper,
+        0.95
+      )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+      border: `1px solid ${alpha(theme.palette.divider, 0.12)}`
     },
     '&.Mui-focused': {
-      background: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 1)',
-      border:
-        theme.palette.mode === 'dark'
-          ? '1px solid rgba(0, 123, 85, 0.5)'
-          : '1px solid rgba(85, 105, 255, 0.5)',
-      boxShadow:
-        theme.palette.mode === 'dark'
-          ? '0 0 0 3px rgba(0, 123, 85, 0.1)'
-          : '0 0 0 3px rgba(85, 105, 255, 0.1)'
+      background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 1)} 0%, ${alpha(
+        theme.palette.background.paper,
+        0.9
+      )} 100%)`,
+      border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+      boxShadow: `0 0 0 3px ${alpha(theme.palette.primary.main, 0.1)}`
     },
     '&.Mui-disabled': {
-      background:
-        theme.palette.mode === 'dark'
-          ? 'rgba(0, 0, 0, 0.2)'
-          : alpha(theme.palette.action.disabled, 0.08)
+      background: alpha(theme.palette.action.disabled, 0.08)
     }
   },
   '& .MuiInputLabel-root': {
-    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'inherit',
+    color: alpha(theme.palette.text.secondary, 0.8),
     '&.Mui-focused': {
-      color: theme.palette.mode === 'dark' ? '#00C853' : '#5569ff'
+      color: theme.palette.primary.main
     }
   }
 }));
 
 const InfoCard = styled(Stack)(({ theme }) => ({
-  background:
-    theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.4)' : alpha(theme.palette.grey[200], 0.4),
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.7
+  )} 100%)`,
+  backdropFilter: 'blur(20px)',
   borderRadius: theme.spacing(1),
   padding: theme.spacing(1.5),
-  border:
-    theme.palette.mode === 'dark'
-      ? '1px solid rgba(255, 255, 255, 0.08)'
-      : '1px solid rgba(0, 0, 0, 0.06)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
   transition: 'all 0.2s ease',
   '&:hover': {
-    background:
-      theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : alpha(theme.palette.grey[200], 0.6),
-    border:
-      theme.palette.mode === 'dark'
-        ? '1px solid rgba(255, 255, 255, 0.12)'
-        : '1px solid rgba(0, 0, 0, 0.1)'
+    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.8
+    )} 100%)`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.12)}`
   }
 }));
 
 const StyledLink = styled(Link)(({ theme }) => ({
   fontFamily: 'monospace',
-  background:
-    theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : alpha(theme.palette.primary.main, 0.08),
+  background: alpha(theme.palette.primary.main, 0.08),
   padding: theme.spacing(0.5),
   borderRadius: theme.spacing(0.5),
-  color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'text.secondary',
-  border: theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.08)' : 'none',
+  color: alpha(theme.palette.text.secondary, 0.8),
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
   transition: 'all 0.2s ease',
   '&:hover': {
-    color: theme.palette.mode === 'dark' ? '#00C853' : 'primary.main',
-    background:
-      theme.palette.mode === 'dark'
-        ? 'rgba(0, 123, 85, 0.1)'
-        : alpha(theme.palette.primary.main, 0.12),
-    border: theme.palette.mode === 'dark' ? '1px solid rgba(0, 123, 85, 0.3)' : 'none'
+    color: theme.palette.primary.main,
+    background: alpha(theme.palette.primary.main, 0.12),
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
   }
 }));
 
 const CurrencyChip = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
-  color: theme.palette.mode === 'dark' ? '#00C853' : 'primary.main',
-  background:
-    theme.palette.mode === 'dark'
-      ? 'rgba(0, 123, 85, 0.15)'
-      : alpha(theme.palette.primary.main, 0.08),
+  color: theme.palette.primary.main,
+  background: alpha(theme.palette.primary.main, 0.08),
   padding: theme.spacing(0.5),
   borderRadius: theme.spacing(0.5),
-  border: theme.palette.mode === 'dark' ? '1px solid rgba(0, 123, 85, 0.3)' : 'none'
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
 }));
 
 const ActionButton = styled(Button)(({ theme }) => ({
@@ -266,42 +256,40 @@ const ActionButton = styled(Button)(({ theme }) => ({
   padding: '8px 22px',
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&.MuiButton-contained': {
-    background:
-      theme.palette.mode === 'dark'
-        ? 'linear-gradient(135deg, rgba(0, 123, 85, 0.9) 0%, rgba(0, 123, 85, 1) 100%)'
-        : undefined,
-    boxShadow:
-      theme.palette.mode === 'dark'
-        ? '0 4px 12px rgba(0, 123, 85, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-        : undefined,
+    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${alpha(
+      theme.palette.primary.main,
+      0.9
+    )} 100%)`,
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
     '&:hover': {
       transform: 'translateY(-2px) scale(1.02)',
-      boxShadow:
-        theme.palette.mode === 'dark'
-          ? '0 8px 24px rgba(0, 123, 85, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
-          : undefined
+      boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.4)}`
     },
     '&.MuiButton-colorError': {
-      background:
-        theme.palette.mode === 'dark'
-          ? 'linear-gradient(135deg, rgba(211, 47, 47, 0.9) 0%, rgba(211, 47, 47, 1) 100%)'
-          : undefined
+      background: `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${alpha(
+        theme.palette.error.main,
+        0.9
+      )} 100%)`,
+      boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.3)}`,
+      '&:hover': {
+        boxShadow: `0 8px 24px ${alpha(theme.palette.error.main, 0.4)}`
+      }
     }
   }
 }));
 
 const CopyButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.04)',
+  backgroundColor: alpha(theme.palette.background.paper, 0.6),
   borderRadius: '8px',
-  border: theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.08)',
+    backgroundColor: alpha(theme.palette.background.paper, 0.8),
     transform: 'scale(1.05)',
-    boxShadow: theme.palette.mode === 'dark' ? '0 4px 12px rgba(0, 0, 0, 0.3)' : 'none'
+    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
   },
   '& .MuiSvgIcon-root': {
-    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'inherit'
+    color: theme.palette.text.primary
   }
 }));
 
@@ -770,7 +758,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
   return (
     <>
       <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
-        <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />
+        <PulseLoader color={theme.palette.primary.main} size={10} />
       </Backdrop>
 
       <TrustDialog fullScreen={fullScreen} onClose={handleClose} open={true} sx={{ zIndex: 1302 }}>
@@ -786,7 +774,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
               <Typography
                 variant="token"
                 sx={{
-                  color: darkMode ? '#00C853' : 'primary.main',
+                  color: theme.palette.primary.main,
                   fontWeight: 600
                 }}
               >
@@ -795,7 +783,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
               <Typography
                 variant="caption"
                 sx={{
-                  color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary'
+                  color: alpha(theme.palette.text.secondary, 0.8)
                 }}
               >
                 {user}
@@ -919,60 +907,23 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                     borderRadius: '12px',
                     textTransform: 'none',
                     padding: '8px 22px',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    background: (theme) =>
-                      theme.palette.mode === 'dark'
-                        ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(20, 20, 20, 0.9) 50%, rgba(0, 0, 0, 0.8) 100%)'
-                        : `linear-gradient(45deg, 
-                        ${theme.palette.mode === 'dark' ? '#000000' : '#ffffff'} 0%, 
-                        ${alpha(theme.palette.mode === 'dark' ? '#000000' : '#ffffff', 0.9)} 25%,
-                        ${alpha(theme.palette.mode === 'dark' ? '#1a1a1a' : '#f5f5f5', 0.95)} 50%,
-                        ${alpha(theme.palette.mode === 'dark' ? '#000000' : '#ffffff', 0.9)} 75%,
-                        ${theme.palette.mode === 'dark' ? '#000000' : '#ffffff'} 100%)`,
-                    backgroundSize: '200% 200%',
-                    animation: 'gradient 5s ease infinite',
-                    border: (theme) =>
-                      theme.palette.mode === 'dark'
-                        ? '1px solid rgba(0, 123, 85, 0.3)'
-                        : `1px solid ${alpha(theme.palette.primary.light, 0.5)}`,
-                    color: (theme) =>
-                      theme.palette.mode === 'dark' ? '#00C853' : theme.palette.primary.main,
-                    boxShadow: (theme) =>
-                      theme.palette.mode === 'dark'
-                        ? '0 0 8px rgba(0, 123, 85, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-                        : `0 0 5px ${alpha(theme.palette.primary.main, 0.2)}, 0 0 10px ${alpha(
-                            theme.palette.primary.main,
-                            0.1
-                          )}`,
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.background.paper,
+                      0.9
+                    )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                    backdropFilter: 'blur(20px)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                    color: theme.palette.primary.main,
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '@keyframes gradient': {
-                      '0%': { backgroundPosition: '0% 50%' },
-                      '50%': { backgroundPosition: '100% 50%' },
-                      '100%': { backgroundPosition: '0% 50%' }
-                    },
                     '&:hover': {
                       transform: 'translateY(-2px) scale(1.02)',
-                      background: (theme) =>
-                        theme.palette.mode === 'dark'
-                          ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(30, 30, 30, 1) 50%, rgba(0, 0, 0, 0.9) 100%)'
-                          : `linear-gradient(45deg, 
-                          ${theme.palette.mode === 'dark' ? '#000000' : '#ffffff'} 0%, 
-                          ${alpha(theme.palette.mode === 'dark' ? '#000000' : '#ffffff', 0.95)} 25%,
-                          ${alpha(theme.palette.mode === 'dark' ? '#1a1a1a' : '#f5f5f5', 1)} 50%,
-                          ${alpha(theme.palette.mode === 'dark' ? '#000000' : '#ffffff', 0.95)} 75%,
-                          ${theme.palette.mode === 'dark' ? '#000000' : '#ffffff'} 100%)`,
-                      border: (theme) =>
-                        theme.palette.mode === 'dark'
-                          ? '1px solid rgba(0, 123, 85, 0.5)'
-                          : `1px solid ${alpha(theme.palette.primary.light, 0.7)}`,
-                      boxShadow: (theme) =>
-                        theme.palette.mode === 'dark'
-                          ? '0 0 12px rgba(0, 123, 85, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-                          : `0 0 8px ${alpha(theme.palette.primary.main, 0.3)}, 0 0 15px ${alpha(
-                              theme.palette.primary.main,
-                              0.15
-                            )}`
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.background.paper,
+                        0.95
+                      )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+                      boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.25)}`
                     },
                     '&:active': {
                       transform: 'translateY(0)'

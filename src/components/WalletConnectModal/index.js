@@ -3,12 +3,13 @@ import { useContext, useState } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import { Divider, IconButton, Stack, Typography, Tooltip } from '@mui/material';
+import { Divider, IconButton, Stack, Typography, Tooltip, useTheme } from '@mui/material';
 import styled from '@emotion/styled';
 import ClearIcon from '@mui/icons-material/Clear';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DownloadIcon from '@mui/icons-material/Download';
 import { enqueueSnackbar } from 'notistack';
+import { alpha } from '@mui/material/styles';
 
 import { isInstalled, getPublicKey, signMessage } from '@gemwallet/api';
 import sdk from '@crossmarkio/sdk';
@@ -18,30 +19,53 @@ import { AppContext } from 'src/AppContext';
 import axios from 'axios';
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
-  backdropFilter: 'blur(12px)',
-  WebkitBackdropFilter: 'blur(12px)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
   '& .MuiBackdrop-root': {
     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.4)'
   },
   '& .MuiDialog-paper': {
-    borderRadius: '20px',
+    borderRadius: '24px',
     background:
       theme.palette.mode === 'dark'
-        ? 'linear-gradient(145deg, rgba(0, 0, 0, 0.98) 0%, rgba(10, 10, 10, 0.98) 50%, rgba(0, 0, 0, 0.98) 100%)'
-        : 'linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+        ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+            theme.palette.background.paper,
+            0.8
+          )} 100%)`
+        : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+            theme.palette.background.paper,
+            0.8
+          )} 100%)`,
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
     border:
       theme.palette.mode === 'dark'
-        ? '1px solid rgba(255, 255, 255, 0.08)'
-        : '1px solid rgba(255, 255, 255, 0.8)',
+        ? `1px solid ${alpha(theme.palette.divider, 0.08)}`
+        : `1px solid ${alpha(theme.palette.divider, 0.08)}`,
     boxShadow:
       theme.palette.mode === 'dark'
-        ? '0 32px 64px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-        : '0 24px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.8)',
+        ? `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
+            theme.palette.primary.main,
+            0.04
+          )}`
+        : `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
+            theme.palette.primary.main,
+            0.04
+          )}`,
     overflow: 'hidden',
     width: '100%',
-    maxWidth: '450px'
+    maxWidth: '450px',
+    position: 'relative',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      height: '2px',
+      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+      opacity: 0.8
+    }
   }
 }));
 
@@ -49,18 +73,23 @@ const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
   padding: theme.spacing(2, 3),
   background:
     theme.palette.mode === 'dark'
-      ? 'linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(20, 20, 20, 0.9) 50%, rgba(0, 0, 0, 0.8) 100%)'
-      : 'linear-gradient(135deg, rgba(85, 105, 255, 0.05) 0%, rgba(0, 123, 85, 0.05) 100%)',
-  borderBottom: `1px solid ${
-    theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : theme.palette.divider
-  }`,
+      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+          theme.palette.background.paper,
+          0.4
+        )} 100%)`
+      : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+          theme.palette.background.paper,
+          0.4
+        )} 100%)`,
+  backdropFilter: 'blur(10px)',
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
   position: 'relative'
 }));
 
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   padding: theme.spacing(3),
   paddingBottom: theme.spacing(4),
-  background: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.3)' : 'transparent',
+  background: 'transparent',
   position: 'relative',
   '&::before': {
     content: '""',
@@ -70,27 +99,24 @@ const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
     transform: 'translateX(-50%)',
     width: '60px',
     height: '4px',
-    background:
-      theme.palette.mode === 'dark'
-        ? 'linear-gradient(90deg, #00C853 0%, #5569ff 100%)'
-        : 'linear-gradient(90deg, #5569ff 0%, #00C853 100%)',
+    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main})`,
     borderRadius: '2px',
-    opacity: theme.palette.mode === 'dark' ? 0.8 : 0.6
+    opacity: 0.8
   }
 }));
 
 const ActionButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.04)',
-  borderRadius: '10px',
-  border: theme.palette.mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
-  transition: 'all 0.2s ease',
+  backgroundColor: alpha(theme.palette.background.paper, 0.6),
+  borderRadius: '12px',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.08)',
+    backgroundColor: alpha(theme.palette.background.paper, 0.8),
     transform: 'scale(1.05)',
-    boxShadow: theme.palette.mode === 'dark' ? '0 4px 12px rgba(0, 0, 0, 0.5)' : 'none'
+    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`
   },
   '& .MuiSvgIcon-root': {
-    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.8)' : 'inherit'
+    color: theme.palette.text.primary
   }
 }));
 
@@ -98,14 +124,16 @@ const WalletItem = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(2),
   cursor: 'pointer',
   borderRadius: '16px',
-  background: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.8)',
-  border:
-    theme.palette.mode === 'dark'
-      ? '1px solid rgba(255, 255, 255, 0.08)'
-      : '1px solid rgba(0, 0, 0, 0.06)',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.7
+  )} 100%)`,
+  backdropFilter: 'blur(20px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
+  boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`,
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -113,41 +141,38 @@ const WalletItem = styled(Stack)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background:
-      theme.palette.mode === 'dark'
-        ? 'linear-gradient(135deg, rgba(0, 123, 85, 0.1) 0%, rgba(85, 105, 255, 0.1) 100%)'
-        : 'linear-gradient(135deg, rgba(85, 105, 255, 0.05) 0%, rgba(0, 123, 85, 0.05) 100%)',
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+      theme.palette.success.main,
+      0.05
+    )} 100%)`,
     opacity: 0,
     transition: 'opacity 0.3s ease',
     zIndex: -1
   },
   '&:hover': {
-    transform: 'translateY(-2px) scale(1.02)',
-    background: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.95)',
-    border:
-      theme.palette.mode === 'dark'
-        ? '1px solid rgba(0, 123, 85, 0.3)'
-        : '1px solid rgba(85, 105, 255, 0.3)',
-    boxShadow:
-      theme.palette.mode === 'dark'
-        ? '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 123, 85, 0.2)'
-        : '0 8px 32px rgba(85, 105, 255, 0.15)',
+    transform: 'translateY(-4px)',
+    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+      theme.palette.background.paper,
+      0.8
+    )} 100%)`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+    boxShadow: `0 16px 48px ${alpha(theme.palette.common.black, 0.12)}, 0 4px 16px ${alpha(
+      theme.palette.primary.main,
+      0.1
+    )}`,
     '&::before': {
       opacity: 1
     },
     '& .wallet-name': {
-      color: theme.palette.mode === 'dark' ? '#00C853' : '#5569ff'
+      color: theme.palette.primary.main
     },
     '& .wallet-icon': {
       transform: 'scale(1.1)',
-      filter:
-        theme.palette.mode === 'dark'
-          ? 'drop-shadow(0 0 8px rgba(0, 123, 85, 0.3))'
-          : 'drop-shadow(0 0 8px rgba(85, 105, 255, 0.3))'
+      filter: `drop-shadow(0 0 8px ${alpha(theme.palette.primary.main, 0.3)})`
     }
   },
   '&:active': {
-    transform: 'translateY(0) scale(0.98)'
+    transform: 'translateY(-2px) scale(0.98)'
   }
 }));
 
@@ -155,40 +180,29 @@ const WalletIcon = styled('img')(({ theme }) => ({
   width: '40px',
   height: '40px',
   borderRadius: '12px',
-  border:
-    theme.palette.mode === 'dark'
-      ? '2px solid rgba(255, 255, 255, 0.1)'
-      : '2px solid rgba(0, 0, 0, 0.05)',
+  border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
   transition: 'all 0.3s ease',
-  boxShadow:
-    theme.palette.mode === 'dark'
-      ? '0 4px 12px rgba(0, 0, 0, 0.4)'
-      : '0 4px 12px rgba(0, 0, 0, 0.1)'
+  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
 }));
 
 const DownloadButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor:
-    theme.palette.mode === 'dark' ? 'rgba(0, 123, 85, 0.1)' : 'rgba(85, 105, 255, 0.1)',
+  backgroundColor: alpha(theme.palette.primary.main, 0.1),
   borderRadius: '8px',
-  border: theme.palette.mode === 'dark' ? '1px solid rgba(0, 123, 85, 0.2)' : 'none',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
   transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor:
-      theme.palette.mode === 'dark' ? 'rgba(0, 123, 85, 0.2)' : 'rgba(85, 105, 255, 0.2)',
+    backgroundColor: alpha(theme.palette.primary.main, 0.2),
     transform: 'scale(1.1)',
-    boxShadow:
-      theme.palette.mode === 'dark'
-        ? '0 4px 12px rgba(0, 123, 85, 0.3)'
-        : '0 4px 12px rgba(85, 105, 255, 0.3)'
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
   },
   '& .MuiSvgIcon-root': {
-    color: theme.palette.mode === 'dark' ? '#00C853' : '#5569ff',
+    color: theme.palette.primary.main,
     fontSize: 'inherit'
   }
 }));
 
 const StyledDivider = styled(Divider)(({ theme }) => ({
-  borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+  borderColor: alpha(theme.palette.divider, 0.08),
   margin: theme.spacing(1, 0),
   '&::before, &::after': {
     borderColor: 'inherit'
@@ -198,10 +212,7 @@ const StyledDivider = styled(Divider)(({ theme }) => ({
 const ModalTitle = styled(Typography)(({ theme }) => ({
   fontWeight: 700,
   fontSize: '1.5rem',
-  background:
-    theme.palette.mode === 'dark'
-      ? 'linear-gradient(135deg, #00C853 0%, #5569ff 100%)'
-      : 'linear-gradient(135deg, #5569ff 0%, #00C853 100%)',
+  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
   WebkitBackgroundClip: 'text',
   WebkitTextFillColor: 'transparent',
   backgroundClip: 'text',
@@ -217,49 +228,32 @@ const FeeTag = styled('div')(({ theme, isFree }) => ({
   letterSpacing: '0.5px',
   display: 'inline-block',
   background: isFree
-    ? theme.palette.mode === 'dark'
-      ? 'linear-gradient(135deg, rgba(0, 123, 85, 0.2) 0%, rgba(0, 200, 83, 0.2) 100%)'
-      : 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%)'
-    : theme.palette.mode === 'dark'
-    ? 'linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 193, 7, 0.2) 100%)'
-    : 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 193, 7, 0.1) 100%)',
-  color: isFree
-    ? theme.palette.mode === 'dark'
-      ? '#00C853'
-      : '#4CAF50'
-    : theme.palette.mode === 'dark'
-    ? '#FFB74D'
-    : '#FF9800',
+    ? `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.15)} 0%, ${alpha(
+        theme.palette.success.main,
+        0.08
+      )} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.15)} 0%, ${alpha(
+        theme.palette.warning.main,
+        0.08
+      )} 100%)`,
+  color: isFree ? theme.palette.success.main : theme.palette.warning.main,
   border: `1px solid ${
-    isFree
-      ? theme.palette.mode === 'dark'
-        ? 'rgba(0, 123, 85, 0.3)'
-        : 'rgba(76, 175, 80, 0.3)'
-      : theme.palette.mode === 'dark'
-      ? 'rgba(255, 152, 0, 0.3)'
-      : 'rgba(255, 152, 0, 0.3)'
+    isFree ? alpha(theme.palette.success.main, 0.3) : alpha(theme.palette.warning.main, 0.3)
   }`,
   boxShadow: isFree
-    ? theme.palette.mode === 'dark'
-      ? '0 2px 8px rgba(0, 123, 85, 0.2)'
-      : '0 2px 8px rgba(76, 175, 80, 0.2)'
-    : theme.palette.mode === 'dark'
-    ? '0 2px 8px rgba(255, 152, 0, 0.2)'
-    : '0 2px 8px rgba(255, 152, 0, 0.2)',
+    ? `0 2px 8px ${alpha(theme.palette.success.main, 0.2)}`
+    : `0 2px 8px ${alpha(theme.palette.warning.main, 0.2)}`,
   transition: 'all 0.2s ease',
   '&:hover': {
     transform: 'scale(1.05)',
     boxShadow: isFree
-      ? theme.palette.mode === 'dark'
-        ? '0 4px 12px rgba(0, 123, 85, 0.3)'
-        : '0 4px 12px rgba(76, 175, 80, 0.3)'
-      : theme.palette.mode === 'dark'
-      ? '0 4px 12px rgba(255, 152, 0, 0.3)'
-      : '0 4px 12px rgba(255, 152, 0, 0.3)'
+      ? `0 4px 12px ${alpha(theme.palette.success.main, 0.3)}`
+      : `0 4px 12px ${alpha(theme.palette.warning.main, 0.3)}`
   }
 }));
 
 const WalletConnectModal = () => {
+  const theme = useTheme();
   const BASE_URL = process.env.API_URL;
 
   const {
@@ -436,7 +430,7 @@ const WalletConnectModal = () => {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary'
+                      color: alpha(theme.palette.text.secondary, 0.8)
                     }}
                   >
                     Mobile Wallet
@@ -449,8 +443,9 @@ const WalletConnectModal = () => {
                   rel="noopener noreferrer"
                   sx={{
                     marginLeft: 'auto',
-                    color: 'text.secondary',
-                    '&:hover': { color: 'primary.main' }
+                    color: alpha(theme.palette.text.secondary, 0.7),
+                    transition: 'color 0.2s ease',
+                    '&:hover': { color: theme.palette.primary.main }
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -507,7 +502,7 @@ const WalletConnectModal = () => {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary'
+                      color: alpha(theme.palette.text.secondary, 0.8)
                     }}
                   >
                     Browser Wallet
@@ -520,8 +515,9 @@ const WalletConnectModal = () => {
                   rel="noopener noreferrer"
                   sx={{
                     marginLeft: 'auto',
-                    color: 'text.secondary',
-                    '&:hover': { color: 'primary.main' }
+                    color: alpha(theme.palette.text.secondary, 0.7),
+                    transition: 'color 0.2s ease',
+                    '&:hover': { color: theme.palette.primary.main }
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -582,7 +578,7 @@ const WalletConnectModal = () => {
                   <Typography
                     variant="body2"
                     sx={{
-                      color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary'
+                      color: alpha(theme.palette.text.secondary, 0.8)
                     }}
                   >
                     Browser Wallet
@@ -595,8 +591,9 @@ const WalletConnectModal = () => {
                   rel="noopener noreferrer"
                   sx={{
                     marginLeft: 'auto',
-                    color: 'text.secondary',
-                    '&:hover': { color: 'primary.main' }
+                    color: alpha(theme.palette.text.secondary, 0.7),
+                    transition: 'color 0.2s ease',
+                    '&:hover': { color: theme.palette.primary.main }
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
