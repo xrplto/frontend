@@ -1297,7 +1297,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
         Flags,
         user_token,
         Fee: '12',
-        SourceTag: 20221212
+        SourceTag: 93339333
       };
 
       let memoData = `Swap via https://xrpl.to`;
@@ -1343,7 +1343,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 SendMax,
                 Flags,
                 Fee: '12',
-                SourceTag: 20221212,
+                SourceTag: 93339333,
                 Memos: configureMemos('', '', memoData)
               };
 
@@ -1391,7 +1391,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
             SendMax,
             Flags,
             Fee: '12',
-            SourceTag: 20221212,
+            SourceTag: 93339333,
             Memos: configureMemos('', '', memoData)
           };
 
