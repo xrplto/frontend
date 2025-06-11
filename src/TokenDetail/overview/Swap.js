@@ -1,5 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Button, Stack, Typography, Input, IconButton, Box } from '@mui/material';
+import {
+  Button,
+  Stack,
+  Typography,
+  Input,
+  IconButton,
+  Box,
+  Alert,
+  AlertTitle
+} from '@mui/material';
 import { styled, useTheme, keyframes, alpha } from '@mui/material/styles';
 import { Icon } from '@iconify/react';
 import exchangeIcon from '@iconify/icons-uil/exchange';
@@ -16,11 +25,12 @@ import { currencySymbols, XRP_TOKEN } from 'src/utils/constants';
 import Decimal from 'decimal.js';
 import { fNumber } from 'src/utils/formatNumber';
 import useWebSocket from 'react-use-websocket';
-import { isInstalled, submitTransaction } from '@gemwallet/api';
+import { isInstalled, submitTransaction, setTrustline } from '@gemwallet/api';
 import sdk from '@crossmarkio/sdk';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { PuffLoader } from 'react-spinners';
+import { enqueueSnackbar } from 'notistack';
 
 const pulse = keyframes`
   0% {
@@ -295,6 +305,15 @@ const Swap = ({ token }) => {
   const [focusTop, setFocusTop] = useState(false);
   const [focusBottom, setFocusBottom] = useState(false);
 
+  // Add trustline states
+  const [trustlines, setTrustlines] = useState([]);
+  const [hasTrustline1, setHasTrustline1] = useState(true);
+  const [hasTrustline2, setHasTrustline2] = useState(true);
+  const [transactionType, setTransactionType] = useState('Payment');
+
+  // Add slippage state
+  const [slippage, setSlippage] = useState(5); // Default 5% slippage
+
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
   const setAmount = revert ? setAmount2 : setAmount1;
@@ -320,14 +339,36 @@ const Swap = ({ token }) => {
           .toNumber()
       : 0;
 
-  // const color1 = revert?theme.currency.background2:theme.currency.background1;
-  // const color2 = revert?theme.currency.background1:theme.currency.background2;
-  // var color1, color2;
-  // if (typeof theme.currency !== "undefined") // webxtor SEO fix
-  // {
-  //   /*const */color1 = theme.currency.background2;
-  //   /*const */color2 = theme.currency.background2;
-  // }
+  // Helper function to convert hex currency code to readable name
+  const getCurrencyDisplayName = (currency, tokenName) => {
+    if (currency === 'XRP') return 'XRP';
+    if (currency === 'USD') return 'USD';
+    if (currency === 'EUR') return 'EUR';
+    if (currency === 'BTC') return 'BTC';
+    if (currency === 'ETH') return 'ETH';
+
+    // If we have a token name, use it
+    if (tokenName && tokenName !== currency) {
+      return tokenName;
+    }
+
+    // Try to convert hex to ASCII for display
+    try {
+      if (currency.length === 40 && /^[0-9A-Fa-f]+$/.test(currency)) {
+        const hex = currency.replace(/00+$/, ''); // Remove trailing zeros
+        let ascii = '';
+        for (let i = 0; i < hex.length; i += 2) {
+          const byte = parseInt(hex.substr(i, 2), 16);
+          if (byte > 0) ascii += String.fromCharCode(byte);
+        }
+        return ascii.toUpperCase() || currency;
+      }
+    } catch (e) {
+      // Fall back to original currency code
+    }
+
+    return currency;
+  };
 
   const isLoggedIn = accountProfile && accountProfile.account && accountPairBalance;
 
@@ -335,42 +376,44 @@ const Swap = ({ token }) => {
   let errMsg = '';
 
   if (isLoggedIn) {
-    /* accountPairBalance
-        {
-            "curr1": {
-                "currency": "534F4C4F00000000000000000000000000000000",
-                "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-                "value": "0.00000383697235788"
-            },
-            "curr2": {
-                "currency": "XRP",
-                "issuer": "XRPL",
-                "value": 26.733742000000007
-            }
-        }
-        */
-
     errMsg = '';
     isSufficientBalance = false;
-    try {
-      const fAmount = new Decimal(amount || 0).toNumber();
-      const fValue = new Decimal(value || 0).toNumber();
-      const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
-      const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
 
-      if (amount1 && amount2) {
-        if (fAmount > 0 && fValue > 0) {
-          if (accountAmount >= fAmount) {
-            isSufficientBalance = true;
+    // Check trustlines first
+    if (!hasTrustline1 && curr1.currency !== 'XRP') {
+      const displayName = getCurrencyDisplayName(curr1.currency, token1?.name);
+      errMsg = `No trustline for ${displayName}`;
+    } else if (!hasTrustline2 && curr2.currency !== 'XRP') {
+      const displayName = getCurrencyDisplayName(curr2.currency, token2?.name);
+      errMsg = `No trustline for ${displayName}`;
+    } else {
+      // Check balance if trustlines exist
+      try {
+        const fAmount = new Decimal(amount || 0).toNumber();
+        const fValue = new Decimal(value || 0).toNumber();
+        const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
+        const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
+
+        if (amount1 && amount2) {
+          if (fAmount > 0 && fValue > 0) {
+            // Check balance against the correct currency based on revert state
+            const spendingAmount = revert
+              ? new Decimal(amount2 || 0).toNumber()
+              : new Decimal(amount1 || 0).toNumber();
+            const availableBalance = revert ? accountValue : accountAmount;
+
+            if (availableBalance >= spendingAmount) {
+              isSufficientBalance = true;
+            } else {
+              errMsg = 'Insufficient wallet balance';
+            }
           } else {
             errMsg = 'Insufficient wallet balance';
           }
-        } else {
-          errMsg = 'Insufficient wallet balance';
         }
+      } catch (e) {
+        errMsg = 'Insufficient wallet balance';
       }
-    } catch (e) {
-      errMsg = 'Insufficient wallet balance';
     }
   } else {
     errMsg = 'Connect your wallet!';
@@ -399,31 +442,6 @@ const Swap = ({ token }) => {
     let reqID = 1;
     function sendRequest() {
       if (!wsReady) return;
-      /*{
-          "id":17,
-          "command":"book_offers",
-          "taker_gets":{
-              "currency":"534F4C4F00000000000000000000000000000000",
-              "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
-          },
-          "taker_pays":{
-              "currency":"XRP"
-          },
-          "ledger_index":"validated",
-          "limit":200
-      }
-
-      {
-          "id":20,
-          "command":"book_offers",
-          "taker_gets":{"currency":"XRP"},
-          "taker_pays":{
-              "currency":"534F4C4F00000000000000000000000000000000",
-              "issuer":"rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz"
-          },
-          "ledger_index":"validated",
-          "limit":200
-      }*/
 
       const curr1 = pair.curr1;
       const curr2 = pair.curr2;
@@ -495,7 +513,8 @@ const Swap = ({ token }) => {
       if (!curr1 || !curr2) return;
 
       const account = accountProfile.account;
-      // https://api.xrpl.to/api/account/info/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=XRPL
+
+      // Get account balance info
       axios
         .get(
           `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`
@@ -508,12 +527,181 @@ const Swap = ({ token }) => {
         })
         .catch((err) => {
           console.log('Error on getting details!!!', err);
+        });
+
+      // Check trustlines - implement pagination to fetch all trustlines
+      const fetchAllTrustlines = async () => {
+        try {
+          let allTrustlines = [];
+          let currentPage = 0;
+          let totalTrustlines = 0;
+
+          // First request to get initial data and total count
+          const firstResponse = await axios.get(
+            `${BASE_URL}/account/lines/${account}?page=${currentPage}&limit=50`
+          );
+
+          if (firstResponse.status === 200 && firstResponse.data) {
+            allTrustlines = firstResponse.data.lines || [];
+            totalTrustlines = firstResponse.data.total || 0;
+
+            // If total is more than 50, fetch additional pages starting from page 1
+            if (totalTrustlines > 50) {
+              const totalPages = Math.ceil(totalTrustlines / 50);
+              const additionalRequests = [];
+
+              // Create requests for pages 1 through totalPages-1 (since we already have page 0)
+              for (let page = 1; page < totalPages; page++) {
+                additionalRequests.push(
+                  axios.get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=50`)
+                );
+              }
+
+              // Execute all additional requests in parallel
+              const additionalResponses = await Promise.all(additionalRequests);
+
+              // Combine all trustlines from additional pages
+              additionalResponses.forEach((response, index) => {
+                if (response.status === 200 && response.data.lines) {
+                  allTrustlines = allTrustlines.concat(response.data.lines);
+                }
+              });
+            }
+
+            return allTrustlines;
+          }
+
+          return [];
+        } catch (error) {
+          console.log('Error fetching trustlines:', error);
+          return [];
+        }
+      };
+
+      fetchAllTrustlines()
+        .then((allTrustlines) => {
+          setTrustlines(allTrustlines);
+
+          // Helper function to normalize currency codes for comparison
+          const normalizeCurrency = (currency) => {
+            if (!currency) return '';
+            // Remove trailing zeros from hex currency codes
+            if (currency.length === 40 && /^[0-9A-Fa-f]+$/.test(currency)) {
+              return currency.replace(/00+$/, '').toUpperCase();
+            }
+            return currency.toUpperCase();
+          };
+
+          // Helper function to check if two currency codes match
+          const currenciesMatch = (curr1, curr2) => {
+            if (!curr1 || !curr2) return false;
+
+            // Direct match
+            if (curr1 === curr2) return true;
+
+            // Normalized match (for hex codes)
+            const norm1 = normalizeCurrency(curr1);
+            const norm2 = normalizeCurrency(curr2);
+            if (norm1 === norm2) return true;
+
+            // Try converting hex to ASCII and compare
+            try {
+              const convertHexToAscii = (hex) => {
+                if (hex.length === 40 && /^[0-9A-Fa-f]+$/.test(hex)) {
+                  const cleanHex = hex.replace(/00+$/, '');
+                  let ascii = '';
+                  for (let i = 0; i < cleanHex.length; i += 2) {
+                    const byte = parseInt(cleanHex.substr(i, 2), 16);
+                    if (byte > 0) ascii += String.fromCharCode(byte);
+                  }
+                  return ascii.toLowerCase();
+                }
+                return hex.toLowerCase();
+              };
+
+              const ascii1 = convertHexToAscii(curr1);
+              const ascii2 = convertHexToAscii(curr2);
+              if (ascii1 === ascii2) return true;
+            } catch (e) {
+              // Ignore conversion errors
+            }
+
+            return false;
+          };
+
+          // Helper function to check if issuers match
+          const issuersMatch = (line, expectedIssuer) => {
+            const lineIssuers = [
+              line.account,
+              line.issuer,
+              line._token1,
+              line._token2,
+              line.Balance?.issuer,
+              line.HighLimit?.issuer,
+              line.LowLimit?.issuer
+            ].filter(Boolean);
+
+            return lineIssuers.some((issuer) => issuer === expectedIssuer);
+          };
+
+          // Check if trustlines exist for curr1 and curr2
+          const hasCurr1Trustline =
+            curr1.currency === 'XRP' ||
+            allTrustlines.some((line) => {
+              // Check multiple currency fields
+              const lineCurrencies = [
+                line.Balance?.currency,
+                line.currency,
+                line._currency,
+                line.HighLimit?.currency,
+                line.LowLimit?.currency
+              ].filter(Boolean);
+
+              const currencyMatch = lineCurrencies.some((lineCurrency) =>
+                currenciesMatch(lineCurrency, curr1.currency)
+              );
+
+              if (!currencyMatch) return false;
+
+              // For currency matches, check if we have a valid trustline
+              const issuerMatch = issuersMatch(line, curr1.issuer);
+              const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency);
+
+              return currencyMatch && (issuerMatch || isStandardCurrency);
+            });
+
+          const hasCurr2Trustline =
+            curr2.currency === 'XRP' ||
+            allTrustlines.some((line) => {
+              // Check multiple currency fields
+              const lineCurrencies = [
+                line.Balance?.currency,
+                line.currency,
+                line._currency,
+                line.HighLimit?.currency,
+                line.LowLimit?.currency
+              ].filter(Boolean);
+
+              const currencyMatch = lineCurrencies.some((lineCurrency) =>
+                currenciesMatch(lineCurrency, curr2.currency)
+              );
+
+              if (!currencyMatch) return false;
+
+              const issuerMatch = issuersMatch(line, curr2.issuer);
+              const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr2.currency);
+
+              return currencyMatch && (issuerMatch || isStandardCurrency);
+            });
+
+          setHasTrustline1(hasCurr1Trustline);
+          setHasTrustline2(hasCurr2Trustline);
         })
-        .then(function () {
-          // always executed
+        .catch((err) => {
+          console.log('Error getting trustlines:', err);
         });
     }
-    // console.log('account_info')
+
     getAccountInfo();
   }, [accountProfile, curr1, curr2, sync, isSwapped]);
 
@@ -584,7 +772,7 @@ const Swap = ({ token }) => {
 
         if (dispatched_result && dispatched_result === 'tesSUCCESS') {
           setSync(sync + 1);
-          openSnackbar('Successfully submitted the order!', 'success');
+          openSnackbar('Successfully submitted the swap!', 'success');
           stopInterval();
           return;
         }
@@ -639,54 +827,79 @@ const Swap = ({ token }) => {
 
   const onOfferCreateXumm = async () => {
     try {
-      // const curr1 = revert?pair.curr2:pair.curr1;
-      // const curr2 = revert?pair.curr1:pair.curr2;
       const curr1 = pair.curr1;
       const curr2 = pair.curr2;
       const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
-      let TakerGets, TakerPays;
-      /*if (buySell === 'BUY') {
-                // BUY logic
-                TakerGets = {currency:curr2.currency, issuer:curr2.issuer, value: value.toString()};
-                TakerPays = {currency:curr1.currency, issuer:curr1.issuer, value: amount.toString()};
-            } else */
-      // {
-      // SELL logic
-      TakerGets = {
+
+      // Use Payment transaction instead of OfferCreate
+      const PaymentFlags = {
+        tfPartialPayment: 131072,
+        tfLimitQuality: 65536,
+        tfNoDirectRipple: 1048576
+      };
+
+      const Flags = PaymentFlags.tfPartialPayment;
+
+      let Amount, SendMax, DeliverMin;
+
+      SendMax = {
         currency: curr1.currency,
         issuer: curr1.issuer,
         value: amount.toString()
       };
-      TakerPays = {
+      Amount = {
         currency: curr2.currency,
         issuer: curr2.issuer,
         value: value.toString()
       };
-      // }
 
-      const OfferCreate = {
-        tfPassive: 0x00010000,
-        tfImmediateOrCancel: 0x00020000,
-        tfFillOrKill: 0x00040000,
-        tfSell: 0x00080000
-      };
-
-      //const Flags = OfferCreate.tfSell | OfferCreate.tfImmediateOrCancel;
-      const Flags = OfferCreate.tfImmediateOrCancel;
-
-      const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
-
-      let memoData = `Create offer via https://xrpl.to`;
-      if (Flags & OfferCreate.tfImmediateOrCancel) {
-        memoData = `Token Exchange via https://xrpl.to`;
+      if (SendMax.currency === 'XRP') {
+        SendMax = new Decimal(SendMax.value).mul(1000000).toString();
       }
+      if (Amount.currency === 'XRP') {
+        Amount = new Decimal(Amount.value).mul(1000000).toString();
+      }
+
+      // Calculate slippage amounts
+      const slippageDecimal = new Decimal(slippage).div(100);
+
+      // DeliverMin is Amount minus slippage tolerance
+      if (typeof Amount === 'object') {
+        DeliverMin = {
+          currency: Amount.currency,
+          issuer: Amount.issuer,
+          value: new Decimal(Amount.value).mul(new Decimal(1).sub(slippageDecimal)).toString()
+        };
+      } else {
+        // For XRP amounts (strings)
+        DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toString();
+      }
+
+      let memoData = `Swap via https://xrpl.to`;
 
       switch (wallet_type) {
         case 'xaman':
           setLoading(true);
-          const res = await axios.post(`${BASE_URL}/offer/create`, body);
+          setTransactionType('Payment'); // Set correct transaction type for swaps
+          const body = {
+            TransactionType: 'Payment',
+            Account,
+            Destination: Account,
+            Amount,
+            DeliverMin,
+            SendMax,
+            Flags,
+            user_token,
+            Fee: '12',
+            SourceTag: 93339333
+          };
+
+          const res = await axios.post(`${BASE_URL}/offer/payment`, {
+            ...body,
+            Memos: configureMemos('', '', memoData)
+          });
 
           if (res.status === 200) {
             const uuid = res.data.data.uuid;
@@ -703,35 +916,39 @@ const Swap = ({ token }) => {
         case 'gem':
           isInstalled().then(async (response) => {
             if (response.result.isInstalled) {
-              if (TakerGets.currency === 'XRP') {
-                TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
-              }
-
-              if (TakerPays.currency === 'XRP') {
-                TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
-              }
-              let offerTxData = {
-                TransactionType: 'OfferCreate',
+              let paymentTxData = {
+                TransactionType: 'Payment',
                 Account,
+                Destination: Account,
+                Amount,
+                DeliverMin,
+                SendMax,
                 Flags,
-                TakerGets,
-                TakerPays,
+                Fee: '12',
+                SourceTag: 93339333,
                 Memos: configureMemos('', '', memoData)
               };
 
               dispatch(updateProcess(1));
 
               await submitTransaction({
-                transaction: offerTxData
+                transaction: paymentTxData
               }).then(({ type, result }) => {
                 if (type == 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
+                  setTimeout(() => {
+                    setSync(sync + 1);
+                    dispatch(updateProcess(0));
+                  }, 1500);
+                  setSwapped(!isSwapped);
+                  enqueueSnackbar('Swap completed successfully!', { variant: 'success' });
+                  // Clear amounts after successful swap
+                  setAmount1('');
+                  setAmount2('');
                 } else {
                   dispatch(updateProcess(3));
                 }
-
-                setSwapped(!isSwapped);
               });
             } else {
               enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
@@ -739,33 +956,37 @@ const Swap = ({ token }) => {
           });
           break;
         case 'crossmark':
-          if (TakerGets.currency === 'XRP') {
-            TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
-          }
-
-          if (TakerPays.currency === 'XRP') {
-            TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
-          }
-          let offerTxData = {
-            TransactionType: 'OfferCreate',
+          let paymentTxData = {
+            TransactionType: 'Payment',
             Account,
+            Destination: Account,
+            Amount,
+            DeliverMin,
+            SendMax,
             Flags,
-            TakerGets,
-            TakerPays,
+            Fee: '12',
+            SourceTag: 93339333,
             Memos: configureMemos('', '', memoData)
           };
 
           dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(offerTxData).then(({ response }) => {
+          await sdk.methods.signAndSubmitAndWait(paymentTxData).then(({ response }) => {
             if (response.data.meta.isSuccess) {
               dispatch(updateProcess(2));
               dispatch(updateTxHash(response.data.resp.result?.hash));
+              setTimeout(() => {
+                setSync(sync + 1);
+                dispatch(updateProcess(0));
+              }, 1500);
+              setSwapped(!isSwapped);
+              enqueueSnackbar('Swap completed successfully!', { variant: 'success' });
+              // Clear amounts after successful swap
+              setAmount1('');
+              setAmount2('');
             } else {
               dispatch(updateProcess(3));
             }
-            setSwapped(!isSwapped);
           });
-          // }
           break;
       }
     } catch (err) {
@@ -828,6 +1049,18 @@ const Swap = ({ token }) => {
   };
 
   const handlePlaceOrder = (e) => {
+    // First check if trustlines are missing
+    if (!hasTrustline1 && curr1.currency !== 'XRP') {
+      const displayName = getCurrencyDisplayName(curr1.currency, token1?.name);
+      openSnackbar(`Please set trustline for ${displayName} first`, 'error');
+      return;
+    }
+    if (!hasTrustline2 && curr2.currency !== 'XRP') {
+      const displayName = getCurrencyDisplayName(curr2.currency, token2?.name);
+      openSnackbar(`Please set trustline for ${displayName} first`, 'error');
+      return;
+    }
+
     const fAmount = Number(amount);
     const fValue = Number(value);
     if (fAmount > 0 && fValue > 0) onOfferCreateXumm();
@@ -858,20 +1091,18 @@ const Swap = ({ token }) => {
 
   const onRevertExchange = () => {
     setRevert(!revert);
-    /*
-        
-        const newToken1 = {...token2};
-        const newToken2 = {...token1};
-        setToken1(newToken1);
-        setToken2(newToken2);
-        setAmount1(amount1);
-        setAmount2(amount2);
-
-        */
   };
 
   const handleMsg = () => {
     if (isProcessing == 1) return 'Pending Exchanging';
+    if (!hasTrustline1 && curr1.currency !== 'XRP') {
+      const displayName = getCurrencyDisplayName(curr1.currency, token1?.name);
+      return `Set trustline for ${displayName} first`;
+    }
+    if (!hasTrustline2 && curr2.currency !== 'XRP') {
+      const displayName = getCurrencyDisplayName(curr2.currency, token2?.name);
+      return `Set trustline for ${displayName} first`;
+    }
     if (!amount1 || !amount2) return 'Enter an Amount';
     else if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
     else return 'Exchange';
@@ -880,6 +1111,109 @@ const Swap = ({ token }) => {
   const onFillMax = () => {
     // The MAX button is always for the top input (amount1) which shows curr1.value
     if (accountPairBalance?.curr1.value > 0) setAmount1(accountPairBalance?.curr1.value);
+  };
+
+  // Add trustline creation function
+  const onCreateTrustline = async (currency) => {
+    if (!accountProfile || !accountProfile.account) return;
+
+    try {
+      const Account = accountProfile.account;
+      const user_token = accountProfile.user_token;
+      const wallet_type = accountProfile.wallet_type;
+
+      const Flags = 0x00020000; // Standard trustline flag
+      let LimitAmount = {};
+      LimitAmount.issuer = currency.issuer;
+      LimitAmount.currency = currency.currency;
+      LimitAmount.value = '1000000000'; // Set a high trust limit
+
+      switch (wallet_type) {
+        case 'xaman':
+          setLoading(true);
+          setTransactionType('TrustSet'); // Set correct transaction type
+          const body = { LimitAmount, Flags, user_token };
+          const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
+
+          if (res.status === 200) {
+            const uuid = res.data.data.uuid;
+            const qrlink = res.data.data.qrUrl;
+            const nextlink = res.data.data.next;
+
+            setUuid(uuid);
+            setQrUrl(qrlink);
+            setNextUrl(nextlink);
+            setOpenScanQR(true);
+          }
+          break;
+
+        case 'gem':
+          isInstalled().then(async (response) => {
+            if (response.result.isInstalled) {
+              const trustSet = {
+                flags: Flags,
+                limitAmount: LimitAmount
+              };
+
+              dispatch(updateProcess(1));
+              await setTrustline(trustSet).then(({ type, result }) => {
+                if (type == 'response') {
+                  dispatch(updateProcess(2));
+                  dispatch(updateTxHash(result?.hash));
+                  setTimeout(() => {
+                    setSync(sync + 1);
+                  }, 1500);
+                  enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
+                } else {
+                  dispatch(updateProcess(3));
+                  enqueueSnackbar('Failed to create trustline', { variant: 'error' });
+                }
+              });
+            } else {
+              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
+            }
+          });
+          break;
+
+        case 'crossmark':
+          const trustSet = {
+            Flags: Flags,
+            LimitAmount: LimitAmount
+          };
+
+          dispatch(updateProcess(1));
+          await sdk.methods
+            .signAndSubmitAndWait({
+              ...trustSet,
+              Account: accountProfile.account,
+              TransactionType: 'TrustSet'
+            })
+            .then(({ response }) => {
+              if (response.data.meta.isSuccess) {
+                dispatch(updateProcess(2));
+                dispatch(updateTxHash(response.data.resp.result?.hash));
+                setTimeout(() => {
+                  setSync(sync + 1);
+                }, 1500);
+                enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
+              } else {
+                dispatch(updateProcess(3));
+                enqueueSnackbar('Failed to create trustline', { variant: 'error' });
+              }
+            });
+          break;
+      }
+    } catch (err) {
+      console.log('Trustline creation error:', err);
+      dispatch(updateProcess(0));
+      enqueueSnackbar(
+        `Failed to create trustline: ${
+          err.response?.data?.message || err.message || 'Unknown error'
+        }`,
+        { variant: 'error' }
+      );
+    }
+    setLoading(false);
   };
 
   return (
@@ -1025,6 +1359,78 @@ const Swap = ({ token }) => {
               />
             </IconButton>
           </ToggleContent>
+
+          {/* Add slippage control */}
+          <Box sx={{ px: 2, py: 1 }}>
+            <Stack direction="row" alignItems="center" justifyContent="space-between">
+              <Typography variant="body2" color="textSecondary">
+                Slippage tolerance
+              </Typography>
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                {[1, 3, 5].map((preset) => (
+                  <Button
+                    key={preset}
+                    size="small"
+                    variant={slippage === preset ? 'contained' : 'text'}
+                    onClick={() => setSlippage(preset)}
+                    sx={{ minWidth: '36px', height: '28px', fontSize: '0.75rem' }}
+                  >
+                    {preset}%
+                  </Button>
+                ))}
+                <Input
+                  value={slippage}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (
+                      val === '' ||
+                      (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 50)
+                    ) {
+                      setSlippage(val === '' ? 0 : parseFloat(val));
+                    }
+                  }}
+                  disableUnderline
+                  sx={{
+                    width: '45px',
+                    input: {
+                      fontSize: '0.75rem',
+                      textAlign: 'center',
+                      padding: '4px 6px',
+                      border: '1px solid rgba(0,0,0,0.2)',
+                      borderRadius: '4px'
+                    }
+                  }}
+                />
+                <Typography variant="caption">%</Typography>
+              </Stack>
+            </Stack>
+          </Box>
+
+          {/* Add trustline warning */}
+          {((!hasTrustline1 && curr1.currency !== 'XRP') ||
+            (!hasTrustline2 && curr2.currency !== 'XRP')) && (
+            <Box sx={{ px: 2, py: 1 }}>
+              <Alert severity="warning" sx={{ mb: 1 }}>
+                <AlertTitle>Missing Trustline</AlertTitle>
+                You need to set a trustline for{' '}
+                {!hasTrustline1 && curr1.currency !== 'XRP'
+                  ? getCurrencyDisplayName(curr1.currency, token1?.name)
+                  : getCurrencyDisplayName(curr2.currency, token2?.name)}
+                <Button
+                  size="small"
+                  onClick={() => {
+                    const missingCurrency =
+                      !hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2;
+                    onCreateTrustline(missingCurrency);
+                  }}
+                  disabled={isProcessing === 1}
+                  sx={{ ml: 1 }}
+                >
+                  {isProcessing === 1 ? 'Setting...' : 'Set Trustline'}
+                </Button>
+              </Alert>
+            </Box>
+          )}
         </ConverterFrame>
       </OverviewWrapper>
 
@@ -1044,7 +1450,17 @@ const Swap = ({ token }) => {
 
       <Stack sx={{ width: '100%' }}>
         {accountProfile && accountProfile.account ? (
-          <ExchangeButton variant="contained" onClick={handlePlaceOrder} sx={{ mt: 0 }}>
+          <ExchangeButton
+            variant="contained"
+            onClick={handlePlaceOrder}
+            sx={{ mt: 0 }}
+            disabled={
+              !canPlaceOrder ||
+              isProcessing == 1 ||
+              (!hasTrustline1 && curr1.currency !== 'XRP') ||
+              (!hasTrustline2 && curr2.currency !== 'XRP')
+            }
+          >
             {handleMsg()}
           </ExchangeButton>
         ) : (
@@ -1054,7 +1470,7 @@ const Swap = ({ token }) => {
 
       <QRDialog
         open={openScanQR}
-        type="OfferCreate"
+        type={transactionType}
         onClose={handleScanQRClose}
         qrUrl={qrUrl}
         nextUrl={nextUrl}
