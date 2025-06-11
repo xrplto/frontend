@@ -34,7 +34,7 @@ const LowhighBarSlider = styled(Slider)(({ theme }) => ({
     height: 6,
     background: `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.primary.main}, ${theme.palette.info.main})`,
     borderRadius: '3px',
-    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}`
+    boxShadow: `0 1px 4px ${alpha(theme.palette.primary.main, 0.25)}`
   },
   '& .MuiSlider-rail': {
     height: 6,
@@ -48,18 +48,18 @@ const LowhighBarSlider = styled(Slider)(({ theme }) => ({
     opacity: 1
   },
   '& .MuiSlider-thumb': {
-    height: 18,
-    width: 18,
+    height: 16,
+    width: 16,
     background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${alpha(
       theme.palette.background.paper,
       0.9
     )} 100%)`,
     border: `2px solid ${theme.palette.primary.main}`,
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.25)}`,
+    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}`,
     backdropFilter: 'blur(10px)',
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     '&:focus, &:hover, &.Mui-active, &.Mui-focusVisible': {
-      boxShadow: `0 0 0 8px ${alpha(theme.palette.primary.main, 0.12)}, 0 4px 16px ${alpha(
+      boxShadow: `0 0 0 6px ${alpha(theme.palette.primary.main, 0.12)}, 0 2px 12px ${alpha(
         theme.palette.primary.main,
         0.3
       )}`,
@@ -70,34 +70,7 @@ const LowhighBarSlider = styled(Slider)(({ theme }) => ({
     }
   },
   '& .MuiSlider-valueLabel': {
-    lineHeight: 1.2,
-    fontSize: 11,
-    background: 'unset',
-    padding: '4px 8px',
-    width: 'auto',
-    height: 'auto',
-    borderRadius: '6px',
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.95)} 0%, ${alpha(
-      theme.palette.primary.main,
-      0.85
-    )} 100%)`,
-    backdropFilter: 'blur(10px)',
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-    color: theme.palette.primary.contrastText,
-    fontWeight: 500,
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.25)}`,
-    transformOrigin: 'bottom center',
-    transform: 'translateY(-100%) scale(0)',
-    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-    '&:before': {
-      display: 'none'
-    },
-    '&.MuiSlider-valueLabelOpen': {
-      transform: 'translateY(-100%) scale(1)'
-    },
-    '& > *': {
-      transform: 'none'
-    }
+    display: 'none'
   }
 }));
 
@@ -123,51 +96,46 @@ export default function LowHighBar24H({ token, sx = {} }) {
     <Stack
       direction="row"
       alignItems="center"
-      spacing={1.5}
+      spacing={1}
       sx={{
-        py: 1,
-        px: { xs: 1.5, sm: 2 },
-        borderRadius: '12px',
+        py: 0.75,
+        px: 1,
+        borderRadius: '6px',
         background: `linear-gradient(135deg, ${alpha(
           theme.palette.background.paper,
-          0.8
-        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-        backdropFilter: 'blur(10px)',
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
-        boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
-        position: 'relative',
-        overflow: 'hidden',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '1px',
-          background: `linear-gradient(90deg, ${alpha(theme.palette.success.main, 0.6)}, ${alpha(
-            theme.palette.primary.main,
-            0.6
-          )}, ${alpha(theme.palette.info.main, 0.6)})`,
-          opacity: 0.8
-        },
+          0.6
+        )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+        backdropFilter: 'blur(8px)',
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        boxShadow: `0 1px 4px ${alpha(theme.palette.common.black, 0.04)}`,
         ...sx
       }}
     >
-      <Typography
-        variant="caption"
+      <Box
         sx={{
-          minWidth: 'max-content',
-          fontSize: '0.75rem',
-          fontWeight: 500,
-          color: alpha(theme.palette.text.secondary, 0.9)
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          minWidth: 'fit-content'
         }}
       >
-        Low:{' '}
-        <Box
-          component="span"
+        <Typography
+          variant="caption"
           sx={{
-            color: theme.palette.success.main,
-            fontWeight: 600
+            fontSize: '0.625rem',
+            fontWeight: 500,
+            color: alpha(theme.palette.text.secondary, 0.8),
+            mb: 0.125
+          }}
+        >
+          Low
+        </Typography>
+        <Typography
+          variant="caption"
+          sx={{
+            fontSize: '0.65rem',
+            fontWeight: 600,
+            color: theme.palette.success.main
           }}
         >
           <NumberTooltip
@@ -176,33 +144,53 @@ export default function LowHighBar24H({ token, sx = {} }) {
               Decimal.mul(Decimal.mul(min, metrics.USD), 1 / metrics[activeFiatCurrency])
             )}
           />
-        </Box>
-      </Typography>
+        </Typography>
+      </Box>
 
-      <Box sx={{ flexGrow: 1, px: 1 }}>
+      <Box sx={{ flexGrow: 1, px: 0.75 }}>
         <LowhighBarSlider
-          valueLabelDisplay="auto"
-          aria-label="Low High Bar Slider"
+          aria-label="24h Price Range"
           value={percent}
-          sx={{ mt: 0.5 }}
+          disabled
+          sx={{
+            mt: 0.25,
+            '& .MuiSlider-thumb': {
+              '&:hover, &.Mui-focusVisible': {
+                boxShadow: `0 0 0 6px ${alpha(
+                  theme.palette.primary.main,
+                  0.12
+                )}, 0 2px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+              }
+            }
+          }}
         />
       </Box>
 
-      <Typography
-        variant="caption"
+      <Box
         sx={{
-          minWidth: 'max-content',
-          fontSize: '0.75rem',
-          fontWeight: 500,
-          color: alpha(theme.palette.text.secondary, 0.9)
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          minWidth: 'fit-content'
         }}
       >
-        High:{' '}
-        <Box
-          component="span"
+        <Typography
+          variant="caption"
           sx={{
-            color: theme.palette.info.main,
-            fontWeight: 600
+            fontSize: '0.625rem',
+            fontWeight: 500,
+            color: alpha(theme.palette.text.secondary, 0.8),
+            mb: 0.125
+          }}
+        >
+          High
+        </Typography>
+        <Typography
+          variant="caption"
+          sx={{
+            fontSize: '0.65rem',
+            fontWeight: 600,
+            color: theme.palette.info.main
           }}
         >
           <NumberTooltip
@@ -211,8 +199,8 @@ export default function LowHighBar24H({ token, sx = {} }) {
               Decimal.mul(Decimal.mul(max, metrics.USD), 1 / metrics[activeFiatCurrency])
             )}
           />
-        </Box>
-      </Typography>
+        </Typography>
+      </Box>
     </Stack>
   );
 }

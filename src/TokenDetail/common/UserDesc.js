@@ -436,9 +436,25 @@ export default function UserDesc({ token }) {
     }
   }, [tags, id]);
 
+  const statsData = [
+    {
+      label: 'Market Cap',
+      value: `${currencySymbols[activeFiatCurrency]} ${fNumber(convertedMarketCap)}`,
+      color: theme.palette.info.main
+    },
+    {
+      label: 'Volume (24h)',
+      value: volume,
+      color: theme.palette.warning.main,
+      subValue: `${name}`
+    },
+    { label: 'Vol/Market', value: fNumber(voldivmarket), color: theme.palette.warning.main },
+    { label: 'Circ. Supply', value: circulatingSupply, color: theme.palette.primary.main }
+  ];
+
   return (
     <Stack
-      spacing={1}
+      spacing={1.5}
       sx={{
         p: 1.5,
         borderRadius: '12px',
@@ -471,8 +487,8 @@ export default function UserDesc({ token }) {
       <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
 
       {/* Header Row - Token Info + Actions */}
-      <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
+      <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between">
+        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
           {/* Avatar */}
           {isAdmin ? (
             <div>
@@ -512,9 +528,9 @@ export default function UserDesc({ token }) {
                 alt={`${user} ${name} Logo`}
                 src={imgUrl}
                 sx={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '10px',
+                  width: 56,
+                  height: 56,
+                  borderRadius: '12px',
                   border: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
                   boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
                 }}
@@ -530,23 +546,47 @@ export default function UserDesc({ token }) {
           )}
 
           {/* Token Name & Info */}
-          <Stack spacing={0} sx={{ flex: 1, minWidth: 0 }}>
-            <Typography
-              variant="h6"
-              sx={{
-                fontSize: '1rem',
-                fontWeight: 700,
-                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                letterSpacing: '-0.01em',
-                lineHeight: 1.2
-              }}
-            >
-              {name}
-            </Typography>
-            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ minWidth: 0 }}>
+          <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontSize: '1.125rem',
+                  fontWeight: 700,
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  letterSpacing: '-0.01em',
+                  lineHeight: 1.2
+                }}
+              >
+                {name}
+              </Typography>
+
+              <Tooltip title={`Rank by 24h Volume: #${id}`}>
+                <Chip
+                  label={`#${id}`}
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                  sx={{
+                    borderRadius: '6px',
+                    height: '22px',
+                    fontSize: '0.7rem',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.primary.main,
+                      0.08
+                    )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                    backdropFilter: 'blur(10px)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    fontWeight: 600
+                  }}
+                />
+              </Tooltip>
+            </Stack>
+
+            <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
               <Typography
                 variant="body2"
                 color="text.secondary"
@@ -556,14 +596,14 @@ export default function UserDesc({ token }) {
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                  maxWidth: '150px'
+                  maxWidth: '120px'
                 }}
               >
                 {user}
               </Typography>
 
               {/* Badges Row */}
-              <Stack direction="row" spacing={0.25} alignItems="center">
+              <Stack direction="row" spacing={0.5} alignItems="center">
                 <Box
                   sx={{
                     p: 0.25,
@@ -638,36 +678,12 @@ export default function UserDesc({ token }) {
       {/* Stats Chips Row */}
       <Box
         sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 0.5,
-          width: '100%',
-          '& > *': {
-            flex: '1 1 auto',
-            minWidth: 'fit-content'
-          }
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 0.75,
+          width: '100%'
         }}
       >
-        <Tooltip title={<Typography variant="body2">Rank by 24h Volume.</Typography>}>
-          <Chip
-            label={`#${id}`}
-            color="primary"
-            variant="outlined"
-            size="small"
-            sx={{
-              borderRadius: '6px',
-              height: '24px',
-              fontSize: '0.75rem',
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.primary.main,
-                0.08
-              )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-              backdropFilter: 'blur(10px)',
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-              fontWeight: 600
-            }}
-          />
-        </Tooltip>
         <Chip
           label={`${fNumberWithSuffix(holders)} H`}
           color="error"
@@ -675,7 +691,7 @@ export default function UserDesc({ token }) {
           size="small"
           sx={{
             borderRadius: '6px',
-            height: '24px',
+            height: '28px',
             fontSize: '0.75rem',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.error.main,
@@ -693,7 +709,7 @@ export default function UserDesc({ token }) {
           size="small"
           sx={{
             borderRadius: '6px',
-            height: '24px',
+            height: '28px',
             fontSize: '0.75rem',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.warning.main,
@@ -711,7 +727,7 @@ export default function UserDesc({ token }) {
           size="small"
           sx={{
             borderRadius: '6px',
-            height: '24px',
+            height: '28px',
             fontSize: '0.75rem',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.secondary.main,
@@ -729,7 +745,7 @@ export default function UserDesc({ token }) {
           size="small"
           sx={{
             borderRadius: '6px',
-            height: '24px',
+            height: '28px',
             fontSize: '0.75rem',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.info.main,
@@ -769,149 +785,81 @@ export default function UserDesc({ token }) {
             boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`
           }}
         >
-          <Grid container spacing={1}>
-            <Grid item xs={6}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 1.5
+            }}
+          >
+            {statsData.map((stat, index) => (
+              <Stack
+                key={stat.label}
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+              >
                 <Stack direction="row" alignItems="center" gap={0.5}>
                   <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
-                    Market Cap
+                    {stat.label}
                   </Typography>
-                  <Tooltip
-                    title={
-                      <Typography variant="body2">
-                        The total market value of a token's circulating supply represents its
-                        overall worth.
-                      </Typography>
-                    }
-                  >
-                    <Icon icon={infoFilled} width={12} height={12} />
-                  </Tooltip>
+                  {stat.label === 'Market Cap' && (
+                    <Tooltip
+                      title={
+                        <Typography variant="body2">
+                          The total market value of a token's circulating supply represents its
+                          overall worth.
+                        </Typography>
+                      }
+                    >
+                      <Icon icon={infoFilled} width={12} height={12} />
+                    </Tooltip>
+                  )}
+                  {stat.label === 'Volume (24h)' && (
+                    <Tooltip
+                      title={
+                        <Typography variant="body2">
+                          Trading volume of {name} within the past 24 hours.
+                        </Typography>
+                      }
+                    >
+                      <Icon icon={infoFilled} width={12} height={12} />
+                    </Tooltip>
+                  )}
+                  {stat.label === 'Circ. Supply' && (
+                    <Tooltip
+                      title={
+                        <Typography variant="body2">
+                          The number of tokens in circulation within the market.
+                        </Typography>
+                      }
+                    >
+                      <Icon icon={infoFilled} width={12} height={12} />
+                    </Tooltip>
+                  )}
                 </Stack>
                 <Box
                   sx={{
                     px: 1,
                     py: 0.25,
                     borderRadius: '4px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.info.main,
-                      0.08
-                    )} 0%, ${alpha(theme.palette.info.main, 0.04)} 100%)`,
-                    border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`
+                    background: `linear-gradient(135deg, ${alpha(stat.color, 0.08)} 0%, ${alpha(
+                      stat.color,
+                      0.04
+                    )} 100%)`,
+                    border: `1px solid ${alpha(stat.color, 0.1)}`
                   }}
                 >
                   <Typography
                     variant="caption"
-                    sx={{ color: theme.palette.info.main, fontWeight: 600, fontSize: '0.75rem' }}
+                    sx={{ color: stat.color, fontWeight: 600, fontSize: '0.75rem' }}
                   >
-                    {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
+                    {stat.value}
                   </Typography>
                 </Box>
               </Stack>
-            </Grid>
-
-            <Grid item xs={6}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Stack direction="row" alignItems="center" gap={0.5}>
-                  <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
-                    Volume (24h)
-                  </Typography>
-                  <Tooltip
-                    title={
-                      <Typography variant="body2">
-                        Trading volume of {name} within the past 24 hours.
-                      </Typography>
-                    }
-                  >
-                    <Icon icon={infoFilled} width={12} height={12} />
-                  </Tooltip>
-                </Stack>
-                <Box
-                  sx={{
-                    px: 1,
-                    py: 0.25,
-                    borderRadius: '4px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.warning.main,
-                      0.08
-                    )} 0%, ${alpha(theme.palette.warning.main, 0.04)} 100%)`,
-                    border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{ color: theme.palette.warning.main, fontWeight: 600, fontSize: '0.75rem' }}
-                  >
-                    {volume}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Grid>
-
-            <Grid item xs={6}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
-                  Vol/Market
-                </Typography>
-                <Box
-                  sx={{
-                    px: 1,
-                    py: 0.25,
-                    borderRadius: '4px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.warning.main,
-                      0.08
-                    )} 0%, ${alpha(theme.palette.warning.main, 0.04)} 100%)`,
-                    border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{ color: theme.palette.warning.main, fontWeight: 600, fontSize: '0.75rem' }}
-                  >
-                    {fNumber(voldivmarket)}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Grid>
-
-            <Grid item xs={6}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Stack direction="row" alignItems="center" gap={0.5}>
-                  <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
-                    Circ. Supply
-                  </Typography>
-                  <Tooltip
-                    title={
-                      <Typography variant="body2">
-                        The number of tokens in circulation within the market.
-                      </Typography>
-                    }
-                  >
-                    <Icon icon={infoFilled} width={12} height={12} />
-                  </Tooltip>
-                </Stack>
-                <Box
-                  sx={{
-                    px: 1,
-                    py: 0.25,
-                    borderRadius: '4px',
-                    background: `linear-gradient(135deg, ${alpha(
-                      theme.palette.primary.main,
-                      0.08
-                    )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{ color: theme.palette.primary.main, fontWeight: 600, fontSize: '0.75rem' }}
-                  >
-                    {circulatingSupply}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Grid>
-          </Grid>
+            ))}
+          </Box>
         </Box>
       )}
 
@@ -967,7 +915,7 @@ export default function UserDesc({ token }) {
                       label={tag}
                       onClick={handleDelete}
                       sx={{
-                        height: '20px',
+                        height: '22px',
                         fontSize: '0.7rem',
                         borderRadius: '4px',
                         background: `linear-gradient(135deg, ${alpha(
@@ -998,7 +946,7 @@ export default function UserDesc({ token }) {
                   size="small"
                   onClick={() => toggleTagsDrawer(true)}
                   sx={{
-                    height: '20px',
+                    height: '22px',
                     fontSize: '0.7rem',
                     borderRadius: '4px',
                     background: `linear-gradient(135deg, ${alpha(
@@ -1086,7 +1034,7 @@ export default function UserDesc({ token }) {
                     label={domain}
                     size="small"
                     sx={{
-                      height: '24px',
+                      height: '26px',
                       fontSize: '0.7rem',
                       borderRadius: '6px',
                       background: `linear-gradient(135deg, ${alpha(
