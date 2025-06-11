@@ -130,7 +130,7 @@ export default function ExtraDesc({ token }) {
           : '(Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'
       }.`,
       admin: isAdmin && (
-        <FormGroup sx={{ ml: 0.25 }}>
+        <FormGroup sx={{ ml: 0.125 }}>
           <FormControlLabel
             control={
               <Checkbox
@@ -139,7 +139,7 @@ export default function ExtraDesc({ token }) {
                 onClick={onChangeMarketCalculation}
                 inputProps={{ 'aria-label': 'controlled' }}
                 sx={{
-                  p: 0.125,
+                  p: 0.0625,
                   color: theme.palette.success.main,
                   '&.Mui-checked': {
                     color: theme.palette.success.main
@@ -151,7 +151,7 @@ export default function ExtraDesc({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontSize: '0.65rem',
+                  fontSize: '0.55rem',
                   color: alpha(theme.palette.text.secondary, 0.8)
                 }}
               >
@@ -186,15 +186,15 @@ export default function ExtraDesc({ token }) {
   return (
     <Box
       sx={{
-        p: 1,
-        borderRadius: '8px',
+        p: 0.75,
+        borderRadius: '6px',
         background: `linear-gradient(135deg, ${alpha(
           theme.palette.background.paper,
           0.8
         )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-        backdropFilter: 'blur(10px)',
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
-        boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
+        backdropFilter: 'blur(8px)',
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.06)}`,
+        boxShadow: `0 1px 6px ${alpha(theme.palette.common.black, 0.03)}`,
         position: 'relative',
         overflow: 'hidden',
         '&::before': {
@@ -204,11 +204,11 @@ export default function ExtraDesc({ token }) {
           left: 0,
           right: 0,
           height: '1px',
-          background: `linear-gradient(90deg, ${alpha(theme.palette.success.main, 0.6)}, ${alpha(
+          background: `linear-gradient(90deg, ${alpha(theme.palette.success.main, 0.5)}, ${alpha(
             theme.palette.primary.main,
-            0.6
-          )}, ${alpha(theme.palette.info.main, 0.6)})`,
-          opacity: 0.8
+            0.5
+          )}, ${alpha(theme.palette.info.main, 0.5)})`,
+          opacity: 0.7
         }
       }}
     >
@@ -216,22 +216,22 @@ export default function ExtraDesc({ token }) {
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-          gap: 1
+          gap: 0.75
         }}
       >
         {metrics_data.map((metric, index) => (
           <Box
             key={metric.title}
             sx={{
-              p: 1,
-              borderRadius: '6px',
+              p: 0.75,
+              borderRadius: '4px',
               background: `linear-gradient(135deg, ${alpha(metric.color, 0.08)} 0%, ${alpha(
                 metric.color,
                 0.04
               )} 100%)`,
-              backdropFilter: 'blur(8px)',
-              border: `1px solid ${alpha(metric.color, 0.15)}`,
-              boxShadow: `0 1px 4px ${alpha(metric.color, 0.1)}`,
+              backdropFilter: 'blur(6px)',
+              border: `1px solid ${alpha(metric.color, 0.12)}`,
+              boxShadow: `0 1px 3px ${alpha(metric.color, 0.08)}`,
               height: '100%',
               display: 'flex',
               flexDirection: 'column',
@@ -239,15 +239,15 @@ export default function ExtraDesc({ token }) {
               transition: 'all 0.2s ease',
               '&:hover': {
                 transform: 'translateY(-1px)',
-                boxShadow: `0 2px 8px ${alpha(metric.color, 0.2)}`
+                boxShadow: `0 2px 6px ${alpha(metric.color, 0.15)}`
               }
             }}
           >
-            <Stack direction="row" alignItems="center" gap={0.25} sx={{ mb: 0.5 }}>
+            <Stack direction="row" alignItems="center" gap={0.125} sx={{ mb: 0.25 }}>
               <Typography
                 variant="body2"
                 sx={{
-                  fontSize: '0.65rem',
+                  fontSize: '0.55rem',
                   color: alpha(theme.palette.text.secondary, 0.9),
                   fontWeight: 500
                 }}
@@ -256,7 +256,7 @@ export default function ExtraDesc({ token }) {
               </Typography>
               <Tooltip
                 title={
-                  <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
+                  <Typography variant="body2" sx={{ fontSize: '0.65rem' }}>
                     {metric.tooltip}
                   </Typography>
                 }
@@ -267,10 +267,11 @@ export default function ExtraDesc({ token }) {
                         theme.palette.background.paper,
                         0.95
                       )} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
-                      backdropFilter: 'blur(20px)',
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                      borderRadius: '6px',
-                      boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.15)}`,
+                      backdropFilter: 'blur(16px)',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                      borderRadius: '4px',
+                      boxShadow: `0 2px 12px ${alpha(theme.palette.common.black, 0.12)}`,
+                      p: 0.75,
                       '& .MuiTooltip-arrow': {
                         color: alpha(theme.palette.background.paper, 0.9)
                       }
@@ -278,7 +279,7 @@ export default function ExtraDesc({ token }) {
                   }
                 }}
               >
-                <Icon icon={infoFilled} width={10} height={10} style={{ color: metric.color }} />
+                <Icon icon={infoFilled} width={8} height={8} style={{ color: metric.color }} />
               </Tooltip>
               {metric.admin}
             </Stack>
@@ -287,7 +288,7 @@ export default function ExtraDesc({ token }) {
               {metric.subValue ? (
                 <Tooltip
                   title={
-                    <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.65rem' }}>
                       {metric.subValue}
                     </Typography>
                   }
@@ -298,10 +299,11 @@ export default function ExtraDesc({ token }) {
                           theme.palette.background.paper,
                           0.95
                         )} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
-                        backdropFilter: 'blur(20px)',
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                        borderRadius: '6px',
-                        boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.15)}`,
+                        backdropFilter: 'blur(16px)',
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                        borderRadius: '4px',
+                        boxShadow: `0 2px 12px ${alpha(theme.palette.common.black, 0.12)}`,
+                        p: 0.75,
                         '& .MuiTooltip-arrow': {
                           color: alpha(theme.palette.background.paper, 0.9)
                         }
@@ -312,7 +314,7 @@ export default function ExtraDesc({ token }) {
                   <Typography
                     variant="h6"
                     sx={{
-                      fontSize: '0.875rem',
+                      fontSize: '0.75rem',
                       fontWeight: 700,
                       background: `linear-gradient(135deg, ${metric.color} 0%, ${alpha(
                         metric.color,
@@ -324,7 +326,7 @@ export default function ExtraDesc({ token }) {
                       letterSpacing: '0.01em',
                       textAlign: 'center',
                       cursor: 'pointer',
-                      lineHeight: 1.2
+                      lineHeight: 1.1
                     }}
                   >
                     {metric.value}
@@ -334,7 +336,7 @@ export default function ExtraDesc({ token }) {
                 <Typography
                   variant="h6"
                   sx={{
-                    fontSize: '0.875rem',
+                    fontSize: '0.75rem',
                     fontWeight: 700,
                     background: `linear-gradient(135deg, ${metric.color} 0%, ${alpha(
                       metric.color,
@@ -345,7 +347,7 @@ export default function ExtraDesc({ token }) {
                     WebkitTextFillColor: 'transparent',
                     letterSpacing: '0.01em',
                     textAlign: 'center',
-                    lineHeight: 1.2
+                    lineHeight: 1.1
                   }}
                 >
                   {metric.value}
