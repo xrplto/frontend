@@ -758,12 +758,59 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   }, [token1, amount1, token2, amount2]);
 
   useEffect(() => {
-    if (active === 'VALUE') {
-      setAmount(calcQuantity(value, active));
-    } else {
-      setValue(calcQuantity(amount, active));
+    // Only recalculate when market data changes, not when amounts change
+    if (!asks || !bids || asks.length === 0 || bids.length === 0) {
+      console.log('No market data available for calculation');
+      return;
+    }
+
+    if (active === 'VALUE' && value) {
+      const newAmount = calcQuantity(value, active);
+      console.log('Calculating amount from value:', {
+        value,
+        newAmount,
+        active,
+        bidsLength: bids.length
+      });
+      if (newAmount && newAmount !== amount) {
+        setAmount(newAmount);
+      }
+    } else if (active === 'AMOUNT' && amount) {
+      const newValue = calcQuantity(amount, active);
+      console.log('Calculating value from amount:', {
+        amount,
+        newValue,
+        active,
+        bidsLength: bids.length
+      });
+      if (newValue && newValue !== value) {
+        setValue(newValue);
+      }
     }
   }, [asks, bids, revert, active]);
+
+  // Add separate effect to trigger calculation when user types
+  useEffect(() => {
+    if (!asks || !bids || asks.length === 0 || bids.length === 0) return;
+
+    if (active === 'AMOUNT' && amount && amount !== '') {
+      const newValue = calcQuantity(amount, active);
+      if (newValue && newValue !== value) {
+        setValue(newValue);
+      }
+    }
+  }, [amount, active]);
+
+  useEffect(() => {
+    if (!asks || !bids || asks.length === 0 || bids.length === 0) return;
+
+    if (active === 'VALUE' && value && value !== '') {
+      const newAmount = calcQuantity(value, active);
+      if (newAmount && newAmount !== amount) {
+        setAmount(newAmount);
+      }
+    }
+  }, [value, active]);
 
   useEffect(() => {
     const pair = {
@@ -1055,34 +1102,62 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     let amt = 0;
     let val = 0;
 
+    console.log('calcQuantity called with:', {
+      amount,
+      active,
+      bidsLength: bids?.length,
+      asksLength: asks?.length
+    });
+
     /*
             ask: taker_gets = curr1, taker_pays = curr2
             bid: taker_gets = curr2, taker_pays = curr1
          */
     try {
       amt = new Decimal(amount).toNumber();
-    } catch (e) {}
+    } catch (e) {
+      console.log('Error parsing amount:', e);
+    }
 
-    if (amt === 0) return '';
+    if (amt === 0) {
+      console.log('Amount is 0, returning empty string');
+      return '';
+    }
+
+    if (!bids || bids.length === 0) {
+      console.log('No bids available for calculation');
+      return '';
+    }
 
     try {
       if (active === 'AMOUNT') {
+        console.log('Calculating VALUE from AMOUNT:', amt);
         for (var bid of bids) {
+          console.log('Checking bid:', { sumAmount: bid.sumAmount, sumValue: bid.sumValue });
           if (bid.sumAmount >= amt) {
             val = new Decimal(bid.sumValue).mul(amt).div(bid.sumAmount).toNumber();
+            console.log('Found matching bid, calculated value:', val);
             break;
           }
         }
       } else {
+        console.log('Calculating AMOUNT from VALUE:', amt);
         for (var bid of bids) {
+          console.log('Checking bid:', { sumAmount: bid.sumAmount, sumValue: bid.sumValue });
           if (bid.sumValue >= amt) {
             val = new Decimal(bid.sumAmount).mul(amt).div(bid.sumValue).toNumber();
+            console.log('Found matching bid, calculated amount:', val);
             break;
           }
         }
       }
-      return new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
-    } catch (e) {}
+
+      const result = new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
+      console.log('Final calculated result:', result);
+      return result;
+    } catch (e) {
+      console.log('Error in calculation:', e);
+    }
 
     return 0;
   };
@@ -1134,6 +1209,17 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
     setAmount1(value);
     setActive(revert ? 'VALUE' : 'AMOUNT');
+
+    // Immediately calculate the corresponding amount
+    if (value && value !== '' && asks && bids && bids.length > 0) {
+      const activeType = revert ? 'VALUE' : 'AMOUNT';
+      const calculatedValue = calcQuantity(value, activeType);
+      if (calculatedValue) {
+        setAmount2(calculatedValue);
+      }
+    } else if (!value || value === '') {
+      setAmount2('');
+    }
   };
 
   const handleChangeAmount2 = (e) => {
@@ -1144,6 +1230,17 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
     setAmount2(value);
     setActive(revert ? 'AMOUNT' : 'VALUE');
+
+    // Immediately calculate the corresponding amount
+    if (value && value !== '' && asks && bids && bids.length > 0) {
+      const activeType = revert ? 'AMOUNT' : 'VALUE';
+      const calculatedValue = calcQuantity(value, activeType);
+      if (calculatedValue) {
+        setAmount1(calculatedValue);
+      }
+    } else if (!value || value === '') {
+      setAmount1('');
+    }
   };
 
   const onChangeToken1 = (token) => {
