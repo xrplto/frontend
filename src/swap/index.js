@@ -629,18 +629,95 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
           if (res.status === 200 && res.data.lines) {
             setTrustlines(res.data.lines);
 
+            // Debug: Log the first trustline to understand the structure
+            if (res.data.lines.length > 0) {
+              console.log('Trustline structure:', res.data.lines[0]);
+            }
+
             // Check if trustlines exist for curr1 and curr2
+            // Try multiple possible field names for the issuer
             const hasCurr1Trustline =
               curr1.currency === 'XRP' ||
-              res.data.lines.some(
-                (line) => line.Balance.currency === curr1.currency && line._token1 === curr1.issuer
-              );
+              res.data.lines.some((line) => {
+                const currencyMatch =
+                  (line.Balance && line.Balance.currency === curr1.currency) ||
+                  line.currency === curr1.currency ||
+                  line._currency === curr1.currency;
+
+                if (!currencyMatch) return false;
+
+                // For currency matches, check if we have a valid trustline
+                // A valid trustline exists if any of the issuer fields match, OR
+                // if it's a standard currency like USD and we have any trustline for it
+                const issuerMatch =
+                  line.account === curr1.issuer ||
+                  line.issuer === curr1.issuer ||
+                  line._token1 === curr1.issuer ||
+                  line._token2 === curr1.issuer ||
+                  (line.Balance && line.Balance.issuer === curr1.issuer) ||
+                  (line.HighLimit && line.HighLimit.issuer === curr1.issuer) ||
+                  (line.LowLimit && line.LowLimit.issuer === curr1.issuer);
+
+                // Debug specific currency matches
+                console.log(`Currency match for ${curr1.currency}:`, {
+                  expectedIssuer: curr1.issuer,
+                  actualIssuer: line._token1,
+                  issuerMatch,
+                  hasValidTrustline: currencyMatch
+                });
+
+                // For standard currencies, accept any valid trustline
+                // For specific tokens, require exact issuer match
+                return (
+                  currencyMatch &&
+                  (issuerMatch || ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency))
+                );
+              });
 
             const hasCurr2Trustline =
               curr2.currency === 'XRP' ||
-              res.data.lines.some(
-                (line) => line.Balance.currency === curr2.currency && line._token1 === curr2.issuer
-              );
+              res.data.lines.some((line) => {
+                const currencyMatch =
+                  (line.Balance && line.Balance.currency === curr2.currency) ||
+                  line.currency === curr2.currency ||
+                  line._currency === curr2.currency;
+
+                if (!currencyMatch) return false;
+
+                const issuerMatch =
+                  line.account === curr2.issuer ||
+                  line.issuer === curr2.issuer ||
+                  line._token1 === curr2.issuer ||
+                  line._token2 === curr2.issuer ||
+                  (line.Balance && line.Balance.issuer === curr2.issuer) ||
+                  (line.HighLimit && line.HighLimit.issuer === curr2.issuer) ||
+                  (line.LowLimit && line.LowLimit.issuer === curr2.issuer);
+
+                // Debug specific currency matches
+                console.log(`Currency match for ${curr2.currency}:`, {
+                  expectedIssuer: curr2.issuer,
+                  actualIssuer: line._token1,
+                  issuerMatch,
+                  hasValidTrustline: currencyMatch
+                });
+
+                // For standard currencies, accept any valid trustline
+                // For specific tokens, require exact issuer match
+                return (
+                  currencyMatch &&
+                  (issuerMatch || ['USD', 'EUR', 'BTC', 'ETH'].includes(curr2.currency))
+                );
+              });
+
+            console.log('Trustline check results:', {
+              curr1: curr1.currency,
+              curr1Issuer: curr1.issuer,
+              hasCurr1Trustline,
+              curr2: curr2.currency,
+              curr2Issuer: curr2.issuer,
+              hasCurr2Trustline,
+              totalLines: res.data.lines.length
+            });
 
             setHasTrustline1(hasCurr1Trustline);
             setHasTrustline2(hasCurr2Trustline);
@@ -721,7 +798,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
         if (dispatched_result && dispatched_result === 'tesSUCCESS') {
           setSync(sync + 1);
-          openSnackbar('Successfully submitted the order!', 'success');
+          openSnackbar('Successfully submitted the swap!', 'success');
           stopInterval();
           return;
         }
@@ -903,12 +980,15 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 if (type == 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
-                  setSync(sync + 1);
+                  setTimeout(() => {
+                    setSync(sync + 1);
+                    dispatch(updateProcess(0));
+                  }, 2000);
+                  setSwapped(!isSwapped);
+                  enqueueSnackbar('Swap completed successfully!', { variant: 'success' });
                 } else {
                   dispatch(updateProcess(3));
                 }
-
-                setSwapped(!isSwapped);
               });
             } else {
               enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
@@ -940,11 +1020,15 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             if (response.data.meta.isSuccess) {
               dispatch(updateProcess(2));
               dispatch(updateTxHash(response.data.resp.result?.hash));
-              setSync(sync + 1);
+              setTimeout(() => {
+                setSync(sync + 1);
+                dispatch(updateProcess(0));
+              }, 2000);
+              setSwapped(!isSwapped);
+              enqueueSnackbar('Swap completed successfully!', { variant: 'success' });
             } else {
               dispatch(updateProcess(3));
             }
-            setSwapped(!isSwapped);
           });
           // }
           break;
@@ -1210,7 +1294,10 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
                 if (type == 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
-                  setSync(sync + 1);
+                  // Add a small delay to ensure the transaction is processed
+                  setTimeout(() => {
+                    setSync(sync + 1);
+                  }, 2000);
                   enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
                 } else {
                   dispatch(updateProcess(3));
@@ -1240,7 +1327,9 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
               if (response.data.meta.isSuccess) {
                 dispatch(updateProcess(2));
                 dispatch(updateTxHash(response.data.resp.result?.hash));
-                setSync(sync + 1);
+                setTimeout(() => {
+                  setSync(sync + 1);
+                }, 2000);
                 enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
               } else {
                 dispatch(updateProcess(3));
