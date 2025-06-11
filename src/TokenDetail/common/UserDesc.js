@@ -81,6 +81,7 @@ import ExtraButtons from './ExtraButtons';
 
 import Decimal from 'decimal.js';
 import { currencySymbols } from 'src/utils/constants';
+import { alpha } from '@mui/material/styles';
 
 const IconCover = styled('div')(
   ({ theme }) => `
@@ -436,413 +437,644 @@ export default function UserDesc({ token }) {
   }, [tags, id]);
 
   return (
-    <Stack spacing={0.5}>
+    <Stack
+      spacing={1}
+      sx={{
+        p: 1.5,
+        borderRadius: '12px',
+        background: `linear-gradient(135deg, ${alpha(
+          theme.palette.background.paper,
+          0.8
+        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+        backdropFilter: 'blur(10px)',
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+        boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '1px',
+          background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.6)}, ${alpha(
+            theme.palette.success.main,
+            0.6
+          )}, ${alpha(theme.palette.info.main, 0.6)})`,
+          opacity: 0.8
+        }
+      }}
+    >
       {editToken && <EditTokenDialog token={editToken} setToken={setEditToken} />}
 
       <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
 
-      <Stack direction="row" spacing={0.5} alignItems="center">
-        {isAdmin ? (
-          <div>
-            <IconCover>
-              <IconWrapper>
-                <IconImage src={imgUrl} />
-              </IconWrapper>
-              <IconButton
-                className="MuiIconEditButton-root"
-                aria-label="edit"
+      {/* Header Row - Token Info + Actions */}
+      <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
+          {/* Avatar */}
+          {isAdmin ? (
+            <div>
+              <IconCover>
+                <IconWrapper>
+                  <IconImage src={imgUrl} />
+                </IconWrapper>
+                <IconButton
+                  className="MuiIconEditButton-root"
+                  aria-label="edit"
+                  sx={{
+                    position: 'absolute',
+                    left: '0vw',
+                    top: '0vh',
+                    opacity: 0,
+                    zIndex: 1,
+                    width: '48px',
+                    height: '48px'
+                  }}
+                  onClick={() => setEditToken(token)}
+                >
+                  <EditIcon sx={{ width: 24, height: 24 }} />
+                </IconButton>
+                <ImageBackdrop className="MuiImageBackdrop-root" />
+                {kyc && (
+                  <KYCBadge>
+                    <Tooltip title="KYC Verified">
+                      <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 18 }} />
+                    </Tooltip>
+                  </KYCBadge>
+                )}
+              </IconCover>
+            </div>
+          ) : (
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Avatar
+                alt={`${user} ${name} Logo`}
+                src={imgUrl}
                 sx={{
-                  position: 'absolute',
-                  left: '0vw',
-                  top: '0vh',
-                  opacity: 0,
-                  zIndex: 1,
-                  width: '56px',
-                  height: '56px'
+                  width: 48,
+                  height: 48,
+                  borderRadius: '10px',
+                  border: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
                 }}
-                onClick={() => setEditToken(token)}
-              >
-                <EditIcon sx={{ width: 28, height: 28 }} />
-              </IconButton>
-              <ImageBackdrop className="MuiImageBackdrop-root" />
+              />
               {kyc && (
                 <KYCBadge>
                   <Tooltip title="KYC Verified">
-                    <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 20 }} />
+                    <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 18 }} />
                   </Tooltip>
                 </KYCBadge>
               )}
-            </IconCover>
-          </div>
-        ) : (
-          <Box sx={{ position: 'relative', zIndex: 1 }}>
-            <Avatar
-              alt={`${user} ${name} Logo`}
-              src={imgUrl}
-              sx={{
-                width: 56,
-                height: 56,
-                borderRadius: '12px'
-              }}
-            />
-            {kyc && (
-              <KYCBadge>
-                <Tooltip title="KYC Verified">
-                  <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 20 }} />
-                </Tooltip>
-              </KYCBadge>
-            )}
-          </Box>
-        )}
-        <Stack spacing={0}>
-          <Stack direction="column" spacing={0.25}>
+            </Box>
+          )}
+
+          {/* Token Name & Info */}
+          <Stack spacing={0} sx={{ flex: 1, minWidth: 0 }}>
             <Typography
-              variant="span"
-              fontWeight="700"
-              color={darkMode ? '#22B14C' : '#3366FF'}
-              alt={user}
-              fontSize="1.1rem"
+              variant="h6"
+              sx={{
+                fontSize: '1rem',
+                fontWeight: 700,
+                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '-0.01em',
+                lineHeight: 1.2
+              }}
             >
               {name}
             </Typography>
-            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ maxWidth: '100%' }}>
+            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ minWidth: 0 }}>
               <Typography
-                variant="s17"
+                variant="body2"
                 color="text.secondary"
                 sx={{
-                  fontSize: '1rem',
-                  whiteSpace: 'nowrap',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  maxWidth: '200px'
+                  whiteSpace: 'nowrap',
+                  maxWidth: '150px'
                 }}
               >
                 {user}
               </Typography>
-              <Stack direction="row" spacing={0.5} alignItems="center">
-                <Tooltip title={token.origin || 'Standard Launch'}>
-                  {getOriginIcon(token.origin)}
-                </Tooltip>
+
+              {/* Badges Row */}
+              <Stack direction="row" spacing={0.25} alignItems="center">
+                <Box
+                  sx={{
+                    p: 0.25,
+                    borderRadius: '4px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.primary.main,
+                      0.08
+                    )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  <Tooltip title={token.origin || 'Standard Launch'}>
+                    <Box sx={{ fontSize: '12px', display: 'flex' }}>
+                      {getOriginIcon(token.origin)}
+                    </Box>
+                  </Tooltip>
+                </Box>
                 {token.origin && (
                   <>
-                    <Tooltip title="Blackholed Issuer">
-                      <LockIcon sx={{ fontSize: '14px', color: '#007B55' }} />
-                    </Tooltip>
-                    <Tooltip title="Burned Liquidity Pool">
-                      <LocalFireDepartmentIcon sx={{ fontSize: '14px', color: '#B72136' }} />
-                    </Tooltip>
+                    <Box
+                      sx={{
+                        p: 0.25,
+                        borderRadius: '4px',
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.success.main,
+                          0.08
+                        )} 0%, ${alpha(theme.palette.success.main, 0.04)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <Tooltip title="Blackholed Issuer">
+                        <LockIcon sx={{ fontSize: '12px', color: theme.palette.success.main }} />
+                      </Tooltip>
+                    </Box>
+                    <Box
+                      sx={{
+                        p: 0.25,
+                        borderRadius: '4px',
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.error.main,
+                          0.08
+                        )} 0%, ${alpha(theme.palette.error.main, 0.04)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.error.main, 0.1)}`,
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <Tooltip title="Burned Liquidity Pool">
+                        <LocalFireDepartmentIcon
+                          sx={{ fontSize: '12px', color: theme.palette.error.main }}
+                        />
+                      </Tooltip>
+                    </Box>
                   </>
                 )}
               </Stack>
             </Stack>
           </Stack>
         </Stack>
-        <Grid
-          container
-          direction="row"
-          spacing={0.5}
-          justifyContent={isTablet ? 'flex-end' : 'flex-start'}
-          sx={{ ml: 'auto' }}
-        >
-          <Grid item>
-            <Watch token={token} />
-          </Grid>
-          <Grid item>
-            <Share token={token} />
-          </Grid>
-        </Grid>
+
+        {/* Action Buttons */}
+        <Stack direction="row" spacing={0.5}>
+          <Watch token={token} />
+          <Share token={token} />
+        </Stack>
       </Stack>
+
+      {/* Stats Chips Row */}
       <Box
         sx={{
           display: 'flex',
           flexWrap: 'wrap',
-          gap: { xs: 0.25, sm: 0.5, md: 0.75 },
-          py: 0.25,
-          overflow: 'auto',
+          gap: 0.5,
           width: '100%',
           '& > *': {
-            scrollSnapAlign: 'center',
+            flex: '1 1 auto',
             minWidth: 'fit-content'
-          },
-          '::-webkit-scrollbar': { display: 'none' },
-          mb: isTablet ? 0.5 : 0
+          }
         }}
       >
         <Tooltip title={<Typography variant="body2">Rank by 24h Volume.</Typography>}>
           <Chip
-            label={<Typography variant={isTablet ? 'body2' : 's16'}>Rank # {id}</Typography>}
+            label={`#${id}`}
             color="primary"
             variant="outlined"
             size="small"
-            sx={{ borderRadius: '6px', height: '24px' }}
+            sx={{
+              borderRadius: '6px',
+              height: '24px',
+              fontSize: '0.75rem',
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.primary.main,
+                0.08
+              )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+              fontWeight: 600
+            }}
           />
         </Tooltip>
         <Chip
-          label={
-            <Typography variant={isTablet ? 'body2' : 's16'}>
-              {fNumberWithSuffix(holders)} Holders
-            </Typography>
-          }
+          label={`${fNumberWithSuffix(holders)} H`}
           color="error"
           variant="outlined"
           size="small"
-          sx={{ borderRadius: '6px', height: '24px' }}
+          sx={{
+            borderRadius: '6px',
+            height: '24px',
+            fontSize: '0.75rem',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.error.main,
+              0.08
+            )} 0%, ${alpha(theme.palette.error.main, 0.04)} 100%)`,
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+            fontWeight: 600
+          }}
         />
         <Chip
-          label={
-            <Typography variant={isTablet ? 'body2' : 's16'}>
-              {fNumberWithSuffix(offers)} Offers
-            </Typography>
-          }
+          label={`${fNumberWithSuffix(offers)} O`}
           color="warning"
           variant="outlined"
           size="small"
-          sx={{ borderRadius: '6px', height: '24px' }}
+          sx={{
+            borderRadius: '6px',
+            height: '24px',
+            fontSize: '0.75rem',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.warning.main,
+              0.08
+            )} 0%, ${alpha(theme.palette.warning.main, 0.04)} 100%)`,
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+            fontWeight: 600
+          }}
         />
         <Chip
-          label={
-            <Typography variant={isTablet ? 'body2' : 's16'}>
-              {fNumberWithSuffix(vol24htx)} Trades
-            </Typography>
-          }
+          label={`${fNumberWithSuffix(vol24htx)} T`}
           color="secondary"
           variant="outlined"
           size="small"
-          sx={{ borderRadius: '6px', height: '24px' }}
+          sx={{
+            borderRadius: '6px',
+            height: '24px',
+            fontSize: '0.75rem',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.secondary.main,
+              0.08
+            )} 0%, ${alpha(theme.palette.secondary.main, 0.04)} 100%)`,
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+            fontWeight: 600
+          }}
         />
         <Chip
-          label={
-            <Typography variant={isTablet ? 'body2' : 's16'}>
-              {fNumberWithSuffix(trustlines)} TrustLines
-            </Typography>
-          }
+          label={`${fNumberWithSuffix(trustlines)} TL`}
           color="info"
           variant="outlined"
           size="small"
-          sx={{ borderRadius: '6px', height: '24px' }}
+          sx={{
+            borderRadius: '6px',
+            height: '24px',
+            fontSize: '0.75rem',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.info.main,
+              0.08
+            )} 0%, ${alpha(theme.palette.info.main, 0.04)} 100%)`,
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+            fontWeight: 600
+          }}
         />
       </Box>
 
+      {/* Mobile Price & Extra Buttons */}
       {isTablet && (
-        <>
-          <Grid item xs={12} lg={6} mb={1}>
+        <Stack direction="row" spacing={1} sx={{ width: '100%' }}>
+          <Box sx={{ flex: 1 }}>
             <PriceDesc token={token} />
-          </Grid>
-
-          <Grid item xs={12} lg={6}>
+          </Box>
+          <Box sx={{ flex: 1 }}>
             <ExtraButtons token={token} />
-          </Grid>
-
-          <Divider sx={{ my: 1 }} />
-        </>
+          </Box>
+        </Stack>
       )}
 
+      {/* Expandable Stats Section */}
       {showStat && (
-        <Grid container item xs={12} sx={{ display: { xs: 'block', md: 'none' }, mb: 1 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={0.5}>
-            <Stack direction="row" alignItems="center" gap={0.5}>
-              <Typography variant="body2">Market Cap</Typography>
-              <Tooltip
-                title={
-                  <Typography variant="body2">
-                    The total market value of a token's circulating supply represents its overall
-                    worth.
-                    <br />
-                    This concept is similar to free-float capitalization in the stock market.
-                    <br />
-                    {omcf === 'yes'
-                      ? 'Price x Circulating Supply'
-                      : '(Price x Circulating Supply) x (Average daily trading volume / Average daily trading volume for all tokens)'}
-                    .
+        <Box
+          sx={{
+            p: 1.5,
+            borderRadius: '8px',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.6
+            )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+            backdropFilter: 'blur(8px)',
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`
+          }}
+        >
+          <Grid container spacing={1}>
+            <Grid item xs={6}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Stack direction="row" alignItems="center" gap={0.5}>
+                  <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
+                    Market Cap
                   </Typography>
-                }
-              >
-                <Icon icon={infoFilled} width={14} height={14} />
-              </Tooltip>
-            </Stack>
-
-            <MarketTypography variant="body2">
-              {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
-            </MarketTypography>
-          </Stack>
-
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ mt: 0.5 }}
-          >
-            <Stack direction="row" alignItems="center" gap={0.5}>
-              <Typography variant="body2">Volume (24h)</Typography>
-              <Tooltip
-                title={
-                  <Typography variant="body2">
-                    Trading volume of {name} within the past 24 hours.
+                  <Tooltip
+                    title={
+                      <Typography variant="body2">
+                        The total market value of a token's circulating supply represents its
+                        overall worth.
+                      </Typography>
+                    }
+                  >
+                    <Icon icon={infoFilled} width={12} height={12} />
+                  </Tooltip>
+                </Stack>
+                <Box
+                  sx={{
+                    px: 1,
+                    py: 0.25,
+                    borderRadius: '4px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.info.main,
+                      0.08
+                    )} 0%, ${alpha(theme.palette.info.main, 0.04)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{ color: theme.palette.info.main, fontWeight: 600, fontSize: '0.75rem' }}
+                  >
+                    {currencySymbols[activeFiatCurrency]} {fNumber(convertedMarketCap)}
                   </Typography>
-                }
-              >
-                <Icon icon={infoFilled} width={14} height={14} />
-              </Tooltip>
-            </Stack>
-            <VolumeTypography variant="body2">
-              {volume} <VolumeTypography variant="small"> {name}</VolumeTypography>
-            </VolumeTypography>
-          </Stack>
+                </Box>
+              </Stack>
+            </Grid>
 
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ mt: 0.5 }}
-          >
-            <Typography variant="body2">Volume / Marketcap</Typography>
-            <VolumeTypography variant="body2">{fNumber(voldivmarket)}</VolumeTypography>
-          </Stack>
-
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ mt: 0.5 }}
-          >
-            <Stack direction="row" alignItems="center" gap={0.5}>
-              <Typography variant="body2">Circulating Supply</Typography>
-              <Tooltip
-                title={
-                  <Typography variant="body2">
-                    The number of tokens in circulation within the market and held by the public is
-                    comparable to the concept of outstanding shares in the stock market.
+            <Grid item xs={6}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Stack direction="row" alignItems="center" gap={0.5}>
+                  <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
+                    Volume (24h)
                   </Typography>
-                }
-              >
-                <Icon icon={infoFilled} width={14} height={14} />
-              </Tooltip>
-            </Stack>
-            <SupplyTypography variant="body2">{circulatingSupply}</SupplyTypography>
-          </Stack>
+                  <Tooltip
+                    title={
+                      <Typography variant="body2">
+                        Trading volume of {name} within the past 24 hours.
+                      </Typography>
+                    }
+                  >
+                    <Icon icon={infoFilled} width={12} height={12} />
+                  </Tooltip>
+                </Stack>
+                <Box
+                  sx={{
+                    px: 1,
+                    py: 0.25,
+                    borderRadius: '4px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.warning.main,
+                      0.08
+                    )} 0%, ${alpha(theme.palette.warning.main, 0.04)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{ color: theme.palette.warning.main, fontWeight: 600, fontSize: '0.75rem' }}
+                  >
+                    {volume}
+                  </Typography>
+                </Box>
+              </Stack>
+            </Grid>
 
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ mt: 0.5 }}
-          >
-            <Typography variant="body2">Total Supply</Typography>
-            <TotalSupplyTypography variant="body2">{totalSupply}</TotalSupplyTypography>
-          </Stack>
-        </Grid>
+            <Grid item xs={6}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
+                  Vol/Market
+                </Typography>
+                <Box
+                  sx={{
+                    px: 1,
+                    py: 0.25,
+                    borderRadius: '4px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.warning.main,
+                      0.08
+                    )} 0%, ${alpha(theme.palette.warning.main, 0.04)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{ color: theme.palette.warning.main, fontWeight: 600, fontSize: '0.75rem' }}
+                  >
+                    {fNumber(voldivmarket)}
+                  </Typography>
+                </Box>
+              </Stack>
+            </Grid>
+
+            <Grid item xs={6}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Stack direction="row" alignItems="center" gap={0.5}>
+                  <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
+                    Circ. Supply
+                  </Typography>
+                  <Tooltip
+                    title={
+                      <Typography variant="body2">
+                        The number of tokens in circulation within the market.
+                      </Typography>
+                    }
+                  >
+                    <Icon icon={infoFilled} width={12} height={12} />
+                  </Tooltip>
+                </Stack>
+                <Box
+                  sx={{
+                    px: 1,
+                    py: 0.25,
+                    borderRadius: '4px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.primary.main,
+                      0.08
+                    )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{ color: theme.palette.primary.main, fontWeight: 600, fontSize: '0.75rem' }}
+                  >
+                    {circulatingSupply}
+                  </Typography>
+                </Box>
+              </Stack>
+            </Grid>
+          </Grid>
+        </Box>
       )}
+
+      {/* Stats Toggle Button */}
       {isTablet && (
         <Button
           color="inherit"
           onClick={() => setShowStat(!showStat)}
+          size="small"
           sx={{
             width: '100%',
-            backgroundColor: darkMode ? '#343445' : '#fff',
-            '&:hover': {
-              backgroundColor: darkMode ? '#2B2C38' : '#EBEDF0'
-            },
+            borderRadius: '6px',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.8
+            )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            color: theme.palette.primary.main,
+            fontWeight: 500,
+            fontSize: '0.75rem',
             py: 0.5,
-            mb: 0.5
+            '&:hover': {
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.primary.main,
+                0.08
+              )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+            }
           }}
         >
-          {`${!showStat ? 'More' : 'less'} stats`}
+          {`${!showStat ? 'More' : 'Less'} stats`}
         </Button>
       )}
 
-      <Grid
-        container
-        spacing={0.25}
-        alignItems="center"
-        sx={{
-          mt: 0.25,
-          ml: isTablet ? 0 : '-4px',
-          width: '100%'
-        }}
-      >
-        {!isTablet ? (
-          tags &&
-          tags.map((tag) => (
-            <Grid item key={`${md5}-${tag}`}>
-              <Link
-                href={`/view/${normalizeTag(tag)}`}
-                sx={{ pl: 0, pr: 0, display: 'inline-flex' }}
-                underline="none"
-                rel="noreferrer noopener nofollow"
-              >
-                <Chip size="small" label={tag} onClick={handleDelete} sx={{ height: '24px' }} />
-              </Link>
-            </Grid>
-          ))
-        ) : (
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{ width: '100%' }}
-          >
-            <Typography variant="body2">Tags</Typography>
-
-            <Box display="flex" alignItems="center">
+      {/* Tags & Links Row */}
+      <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+        {/* Tags */}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {!isTablet ? (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
               {tags &&
-                tags.slice(0, 2).map((tag) => (
+                tags.slice(0, 4).map((tag) => (
                   <Link
                     key={`${md5}-${tag}`}
                     href={`/view/${normalizeTag(tag)}`}
-                    sx={{
-                      pl: 0,
-                      pr: 0,
-                      display: 'inline-flex',
-                      marginLeft: '-3px'
-                    }}
+                    sx={{ display: 'inline-flex' }}
                     underline="none"
                     rel="noreferrer noopener nofollow"
                   >
                     <Chip
-                      label={tag}
                       size="small"
+                      label={tag}
+                      onClick={handleDelete}
                       sx={{
-                        borderInlineStart: `2px solid ${darkMode ? '#17171a' : '#fff'}`,
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        height: '24px'
+                        height: '20px',
+                        fontSize: '0.7rem',
+                        borderRadius: '4px',
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.background.paper,
+                          0.8
+                        )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                        backdropFilter: 'blur(8px)',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                        color: theme.palette.text.primary,
+                        fontWeight: 500,
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          background: `linear-gradient(135deg, ${alpha(
+                            theme.palette.primary.main,
+                            0.08
+                          )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                          color: theme.palette.primary.main,
+                          transform: 'translateY(-1px)'
+                        }
                       }}
                     />
                   </Link>
                 ))}
-              {tags && tags.length > 2 && (
+              {tags && tags.length > 4 && (
                 <Chip
-                  label={`+${tags.slice(2).length}`}
+                  label={`+${tags.length - 4}`}
                   size="small"
-                  sx={{
-                    fontSize: '12px',
-                    borderInlineStart: `2px solid ${darkMode ? '#17171a' : '#fff'}`,
-                    marginLeft: '-3px',
-                    height: '24px'
-                  }}
                   onClick={() => toggleTagsDrawer(true)}
+                  sx={{
+                    height: '20px',
+                    fontSize: '0.7rem',
+                    borderRadius: '4px',
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.primary.main,
+                      0.08
+                    )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    color: theme.palette.primary.main,
+                    fontWeight: 500,
+                    cursor: 'pointer'
+                  }}
                 />
               )}
-              <KeyboardArrowRightIcon
-                sx={{ cursor: 'pointer', width: 20, height: 20 }}
-                onClick={() => toggleTagsDrawer(true)}
-              />
             </Box>
-          </Stack>
-        )}
-      </Grid>
+          ) : (
+            <Stack direction="row" alignItems="center" justifyContent="space-between">
+              <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.75rem' }}>
+                Tags
+              </Typography>
+              <Box display="flex" alignItems="center" onClick={() => toggleTagsDrawer(true)}>
+                {tags &&
+                  tags.slice(0, 2).map((tag) => (
+                    <Chip
+                      key={`${md5}-${tag}`}
+                      label={tag}
+                      size="small"
+                      sx={{
+                        height: '20px',
+                        fontSize: '0.7rem',
+                        borderRadius: '4px',
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.background.paper,
+                          0.6
+                        )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                        fontWeight: 500,
+                        mr: 0.25
+                      }}
+                    />
+                  ))}
+                {tags && tags.length > 2 && (
+                  <Chip
+                    label={`+${tags.slice(2).length}`}
+                    size="small"
+                    sx={{
+                      height: '20px',
+                      fontSize: '0.7rem',
+                      borderRadius: '4px',
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.primary.main,
+                        0.08
+                      )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      color: theme.palette.primary.main,
+                      fontWeight: 500,
+                      mr: 0.5
+                    }}
+                  />
+                )}
+                <KeyboardArrowRightIcon
+                  sx={{
+                    width: 16,
+                    height: 16,
+                    color: theme.palette.primary.main
+                  }}
+                />
+              </Box>
+            </Stack>
+          )}
+        </Box>
 
-      {isTablet && <Divider sx={{ my: 0.5 }} />}
-
-      <Grid
-        container
-        spacing={0.25}
-        sx={{ p: 0, mt: 0.25, width: '100%', ml: isTablet ? 0 : '-4px' }}
-      >
-        {!isTablet ? (
-          <>
-            {domain && (
-              <Grid item>
+        {/* Links */}
+        <Box>
+          {!isTablet ? (
+            <Stack direction="row" spacing={0.5}>
+              {domain && (
                 <Link
                   underline="none"
                   color="inherit"
@@ -853,86 +1085,87 @@ export default function UserDesc({ token }) {
                   <Chip
                     label={domain}
                     size="small"
-                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px', height: '32px' }}
+                    sx={{
+                      height: '24px',
+                      fontSize: '0.7rem',
+                      borderRadius: '6px',
+                      background: `linear-gradient(135deg, ${alpha(
+                        theme.palette.background.paper,
+                        0.8
+                      )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                      backdropFilter: 'blur(8px)',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                      color: theme.palette.primary.main,
+                      fontWeight: 500,
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        background: `linear-gradient(135deg, ${alpha(
+                          theme.palette.primary.main,
+                          0.08
+                        )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                        transform: 'translateY(-1px)'
+                      }
+                    }}
                     deleteIcon={
                       <Icon
                         icon={linkExternal}
-                        width="14"
-                        height="14"
+                        width="12"
+                        height="12"
                         style={{ color: theme.palette.primary.main }}
                       />
                     }
                     onDelete={handleDelete}
                     onClick={handleDelete}
-                    icon={<Icon icon={link45deg} width="14" height="14" />}
+                    icon={<Icon icon={link45deg} width="12" height="12" />}
                   />
                 </Link>
-              </Grid>
-            )}
-            {whitepaper && (
-              <Grid item>
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`${whitepaper}`}
-                  rel="noreferrer noopener nofollow"
-                >
-                  <Chip
-                    label={'Whitepaper'}
-                    size="small"
-                    sx={{ pl: 0.5, pr: 0.5, borderRadius: '6px', height: '32px' }}
-                    deleteIcon={
-                      <Icon
-                        icon={linkExternal}
-                        width="14"
-                        height="14"
-                        style={{ color: theme.palette.primary.main }}
-                      />
-                    }
-                    onDelete={handleDelete}
-                    onClick={handleDelete}
-                    icon={<Icon icon={paperIcon} width="14" height="14" />}
-                  />
-                </Link>
-              </Grid>
-            )}
-
-            <Grid item>
+              )}
               <ExplorersMenu issuer={issuer} />
-            </Grid>
-            {isChat && (
-              <Grid item>
-                <ChatMenu token={token} />
-              </Grid>
-            )}
-            {isCommunity && (
-              <Grid item>
-                <CommunityMenu token={token} />
-              </Grid>
-            )}
-          </>
-        ) : (
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{ width: '100%' }}
-          >
-            <Typography variant="body2">Links</Typography>
-
-            <Box display="flex" alignItems="center" onClick={() => toggleLinksDrawer(true)}>
-              <Typography variant="caption" sx={{ fontSize: '11px' }}>
-                Website, Explorers, Socials etc.
+              {isChat && <ChatMenu token={token} />}
+              {isCommunity && <CommunityMenu token={token} />}
+            </Stack>
+          ) : (
+            <Box
+              display="flex"
+              alignItems="center"
+              onClick={() => toggleLinksDrawer(true)}
+              sx={{
+                cursor: 'pointer',
+                p: 0.5,
+                borderRadius: '6px',
+                background: `linear-gradient(135deg, ${alpha(
+                  theme.palette.background.paper,
+                  0.6
+                )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.primary.main,
+                    0.08
+                  )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                }
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{ fontSize: '0.7rem', color: theme.palette.text.secondary, mr: 0.5 }}
+              >
+                Links
               </Typography>
-
-              <KeyboardArrowRightIcon sx={{ cursor: 'pointer', width: 20, height: 20 }} />
+              <KeyboardArrowRightIcon
+                sx={{
+                  width: 16,
+                  height: 16,
+                  color: theme.palette.primary.main
+                }}
+              />
             </Box>
-          </Stack>
-        )}
-      </Grid>
-
-      {isTablet && <Divider sx={{ my: 0.5 }} />}
+          )}
+        </Box>
+      </Stack>
 
       <TagsDrawer
         isOpen={openTagsDrawer}
@@ -951,18 +1184,37 @@ export default function UserDesc({ token }) {
         PaperProps={{
           sx: {
             maxWidth: '500px',
-            border: '2px solid #ff3d00'
+            border: '2px solid #ff3d00',
+            borderRadius: '16px',
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.95
+            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+            backdropFilter: 'blur(20px)',
+            boxShadow: `0 8px 32px ${alpha(theme.palette.error.main, 0.25)}`
           }
         }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5 }}>
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            p: 2,
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.error.main,
+              0.08
+            )} 0%, ${alpha(theme.palette.error.main, 0.04)} 100%)`,
+            borderBottom: `1px solid ${alpha(theme.palette.error.main, 0.2)}`
+          }}
+        >
           <WarningIcon sx={{ color: '#ff3d00', width: 24, height: 24 }} />
-          <Typography color="error" variant="h6">
+          <Typography color="error" variant="h6" sx={{ fontWeight: 600 }}>
             Scam Warning!
           </Typography>
         </DialogTitle>
-        <DialogContent sx={{ p: 1.5 }}>
-          <DialogContentText>
+        <DialogContent sx={{ p: 2 }}>
+          <DialogContentText sx={{ color: theme.palette.text.primary }}>
             This token has been tagged as a potential SCAM. Exercise extreme caution:
             <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
               <li>Do NOT trust any investment promises</li>
@@ -972,8 +1224,18 @@ export default function UserDesc({ token }) {
             </ul>
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ p: 1.5 }}>
-          <Button onClick={() => setOpenScamWarning(false)} variant="contained" color="error">
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={() => setOpenScamWarning(false)}
+            variant="contained"
+            color="error"
+            sx={{
+              borderRadius: '8px',
+              fontWeight: 600,
+              px: 3,
+              py: 1
+            }}
+          >
             I Understand
           </Button>
         </DialogActions>
