@@ -761,29 +761,6 @@ const Swap = ({ token }) => {
   }, [token1, token2]);
 
   useEffect(() => {
-    // Don't run if both fields are empty (e.g., after flipping)
-    if (!amount1 && !amount2) return;
-
-    if (active === 'VALUE') {
-      // User typed in bottom field, calculate top field
-      const calculatedAmount = calcQuantity(amount2, active);
-      if (calculatedAmount && calculatedAmount !== amount1 && calculatedAmount !== '0') {
-        setAmount1(calculatedAmount);
-      }
-    } else {
-      // User typed in top field, calculate bottom field
-      const calculatedValue = calcQuantity(amount1, active);
-      if (calculatedValue && calculatedValue !== amount2 && calculatedValue !== '0') {
-        setAmount2(calculatedValue);
-      }
-    }
-  }, [asks, bids, revert, active]);
-
-  // Add useEffect to handle calculation when token prices change
-  useEffect(() => {
-    // Don't run if both fields are empty (e.g., after flipping)
-    if (!amount1 && !amount2) return;
-
     // Calculate when token prices change
     const curr1IsXRP = curr1?.currency === 'XRP';
     const curr2IsXRP = curr2?.currency === 'XRP';
@@ -794,22 +771,34 @@ const Swap = ({ token }) => {
         ? tokenExch1 > 0 || tokenExch2 > 0 // XRP pair: need at least one rate
         : tokenExch1 > 0 && tokenExch2 > 0; // Non-XRP pair: need both rates
 
+    console.log('useEffect calculation trigger:', {
+      hasValidRates,
+      active,
+      amount1,
+      amount2,
+      tokenExch1,
+      tokenExch2,
+      revert
+    });
+
     if (hasValidRates) {
       if (active === 'AMOUNT' && amount1 && amount1 !== '') {
-        // User typed in top field, calculate bottom field
         const newValue = calcQuantity(amount1, active);
+        console.log('Calculating from amount1:', { amount1, newValue, currentAmount2: amount2 });
         if (newValue && newValue !== amount2 && newValue !== '0') {
+          console.log('Setting amount2 to:', newValue);
           setAmount2(newValue);
         }
       } else if (active === 'VALUE' && amount2 && amount2 !== '') {
-        // User typed in bottom field, calculate top field
         const newAmount = calcQuantity(amount2, active);
+        console.log('Calculating from amount2:', { amount2, newAmount, currentAmount1: amount1 });
         if (newAmount && newAmount !== amount1 && newAmount !== '0') {
+          console.log('Setting amount1 to:', newAmount);
           setAmount1(newAmount);
         }
       }
     }
-  }, [tokenExch1, tokenExch2, revert, active]);
+  }, [tokenExch1, tokenExch2, revert, active, amount1, amount2]);
 
   useEffect(() => {
     const pair = {
@@ -1112,7 +1101,7 @@ const Swap = ({ token }) => {
       const rate1 = new Decimal(tokenExch1 || 0);
       const rate2 = new Decimal(tokenExch2 || 0);
 
-      // For XRP pairs, we need different handling
+      // For XRP pairs, use direct conversion
       if (curr1IsXRP || curr2IsXRP) {
         console.log('Handling XRP pair calculation:', {
           curr1IsXRP,
@@ -1124,8 +1113,7 @@ const Swap = ({ token }) => {
           revert
         });
 
-        // For XRP pairs, try to use a simple approach
-        // If one rate is 0 or both are 0, we can't calculate
+        // For XRP pairs, use simple rate calculation - no orderbook
         if (rate1.eq(0) && rate2.eq(0)) {
           console.log('Both rates are 0, cannot calculate');
           return '';
@@ -1133,60 +1121,63 @@ const Swap = ({ token }) => {
 
         let result = 0;
 
-        // Determine which rate represents XRP price in USD
-        // The API seems to return rate1 as "1" for XRP, so we should use rate2 as the actual price
-        let xrpPriceInUSD = 0;
-
         if (curr1IsXRP && !curr2IsXRP) {
-          // curr1 = XRP (top), curr2 = Token (bottom)
-          // When revert=true, the rates are swapped, so we need to adjust
-          if (revert) {
-            // When reverted, rate1 is actually the Token rate
-            xrpPriceInUSD = rate1.toNumber() > 0 ? 1 / rate1.toNumber() : 0;
-          } else {
-            // Normal case: rate2 is Token exchange rate, so XRP price in Token = 1 / rate2
-            xrpPriceInUSD = rate2.toNumber() > 0 ? 1 / rate2.toNumber() : 0;
-          }
+          // curr1 = XRP, curr2 = Token
+          // tokenExch2 appears to be Token-to-XRP rate, so we need to invert it for XRP-to-Token
+          const tokenToXrpRate = rate2.toNumber();
+          const xrpToTokenRate = tokenToXrpRate > 0 ? 1 / tokenToXrpRate : 0;
+
+          console.log('XRP to Token rate conversion:', {
+            tokenToXrpRate,
+            xrpToTokenRate,
+            calculation: `1 / ${tokenToXrpRate} = ${xrpToTokenRate}`
+          });
 
           if (active === 'AMOUNT') {
-            // User typed in top field
-            if (revert) {
-              // Top field is Token, calculate XRP (bottom)
-              // Token_amount / XRP_price_in_Token = XRP_amount
-              result = new Decimal(amt).div(xrpPriceInUSD).toNumber();
-            } else {
-              // Top field is XRP, calculate Token (bottom)
-              // XRP_amount * XRP_price_in_Token = Token_amount
-              result = new Decimal(amt).mul(xrpPriceInUSD).toNumber();
-            }
+            // User typed in top field = XRP, calculate Token
+            // XRP_amount * XRP_to_Token_rate = Token_amount
+            result = new Decimal(amt).mul(xrpToTokenRate).toNumber();
           } else {
-            // User typed in bottom field
-            if (revert) {
-              // Bottom field is XRP, calculate Token (top)
-              // XRP_amount * XRP_price_in_Token = Token_amount
-              result = new Decimal(amt).mul(xrpPriceInUSD).toNumber();
-            } else {
-              // Bottom field is Token, calculate XRP (top)
-              // Token_amount / XRP_price_in_Token = XRP_amount
-              result = new Decimal(amt).div(xrpPriceInUSD).toNumber();
-            }
+            // User typed in bottom field = Token, calculate XRP
+            // Token_amount / XRP_to_Token_rate = XRP_amount
+            result = new Decimal(amt).div(xrpToTokenRate).toNumber();
           }
         } else if (!curr1IsXRP && curr2IsXRP) {
-          // Original pair: curr1 = Token, curr2 = XRP
-          // When revert=false: top=Token, bottom=XRP
-          // When revert=true: top=Token, bottom=XRP (display swapped but logic same)
-
-          // Use tokenExch2 as the Token-to-XRP conversion rate
+          // curr1 = Token, curr2 = XRP
+          // Use tokenExch2 as the direct Token-to-XRP conversion rate
           const tokenToXrpRate = rate2.toNumber();
 
+          console.log('Token/XRP calculation debug:', {
+            amt,
+            active,
+            revert,
+            tokenToXrpRate,
+            rate1: rate1.toNumber(),
+            rate2: rate2.toNumber(),
+            tokenExch1,
+            tokenExch2
+          });
+
           if (active === 'AMOUNT') {
-            // User typed in top field = Token
-            // Token_amount * tokenToXrpRate = XRP_amount
+            // User typed in top field = Token, calculate XRP
+            // Token_amount * Token_to_XRP_rate = XRP_amount
             result = new Decimal(amt).mul(tokenToXrpRate).toNumber();
+            console.log('Token to XRP calculation:', {
+              tokenAmount: amt,
+              rate: tokenToXrpRate,
+              result,
+              formula: `${amt} * ${tokenToXrpRate} = ${result}`
+            });
           } else {
-            // User typed in bottom field = XRP
-            // XRP_amount / tokenToXrpRate = Token_amount
+            // User typed in bottom field = XRP, calculate Token
+            // XRP_amount / Token_to_XRP_rate = Token_amount
             result = new Decimal(amt).div(tokenToXrpRate).toNumber();
+            console.log('XRP to Token calculation:', {
+              xrpAmount: amt,
+              rate: tokenToXrpRate,
+              result,
+              formula: `${amt} / ${tokenToXrpRate} = ${result}`
+            });
           }
         } else {
           // Both XRP (shouldn't happen)
@@ -1211,7 +1202,6 @@ const Swap = ({ token }) => {
 
         console.log('XRP calculation result:', {
           input: amt,
-          xrpPriceInUSD,
           rate1: rate1.toNumber(),
           rate2: rate2.toNumber(),
           result,
@@ -1230,40 +1220,22 @@ const Swap = ({ token }) => {
 
         return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
       } else {
-        // Both are non-XRP tokens - use original orderbook logic
-        let amt = 0;
-        let val = 0;
+        // For non-XRP pairs, use simple rate calculation too
+        if (rate1.eq(0) || rate2.eq(0)) {
+          console.log('Missing rates for non-XRP pair, cannot calculate');
+          return '';
+        }
 
-        /*
-                ask: taker_gets = curr1, taker_pays = curr2
-                bid: taker_gets = curr2, taker_pays = curr1
-             */
-        try {
-          amt = new Decimal(amount).toNumber();
-        } catch (e) {}
+        let result = 0;
+        if (active === 'AMOUNT') {
+          // User typed in top field, calculate bottom field using rates
+          result = new Decimal(amt).mul(rate1).div(rate2).toNumber();
+        } else {
+          // User typed in bottom field, calculate top field using rates
+          result = new Decimal(amt).mul(rate2).div(rate1).toNumber();
+        }
 
-        if (amt === 0) return '';
-
-        try {
-          if (active === 'AMOUNT') {
-            for (var bid of bids) {
-              if (bid.sumAmount >= amt) {
-                val = new Decimal(bid.sumValue).mul(amt).div(bid.sumAmount).toNumber();
-                break;
-              }
-            }
-          } else {
-            for (var bid of bids) {
-              if (bid.sumValue >= amt) {
-                val = new Decimal(bid.sumAmount).mul(amt).div(bid.sumValue).toNumber();
-                break;
-              }
-            }
-          }
-          return new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
-        } catch (e) {}
-
-        return 0;
+        return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
       }
     } catch (e) {
       console.log('Error in price calculation:', e);
@@ -1646,7 +1618,7 @@ const Swap = ({ token }) => {
                 placeholder="0"
                 autoComplete="new-password"
                 disableUnderline
-                value={amount1 === '' ? '' : amount2}
+                value={amount2}
                 onChange={handleChangeAmount2}
                 sx={{
                   width: '100%',
