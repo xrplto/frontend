@@ -61,11 +61,9 @@ const TopWrapper = styled(Box)(
       top: 0;
       left: 0;
       right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, ${theme.palette.primary.main}, ${
-    theme.palette.success.main
-  }, ${theme.palette.info.main});
-      opacity: 0.8;
+      height: 1px;
+      background: ${alpha(theme.palette.divider, 0.15)};
+      opacity: 0.6;
     }
 `
 );
