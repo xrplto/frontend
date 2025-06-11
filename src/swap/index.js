@@ -20,7 +20,8 @@ import {
   Alert,
   AlertTitle,
   CircularProgress,
-  Box
+  Box,
+  Tooltip
 } from '@mui/material';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
@@ -2116,17 +2117,20 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   >
                     Slippage tolerance
                   </Typography>
-                  <Icon
-                    icon={infoFill}
-                    width={16}
-                    height={16}
-                    style={{
-                      color:
-                        theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                      cursor: 'help'
-                    }}
-                    title="Maximum price movement you're willing to accept"
-                  />
+                  <Tooltip title="Maximum price movement you're willing to accept" arrow>
+                    <Icon
+                      icon={infoFill}
+                      width={16}
+                      height={16}
+                      style={{
+                        color:
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255,255,255,0.5)'
+                            : 'rgba(0,0,0,0.5)',
+                        cursor: 'help'
+                      }}
+                    />
+                  </Tooltip>
                 </Stack>
                 <Stack direction="row" spacing={0.5} alignItems="center">
                   {[1, 3, 5].map((preset) => (
