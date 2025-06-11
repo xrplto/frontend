@@ -878,11 +878,8 @@ const Swap = ({ token }) => {
   };
 
   const onFillMax = () => {
-    if (revert) {
-      if (accountPairBalance?.curr1.value > 0) setAmount2(accountPairBalance?.curr1.value);
-    } else {
-      if (accountPairBalance?.curr1.value > 0) setAmount1(accountPairBalance?.curr1.value);
-    }
+    // The MAX button is always for the top input (amount1) which shows curr1.value
+    if (accountPairBalance?.curr1.value > 0) setAmount1(accountPairBalance?.curr1.value);
   };
 
   return (

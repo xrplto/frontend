@@ -1105,13 +1105,23 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     console.log('calcQuantity called with:', {
       amount,
       active,
+      revert,
       bidsLength: bids?.length,
       asksLength: asks?.length
     });
 
     /*
-            ask: taker_gets = curr1, taker_pays = curr2
-            bid: taker_gets = curr2, taker_pays = curr1
+            When NOT reverted (normal state):
+            - ask: taker_gets = curr1, taker_pays = curr2
+            - bid: taker_gets = curr2, taker_pays = curr1
+            - amount1 = curr1 (input currency), amount2 = curr2 (output currency)
+            - Use bids to calculate from curr1 to curr2
+            
+            When reverted (currencies flipped):
+            - Logically we want to trade curr2 for curr1 now
+            - amount1 still represents the top input, but now it's curr2
+            - amount2 represents the bottom output, but now it's curr1
+            - Use asks to calculate from curr2 to curr1
          */
     try {
       amt = new Decimal(amount).toNumber();
@@ -1124,29 +1134,33 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       return '';
     }
 
-    if (!bids || bids.length === 0) {
-      console.log('No bids available for calculation');
+    // Determine which orderbook to use based on revert state and calculation direction
+    const useAsks = revert;
+    const orderbook = useAsks ? asks : bids;
+
+    if (!orderbook || orderbook.length === 0) {
+      console.log(`No ${useAsks ? 'asks' : 'bids'} available for calculation`);
       return '';
     }
 
     try {
       if (active === 'AMOUNT') {
-        console.log('Calculating VALUE from AMOUNT:', amt);
-        for (var bid of bids) {
-          console.log('Checking bid:', { sumAmount: bid.sumAmount, sumValue: bid.sumValue });
-          if (bid.sumAmount >= amt) {
-            val = new Decimal(bid.sumValue).mul(amt).div(bid.sumAmount).toNumber();
-            console.log('Found matching bid, calculated value:', val);
+        console.log('Calculating VALUE from AMOUNT:', amt, `using ${useAsks ? 'asks' : 'bids'}`);
+        for (var order of orderbook) {
+          console.log('Checking order:', { sumAmount: order.sumAmount, sumValue: order.sumValue });
+          if (order.sumAmount >= amt) {
+            val = new Decimal(order.sumValue).mul(amt).div(order.sumAmount).toNumber();
+            console.log('Found matching order, calculated value:', val);
             break;
           }
         }
       } else {
-        console.log('Calculating AMOUNT from VALUE:', amt);
-        for (var bid of bids) {
-          console.log('Checking bid:', { sumAmount: bid.sumAmount, sumValue: bid.sumValue });
-          if (bid.sumValue >= amt) {
-            val = new Decimal(bid.sumAmount).mul(amt).div(bid.sumValue).toNumber();
-            console.log('Found matching bid, calculated amount:', val);
+        console.log('Calculating AMOUNT from VALUE:', amt, `using ${useAsks ? 'asks' : 'bids'}`);
+        for (var order of orderbook) {
+          console.log('Checking order:', { sumAmount: order.sumAmount, sumValue: order.sumValue });
+          if (order.sumValue >= amt) {
+            val = new Decimal(order.sumAmount).mul(amt).div(order.sumValue).toNumber();
+            console.log('Found matching order, calculated amount:', val);
             break;
           }
         }
@@ -1174,31 +1188,6 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     else {
       openSnackbar('Invalid values!', 'error');
     }
-
-    // if (accountProfile && accountProfile.account) {
-    //     // Create offer
-    //     /*{
-    //         "TransactionType": "OfferCreate",
-    //         "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
-    //         "Fee": "12",
-    //         "Flags": 0,
-    //         "LastLedgerSequence": 7108682,
-    //         "Sequence": 8,
-    //         "TakerGets": "6000000",
-    //         "TakerPays": {
-    //           "currency": "GKO",
-    //           "issuer": "ruazs5h1qEsqpke88pcqnaseXdm6od2xc",
-    //           "value": "2"
-    //         }
-    //     }*/
-    //     onOfferCreateXumm();
-
-    // } else {
-    //     setShowAccountAlert(true);
-    //     setTimeout(() => {
-    //         setShowAccountAlert(false);
-    //     }, 2000);
-    // }
   };
 
   const handleChangeAmount1 = (e) => {
@@ -1306,7 +1295,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
   const onFillHalf = () => {
     if (revert) {
-      if (accountPairBalance?.curr1.value > 0) setAmount2(accountPairBalance?.curr1.value / 2);
+      if (accountPairBalance?.curr2.value > 0) setAmount1(accountPairBalance?.curr2.value / 2);
     } else {
       if (accountPairBalance?.curr1.value > 0) setAmount1(accountPairBalance?.curr1.value / 2);
     }
@@ -1314,7 +1303,7 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
 
   const onFillMax = () => {
     if (revert) {
-      if (accountPairBalance?.curr1.value > 0) setAmount2(accountPairBalance?.curr1.value);
+      if (accountPairBalance?.curr2.value > 0) setAmount1(accountPairBalance?.curr2.value);
     } else {
       if (accountPairBalance?.curr1.value > 0) setAmount1(accountPairBalance?.curr1.value);
     }
