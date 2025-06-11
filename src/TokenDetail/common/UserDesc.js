@@ -67,9 +67,7 @@ import { AppContext } from 'src/AppContext';
 import { fNumber, fIntNumber, fNumberWithSuffix } from 'src/utils/formatNumber';
 
 // Components
-import ExplorersMenu from './ExplorersMenu';
-import CommunityMenu from './CommunityMenu';
-import ChatMenu from './ChatMenu';
+import SocialLinksMenu from './SocialLinksMenu';
 import Watch from './Watch';
 import Share from './Share';
 import IssuerInfoDialog from './IssuerInfoDialog';
@@ -358,9 +356,10 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           label={tag}
           onClick={handleToggleExpand}
           sx={{
-            height: '16px',
-            fontSize: '0.55rem',
-            borderRadius: '2px',
+            height: '24px',
+            fontSize: '0.7rem',
+            borderRadius: '4px',
+            px: 1,
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.primary.main,
               0.08
@@ -396,9 +395,10 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           label={tag}
           onClick={handleDelete}
           sx={{
-            height: '16px',
-            fontSize: '0.55rem',
-            borderRadius: '2px',
+            height: '24px',
+            fontSize: '0.7rem',
+            borderRadius: '4px',
+            px: 1,
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.8
@@ -426,9 +426,9 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
 
   if (shouldUseVerticalLayout) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.375, width: '100%' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, width: '100%' }}>
         {/* Primary row */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.125, width: '100%' }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.375, width: '100%' }}>
           {tags.slice(0, 4).map((tag) => (
             <TagChip key={tag} tag={tag} />
           ))}
@@ -438,12 +438,12 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
         {/* Additional rows when expanded */}
         {expanded && (
           <Collapse in={expanded} timeout={300}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.375, mt: 0.25 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, mt: 0.25 }}>
               {/* Split remaining tags into rows of 4 */}
               {Array.from({ length: Math.ceil((tags.length - 4) / 4) }, (_, rowIndex) => (
                 <Box
                   key={rowIndex}
-                  sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.125, width: '100%' }}
+                  sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.375, width: '100%' }}
                 >
                   {tags.slice(4 + rowIndex * 4, 4 + (rowIndex + 1) * 4).map((tag) => (
                     <TagChip key={tag} tag={tag} />
@@ -451,7 +451,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
                 </Box>
               ))}
               {/* Show less button */}
-              <Box sx={{ display: 'flex', gap: 0.125 }}>
+              <Box sx={{ display: 'flex', gap: 0.375 }}>
                 <TagChip tag="Show less" isExpand={true} />
               </Box>
             </Box>
@@ -463,7 +463,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
 
   // Standard horizontal layout for fewer tags
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.125, width: '100%' }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.375, width: '100%' }}>
       {tags.slice(0, maxVisibleTags).map((tag) => (
         <TagChip key={tag} tag={tag} />
       ))}
@@ -473,9 +473,10 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           size="small"
           onClick={() => toggleTagsDrawer(true)}
           sx={{
-            height: '16px',
-            fontSize: '0.55rem',
-            borderRadius: '2px',
+            height: '24px',
+            fontSize: '0.7rem',
+            borderRadius: '4px',
+            px: 1,
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.primary.main,
               0.08
@@ -1186,16 +1187,17 @@ export default function UserDesc({ token }) {
                         label={tag}
                         size="small"
                         sx={{
-                          height: '16px',
-                          fontSize: '0.55rem',
-                          borderRadius: '2px',
+                          height: '24px',
+                          fontSize: '0.7rem',
+                          borderRadius: '4px',
+                          px: 1,
                           background: `linear-gradient(135deg, ${alpha(
                             theme.palette.background.paper,
                             0.6
                           )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
                           border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
                           fontWeight: 500,
-                          mr: 0.125
+                          mr: 0.375
                         }}
                       />
                     ))}
@@ -1204,9 +1206,10 @@ export default function UserDesc({ token }) {
                       label={`+${tags.slice(2).length}`}
                       size="small"
                       sx={{
-                        height: '16px',
-                        fontSize: '0.55rem',
-                        borderRadius: '2px',
+                        height: '24px',
+                        fontSize: '0.7rem',
+                        borderRadius: '4px',
+                        px: 1,
                         background: `linear-gradient(135deg, ${alpha(
                           theme.palette.primary.main,
                           0.08
@@ -1214,7 +1217,7 @@ export default function UserDesc({ token }) {
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                         color: theme.palette.primary.main,
                         fontWeight: 500,
-                        mr: 0.25
+                        mr: 0.375
                       }}
                     />
                   )}
@@ -1289,9 +1292,7 @@ export default function UserDesc({ token }) {
                     />
                   </Link>
                 )}
-                <ExplorersMenu issuer={issuer} />
-                {isChat && <ChatMenu token={token} />}
-                {isCommunity && <CommunityMenu token={token} />}
+                <SocialLinksMenu token={token} issuer={issuer} />
               </Stack>
             ) : (
               <Box
