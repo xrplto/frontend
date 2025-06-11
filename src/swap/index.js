@@ -478,7 +478,7 @@ const TrustlineButton = styled(Button)(
 `
 );
 
-export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
+export default function Swap({ pair, setPair, revert, setRevert }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
   const QR_BLUR = '/static/blurqr.webp';
@@ -736,12 +736,25 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       setLoadingPrice(true);
       const md51 = token1.md5;
       const md52 = token2.md5;
+
+      console.log('Fetching token prices:', {
+        token1: { name: token1.name, currency: token1.currency, md5: md51 },
+        token2: { name: token2.name, currency: token2.currency, md5: md52 }
+      });
+
       // https://api.xrpl.to/api/pair_rates?md51=84e5efeb89c4eae8f68188982dc290d8&md52=c9ac9a6c44763c1bd9ccc6e47572fd26
       axios
         .get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`)
         .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
+          console.log('Token price API response:', ret);
           if (ret) {
+            console.log('Setting token exchange rates:', {
+              rate1: ret.rate1,
+              rate2: ret.rate2,
+              previousRate1: tokenExch1,
+              previousRate2: tokenExch2
+            });
             setTokenExch1(ret.rate1 || 0);
             setTokenExch2(ret.rate2 || 0);
           }
@@ -758,59 +771,30 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   }, [token1, amount1, token2, amount2]);
 
   useEffect(() => {
-    // Only recalculate when market data changes, not when amounts change
-    if (!asks || !bids || asks.length === 0 || bids.length === 0) {
-      console.log('No market data available for calculation');
-      return;
-    }
+    // Calculate when token prices change
+    const curr1IsXRP = curr1?.currency === 'XRP';
+    const curr2IsXRP = curr2?.currency === 'XRP';
 
-    if (active === 'VALUE' && value) {
-      const newAmount = calcQuantity(value, active);
-      console.log('Calculating amount from value:', {
-        value,
-        newAmount,
-        active,
-        bidsLength: bids.length
-      });
-      if (newAmount && newAmount !== amount) {
-        setAmount(newAmount);
-      }
-    } else if (active === 'AMOUNT' && amount) {
-      const newValue = calcQuantity(amount, active);
-      console.log('Calculating value from amount:', {
-        amount,
-        newValue,
-        active,
-        bidsLength: bids.length
-      });
-      if (newValue && newValue !== value) {
-        setValue(newValue);
+    // For XRP pairs, we only need one rate. For non-XRP pairs, we need both rates.
+    const hasValidRates =
+      curr1IsXRP || curr2IsXRP
+        ? tokenExch1 > 0 || tokenExch2 > 0 // XRP pair: need at least one rate
+        : tokenExch1 > 0 && tokenExch2 > 0; // Non-XRP pair: need both rates
+
+    if (hasValidRates) {
+      if (active === 'AMOUNT' && amount && amount !== '') {
+        const newValue = calcQuantity(amount, active);
+        if (newValue && newValue !== value && newValue !== '0') {
+          setValue(newValue);
+        }
+      } else if (active === 'VALUE' && value && value !== '') {
+        const newAmount = calcQuantity(value, active);
+        if (newAmount && newAmount !== amount && newAmount !== '0') {
+          setAmount(newAmount);
+        }
       }
     }
-  }, [asks, bids, revert, active]);
-
-  // Add separate effect to trigger calculation when user types
-  useEffect(() => {
-    if (!asks || !bids || asks.length === 0 || bids.length === 0) return;
-
-    if (active === 'AMOUNT' && amount && amount !== '') {
-      const newValue = calcQuantity(amount, active);
-      if (newValue && newValue !== value) {
-        setValue(newValue);
-      }
-    }
-  }, [amount, active]);
-
-  useEffect(() => {
-    if (!asks || !bids || asks.length === 0 || bids.length === 0) return;
-
-    if (active === 'VALUE' && value && value !== '') {
-      const newAmount = calcQuantity(value, active);
-      if (newAmount && newAmount !== amount) {
-        setAmount(newAmount);
-      }
-    }
-  }, [value, active]);
+  }, [tokenExch1, tokenExch2, revert, active]);
 
   useEffect(() => {
     const pair = {
@@ -1099,81 +1083,139 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   };
 
   const calcQuantity = (amount, active) => {
-    let amt = 0;
-    let val = 0;
-
-    console.log('calcQuantity called with:', {
-      amount,
-      active,
-      revert,
-      bidsLength: bids?.length,
-      asksLength: asks?.length
-    });
-
-    /*
-            When NOT reverted (normal state):
-            - ask: taker_gets = curr1, taker_pays = curr2
-            - bid: taker_gets = curr2, taker_pays = curr1
-            - amount1 = curr1 (input currency), amount2 = curr2 (output currency)
-            - Use bids to calculate from curr1 to curr2
-            
-            When reverted (currencies flipped):
-            - Logically we want to trade curr2 for curr1 now
-            - amount1 still represents the top input, but now it's curr2
-            - amount2 represents the bottom output, but now it's curr1
-            - Use asks to calculate from curr2 to curr1
-         */
     try {
-      amt = new Decimal(amount).toNumber();
-    } catch (e) {
-      console.log('Error parsing amount:', e);
-    }
+      const amt = new Decimal(amount || 0).toNumber();
+      if (amt === 0) return '';
 
-    if (amt === 0) {
-      console.log('Amount is 0, returning empty string');
-      return '';
-    }
+      console.log('calcQuantity debug:', {
+        amount: amt,
+        active,
+        revert,
+        tokenExch1,
+        tokenExch2,
+        curr1: curr1?.currency,
+        curr2: curr2?.currency,
+        token1Currency: token1?.currency,
+        token2Currency: token2?.currency
+      });
 
-    // Determine which orderbook to use based on revert state and calculation direction
-    const useAsks = revert;
-    const orderbook = useAsks ? asks : bids;
+      // Check if either currency is XRP
+      const curr1IsXRP = curr1?.currency === 'XRP';
+      const curr2IsXRP = curr2?.currency === 'XRP';
 
-    if (!orderbook || orderbook.length === 0) {
-      console.log(`No ${useAsks ? 'asks' : 'bids'} available for calculation`);
-      return '';
-    }
+      // Use token exchange rates for calculation
+      const rate1 = new Decimal(tokenExch1 || 0);
+      const rate2 = new Decimal(tokenExch2 || 0);
 
-    try {
-      if (active === 'AMOUNT') {
-        console.log('Calculating VALUE from AMOUNT:', amt, `using ${useAsks ? 'asks' : 'bids'}`);
-        for (var order of orderbook) {
-          console.log('Checking order:', { sumAmount: order.sumAmount, sumValue: order.sumValue });
-          if (order.sumAmount >= amt) {
-            val = new Decimal(order.sumValue).mul(amt).div(order.sumAmount).toNumber();
-            console.log('Found matching order, calculated value:', val);
-            break;
-          }
+      // For XRP pairs, we need different handling
+      if (curr1IsXRP || curr2IsXRP) {
+        console.log('Handling XRP pair calculation:', {
+          curr1IsXRP,
+          curr2IsXRP,
+          rate1: rate1.toNumber(),
+          rate2: rate2.toNumber(),
+          active,
+          amount: amt
+        });
+
+        // For XRP pairs, try to use a simple approach
+        // If one rate is 0 or both are 0, we can't calculate
+        if (rate1.eq(0) && rate2.eq(0)) {
+          console.log('Both rates are 0, cannot calculate');
+          return '';
         }
+
+        let result = 0;
+
+        // Simplified logic based on what we're converting
+        if (curr1IsXRP && !curr2IsXRP) {
+          // curr1 = XRP, curr2 = Token (e.g., USD)
+          // rate1 = XRP price in USD, rate2 = Token price (usually 1 for USD)
+          const xrpPriceInUSD = rate1.toNumber();
+          const tokenPrice = rate2.toNumber() || 1;
+
+          if (active === 'AMOUNT') {
+            // Input: XRP amount, Output: Token amount
+            // XRP_amount * XRP_price_in_USD = USD_amount
+            result = new Decimal(amt).mul(xrpPriceInUSD).toNumber();
+          } else {
+            // Input: Token amount (USD), Output: XRP amount
+            // USD_amount * XRP_price_as_rate = XRP_amount (direct rate conversion)
+            result = new Decimal(amt).mul(xrpPriceInUSD).toNumber();
+          }
+        } else if (!curr1IsXRP && curr2IsXRP) {
+          // curr1 = Token (e.g., USD), curr2 = XRP
+          // rate1 = Token price, rate2 = XRP price in USD
+          const tokenPrice = rate1.toNumber() || 1;
+          const xrpPriceInUSD = rate2.toNumber();
+
+          if (active === 'AMOUNT') {
+            // Input: Token amount (USD), Output: XRP amount
+            // USD_amount * XRP_price_as_rate = XRP_amount (direct rate conversion)
+            result = new Decimal(amt).mul(xrpPriceInUSD).toNumber();
+          } else {
+            // Input: XRP amount, Output: Token amount (USD)
+            // XRP_amount * XRP_price_in_USD = USD_amount
+            result = new Decimal(amt).mul(xrpPriceInUSD).toNumber();
+          }
+        } else {
+          // Both XRP (shouldn't happen)
+          result = amt;
+        }
+
+        console.log('XRP calculation result:', {
+          input: amt,
+          rate1: rate1.toNumber(),
+          rate2: rate2.toNumber(),
+          result,
+          curr1IsXRP,
+          curr2IsXRP,
+          active,
+          calculation: curr1IsXRP
+            ? active === 'AMOUNT'
+              ? `${amt} XRP * ${rate1.toNumber()} = ${result}`
+              : `${amt} USD * ${rate1.toNumber()} = ${result}`
+            : active === 'AMOUNT'
+            ? `${amt} USD * ${rate1.toNumber()} = ${result}`
+            : `${amt} XRP * ${rate1.toNumber()} = ${result}`
+        });
+
+        return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
       } else {
-        console.log('Calculating AMOUNT from VALUE:', amt, `using ${useAsks ? 'asks' : 'bids'}`);
-        for (var order of orderbook) {
-          console.log('Checking order:', { sumAmount: order.sumAmount, sumValue: order.sumValue });
-          if (order.sumValue >= amt) {
-            val = new Decimal(order.sumAmount).mul(amt).div(order.sumValue).toNumber();
-            console.log('Found matching order, calculated amount:', val);
-            break;
+        // Both are non-XRP tokens - use original logic
+        if (rate1.eq(0) || rate2.eq(0)) {
+          console.log('Exchange rates not available');
+          return '';
+        }
+
+        let result = 0;
+
+        if (active === 'AMOUNT') {
+          // Calculate value from amount
+          if (revert) {
+            // When reverted: amount1 (top) is curr2, calculate curr1 value
+            result = new Decimal(amt).mul(rate2).div(rate1).toNumber();
+          } else {
+            // Normal: amount1 (top) is curr1, calculate curr2 value
+            result = new Decimal(amt).mul(rate1).div(rate2).toNumber();
+          }
+        } else {
+          // Calculate amount from value
+          if (revert) {
+            // When reverted: value is in curr1, calculate curr2 amount
+            result = new Decimal(amt).mul(rate1).div(rate2).toNumber();
+          } else {
+            // Normal: value is in curr2, calculate curr1 amount
+            result = new Decimal(amt).mul(rate2).div(rate1).toNumber();
           }
         }
+
+        return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
       }
-
-      const result = new Decimal(val).toFixed(6, Decimal.ROUND_DOWN);
-      console.log('Final calculated result:', result);
-      return result;
     } catch (e) {
-      console.log('Error in calculation:', e);
+      console.log('Error in price calculation:', e);
+      return '';
     }
-
-    return 0;
   };
 
   const handleScanQRClose = () => {
@@ -1196,14 +1238,41 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
 
+    console.log('handleChangeAmount1 called:', {
+      value,
+      revert,
+      curr1: curr1?.currency,
+      curr2: curr2?.currency
+    });
+
     setAmount1(value);
     setActive(revert ? 'VALUE' : 'AMOUNT');
 
-    // Immediately calculate the corresponding amount
-    if (value && value !== '' && asks && bids && bids.length > 0) {
+    // Calculate using token prices
+    const curr1IsXRP = curr1?.currency === 'XRP';
+    const curr2IsXRP = curr2?.currency === 'XRP';
+
+    // Check if we have valid rates for calculation
+    const hasValidRates =
+      curr1IsXRP || curr2IsXRP
+        ? tokenExch1 > 0 || tokenExch2 > 0
+        : tokenExch1 > 0 && tokenExch2 > 0;
+
+    if (value && value !== '' && hasValidRates) {
       const activeType = revert ? 'VALUE' : 'AMOUNT';
+      console.log('About to call calcQuantity with:', {
+        value,
+        activeType,
+        revert,
+        curr1IsXRP,
+        curr2IsXRP
+      });
+
       const calculatedValue = calcQuantity(value, activeType);
-      if (calculatedValue) {
+      console.log('calcQuantity returned:', calculatedValue);
+
+      if (calculatedValue && calculatedValue !== '0') {
+        console.log('Setting amount2 to:', calculatedValue);
         setAmount2(calculatedValue);
       }
     } else if (!value || value === '') {
@@ -1217,14 +1286,41 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     if (value == '.') value = '0.';
     if (isNaN(Number(value))) return;
 
+    console.log('handleChangeAmount2 called:', {
+      value,
+      revert,
+      curr1: curr1?.currency,
+      curr2: curr2?.currency
+    });
+
     setAmount2(value);
     setActive(revert ? 'AMOUNT' : 'VALUE');
 
-    // Immediately calculate the corresponding amount
-    if (value && value !== '' && asks && bids && bids.length > 0) {
+    // Calculate using token prices
+    const curr1IsXRP = curr1?.currency === 'XRP';
+    const curr2IsXRP = curr2?.currency === 'XRP';
+
+    // Check if we have valid rates for calculation
+    const hasValidRates =
+      curr1IsXRP || curr2IsXRP
+        ? tokenExch1 > 0 || tokenExch2 > 0
+        : tokenExch1 > 0 && tokenExch2 > 0;
+
+    if (value && value !== '' && hasValidRates) {
       const activeType = revert ? 'AMOUNT' : 'VALUE';
+      console.log('About to call calcQuantity with:', {
+        value,
+        activeType,
+        revert,
+        curr1IsXRP,
+        curr2IsXRP
+      });
+
       const calculatedValue = calcQuantity(value, activeType);
-      if (calculatedValue) {
+      console.log('calcQuantity returned:', calculatedValue);
+
+      if (calculatedValue && calculatedValue !== '0') {
+        console.log('Setting amount1 to:', calculatedValue);
         setAmount1(calculatedValue);
       }
     } else if (!value || value === '') {
@@ -1251,13 +1347,11 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const onRevertExchange = () => {
     setIsSwitching(true);
 
-    // Store current values
-    const tempAmount1 = amount1;
-    const tempAmount2 = amount2;
+    // Store current tokens
     const tempToken1 = token1;
     const tempToken2 = token2;
 
-    // Clear amounts temporarily for smooth transition
+    // Clear amounts immediately when switching
     setAmount1('');
     setAmount2('');
 
@@ -1272,10 +1366,8 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
       curr2: tempToken1
     });
 
-    // Restore values in switched positions after a small delay
+    // Complete the switching animation without restoring amounts
     setTimeout(() => {
-      setAmount1(tempAmount2);
-      setAmount2(tempAmount1);
       setIsSwitching(false);
     }, 200);
   };

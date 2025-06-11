@@ -209,15 +209,7 @@ function Overview({ data }) {
             minHeight: '100vh'
           }}
         >
-          <Swap
-            tokens={tokens}
-            asks={asks}
-            bids={bids}
-            pair={pair}
-            setPair={setPair}
-            revert={revert}
-            setRevert={setRevert}
-          />
+          <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
         </Stack>
       </Container>
 
