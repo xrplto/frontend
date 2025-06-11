@@ -346,6 +346,101 @@ const getPriceImpactSeverity = (impact) => {
   return 'High';
 };
 
+const WalletDisplay = styled('div')(
+  ({ theme }) => `
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(
+    theme.palette.success.main,
+    0.04
+  )} 100%);
+    border: 1px solid ${alpha(theme.palette.success.main, 0.2)};
+    backdrop-filter: blur(10px);
+    
+    @media (max-width: 600px) {
+      margin-left: 10px;
+      margin-right: 10px;
+    }
+`
+);
+
+const WalletInfo = styled('div')(
+  ({ theme }) => `
+    display: flex;
+    align-items: center;
+    gap: 12px;
+`
+);
+
+const WalletIcon = styled('div')(
+  ({ theme }) => `
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: ${alpha(theme.palette.success.main, 0.15)};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: ${theme.palette.success.main};
+`
+);
+
+const WalletDetails = styled('div')(
+  ({ theme }) => `
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+`
+);
+
+const WalletAddress = styled(Typography)(
+  ({ theme }) => `
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: ${theme.palette.mode === 'dark' ? 'white' : 'black'};
+    
+    @media (max-width: 600px) {
+      font-size: 0.75rem;
+    }
+`
+);
+
+const WalletType = styled(Typography)(
+  ({ theme }) => `
+    font-size: 0.75rem;
+    color: ${theme.palette.success.main};
+    font-weight: 500;
+    text-transform: capitalize;
+`
+);
+
+const StatusIndicator = styled('div')(
+  ({ theme }) => `
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: ${theme.palette.success.main};
+    animation: pulse 2s infinite;
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 ${alpha(theme.palette.success.main, 0.7)};
+      }
+      70% {
+        box-shadow: 0 0 0 4px ${alpha(theme.palette.success.main, 0)};
+      }
+      100% {
+        box-shadow: 0 0 0 0 ${alpha(theme.palette.success.main, 0)};
+      }
+    }
+`
+);
+
 export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
   const theme = useTheme();
   const BASE_URL = process.env.API_URL;
@@ -989,9 +1084,42 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
     else return 'Exchange';
   };
 
+  const formatAddress = (address) => {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-6)}`;
+  };
+
+  const getWalletTypeDisplay = (walletType) => {
+    switch (walletType) {
+      case 'xaman':
+        return 'Xaman';
+      case 'gem':
+        return 'GemWallet';
+      case 'crossmark':
+        return 'Crossmark';
+      default:
+        return walletType || 'Unknown';
+    }
+  };
+
   return (
     <Stack alignItems="center" sx={{ width: '100%', maxWidth: '480px', margin: '0 auto' }}>
       <Stack sx={{ width: '100%' }}>
+        {accountProfile && accountProfile.account && (
+          <WalletDisplay>
+            <WalletInfo>
+              <WalletIcon>
+                <AccountBalanceWalletIcon fontSize="small" />
+              </WalletIcon>
+              <WalletDetails>
+                <WalletAddress>{formatAddress(accountProfile.account)}</WalletAddress>
+                <WalletType>{getWalletTypeDisplay(accountProfile.wallet_type)}</WalletType>
+              </WalletDetails>
+            </WalletInfo>
+            <StatusIndicator />
+          </WalletDisplay>
+        )}
+
         <OverviewWrapper sx={{ width: '100%', mb: 3 }}>
           <ConverterFrame>
             {isLoggedIn && (
