@@ -1,7 +1,7 @@
 /* Define CSS variables for colors */
 :root {
-  --link-color-light: #3366FF; /* Color for light theme links */
-  --link-color-dark: #22B14C;  /* Color for dark theme links */
+  --link-color-light: #3366ff; /* Color for light theme links */
+  --link-color-dark: #22b14c; /* Color for dark theme links */
 }
 
 /* Combine selectors for light and dark themes */
@@ -11,8 +11,12 @@
   text-decoration: none;
 }
 
-.reactMarkDownlight a { color: var(--link-color-light); }
-.reactMarkDowndark a { color: var(--link-color-dark); }
+.reactMarkDownlight a {
+  color: var(--link-color-light);
+}
+.reactMarkDowndark a {
+  color: var(--link-color-dark);
+}
 
 /* Headings */
 .reactMarkDown h2 {
@@ -27,8 +31,14 @@
   transform: translateX(-40px);
 }
 
+/* ECharts tooltip styling */
+.echarts-tooltip {
+  z-index: 9999 !important;
+  pointer-events: none !important;
+}
+
 /* dropdown menu css */
-#dropdown_menu{
+#dropdown_menu {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -42,10 +52,10 @@ ul#dropItems {
   padding: 12px;
   width: 230px;
   z-index: 1010;
-  top:35px;
-  transform-origin:left top;
+  top: 35px;
+  transform-origin: left top;
   opacity: 0;
-  transform:scale(0.7);
+  transform: scale(0.7);
   transition: opacity 0.1s, transform 0.1s;
 }
 ul#dropItems li {
@@ -54,13 +64,13 @@ ul#dropItems li {
   margin: 3px 15px;
   transition: background-color 0.3s;
 }
-#darkItem:hover{
+#darkItem:hover {
   background: #2a2a2a;
 }
-#lightItem:hover{
+#lightItem:hover {
   background: #dfdfdf;
 }
-#dropdown_menu li a:hover ul#dropItems{
-  transform:scale(1);
+#dropdown_menu li a:hover ul#dropItems {
+  transform: scale(1);
   opacity: 1;
 }

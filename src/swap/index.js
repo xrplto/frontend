@@ -522,6 +522,9 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
   const [hasTrustline2, setHasTrustline2] = useState(true);
   const [transactionType, setTransactionType] = useState('OfferCreate');
 
+  // Add slippage state
+  const [slippage, setSlippage] = useState(5); // Default 5% slippage
+
   const amount = revert ? amount2 : amount1;
   let value = revert ? amount1 : amount2;
   const setAmount = revert ? setAmount2 : setAmount1;
@@ -1159,11 +1162,32 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
         Amount = new Decimal(Amount.value).mul(1000000).toString();
       }
 
+      // Calculate slippage amounts
+      const slippageDecimal = new Decimal(slippage).div(100);
+      let DeliverMin, DeliverMax;
+
+      // DeliverMax is the same as Amount (what we want to receive)
+      DeliverMax = Amount;
+
+      // DeliverMin is Amount minus slippage tolerance
+      if (typeof Amount === 'object') {
+        DeliverMin = {
+          currency: Amount.currency,
+          issuer: Amount.issuer,
+          value: new Decimal(Amount.value).mul(new Decimal(1).sub(slippageDecimal)).toString()
+        };
+      } else {
+        // For XRP amounts (strings)
+        DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toString();
+      }
+
       const body = {
         TransactionType: 'Payment',
         Account,
         Destination: Account,
         Amount,
+        DeliverMax,
+        DeliverMin,
         SendMax,
         Flags,
         user_token,
@@ -1209,6 +1233,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 Account,
                 Destination: Account,
                 Amount,
+                DeliverMax,
+                DeliverMin,
                 SendMax,
                 Flags,
                 Fee: '12',
@@ -1255,6 +1281,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
             Account,
             Destination: Account,
             Amount,
+            DeliverMax,
+            DeliverMin,
             SendMax,
             Flags,
             Fee: '12',
@@ -1944,6 +1972,142 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               </InputContent>
             </CurrencyContent>
 
+            {/* Add slippage control before the price impact section */}
+            <CurrencyContent
+              style={{
+                order: 3.5,
+                backgroundColor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
+                border: `1px solid ${
+                  theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                }`,
+                borderRadius: '0',
+                margin: '0 16px',
+                padding: '16px 24px'
+              }}
+            >
+              <Stack
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
+                sx={{ width: '100%' }}
+              >
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Typography
+                    variant="s6"
+                    sx={{
+                      color: theme.palette.mode === 'dark' ? 'white' : 'black',
+                      fontWeight: 500
+                    }}
+                  >
+                    Slippage tolerance
+                  </Typography>
+                  <Icon
+                    icon={infoFill}
+                    width={14}
+                    height={14}
+                    style={{
+                      color:
+                        theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                      cursor: 'help'
+                    }}
+                    title="Maximum price movement you're willing to accept"
+                  />
+                </Stack>
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  {[1, 3, 5].map((preset) => (
+                    <Button
+                      key={preset}
+                      size="small"
+                      variant={slippage === preset ? 'contained' : 'text'}
+                      onClick={() => setSlippage(preset)}
+                      sx={{
+                        minWidth: '36px',
+                        height: '28px',
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        ...(slippage === preset
+                          ? {
+                              background: theme.palette.primary.main,
+                              color: 'white',
+                              '&:hover': {
+                                background: theme.palette.primary.dark
+                              }
+                            }
+                          : {
+                              color:
+                                theme.palette.mode === 'dark'
+                                  ? 'rgba(255,255,255,0.7)'
+                                  : 'rgba(0,0,0,0.7)',
+                              '&:hover': {
+                                background:
+                                  theme.palette.mode === 'dark'
+                                    ? 'rgba(255,255,255,0.08)'
+                                    : 'rgba(0,0,0,0.04)'
+                              }
+                            })
+                      }}
+                    >
+                      {preset}%
+                    </Button>
+                  ))}
+                  <Stack direction="row" alignItems="center" spacing={0.5}>
+                    <Input
+                      value={slippage}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (
+                          val === '' ||
+                          (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 50)
+                        ) {
+                          setSlippage(val === '' ? 0 : parseFloat(val));
+                        }
+                      }}
+                      disableUnderline
+                      sx={{
+                        width: '45px',
+                        input: {
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          textAlign: 'center',
+                          padding: '4px 6px',
+                          border: `1px solid ${
+                            theme.palette.mode === 'dark'
+                              ? 'rgba(255, 255, 255, 0.2)'
+                              : 'rgba(0, 0, 0, 0.2)'
+                          }`,
+                          borderRadius: '6px',
+                          background:
+                            theme.palette.mode === 'dark'
+                              ? 'rgba(255,255,255,0.05)'
+                              : 'rgba(0,0,0,0.02)',
+                          color: theme.palette.mode === 'dark' ? 'white' : 'black',
+                          '&:focus': {
+                            borderColor: theme.palette.primary.main,
+                            outline: 'none'
+                          }
+                        }
+                      }}
+                    />
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color:
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255,255,255,0.7)'
+                            : 'rgba(0,0,0,0.7)',
+                        fontSize: '0.75rem',
+                        fontWeight: 500
+                      }}
+                    >
+                      %
+                    </Typography>
+                  </Stack>
+                </Stack>
+              </Stack>
+            </CurrencyContent>
+
             <CurrencyContent
               style={{
                 order: 4,
@@ -2091,7 +2255,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
             )}`,
             padding: '12px',
             position: 'relative',
-            overflow: 'hidden',
+            overflow: 'visible',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
               transform: 'translateY(-4px)',
@@ -2182,7 +2346,16 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                     .toNumber()
                 )}
               </Typography>
-              <Box sx={{ height: '32px', width: '100%', mt: '-1px' }}>
+              <Box
+                sx={{
+                  height: '32px',
+                  width: '100%',
+                  mt: '-1px',
+                  position: 'relative',
+                  zIndex: 10,
+                  overflow: 'visible'
+                }}
+              >
                 <SparklineChart
                   url={`${BASE_URL}/sparkline/${revert ? token2.md5 : token1.md5}?period=24h&${
                     revert ? token2.pro24h : token1.pro24h
@@ -2260,7 +2433,16 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                     .toNumber()
                 )}
               </Typography>
-              <Box sx={{ height: '32px', width: '100%', mt: '-1px' }}>
+              <Box
+                sx={{
+                  height: '32px',
+                  width: '100%',
+                  mt: '-1px',
+                  position: 'relative',
+                  zIndex: 10,
+                  overflow: 'visible'
+                }}
+              >
                 <SparklineChart
                   url={`${BASE_URL}/sparkline/${revert ? token1.md5 : token2.md5}?period=24h&${
                     revert ? token1.pro24h : token2.pro24h

@@ -1,7 +1,7 @@
 /* Define CSS variables for colors */
 :root {
-  --link-color-light: #3366FF; /* Color for light theme links */
-  --link-color-dark: #22B14C;  /* Color for dark theme links */
+  --link-color-light: #3366ff; /* Color for light theme links */
+  --link-color-dark: #22b14c; /* Color for dark theme links */
 }
 
 /* Light theme */
@@ -35,6 +35,12 @@
 /* Additional styles for webxtor: token trade tab bid/ask chart */
 .apexcharts-xaxis-label-infini:last-child {
   transform: translateX(-40px);
+}
+
+/* ECharts tooltip styling */
+.echarts-tooltip {
+  z-index: 9999 !important;
+  pointer-events: none !important;
 }
 
 /* Dropdown menu CSS */

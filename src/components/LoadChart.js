@@ -85,7 +85,9 @@ const LoadChart = ({ url, ...props }) => {
             // Return only the formatted date and price
             return `${formattedDate}<br/>Price: ${originalPrice}`;
           },
-          padding: [8, 12]
+          padding: [8, 12],
+          z: 9999,
+          appendToBody: true
         },
         xAxis: {
           type: 'category',
