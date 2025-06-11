@@ -96,13 +96,36 @@ const OverviewWrapper = styled('div')(
     overflow: hidden;
     box-sizing: border-box;
     position: relative;
-    border-radius: 16px;
+    border-radius: 24px;
     display: flex;
-    background-color: ${theme.palette.mode === 'dark' ? '#000000' : '#ffffff'};
-    border: 1px solid ${
-      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-    };
+    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.8
+  )} 100%);
+    backdropFilter: blur(20px);
+    border: 1px solid ${alpha(theme.palette.divider, 0.08)};
+    box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.06)}, 0 2px 8px ${alpha(
+    theme.palette.primary.main,
+    0.04
+  )};
     padding-bottom: 10px;
+    position: relative;
+    overflow: visible;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      right: -1px;
+      height: 3px;
+      background: linear-gradient(90deg, ${theme.palette.primary.main}, ${
+    theme.palette.success.main
+  }, ${theme.palette.info.main});
+      opacity: 0.8;
+      border-radius: 24px 24px 0 0;
+      z-index: 10;
+    }
 
     @media (max-width: 600px) {
         border-right: none;
@@ -115,6 +138,10 @@ const OverviewWrapper = styled('div')(
         border-bottom: 1px solid ${
           theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
         };
+        
+        &::before {
+          display: none;
+        }
     }
 `
 );
@@ -1194,12 +1221,39 @@ export default function Swap({ asks, bids, pair, setPair, revert, setRevert }) {
             width: '100%',
             mt: 4,
             mb: 3,
-            backgroundColor: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
-            borderRadius: '16px',
-            border: `1px solid ${
-              theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-            }`,
-            padding: '12px'
+            background: `linear-gradient(135deg, ${alpha(
+              theme.palette.background.paper,
+              0.9
+            )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+            backdropFilter: 'blur(20px)',
+            borderRadius: '20px',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 0 2px 8px ${alpha(
+              theme.palette.primary.main,
+              0.05
+            )}`,
+            padding: '12px',
+            position: 'relative',
+            overflow: 'hidden',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: `0 16px 48px ${alpha(
+                theme.palette.common.black,
+                0.12
+              )}, 0 4px 16px ${alpha(theme.palette.primary.main, 0.1)}`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
+            },
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '3px',
+              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
+              opacity: 0.8
+            }
           }}
         >
           <Stack
