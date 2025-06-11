@@ -60,13 +60,25 @@ const CurrencyContent = styled('div')(
     display: flex;
     flex: 1 1 0%;
     flex-direction: row;
-    padding: 10px 24px;
+    padding: 20px 32px;
     border-radius: 10px;
     -webkit-box-align: center;
     align-items: center;
     background-color: #000000;
     &:not(:first-of-type) {
       margin-top: 2px;
+    }
+    
+    @media (max-width: 600px) {
+      padding: 16px 24px;
+      margin-left: 8px;
+      margin-right: 8px;
+    }
+    
+    @media (min-width: 900px) {
+      padding: 24px 40px;
+      margin-left: 16px;
+      margin-right: 16px;
     }
 `
 );
@@ -143,6 +155,15 @@ const OverviewWrapper = styled('div')(
           display: none;
         }
     }
+    
+    @media (min-width: 900px) {
+        border-radius: 28px;
+        padding-bottom: 16px;
+        
+        &::before {
+          border-radius: 28px 28px 0 0;
+        }
+    }
 `
 );
 
@@ -171,6 +192,14 @@ const ExchangeButton = styled(Button)(
     @media (max-width: 600px) {
         margin-left: 10px;
         margin-right: 10px;
+    }
+    @media (min-width: 900px) {
+        margin-left: 16px;
+        margin-right: 16px;
+        padding: 12px 32px;
+        border-radius: 16px;
+        min-height: 60px;
+        font-size: 20px;
     }
     position: relative;
     overflow: hidden;
@@ -314,8 +343,8 @@ const ToggleButton = styled(IconButton)(
     border: 1px solid ${
       theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
     };
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     position: absolute;
     left: 50%;
     top: 50%;
@@ -330,6 +359,16 @@ const ToggleButton = styled(IconButton)(
 
     &.switching {
       transform: translate(-50%, -50%) rotate(180deg);
+    }
+    
+    @media (max-width: 600px) {
+      width: 32px;
+      height: 32px;
+    }
+    
+    @media (min-width: 900px) {
+      width: 48px;
+      height: 48px;
     }
 `
 );
@@ -351,9 +390,9 @@ const WalletDisplay = styled('div')(
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 20px;
-    margin-bottom: 16px;
-    border-radius: 12px;
+    padding: 16px 24px;
+    margin-bottom: 20px;
+    border-radius: 16px;
     background: linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(
     theme.palette.success.main,
     0.04
@@ -364,6 +403,15 @@ const WalletDisplay = styled('div')(
     @media (max-width: 600px) {
       margin-left: 10px;
       margin-right: 10px;
+      padding: 12px 20px;
+      margin-bottom: 16px;
+      border-radius: 12px;
+    }
+    
+    @media (min-width: 900px) {
+      padding: 20px 32px;
+      margin-bottom: 24px;
+      border-radius: 20px;
     }
 `
 );
@@ -524,6 +572,10 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
   // Add slippage state
   const [slippage, setSlippage] = useState(5); // Default 5% slippage
+
+  // Add state for latest sparkline prices
+  const [latestPrice1, setLatestPrice1] = useState(null);
+  const [latestPrice2, setLatestPrice2] = useState(null);
 
   const amount = revert ? amount2 : amount1;
   let value = revert ? amount1 : amount2;
@@ -969,6 +1021,36 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
 
     getAccountInfo();
   }, [accountProfile, curr1, curr2, sync, isSwapped]);
+
+  // Add function to fetch latest sparkline price
+  const fetchLatestSparklinePrice = async (token, setPriceFunction) => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/sparkline/${token.md5}?period=24h&${token.pro24h}`
+      );
+
+      if (response.data && response.data.data && response.data.data.prices) {
+        const prices = response.data.data.prices;
+        if (prices.length > 0) {
+          // Get the latest price (last element in the array)
+          const latestPrice = prices[prices.length - 1];
+          setPriceFunction(latestPrice);
+        }
+      }
+    } catch (error) {
+      console.log('Error fetching sparkline data:', error);
+    }
+  };
+
+  // Fetch latest sparkline prices when tokens change
+  useEffect(() => {
+    if (token1 && token1.md5) {
+      fetchLatestSparklinePrice(token1, setLatestPrice1);
+    }
+    if (token2 && token2.md5) {
+      fetchLatestSparklinePrice(token2, setLatestPrice2);
+    }
+  }, [token1, token2]);
 
   useEffect(() => {
     function getTokenPrice() {
@@ -1815,7 +1897,10 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
   };
 
   return (
-    <Stack alignItems="center" sx={{ width: '100%', maxWidth: '480px', margin: '0 auto' }}>
+    <Stack
+      alignItems="center"
+      sx={{ width: '100%', maxWidth: '800px', margin: '0 auto', px: { xs: 1, sm: 2, md: 3 } }}
+    >
       <Stack sx={{ width: '100%' }}>
         {accountProfile && accountProfile.account && (
           <WalletDisplay>
@@ -1840,7 +1925,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 justifyContent="flex-end"
                 spacing={1}
                 sx={{
-                  px: 2,
+                  px: { xs: 2, sm: 3, md: 4 },
                   pt: 2,
                   pb: 1,
                   position: 'relative'
@@ -1870,7 +1955,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 borderBottomLeftRadius: '0',
                 borderBottomRightRadius: '0',
                 margin: '0 16px',
-                padding: '16px 24px'
+                padding: '20px 32px'
               }}
             >
               <Stack>
@@ -1895,9 +1980,9 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                     width: '100%',
                     input: {
                       autoComplete: 'off',
-                      padding: '10px 0px',
+                      padding: '12px 0px',
                       border: 'none',
-                      fontSize: '18px',
+                      fontSize: { xs: '20px', sm: '24px', md: '28px' },
                       textAlign: 'end',
                       appearance: 'none',
                       fontWeight: 700,
@@ -1911,7 +1996,10 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 <Typography
                   variant="s2"
                   color="primary"
-                  sx={{ visibility: tokenPrice1 > 0 ? 'visible' : 'hidden' }}
+                  sx={{
+                    visibility: tokenPrice1 > 0 ? 'visible' : 'hidden',
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
                 >
                   {currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}
                 </Typography>
@@ -1927,8 +2015,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               >
                 <Icon
                   icon={exchangeIcon}
-                  width={20}
-                  height={20}
+                  width={24}
+                  height={24}
                   color={theme.palette.mode === 'dark' ? '#fff' : '#000'}
                 />
               </ToggleButton>
@@ -1947,7 +2035,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                     }`,
                 borderRadius: '0',
                 margin: '0 16px',
-                padding: '16px 24px'
+                padding: '20px 32px'
               }}
             >
               <Stack>
@@ -1972,9 +2060,9 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                     width: '100%',
                     input: {
                       autoComplete: 'off',
-                      padding: '10px 0px',
+                      padding: '12px 0px',
                       border: 'none',
-                      fontSize: '18px',
+                      fontSize: { xs: '20px', sm: '24px', md: '28px' },
                       textAlign: 'end',
                       appearance: 'none',
                       fontWeight: 700,
@@ -1988,7 +2076,10 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 <Typography
                   variant="s2"
                   color="primary"
-                  sx={{ visibility: tokenPrice2 > 0 ? 'visible' : 'hidden' }}
+                  sx={{
+                    visibility: tokenPrice2 > 0 ? 'visible' : 'hidden',
+                    fontSize: { xs: '0.875rem', sm: '1rem' }
+                  }}
                 >
                   {currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}
                 </Typography>
@@ -2005,7 +2096,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 }`,
                 borderRadius: '0',
                 margin: '0 16px',
-                padding: '16px 24px'
+                padding: '20px 32px'
               }}
             >
               <Stack
@@ -2019,15 +2110,16 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                     variant="s6"
                     sx={{
                       color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                      fontWeight: 500
+                      fontWeight: 500,
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
                     }}
                   >
                     Slippage tolerance
                   </Typography>
                   <Icon
                     icon={infoFill}
-                    width={14}
-                    height={14}
+                    width={16}
+                    height={16}
                     style={{
                       color:
                         theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
@@ -2044,11 +2136,11 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                       variant={slippage === preset ? 'contained' : 'text'}
                       onClick={() => setSlippage(preset)}
                       sx={{
-                        minWidth: '36px',
-                        height: '28px',
-                        fontSize: '0.75rem',
+                        minWidth: { xs: '36px', sm: '42px' },
+                        height: { xs: '28px', sm: '32px' },
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
                         fontWeight: 600,
-                        padding: '4px 8px',
+                        padding: { xs: '4px 8px', sm: '6px 12px' },
                         borderRadius: '6px',
                         ...(slippage === preset
                           ? {
@@ -2089,12 +2181,12 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                       }}
                       disableUnderline
                       sx={{
-                        width: '45px',
+                        width: { xs: '45px', sm: '55px' },
                         input: {
-                          fontSize: '0.75rem',
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' },
                           fontWeight: 600,
                           textAlign: 'center',
-                          padding: '4px 6px',
+                          padding: { xs: '4px 6px', sm: '6px 8px' },
                           border: `1px solid ${
                             theme.palette.mode === 'dark'
                               ? 'rgba(255, 255, 255, 0.2)'
@@ -2120,7 +2212,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                           theme.palette.mode === 'dark'
                             ? 'rgba(255,255,255,0.7)'
                             : 'rgba(0,0,0,0.7)',
-                        fontSize: '0.75rem',
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
                         fontWeight: 500
                       }}
                     >
@@ -2140,7 +2232,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 }`,
                 borderRadius: '0',
                 margin: '0 16px',
-                padding: '16px 24px'
+                padding: '20px 32px'
               }}
             >
               <Stack
@@ -2156,7 +2248,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   <Typography
                     variant="s6"
                     sx={{
-                      color: theme.palette.mode === 'dark' ? 'white' : 'black'
+                      color: theme.palette.mode === 'dark' ? 'white' : 'black',
+                      fontSize: { xs: '0.875rem', sm: '1rem' }
                     }}
                   >
                     Price impact
@@ -2169,7 +2262,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                         variant="s2"
                         sx={{
                           color: getPriceImpactColor(priceImpact),
-                          fontWeight: 600
+                          fontWeight: 600,
+                          fontSize: { xs: '0.875rem', sm: '1rem' }
                         }}
                       >
                         {priceImpact}%
@@ -2179,7 +2273,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                         sx={{
                           color: getPriceImpactColor(priceImpact),
                           opacity: 0.8,
-                          fontWeight: 500
+                          fontWeight: 500,
+                          fontSize: { xs: '0.75rem', sm: '0.875rem' }
                         }}
                       >
                         ({getPriceImpactSeverity(priceImpact)})
@@ -2202,7 +2297,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 borderBottomLeftRadius: '10px',
                 borderBottomRightRadius: '10px',
                 margin: '0 16px 16px',
-                padding: '24px 24px'
+                padding: '24px 32px'
               }}
             >
               {(!hasTrustline1 && curr1.currency !== 'XRP') ||
@@ -2234,6 +2329,11 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   fullWidth
                   onClick={handlePlaceOrder}
                   disabled={!canPlaceOrder || isProcessing == 1}
+                  sx={{
+                    minHeight: { xs: '48px', sm: '56px' },
+                    fontSize: { xs: '16px', sm: '18px' },
+                    fontWeight: 600
+                  }}
                 >
                   {handleMsg()}
                 </ExchangeButton>
@@ -2244,9 +2344,9 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                     '& .MuiButton-root': {
                       width: '100% !important',
                       minWidth: '100% !important',
-                      padding: '12px 24px !important',
-                      minHeight: '48px !important',
-                      fontSize: '16px !important'
+                      padding: { xs: '12px 24px !important', sm: '16px 32px !important' },
+                      minHeight: { xs: '48px !important', sm: '56px !important' },
+                      fontSize: { xs: '16px !important', sm: '18px !important' }
                     }
                   }}
                 >
@@ -2276,7 +2376,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               theme.palette.primary.main,
               0.05
             )}`,
-            padding: '12px',
+            padding: { xs: '12px', sm: '16px', md: '20px' },
             position: 'relative',
             overflow: 'visible',
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -2313,8 +2413,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 alt={revert ? token2.name : token1.name}
                 onError={(e) => (e.target.src = '/static/alt.webp')}
                 sx={{
-                  width: 26,
-                  height: 26,
+                  width: { xs: 26, sm: 32 },
+                  height: { xs: 26, sm: 32 },
                   borderRadius: '6px',
                   objectFit: 'cover'
                 }}
@@ -2324,7 +2424,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   variant="s7"
                   sx={{
                     color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                    fontSize: '0.825rem',
+                    fontSize: { xs: '0.825rem', sm: '0.95rem' },
                     lineHeight: 1.1
                   }}
                 >
@@ -2337,7 +2437,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                       theme.palette.mode === 'dark'
                         ? 'rgba(255, 255, 255, 0.7)'
                         : 'rgba(0, 0, 0, 0.7)',
-                    fontSize: '0.675rem',
+                    fontSize: { xs: '0.675rem', sm: '0.75rem' },
                     lineHeight: 1
                   }}
                 >
@@ -2358,20 +2458,34 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 sx={{
                   mb: 0.1,
                   color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                  fontSize: '0.825rem',
+                  fontSize: { xs: '0.825rem', sm: '0.95rem' },
                   lineHeight: 1.1
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{' '}
                 {fNumber(
-                  new Decimal(revert ? tokenExch2 : tokenExch1)
-                    .div(metrics[activeFiatCurrency] || 1)
-                    .toNumber()
+                  (() => {
+                    const currentToken = revert ? token2 : token1;
+                    const currentLatestPrice = revert ? latestPrice2 : latestPrice1;
+                    const currentExchRate = revert ? tokenExch2 : tokenExch1;
+
+                    // For XRP, use the latest sparkline price if available
+                    if (currentToken?.currency === 'XRP' && currentLatestPrice) {
+                      return new Decimal(currentLatestPrice)
+                        .div(metrics[activeFiatCurrency] || 1)
+                        .toNumber();
+                    }
+
+                    // For other tokens, use the exchange rate
+                    return new Decimal(currentExchRate)
+                      .div(metrics[activeFiatCurrency] || 1)
+                      .toNumber();
+                  })()
                 )}
               </Typography>
               <Box
                 sx={{
-                  height: '32px',
+                  height: { xs: '32px', sm: '40px' },
                   width: '100%',
                   mt: '-1px',
                   position: 'relative',
@@ -2400,8 +2514,8 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 alt={revert ? token1.name : token2.name}
                 onError={(e) => (e.target.src = '/static/alt.webp')}
                 sx={{
-                  width: 26,
-                  height: 26,
+                  width: { xs: 26, sm: 32 },
+                  height: { xs: 26, sm: 32 },
                   borderRadius: '6px',
                   objectFit: 'cover'
                 }}
@@ -2411,7 +2525,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   variant="s7"
                   sx={{
                     color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                    fontSize: '0.825rem',
+                    fontSize: { xs: '0.825rem', sm: '0.95rem' },
                     lineHeight: 1.1
                   }}
                 >
@@ -2424,7 +2538,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                       theme.palette.mode === 'dark'
                         ? 'rgba(255, 255, 255, 0.7)'
                         : 'rgba(0, 0, 0, 0.7)',
-                    fontSize: '0.675rem',
+                    fontSize: { xs: '0.675rem', sm: '0.75rem' },
                     lineHeight: 1
                   }}
                 >
@@ -2445,20 +2559,34 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 sx={{
                   mb: 0.1,
                   color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                  fontSize: '0.825rem',
+                  fontSize: { xs: '0.825rem', sm: '0.95rem' },
                   lineHeight: 1.1
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{' '}
                 {fNumber(
-                  new Decimal(revert ? tokenExch1 : tokenExch2)
-                    .div(metrics[activeFiatCurrency] || 1)
-                    .toNumber()
+                  (() => {
+                    const currentToken = revert ? token1 : token2;
+                    const currentLatestPrice = revert ? latestPrice1 : latestPrice2;
+                    const currentExchRate = revert ? tokenExch1 : tokenExch2;
+
+                    // For XRP, use the latest sparkline price if available
+                    if (currentToken?.currency === 'XRP' && currentLatestPrice) {
+                      return new Decimal(currentLatestPrice)
+                        .div(metrics[activeFiatCurrency] || 1)
+                        .toNumber();
+                    }
+
+                    // For other tokens, use the exchange rate
+                    return new Decimal(currentExchRate)
+                      .div(metrics[activeFiatCurrency] || 1)
+                      .toNumber();
+                  })()
                 )}
               </Typography>
               <Box
                 sx={{
-                  height: '32px',
+                  height: { xs: '32px', sm: '40px' },
                   width: '100%',
                   mt: '-1px',
                   position: 'relative',
