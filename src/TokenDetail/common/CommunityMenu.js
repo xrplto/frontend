@@ -1,245 +1,264 @@
+import { Fragment, useState } from 'react';
+
 // Material
-import { styled, Chip, Link, Menu, useTheme, MenuItem, Avatar, ListItemText } from '@mui/material';
+import {
+  styled,
+  Chip,
+  Link,
+  useTheme,
+  alpha,
+  Box,
+  Collapse,
+  IconButton,
+  Tooltip
+} from '@mui/material';
 
 // Iconify
 import { Icon } from '@iconify/react';
-import { useState } from 'react';
 import personFill from '@iconify/icons-bi/person-fill';
 import chevronDown from '@iconify/icons-akar-icons/chevron-down';
+import chevronUp from '@iconify/icons-akar-icons/chevron-up';
 
 // ----------------------------------------------------------------------
 const LinkChip = styled(Chip)(({ theme }) => ({
-  // color: theme.palette.text.primary,
-  '&&:hover': {
-    backgroundColor: theme.palette.grey[500_24],
+  height: '28px',
+  fontSize: '0.75rem',
+  borderRadius: '6px',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.4
+  )} 100%)`,
+  backdropFilter: 'blur(8px)',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+  color: theme.palette.primary.main,
+  fontWeight: 500,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+      theme.palette.primary.main,
+      0.04
+    )} 100%)`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+    transform: 'translateY(-1px)',
     cursor: 'pointer'
   },
-  '&&:focus': {},
-  borderRadius: '6px'
+  '&:focus': {
+    outline: 'none'
+  },
+  [theme.breakpoints.down('sm')]: {
+    height: '24px',
+    fontSize: '0.7rem',
+    '& .MuiChip-icon': {
+      fontSize: '10px'
+    }
+  }
+}));
+
+const ExpandButton = styled(IconButton)(({ theme }) => ({
+  width: '28px',
+  height: '28px',
+  padding: 0,
+  borderRadius: '6px',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.4
+  )} 100%)`,
+  backdropFilter: 'blur(8px)',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+  color: theme.palette.primary.main,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+      theme.palette.primary.main,
+      0.04
+    )} 100%)`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+    transform: 'translateY(-1px)'
+  },
+  [theme.breakpoints.down('sm')]: {
+    width: '24px',
+    height: '24px'
+  }
 }));
 
 export default function CommunityMenu({ token }) {
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [open, setOpen] = useState(false);
   const theme = useTheme();
+  const [expanded, setExpanded] = useState(false);
 
-  const {
-    name,
-    user,
-    // domain,
-    // whitepaper,
-    social
-    // issuer,
-  } = token;
+  const { social } = token;
 
   // Return null if no social links are available
   if (!social || Object.keys(social).every((key) => !social[key])) {
     return null;
   }
 
-  const handleClick = () => {};
+  const socialPlatforms = [];
 
-  const handleOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-    setOpen(true);
-  };
+  const platformConfigs = [
+    {
+      key: 'twitter',
+      name: 'Twitter',
+      icon: '/static/twitter.webp',
+      url: (handle) => `https://twitter.com/${handle}`,
+      label: 'Twitter',
+      priority: 1
+    },
+    {
+      key: 'telegram',
+      name: 'Telegram',
+      icon: '/static/telegram.webp',
+      url: (handle) => `https://t.me/${handle}`,
+      label: 'Telegram',
+      priority: 2
+    },
+    {
+      key: 'discord',
+      name: 'Discord',
+      icon: '/static/discord.webp',
+      url: (handle) => `https://discord.gg/${handle}`,
+      label: 'Discord',
+      priority: 3
+    },
+    {
+      key: 'youtube',
+      name: 'YouTube',
+      icon: '/static/youtube.webp',
+      url: (handle) => `https://youtube.com/${handle}`,
+      label: 'YouTube',
+      priority: 4
+    },
+    {
+      key: 'instagram',
+      name: 'Instagram',
+      icon: '/static/instagram.webp',
+      url: (handle) => `https://instagram.com/${handle}`,
+      label: 'Instagram',
+      priority: 5
+    },
+    {
+      key: 'facebook',
+      name: 'Facebook',
+      icon: '/static/facebook.webp',
+      url: (handle) => `https://facebook.com/${handle}`,
+      label: 'Facebook',
+      priority: 6
+    },
+    {
+      key: 'linkedin',
+      name: 'LinkedIn',
+      icon: '/static/linkedin.webp',
+      url: (handle) => `https://linkedin.com/${handle}`,
+      label: 'LinkedIn',
+      priority: 7
+    },
+    {
+      key: 'medium',
+      name: 'Medium',
+      icon: '/static/medium.webp',
+      url: (handle) => `https://medium.com/${handle}`,
+      label: 'Medium',
+      priority: 8
+    },
+    {
+      key: 'reddit',
+      name: 'Reddit',
+      icon: '/static/reddit.webp',
+      url: (handle) => `https://reddit.com/r/${handle}`,
+      label: 'Reddit',
+      priority: 9
+    }
+  ];
 
-  const handleOpen1 = (event) => {
-    setOpen(true);
-  };
+  platformConfigs.forEach((config) => {
+    if (social && social[config.key]) {
+      socialPlatforms.push({
+        name: config.name,
+        icon: config.icon,
+        url: config.url(social[config.key]),
+        label: config.label,
+        priority: config.priority
+      });
+    }
+  });
 
-  const handleClose = (event) => {
-    setOpen(false);
+  // Sort by priority
+  socialPlatforms.sort((a, b) => a.priority - b.priority);
+
+  // Split into primary (first 6) and secondary (rest)
+  const maxVisible = 6;
+  const primaryPlatforms = socialPlatforms.slice(0, maxVisible);
+  const secondaryPlatforms = socialPlatforms.slice(maxVisible);
+  const hasMore = secondaryPlatforms.length > 0;
+
+  const handleToggleExpand = () => {
+    setExpanded(!expanded);
   };
 
   return (
-    <>
-      <LinkChip
-        id="community_chip"
-        aria-owns={open ? 'simple-menu' : null}
-        aria-haspopup="true"
-        onMouseOver={handleOpen}
-        onMouseLeave={handleClose}
-        style={{ zIndex: open ? 1301 : 100 }}
-        label="Community"
-        sx={{ pl: 0.5, pr: 0.5 }}
-        deleteIcon={
-          <Icon
-            icon={chevronDown}
-            width="16"
-            height="16"
-            style={{ color: theme.palette.primary.main }}
-          />
-        }
-        onDelete={handleClick}
-        icon={<Icon icon={personFill} width="16" height="16" />}
-      />
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      {/* Primary row - always visible */}
+      <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+        {primaryPlatforms.map((platform, index) => (
+          <Link
+            key={index}
+            underline="none"
+            color="inherit"
+            target="_blank"
+            href={platform.url}
+            rel="noreferrer noopener nofollow"
+          >
+            <Tooltip title={`Visit ${platform.name}`} arrow>
+              <LinkChip
+                label={platform.label}
+                icon={<Icon icon={personFill} width="12" height="12" />}
+                clickable
+              />
+            </Tooltip>
+          </Link>
+        ))}
 
-      <Menu
-        id="simple-menu"
-        anchorEl={anchorEl}
-        open={open}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center'
-        }}
-        MenuListProps={{
-          onMouseOver: handleOpen1,
-          onMouseLeave: handleClose
-        }}
-        // PaperProps={{
-        //   sx: { width: 170, maxWidth: '100%' }
-        // }}
-      >
-        {social && social.twitter && (
-          <Link
-            underline="none"
-            color="inherit"
-            target="_blank"
-            href={`https://twitter.com/${social.twitter}`}
-            rel="noreferrer noopener nofollow"
-          >
-            <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-              <Avatar
-                alt={`${user} ${name} Twitter Profile`}
-                src="/static/twitter.webp"
-                sx={{ mr: 1, width: 24, height: 24 }}
+        {/* Show expand/collapse button if there are more platforms */}
+        {hasMore && (
+          <Tooltip title={expanded ? 'Show less' : `Show ${secondaryPlatforms.length} more`} arrow>
+            <ExpandButton onClick={handleToggleExpand} size="small">
+              <Icon
+                icon={expanded ? chevronUp : chevronDown}
+                width="14"
+                height="14"
+                style={{
+                  transition: 'transform 0.2s ease'
+                }}
               />
-              <ListItemText primary="Twitter" primaryTypographyProps={{ variant: 'subtitle2' }} />
-            </MenuItem>
-          </Link>
+            </ExpandButton>
+          </Tooltip>
         )}
-        {social && social.facebook && (
-          <Link
-            underline="none"
-            color="inherit"
-            target="_blank"
-            href={`https://facebook.com/${social.facebook}`}
-            rel="noreferrer noopener nofollow"
-          >
-            <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-              <Avatar
-                alt={`${user} ${name} Facebook Page`}
-                src="/static/facebook.webp"
-                sx={{ mr: 1, width: 24, height: 24 }}
-              />
-              <ListItemText primary="Facebook" primaryTypographyProps={{ variant: 'subtitle2' }} />
-            </MenuItem>
-          </Link>
-        )}
-        {social && social.linkedin && (
-          <Link
-            underline="none"
-            color="inherit"
-            target="_blank"
-            href={`https://linkedin.com/${social.linkedin}`}
-            rel="noreferrer noopener nofollow"
-          >
-            <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-              <Avatar
-                alt={`${user} ${name} LinkedIn Profile`}
-                src="/static/linkedin.webp"
-                sx={{ mr: 1, width: 24, height: 24 }}
-              />
-              <ListItemText primary="LinkedIn" primaryTypographyProps={{ variant: 'subtitle2' }} />
-            </MenuItem>
-          </Link>
-        )}
-        {social && social.instagram && (
-          <Link
-            underline="none"
-            color="inherit"
-            target="_blank"
-            href={`https://instagram.com/${social.instagram}`}
-            rel="noreferrer noopener nofollow"
-          >
-            <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-              <Avatar
-                alt={`${user} ${name} Instagram Profile`}
-                src="/static/instagram.webp"
-                sx={{ mr: 1, width: 24, height: 24 }}
-              />
-              <ListItemText primary="Instagram" primaryTypographyProps={{ variant: 'subtitle2' }} />
-            </MenuItem>
-          </Link>
-        )}
-        {social && social.youtube && (
-          <Link
-            underline="none"
-            color="inherit"
-            target="_blank"
-            href={`https://youtube.com/${social.youtube}`}
-            rel="noreferrer noopener nofollow"
-          >
-            <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-              <Avatar
-                alt={`${user} ${name} Youtube Channel`}
-                src="/static/youtube.webp"
-                sx={{ mr: 1, width: 24, height: 24 }}
-              />
-              <ListItemText primary="Youtube" primaryTypographyProps={{ variant: 'subtitle2' }} />
-            </MenuItem>
-          </Link>
-        )}
-        {social && social.medium && (
-          <Link
-            underline="none"
-            color="inherit"
-            target="_blank"
-            href={`https://medium.com/${social.medium}`}
-            rel="noreferrer noopener nofollow"
-          >
-            <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-              <Avatar
-                alt={`${user} ${name} Medium Publication`}
-                src="/static/medium.webp"
-                sx={{ mr: 1, width: 24, height: 24 }}
-              />
-              <ListItemText primary="Medium" primaryTypographyProps={{ variant: 'subtitle2' }} />
-            </MenuItem>
-          </Link>
-        )}
-        {social && social.twitch && (
-          <Link
-            underline="none"
-            color="inherit"
-            target="_blank"
-            href={`https://twitch.tv/${social.twitch}`}
-            rel="noreferrer noopener nofollow"
-          >
-            <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-              <Avatar
-                alt={`${user} ${name} Twitch Channel`}
-                src="/static/twitch.webp"
-                sx={{ mr: 1, width: 24, height: 24 }}
-              />
-              <ListItemText primary="Twitch" primaryTypographyProps={{ variant: 'subtitle2' }} />
-            </MenuItem>
-          </Link>
-        )}
-        {social && social.tiktok && (
-          <Link
-            underline="none"
-            color="inherit"
-            target="_blank"
-            href={`https://tiktok.com/${social.tiktok}`}
-            rel="noreferrer noopener nofollow"
-          >
-            <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-              <Avatar
-                alt={`${user} ${name} Tiktok Profile`}
-                src="/static/tiktok.webp"
-                sx={{ mr: 1, width: 24, height: 24 }}
-              />
-              <ListItemText primary="Tiktok" primaryTypographyProps={{ variant: 'subtitle2' }} />
-            </MenuItem>
-          </Link>
-        )}
-      </Menu>
-    </>
+      </Box>
+
+      {/* Secondary row - collapsible */}
+      {hasMore && (
+        <Collapse in={expanded} timeout={300}>
+          <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 0.5 }}>
+            {secondaryPlatforms.map((platform, index) => (
+              <Link
+                key={index + maxVisible}
+                underline="none"
+                color="inherit"
+                target="_blank"
+                href={platform.url}
+                rel="noreferrer noopener nofollow"
+              >
+                <Tooltip title={`Visit ${platform.name}`} arrow>
+                  <LinkChip
+                    label={platform.label}
+                    icon={<Icon icon={personFill} width="12" height="12" />}
+                    clickable
+                  />
+                </Tooltip>
+              </Link>
+            ))}
+          </Box>
+        </Collapse>
+      )}
+    </Box>
   );
 }

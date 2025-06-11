@@ -1,130 +1,95 @@
-import { useState } from 'react';
+import { Fragment } from 'react';
 
 // Material
-import {
-    styled,
-    Chip,
-    Link,
-    Menu,
-    useTheme,
-    MenuItem,
-    Avatar,
-    ListItemText
-} from '@mui/material';
+import { styled, Chip, Link, useTheme, alpha, Box } from '@mui/material';
 
 // Iconify
 import { Icon } from '@iconify/react';
-// import personFill from '@iconify/icons-bi/person-fill';
-import chevronDown from '@iconify/icons-akar-icons/chevron-down';
 import chatIcon from '@iconify/icons-bi/chat';
 
 // ----------------------------------------------------------------------
 const LinkChip = styled(Chip)(({ theme }) => ({
-    // color: theme.palette.text.primary,
-    '&&:hover' : {
-        backgroundColor: theme.palette.grey[500_24],
-        cursor: 'pointer'
-    },
-    "&&:focus": {
-    },
-    borderRadius: '6px'
+  height: '28px',
+  fontSize: '0.75rem',
+  borderRadius: '6px',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.4
+  )} 100%)`,
+  backdropFilter: 'blur(8px)',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+  color: theme.palette.primary.main,
+  fontWeight: 500,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+      theme.palette.primary.main,
+      0.04
+    )} 100%)`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+    transform: 'translateY(-1px)',
+    cursor: 'pointer'
+  },
+  '&:focus': {
+    outline: 'none'
+  },
+  [theme.breakpoints.down('sm')]: {
+    height: '24px',
+    fontSize: '0.7rem',
+    '& .MuiChip-icon': {
+      fontSize: '10px'
+    }
+  }
 }));
 
+export default function ChatMenu({ token }) {
+  const theme = useTheme();
 
-export default function CommunityMenu({token}) {
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [open, setOpen] = useState(false);
-    const theme = useTheme();
+  const { social } = token;
 
-    const {
-        name,
-        user,
-        // domain,
-        // whitepaper,
-        // issuer,
-        social,
-    } = token;
+  const chatPlatforms = [];
 
-    const handleClick = () => {
-    }
+  if (social && social.telegram) {
+    chatPlatforms.push({
+      name: 'Telegram',
+      icon: '/static/telegram.webp',
+      url: `https://t.me/${social.telegram}`,
+      label: 'Telegram'
+    });
+  }
 
-    const handleOpen = (event) => {
-        setAnchorEl(event.currentTarget);
-        setOpen(true);
-    };
+  if (social && social.discord) {
+    chatPlatforms.push({
+      name: 'Discord',
+      icon: '/static/discord.webp',
+      url: `https://discord.gg/${social.discord}`,
+      label: 'Discord'
+    });
+  }
 
-    const handleOpen1 = (event) => {
-        setOpen(true);
-    };
+  // Don't render if no chat platforms available
+  if (chatPlatforms.length === 0) {
+    return null;
+  }
 
-    const handleClose = (event) => {
-        setOpen(false);
-    };
-
-    return (
-        <>
-            <LinkChip
-                id="chat_chip"
-                aria-owns={open ? "simple-menu" : null}
-                aria-haspopup="true"
-                onMouseOver={handleOpen}
-                onMouseLeave={handleClose}
-                style={{ zIndex: open ? 1301:100 }}
-                label="Chat" sx={{pl:0.5,pr:0.5}}
-                deleteIcon={<Icon icon={chevronDown} width="16" height="16" style={{ color: theme.palette.primary.main }}/>}
-                onDelete={handleClick}
-                icon={<Icon icon={chatIcon} width="16" height="16" />}
-            />
-            
-            <Menu
-                id="simple-menu"
-                anchorEl={anchorEl}
-                open={open}
-                anchorOrigin={{
-                    vertical: "bottom",
-                    horizontal: "center"
-                }}
-                transformOrigin={{
-                    vertical: "top",
-                    horizontal: "center"
-                }}
-                MenuListProps={{
-                    onMouseOver: handleOpen1,
-                    onMouseLeave: handleClose
-                }}
-                // PaperProps={{
-                //   sx: { width: 170, maxWidth: '100%' }
-                // }}
-            >
-                {social && social.telegram && (
-                    <Link
-                        underline="none"
-                        color="inherit"
-                        target="_blank"
-                        href={`https://t.me/${social.telegram}`}
-                        rel="noreferrer noopener nofollow"
-                    >
-                        <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt={`${user} ${name} Telegram Channel`} src="/static/telegram.webp" sx={{ mr:1, width: 24, height: 24 }} />
-                            <ListItemText primary="Telegram" primaryTypographyProps={{ variant: 'subtitle2' }} />
-                        </MenuItem>
-                    </Link>
-                )}
-                {social && social.discord && (
-                    <Link
-                        underline="none"
-                        color="inherit"
-                        target="_blank"
-                        href={`https://discord.gg/${social.discord}`}
-                        rel="noreferrer noopener nofollow"
-                    >
-                        <MenuItem onClick={() => handleClose()} disableRipple sx={{ color: 'text.secondary' }}>
-                            <Avatar alt={`${user} ${name} Discord Server`} src="/static/discord.webp" sx={{ mr:1, width: 24, height: 24 }} />
-                            <ListItemText primary="Discord" primaryTypographyProps={{ variant: 'subtitle2' }} />
-                        </MenuItem>
-                    </Link>
-                )}
-            </Menu>
-        </>
-    );
+  return (
+    <Box sx={{ display: 'flex', gap: 0.5 }}>
+      {chatPlatforms.map((platform, index) => (
+        <Link
+          key={index}
+          underline="none"
+          color="inherit"
+          target="_blank"
+          href={platform.url}
+          rel="noreferrer noopener nofollow"
+        >
+          <LinkChip
+            label={platform.label}
+            icon={<Icon icon={chatIcon} width="12" height="12" />}
+            clickable
+          />
+        </Link>
+      ))}
+    </Box>
+  );
 }
