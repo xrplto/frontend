@@ -53,8 +53,8 @@ const CurrencyContent = styled('div')(
     margin: 5px 0;
     display: flex;
     flex-direction: row;
-    padding: 16px;
-    border-radius: 10px;
+    padding: 12px 16px;
+    border-radius: 8px;
     align-items: center;
     background-color: ${theme.palette.background.paper};
     border: 1px solid ${theme.palette.divider};
@@ -81,10 +81,10 @@ const OverviewWrapper = styled('div')(
     overflow: hidden;
     box-sizing: border-box;
     position: relative;
-    border-radius: 16px;
+    border-radius: 12px;
     display: flex;
     border: ${theme.palette.divider};
-    padding-bottom: 10px;
+    padding-bottom: 8px;
     width: 100%;
     background-color: ${theme.palette.background.default};
     @media (max-width: 600px) {
@@ -117,11 +117,11 @@ const ToggleContent = styled('div')(
     transform: translate(-50%, -50%);
     background-color: ${theme.palette.background.paper};
     border-radius: 50%;
-    padding: 4px;
+    padding: 3px;
     z-index: 1;
     transition: all 0.2s ease-in-out;
     border: 1px solid ${theme.palette.divider};
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
     &:hover {
       transform: translate(-50%, -50%) scale(1.1);
@@ -1221,36 +1221,47 @@ const Swap = ({ token }) => {
       <OverviewWrapper>
         <ConverterFrame>
           <CurrencyContent style={{ backgroundColor: color1 }}>
-            <Box display="flex" flexDirection="column" flex="1" gap="5.4px">
+            <Box display="flex" flexDirection="column" flex="1" gap="3px">
               <Box display="flex" justifyContent="space-between" alignItems="top" width="100%">
-                <Typography lineHeight="1.4" variant="subtitle1">
+                <Typography lineHeight="1.2" variant="body2" fontSize="0.875rem">
                   You sell
                 </Typography>
               </Box>
               <Stack direction="row" alignItems="center" spacing={0.5}>
                 <TokenImage
-                  src={`https://s1.xrpl.to/token/${curr1.md5}`} // use normal <img> attributes as props
-                  width={32}
-                  height={32}
+                  src={`https://s1.xrpl.to/token/${curr1.md5}`}
+                  width={24}
+                  height={24}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
                 />
-                <Typography variant="h6">{curr1.name}</Typography>
+                <Typography variant="subtitle1" fontSize="1rem">
+                  {curr1.name}
+                </Typography>
               </Stack>
-              <Typography variant="body2" color="textSecondary">
+              <Typography variant="caption" color="textSecondary" fontSize="0.75rem">
                 {curr1.user}
               </Typography>
             </Box>
             <InputContent>
               {isLoggedIn && (
-                <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
-                  <Typography variant="s7">
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="flex-end"
+                  spacing={0.5}
+                  sx={{ mb: 0.5 }}
+                >
+                  <Typography variant="caption" fontSize="0.75rem">
                     Balance{' '}
-                    <Typography variant="s2" color="primary">
+                    <Typography variant="caption" color="primary" fontSize="0.75rem">
                       {accountPairBalance?.curr1.value}
                     </Typography>
                   </Typography>
 
-                  <Button sx={{ px: 0, py: 0, minWidth: 0 }} onClick={onFillMax}>
+                  <Button
+                    sx={{ px: 0.5, py: 0, minWidth: 0, fontSize: '0.75rem', height: '20px' }}
+                    onClick={onFillMax}
+                  >
                     MAX
                   </Button>
                 </Stack>
@@ -1265,45 +1276,55 @@ const Swap = ({ token }) => {
                   width: '100%',
                   input: {
                     autoComplete: 'off',
-                    padding: '0px 0 10px 0px',
+                    padding: '0px 0 6px 0px',
                     border: 'none',
-                    fontSize: '18px',
+                    fontSize: '16px',
                     textAlign: 'end',
                     appearance: 'none',
                     fontWeight: 700
                   }
                 }}
               />
-              <Typography variant="body2" color="textSecondary">
+              <Typography variant="caption" color="textSecondary" fontSize="0.75rem">
                 ~{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice1)}
               </Typography>
             </InputContent>
           </CurrencyContent>
 
           <CurrencyContent style={{ backgroundColor: color2 }}>
-            <Box display="flex" flexDirection="column" flex="1" gap="5.4px">
+            <Box display="flex" flexDirection="column" flex="1" gap="3px">
               <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-                <Typography variant="subtitle1">You buy</Typography>
+                <Typography variant="body2" fontSize="0.875rem">
+                  You buy
+                </Typography>
               </Box>
               <Stack direction="row" alignItems="center" spacing={0.5}>
                 <TokenImage
-                  src={`https://s1.xrpl.to/token/${curr2.md5}`} // use normal <img> attributes as props
-                  width={32}
-                  height={32}
+                  src={`https://s1.xrpl.to/token/${curr2.md5}`}
+                  width={24}
+                  height={24}
                   onError={(event) => (event.target.src = '/static/alt.webp')}
                 />
-                <Typography variant="h6">{curr2.name}</Typography>
+                <Typography variant="subtitle1" fontSize="1rem">
+                  {curr2.name}
+                </Typography>
               </Stack>
-              <Typography variant="body2" color="textSecondary">
+              <Typography variant="caption" color="textSecondary" fontSize="0.75rem">
                 {curr2.user}
               </Typography>
             </Box>
             <InputContent>
               {isLoggedIn && (
-                <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
-                  <Typography variant="s7">
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="flex-end"
+                  spacing={0.5}
+                  sx={{ mb: 0.5 }}
+                >
+                  <Typography variant="caption" fontSize="0.75rem">
                     Balance{' '}
-                    <Typography variant="s2" color="primary">
+                    <Typography variant="caption" color="primary" fontSize="0.75rem">
                       {accountPairBalance?.curr2.value}
                     </Typography>
                   </Typography>
@@ -1320,16 +1341,16 @@ const Swap = ({ token }) => {
                   width: '100%',
                   input: {
                     autoComplete: 'off',
-                    padding: '0px 0 10px 0px',
+                    padding: '0px 0 6px 0px',
                     border: 'none',
-                    fontSize: '18px',
+                    fontSize: '16px',
                     textAlign: 'end',
                     appearance: 'none',
                     fontWeight: 700
                   }
                 }}
               />
-              <Typography variant="body2" color="textSecondary">
+              <Typography variant="caption" color="textSecondary" fontSize="0.75rem">
                 ~{currencySymbols[activeFiatCurrency]} {fNumber(tokenPrice2)}
               </Typography>
             </InputContent>
@@ -1341,7 +1362,9 @@ const Swap = ({ token }) => {
               onClick={onRevertExchange}
               sx={{
                 backgroundColor: 'transparent',
-                padding: '4px',
+                padding: '3px',
+                width: '28px',
+                height: '28px',
                 '&:hover': {
                   backgroundColor: 'transparent'
                 }
@@ -1349,8 +1372,8 @@ const Swap = ({ token }) => {
             >
               <Icon
                 icon={exchangeIcon}
-                width="20"
-                height="20"
+                width="16"
+                height="16"
                 style={{
                   color: theme.palette.text.primary,
                   transform: 'rotate(90deg)',
@@ -1361,19 +1384,24 @@ const Swap = ({ token }) => {
           </ToggleContent>
 
           {/* Add slippage control */}
-          <Box sx={{ px: 2, py: 1 }}>
+          <Box sx={{ px: 1.5, py: 0.5 }}>
             <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="body2" color="textSecondary">
+              <Typography variant="caption" color="textSecondary" fontSize="0.75rem">
                 Slippage tolerance
               </Typography>
-              <Stack direction="row" spacing={0.5} alignItems="center">
+              <Stack direction="row" spacing={0.25} alignItems="center">
                 {[1, 3, 5].map((preset) => (
                   <Button
                     key={preset}
                     size="small"
                     variant={slippage === preset ? 'contained' : 'text'}
                     onClick={() => setSlippage(preset)}
-                    sx={{ minWidth: '36px', height: '28px', fontSize: '0.75rem' }}
+                    sx={{
+                      minWidth: '28px',
+                      height: '22px',
+                      fontSize: '0.7rem',
+                      padding: '2px 6px'
+                    }}
                   >
                     {preset}%
                   </Button>
@@ -1391,17 +1419,20 @@ const Swap = ({ token }) => {
                   }}
                   disableUnderline
                   sx={{
-                    width: '45px',
+                    width: '35px',
                     input: {
-                      fontSize: '0.75rem',
+                      fontSize: '0.7rem',
                       textAlign: 'center',
-                      padding: '4px 6px',
+                      padding: '2px 4px',
                       border: '1px solid rgba(0,0,0,0.2)',
-                      borderRadius: '4px'
+                      borderRadius: '3px',
+                      height: '18px'
                     }
                   }}
                 />
-                <Typography variant="caption">%</Typography>
+                <Typography variant="caption" fontSize="0.7rem">
+                  %
+                </Typography>
               </Stack>
             </Stack>
           </Box>
@@ -1409,13 +1440,15 @@ const Swap = ({ token }) => {
           {/* Add trustline warning */}
           {((!hasTrustline1 && curr1.currency !== 'XRP') ||
             (!hasTrustline2 && curr2.currency !== 'XRP')) && (
-            <Box sx={{ px: 2, py: 1 }}>
-              <Alert severity="warning" sx={{ mb: 1 }}>
-                <AlertTitle>Missing Trustline</AlertTitle>
-                You need to set a trustline for{' '}
-                {!hasTrustline1 && curr1.currency !== 'XRP'
-                  ? getCurrencyDisplayName(curr1.currency, token1?.name)
-                  : getCurrencyDisplayName(curr2.currency, token2?.name)}
+            <Box sx={{ px: 1.5, py: 0.5 }}>
+              <Alert severity="warning" sx={{ mb: 0.5, py: 0.5 }}>
+                <AlertTitle sx={{ fontSize: '0.8rem', mb: 0.5 }}>Missing Trustline</AlertTitle>
+                <Typography variant="caption" fontSize="0.75rem">
+                  You need to set a trustline for{' '}
+                  {!hasTrustline1 && curr1.currency !== 'XRP'
+                    ? getCurrencyDisplayName(curr1.currency, token1?.name)
+                    : getCurrencyDisplayName(curr2.currency, token2?.name)}
+                </Typography>
                 <Button
                   size="small"
                   onClick={() => {
@@ -1424,7 +1457,7 @@ const Swap = ({ token }) => {
                     onCreateTrustline(missingCurrency);
                   }}
                   disabled={isProcessing === 1}
-                  sx={{ ml: 1 }}
+                  sx={{ ml: 1, fontSize: '0.7rem', padding: '2px 8px', height: '24px' }}
                 >
                   {isProcessing === 1 ? 'Setting...' : 'Set Trustline'}
                 </Button>
@@ -1439,10 +1472,10 @@ const Swap = ({ token }) => {
         alignItems="center"
         justifyContent="flex-start"
         spacing={0.5}
-        sx={{ mt: 1, mb: 1, width: '100%' }}
+        sx={{ mt: 0.5, mb: 0.5, width: '100%' }}
       >
-        <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={20} />
-        <Typography variant="body1">
+        <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={16} />
+        <Typography variant="caption" fontSize="0.8rem">
           1 {curr1.name} = {revert ? tokenExch2.toFixed(3) : (1 / tokenExch2).toFixed(3)}{' '}
           {curr2.name}
         </Typography>
@@ -1453,7 +1486,11 @@ const Swap = ({ token }) => {
           <ExchangeButton
             variant="contained"
             onClick={handlePlaceOrder}
-            sx={{ mt: 0 }}
+            sx={{
+              mt: 0,
+              height: '40px',
+              fontSize: '0.9rem'
+            }}
             disabled={
               !canPlaceOrder ||
               isProcessing == 1 ||
