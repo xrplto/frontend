@@ -177,9 +177,9 @@ export default function ExtraDesc({ token }) {
     },
     {
       title: 'Supply',
-      value: `${formatValue(supply)} / ${formatValue(amount)}`,
+      value: `${formatValue(amount)}`,
       color: theme.palette.primary.main,
-      tooltip: `Circulating Supply: The number of ${name} tokens in circulation within the market and held by the public. Total Supply: Total number of ${name} tokens that have been issued, including those not currently active in the market.`
+      tooltip: `Total Supply: Total number of ${name} tokens that have been issued.`
     }
   ];
 
