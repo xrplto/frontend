@@ -616,7 +616,7 @@ export default function PriceStatistics({ token }) {
             </ModernTableCell>
             <ModernTableCell align="left">
               <Chip
-                label={`#${Number(id) - 1}`}
+                label={`#${id}`}
                 size="small"
                 sx={{
                   borderRadius: '6px',
