@@ -1014,9 +1014,12 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                   setTimeout(() => {
                     setSync(sync + 1);
                     dispatch(updateProcess(0));
-                  }, 2000);
+                  }, 1500);
                   setSwapped(!isSwapped);
                   enqueueSnackbar('Swap completed successfully!', { variant: 'success' });
+                  // Clear amounts after successful swap
+                  setAmount1('');
+                  setAmount2('');
                 } else {
                   dispatch(updateProcess(3));
                 }
@@ -1054,9 +1057,12 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
               setTimeout(() => {
                 setSync(sync + 1);
                 dispatch(updateProcess(0));
-              }, 2000);
+              }, 1500);
               setSwapped(!isSwapped);
               enqueueSnackbar('Swap completed successfully!', { variant: 'success' });
+              // Clear amounts after successful swap
+              setAmount1('');
+              setAmount2('');
             } else {
               dispatch(updateProcess(3));
             }
@@ -1472,10 +1478,9 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 if (type == 'response') {
                   dispatch(updateProcess(2));
                   dispatch(updateTxHash(result?.hash));
-                  // Add a small delay to ensure the transaction is processed
                   setTimeout(() => {
                     setSync(sync + 1);
-                  }, 2000);
+                  }, 1500);
                   enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
                 } else {
                   dispatch(updateProcess(3));
@@ -1507,7 +1512,7 @@ export default function Swap({ pair, setPair, revert, setRevert }) {
                 dispatch(updateTxHash(response.data.resp.result?.hash));
                 setTimeout(() => {
                   setSync(sync + 1);
-                }, 2000);
+                }, 1500);
                 enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
               } else {
                 dispatch(updateProcess(3));
