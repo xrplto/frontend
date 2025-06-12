@@ -754,11 +754,6 @@ export default function UserDesc({ token }) {
           ${alpha(theme.palette.background.paper, 0.95)} 0%, 
           ${alpha(theme.palette.background.paper, 0.85)} 50%,
           ${alpha(theme.palette.background.paper, 0.75)} 100%)`,
-        boxShadow: `
-          0 2px 12px ${alpha(theme.palette.common.black, 0.08)},
-          0 1px 4px ${alpha(theme.palette.common.black, 0.04)},
-          inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
-        `,
         position: 'relative',
         overflow: 'hidden',
         backdropFilter: 'blur(8px)',
@@ -839,11 +834,7 @@ export default function UserDesc({ token }) {
                   width: 72,
                   height: 72,
                   borderRadius: '16px',
-                  border: `3px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                  boxShadow: `
-                    0 4px 16px ${alpha(theme.palette.primary.main, 0.2)},
-                    0 2px 8px ${alpha(theme.palette.common.black, 0.1)}
-                  `
+                  border: `3px solid ${alpha(theme.palette.primary.main, 0.15)}`
                 }}
               />
               {kyc && (
@@ -903,14 +894,12 @@ export default function UserDesc({ token }) {
                     border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                     fontWeight: 700,
                     px: 1.75,
-                    boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.15)}`,
                     '&:hover': {
                       background: `linear-gradient(135deg, 
                         ${alpha(theme.palette.primary.main, 0.18)} 0%, 
                         ${alpha(theme.palette.primary.main, 0.12)} 100%
                       )`,
-                      transform: 'translateY(-1px)',
-                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.25)}`
+                      transform: 'translateY(-1px)'
                     }
                   }}
                 />
@@ -947,10 +936,8 @@ export default function UserDesc({ token }) {
                     border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                     display: 'flex',
                     alignItems: 'center',
-                    boxShadow: `0 2px 6px ${alpha(theme.palette.primary.main, 0.1)}`,
                     '&:hover': {
-                      transform: 'translateY(-1px)',
-                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                      transform: 'translateY(-1px)'
                     }
                   }}
                 >
@@ -973,10 +960,8 @@ export default function UserDesc({ token }) {
                         border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
                         display: 'flex',
                         alignItems: 'center',
-                        boxShadow: `0 2px 6px ${alpha(theme.palette.success.main, 0.1)}`,
                         '&:hover': {
-                          transform: 'translateY(-1px)',
-                          boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.2)}`
+                          transform: 'translateY(-1px)'
                         }
                       }}
                     >
@@ -995,10 +980,8 @@ export default function UserDesc({ token }) {
                         border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
                         display: 'flex',
                         alignItems: 'center',
-                        boxShadow: `0 2px 6px ${alpha(theme.palette.error.main, 0.1)}`,
                         '&:hover': {
-                          transform: 'translateY(-1px)',
-                          boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.2)}`
+                          transform: 'translateY(-1px)'
                         }
                       }}
                     >
@@ -1029,10 +1012,6 @@ export default function UserDesc({ token }) {
             )`,
             border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
             minWidth: 'fit-content',
-            boxShadow: `
-              0 2px 8px ${alpha(theme.palette.common.black, 0.06)},
-              inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
-            `,
             backdropFilter: 'blur(4px)'
           }}
         >
@@ -1262,8 +1241,7 @@ export default function UserDesc({ token }) {
               theme.palette.background.paper,
               0.6
             )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-            boxShadow: `0 1px 6px ${alpha(theme.palette.common.black, 0.03)}`
+            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
           }}
         >
           <Box
@@ -1600,12 +1578,6 @@ export default function UserDesc({ token }) {
               ${alpha(theme.palette.background.paper, 0.98)} 0%, 
               ${alpha(theme.palette.background.paper, 0.95)} 50%,
               ${alpha('#ff1744', 0.02)} 100%)`,
-            boxShadow: `
-              0 0 0 1px ${alpha('#ff1744', 0.1)},
-              0 8px 32px ${alpha('#ff1744', 0.3)},
-              0 16px 64px ${alpha('#ff1744', 0.2)},
-              inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
-            `,
             position: 'relative',
             overflow: 'hidden',
             '&::before': {
@@ -1835,19 +1807,9 @@ export default function UserDesc({ token }) {
               py: 1.5,
               minWidth: '200px',
               background: 'linear-gradient(135deg, #ff1744 0%, #d32f2f 100%)',
-              boxShadow: `
-                0 4px 16px ${alpha('#ff1744', 0.3)},
-                0 2px 8px ${alpha('#ff1744', 0.2)},
-                inset 0 1px 0 ${alpha('#fff', 0.2)}
-              `,
 
               '&:hover': {
-                background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
-                boxShadow: `
-                  0 6px 20px ${alpha('#ff1744', 0.4)},
-                  0 4px 12px ${alpha('#ff1744', 0.3)},
-                  inset 0 1px 0 ${alpha('#fff', 0.2)}
-                `
+                background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)'
               },
               '&:active': {}
             }}
@@ -1872,12 +1834,6 @@ export default function UserDesc({ token }) {
               ${alpha(theme.palette.background.paper, 0.98)} 0%, 
               ${alpha(theme.palette.background.paper, 0.95)} 50%,
               ${alpha('#ff9800', 0.02)} 100%)`,
-            boxShadow: `
-              0 0 0 1px ${alpha('#ff9800', 0.1)},
-              0 8px 32px ${alpha('#ff9800', 0.3)},
-              0 16px 64px ${alpha('#ff9800', 0.2)},
-              inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
-            `,
             position: 'relative',
             overflow: 'hidden',
             '&::before': {
@@ -2107,19 +2063,9 @@ export default function UserDesc({ token }) {
               py: 1.5,
               minWidth: '200px',
               background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-              boxShadow: `
-                0 4px 16px ${alpha('#ff9800', 0.3)},
-                0 2px 8px ${alpha('#ff9800', 0.2)},
-                inset 0 1px 0 ${alpha('#fff', 0.2)}
-              `,
 
               '&:hover': {
-                background: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)',
-                boxShadow: `
-                  0 6px 20px ${alpha('#ff9800', 0.4)},
-                  0 4px 12px ${alpha('#ff9800', 0.3)},
-                  inset 0 1px 0 ${alpha('#fff', 0.2)}
-                `
+                background: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)'
               },
               '&:active': {}
             }}
