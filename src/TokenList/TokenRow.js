@@ -197,17 +197,14 @@ const getOriginIcon = (origin) => {
           sx={{
             width: '18px',
             height: '18px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(1, 60, 254, 0.1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '1px solid rgba(1, 60, 254, 0.2)',
             marginRight: '2px',
             marginBottom: '2px'
           }}
         >
-          <OpenInNewIcon sx={{ fontSize: '11px', color: '#013CFE' }} />
+          <OpenInNewIcon sx={{ fontSize: '16px', color: '#013CFE' }} />
         </Box>
       );
     case 'XPMarket':

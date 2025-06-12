@@ -335,17 +335,14 @@ const getOriginIcon = (origin) => {
           sx={{
             width: '18px',
             height: '18px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(1, 60, 254, 0.1)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '1px solid rgba(1, 60, 254, 0.2)',
             marginRight: '2px',
             marginBottom: '2px'
           }}
         >
-          <OpenInNewIcon sx={{ fontSize: '11px', color: '#013CFE' }} />
+          <OpenInNewIcon sx={{ fontSize: '16px', color: '#013CFE' }} />
         </Box>
       );
     case 'XPMarket':
@@ -440,11 +437,13 @@ const getOriginIcon = (origin) => {
 
 const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsDrawer }) => {
   const [expanded, setExpanded] = useState(false);
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isXsMobile = useMediaQuery(theme.breakpoints.down(400));
 
   if (!tags || tags.length === 0) return null;
 
-  const maxVisibleTags = 8; // Increased since chips are smaller now
-  const shouldUseVerticalLayout = tags.length > 8;
+  const maxVisibleTags = isMobile ? (isXsMobile ? 2 : 4) : 8;
+  const shouldUseVerticalLayout = tags.length > (isMobile ? 4 : 8);
   const hasMore = tags.length > maxVisibleTags;
 
   const handleToggleExpand = (e) => {
@@ -461,10 +460,10 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           label={tag}
           onClick={handleToggleExpand}
           sx={{
-            height: '22px',
-            fontSize: '0.65rem',
-            borderRadius: '4px',
-            px: 1,
+            height: isMobile ? '18px' : '22px',
+            fontSize: isMobile ? '0.55rem' : '0.65rem',
+            borderRadius: '3px',
+            px: isMobile ? 0.5 : 1,
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.primary.main,
               0.08
@@ -472,13 +471,20 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
             border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
             color: theme.palette.primary.main,
             fontWeight: 500,
+            cursor: 'pointer',
+            minHeight: isMobile ? '26px' : 'auto',
 
             '&:hover': {
               background: `linear-gradient(135deg, ${alpha(
                 theme.palette.primary.main,
                 0.12
               )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+              transform: isMobile ? 'scale(1.02)' : 'none'
+            },
+
+            '&:active': {
+              transform: isMobile ? 'scale(0.98)' : 'none'
             }
           }}
         />
@@ -497,10 +503,10 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           label={tag}
           onClick={handleDelete}
           sx={{
-            height: '22px',
-            fontSize: '0.65rem',
-            borderRadius: '4px',
-            px: 1,
+            height: isMobile ? '18px' : '22px',
+            fontSize: isMobile ? '0.55rem' : '0.65rem',
+            borderRadius: '3px',
+            px: isMobile ? 0.5 : 1,
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.8
@@ -508,6 +514,8 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
             border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
             color: theme.palette.text.primary,
             fontWeight: 500,
+            cursor: 'pointer',
+            minHeight: isMobile ? '26px' : 'auto',
 
             '&:hover': {
               background: `linear-gradient(135deg, ${alpha(
@@ -515,7 +523,12 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
                 0.08
               )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
               border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-              color: theme.palette.primary.main
+              color: theme.palette.primary.main,
+              transform: isMobile ? 'scale(1.02)' : 'none'
+            },
+
+            '&:active': {
+              transform: isMobile ? 'scale(0.98)' : 'none'
             }
           }}
         />
@@ -525,31 +538,67 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
 
   if (shouldUseVerticalLayout) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.625, width: '100%' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: isMobile ? 0.5 : 0.625,
+          width: '100%'
+        }}
+      >
         {/* Primary row */}
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.375, width: '100%' }}>
-          {tags.slice(0, 6).map((tag) => (
+        <Box
+          sx={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.375, width: '100%' }}
+        >
+          {tags.slice(0, isMobile ? (isXsMobile ? 2 : 4) : 6).map((tag) => (
             <TagChip key={tag} tag={tag} />
           ))}
-          {hasMore && !expanded && <TagChip tag={`+${tags.length - 6} more`} isExpand={true} />}
+          {hasMore && !expanded && (
+            <TagChip
+              tag={`+${tags.length - (isMobile ? (isXsMobile ? 2 : 4) : 6)} more`}
+              isExpand={true}
+            />
+          )}
         </Box>
 
         {/* Additional rows when expanded */}
         {expanded && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.625, mt: 0.25 }}>
-            {/* Split remaining tags into rows of 6 */}
-            {Array.from({ length: Math.ceil((tags.length - 6) / 6) }, (_, rowIndex) => (
-              <Box
-                key={rowIndex}
-                sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.375, width: '100%' }}
-              >
-                {tags.slice(6 + rowIndex * 6, 6 + (rowIndex + 1) * 6).map((tag) => (
-                  <TagChip key={tag} tag={tag} />
-                ))}
-              </Box>
-            ))}
+          <Box
+            sx={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 0.5 : 0.625, mt: 0.25 }}
+          >
+            {/* Split remaining tags into rows */}
+            {Array.from(
+              {
+                length: Math.ceil(
+                  (tags.length - (isMobile ? (isXsMobile ? 2 : 4) : 6)) /
+                    (isMobile ? (isXsMobile ? 2 : 4) : 6)
+                )
+              },
+              (_, rowIndex) => (
+                <Box
+                  key={rowIndex}
+                  sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: isMobile ? 0.25 : 0.375,
+                    width: '100%'
+                  }}
+                >
+                  {tags
+                    .slice(
+                      (isMobile ? (isXsMobile ? 2 : 4) : 6) +
+                        rowIndex * (isMobile ? (isXsMobile ? 2 : 4) : 6),
+                      (isMobile ? (isXsMobile ? 2 : 4) : 6) +
+                        (rowIndex + 1) * (isMobile ? (isXsMobile ? 2 : 4) : 6)
+                    )
+                    .map((tag) => (
+                      <TagChip key={tag} tag={tag} />
+                    ))}
+                </Box>
+              )
+            )}
             {/* Show less button */}
-            <Box sx={{ display: 'flex', gap: 0.375 }}>
+            <Box sx={{ display: 'flex', gap: isMobile ? 0.25 : 0.375 }}>
               <TagChip tag="Show less" isExpand={true} />
             </Box>
           </Box>
@@ -560,7 +609,7 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
 
   // Standard horizontal layout for fewer tags
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.375, width: '100%' }}>
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.375, width: '100%' }}>
       {tags.slice(0, maxVisibleTags).map((tag) => (
         <TagChip key={tag} tag={tag} />
       ))}
@@ -570,10 +619,10 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
           size="small"
           onClick={() => toggleTagsDrawer(true)}
           sx={{
-            height: '22px',
-            fontSize: '0.65rem',
-            borderRadius: '4px',
-            px: 1,
+            height: isMobile ? '18px' : '22px',
+            fontSize: isMobile ? '0.55rem' : '0.65rem',
+            borderRadius: '3px',
+            px: isMobile ? 0.5 : 1,
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.primary.main,
               0.08
@@ -581,7 +630,21 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
             border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
             color: theme.palette.primary.main,
             fontWeight: 500,
-            cursor: 'pointer'
+            cursor: 'pointer',
+            minHeight: isMobile ? '26px' : 'auto',
+
+            '&:hover': {
+              background: `linear-gradient(135deg, ${alpha(
+                theme.palette.primary.main,
+                0.12
+              )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+              transform: isMobile ? 'scale(1.02)' : 'none'
+            },
+
+            '&:active': {
+              transform: isMobile ? 'scale(0.98)' : 'none'
+            }
           }}
         />
       )}
@@ -594,6 +657,8 @@ const TagsSection = ({ tags, md5, normalizeTag, theme, handleDelete, toggleTagsD
 export default function UserDesc({ token }) {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isXsMobile = useMediaQuery(theme.breakpoints.down(400));
   const { darkMode, accountProfile, openSnackbar, activeFiatCurrency } = useContext(AppContext);
   const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
   const [rating, setRating] = useState(2);
@@ -782,10 +847,10 @@ export default function UserDesc({ token }) {
 
   return (
     <Stack
-      spacing={1.25}
+      spacing={isMobile ? 0.5 : 1.25}
       sx={{
-        p: 2,
-        borderRadius: '12px',
+        p: isMobile ? 0.75 : 2,
+        borderRadius: isMobile ? '6px' : '12px',
         background: `linear-gradient(135deg, 
           ${alpha(theme.palette.background.paper, 0.95)} 0%, 
           ${alpha(theme.palette.background.paper, 0.85)} 50%,
@@ -826,52 +891,30 @@ export default function UserDesc({ token }) {
       <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
 
       {/* Main Content Row */}
-      <Stack direction="row" spacing={1.5} alignItems="flex-start" justifyContent="space-between">
-        {/* Left Section - Token Info */}
-        <Stack direction="row" spacing={1.5} alignItems="flex-start" sx={{ flex: 1, minWidth: 0 }}>
-          {/* Compact Avatar */}
-          {isAdmin ? (
-            <div>
-              <IconCover>
-                <IconWrapper>
-                  <IconImage src={imgUrl} />
-                </IconWrapper>
-                <IconButton
-                  className="MuiIconEditButton-root"
-                  aria-label="edit"
-                  sx={{
-                    position: 'absolute',
-                    left: '0vw',
-                    top: '0vh',
-                    opacity: 0,
-                    zIndex: 1,
-                    width: '90px',
-                    height: '90px'
-                  }}
-                  onClick={() => setEditToken(token)}
-                >
-                  <EditIcon sx={{ width: 40, height: 40 }} />
-                </IconButton>
-                <ImageBackdrop className="MuiImageBackdrop-root" />
-                {kyc && (
-                  <KYCBadge>
-                    <Tooltip title="KYC Verified">
-                      <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 26 }} />
-                    </Tooltip>
-                  </KYCBadge>
-                )}
-              </IconCover>
-            </div>
-          ) : (
+      <Stack
+        direction={isMobile ? 'column' : 'row'}
+        spacing={isMobile ? 0.75 : 1.5}
+        alignItems={isMobile ? 'stretch' : 'flex-start'}
+        justifyContent="space-between"
+      >
+        {/* Mobile: Header with Avatar and Actions */}
+        {isMobile && (
+          <Stack
+            direction="row"
+            alignItems="flex-start"
+            justifyContent="space-between"
+            sx={{ width: '100%' }}
+          >
+            {/* Avatar */}
             <Box sx={{ position: 'relative', zIndex: 1 }}>
               <Avatar
                 alt={`${user} ${name} Logo`}
                 src={imgUrl}
                 sx={{
-                  width: 90,
-                  height: 90,
-                  borderRadius: '22px',
-                  border: `3px solid ${alpha(theme.palette.primary.main, 0.15)}`
+                  width: isXsMobile ? 50 : 60,
+                  height: isXsMobile ? 50 : 60,
+                  borderRadius: '12px',
+                  border: `2px solid ${alpha(theme.palette.primary.main, 0.15)}`
                 }}
               />
               {kyc && (
@@ -880,7 +923,7 @@ export default function UserDesc({ token }) {
                     <CheckCircleIcon
                       sx={{
                         color: '#00AB55',
-                        fontSize: 26,
+                        fontSize: isXsMobile ? 16 : 18,
                         filter: 'drop-shadow(0 2px 4px rgba(0, 171, 85, 0.3))'
                       }}
                     />
@@ -888,16 +931,100 @@ export default function UserDesc({ token }) {
                 </KYCBadge>
               )}
             </Box>
+
+            {/* Actions */}
+            <Stack direction="row" spacing={0.25} alignItems="flex-start">
+              <Watch token={token} />
+              <Share token={token} />
+            </Stack>
+          </Stack>
+        )}
+
+        {/* Token Info Section */}
+        <Stack
+          direction={isMobile ? 'column' : 'row'}
+          spacing={isMobile ? 0.5 : 1.5}
+          alignItems={isMobile ? 'stretch' : 'flex-start'}
+          sx={{ flex: 1, minWidth: 0 }}
+        >
+          {/* Desktop Avatar - same as before */}
+          {!isMobile && (
+            <>
+              {isAdmin ? (
+                <div>
+                  <IconCover>
+                    <IconWrapper>
+                      <IconImage src={imgUrl} />
+                    </IconWrapper>
+                    <IconButton
+                      className="MuiIconEditButton-root"
+                      aria-label="edit"
+                      sx={{
+                        position: 'absolute',
+                        left: '0vw',
+                        top: '0vh',
+                        opacity: 0,
+                        zIndex: 1,
+                        width: '90px',
+                        height: '90px'
+                      }}
+                      onClick={() => setEditToken(token)}
+                    >
+                      <EditIcon sx={{ width: 40, height: 40 }} />
+                    </IconButton>
+                    <ImageBackdrop className="MuiImageBackdrop-root" />
+                    {kyc && (
+                      <KYCBadge>
+                        <Tooltip title="KYC Verified">
+                          <CheckCircleIcon sx={{ color: '#00AB55', fontSize: 26 }} />
+                        </Tooltip>
+                      </KYCBadge>
+                    )}
+                  </IconCover>
+                </div>
+              ) : (
+                <Box sx={{ position: 'relative', zIndex: 1 }}>
+                  <Avatar
+                    alt={`${user} ${name} Logo`}
+                    src={imgUrl}
+                    sx={{
+                      width: 90,
+                      height: 90,
+                      borderRadius: '22px',
+                      border: `3px solid ${alpha(theme.palette.primary.main, 0.15)}`
+                    }}
+                  />
+                  {kyc && (
+                    <KYCBadge>
+                      <Tooltip title="KYC Verified">
+                        <CheckCircleIcon
+                          sx={{
+                            color: '#00AB55',
+                            fontSize: 26,
+                            filter: 'drop-shadow(0 2px 4px rgba(0, 171, 85, 0.3))'
+                          }}
+                        />
+                      </Tooltip>
+                    </KYCBadge>
+                  )}
+                </Box>
+              )}
+            </>
           )}
 
           {/* Token Details */}
-          <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
+          <Stack spacing={isMobile ? 0.375 : 0.5} sx={{ flex: 1, minWidth: 0 }}>
             {/* Name and Rank Row */}
-            <Stack direction="row" alignItems="center" spacing={1.25} sx={{ minWidth: 0 }}>
+            <Stack
+              direction={isMobile ? 'column' : 'row'}
+              alignItems={isMobile ? 'flex-start' : 'center'}
+              spacing={isMobile ? 0.125 : 1.25}
+              sx={{ minWidth: 0 }}
+            >
               <Typography
                 variant="h6"
                 sx={{
-                  fontSize: '1.35rem',
+                  fontSize: isMobile ? (isXsMobile ? '0.95rem' : '1.05rem') : '1.35rem',
                   fontWeight: 700,
                   background: `linear-gradient(135deg, 
                     ${theme.palette.primary.main} 0%, 
@@ -908,11 +1035,11 @@ export default function UserDesc({ token }) {
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   letterSpacing: '-0.01em',
-                  lineHeight: 1.2,
+                  lineHeight: 1,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                  maxWidth: '240px'
+                  maxWidth: isMobile ? '100%' : '240px'
                 }}
               >
                 {name}
@@ -925,57 +1052,70 @@ export default function UserDesc({ token }) {
                   variant="outlined"
                   size="small"
                   sx={{
-                    borderRadius: '8px',
-                    height: '28px',
-                    fontSize: '0.8rem',
+                    borderRadius: '4px',
+                    height: isMobile ? '18px' : '28px',
+                    fontSize: isMobile ? '0.6rem' : '0.8rem',
                     background: `linear-gradient(135deg, 
                       ${alpha(theme.palette.primary.main, 0.12)} 0%, 
                       ${alpha(theme.palette.primary.main, 0.06)} 100%
                     )`,
                     border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                     fontWeight: 600,
-                    px: 1.25,
-                    minWidth: 'auto'
+                    px: isMobile ? 0.5 : 1.25,
+                    minWidth: 'auto',
+                    alignSelf: isMobile ? 'flex-start' : 'auto'
                   }}
                 />
               </Tooltip>
             </Stack>
 
             {/* User and Badges Row */}
-            <Stack direction="row" alignItems="center" spacing={1.25} sx={{ minWidth: 0 }}>
+            <Stack
+              direction={isMobile ? 'column' : 'row'}
+              alignItems={isMobile ? 'flex-start' : 'center'}
+              spacing={isMobile ? 0.25 : 1.25}
+              sx={{ minWidth: 0 }}
+            >
               <Typography
                 variant="body2"
                 color="text.secondary"
                 sx={{
-                  fontSize: '0.9rem',
+                  fontSize: isMobile ? '0.75rem' : '0.9rem',
                   fontWeight: 500,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                  maxWidth: '160px',
-                  color: alpha(theme.palette.text.primary, 0.7)
+                  maxWidth: isMobile ? '100%' : '160px',
+                  color: alpha(theme.palette.text.primary, 0.7),
+                  lineHeight: 1
                 }}
               >
                 {user}
               </Typography>
 
               {/* Compact Badges */}
-              <Stack direction="row" spacing={0.625} alignItems="center">
+              <Stack
+                direction="row"
+                spacing={isMobile ? 0.25 : 0.625}
+                alignItems="center"
+                sx={{ flexWrap: 'wrap' }}
+              >
                 <Box
                   sx={{
-                    p: 0.625,
-                    borderRadius: '8px',
+                    p: isMobile ? 0.25 : 0.625,
+                    borderRadius: '4px',
                     background: `linear-gradient(135deg, 
                       ${alpha(theme.palette.primary.main, 0.12)} 0%, 
                       ${alpha(theme.palette.primary.main, 0.06)} 100%
                     )`,
                     border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                     display: 'flex',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    minHeight: isMobile ? '20px' : 'auto'
                   }}
                 >
                   <Tooltip title={token.origin || 'Standard Launch'}>
-                    <Box sx={{ fontSize: '18px', display: 'flex' }}>
+                    <Box sx={{ fontSize: isMobile ? '12px' : '18px', display: 'flex' }}>
                       {getOriginIcon(token.origin)}
                     </Box>
                   </Tooltip>
@@ -984,36 +1124,45 @@ export default function UserDesc({ token }) {
                   <>
                     <Box
                       sx={{
-                        p: 0.625,
-                        borderRadius: '8px',
+                        p: isMobile ? 0.25 : 0.625,
+                        borderRadius: '4px',
                         background: `linear-gradient(135deg, 
                           ${alpha(theme.palette.success.main, 0.12)} 0%, 
                           ${alpha(theme.palette.success.main, 0.06)} 100%
                         )`,
                         border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
                         display: 'flex',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        minHeight: isMobile ? '20px' : 'auto'
                       }}
                     >
                       <Tooltip title="Blackholed Issuer">
-                        <LockIcon sx={{ fontSize: '18px', color: theme.palette.success.main }} />
+                        <LockIcon
+                          sx={{
+                            fontSize: isMobile ? '12px' : '18px',
+                            color: theme.palette.success.main
+                          }}
+                        />
                       </Tooltip>
                     </Box>
                     <Box
                       sx={{
-                        p: 0.625,
-                        borderRadius: '8px',
+                        p: isMobile ? 0.25 : 0.625,
+                        borderRadius: '4px',
                         background: `linear-gradient(135deg, 
                           ${alpha(theme.palette.error.main, 0.12)} 0%, 
                           ${alpha(theme.palette.error.main, 0.06)} 100%
                         )`,
                         border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
                         display: 'flex',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        minHeight: isMobile ? '20px' : 'auto'
                       }}
                     >
                       <Tooltip title="Burned Liquidity Pool">
-                        <LocalFireDepartmentIcon sx={{ fontSize: '18px', color: '#1890FF' }} />
+                        <LocalFireDepartmentIcon
+                          sx={{ fontSize: isMobile ? '12px' : '18px', color: '#1890FF' }}
+                        />
                       </Tooltip>
                     </Box>
                   </>
@@ -1021,100 +1170,200 @@ export default function UserDesc({ token }) {
               </Stack>
             </Stack>
 
-            {/* Compact Stats Row */}
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.25,
-                flexWrap: 'wrap',
-                mt: 0.5
-              }}
-            >
-              {[
-                {
-                  label: 'Holders',
-                  value: fNumberWithSuffix(holders),
-                  color: theme.palette.error.main
-                },
-                {
-                  label: 'Offers',
-                  value: fNumberWithSuffix(offers),
-                  color: theme.palette.warning.main
-                },
-                {
-                  label: 'Transactions',
-                  value: fNumberWithSuffix(vol24htx),
-                  color: theme.palette.secondary.main
-                },
-                {
-                  label: 'Trustlines',
-                  value: fNumberWithSuffix(trustlines),
-                  color: theme.palette.info.main
-                },
-                {
-                  label: 'Created',
-                  value: (() => {
-                    // Try date first (string format like "2024-10-27")
-                    if (date) {
-                      return new Date(date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      });
-                    }
-                    // Fallback to dateon (timestamp format)
-                    if (dateon) {
-                      return new Date(dateon).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      });
-                    }
-                    return 'N/A';
-                  })(),
-                  color: theme.palette.success.main
-                }
-              ].map((stat, index) => (
-                <Box key={stat.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: '0.7rem',
-                      fontWeight: 500,
-                      color: alpha(theme.palette.text.secondary, 0.8),
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.3px'
-                    }}
-                  >
-                    {stat.label}:
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      color: stat.color
-                    }}
-                  >
-                    {stat.value}
-                  </Typography>
-                </Box>
-              ))}
-            </Box>
+            {/* Ultra Compact Stats Row - Mobile Grid Layout */}
+            {isMobile ? (
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: isXsMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                  gap: 0.375,
+                  mt: 0.125
+                }}
+              >
+                {[
+                  {
+                    label: 'Holders',
+                    value: fNumberWithSuffix(holders),
+                    color: theme.palette.error.main
+                  },
+                  {
+                    label: 'Offers',
+                    value: fNumberWithSuffix(offers),
+                    color: theme.palette.warning.main
+                  },
+                  {
+                    label: 'Transactions',
+                    value: fNumberWithSuffix(vol24htx),
+                    color: theme.palette.secondary.main
+                  },
+                  {
+                    label: 'Trustlines',
+                    value: fNumberWithSuffix(trustlines),
+                    color: theme.palette.info.main
+                  },
+                  {
+                    label: 'Created',
+                    value: (() => {
+                      if (date) {
+                        return new Date(date).toLocaleDateString('en-US', {
+                          year: '2-digit',
+                          month: 'short'
+                        });
+                      }
+                      if (dateon) {
+                        return new Date(dateon).toLocaleDateString('en-US', {
+                          year: '2-digit',
+                          month: 'short'
+                        });
+                      }
+                      return 'N/A';
+                    })(),
+                    color: theme.palette.success.main
+                  }
+                ]
+                  .slice(0, isXsMobile ? 4 : 6)
+                  .map((stat, index) => (
+                    <Box
+                      key={stat.label}
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        p: 0.375,
+                        borderRadius: '4px',
+                        background: `linear-gradient(135deg, ${alpha(stat.color, 0.06)} 0%, ${alpha(
+                          stat.color,
+                          0.02
+                        )} 100%)`,
+                        border: `1px solid ${alpha(stat.color, 0.1)}`,
+                        minHeight: '28px'
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.55rem',
+                          fontWeight: 500,
+                          color: alpha(theme.palette.text.secondary, 0.8),
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.2px',
+                          textAlign: 'center',
+                          mb: 0.075,
+                          lineHeight: 0.9
+                        }}
+                      >
+                        {stat.label}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.6rem',
+                          fontWeight: 600,
+                          color: stat.color,
+                          textAlign: 'center',
+                          lineHeight: 0.9
+                        }}
+                      >
+                        {stat.value}
+                      </Typography>
+                    </Box>
+                  ))}
+              </Box>
+            ) : (
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1.25,
+                  flexWrap: 'wrap',
+                  mt: 0.5
+                }}
+              >
+                {[
+                  {
+                    label: 'Holders',
+                    value: fNumberWithSuffix(holders),
+                    color: theme.palette.error.main
+                  },
+                  {
+                    label: 'Offers',
+                    value: fNumberWithSuffix(offers),
+                    color: theme.palette.warning.main
+                  },
+                  {
+                    label: 'Transactions',
+                    value: fNumberWithSuffix(vol24htx),
+                    color: theme.palette.secondary.main
+                  },
+                  {
+                    label: 'Trustlines',
+                    value: fNumberWithSuffix(trustlines),
+                    color: theme.palette.info.main
+                  },
+                  {
+                    label: 'Created',
+                    value: (() => {
+                      if (date) {
+                        return new Date(date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        });
+                      }
+                      if (dateon) {
+                        return new Date(dateon).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        });
+                      }
+                      return 'N/A';
+                    })(),
+                    color: theme.palette.success.main
+                  }
+                ].map((stat, index) => (
+                  <Box key={stat.label} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.7rem',
+                        fontWeight: 500,
+                        color: alpha(theme.palette.text.secondary, 0.8),
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.3px'
+                      }}
+                    >
+                      {stat.label}:
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: stat.color
+                      }}
+                    >
+                      {stat.value}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            )}
           </Stack>
         </Stack>
 
-        {/* Right Section - Actions */}
-        <Stack direction="row" spacing={0.5} alignItems="flex-start">
-          <Watch token={token} />
-          <Share token={token} />
-        </Stack>
+        {/* Desktop Actions */}
+        {!isMobile && (
+          <Stack direction="row" spacing={0.5} alignItems="flex-start">
+            <Watch token={token} />
+            <Share token={token} />
+          </Stack>
+        )}
       </Stack>
 
       {/* Mobile Price & Extra Buttons */}
       {isTablet && (
-        <Stack direction="row" spacing={0.625} sx={{ width: '100%' }}>
+        <Stack direction="row" spacing={0.375} sx={{ width: '100%' }}>
           <Box sx={{ flex: 1 }}>
             <PriceDesc token={token} />
           </Box>
@@ -1128,8 +1377,8 @@ export default function UserDesc({ token }) {
       {isTablet && showStat && (
         <Box
           sx={{
-            p: 0.75,
-            borderRadius: '6px',
+            p: isMobile ? 0.5 : 0.75,
+            borderRadius: '4px',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.6
@@ -1140,19 +1389,32 @@ export default function UserDesc({ token }) {
           <Box
             sx={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: 0.75
+              gridTemplateColumns: isMobile ? 'repeat(1, 1fr)' : 'repeat(2, 1fr)',
+              gap: isMobile ? 0.5 : 0.75
             }}
           >
             {statsData.map((stat, index) => (
-              <Stack
+              <Box
                 key={stat.label}
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  p: isMobile ? 0.375 : 0.5,
+                  borderRadius: '3px',
+                  background: `linear-gradient(135deg, ${alpha(stat.color, 0.04)} 0%, ${alpha(
+                    stat.color,
+                    0.02
+                  )} 100%)`,
+                  border: `1px solid ${alpha(stat.color, 0.08)}`,
+                  minHeight: isMobile ? '28px' : 'auto'
+                }}
               >
                 <Stack direction="row" alignItems="center" gap={0.25}>
-                  <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.55rem' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ fontWeight: 500, fontSize: isMobile ? '0.6rem' : '0.55rem' }}
+                  >
                     {stat.label}
                   </Typography>
                   {stat.label === 'Market Cap' && (
@@ -1164,7 +1426,7 @@ export default function UserDesc({ token }) {
                         </Typography>
                       }
                     >
-                      <Icon icon={infoFilled} width={6} height={6} />
+                      <Icon icon={infoFilled} width={isMobile ? 8 : 6} height={isMobile ? 8 : 6} />
                     </Tooltip>
                   )}
                   {stat.label === 'Volume (24h)' && (
@@ -1175,7 +1437,7 @@ export default function UserDesc({ token }) {
                         </Typography>
                       }
                     >
-                      <Icon icon={infoFilled} width={6} height={6} />
+                      <Icon icon={infoFilled} width={isMobile ? 8 : 6} height={isMobile ? 8 : 6} />
                     </Tooltip>
                   )}
                   {stat.label === 'Vol/Market' && (
@@ -1187,7 +1449,7 @@ export default function UserDesc({ token }) {
                         </Typography>
                       }
                     >
-                      <Icon icon={infoFilled} width={6} height={6} />
+                      <Icon icon={infoFilled} width={isMobile ? 8 : 6} height={isMobile ? 8 : 6} />
                     </Tooltip>
                   )}
                   {stat.label === 'Circ. Supply' && (
@@ -1198,7 +1460,7 @@ export default function UserDesc({ token }) {
                         </Typography>
                       }
                     >
-                      <Icon icon={infoFilled} width={6} height={6} />
+                      <Icon icon={infoFilled} width={isMobile ? 8 : 6} height={isMobile ? 8 : 6} />
                     </Tooltip>
                   )}
                   {stat.label === 'Created' && (
@@ -1209,15 +1471,15 @@ export default function UserDesc({ token }) {
                         </Typography>
                       }
                     >
-                      <Icon icon={infoFilled} width={6} height={6} />
+                      <Icon icon={infoFilled} width={isMobile ? 8 : 6} height={isMobile ? 8 : 6} />
                     </Tooltip>
                   )}
                 </Stack>
                 <Box
                   sx={{
-                    px: 0.375,
-                    py: 0.125,
-                    borderRadius: '2px',
+                    px: isMobile ? 0.5 : 0.375,
+                    py: isMobile ? 0.25 : 0.125,
+                    borderRadius: '4px',
                     background: `linear-gradient(135deg, ${alpha(stat.color, 0.08)} 0%, ${alpha(
                       stat.color,
                       0.04
@@ -1227,12 +1489,16 @@ export default function UserDesc({ token }) {
                 >
                   <Typography
                     variant="caption"
-                    sx={{ color: stat.color, fontWeight: 600, fontSize: '0.55rem' }}
+                    sx={{
+                      color: stat.color,
+                      fontWeight: 600,
+                      fontSize: isMobile ? '0.7rem' : '0.55rem'
+                    }}
                   >
                     {stat.value}
                   </Typography>
                 </Box>
-              </Stack>
+              </Box>
             ))}
           </Box>
         </Box>
@@ -1246,7 +1512,7 @@ export default function UserDesc({ token }) {
           size="small"
           sx={{
             width: '100%',
-            borderRadius: '4px',
+            borderRadius: '8px',
             background: `linear-gradient(135deg, ${alpha(
               theme.palette.background.paper,
               0.8
@@ -1254,9 +1520,9 @@ export default function UserDesc({ token }) {
             border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
             color: theme.palette.primary.main,
             fontWeight: 500,
-            fontSize: '0.65rem',
-            py: 0.25,
-            minHeight: '28px',
+            fontSize: isMobile ? '0.75rem' : '0.65rem',
+            py: isMobile ? 0.75 : 0.25,
+            minHeight: isMobile ? '44px' : '28px',
             '&:hover': {
               background: `linear-gradient(135deg, ${alpha(
                 theme.palette.primary.main,
@@ -1270,8 +1536,8 @@ export default function UserDesc({ token }) {
         </Button>
       )}
 
-      {/* Compact Tags & Links Section */}
-      <Stack spacing={0.75} sx={{ width: '100%' }}>
+      {/* Enhanced Tags & Links Section */}
+      <Stack spacing={isMobile ? 1 : 0.75} sx={{ width: '100%' }}>
         {/* Tags */}
         {enhancedTags && enhancedTags.length > 0 && (
           <Box sx={{ width: '100%' }}>
@@ -1285,61 +1551,98 @@ export default function UserDesc({ token }) {
                 toggleTagsDrawer={toggleTagsDrawer}
               />
             ) : (
-              <Stack direction="row" alignItems="center" justifyContent="space-between">
-                <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.65rem' }}>
-                  Tags
-                </Typography>
-                <Box display="flex" alignItems="center" onClick={() => toggleTagsDrawer(true)}>
-                  {enhancedTags &&
-                    enhancedTags.slice(0, 2).map((tag) => (
-                      <Chip
-                        key={`${md5}-${tag}`}
-                        label={tag}
-                        size="small"
-                        sx={{
-                          height: '22px',
-                          fontSize: '0.65rem',
-                          borderRadius: '5px',
-                          px: 1,
-                          background: `linear-gradient(135deg, ${alpha(
-                            theme.palette.background.paper,
-                            0.6
-                          )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
-                          border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                          fontWeight: 500,
-                          mr: 0.375
-                        }}
-                      />
-                    ))}
-                  {enhancedTags && enhancedTags.length > 2 && (
-                    <Chip
-                      label={`+${enhancedTags.slice(2).length}`}
-                      size="small"
+              <Box
+                sx={{
+                  p: isMobile ? 1 : 0.75,
+                  borderRadius: '8px',
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.background.paper,
+                    0.6
+                  )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                  cursor: 'pointer',
+                  minHeight: isMobile ? '52px' : 'auto',
+                  display: 'flex',
+                  alignItems: 'center',
+
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${alpha(
+                      theme.palette.primary.main,
+                      0.08
+                    )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+                  }
+                }}
+                onClick={() => toggleTagsDrawer(true)}
+              >
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ width: '100%' }}
+                >
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Typography
+                      variant="caption"
                       sx={{
-                        height: '22px',
-                        fontSize: '0.65rem',
-                        borderRadius: '5px',
-                        px: 1,
-                        background: `linear-gradient(135deg, ${alpha(
-                          theme.palette.primary.main,
-                          0.08
-                        )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                        color: theme.palette.primary.main,
                         fontWeight: 500,
-                        mr: 0.375
+                        fontSize: isMobile ? '0.75rem' : '0.65rem',
+                        color: theme.palette.text.secondary
                       }}
-                    />
-                  )}
+                    >
+                      Tags
+                    </Typography>
+                    <Box display="flex" alignItems="center" gap={0.5}>
+                      {enhancedTags &&
+                        enhancedTags.slice(0, isMobile ? 3 : 2).map((tag) => (
+                          <Chip
+                            key={`${md5}-${tag}`}
+                            label={tag}
+                            size="small"
+                            sx={{
+                              height: isMobile ? '24px' : '22px',
+                              fontSize: isMobile ? '0.7rem' : '0.65rem',
+                              borderRadius: '6px',
+                              px: isMobile ? 0.75 : 1,
+                              background: `linear-gradient(135deg, ${alpha(
+                                theme.palette.background.paper,
+                                0.6
+                              )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                              fontWeight: 500
+                            }}
+                          />
+                        ))}
+                      {enhancedTags && enhancedTags.length > (isMobile ? 3 : 2) && (
+                        <Chip
+                          label={`+${enhancedTags.slice(isMobile ? 3 : 2).length}`}
+                          size="small"
+                          sx={{
+                            height: isMobile ? '24px' : '22px',
+                            fontSize: isMobile ? '0.7rem' : '0.65rem',
+                            borderRadius: '6px',
+                            px: isMobile ? 0.75 : 1,
+                            background: `linear-gradient(135deg, ${alpha(
+                              theme.palette.primary.main,
+                              0.08
+                            )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                            border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                            color: theme.palette.primary.main,
+                            fontWeight: 500
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </Stack>
                   <KeyboardArrowRightIcon
                     sx={{
-                      width: 12,
-                      height: 12,
+                      width: isMobile ? 16 : 12,
+                      height: isMobile ? 16 : 12,
                       color: theme.palette.primary.main
                     }}
                   />
-                </Box>
-              </Stack>
+                </Stack>
+              </Box>
             )}
           </Box>
         )}
@@ -1367,9 +1670,9 @@ export default function UserDesc({ token }) {
                       label={domain}
                       size="small"
                       sx={{
-                        height: '20px',
-                        fontSize: '0.6rem',
-                        borderRadius: '4px',
+                        height: '28px',
+                        fontSize: '0.75rem',
+                        borderRadius: '6px',
                         background: `linear-gradient(135deg, ${alpha(
                           theme.palette.background.paper,
                           0.8
@@ -1377,13 +1680,16 @@ export default function UserDesc({ token }) {
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                         color: theme.palette.primary.main,
                         fontWeight: 500,
+                        transition: 'all 0.2s ease',
 
                         '&:hover': {
                           background: `linear-gradient(135deg, ${alpha(
                             theme.palette.primary.main,
                             0.08
                           )} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                          transform: 'translateY(-1px)',
+                          cursor: 'pointer'
                         }
                       }}
                       deleteIcon={
@@ -1409,13 +1715,14 @@ export default function UserDesc({ token }) {
                 onClick={() => toggleLinksDrawer(true)}
                 sx={{
                   cursor: 'pointer',
-                  p: 0.375,
-                  borderRadius: '5px',
+                  p: isMobile ? 1 : 0.75,
+                  borderRadius: '8px',
                   background: `linear-gradient(135deg, ${alpha(
                     theme.palette.background.paper,
                     0.6
                   )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
                   border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+                  minHeight: isMobile ? '52px' : 'auto',
 
                   '&:hover': {
                     background: `linear-gradient(135deg, ${alpha(
@@ -1426,19 +1733,30 @@ export default function UserDesc({ token }) {
                   }
                 }}
               >
-                <Typography
-                  variant="caption"
-                  sx={{ fontSize: '0.6rem', color: theme.palette.text.secondary, mr: 0.375 }}
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ width: '100%' }}
                 >
-                  Links
-                </Typography>
-                <KeyboardArrowRightIcon
-                  sx={{
-                    width: 12,
-                    height: 12,
-                    color: theme.palette.primary.main
-                  }}
-                />
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: isMobile ? '0.75rem' : '0.6rem',
+                      color: theme.palette.text.secondary,
+                      fontWeight: 500
+                    }}
+                  >
+                    Links & Social
+                  </Typography>
+                  <KeyboardArrowRightIcon
+                    sx={{
+                      width: isMobile ? 16 : 12,
+                      height: isMobile ? 16 : 12,
+                      color: theme.palette.primary.main
+                    }}
+                  />
+                </Stack>
               </Box>
             )}
           </Box>
