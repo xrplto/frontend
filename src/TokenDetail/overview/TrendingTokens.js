@@ -60,25 +60,17 @@ const KYCBadge = styled(Badge)(({ theme }) => ({
 }));
 
 const TrendingCard = styled(Card)(({ theme, darkMode, rank }) => {
-  const getCardGradient = (rank, darkMode) => {
-    if (rank <= 3) {
-      return darkMode
-        ? `linear-gradient(135deg, ${alpha('#FFD700', 0.15)} 0%, ${alpha('#FFA500', 0.1)} 100%)`
-        : `linear-gradient(135deg, ${alpha('#FFD700', 0.08)} 0%, ${alpha('#FFA500', 0.05)} 100%)`;
-    }
-    return darkMode
-      ? `linear-gradient(135deg, ${alpha('#ffffff', 0.05)} 0%, ${alpha('#f8f9fa', 0.02)} 100%)`
-      : `linear-gradient(135deg, ${alpha('#ffffff', 0.9)} 0%, ${alpha('#f8f9fa', 0.7)} 100%)`;
-  };
-
   return {
     position: 'relative',
-    background: getCardGradient(rank, darkMode),
+    backgroundColor:
+      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.9)',
     backdropFilter: 'blur(20px)',
     border:
       rank <= 3
         ? `2px solid ${alpha('#FFD700', 0.3)}`
-        : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        : `1px solid ${
+            theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
+          }`,
     borderRadius: '12px',
     boxShadow: darkMode
       ? `0 4px 16px ${alpha('#000', 0.4)}, inset 0 1px 0 ${alpha('#fff', 0.1)}`
