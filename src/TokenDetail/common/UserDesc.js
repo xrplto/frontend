@@ -686,6 +686,7 @@ export default function UserDesc({ token }) {
   };
 
   const [openScamWarning, setOpenScamWarning] = useState(false);
+  const [openHighRiskWarning, setOpenHighRiskWarning] = useState(false);
 
   // Move the session initialization useEffect inside the component
   useEffect(() => {
@@ -699,6 +700,18 @@ export default function UserDesc({ token }) {
     if (tags && tags.some((tag) => tag.toLowerCase() === 'scam') && !hasShownWarningForToken(id)) {
       setOpenScamWarning(true);
       markWarningShownForToken(id);
+    }
+  }, [tags, id]);
+
+  // Move the high risk warning useEffect inside the component
+  useEffect(() => {
+    if (
+      tags &&
+      tags.some((tag) => tag.toLowerCase() === 'high risk') &&
+      !hasShownWarningForToken(`${id}-highrisk`)
+    ) {
+      setOpenHighRiskWarning(true);
+      markWarningShownForToken(`${id}-highrisk`);
     }
   }, [tags, id]);
 
@@ -1741,6 +1754,300 @@ export default function UserDesc({ token }) {
             }}
           >
             I Understand the Risks
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openHighRiskWarning}
+        onClose={() => setOpenHighRiskWarning(false)}
+        aria-labelledby="high-risk-warning-dialog"
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            maxWidth: '480px',
+            border: '3px solid #ff9800',
+            borderRadius: '20px',
+            background: `linear-gradient(135deg, 
+              ${alpha(theme.palette.background.paper, 0.98)} 0%, 
+              ${alpha(theme.palette.background.paper, 0.95)} 50%,
+              ${alpha('#ff9800', 0.02)} 100%)`,
+            backdropFilter: 'blur(24px)',
+            boxShadow: `
+              0 0 0 1px ${alpha('#ff9800', 0.1)},
+              0 8px 32px ${alpha('#ff9800', 0.3)},
+              0 16px 64px ${alpha('#ff9800', 0.2)},
+              inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}
+            `,
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              background: 'linear-gradient(90deg, #ff9800, #ffc107, #ffeb3b, #ffc107, #ff9800)',
+              backgroundSize: '200% 100%',
+              animation: 'shimmer 2s ease-in-out infinite'
+            },
+            '@keyframes shimmer': {
+              '0%': { backgroundPosition: '-200% 0' },
+              '100%': { backgroundPosition: '200% 0' }
+            }
+          }
+        }}
+        BackdropProps={{
+          sx: {
+            backgroundColor: alpha('#000', 0.7),
+            backdropFilter: 'blur(8px)'
+          }
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 1.5,
+            p: 3,
+            pb: 2,
+            background: `linear-gradient(135deg, 
+              ${alpha('#ff9800', 0.08)} 0%, 
+              ${alpha('#ff9800', 0.04)} 50%,
+              transparent 100%)`,
+            borderBottom: `1px solid ${alpha('#ff9800', 0.15)}`,
+            position: 'relative'
+          }}
+        >
+          {/* Animated Warning Icon */}
+          <Box
+            sx={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              background: `linear-gradient(135deg, 
+                ${alpha('#ff9800', 0.15)} 0%, 
+                ${alpha('#ff9800', 0.08)} 100%)`,
+              border: `2px solid ${alpha('#ff9800', 0.3)}`,
+              animation: 'pulse 2s ease-in-out infinite',
+              '@keyframes pulse': {
+                '0%, 100%': {
+                  transform: 'scale(1)',
+                  boxShadow: `0 0 0 0 ${alpha('#ff9800', 0.4)}`
+                },
+                '50%': {
+                  transform: 'scale(1.05)',
+                  boxShadow: `0 0 0 8px ${alpha('#ff9800', 0)}`
+                }
+              }
+            }}
+          >
+            <WarningIcon
+              sx={{
+                color: '#ff9800',
+                width: 32,
+                height: 32,
+                filter: 'drop-shadow(0 2px 4px rgba(255, 152, 0, 0.3))'
+              }}
+            />
+          </Box>
+
+          {/* Title with gradient text */}
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 800,
+                fontSize: '1.75rem',
+                background: 'linear-gradient(135deg, #ff9800 0%, #ffc107 50%, #ffeb3b 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: `0 2px 8px ${alpha('#ff9800', 0.3)}`,
+                letterSpacing: '-0.02em',
+                mb: 0.5
+              }}
+            >
+              ⚠️ HIGH RISK ⚠️
+            </Typography>
+            <Typography
+              variant="subtitle1"
+              sx={{
+                color: alpha(theme.palette.warning.main, 0.8),
+                fontWeight: 600,
+                fontSize: '0.95rem'
+              }}
+            >
+              High Risk Investment Detected
+            </Typography>
+          </Box>
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 3, pt: 2 }}>
+          {/* Main warning message */}
+          <Box
+            sx={{
+              p: 2.5,
+              borderRadius: '12px',
+              background: `linear-gradient(135deg, 
+                ${alpha('#ff9800', 0.06)} 0%, 
+                ${alpha('#ff9800', 0.02)} 100%)`,
+              border: `1px solid ${alpha('#ff9800', 0.15)}`,
+              mb: 2.5
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                color: theme.palette.text.primary,
+                fontWeight: 600,
+                fontSize: '1rem',
+                lineHeight: 1.6,
+                textAlign: 'center',
+                mb: 1
+              }}
+            >
+              This token has been classified as{' '}
+              <strong style={{ color: '#ff9800' }}>HIGH RISK</strong>.
+              <br />
+              Exercise extreme caution before investing!
+            </Typography>
+          </Box>
+
+          {/* Risk factors */}
+          <Box
+            sx={{
+              p: 2.5,
+              borderRadius: '12px',
+              background: `linear-gradient(135deg, 
+                ${alpha(theme.palette.background.paper, 0.8)} 0%, 
+                ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+              backdropFilter: 'blur(8px)'
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                color: theme.palette.text.primary,
+                fontWeight: 700,
+                fontSize: '1rem',
+                mb: 1.5,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1
+              }}
+            >
+              <Box
+                sx={{
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${theme.palette.warning.main}, ${theme.palette.error.main})`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Typography sx={{ color: 'white', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                  !
+                </Typography>
+              </Box>
+              Risk Factors
+            </Typography>
+
+            <Stack spacing={1.5}>
+              {[
+                { icon: '📉', text: 'High volatility and price swings' },
+                { icon: '💸', text: 'Potential for significant losses' },
+                { icon: '🔍', text: 'Limited or unverified project information' },
+                { icon: '⏰', text: 'New or experimental token' },
+                { icon: '🎯', text: 'Speculative investment nature' }
+              ].map((item, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 1.5,
+                    p: 1,
+                    borderRadius: '8px',
+                    background: alpha(theme.palette.background.paper, 0.5),
+                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      background: alpha(theme.palette.warning.main, 0.04),
+                      border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`
+                    }
+                  }}
+                >
+                  <Typography sx={{ fontSize: '1.1rem', lineHeight: 1 }}>{item.icon}</Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: theme.palette.text.primary,
+                      fontWeight: 500,
+                      fontSize: '0.875rem',
+                      lineHeight: 1.5
+                    }}
+                  >
+                    {item.text}
+                  </Typography>
+                </Box>
+              ))}
+            </Stack>
+          </Box>
+        </DialogContent>
+
+        <DialogActions
+          sx={{
+            p: 3,
+            pt: 1,
+            display: 'flex',
+            gap: 1.5,
+            justifyContent: 'center'
+          }}
+        >
+          <Button
+            onClick={() => setOpenHighRiskWarning(false)}
+            variant="contained"
+            size="large"
+            sx={{
+              borderRadius: '12px',
+              fontWeight: 700,
+              fontSize: '1rem',
+              px: 4,
+              py: 1.5,
+              minWidth: '200px',
+              background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+              boxShadow: `
+                0 4px 16px ${alpha('#ff9800', 0.3)},
+                0 2px 8px ${alpha('#ff9800', 0.2)},
+                inset 0 1px 0 ${alpha('#fff', 0.2)}
+              `,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)',
+                transform: 'translateY(-2px)',
+                boxShadow: `
+                  0 6px 20px ${alpha('#ff9800', 0.4)},
+                  0 4px 12px ${alpha('#ff9800', 0.3)},
+                  inset 0 1px 0 ${alpha('#fff', 0.2)}
+                `
+              },
+              '&:active': {
+                transform: 'translateY(0px)'
+              }
+            }}
+          >
+            I Acknowledge the Risks
           </Button>
         </DialogActions>
       </Dialog>
