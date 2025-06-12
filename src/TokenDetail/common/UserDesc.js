@@ -1190,6 +1190,18 @@ export default function UserDesc({ token }) {
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             <Typography
+              variant="caption"
+              sx={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                color: alpha(theme.palette.text.secondary, 0.9),
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}
+            >
+              Created:
+            </Typography>
+            <Typography
               variant="body2"
               sx={{
                 fontSize: '0.8rem',
