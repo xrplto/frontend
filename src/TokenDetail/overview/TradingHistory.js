@@ -98,8 +98,8 @@ const LiveCircle = styled('div')(({ theme }) => ({
 }));
 
 const TradeCard = styled(Card)(({ theme, isNew }) => ({
-  marginBottom: theme.spacing(1),
-  borderRadius: '12px',
+  marginBottom: theme.spacing(0.5),
+  borderRadius: '8px',
   backgroundColor:
     theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.9)',
   border: `1px solid ${
@@ -110,11 +110,11 @@ const TradeCard = styled(Card)(({ theme, isNew }) => ({
   overflow: 'hidden',
   animation: isNew ? `${highlightAnimation} 1s ease-in-out` : 'none',
   '&:hover': {
-    transform: 'translateY(-2px)',
+    transform: 'translateY(-1px)',
     boxShadow:
       theme.palette.mode === 'dark'
-        ? '0 8px 25px rgba(0, 0, 0, 0.3)'
-        : '0 8px 25px rgba(0, 0, 0, 0.1)',
+        ? '0 4px 12px rgba(0, 0, 0, 0.3)'
+        : '0 4px 12px rgba(0, 0, 0, 0.1)',
     border: `1px solid ${theme.palette.primary.main}40`
   }
 }));
@@ -450,7 +450,7 @@ const TradingHistory = ({ tokenId }) => {
         <Typography sx={{ display: { xs: 'none', md: 'block' } }}></Typography>
       </Box>
 
-      <Stack spacing={1.5}>
+      <Stack spacing={0.5}>
         {trades.map((trade, index) => {
           const isBuy = trade.paid.currency === 'XRP';
           const xrpAmount = getXRPAmount(trade);
@@ -460,7 +460,7 @@ const TradingHistory = ({ tokenId }) => {
           return (
             <TradeCard key={trade._id} isNew={newTradeIds.has(trade._id)}>
               <VolumeIndicator volume={volumePercentage} />
-              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
                 <Box
                   sx={{
                     display: 'grid',
@@ -469,17 +469,17 @@ const TradingHistory = ({ tokenId }) => {
                       sm: '1fr 1fr',
                       md: '2fr 1fr 2fr 2fr 1.5fr 0.5fr'
                     },
-                    gap: 2,
+                    gap: 1.5,
                     alignItems: 'center'
                   }}
                 >
                   {/* Time and Type */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography
                       variant="body2"
                       color="text.secondary"
                       fontWeight="500"
-                      sx={{ minWidth: 'fit-content' }}
+                      sx={{ minWidth: 'fit-content', fontSize: '0.8rem' }}
                     >
                       {formatRelativeTime(trade.time)}
                     </Typography>
@@ -495,61 +495,76 @@ const TradingHistory = ({ tokenId }) => {
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ fontSize: '0.75rem', display: { xs: 'block', md: 'none' } }}
+                      sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
                     >
                       Price
                     </Typography>
-                    <Typography variant="body1" fontWeight="600" color="text.primary">
+                    <Typography
+                      variant="body2"
+                      fontWeight="600"
+                      color="text.primary"
+                      sx={{ fontSize: '0.85rem' }}
+                    >
                       {formatTradeValue(price)} XRP
                     </Typography>
                   </Box>
 
                   {/* Amount */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <img
                       src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
                       alt={decodeCurrency(trade.paid.currency)}
-                      style={{ width: 20, height: 20, borderRadius: '50%' }}
+                      style={{ width: 16, height: 16, borderRadius: '50%' }}
                     />
                     <Box>
                       <Typography
                         variant="body2"
                         color="text.secondary"
-                        sx={{ fontSize: '0.75rem', display: { xs: 'block', md: 'none' } }}
+                        sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
                       >
                         Amount
                       </Typography>
-                      <Typography variant="body1" fontWeight="600" color="text.primary">
+                      <Typography
+                        variant="body2"
+                        fontWeight="600"
+                        color="text.primary"
+                        sx={{ fontSize: '0.85rem' }}
+                      >
                         {formatTradeValue(trade.paid.value)} {decodeCurrency(trade.paid.currency)}
                       </Typography>
                     </Box>
                   </Box>
 
                   {/* Total */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <img
                       src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
                       alt={decodeCurrency(trade.got.currency)}
-                      style={{ width: 20, height: 20, borderRadius: '50%' }}
+                      style={{ width: 16, height: 16, borderRadius: '50%' }}
                     />
                     <Box>
                       <Typography
                         variant="body2"
                         color="text.secondary"
-                        sx={{ fontSize: '0.75rem', display: { xs: 'block', md: 'none' } }}
+                        sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
                       >
                         Total
                       </Typography>
-                      <Typography variant="body1" fontWeight="600" color="text.primary">
+                      <Typography
+                        variant="body2"
+                        fontWeight="600"
+                        color="text.primary"
+                        sx={{ fontSize: '0.85rem' }}
+                      >
                         {formatTradeValue(trade.got.value)} {decodeCurrency(trade.got.currency)}
                       </Typography>
                     </Box>
                   </Box>
 
                   {/* Maker/Taker */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <Tooltip title={`Maker: ${trade.maker}\nTaker: ${trade.taker}`} arrow>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                         <Link
                           href={`/profile/${trade.maker}`}
                           sx={{
@@ -562,11 +577,11 @@ const TradingHistory = ({ tokenId }) => {
                             }
                           }}
                         >
-                          <Typography variant="body2" fontWeight="500">
+                          <Typography variant="body2" fontWeight="500" sx={{ fontSize: '0.8rem' }}>
                             {`${trade.maker.slice(0, 4)}...${trade.maker.slice(-4)}`}
                           </Typography>
                         </Link>
-                        <Typography variant="body1" sx={{ fontSize: '1rem' }}>
+                        <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
                           {getTradeSizeEmoji(xrpAmount)}
                         </Typography>
                         {(BOT_ADDRESSES.includes(trade.maker) ||
@@ -574,7 +589,7 @@ const TradingHistory = ({ tokenId }) => {
                           <SmartToy
                             sx={{
                               color: theme.palette.warning.main,
-                              fontSize: '1rem'
+                              fontSize: '0.9rem'
                             }}
                           />
                         )}
@@ -593,6 +608,7 @@ const TradingHistory = ({ tokenId }) => {
                         rel="noopener noreferrer"
                         sx={{
                           color: theme.palette.primary.main,
+                          padding: '4px',
                           '&:hover': {
                             color: theme.palette.primary.dark,
                             backgroundColor:
