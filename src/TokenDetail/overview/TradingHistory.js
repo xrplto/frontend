@@ -35,16 +35,16 @@ import SmartToy from '@mui/icons-material/SmartToy';
 import { getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 
 // Define the highlight animation with softer colors
-const highlightAnimation = keyframes`
+const highlightAnimation = (theme) => keyframes`
   0% {
-    background-color: rgba(76, 175, 80, 0.15);
+    background-color: ${theme.palette.primary.main}30;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2);
+    box-shadow: 0 4px 8px ${theme.palette.primary.main}40;
   }
   50% {
-    background-color: rgba(76, 175, 80, 0.08);
+    background-color: ${theme.palette.primary.main}15;
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.1);
+    box-shadow: 0 2px 4px ${theme.palette.primary.main}20;
   }
   100% {
     background-color: transparent;
@@ -61,38 +61,41 @@ const LiveIndicator = styled('div')(({ theme }) => ({
   padding: theme.spacing(0.5, 1.5),
   borderRadius: '20px',
   backgroundColor:
-    theme.palette.mode === 'dark' ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.1)',
-  border: `1px solid ${
-    theme.palette.mode === 'dark' ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)'
-  }`,
+    theme.palette.mode === 'dark'
+      ? `${theme.palette.primary.main}30`
+      : `${theme.palette.primary.main}20`,
+  border:
+    theme.palette.mode === 'dark'
+      ? `1px solid ${theme.palette.primary.main}60`
+      : `1px solid ${theme.palette.primary.main}40`,
   boxShadow:
     theme.palette.mode === 'dark'
-      ? '0 2px 8px rgba(76, 175, 80, 0.1)'
-      : '0 2px 4px rgba(76, 175, 80, 0.08)'
+      ? `0 2px 8px ${theme.palette.primary.main}30`
+      : `0 2px 4px ${theme.palette.primary.main}20`
 }));
 
 const LiveCircle = styled('div')(({ theme }) => ({
   width: '10px',
   height: '10px',
   borderRadius: '50%',
-  backgroundColor: '#4CAF50',
+  backgroundColor: theme.palette.primary.main,
   animation: 'pulse 2s infinite',
-  boxShadow: '0 0 8px rgba(76, 175, 80, 0.4)',
+  boxShadow: `0 0 8px ${theme.palette.primary.main}80`,
   '@keyframes pulse': {
     '0%': {
       transform: 'scale(0.95)',
       opacity: 0.8,
-      boxShadow: '0 0 8px rgba(76, 175, 80, 0.4)'
+      boxShadow: `0 0 8px ${theme.palette.primary.main}80`
     },
     '50%': {
       transform: 'scale(1.1)',
       opacity: 1,
-      boxShadow: '0 0 12px rgba(76, 175, 80, 0.6)'
+      boxShadow: `0 0 12px ${theme.palette.primary.main}A0`
     },
     '100%': {
       transform: 'scale(0.95)',
       opacity: 0.8,
-      boxShadow: '0 0 8px rgba(76, 175, 80, 0.4)'
+      boxShadow: `0 0 8px ${theme.palette.primary.main}80`
     }
   }
 }));
@@ -108,14 +111,14 @@ const TradeCard = styled(Card)(({ theme, isNew }) => ({
   transition: 'all 0.3s ease-in-out',
   position: 'relative',
   overflow: 'hidden',
-  animation: isNew ? `${highlightAnimation} 1s ease-in-out` : 'none',
+  animation: isNew ? `${highlightAnimation(theme)} 1s ease-in-out` : 'none',
   '&:hover': {
     transform: 'translateY(-1px)',
     boxShadow:
       theme.palette.mode === 'dark'
         ? '0 4px 12px rgba(0, 0, 0, 0.3)'
         : '0 4px 12px rgba(0, 0, 0, 0.1)',
-    border: `1px solid ${theme.palette.primary.main}40`
+    border: `1px solid ${theme.palette.primary.main}60`
   }
 }));
 
@@ -127,13 +130,16 @@ const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
   backgroundColor:
     tradetype === 'BUY'
       ? theme.palette.mode === 'dark'
-        ? 'rgba(76, 175, 80, 0.2)'
-        : 'rgba(76, 175, 80, 0.15)'
+        ? `${theme.palette.primary.main}40`
+        : `${theme.palette.primary.main}30`
       : theme.palette.mode === 'dark'
       ? 'rgba(244, 67, 54, 0.2)'
       : 'rgba(244, 67, 54, 0.15)',
-  color: tradetype === 'BUY' ? '#4CAF50' : '#F44336',
-  border: `1px solid ${tradetype === 'BUY' ? '#4CAF50' : '#F44336'}40`
+  color: tradetype === 'BUY' ? theme.palette.primary.main : '#F44336',
+  border:
+    tradetype === 'BUY'
+      ? `1px solid ${theme.palette.primary.main}80`
+      : `1px solid rgba(244, 67, 54, 0.4)`
 }));
 
 const VolumeIndicator = styled('div')(({ theme, volume }) => ({
@@ -352,7 +358,7 @@ const TradingHistory = ({ tokenId }) => {
             </Typography>
             <LiveIndicator>
               <LiveCircle />
-              <Typography variant="body2" fontWeight="600" sx={{ color: '#4CAF50' }}>
+              <Typography variant="body2" fontWeight="600" sx={{ color: 'primary.main' }}>
                 LIVE
               </Typography>
             </LiveIndicator>
@@ -375,7 +381,7 @@ const TradingHistory = ({ tokenId }) => {
             </Typography>
             <LiveIndicator>
               <LiveCircle />
-              <Typography variant="body2" fontWeight="600" sx={{ color: '#4CAF50' }}>
+              <Typography variant="body2" fontWeight="600" sx={{ color: 'primary.main' }}>
                 LIVE
               </Typography>
             </LiveIndicator>
@@ -411,7 +417,7 @@ const TradingHistory = ({ tokenId }) => {
           </Typography>
           <LiveIndicator>
             <LiveCircle />
-            <Typography variant="body2" fontWeight="600" sx={{ color: '#4CAF50' }}>
+            <Typography variant="body2" fontWeight="600" sx={{ color: 'primary.main' }}>
               LIVE
             </Typography>
           </LiveIndicator>
@@ -569,15 +575,19 @@ const TradingHistory = ({ tokenId }) => {
                           href={`/profile/${trade.maker}`}
                           sx={{
                             textDecoration: 'none',
-                            color: theme.palette.primary.main,
+                            color: 'primary.main',
                             fontWeight: '500',
                             '&:hover': {
                               textDecoration: 'underline',
-                              color: theme.palette.primary.dark
+                              color: 'primary.dark'
                             }
                           }}
                         >
-                          <Typography variant="body2" fontWeight="500" sx={{ fontSize: '0.8rem' }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight="500"
+                            sx={{ fontSize: '0.8rem', color: 'primary.main' }}
+                          >
                             {`${trade.maker.slice(0, 4)}...${trade.maker.slice(-4)}`}
                           </Typography>
                         </Link>
@@ -607,14 +617,28 @@ const TradingHistory = ({ tokenId }) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         sx={{
-                          color: theme.palette.primary.main,
+                          color: `${theme.palette.primary.main} !important`,
                           padding: '4px',
+                          borderRadius: '6px',
+                          backgroundColor:
+                            theme.palette.mode === 'dark'
+                              ? `${theme.palette.primary.main}20`
+                              : `${theme.palette.primary.main}15`,
+                          border:
+                            theme.palette.mode === 'dark'
+                              ? `1px solid ${theme.palette.primary.main}40`
+                              : `1px solid ${theme.palette.primary.main}30`,
                           '&:hover': {
-                            color: theme.palette.primary.dark,
-                            backgroundColor:
-                              theme.palette.mode === 'dark'
-                                ? 'rgba(255, 255, 255, 0.08)'
-                                : 'rgba(0, 0, 0, 0.04)'
+                            color: '#fff !important',
+                            backgroundColor: theme.palette.primary.main,
+                            border: `1px solid ${theme.palette.primary.main}`,
+                            transform: 'scale(1.05)'
+                          },
+                          '& .MuiSvgIcon-root': {
+                            color: `${theme.palette.primary.main} !important`
+                          },
+                          '&:hover .MuiSvgIcon-root': {
+                            color: '#fff !important'
                           }
                         }}
                       >
