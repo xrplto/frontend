@@ -391,19 +391,6 @@ export default function PriceDesc({ token }) {
 
         {/* Price Changes Grid */}
         <Box>
-          <Typography
-            variant="caption"
-            sx={{
-              fontSize: { xs: '0.5rem', sm: '0.525rem' },
-              fontWeight: 600,
-              color: alpha(theme.palette.text.primary, 0.8),
-              mb: 0.15,
-              display: 'block'
-            }}
-          >
-            Price Changes
-          </Typography>
-
           <Box
             sx={{
               display: 'grid',
@@ -524,7 +511,7 @@ export default function PriceDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: { xs: '0.45rem', sm: '0.5rem' },
+                        fontSize: { xs: '0.6rem', sm: '0.65rem' },
                         fontWeight: 700,
                         color: alpha(theme.palette.text.secondary, 0.8),
                         lineHeight: 1
@@ -535,8 +522,8 @@ export default function PriceDesc({ token }) {
                     <Typography
                       variant="caption"
                       sx={{
-                        fontSize: { xs: '0.5rem', sm: '0.525rem' },
-                        fontWeight: 700,
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                        fontWeight: 800,
                         color: item.color,
                         lineHeight: 1
                       }}
