@@ -3,6 +3,7 @@ import Decimal from 'decimal.js';
 import { useState, useContext } from 'react';
 import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
+import { alpha } from '@mui/material/styles';
 
 // Material
 import {
@@ -14,7 +15,9 @@ import {
   Typography,
   Paper,
   Fade,
-  CardHeader
+  CardHeader,
+  Box,
+  Chip
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
@@ -52,7 +55,7 @@ const ReadMore = ({ children }) => {
         overflow: hidden;
         text-overflow: ellipsis;
         position: relative;
-        transition: all 0.3s ease-in-out;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     
         &::after {
             content: "";
@@ -60,12 +63,13 @@ const ReadMore = ({ children }) => {
             left: 0px;
             bottom: 0px;
             width: 100%;
-            height: 4em;
+            height: 5em;
             background: linear-gradient(180deg, 
               rgba(255,255,255,0) 0%, 
-              ${theme.palette.background.default} 90%);
-            z-index: 1;
-            transition: opacity 0.3s ease-in-out;
+              ${theme.palette.background.default} 85%,
+              ${theme.palette.background.default} 100%);
+            z-index: 2;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
     `
   );
@@ -76,32 +80,54 @@ const ReadMore = ({ children }) => {
         overflow: unset;
         text-overflow: unset;
         min-height: 10em;
-        transition: all 0.3s ease-in-out;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     `
   );
 
   const ReadMoreButton = styled(Link)(
     ({ theme }) => `
-        margin-top: -8px;
-        padding: 2px 8px;
-        border-radius: 4px;
+        margin-top: 8px;
+        padding: 8px 16px;
+        border-radius: 20px;
         font-size: 0.8125rem;
+        font-weight: 500;
         color: ${theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF'};
-        transition: all 0.2s ease-in-out;
-        z-index: 2;
+        background: ${
+          theme.palette.mode === 'dark'
+            ? 'linear-gradient(135deg, rgba(34, 177, 76, 0.1) 0%, rgba(46, 204, 113, 0.05) 100%)'
+            : 'linear-gradient(135deg, rgba(51, 102, 255, 0.1) 0%, rgba(77, 121, 255, 0.05) 100%)'
+        };
+        border: 1px solid ${
+          theme.palette.mode === 'dark' ? 'rgba(34, 177, 76, 0.2)' : 'rgba(51, 102, 255, 0.2)'
+        };
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 3;
         position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
         
         &:hover {
             background: ${
-              theme.palette.mode === 'dark' ? 'rgba(34, 177, 76, 0.08)' : 'rgba(51, 102, 255, 0.08)'
+              theme.palette.mode === 'dark'
+                ? 'linear-gradient(135deg, rgba(34, 177, 76, 0.15) 0%, rgba(46, 204, 113, 0.08) 100%)'
+                : 'linear-gradient(135deg, rgba(51, 102, 255, 0.15) 0%, rgba(77, 121, 255, 0.08) 100%)'
+            };
+            transform: translateY(-2px);
+            box-shadow: ${
+              theme.palette.mode === 'dark'
+                ? '0 8px 25px rgba(34, 177, 76, 0.15)'
+                : '0 8px 25px rgba(51, 102, 255, 0.15)'
             };
         }
     `
   );
 
   return (
-    <Stack spacing={0}>
-      <Fade in={true} timeout={300}>
+    <Stack spacing={1}>
+      <Fade in={true} timeout={400}>
         {showFullContent ? (
           <ContentOpened>{children}</ContentOpened>
         ) : (
@@ -123,13 +149,102 @@ const ReadMore = ({ children }) => {
               color: 'inherit'
             }}
           >
-            {showFullContent ? 'Read less' : 'Read more'}
+            {showFullContent ? 'Show less' : 'Read more'}
           </Typography>
+          {showFullContent ? (
+            <KeyboardArrowUpIcon fontSize="small" />
+          ) : (
+            <KeyboardArrowDownIcon fontSize="small" />
+          )}
         </ReadMoreButton>
       </Stack>
     </Stack>
   );
 };
+
+// Enhanced styled components
+const StyledCard = styled(Paper)(({ theme }) => ({
+  borderRadius: '12px',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.4
+  )} 100%)`,
+  backdropFilter: 'blur(10px)',
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
+  boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '1px',
+    background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.6)}, ${alpha(
+      theme.palette.success.main,
+      0.6
+    )}, ${alpha(theme.palette.info.main, 0.6)})`,
+    opacity: 0.8,
+    zIndex: 1
+  },
+
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.08)}`
+  }
+}));
+
+const StyledCardHeader = styled(CardHeader)(({ theme }) => ({
+  padding: '20px 24px 16px',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(
+    theme.palette.primary.main,
+    0.02
+  )} 100%)`,
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+
+  '& .MuiCardHeader-title': {
+    fontSize: '1.125rem',
+    fontWeight: 700,
+    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    letterSpacing: '-0.01em'
+  }
+}));
+
+const ActionButton = styled(IconButton)(({ theme }) => ({
+  padding: '8px',
+  background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+    theme.palette.background.paper,
+    0.4
+  )} 100%)`,
+  backdropFilter: 'blur(8px)',
+  WebkitBackdropFilter: 'blur(8px)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  borderRadius: '12px',
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+
+  '&:hover': {
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+      theme.palette.primary.main,
+      0.04
+    )} 100%)`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+    transform: 'translateY(-1px)'
+  }
+}));
+
+const ContentContainer = styled(Box)(({ theme }) => ({
+  padding: '0 24px 24px',
+  position: 'relative'
+}));
 
 export default function Description({
   token,
@@ -224,11 +339,11 @@ export default function Description({
     ({ theme }) => `
         -webkit-box-flex: 1;
         flex-grow: 1;
-        height: 10em;
+        height: 12em;
         overflow: hidden;
         text-overflow: ellipsis;
         position: relative;
-        transition: all 0.3s ease-in-out;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     
         &::after {
             content: "";
@@ -236,12 +351,13 @@ export default function Description({
             left: 0px;
             bottom: 0px;
             width: 100%;
-            height: 4em;
+            height: 6em;
             background: linear-gradient(180deg, 
               rgba(255,255,255,0) 0%, 
-              ${theme.palette.background.default} 90%);
-            z-index: 1;
-            transition: opacity 0.3s ease-in-out;
+              ${theme.palette.background.default} 70%,
+              ${theme.palette.background.default} 100%);
+            z-index: 2;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
     `
   );
@@ -251,267 +367,369 @@ export default function Description({
         height: unset;
         overflow: unset;
         text-overflow: unset;
-        min-height: 10em;
-        transition: all 0.3s ease-in-out;
+        min-height: 12em;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     `
   );
+
+  const ExpandButton = styled(ActionButton)(({ theme }) => ({
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+      theme.palette.primary.main,
+      0.04
+    )} 100%)`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+    color: theme.palette.primary.main,
+
+    '&:hover': {
+      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(
+        theme.palette.primary.main,
+        0.06
+      )} 100%)`,
+      border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+      transform: 'translateY(-1px)'
+    }
+  }));
+
+  const EditButton = styled(ActionButton)(({ theme, isActive }) => ({
+    background: isActive
+      ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.15)} 0%, ${alpha(
+          theme.palette.error.main,
+          0.08
+        )} 100%)`
+      : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(
+          theme.palette.background.paper,
+          0.4
+        )} 100%)`,
+    border: `1px solid ${
+      isActive ? alpha(theme.palette.error.main, 0.3) : alpha(theme.palette.divider, 0.1)
+    }`,
+    color: isActive ? theme.palette.error.main : 'inherit',
+
+    '&:hover': {
+      background: isActive
+        ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.2)} 0%, ${alpha(
+            theme.palette.error.main,
+            0.1
+          )} 100%)`
+        : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+            theme.palette.primary.main,
+            0.04
+          )} 100%)`,
+      border: `1px solid ${
+        isActive ? alpha(theme.palette.error.main, 0.4) : alpha(theme.palette.primary.main, 0.2)
+      }`,
+      transform: 'translateY(-1px)'
+    }
+  }));
 
   return (
     <StackStyle>
       <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
 
-      <CardHeader
-        title={`About ${user}`}
-        subheader=""
-        sx={{
-          p: 1.5,
-          '& .MuiCardHeader-title': {
-            fontSize: '1rem',
-            fontWeight: 600,
-            background: (theme) =>
-              theme.palette.mode === 'dark'
-                ? 'linear-gradient(45deg, #22B14C 30%, #2ecc71 90%)'
-                : 'linear-gradient(45deg, #3366FF 30%, #4d79ff 90%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
-          }
-        }}
-        action={
-          <Stack direction="row" spacing={1}>
-            <Tooltip title={showFullContent ? 'Show less' : 'Show more'}>
-              <IconButton
-                onClick={() => setShowFullContent(!showFullContent)}
-                edge="end"
+      <StyledCard elevation={0}>
+        <StyledCardHeader
+          title={
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {`About ${user}`}
+              <Chip
+                label="Info"
                 size="small"
                 sx={{
-                  p: 0.5,
+                  height: '20px',
+                  fontSize: '0.7rem',
+                  fontWeight: 500,
                   background: (theme) =>
-                    theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(34, 177, 76, 0.1)'
+                      : 'rgba(51, 102, 255, 0.1)',
+                  color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF'),
                   border: (theme) =>
                     `1px solid ${
-                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
-                    }`,
-                  '&:hover': {
-                    background: (theme) =>
-                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                    transform: 'translateY(-1px)'
-                  }
+                      theme.palette.mode === 'dark'
+                        ? 'rgba(34, 177, 76, 0.2)'
+                        : 'rgba(51, 102, 255, 0.2)'
+                    }`
                 }}
+              />
+            </Box>
+          }
+          subheader=""
+          action={
+            <Stack direction="row" spacing={1.5}>
+              <Tooltip
+                title={showFullContent ? 'Show less content' : 'Show more content'}
+                arrow
+                placement="top"
               >
-                {showFullContent ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-              </IconButton>
-            </Tooltip>
-            {isAdmin && (
-              <Tooltip title={showEditor ? 'Apply changes' : 'Click to edit description'}>
-                <IconButton
-                  onClick={handleClickEdit}
+                <ExpandButton
+                  onClick={() => setShowFullContent(!showFullContent)}
                   edge="end"
-                  aria-label="edit"
                   size="small"
-                  sx={{
-                    p: 0.5,
-                    background: (theme) =>
-                      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)',
-                    border: (theme) =>
-                      `1px solid ${
-                        theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
-                      }`,
-                    '&:hover': {
-                      background: (theme) =>
-                        theme.palette.mode === 'dark'
-                          ? 'rgba(255,255,255,0.1)'
-                          : 'rgba(0,0,0,0.05)',
-                      transform: 'translateY(-1px)'
-                    }
-                  }}
                 >
-                  {showEditor ? <CloseIcon color="error" /> : <EditIcon />}
-                </IconButton>
+                  {showFullContent ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                </ExpandButton>
               </Tooltip>
-            )}
-          </Stack>
-        }
-      />
+              {isAdmin && (
+                <Tooltip
+                  title={showEditor ? 'Apply changes and close editor' : 'Edit description'}
+                  arrow
+                  placement="top"
+                >
+                  <EditButton
+                    onClick={handleClickEdit}
+                    edge="end"
+                    aria-label="edit"
+                    size="small"
+                    isActive={showEditor}
+                  >
+                    {showEditor ? <CloseIcon /> : <EditIcon />}
+                  </EditButton>
+                </Tooltip>
+              )}
+            </Stack>
+          }
+        />
 
-      {!showEditor && description && (
-        <Stack sx={{ px: 1.5, pb: 1.5 }}>
-          <Fade in={true} timeout={300}>
-            {showFullContent ? (
-              <ContentOpened>
-                <ReactMarkdown
-                  className={darkMode ? 'reactMarkDowndark' : 'reactMarkDownlight'}
-                  components={{
-                    p: ({ node, ...props }) => (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          mb: 1.5,
-                          lineHeight: 1.6,
-                          color: (theme) => theme.palette.text.primary
-                        }}
-                        {...props}
-                      />
-                    ),
-                    h1: ({ node, ...props }) => (
-                      <Typography
-                        variant="h5"
-                        sx={{
-                          mt: 2,
-                          mb: 1.5,
-                          fontWeight: 600,
-                          color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
-                        }}
-                        {...props}
-                      />
-                    ),
-                    h2: ({ node, ...props }) => (
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          mt: 2,
-                          mb: 1.5,
-                          fontWeight: 600,
-                          color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
-                        }}
-                        {...props}
-                      />
-                    ),
-                    h3: ({ node, ...props }) => (
-                      <Typography
-                        variant="subtitle1"
-                        sx={{
-                          mt: 2,
-                          mb: 1.5,
-                          fontWeight: 600,
-                          color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
-                        }}
-                        {...props}
-                      />
-                    ),
-                    ul: ({ node, ...props }) => (
-                      <ul
-                        style={{
-                          marginBottom: '0.75rem',
-                          paddingLeft: '1.25rem'
-                        }}
-                        {...props}
-                      />
-                    ),
-                    ol: ({ node, ...props }) => (
-                      <ol
-                        style={{
-                          marginBottom: '0.75rem',
-                          paddingLeft: '1.25rem'
-                        }}
-                        {...props}
-                      />
-                    ),
-                    li: ({ node, ...props }) => (
-                      <li
-                        style={{
-                          marginBottom: '0.25rem',
-                          color: darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)'
-                        }}
-                        {...props}
-                      />
-                    )
-                  }}
-                >
-                  {description}
-                </ReactMarkdown>
-              </ContentOpened>
-            ) : (
-              <ContentClosed>
-                <ReactMarkdown
-                  className={darkMode ? 'reactMarkDowndark' : 'reactMarkDownlight'}
-                  components={{
-                    p: ({ node, ...props }) => (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          mb: 1.5,
-                          lineHeight: 1.6,
-                          color: (theme) => theme.palette.text.primary
-                        }}
-                        {...props}
-                      />
-                    ),
-                    h1: ({ node, ...props }) => (
-                      <Typography
-                        variant="h5"
-                        sx={{
-                          mt: 2,
-                          mb: 1.5,
-                          fontWeight: 600,
-                          color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
-                        }}
-                        {...props}
-                      />
-                    ),
-                    h2: ({ node, ...props }) => (
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          mt: 2,
-                          mb: 1.5,
-                          fontWeight: 600,
-                          color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
-                        }}
-                        {...props}
-                      />
-                    ),
-                    h3: ({ node, ...props }) => (
-                      <Typography
-                        variant="subtitle1"
-                        sx={{
-                          mt: 2,
-                          mb: 1.5,
-                          fontWeight: 600,
-                          color: (theme) => (theme.palette.mode === 'dark' ? '#22B14C' : '#3366FF')
-                        }}
-                        {...props}
-                      />
-                    ),
-                    ul: ({ node, ...props }) => (
-                      <ul
-                        style={{
-                          marginBottom: '0.75rem',
-                          paddingLeft: '1.25rem'
-                        }}
-                        {...props}
-                      />
-                    ),
-                    ol: ({ node, ...props }) => (
-                      <ol
-                        style={{
-                          marginBottom: '0.75rem',
-                          paddingLeft: '1.25rem'
-                        }}
-                        {...props}
-                      />
-                    ),
-                    li: ({ node, ...props }) => (
-                      <li
-                        style={{
-                          marginBottom: '0.25rem',
-                          color: darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)'
-                        }}
-                        {...props}
-                      />
-                    )
-                  }}
-                >
-                  {description}
-                </ReactMarkdown>
-              </ContentClosed>
-            )}
-          </Fade>
-        </Stack>
-      )}
+        {!showEditor && description && (
+          <ContentContainer>
+            <Fade in={true} timeout={500}>
+              {showFullContent ? (
+                <ContentOpened>
+                  <ReactMarkdown
+                    className={darkMode ? 'reactMarkDowndark' : 'reactMarkDownlight'}
+                    components={{
+                      p: ({ node, ...props }) => (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            mb: 2,
+                            lineHeight: 1.7,
+                            color: (theme) => theme.palette.text.primary,
+                            fontSize: '0.95rem'
+                          }}
+                          {...props}
+                        />
+                      ),
+                      h1: ({ node, ...props }) => (
+                        <Typography
+                          variant="h5"
+                          sx={{
+                            mt: 3,
+                            mb: 2,
+                            fontWeight: 700,
+                            background: (theme) =>
+                              theme.palette.mode === 'dark'
+                                ? 'linear-gradient(135deg, #22B14C 0%, #2ecc71 100%)'
+                                : 'linear-gradient(135deg, #3366FF 0%, #4d79ff 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                          }}
+                          {...props}
+                        />
+                      ),
+                      h2: ({ node, ...props }) => (
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            mt: 2.5,
+                            mb: 1.5,
+                            fontWeight: 600,
+                            background: (theme) =>
+                              theme.palette.mode === 'dark'
+                                ? 'linear-gradient(135deg, #22B14C 0%, #2ecc71 100%)'
+                                : 'linear-gradient(135deg, #3366FF 0%, #4d79ff 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                          }}
+                          {...props}
+                        />
+                      ),
+                      h3: ({ node, ...props }) => (
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            mt: 2,
+                            mb: 1.5,
+                            fontWeight: 600,
+                            background: (theme) =>
+                              theme.palette.mode === 'dark'
+                                ? 'linear-gradient(135deg, #22B14C 0%, #2ecc71 100%)'
+                                : 'linear-gradient(135deg, #3366FF 0%, #4d79ff 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                          }}
+                          {...props}
+                        />
+                      ),
+                      ul: ({ node, ...props }) => (
+                        <Box
+                          component="ul"
+                          sx={{
+                            mb: 2,
+                            pl: 2,
+                            '& li': {
+                              mb: 0.5,
+                              color: (theme) => theme.palette.text.secondary,
+                              fontSize: '0.9rem',
+                              lineHeight: 1.6
+                            }
+                          }}
+                          {...props}
+                        />
+                      ),
+                      ol: ({ node, ...props }) => (
+                        <Box
+                          component="ol"
+                          sx={{
+                            mb: 2,
+                            pl: 2,
+                            '& li': {
+                              mb: 0.5,
+                              color: (theme) => theme.palette.text.secondary,
+                              fontSize: '0.9rem',
+                              lineHeight: 1.6
+                            }
+                          }}
+                          {...props}
+                        />
+                      ),
+                      li: ({ node, ...props }) => (
+                        <li
+                          style={{
+                            marginBottom: '0.5rem',
+                            color: darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)',
+                            fontSize: '0.9rem',
+                            lineHeight: 1.6
+                          }}
+                          {...props}
+                        />
+                      )
+                    }}
+                  >
+                    {description}
+                  </ReactMarkdown>
+                </ContentOpened>
+              ) : (
+                <ContentClosed>
+                  <ReactMarkdown
+                    className={darkMode ? 'reactMarkDowndark' : 'reactMarkDownlight'}
+                    components={{
+                      p: ({ node, ...props }) => (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            mb: 2,
+                            lineHeight: 1.7,
+                            color: (theme) => theme.palette.text.primary,
+                            fontSize: '0.95rem'
+                          }}
+                          {...props}
+                        />
+                      ),
+                      h1: ({ node, ...props }) => (
+                        <Typography
+                          variant="h5"
+                          sx={{
+                            mt: 3,
+                            mb: 2,
+                            fontWeight: 700,
+                            background: (theme) =>
+                              theme.palette.mode === 'dark'
+                                ? 'linear-gradient(135deg, #22B14C 0%, #2ecc71 100%)'
+                                : 'linear-gradient(135deg, #3366FF 0%, #4d79ff 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                          }}
+                          {...props}
+                        />
+                      ),
+                      h2: ({ node, ...props }) => (
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            mt: 2.5,
+                            mb: 1.5,
+                            fontWeight: 600,
+                            background: (theme) =>
+                              theme.palette.mode === 'dark'
+                                ? 'linear-gradient(135deg, #22B14C 0%, #2ecc71 100%)'
+                                : 'linear-gradient(135deg, #3366FF 0%, #4d79ff 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                          }}
+                          {...props}
+                        />
+                      ),
+                      h3: ({ node, ...props }) => (
+                        <Typography
+                          variant="subtitle1"
+                          sx={{
+                            mt: 2,
+                            mb: 1.5,
+                            fontWeight: 600,
+                            background: (theme) =>
+                              theme.palette.mode === 'dark'
+                                ? 'linear-gradient(135deg, #22B14C 0%, #2ecc71 100%)'
+                                : 'linear-gradient(135deg, #3366FF 0%, #4d79ff 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
+                          }}
+                          {...props}
+                        />
+                      ),
+                      ul: ({ node, ...props }) => (
+                        <Box
+                          component="ul"
+                          sx={{
+                            mb: 2,
+                            pl: 2,
+                            '& li': {
+                              mb: 0.5,
+                              color: (theme) => theme.palette.text.secondary,
+                              fontSize: '0.9rem',
+                              lineHeight: 1.6
+                            }
+                          }}
+                          {...props}
+                        />
+                      ),
+                      ol: ({ node, ...props }) => (
+                        <Box
+                          component="ol"
+                          sx={{
+                            mb: 2,
+                            pl: 2,
+                            '& li': {
+                              mb: 0.5,
+                              color: (theme) => theme.palette.text.secondary,
+                              fontSize: '0.9rem',
+                              lineHeight: 1.6
+                            }
+                          }}
+                          {...props}
+                        />
+                      ),
+                      li: ({ node, ...props }) => (
+                        <li
+                          style={{
+                            marginBottom: '0.5rem',
+                            color: darkMode ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.75)',
+                            fontSize: '0.9rem',
+                            lineHeight: 1.6
+                          }}
+                          {...props}
+                        />
+                      )
+                    }}
+                  >
+                    {description}
+                  </ReactMarkdown>
+                </ContentClosed>
+              )}
+            </Fade>
+          </ContentContainer>
+        )}
+      </StyledCard>
     </StackStyle>
   );
 }
