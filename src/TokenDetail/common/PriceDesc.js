@@ -193,13 +193,13 @@ export default function PriceDesc({ token }) {
             spacing={{ xs: 0.75, md: 1 }}
           >
             <Stack
-              spacing={0.0625}
+              spacing={0.03125}
               sx={{ flex: { xs: 'none', md: '0 0 auto' }, minWidth: { xs: 'auto', md: '160px' } }}
             >
               <Typography
                 component="h1"
                 sx={{
-                  fontSize: { xs: '0.55rem', sm: '0.575rem' },
+                  fontSize: { xs: '0.5rem', sm: '0.525rem' },
                   fontWeight: 600,
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
                   backgroundClip: 'text',
@@ -208,15 +208,16 @@ export default function PriceDesc({ token }) {
                   letterSpacing: '-0.01em',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 0.2,
-                  flexWrap: 'wrap'
+                  gap: 0.15,
+                  flexWrap: 'wrap',
+                  mb: 0.0625
                 }}
               >
                 Price
                 <Typography
                   component="span"
                   sx={{
-                    fontSize: { xs: '0.5rem', sm: '0.525rem' },
+                    fontSize: { xs: '0.45rem', sm: '0.475rem' },
                     fontWeight: 500,
                     color: alpha(theme.palette.text.secondary, 0.7),
                     background: 'none',
@@ -232,7 +233,7 @@ export default function PriceDesc({ token }) {
                 noWrap
                 component="h2"
                 sx={{
-                  fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.2rem' },
+                  fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
                   fontWeight: 800,
                   letterSpacing: '-0.02em',
                   background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${alpha(
@@ -242,7 +243,7 @@ export default function PriceDesc({ token }) {
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  lineHeight: 1.05
+                  lineHeight: 1.1
                 }}
               >
                 <NumberTooltip
